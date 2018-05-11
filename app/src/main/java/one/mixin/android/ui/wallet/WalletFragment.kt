@@ -188,6 +188,10 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
                 }
                 bottomSheet.dismiss()
             }
+            view.transactions_tv.setOnClickListener {
+                activity?.addFragment(this@WalletFragment, AllTransactionsFragment.newInstance(), AllTransactionsFragment.TAG)
+                bottomSheet.dismiss()
+            }
             view.cancel.setOnClickListener { bottomSheet.dismiss() }
 
             bottomSheet.show()

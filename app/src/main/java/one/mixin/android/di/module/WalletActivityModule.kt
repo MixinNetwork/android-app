@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.wallet.AddressAddFragment
 import one.mixin.android.ui.wallet.AddressManagementFragment
+import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.wallet.FeeFragment
 import one.mixin.android.ui.wallet.HiddenAssetsFragment
 import one.mixin.android.ui.wallet.OldPasswordFragment
@@ -64,4 +65,7 @@ abstract class WalletActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeAddressAddFragment(): AddressAddFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeAllTransactionsFragment(): AllTransactionsFragment
 }
