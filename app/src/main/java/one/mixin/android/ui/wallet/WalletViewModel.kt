@@ -2,11 +2,14 @@ package one.mixin.android.ui.wallet
 
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.ViewModel
+import android.arch.paging.LivePagedListBuilder
+import android.arch.paging.PagedList
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.AssetFee
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.repository.AccountRepository
@@ -15,7 +18,6 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
-import one.mixin.android.api.request.AssetFee
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
@@ -37,7 +39,9 @@ internal constructor(
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
 
-    fun snapshotsFromDb(id: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id)
+    fun snapshotsFromDb(id: String): LiveData<PagedList<SnapshotItem>> =
+        LivePagedListBuilder(assetRepository.snapshotsFromDb(id), PagedList.Config.Builder()
+            .setPageSize(20).build()).build()
 
     fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
 
@@ -87,4 +91,8 @@ internal constructor(
             return@BiFunction t1
         }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
     }
+
+    fun allSnapshots(): LiveData<PagedList<SnapshotItem>> =
+        LivePagedListBuilder(assetRepository.allSnapshots(), PagedList.Config.Builder()
+            .setPageSize(10).build()).build()
 }

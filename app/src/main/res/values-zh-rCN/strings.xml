@@ -256,6 +256,7 @@
     <string name="wallet_verifying">验证中…</string>
     <string name="wallet_change_password_success">钱包密码修改成功</string>
     <string name="wallet_set_password_success">钱包密码设置成功</string>
+    <string name="wallet_all_transactions">所有交易</string>
     <string name="wallet_transactions_hash">%s......%s</string>
     <string name="pin_check_title">输入你的钱包密码</string>
     <string name="pin_check_tip">定期输入钱包密码有助于记住该密码</string>

@@ -43,5 +43,8 @@ data class SnapshotItem(
     val receiver: String?,
     @SerializedName("memo")
     @ColumnInfo(name = "memo")
-    val memo: String?
+    val memo: String?,
+    @SerializedName("asset_symbol")
+    @ColumnInfo(name = "asset_symbol")
+    val assetSymbol: String
 ) : Parcelable

@@ -1,5 +1,7 @@
 package one.mixin.android.ui.wallet.adapter
 
+import android.arch.paging.PagedListAdapter
+import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -8,23 +10,31 @@ import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.date
 import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.vo.AssetItem
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.textColorResource
 
-class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetItem)
-    : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class TransactionsAdapter : PagedListAdapter<SnapshotItem, RecyclerView.ViewHolder>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0
         const val TYPE_NORMAL = 1
+
+        private val diffCallback = object : DiffUtil.ItemCallback<SnapshotItem>() {
+            override fun areItemsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem): Boolean {
+                return oldItem.snapshotId == newItem.snapshotId
+            }
+
+            override fun areContentsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem): Boolean {
+                return oldItem == newItem
+            }
+        }
     }
 
     var header: View? = null
     private var transactionsListener: TransactionsListener? = null
 
-    override fun getItemCount(): Int = if (header != null) snapshots.size + 1 else snapshots.size
+    override fun getItemCount(): Int = if (header != null) super.getItemCount() + 1 else super.getItemCount()
 
     override fun getItemViewType(position: Int): Int {
         return if (position == TYPE_HEADER && header != null) {
@@ -34,10 +44,22 @@ class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetIte
         }
     }
 
+    override fun getItem(position: Int): SnapshotItem? {
+        return if (header != null) {
+            if (getItemViewType(position) == TYPE_HEADER) {
+                return null
+            }
+            return super.getItem(position - 1)
+        } else {
+            super.getItem(position)
+        }
+    }
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is NormalHolder) {
-            val snapshot = snapshots[getPos(position)]
-            holder.bind(snapshot, asset, transactionsListener)
+        getItem(position)?.let {
+            if (holder is NormalHolder) {
+                holder.bind(it, transactionsListener)
+            }
         }
     }
 
@@ -49,16 +71,8 @@ class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetIte
             .inflate(R.layout.item_wallet_transactions, parent, false))
     }
 
-    private fun getPos(position: Int): Int {
-        return if (header != null) {
-            position - 1
-        } else {
-            position
-        }
-    }
-
     class NormalHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(snapshot: SnapshotItem, asset: AssetItem, listener: TransactionsListener?) {
+        fun bind(snapshot: SnapshotItem, listener: TransactionsListener?) {
             val isPositive = snapshot.amount.toFloat() > 0
             itemView.date.text = snapshot.createdAt.date()
             when {
@@ -78,7 +92,7 @@ class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetIte
                 }
                 else -> itemView.name.text = snapshot.receiver!!.formatPublicKey()
             }
-            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat()} ${asset.symbol}" else "${snapshot.amount.numberFormat()} ${asset.symbol}"
+            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat()} ${snapshot.assetSymbol}" else "${snapshot.amount.numberFormat()} ${snapshot.assetSymbol}"
             itemView.value.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
 
             itemView.setOnClickListener { listener?.onItemClick(snapshot) }
