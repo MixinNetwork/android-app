@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#FFFFFF</color>
+    <color name="colorAccent">#000000</color>
+    <color name="colorBlue">#19C2FD</color>
+    <color name="colorGray">#9B9B9B</color>
+
+    <color name="black">#ff000000</color>
+    <color name="black_50">#88000000</color>
+    <color name="gray_50">#88888888</color>
+    <color name="color_chat_date">#ff7799A9</color>
+    <color name="bg_gray">#F5F5F5</color>
+    <color name="divider">#ECECEC</color>
+    <color name="text_black">#202020</color>
+    <color name="text_gray">#bbbbbb</color>
+    <color name="text_white">#EFEFF4</color>
+    <color name="text_light_gray">#C5C5C7</color>
+    <color name="white_50">#88FFFFFF</color>
+    <color name="colorRed">#FF001F</color>
+    <color name="dotRed">#FF001F</color>
+    <color name="colorGreen">#00C500</color>
+    <color name="touch_highlight">#400099cc</color>
+    <color name="button_blue">#0D94FC</color>
+    <color name="button_blue_highlighted">#2CC3FA</color>
+    <color name="avatar_place_holder">#efefef</color>
+    <color name="pie_item_first">#005EE4</color>
+    <color name="pie_item_second">#3387FF</color>
+    <color name="pie_item_third">#70BEFF</color>
+    <color name="blue_highlight">#660D94FC</color>
+
+    <array name="name_colors">
+        <item>#AA4848</item>
+        <item>#B0665E</item>
+        <item>#EF8A44</item>
+        <item>#A09555</item>
+        <item>#727234</item>
+        <item>#9CAD23</item>
+        <item>#AA9100</item>
+        <item>#C49B4B</item>
+        <item>#A47758</item>
+        <item>#DF694C</item>
+        <item>#D65859</item>
+        <item>#C2405A</item>
+        <item>#A75C96</item>
+        <item>#BD637C</item>
+        <item>#8F7AC5</item>
+        <item>#7983C2</item>
+        <item>#728DB8</item>
+        <item>#5977C2</item>
+        <item>#5E6DA2</item>
+        <item>#3D98D0</item>
+        <item>#5E97A1</item>
+        <item>#4EABAA</item>
+        <item>#63A082</item>
+        <item>#877C9B</item>
+        <item>#AA66C3</item>
+        <item>#BB5334</item>
+        <item>#667355</item>
+        <item>#668899</item>
+        <item>#83BE44</item>
+        <item>#BBA600</item>
+        <item>#429AB6</item>
+        <item>#75856F</item>
+        <item>#88A299</item>
+        <item>#B3798E</item>
+        <item>#447899</item>
+        <item>#D79200</item>
+        <item>#728DB8</item>
+        <item>#DD637C</item>
+        <item>#887C66</item>
+        <item>#BE6C2C</item>
+        <item>#9B6D77</item>
+        <item>#B69370</item>
+        <item>#976236</item>
+        <item>#9D77A5</item>
+        <item>#8A660E</item>
+        <item>#5E935E</item>
+        <item>#9B8484</item>
+        <item>#92B288</item>
+    </array>
+</resources>

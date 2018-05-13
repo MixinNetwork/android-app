@@ -1,0 +1,30 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="photo_size">90dp</dimen>
+    <dimen name="default_margin">8dp</dimen>
+    <dimen name="min_keyboard_size">50dp</dimen>
+    <dimen name="min_custom_keyboard_size">110dp</dimen>
+    <dimen name="default_custom_keyboard_size">220dp</dimen>
+    <dimen name="min_custom_keyboard_top_margin">170dp</dimen>
+    <dimen name="item_contact_height">60dp</dimen>
+    <dimen name="item_contact_header_height">30dp</dimen>
+    <dimen name="title_height">?actionBarSize</dimen>
+    <dimen name="quick_camera_shutter_ring_size">52dp</dimen>
+    <dimen name="transfer_coin_size">24sp</dimen>
+    <dimen name="transfer_coin_desc_size">18sp</dimen>
+    <dimen name="transfer_item_height">80dp</dimen>
+    <dimen name="chat_date_size">10sp</dimen>
+    <dimen name="item_divider">20dp</dimen>
+    <dimen name="wallet_balance_text">26sp</dimen>
+    <dimen name="wallet_balance_as_text">14sp</dimen>
+    <dimen name="avatar_text_size">22sp</dimen>
+    <dimen name="group_avatar_text_size">34sp</dimen>
+    <dimen name="group_avatar_text_medium">28sp</dimen>
+    <dimen name="group_avatar_text_small">22sp</dimen>
+    <dimen name="bottom_avatar_size">64dp</dimen>
+    <dimen name="bottom_group_avatar_size">40dp</dimen>
+    <dimen name="bottom_button_height">56dp</dimen>
+    <dimen name="bottom_name_text_size">18sp</dimen>
+</resources>

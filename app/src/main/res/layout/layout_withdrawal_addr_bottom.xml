@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="300dp">
+
+    <one.mixin.android.widget.TitleView android:id="@+id/addr_book_title" android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:background="@drawable/bg_upper_round"
+                                        app:leftIcon="@drawable/ic_close_black_24dp"
+                                        app:rightIcon="@drawable/ic_settings_black_24dp"
+                                        app:titleText="@string/withdrawal_addr_book"/>
+
+    <ViewAnimator android:id="@+id/addr_va" android:layout_width="match_parent"
+                  android:layout_height="match_parent" android:background="@color/white">
+        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                  android:id="@+id/addr_add_tv"
+                  android:padding="@dimen/activity_vertical_margin"
+                  android:layout_gravity="center"
+                  android:text="@string/withdrawal_addr_add"
+                  android:textColor="@color/colorBlue"/>
+        <android.support.v7.widget.RecyclerView android:id="@+id/addr_rv"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="match_parent"
+                                                app:layoutManager="LinearLayoutManager"/>
+    </ViewAnimator>
+</LinearLayout>

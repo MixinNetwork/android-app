@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="@android:color/white"
+                android:foreground="?attr/selectableItemBackground">
+
+    <android.support.v4.widget.Space
+            android:id="@+id/center"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+    <one.mixin.android.widget.BadgeCircleImageView
+            android:id="@+id/avatar"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"/>
+
+    <TextView
+            android:id="@+id/balance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="50dp"
+            android:maxWidth="200dp"
+            android:layout_above="@id/center"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="8dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_toEndOf="@id/avatar"
+            android:textColor="@android:color/black"/>
+
+    <TextView
+            android:id="@+id/balance_as"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="50dp"
+            android:maxWidth="200dp"
+            android:layout_below="@id/center"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="8dp"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:layout_toEndOf="@id/avatar"
+            android:textSize="12sp"
+            android:textColor="@color/text_gray"/>
+
+    <TextView
+            android:id="@+id/price_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/center"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_toEndOf="@id/balance"
+            android:layout_alignParentEnd="true"
+            android:gravity="end"
+            android:maxLines="1"
+            android:textColor="#555555"
+            android:textSize="12sp"/>
+
+    <TextView
+            android:id="@+id/change_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/center"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_toEndOf="@id/balance_as"
+            android:layout_alignParentEnd="true"
+            android:gravity="end"
+            android:maxLines="1"
+            android:textColor="@color/text_gray"
+            android:textSize="12sp"/>
+</RelativeLayout>

@@ -1,0 +1,219 @@
+def versionMajor = 0
+def versionMinor = 3
+def versionPatch = 0
+def versionBuild = 0
+
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'org.jetbrains.kotlin.android'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 27
+    buildToolsVersion "27.0.3"
+    defaultConfig {
+        applicationId "one.mixin.messenger"
+        minSdkVersion 23
+        targetSdkVersion 27
+        versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
+        versionName "${versionMajor}.${versionMinor}.${versionPatch}"
+        multiDexEnabled true
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                arguments = ["room.schemaLocation": "$projectDir/schemas".toString()]
+            }
+        }
+
+        ndk {
+            abiFilters "armeabi-v7a", "x86", "arm64-v8a"
+        }
+
+        buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
+
+    }
+
+    sourceSets {
+        androidTest.assets.srcDirs += files("$projectDir/schemas".toString())
+    }
+
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
+    productFlavors {
+    }
+
+    signingConfigs {
+        debug {
+            storeFile file('keys/debug.keystore')
+            storePassword 'android'
+            keyAlias 'AndroidDebugKey'
+            keyPassword 'android'
+        }
+        if(project.hasProperty("RELEASE_STORE_FILE")) {
+            release {
+                keyAlias "${RELEASE_KEY_ALIAS}"
+                keyPassword "${RELEASE_KEY_PASSWORD}"
+                storeFile file("${RELEASE_STORE_FILE}")
+                storePassword "${RELEASE_STORE_PASSWORD}"
+            }
+        }
+    }
+
+    buildTypes {
+        if (project.hasProperty("RELEASE_STORE_FILE")) {
+            release {
+                debuggable false
+                proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+                signingConfig signingConfigs.release
+            }
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+    configurations {
+        ktlint
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.aar'], dir: 'libs')
+    implementation "com.android.support:appcompat-v7:${supportLibVersion}"
+    implementation "com.android.support:support-v4:${supportLibVersion}"
+    implementation "com.android.support:design:${supportLibVersion}"
+    implementation "com.android.support:cardview-v7:${supportLibVersion}"
+    implementation "com.android.support:recyclerview-v7:${supportLibVersion}"
+    implementation "com.android.support.constraint:constraint-layout:${constraintLayoutVersion}"
+    implementation "com.android.support:exifinterface:${supportLibVersion}"
+    implementation "com.android.support:customtabs:${supportLibVersion}"
+    implementation "androidx.core:core-ktx:${ktxVersion}"
+
+    // Architecture components
+    implementation "android.arch.paging:runtime:${pagingVersion}"
+    implementation "android.arch.lifecycle:extensions:${lifecycleVersion}"
+    kapt "android.arch.lifecycle:compiler:$lifecycleVersion"
+    implementation "android.arch.persistence.room:runtime:${roomVersion}"
+    kapt "android.arch.persistence.room:compiler:${roomVersion}"
+    implementation "android.arch.persistence.room:rxjava2:${roomVersion}"
+
+    // DI
+    implementation "com.google.dagger:dagger:${daggerVersion}"
+    kapt "com.google.dagger:dagger-compiler:${daggerVersion}"
+    implementation "com.google.dagger:dagger-android:${daggerVersion}"
+    implementation "com.google.dagger:dagger-android-support:${daggerVersion}"
+    kapt "com.google.dagger:dagger-android-processor:${daggerVersion}"
+
+    // RxJava
+    implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
+    implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
+    implementation("io.jsonwebtoken:jjwt:${jwtVersion}") {
+        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
+    }
+    implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
+    implementation "com.bugsnag:bugsnag-android:${bugsnagVersion}"
+    implementation "org.jsoup:jsoup:${jsoupVersion}"
+
+    // retrofit
+    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+    implementation("com.squareup.retrofit2:retrofit:${retrofitVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    implementation("com.squareup.retrofit2:converter-gson:${retrofitVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    implementation("com.squareup.retrofit2:adapter-rxjava2:${retrofitVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    implementation("com.squareup.okhttp3:logging-interceptor:${okhttpVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    implementation "com.google.code.gson:gson:${gsonVersion}"
+    implementation "com.google.firebase:firebase-core:${firebaseVersion}"
+    implementation "com.google.firebase:firebase-messaging:${firebaseVersion}"
+    implementation "com.timehop.stickyheadersrecyclerview:library:${stickyheadersrecyclerviewVersion}"
+    implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
+    implementation 'org.whispersystems:curve25519-android:0.5.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin_version}"
+    implementation "org.jetbrains.anko:anko-commons:$anko_version"
+    implementation "org.jetbrains.anko:anko-sdk25:$anko_version"
+    implementation "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
+    implementation "org.jetbrains.anko:anko-coroutines:$anko_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "com.github.bumptech.glide:glide:$glideVersion"
+    implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    kapt "com.github.bumptech.glide:compiler:$glideVersion"
+    implementation "jp.wasabeef:glide-transformations:${glideTransformationsVersion}"
+    implementation "com.jakewharton.timber:timber:${timberVersion}"
+    implementation "com.facebook.stetho:stetho:${stethoVersion}"
+    implementation("com.facebook.stetho:stetho-okhttp3:${stethoVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    implementation "com.github.jorgecastilloprz:fabprogresscircle:${fabprogresscircleVersion}"
+    implementation "com.github.tougee:country-picker-android:${countryPickerVersion}"
+    implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"
+    implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
+    implementation "com.github.tougee:rx-contacts2:${rxContactsVersion}"
+    implementation "com.github.tougee:zxing-android-embedded:${zxingVersion}"
+    implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
+    implementation "com.tbruyelle.rxpermissions2:rxpermissions:${rxpermissionsVersion}"
+    implementation("com.github.yalantis:ucrop:${ucropVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
+    implementation "com.fasterxml.jackson.core:jackson-databind:${fasterxmlVersion}"
+    implementation "com.facebook.rebound:rebound:${reboundVersion}"
+    implementation 'com.madgag.spongycastle:core:1.58.0.0'
+    ktlint "com.github.shyiko:ktlint:${ktlintVersion}"
+    testImplementation "junit:junit:${junitVersion}"
+    androidTestImplementation "junit:junit:${junitVersion}"
+    androidTestImplementation("com.android.support.test.espresso:espresso-core:${espressoVersion}", {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    implementation "com.uber.autodispose:autodispose-kotlin:${autodisposeVersion}"
+    implementation "com.uber.autodispose:autodispose-android-archcomponents-kotlin:${autodisposeVersion}"
+
+
+    implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
+    implementation "com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}"
+    implementation "com.googlecode.mp4parser:isoparser:1.0.6"
+}
+
+task ktlint(type: JavaExec, group: "verification") {
+    description = "Check Kotlin code style."
+    main = "com.github.shyiko.ktlint.Main"
+    classpath = configurations.ktlint
+    args '--android', "src/**/*.kt"
+    // to generate report in checkstyle format prepend following args:
+    // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
+    // see https://github.com/shyiko/ktlint#usage for more
+}
+check.dependsOn ktlint
+
+task ktlintFormat(type: JavaExec, group: "formatting") {
+    description = "Fix Kotlin code style deviations."
+    main = "com.github.shyiko.ktlint.Main"
+    classpath = configurations.ktlint
+    args '--android', "-F", "src/**/*.kt"
+}
+
+// preBuild.dependsOn ktlint
+
+androidExtensions {
+    experimental = true
+}
+kotlin {
+    experimental {
+        coroutines "enable"
+    }
+}
+
+apply plugin: 'com.google.gms.google-services'

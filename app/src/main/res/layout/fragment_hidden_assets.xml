@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:background="@color/white"
+              android:clickable="true"
+              android:focusable="true">
+
+    <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
+            app:leftIcon="@drawable/ic_arrow_back_black_24dp"
+            app:titleText="@string/wallet_hidden_assets"/>
+
+    <ViewAnimator android:id="@+id/assets_va"
+                  android:layout_width="match_parent" android:layout_height="match_parent">
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/assets_rv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layoutManager="LinearLayoutManager"/>
+
+        <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent"
+                        android:orientation="vertical" tools:ignore="UseCompoundDrawables">
+            <ImageView android:layout_width="42dp" android:layout_height="42dp"
+                       android:layout_marginBottom="8dp"
+                       android:src="@drawable/ic_hidden_assets" android:contentDescription="@null"
+                       android:layout_above="@+id/empty_tv" android:layout_centerHorizontal="true"/>
+            <TextView android:id="@+id/empty_tv"
+                      android:layout_width="wrap_content" android:layout_height="wrap_content"
+                      android:layout_centerInParent="true"
+                      android:text="@string/asset_no_hidden" android:textColor="@color/text_gray"
+                      android:textSize="16sp"/>
+        </RelativeLayout>
+    </ViewAnimator>
+</LinearLayout>

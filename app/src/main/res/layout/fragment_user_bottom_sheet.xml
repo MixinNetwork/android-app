@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:background="@drawable/bg_upper_round"
+              android:orientation="vertical">
+
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+        <ImageView
+                android:id="@+id/left_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_close_black_24dp"
+                tools:ignore="ContentDescription"/>
+
+        <ImageView
+                android:id="@+id/right_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="8dp"
+                android:layout_marginTop="8dp"
+                android:padding="8dp"
+                android:src="@drawable/ic_more"
+                tools:ignore="ContentDescription"/>
+
+        <one.mixin.android.widget.AvatarView
+                android:id="@+id/avatar"
+                android:layout_width="@dimen/bottom_avatar_size"
+                android:layout_height="@dimen/bottom_avatar_size"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="30dp"
+                android:layout_marginBottom="16dp"
+                tools:ignore="ContentDescription"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin">
+
+        <TextView
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxWidth="180dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textSize="@dimen/bottom_name_text_size"
+                android:textColor="@android:color/black"/>
+
+        <ImageView
+                android:id="@+id/bot_iv"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_toEndOf="@id/name"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_bot"
+                android:visibility="gone"
+                tools:ignore="ContentDescription"/>
+
+        <ImageView
+                android:id="@+id/verified_iv"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_toEndOf="@id/bot_iv"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:layout_marginStart="8dp"
+                android:visibility="gone"
+                android:src="@drawable/ic_user_verified"
+                tools:ignore="ContentDescription"/>
+    </RelativeLayout>
+
+    <TextView
+            android:id="@+id/id_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:layout_gravity="center_horizontal"
+            android:maxLines="1"
+            android:text="@string/contact_mixin_id"
+            android:textColor="@color/text_gray"/>
+
+    <TextView
+            android:id="@+id/creator_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_round_gray"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="8dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
+            android:layout_gravity="center_horizontal"
+            android:maxLines="1"
+            android:visibility="gone"
+            android:textSize="12sp"
+            android:textColor="@color/text_gray"/>
+
+    <one.mixin.android.widget.linktext.AutoLinkTextView
+            android:layout_width="match_parent"
+            android:id="@+id/detail_tv"
+            android:textColor="@color/text_black"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"/>
+
+    <View
+            android:layout_width="match_parent" android:layout_height=".5dp"
+            android:layout_marginTop="30dp"
+            android:background="@color/bg_gray"/>
+
+    <TextView
+            android:id="@+id/add_contact_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height"
+            android:background="@android:color/white"
+            android:gravity="center"
+            android:text="@string/contact_other_add"
+            android:textColor="@color/colorBlue"
+            tools:ignore="RelativeOverlap"/>
+
+    <View
+            android:id="@+id/divider_send"
+            android:layout_width="match_parent" android:layout_height=".5dp"
+            android:background="@color/bg_gray"/>
+
+    <TextView
+            android:id="@+id/send_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height"
+            android:background="@android:color/white"
+            android:gravity="center"
+            android:text="@string/contact_other_send"
+            android:textColor="@color/colorBlue"
+            tools:ignore="RelativeOverlap"/>
+
+    <View
+            android:id="@+id/divider_open"
+            android:layout_width="match_parent" android:layout_height=".5dp"
+            android:background="@color/bg_gray"/>
+
+    <TextView
+            android:id="@+id/open_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height"
+            android:background="@android:color/white"
+            android:gravity="center"
+            android:text="@string/open_app"
+            android:textColor="@color/colorBlue"
+            tools:ignore="RelativeOverlap"/>
+</LinearLayout>

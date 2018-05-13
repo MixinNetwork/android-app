@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+    <TextView
+            android:id="@+id/pin_tv"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/bg_upper_round"
+            android:drawablePadding="16dp"
+            android:drawableStart="@drawable/ic_pin"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:text="@string/conversation_pin"/>
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:background="@color/divider"/>
+
+    <TextView
+            android:id="@+id/delete_tv"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:color/white"
+            android:drawablePadding="16dp"
+            android:drawableStart="@drawable/ic_msg_delete"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:text="@string/conversation_delete"/>
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:background="@color/divider"/>
+
+    <TextView
+            android:id="@+id/cancel_tv"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@android:color/white"
+            android:drawablePadding="16dp"
+            android:drawableStart="@drawable/ic_close_black_24dp"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:text="@string/cancel"/>
+</LinearLayout>

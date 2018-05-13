@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/item_contact_height"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:foreground="?attr/selectableItemBackground"
+    android:background="@android:color/white">
+
+  <one.mixin.android.widget.AvatarView
+      android:id="@+id/avatar_conversation"
+      android:layout_width="40dp"
+      android:layout_height="40dp"
+      android:layout_gravity="center_vertical"
+      android:layout_marginStart="@dimen/activity_horizontal_margin"/>
+
+  <TextView
+      android:id="@+id/name"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="@dimen/activity_horizontal_margin"
+      android:layout_marginEnd="@dimen/activity_horizontal_margin"
+      android:ellipsize="end"
+      android:singleLine="true"
+      android:layout_gravity="center_vertical"
+      android:textColor="@android:color/black"
+      android:text="@string/app_name"/>
+
+  <ImageView
+      android:id="@+id/c_bot_iv"
+      android:layout_width="12dp"
+      android:layout_height="12dp"
+      android:layout_gravity="center_vertical"
+      android:layout_marginEnd="8dp"
+      android:src="@drawable/ic_bot"
+      android:visibility="gone"
+      tools:ignore="ContentDescription" />
+</LinearLayout>

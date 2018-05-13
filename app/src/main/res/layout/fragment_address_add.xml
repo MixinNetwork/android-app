@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              android:layout_width="match_parent" android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:background="@android:color/white">
+
+    <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleText="@string/withdrawal_addr_new"
+            app:rightText="@string/save"/>
+
+    <RelativeLayout
+            android:id="@+id/label_rl"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:orientation="vertical">
+
+        <EditText
+                android:id="@+id/label_et"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:background="@null"
+                android:hint="@string/label"
+                android:inputType="text"
+                android:maxLength="32"
+                android:maxLines="1"
+                android:paddingEnd="8dp"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"/>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="8dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:background="@color/divider"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+            android:id="@+id/addr_rl"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:orientation="vertical">
+
+        <EditText
+                android:id="@+id/addr_et"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:hint="@string/address"
+                android:inputType="textMultiLine"
+                android:paddingEnd="8dp"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_toStartOf="@id/qr_iv"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"/>
+
+        <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                   android:id="@+id/qr_iv"
+                   android:layout_centerVertical="true"
+                   android:layout_alignParentEnd="true"
+                   android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                   android:src="@drawable/ic_addr_qr" android:contentDescription="@null"/>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="8dp"
+                android:layout_alignParentBottom="true"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:background="@color/divider"/>
+    </RelativeLayout>
+</LinearLayout>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="MaterialSearchView">
+        <attr name="searchCloseIcon" format="integer" />
+        <attr name="searchBackIcon" format="integer" />
+        <attr name="searchBarHeight" format="dimension" />
+        <attr name="android:fitsSystemWindows" />
+        <attr name="android:hint" />
+        <attr name="android:textColor" />
+        <attr name="android:textColorHint" />
+        <attr name="android:inputType" />
+    </declare-styleable>
+
+    <declare-styleable name="TitleView">
+        <attr name="titleText" format="string" />
+        <attr name="rightIcon" format="reference" />
+        <attr name="rightText" format="string" />
+        <attr name="rightTextColor" format="color" />
+        <attr name="leftIcon" format="reference" />
+        <attr name="titleColor" format="color" />
+        <attr name="android:background" />
+        <attr name="need_divider" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="CircleImageView">
+        <attr name="border_width" format="dimension" />
+        <attr name="border_color" format="color" />
+        <attr name="border_overlay" format="boolean" />
+    </declare-styleable>
+    <declare-styleable name="CameraView">
+        <attr name="camera" format="integer" />
+    </declare-styleable>
+    <declare-styleable name="PasswordView">
+        <attr name="circleColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="CircleProgress">
+        <attr name="size" format="dimension" />
+        <attr name="progressWidth" format="dimension" />
+        <attr name="shadowColor" format="color" />
+        <attr name="progressColor" format="color" />
+        <attr name="progress" format="integer" />
+        <attr name="maxProgress" format="integer" />
+        <attr name="stringSize" format="dimension"/>
+        <attr name="border" format="boolean"/>
+    </declare-styleable>
+    <declare-styleable name="VerificationCodeView">
+        <attr name="vcv_count" format="integer" />
+        <attr name="vcv_spacing" format="dimension" />
+        <attr name="vcv_inputWidth" format="dimension" />
+        <attr name="vcv_inputHeight" format="dimension" />
+        <attr name="vcv_inputColor" format="color" />
+        <attr name="vcv_textSize" format="dimension" />
+        <attr name="vcv_textColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="PinView">
+        <attr name="pin_color" format="color"/>
+        <attr name="pin_count" format="integer"/>
+        <attr name="pin_tipVisible" format="boolean"/>
+        <attr name="pin_lineVisible" format="boolean"/>
+    </declare-styleable>
+    <declare-styleable name="FlowLayout">
+        <attr name="max_select" format="integer"/>
+        <attr name="tag_gravity">
+            <enum name="left" value="-1" />
+            <enum name="center" value="0" />
+            <enum name="right" value="1" />
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="PlayView">
+        <attr name="bg" format="color"/>
+        <attr name="color" format="color"/>
+    </declare-styleable>
+</resources>

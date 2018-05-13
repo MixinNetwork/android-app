@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <android.support.constraint.ConstraintLayout
+        android:layout_width="262dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_margin="8dp"
+        android:background="@drawable/bg_item_chat_white"
+        android:orientation="vertical"
+        android:padding="6dp"
+        android:translationZ="1dp">
+
+        <TextView
+            android:id="@+id/name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:textColor="@color/text_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="Taylor Swift" />
+
+        <View
+            android:id="@+id/card_view"
+            android:layout_width="250dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="6dp"
+            android:background="@drawable/bg_item_chat_card"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/name_tv" />
+
+        <one.mixin.android.widget.CircleImageView
+            android:id="@+id/avatar_iv"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:src="@drawable/default_avatar"
+            app:border_color="@color/white"
+            app:border_width="2dp"
+            app:layout_constraintStart_toStartOf="@id/card_view"
+            app:layout_constraintTop_toTopOf="@id/card_view" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/sf_pro_light"
+            android:singleLine="true"
+            tools:text="Taylor Swift"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            app:layout_constraintStart_toEndOf="@id/avatar_iv"
+            app:layout_constraintTop_toTopOf="@id/avatar_iv" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/sf_pro_light"
+            android:singleLine="true"
+            tools:text="Taylor Swift"
+            android:textColor="@color/white_50"
+            android:textSize="14sp"
+            app:layout_constraintBottom_toBottomOf="@id/avatar_iv"
+            app:layout_constraintStart_toEndOf="@id/avatar_iv" />
+
+    </android.support.constraint.ConstraintLayout>
+</FrameLayout>
+
+

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginBottom="1dp"
+              android:orientation="vertical"
+              android:paddingTop="0.5dp">
+
+    <TextView
+            android:id="@+id/chat_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="17dp"
+            android:maxWidth="280dp"
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:lines="1"
+            android:textColor="#19BEF1"
+            android:textSize="14sp"
+            android:layout_marginBottom="1.5dp"/>
+
+    <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/chat_bubble_other"
+            android:layout_marginEnd="4dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="1.5dp">
+        <ImageView
+                android:id="@+id/chat_icon"
+                android:layout_width="40dp"
+                android:layout_marginStart="3dp"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="3dp"
+                android:layout_height="40dp"/>
+        <TextView
+                android:layout_toEndOf="@id/chat_icon"
+                android:id="@+id/chat_title"
+                android:textSize="16sp"
+                android:layout_marginStart="10dp"
+                android:maxWidth="220dp"
+                android:layout_marginEnd="10dp"
+                android:textColor="@color/text_black"
+                android:layout_alignTop="@id/chat_icon"
+                android:layout_width="wrap_content"
+                android:singleLine="true"
+                android:layout_height="wrap_content"/>
+        <TextView
+                android:layout_marginStart="10dp"
+                android:layout_toEndOf="@id/chat_icon"
+                android:layout_marginEnd="10dp"
+                android:maxWidth="220dp"
+                android:singleLine="true"
+                android:layout_alignBottom="@id/chat_icon"
+                android:id="@+id/chat_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+    </RelativeLayout>
+
+</LinearLayout>

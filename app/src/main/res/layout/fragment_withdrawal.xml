@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleText="@string/withdrawal"
+            app:rightText="@string/next"/>
+
+    <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/title_view"
+            android:fillViewport="true">
+
+        <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/bg_gray">
+
+            <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:background="@android:color/white">
+
+                <RelativeLayout
+                        android:id="@+id/addr_rl"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin">
+
+                    <TextView
+                            android:id="@+id/addr_tv"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:background="@null"
+                            android:gravity="center_vertical"
+                            android:layout_toStartOf="@+id/addr_iv"
+                            android:hint="@string/withdrawal_tap_add_addr"
+                            android:paddingEnd="8dp"
+                            android:paddingStart="@dimen/activity_horizontal_margin"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"/>
+
+
+                    <ImageView
+                            android:id="@+id/addr_iv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                            android:src="@drawable/ic_arrow_drop_down_gray_24dp"
+                            tools:ignore="ContentDescription"/>
+
+                    <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"
+                            android:background="@color/divider"/>
+                </RelativeLayout>
+
+                <RelativeLayout
+                        android:id="@+id/amount_rl"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:layout_below="@id/addr_rl"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin">
+
+                    <EditText
+                            android:id="@+id/amount_et"
+                            android:layout_width="wrap_content"
+                            android:layout_height="60dp"
+                            android:background="@null"
+                            android:hint="@string/amount"
+                            android:inputType="numberDecimal"
+                            android:paddingEnd="8dp"
+                            android:paddingStart="16dp"
+                            android:maxLines="1"
+                            android:maxLength="16"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"/>
+
+                    <TextView android:id="@+id/balance_tv"
+                              android:layout_width="wrap_content"
+                              android:layout_height="wrap_content"
+                              android:layout_centerVertical="true"
+                              android:layout_toEndOf="@id/amount_et"
+                              android:gravity="end"
+                              android:maxLines="2"
+                              android:ellipsize="end"
+                              android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                              android:fontFamily="@font/sf_pro_light"
+                              android:textSize="12sp"
+                              android:textColor="@color/text_gray"
+                              android:layout_alignParentEnd="true"
+                              tools:ignore="RelativeOverlap"/>
+
+                    <View
+                            android:id="@+id/divider3"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginStart="8dp"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"
+                            android:background="@color/divider"/>
+                </RelativeLayout>
+
+                <RelativeLayout
+                        android:id="@+id/memo_rl"
+                        android:layout_width="match_parent"
+                        android:layout_height="60dp"
+                        android:layout_below="@id/amount_rl"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:orientation="vertical">
+
+                    <EditText
+                            android:id="@+id/memo_et"
+                            android:layout_width="match_parent"
+                            android:layout_height="60dp"
+                            android:background="@null"
+                            android:hint="@string/wallet_transfer_memo"
+                            android:inputType="text"
+                            android:maxLength="32"
+                            android:maxLines="1"
+                            android:paddingEnd="8dp"
+                            android:paddingStart="16dp"
+                            android:textColor="@android:color/black"
+                            android:textSize="16sp"/>
+
+                    <View
+                            android:id="@+id/divider4"
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_marginStart="8dp"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginTop="@dimen/activity_vertical_margin"
+                            android:background="@color/divider"/>
+                </RelativeLayout>
+
+                <ViewAnimator
+                        android:id="@+id/fee_va"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/activity_vertical_margin"
+                        android:layout_marginStart="36dp"
+                        android:layout_marginEnd="36dp"
+                        android:layout_marginBottom="@dimen/activity_vertical_margin"
+                        android:layout_below="@id/memo_rl"
+                        android:inAnimation="@anim/fade_in"
+                        android:outAnimation="@anim/fade_out">
+
+                    <ProgressBar
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:theme="@style/AppTheme.BlueProgress"/>
+
+                    <TextView
+                            android:id="@+id/fee_tv"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="@string/withdrawal_fee"
+                            android:textColor="@color/text_black"
+                            android:textSize="12sp"/>
+
+                    <TextView
+                            android:id="@+id/fee_retry_tv"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:gravity="center"
+                            android:text="@string/withdrawal_fee_failed"
+                            android:textColor="@color/colorRed"
+                            android:textSize="12sp"/>
+                </ViewAnimator>
+            </RelativeLayout>
+        </FrameLayout>
+    </ScrollView>
+</RelativeLayout>
