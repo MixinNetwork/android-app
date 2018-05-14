@@ -78,7 +78,7 @@ open class SendMessageJob(
     }
 
     private fun sendPlainMessage() {
-        val conversation = conversationDao.getConversation(message.conversationId)!!
+        val conversation = conversationDao.getConversation(message.conversationId) ?: return
         requestCreateConversation(conversation)
         val plainText = Base64.encodeBytes(message.content!!.toByteArray())
         val blazeParam = BlazeMessageParam(message.conversationId, null,
