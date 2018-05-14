@@ -2,13 +2,14 @@ package one.mixin.android.di.module
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.contacts.AddPeopleFragment
+import one.mixin.android.ui.contacts.ContactBottomSheetDialog
 import one.mixin.android.ui.contacts.ContactsFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.contacts.QRFragment
-import one.mixin.android.ui.common.VerifyFragment
-import one.mixin.android.ui.contacts.ContactBottomSheetDialog
 
 @Module
 abstract class ContactActivityModule {
@@ -32,4 +33,7 @@ abstract class ContactActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeUserBottomSheetFragment(): UserBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeGroupBottomSheetDialogFragment(): GroupBottomSheetDialogFragment
 }
