@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -132,6 +133,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                             contentView.pin_va.displayedChild = POS_PIN
                             if (it.isSuccess) {
+                                context?.updatePinCheck()
                                 toast(R.string.transfer_success)
                                 dismiss()
                                 callback?.onSuccess()

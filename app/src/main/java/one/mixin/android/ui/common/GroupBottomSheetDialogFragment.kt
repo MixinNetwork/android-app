@@ -149,6 +149,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             me = bottomViewModel.findParticipantByIds(conversationId, Session.getAccountId()!!)
 
             uiThread {
+                if (!isAdded) return@uiThread
+
                 val size = resources.getDimensionPixelSize(R.dimen.bottom_group_avatar_size)
                 val margin = dip(7.5f)
                 val params = LinearLayout.LayoutParams(size, size)

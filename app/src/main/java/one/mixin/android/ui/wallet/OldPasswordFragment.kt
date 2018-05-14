@@ -13,6 +13,7 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
@@ -72,6 +73,7 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
         walletViewModel.verifyPin(pin.code()).autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
             dialog.dismiss()
             if (r.isSuccess) {
+                context?.updatePinCheck()
                 r.data?.let {
                     activity?.addFragment(this@OldPasswordFragment,
                         WalletPasswordFragment.newInstance(true, pin.code()), WalletPasswordFragment.TAG)

@@ -13,7 +13,6 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_fragment_header.view.*
 import one.mixin.android.Constants
-import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.inTransaction
@@ -153,7 +152,10 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
     private fun checkPin() {
         val cur = System.currentTimeMillis()
         val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
-        val interval = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_INTERVAL, INTERVAL_10_MINS)
+        var interval = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_INTERVAL, 0)
+        if (last != 0L && interval == 0L) {  // version until 0.3.0
+           interval = Constants.INTERVAL_24_HOURS
+        }
         if (cur - last > interval) {
             val pinCheckDialog = PinCheckDialogFragment.newInstance()
             pinCheckDialog.show(activity?.supportFragmentManager, PinCheckDialogFragment.TAG)

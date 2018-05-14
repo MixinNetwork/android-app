@@ -14,18 +14,15 @@ import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_pin_check.view.*
-import one.mixin.android.Constants
-import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.displaySize
-import one.mixin.android.extension.putLong
+import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import javax.inject.Inject
 
 class PinCheckDialogFragment : AppCompatDialogFragment(), Injectable {
@@ -67,16 +64,7 @@ class PinCheckDialogFragment : AppCompatDialogFragment(), Injectable {
                 pinCheckViewModel.verifyPin(contentView.pin.code()).autoDisposable(scopeProvider).subscribe({ r ->
                     contentView.pin_va?.displayedChild = POS_PIN
                     if (r.isSuccess) {
-                        val cur = System.currentTimeMillis()
-                        defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
-                        val interval = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_INTERVAL, INTERVAL_10_MINS)
-                        if (interval < Constants.INTERVAL_24_HOURS) {
-                            var tmp = interval * 2
-                            if (interval * 2 > Constants.INTERVAL_24_HOURS) {
-                                tmp = Constants.INTERVAL_24_HOURS
-                            }
-                            defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, tmp)
-                        }
+                        context?.updatePinCheck()
                         dismiss()
                     } else {
                         if (r.errorCode == ErrorHandler.PIN_INCORRECT) {
