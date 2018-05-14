@@ -411,6 +411,9 @@
     <string name="auth_profile_content">%s, %s, 头像</string>
     <string name="auth_assets_more">%s 等</string>
     <string name="auth_success">成功登录 %s</string>
+    <string name="auth_permission_contacts_read">读取联系人</string>
+    <string name="auth_permission_contacts_read_description">访问你的联系人列表</string>
+
     <string name="extensions">小程序</string>
     <string name="camera">相机</string>
     <string name="document">文件</string>

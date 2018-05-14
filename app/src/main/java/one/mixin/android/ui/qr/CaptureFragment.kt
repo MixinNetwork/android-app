@@ -66,7 +66,7 @@ class CaptureFragment : BaseFragment() {
         const val ARGS_ADDRESS_RESULT = "args_address_result"
         const val RESULT_CODE = 0x0000c0df
 
-        val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "ASSETS:READ", "APPS:READ", "APPS:WRITE")
+        val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "ASSETS:READ", "APPS:READ", "APPS:WRITE", "CONTACTS:READ")
 
         fun newInstance(forAddress: Boolean = false) = CaptureFragment().withArgs {
             putBoolean(ARGS_FOR_ADDRESS, forAddress)
