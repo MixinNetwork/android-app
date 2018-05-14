@@ -3,6 +3,7 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
+import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -21,11 +22,11 @@ data class AssetItem(
     var hidden: Boolean?,
     val chainIconUrl: String?
 ) : Parcelable {
-    fun usd(): Float {
-        return balance.toFloat() * priceUsd.toFloat()
+    fun usd(): BigDecimal {
+        return BigDecimal(balance) * BigDecimal(priceUsd)
     }
 
-    fun btc(): Float {
-        return balance.toFloat() * priceBtc.toFloat()
+    fun btc(): BigDecimal {
+        return BigDecimal(balance) * BigDecimal(priceBtc)
     }
 }

@@ -7,6 +7,7 @@ import kotlinx.android.synthetic.main.item_search_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.AssetItem
 
@@ -25,7 +26,7 @@ class AssetHolder constructor(containerView: View) : RecyclerView.ViewHolder(con
         itemView.name.text = asset.name
         itemView.balance.text = asset.balance + " " + asset.symbol
         itemView.usd.text = itemView.context.getString(R.string.wallet_unit_usd,
-            "≈ ${String.format("%.2f", asset.usd())}")
+            "≈ ${asset.usd().numberFormat2()}")
         itemView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         itemView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         itemView.setOnClickListener { onItemClickListener?.onAsset(asset) }

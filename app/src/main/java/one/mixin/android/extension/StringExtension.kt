@@ -134,11 +134,30 @@ private val decimalFormat = DecimalFormat.getNumberInstance(Locale.getDefault())
     isGroupingUsed = true
 }
 
+private val decimalFormat2 = DecimalFormat.getNumberInstance(Locale.getDefault()).apply {
+    maximumFractionDigits = 2
+    minimumFractionDigits = 0
+    maximumIntegerDigits = 64
+    minimumIntegerDigits = 1
+    isGroupingUsed = true
+}
+
 fun String.numberFormat(): String {
+    if (this.isEmpty()) return this
     return decimalFormat.format(BigDecimal(this))
 }
 
+fun BigDecimal.numberFormat(): String {
+    return decimalFormat.format(this)
+}
+
+fun BigDecimal.numberFormat2(): String {
+    return decimalFormat2.format(this)
+}
+
 fun String.max8(): String {
+    if (this.isEmpty()) return this
+
     val index = this.indexOf('.')
     val result: String
     if (index == -1) {
@@ -161,6 +180,8 @@ fun String.max8(): String {
 }
 
 fun String.formatPrice(): String {
+    if (this.isEmpty()) return this
+
     val index = this.indexOf('.')
     if (index == -1) return this
 

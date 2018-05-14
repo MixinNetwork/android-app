@@ -46,8 +46,4 @@ data class Asset(
     @SerializedName("hidden")
     @ColumnInfo(name = "hidden")
     var hidden: Boolean?
-) : Parcelable {
-    fun usd(): Float {
-        return balance.toFloat() * priceUsd.toFloat()
-    }
-}
+) : Parcelable
