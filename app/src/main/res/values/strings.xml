@@ -417,6 +417,9 @@
     <string name="auth_profile_content">%s, %s, profile photo</string>
     <string name="auth_assets_more">%s and more</string>
     <string name="auth_success">Successfully log in to %s</string>
+    <string name="auth_permission_contacts_read">Read contacts</string>
+    <string name="auth_permission_contacts_read_description">access your contacts list</string>
+
     <string name="extensions">Extensions</string>
     <string name="camera">Camera</string>
     <string name="document">File</string>
