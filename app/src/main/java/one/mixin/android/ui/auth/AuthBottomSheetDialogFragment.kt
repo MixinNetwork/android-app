@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
 import android.support.v7.widget.RecyclerView
@@ -160,13 +161,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.confirm_anim.isEnabled = true
                 if (r.isSuccess && r.data != null) {
                     val redirectUri = r.data!!.app.redirectUri
-                    if (!redirectUri.isWebUrl()) {
-                        val intent = Intent.parseUri(redirectUri, Intent.URI_INTENT_SCHEME)
-                        val info = context?.packageManager?.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
-                        if (info != null) {
-                            context?.startActivity(intent)
-                        }
-                    }
+                    redirect(redirectUri, r.data!!.authorization_code)
                     success = true
                     dismiss()
                 } else {
@@ -180,12 +175,35 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    @SuppressLint("CheckResult")
     override fun onDismiss(dialog: DialogInterface?) {
         if (!success && isAdded) {
             val request = AuthorizeRequest(auth.authorizationId, listOf())
-            bottomViewModel.authorize(request).autoDisposable(scopeProvider).subscribe({}, {})
+            bottomViewModel.authorize(request).subscribe({
+                if (it.isSuccess && it.data != null) {
+                    redirect(it.data!!.app.redirectUri, it.data!!.authorization_code)
+                }
+            }, {
+                ErrorHandler.handleError(it)
+            })
         }
         super.onDismiss(dialog)
+    }
+
+    private fun redirect(uri: String, code: String?) {
+        if (!uri.isWebUrl()) {
+            val builder = Uri.parse(uri).buildUpon()
+            val redirect = if (code.isNullOrEmpty()) {
+                builder.appendQueryParameter("error", "access_denied").build()
+            } else {
+                builder.appendQueryParameter("code", code).build()
+            }
+            val intent = Intent.parseUri(redirect.toString(), Intent.URI_INTENT_SCHEME)
+            val info = context?.packageManager?.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
+            if (info != null) {
+                context?.startActivity(intent)
+            }
+        }
     }
 
     private class ScopeAdapter(val scopes: List<Scope>) : RecyclerView.Adapter<ScopeViewHolder>() {

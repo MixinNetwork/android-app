@@ -1,10 +1,8 @@
 package one.mixin.android.job
 
-import com.google.gson.Gson
 import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
-import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.ConversationDao
@@ -17,15 +15,8 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.di.Injectable
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.BlazeMessage
-import one.mixin.android.websocket.BlazeMessageParam
-import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.ChatWebSocket
-import one.mixin.android.websocket.PlainDataAction
-import one.mixin.android.websocket.TransferPlainData
-import java.util.UUID
 import javax.inject.Inject
 
 open class Injector : Injectable {
@@ -72,14 +63,5 @@ open class Injector : Injectable {
             }
         }
         return bm.data
-    }
-
-    protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
-        val plainText = Gson().toJson(TransferPlainData(PlainDataAction.NO_KEY.name))
-        val encoded = Base64.encodeBytes(plainText.toByteArray())
-        val params = BlazeMessageParam(conversationId, recipientId, UUID.randomUUID().toString(),
-            MessageCategory.PLAIN_JSON.name, encoded, MessageStatus.SENDING.name)
-        val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
-        signalKeysChannel(bm)
     }
 }
