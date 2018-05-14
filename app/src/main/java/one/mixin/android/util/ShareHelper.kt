@@ -4,8 +4,8 @@ import android.content.Intent
 import android.net.Uri
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.addTo
 
 class ShareHelper {
@@ -30,7 +30,7 @@ class ShareHelper {
         if (Intent.ACTION_SEND == action) {
             if ("text/plain" == type) {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
-                ForwardMessage(MessageCategory.SIGNAL_TEXT.name, content = text).addTo(result)
+                ForwardMessage(ForwardCategory.TEXT.name, content = text).addTo(result)
             } else if (type.startsWith("image/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                 generateImageMessage(imageUri)?.addTo(result)
@@ -50,7 +50,7 @@ class ShareHelper {
         if (imageUri == null) {
             return null
         }
-        return ForwardMessage(MessageCategory.SIGNAL_IMAGE.name,
+        return ForwardMessage(ForwardCategory.IMAGE.name,
             mediaUrl = imageUri.getFilePath(MixinApplication.appContext))
     }
 }

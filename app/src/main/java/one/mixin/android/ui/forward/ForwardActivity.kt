@@ -8,8 +8,8 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.ShareHelper
+import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.MessageCategory
 
 class ForwardActivity : BlazeBaseActivity() {
     companion object {
@@ -27,7 +27,7 @@ class ForwardActivity : BlazeBaseActivity() {
         fun show(context: Context, link: String?) {
             val intent = Intent(context, ForwardActivity::class.java).apply {
                 val list = ArrayList<ForwardMessage>().apply {
-                    add(ForwardMessage(MessageCategory.SIGNAL_TEXT.name, link))
+                    add(ForwardMessage(ForwardCategory.TEXT.name, link))
                 }
                 putParcelableArrayListExtra(ARGS_MESSAGES, list)
             }

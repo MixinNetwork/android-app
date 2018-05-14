@@ -27,6 +27,7 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
 import one.mixin.android.extension.getMineType
+import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.notNullElse
@@ -43,6 +44,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.vo.App
@@ -187,6 +189,28 @@ internal constructor(
                     message.mediaMineType!!, message.mediaSize!!, nowInUtc(), null, null,
                     MediaStatus.PENDING, MessageStatus.SENDING
                 )))
+            }
+        }.observeOn(AndroidSchedulers.mainThread())!!
+
+    fun sendFordDataMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
+        Flowable.just(id).observeOn(Schedulers.io()).map {
+            val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
+            conversationRepository.findMessageById(id)?.let { message ->
+                val uri: Uri = if (message.userId != Session.getAccountId()) {
+                    MixinApplication.appContext.getUriForFile(File(message.mediaUrl))
+                } else {
+                    Uri.parse(message.mediaUrl)
+                }
+                jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
+                    null, message.name, uri.toString(), message.mediaMineType!!, message.mediaSize!!, nowInUtc(), null,
+                    null, MediaStatus.PENDING, MessageStatus.SENDING)))
+            }
+        }.observeOn(AndroidSchedulers.mainThread())!!
+
+    fun sendFordStickerMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
+        Flowable.just(id).observeOn(Schedulers.io()).map {
+            conversationRepository.findMessageById(id)?.let { message ->
+                sendStickerMessage(conversationId, sender, TransferStickerData(message.albumId!!, message.name!!), isPlain)
             }
         }.observeOn(AndroidSchedulers.mainThread())!!
 
