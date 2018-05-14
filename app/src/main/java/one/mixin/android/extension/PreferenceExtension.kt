@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import one.mixin.android.Constants
+import one.mixin.android.Constants.INTERVAL_10_MINS
 
 inline val Context.defaultSharedPreferences: SharedPreferences
     get() = PreferenceManager.getDefaultSharedPreferences(this)
@@ -42,4 +44,17 @@ inline fun SharedPreferences.putStringSet(key: String, values: Set<String>?) {
 
 inline fun SharedPreferences.remove(key: String) {
     this.edit().remove(key).apply()
+}
+
+fun Context.updatePinCheck() {
+    val cur = System.currentTimeMillis()
+    defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
+    val interval = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_INTERVAL, INTERVAL_10_MINS)
+    if (interval < Constants.INTERVAL_24_HOURS) {
+        var tmp = interval * 2
+        if (interval * 2 > Constants.INTERVAL_24_HOURS) {
+            tmp = Constants.INTERVAL_24_HOURS
+        }
+        defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, tmp)
+    }
 }

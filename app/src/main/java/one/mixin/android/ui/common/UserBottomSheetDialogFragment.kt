@@ -192,6 +192,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             doAsync {
                 bottomViewModel.findAppById(user.appId!!)?.let { app ->
                     uiThread {
+                        if (!isAdded) return@uiThread
+
                         contentView.detail_tv.visibility = VISIBLE
                         contentView.open_tv.visibility = VISIBLE
                         contentView.creator_tv.visibility = GONE

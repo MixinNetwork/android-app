@@ -19,6 +19,7 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment.Companion.POS_PB
@@ -122,6 +123,7 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         contentView.pin.code(), UUID.randomUUID().toString(), withdrawalItem.memo)
                         .autoDisposable(scopeProvider).subscribe({
                         if (it.isSuccess) {
+                            context?.updatePinCheck()
                             toast(R.string.withdrawal_success)
                             callback?.onSuccess()
                             bottomViewModel.insertSnapshot(it.data!!)

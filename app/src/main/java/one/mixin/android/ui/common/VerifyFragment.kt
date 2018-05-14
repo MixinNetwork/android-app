@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.fragment_verify_pin.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
@@ -55,6 +56,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
                     verify_fab?.visibility = GONE
                     verify_cover?.visibility = GONE
                     if (r.isSuccess) {
+                        context?.updatePinCheck()
                         LandingActivity.show(context!!, pin.code())
                     } else {
                         pin.clear()

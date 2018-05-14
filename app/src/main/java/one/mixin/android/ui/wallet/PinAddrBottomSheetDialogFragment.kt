@@ -4,12 +4,14 @@ import android.os.Bundle
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.putString
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.uiThread
 
 class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
@@ -80,13 +82,18 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
                             uiThread {
                                 contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
+                                defaultSharedPreferences.putString(assetId!!, (r.data as Address).addressId)
                                 callback?.onSuccess()
                                 dismiss()
                             }
                         }
                     } else {
-                        contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
-                        contentView.pin?.clear()
+                        if (r.errorCode != ErrorHandler.PIN_INCORRECT) {
+                            dismiss()
+                        } else {
+                            contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
+                            contentView.pin?.clear()
+                        }
                         ErrorHandler.handleMixinError(r.errorCode)
                     }
                 }, { t ->
