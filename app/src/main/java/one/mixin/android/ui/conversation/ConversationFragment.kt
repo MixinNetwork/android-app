@@ -100,6 +100,7 @@ import one.mixin.android.util.DataPackage
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
@@ -703,12 +704,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         tool_view.forward_iv.setOnClickListener {
             val list = ArrayList<ForwardMessage>()
-            list += chatAdapter.selectSet.map {
-                ForwardMessage(it.type, it.content, it.mediaUrl,
-                    it.mediaName, it.mediaMineType, it.mediaSize,
-                    it.userId, it.albumId, it.assetName, it.createdAt,
-                    it.sharedUserId, it.messageId)
-            }.sortedBy { it.msgCreatedAt }
+            list += chatAdapter.selectSet.sortedBy { it.createdAt }.map {
+                when {
+                    it.type.endsWith("_TEXT") -> ForwardMessage(ForwardCategory.TEXT.name, content = it.content)
+                    it.type.endsWith("_IMAGE") -> ForwardMessage(ForwardCategory.IMAGE.name, mediaUrl = it.mediaUrl)
+                    it.type.endsWith("_DATA") -> ForwardMessage(ForwardCategory.DATA.name, id = it.messageId)
+                    it.type.endsWith("_VIDEO") -> ForwardMessage(ForwardCategory.VIDEO.name, id = it.messageId)
+                    it.type.endsWith("_CONTACT") -> ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = it.sharedUserId)
+                    it.type.endsWith("_STICKER") -> ForwardMessage(ForwardCategory.STICKER.name, id = it.messageId)
+                    else -> ForwardMessage(ForwardCategory.TEXT.name)
+                }
+            }
             ForwardActivity.show(context!!, list)
             closeTool()
         }
@@ -872,20 +878,25 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
         messages?.let {
             for (item in it) {
-                when {
-                    item.type.endsWith("_TEXT") -> item.content?.let { sendMessage(it) }
-                    item.type.endsWith("_IMAGE") -> sendImageMessage(Uri.parse(item.mediaUrl))
-                    item.type.endsWith("_DATA") -> {
-                        val uri: Uri = if (item.userId != Session.getAccountId()) {
-                            context!!.getUriForFile(File(item.mediaUrl))
-                        } else {
-                            Uri.parse(item.mediaUrl)
-                        }
-                        sendAttachmentMessage(Attachment(uri, item.mediaName!!, item.mediaType!!, item.mediaSize!!))
+                when (item.type) {
+                    ForwardCategory.CONTACT.name -> {
+                        sendContactMessage(item.sharedUserId!!)
                     }
-                    item.type.endsWith("_STICKER") -> sendStickerMessage(item.albumId!!, item.assetName!!)
-                    item.type.endsWith("_CONTACT") -> sendContactMessage(item.sharedUserId!!)
-                    item.type.endsWith("_VIDEO") -> sendFordVideoMessage(item.messageId)
+                    ForwardCategory.IMAGE.name -> {
+                        sendImageMessage(Uri.parse(item.mediaUrl))
+                    }
+                    ForwardCategory.TEXT.name -> {
+                        item.content?.let { sendMessage(it) }
+                    }
+                    ForwardCategory.STICKER.name -> {
+                        sendFordStickerMessage(item.id)
+                    }
+                    ForwardCategory.DATA.name -> {
+                        sendFordDataMessage(item.id)
+                    }
+                    ForwardCategory.VIDEO.name -> {
+                        sendFordVideoMessage(item.id)
+                    }
                 }
             }
         }
@@ -951,6 +962,30 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         id?.let {
             createConversation {
                 chatViewModel.sendFordVideoMessage(conversationId, sender, it, isPlainMessage())
+                    .autoDisposable(scopeProvider).subscribe({
+                    }, {
+                        Timber.e(id)
+                    })
+            }
+        }
+    }
+
+    private fun sendFordDataMessage(id: String?) {
+        id?.let {
+            createConversation {
+                chatViewModel.sendFordDataMessage(conversationId, sender, it, isPlainMessage())
+                    .autoDisposable(scopeProvider).subscribe({
+                    }, {
+                        Timber.e(id)
+                    })
+            }
+        }
+    }
+
+    private fun sendFordStickerMessage(id: String?) {
+        id?.let {
+            createConversation {
+                chatViewModel.sendFordStickerMessage(conversationId, sender, it, isPlainMessage())
                     .autoDisposable(scopeProvider).subscribe({
                     }, {
                         Timber.e(id)

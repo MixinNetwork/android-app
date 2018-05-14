@@ -20,8 +20,8 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.MessageCategory
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
@@ -88,7 +88,7 @@ class EditFragment : BaseFragment() {
         }
         send_fl.setOnClickListener {
             ForwardActivity.show(context!!, arrayListOf(ForwardMessage(
-                MessageCategory.SIGNAL_IMAGE.name, mediaUrl = path)), true)
+                ForwardCategory.IMAGE.name, mediaUrl = path)), true)
         }
 
         preview_iv.setImageBitmap(callback?.getBitmap())

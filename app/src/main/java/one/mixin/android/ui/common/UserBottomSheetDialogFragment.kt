@@ -25,8 +25,8 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.util.Session
+import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.widget.BottomSheet
@@ -139,8 +139,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             .setItems(choices.toTypedArray(), { _, which ->
                 when (choices[which]) {
                     getString(R.string.contact_other_share) -> {
-                        val category = if (user.isBot()) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
-                        ForwardActivity.show(context!!, arrayListOf(ForwardMessage(category, sharedUserId = user.userId)), true)
+                        ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
                         dialog?.dismiss()
                     }
                     getString(R.string.edit_name) -> {
