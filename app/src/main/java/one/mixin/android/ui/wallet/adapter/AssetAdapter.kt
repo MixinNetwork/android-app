@@ -14,8 +14,10 @@ import one.mixin.android.extension.formatPrice
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.max8
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColorResource
+import java.math.BigDecimal
 
 class AssetAdapter(var assets: List<AssetItem>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
@@ -48,8 +50,9 @@ class AssetAdapter(var assets: List<AssetItem>) : RecyclerView.Adapter<RecyclerV
                 holder.itemView.change_tv.visibility = VISIBLE
                 holder.itemView.price_tv.text = "$${ asset.priceUsd.formatPrice().numberFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
-                    val isPositive = asset.changeUsd.toFloat() > 0
-                    val t = "${String.format("%.2f", asset.changeUsd.toFloat() * 100)}%"
+                    val changeUsd = BigDecimal(asset.changeUsd)
+                    val isPositive = changeUsd > BigDecimal.ZERO
+                    val t = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
                     holder.itemView.change_tv.text = if (isPositive) "+$t" else t
                     holder.itemView.change_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
                 }

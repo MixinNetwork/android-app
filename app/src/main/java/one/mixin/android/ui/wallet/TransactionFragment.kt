@@ -13,6 +13,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -24,6 +25,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColorResource
 import org.jetbrains.anko.uiThread
+import java.math.BigDecimal
 import javax.inject.Inject
 
 class TransactionFragment : BaseFragment() {
@@ -87,7 +89,7 @@ class TransactionFragment : BaseFragment() {
         value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()} ${asset.symbol}"
         else "${snapshot.amount.numberFormat()} ${asset.symbol}"
         value_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
-        val amount = String.format("%.2f", snapshot.amount.toFloat() * asset.priceUsd.toFloat())
+        val amount = (BigDecimal(snapshot.amount) * BigDecimal(asset.priceUsd)).numberFormat2()
         value_as_tv.text = getString(R.string.wallet_unit_usd,
             "≈ ${amount.numberFormat()}")
         transaction_id_tv.text = snapshot.snapshotId

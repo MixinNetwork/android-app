@@ -18,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment.Companion.POS_PB
@@ -30,6 +31,7 @@ import one.mixin.android.widget.PinView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
+import java.math.BigDecimal
 import java.util.UUID
 
 class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -91,7 +93,7 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.balance.text = withdrawalItem.amount.numberFormat() + " " + asset.symbol
         contentView.balance_as.text = getString(R.string.wallet_unit_usd,
-            "≈ ${String.format("%.2f", withdrawalItem.amount.toFloat() * asset.priceUsd.toFloat()).numberFormat()}")
+            "≈ ${(BigDecimal(withdrawalItem.amount) * BigDecimal(asset.priceUsd)).numberFormat2()}")
         contentView.keyboard.setKeyboardKeys(KEYS)
         contentView.keyboard.setOnClickKeyboardListener(object : Keyboard.OnClickKeyboardListener {
             override fun onKeyClick(position: Int, value: String) {

@@ -15,6 +15,7 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -28,6 +29,7 @@ import one.mixin.android.widget.PinView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
+import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -98,7 +100,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.balance.text = amount.numberFormat() + " " + asset.symbol
         contentView.balance_as.text = getString(R.string.wallet_unit_usd,
-            "≈ ${String.format("%.2f", amount.toFloat() * asset.priceUsd.toFloat()).numberFormat()}")
+        "≈ ${(BigDecimal(amount) * BigDecimal(asset.priceUsd)).numberFormat2()}")
         contentView.keyboard.setKeyboardKeys(KEYS)
         contentView.keyboard.setOnClickKeyboardListener(object : Keyboard.OnClickKeyboardListener {
             override fun onKeyClick(position: Int, value: String) {

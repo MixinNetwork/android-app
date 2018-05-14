@@ -18,7 +18,9 @@ import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.max8
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BaseFragment
@@ -29,6 +31,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PieItemView
 import one.mixin.android.widget.PieView
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
+import java.math.BigDecimal
 import java.util.Collections
 import javax.inject.Inject
 
@@ -77,20 +80,20 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
                 assetsAdapter.assets = assets.filter { it.hidden != true }
                 assetsAdapter.notifyDataSetChanged()
 
-                var totalBTC = 0f
-                var totalUSD = 0f
+                var totalBTC = BigDecimal(0)
+                var totalUSD = BigDecimal(0)
                 r.map {
                     totalBTC += it.btc()
                     totalUSD += it.usd()
                 }
 
-                header.total_as_tv.text = getString(R.string.wallet_unit_btc, totalBTC.toString().numberFormat())
-                header.total_tv.text = getString(R.string.wallet_unit_usd, totalUSD.toString().numberFormat())
+                header.total_as_tv.text = getString(R.string.wallet_unit_btc, totalBTC.toString().max8().numberFormat())
+                header.total_tv.text = getString(R.string.wallet_unit_usd, totalUSD.numberFormat2())
 
-                if (totalUSD == 0f) return@Observer
+                if (totalUSD.compareTo(BigDecimal.ZERO) == 0) return@Observer
 
-                val list = r.filter { it.balance.toFloat() != 0f }
-                    .map { PieView.PieItem(it.symbol, it.usd() / totalUSD) }
+                val list = r.filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }
+                    .map { PieView.PieItem(it.symbol, (it.usd() / totalUSD).toFloat()) }
                 if (list.isNotEmpty()) {
                     header.pie_item_container.removeAllViews()
                     Collections.sort(list, { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() })
