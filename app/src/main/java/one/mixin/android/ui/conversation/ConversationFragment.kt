@@ -198,51 +198,56 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private val menuAdapter: MenuAdapter by lazy {
         MenuAdapter(object : MenuAdapter.OnMenuClickListener {
             override fun onMenuClick(id: Int) {
-                if (id == R.id.menu_camera) {
-                    RxPermissions(activity!!)
-                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                openCamera(imageUri)
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
-                    hideMediaLayout()
-                } else if (id == R.id.menu_gallery) {
-                    RxPermissions(activity!!)
-                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                openGallery()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
-                    hideMediaLayout()
-                } else if (id == R.id.menu_video) {
-                    RxPermissions(activity!!)
-                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
-                        .autoDisposable(scopeProvider)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                openVideo()
-                            } else {
-                                // Left empty
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
-                    hideMediaLayout()
-                } else if (id == R.id.menu_document) {
-                    RxPermissions(activity!!)
+                when (id) {
+                    R.id.menu_camera -> {
+                        RxPermissions(activity!!)
+                            .request(
+                                Manifest.permission.CAMERA,
+                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    openCamera(imageUri)
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                                Bugsnag.notify(it)
+                            })
+                        hideMediaLayout()
+                    }
+                    R.id.menu_gallery -> {
+                        RxPermissions(activity!!)
+                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    openGallery()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                                Bugsnag.notify(it)
+                            })
+                        hideMediaLayout()
+                    }
+                    R.id.menu_video -> {
+                        RxPermissions(activity!!)
+                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .autoDisposable(scopeProvider)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    openVideo()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                                Bugsnag.notify(it)
+                            })
+                        hideMediaLayout()
+                    }
+                    R.id.menu_document -> RxPermissions(activity!!)
                         .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         .autoDisposable(scopeProvider)
                         .subscribe({ granted ->
@@ -255,25 +260,26 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }, {
                             Bugsnag.notify(it)
                         })
-                } else if (id == R.id.menu_transfer) {
-                    if (Session.getAccount()?.hasPin == true) {
-                        recipient?.let {
+                    R.id.menu_transfer -> {
+                        if (Session.getAccount()?.hasPin == true) {
+                            recipient?.let {
+                                activity?.supportFragmentManager?.inTransaction {
+                                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                                        R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                                        .add(R.id.container, TransferFragment.newInstance(it), TransferFragment.TAG)
+                                        .addToBackStack(null)
+                                }
+                            }
+                        } else {
                             activity?.supportFragmentManager?.inTransaction {
-                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                                    R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                    .add(R.id.container, TransferFragment.newInstance(it), TransferFragment.TAG)
+                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                                    .anim.slide_in_bottom, R.anim.slide_out_bottom)
+                                    .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
                                     .addToBackStack(null)
                             }
                         }
-                    } else {
-                        activity?.supportFragmentManager?.inTransaction {
-                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                                .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
-                                .addToBackStack(null)
-                        }
+                        hideMediaLayout()
                     }
-                    hideMediaLayout()
                 }
             }
         })
