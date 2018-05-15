@@ -107,7 +107,7 @@ class ConversationAdapter(
                         isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 INFO_TYPE -> {
-                    (holder as InfoHolder).bind(it, groupName)
+                    (holder as InfoHolder).bind(it, selectSet.size > 0, isSelect(position), onItemListener, groupName)
                 }
                 CARD_TYPE -> {
                     (holder as CardHolder).bind(it)
@@ -141,10 +141,10 @@ class ConversationAdapter(
                         isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 ACTION_TYPE -> {
-                    (holder as ActionHolder).bind(it, isFirst(position), onItemListener)
+                    (holder as ActionHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 ACTION_CARD_TYPE -> {
-                    (holder as ActionCardHolder).bind(it, isFirst(position), onItemListener)
+                    (holder as ActionCardHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 CONTACT_CARD_TYPE -> {
                     (holder as ContactCardHolder).bind(it, isFirst(position), isLast(position),
