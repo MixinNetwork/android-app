@@ -151,14 +151,14 @@ enum class MessageStatus { SENDING, SENT, DELIVERED, READ, FAILED }
 
 enum class MediaStatus { PENDING, DONE, CANCELED, EXPIRED }
 
-fun isMedia(message: MessageItem?): Boolean {
-    return message?.type == MessageCategory.SIGNAL_IMAGE.name ||
-        message?.type == MessageCategory.PLAIN_IMAGE.name ||
-        message?.type == MessageCategory.SIGNAL_DATA.name ||
-        message?.type == MessageCategory.PLAIN_DATA.name ||
-        message?.type == MessageCategory.SIGNAL_VIDEO.name ||
-        message?.type == MessageCategory.PLAIN_VIDEO.name
-}
+fun MessageItem.isMedia(): Boolean = this.type == MessageCategory.SIGNAL_IMAGE.name ||
+    this.type == MessageCategory.PLAIN_IMAGE.name ||
+    this.type == MessageCategory.SIGNAL_DATA.name ||
+    this.type == MessageCategory.PLAIN_DATA.name ||
+    this.type == MessageCategory.SIGNAL_VIDEO.name ||
+    this.type == MessageCategory.PLAIN_VIDEO.name
+
+fun MessageItem.canNotForward() = this.mediaStatus != MediaStatus.DONE.name && this.isMedia()
 
 fun createMessage(
     messageId: String,
@@ -172,11 +172,11 @@ fun createMessage(
     participantId: String? = null,
     snapshotId: String? = null
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
-        .setContent(content)
-        .setAction(action)
-        .setParticipantId(participantId)
-        .setSnapshotId(snapshotId)
-        .build()
+    .setContent(content)
+    .setAction(action)
+    .setParticipantId(participantId)
+    .setSnapshotId(snapshotId)
+    .build()
 
 fun createAttachmentMessage(
     messageId: String,
@@ -194,15 +194,15 @@ fun createAttachmentMessage(
     mediaStatus: MediaStatus,
     status: MessageStatus
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
-        .setContent(content)
-        .setName(name)
-        .setMediaUrl(mediaUrl)
-        .setMediaMineType(mediaMineType)
-        .setMediaSize(mediaSize)
-        .setMediaKey(key)
-        .setMediaDigest(digest)
-        .setMediaStatus(mediaStatus.name)
-        .build()
+    .setContent(content)
+    .setName(name)
+    .setMediaUrl(mediaUrl)
+    .setMediaMineType(mediaMineType)
+    .setMediaSize(mediaSize)
+    .setMediaKey(key)
+    .setMediaDigest(digest)
+    .setMediaStatus(mediaStatus.name)
+    .build()
 
 fun createVideoMessage(
     messageId: String,
@@ -256,17 +256,17 @@ fun createMediaMessage(
     mediaStatus: MediaStatus,
     status: MessageStatus
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
-        .setContent(content)
-        .setMediaUrl(mediaUrl)
-        .setMediaMineType(mediaMineType)
-        .setMediaSize(mediaSize)
-        .setMediaWidth(mediaWidth)
-        .setMediaHeight(mediaHeight)
-        .setThumbImage(thumbImage)
-        .setMediaKey(key)
-        .setMediaDigest(digest)
-        .setMediaStatus(mediaStatus.name)
-        .build()
+    .setContent(content)
+    .setMediaUrl(mediaUrl)
+    .setMediaMineType(mediaMineType)
+    .setMediaSize(mediaSize)
+    .setMediaWidth(mediaWidth)
+    .setMediaHeight(mediaHeight)
+    .setThumbImage(thumbImage)
+    .setMediaKey(key)
+    .setMediaDigest(digest)
+    .setMediaStatus(mediaStatus.name)
+    .build()
 
 fun createStickerMessage(
     messageId: String,
@@ -279,10 +279,10 @@ fun createStickerMessage(
     status: MessageStatus,
     createdAt: String
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
-        .setContent(content)
-        .setAlbumId(albumId)
-        .setName(stickerName)
-        .build()
+    .setContent(content)
+    .setAlbumId(albumId)
+    .setName(stickerName)
+    .build()
 
 fun createContactMessage(
     messageId: String,
