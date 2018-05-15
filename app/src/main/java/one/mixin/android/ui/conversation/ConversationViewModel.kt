@@ -46,7 +46,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.vo.App
-import one.mixin.android.vo.Asset
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
@@ -317,11 +317,7 @@ internal constructor(
         }
     }
 
-    fun assetsWithBalance(): LiveData<List<Asset>> = assetRepository.assetsWithBalance()
-
-    fun getXIN(): Asset? = assetRepository.getXIN()
-
-    fun assetsFromDb() = assetRepository.assetsFromDb()
+    fun getXIN(): AssetItem? = assetRepository.getXIN()
 
     fun transfer(transferRequest: TransferRequest) = assetRepository.transfer(transferRequest)
 
@@ -345,4 +341,6 @@ internal constructor(
             conversationRepository.getConversationApp(userId)
         }
     }
+
+    fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 }

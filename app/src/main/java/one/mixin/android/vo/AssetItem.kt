@@ -28,4 +28,6 @@ data class AssetItem(
     fun btc(): Float {
         return balance.toFloat() * priceBtc.toFloat()
     }
+
+    fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden)
 }
