@@ -122,7 +122,7 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
                 if (thumbId != messageItem.thumbImage!!.hashCode()) {
-                    itemView.chat_image.loadImage(messageItem.thumbImage?.decodeBase64(),
+                    itemView.chat_image.loadImage(messageItem.thumbImage.decodeBase64(),
                         itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
                     thumbId = messageItem.thumbImage.hashCode()
                 }

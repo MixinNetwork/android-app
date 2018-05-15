@@ -64,7 +64,7 @@ fun String.getEpochNano(): Long {
 fun String.gzip(): ByteString {
     val result = Buffer()
     val sink = Okio.buffer(GzipSink(result))
-    sink.use { sink ->
+    sink.use {
         sink.write(toByteArray())
     }
     return result.readByteString()
