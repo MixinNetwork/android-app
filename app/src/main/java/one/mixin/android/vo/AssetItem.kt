@@ -29,4 +29,6 @@ data class AssetItem(
     fun btc(): BigDecimal {
         return BigDecimal(balance) * BigDecimal(priceBtc)
     }
+
+    fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden)
 }

@@ -30,8 +30,8 @@ interface AssetDao : BaseDao<Asset> {
     @Query("SELECT * FROM assets WHERE balance > 0 $POSTFIX")
     fun simpleAssetsWithBalance(): List<Asset>
 
-    @Query("SELECT * FROM assets WHERE symbol = 'XIN' limit 1")
-    fun getXIN(): Asset?
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' AND $POSTFIX_ASSET_ITEM limit 1")
+    fun getXIN(): AssetItem?
 
     @Query("SELECT * FROM assets WHERE asset_id = :id")
     fun asset(id: String): LiveData<Asset>
@@ -62,4 +62,8 @@ interface AssetDao : BaseDao<Asset> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
     fun simpleAssetItem(id: String): AssetItem?
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 AND $POSTFIX_ASSET_ITEM")
+    fun assetItemsWithBalance(): LiveData<List<AssetItem>>
 }

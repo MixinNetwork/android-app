@@ -15,6 +15,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_transfer.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
+import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import one.mixin.android.Constants
@@ -33,7 +34,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
-import one.mixin.android.vo.Asset
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
@@ -65,8 +66,8 @@ class TransferFragment : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
-    private var assets = listOf<Asset>()
-    private var currentAsset: Asset? = null
+    private var assets = listOf<AssetItem>()
+    private var currentAsset: AssetItem? = null
         set(value) {
             field = value
             adapter.currentAsset = value
@@ -116,21 +117,18 @@ class TransferFragment : BaseFragment() {
             UserBottomSheetDialogFragment.newInstance(user).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
         }
         title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, user.fullName))
-
-        chatViewModel.assetsFromDb().observe(this, Observer {
-            adapter.coins = it
-        })
         transfer_amount.addTextChangedListener(mWatcher)
         asset_rl.setOnClickListener {
             transfer_amount.hideKeyboard()
             context?.let {
                 adapter.coins = assets
                 adapter.setTypeListener(object : OnTypeClickListener {
-                    override fun onTypeClick(asset: Asset) {
+                    override fun onTypeClick(asset: AssetItem) {
                         currentAsset = asset
                         asset_name.text = asset.name
                         asset_desc.text = asset.balance.numberFormat()
-                        asset_avatar.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+                        asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+                        asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
                         adapter.notifyDataSetChanged()
                         assetsBottomSheet.dismiss()
                     }
@@ -151,7 +149,7 @@ class TransferFragment : BaseFragment() {
 
             transfer_amount.hideKeyboard()
             val bottom = TransferBottomSheetDialogFragment
-                .newInstance(user, transfer_amount.text.toString(), currentAsset!!, UUID.randomUUID().toString(),
+                .newInstance(user, transfer_amount.text.toString(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
                     transfer_memo.text.toString())
             bottom.show(fragmentManager, TransferBottomSheetDialogFragment.TAG)
             bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
@@ -161,22 +159,25 @@ class TransferFragment : BaseFragment() {
             })
         }
 
-        chatViewModel.assetsWithBalance().observe(this, Observer { r: List<Asset>? ->
+        chatViewModel.assetItemsWithBalance().observe(this, Observer { r: List<AssetItem>? ->
             if (r != null && r.isNotEmpty()) {
                 assets = r
+                adapter.coins = r
                 expand_iv.visibility = VISIBLE
                 asset_rl.isEnabled = true
 
                 notNullElse(r.find {
                     it.assetId == activity?.defaultSharedPreferences!!.getString(ASSERT_PREFERENCE, "")
                 }, { a ->
-                    asset_avatar.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
+                    asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
+                    asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
                     asset_name.text = a.name
                     asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
                 }, {
                     val a = assets[0]
-                    asset_avatar.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
+                    asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
+                    asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
                     asset_name.text = a.name
                     asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
@@ -191,11 +192,12 @@ class TransferFragment : BaseFragment() {
                         if (!isAdded) return@uiThread
 
                         notNullElse(xin, {
-                            asset_avatar.loadImage(it.iconUrl, R.drawable.ic_avatar_place_holder)
+                            asset_avatar.bg.loadImage(it.iconUrl, R.drawable.ic_avatar_place_holder)
+                            asset_avatar.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder)
                             asset_name.text = it.name
                             asset_desc.text = it.balance.numberFormat()
                         }, {
-                            asset_avatar.setImageResource(R.drawable.ic_avatar_place_holder)
+                            asset_avatar.bg.setImageResource(R.drawable.ic_avatar_place_holder)
                             asset_name.text = getString(R.string.app_name)
                             asset_desc.text = "0"
                         })
@@ -226,7 +228,7 @@ class TransferFragment : BaseFragment() {
     }
 
     class TypeAdapter : RecyclerView.Adapter<ItemHolder>() {
-        var coins: List<Asset>? = null
+        var coins: List<AssetItem>? = null
             set(value) {
                 field = value
                 notifyDataSetChanged()
@@ -242,7 +244,8 @@ class TransferFragment : BaseFragment() {
                 return
             }
             val itemAssert = coins!![position]
-            holder.itemView.type_avatar.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
+            holder.itemView.type_avatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
+            holder.itemView.type_avatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.asset_name.text = itemAssert.name
             holder.itemView.value.text = itemAssert.balance
             currentAsset?.let {
@@ -259,11 +262,11 @@ class TransferFragment : BaseFragment() {
             typeListener = listener
         }
 
-        var currentAsset: Asset? = null
+        var currentAsset: AssetItem? = null
     }
 
     interface OnTypeClickListener {
-        fun onTypeClick(asset: Asset)
+        fun onTypeClick(asset: AssetItem)
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)

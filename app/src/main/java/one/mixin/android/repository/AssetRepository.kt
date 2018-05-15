@@ -2,6 +2,7 @@ package one.mixin.android.repository
 
 import one.mixin.android.AppExecutors
 import one.mixin.android.api.request.AddressRequest
+import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.service.AddressService
@@ -11,7 +12,6 @@ import one.mixin.android.db.AssetDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
-import one.mixin.android.api.request.Pin
 import one.mixin.android.vo.Snapshot
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -28,10 +28,6 @@ constructor(
 ) {
 
     fun assets() = assetService.assets()
-
-    fun assetsFromDb() = assetDao.assets()
-
-    fun assetsWithBalance() = assetDao.assetsWithBalance()
 
     fun simpleAssetsWithBalance() = assetDao.simpleAssetsWithBalance()
 
@@ -94,4 +90,6 @@ constructor(
     fun refreshAddresses(assetId: String) = assetService.addresses(assetId)
 
     fun insertAddresses(addresses: List<Address>) = addressDao.insertList(addresses)
+
+    fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
 }
