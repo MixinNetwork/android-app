@@ -94,7 +94,7 @@ class GroupInfoFragment : BaseFragment() {
             activity?.onBackPressed()
         }
         group_info_rv.adapter = adapter
-        group_info_rv.addItemDecoration(SpaceItemDecoration())
+        group_info_rv.addItemDecoration(SpaceItemDecoration(2))
         header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
         adapter.setHeader(header)
         adapter.setGroupInfoListener(object : GroupInfoAdapter.GroupInfoListener {
