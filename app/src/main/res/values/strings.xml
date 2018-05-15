@@ -12,7 +12,7 @@
     <string name="about">About</string>
     <string name="logout">Logout</string>
     <string name="mute">Mute</string>
-    <string name="un_mute">UnMute</string>
+    <string name="un_mute">Unmute</string>
     <string name="notification">Notifications</string>
     <string name="none">None</string>
     <string name="from">From</string>
@@ -176,7 +176,7 @@
     <string name="chat_item_title">CHATS</string>
     <string name="copy_success">Copy to clipboard</string>
     <string name="photo">Photo</string>
-    <string name="title_members">%d members</string>
+    <string name="title_participants">%d participants</string>
     <string name="save_success">Save success</string>
     <string name="save_failure">Save failure</string>
     <!--contact-->

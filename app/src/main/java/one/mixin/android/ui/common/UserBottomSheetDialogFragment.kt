@@ -84,21 +84,19 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (u == null) return@Observer
             // prevent add self
             if (u.userId == Session.getAccountId()) {
-                contentView.send_tv.visibility = GONE
-                contentView.add_contact_tv.visibility = GONE
+                contentView.send_fl.visibility = GONE
+                contentView.add_fl.visibility = GONE
                 contentView.right_iv.visibility = GONE
-                contentView.divider_send.visibility = GONE
-                contentView.divider_open.visibility = GONE
                 return@Observer
             }
             user = u
             updateUserInfo(u)
         })
-        contentView.add_contact_tv.setOnClickListener {
+        contentView.add_fl.setOnClickListener {
             updateRelationship(UserRelationship.FRIEND.name)
             dialog?.dismiss()
         }
-        contentView.send_tv.setOnClickListener {
+        contentView.send_fl.setOnClickListener {
             // TODO [optimize] have conversation with same user
             context?.let { ctx -> ConversationActivity.show(ctx, null, user) }
             dialog?.dismiss()
@@ -122,7 +120,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val choices = mutableListOf<String>()
         when (user.relationship) {
             UserRelationship.BLOCKING.name -> {
-                choices.add(getString(R.string.contact_other_unblock))
+                choices.add(getString(R.string.contact_other_share))
             }
             UserRelationship.FRIEND.name -> {
                 choices.add(getString(R.string.contact_other_share))
@@ -152,9 +150,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     getString(R.string.mute) -> {
                         keepDialog = true
                         mute()
-                    }
-                    getString(R.string.contact_other_unblock) -> {
-                        bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
                     }
                     getString(R.string.contact_other_block) -> {
                         bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.BLOCK.name))
@@ -195,10 +190,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         if (!isAdded) return@uiThread
 
                         contentView.detail_tv.visibility = VISIBLE
-                        contentView.open_tv.visibility = VISIBLE
+                        contentView.open_fl.visibility = VISIBLE
                         contentView.creator_tv.visibility = GONE
                         contentView.detail_tv.text = app.description
-                        contentView.open_tv.setOnClickListener {
+                        contentView.open_fl.setOnClickListener {
                             dialog?.dismiss()
                             WebBottomSheetDialogFragment
                                 .newInstance(app.homeUri, conversationId!!, app.name)
@@ -211,8 +206,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.creator_tv.visibility = GONE
             contentView.bot_iv.visibility = GONE
             contentView.detail_tv.visibility = GONE
-            contentView.open_tv.visibility = GONE
-            contentView.divider_open.visibility = GONE
+            contentView.open_fl.visibility = GONE
         }
 
         updateUserStatus(user.relationship)
@@ -221,17 +215,21 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun updateUserStatus(relationship: String) {
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
-                contentView.send_tv.visibility = GONE
-                contentView.add_contact_tv.visibility = GONE
-                contentView.divider_open.visibility = GONE
-                contentView.divider_send.visibility = GONE
+                contentView.send_fl.visibility = GONE
+                contentView.add_fl.visibility = GONE
+                contentView.unblock_fl.visibility = VISIBLE
+                contentView.unblock_fl.setOnClickListener {
+                    bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
+                    dialog?.dismiss()
+                }
             }
             UserRelationship.FRIEND.name -> {
-                contentView.add_contact_tv.visibility = GONE
-                contentView.divider_send.visibility = GONE
+                contentView.add_fl.visibility = GONE
+                contentView.unblock_fl.visibility = GONE
             }
             UserRelationship.STRANGER.name -> {
-                contentView.add_contact_tv.visibility = VISIBLE
+                contentView.add_fl.visibility = VISIBLE
+                contentView.unblock_fl.visibility = GONE
             }
             else -> {
             }

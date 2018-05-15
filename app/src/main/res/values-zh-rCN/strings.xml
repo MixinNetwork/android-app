@@ -169,7 +169,7 @@
     <string name="chat_item_title">最近聊天</string>
     <string name="copy_success">拷贝</string>
     <string name="photo">照片</string>
-    <string name="title_members">%d 成员</string>
+    <string name="title_participants">%d 成员</string>
     <string name="save_success">保存成功</string>
     <string name="save_failure">保存失败</string>
     <!--contact-->
