@@ -102,14 +102,13 @@ import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.vo.canNotForward
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.vo.isMedia
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckParamBlazeMessage
@@ -307,7 +306,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         tool_view.copy_iv.visibility = View.GONE
                     }
                 }
-                if (chatAdapter.selectSet.find { canNotForward(it) } != null) {
+                if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
                     tool_view.forward_iv.visibility = View.GONE
                 } else {
                     tool_view.forward_iv.visibility = View.VISIBLE
@@ -324,7 +323,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     } else {
                         tool_view.copy_iv.visibility = View.GONE
                     }
-                    if (chatAdapter.selectSet.find { canNotForward(it) } != null) {
+                    if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
                         tool_view.forward_iv.visibility = View.GONE
                     } else {
                         tool_view.forward_iv.visibility = View.VISIBLE
@@ -902,9 +901,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         scrollTo(0)
     }
-
-    private fun canNotForward(it: MessageItem?) =
-        it?.mediaStatus != MediaStatus.DONE.name && isMedia(it)
 
     private inline fun createConversation(crossinline action: () -> Unit) {
         if (isFirstMessage) {
