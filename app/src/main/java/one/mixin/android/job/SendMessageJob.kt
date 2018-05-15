@@ -9,9 +9,11 @@ import one.mixin.android.extension.findLastUrl
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus.SENT
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.isGroup
+import one.mixin.android.vo.isPlain
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
@@ -65,7 +67,7 @@ open class SendMessageJob(
 
     override fun onRun() {
         jobManager.saveJob(this)
-        if (isPlain()) {
+        if (message.isPlain()) {
             sendPlainMessage()
         } else {
             sendSignalMessage()
@@ -73,16 +75,15 @@ open class SendMessageJob(
         removeJob()
     }
 
-    private fun isPlain(): Boolean {
-        return message.category.startsWith("PLAIN_")
-    }
-
     private fun sendPlainMessage() {
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
         requestCreateConversation(conversation)
-        val plainText = Base64.encodeBytes(message.content!!.toByteArray())
+        var content = message.content
+        if (message.category == MessageCategory.PLAIN_TEXT.name) {
+            content = Base64.encodeBytes(message.content!!.toByteArray())
+        }
         val blazeParam = BlazeMessageParam(message.conversationId, null,
-            message.id, message.category, plainText, SENT.name)
+            message.id, message.category, content, SENT.name)
         deliver(createParamBlazeMessage(blazeParam))
     }
 

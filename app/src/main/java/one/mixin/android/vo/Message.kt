@@ -120,6 +120,10 @@ class Message(
     }
 }
 
+fun Message.isPlain(): Boolean {
+    return category.startsWith("PLAIN_")
+}
+
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,
