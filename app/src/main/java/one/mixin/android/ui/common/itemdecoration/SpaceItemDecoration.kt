@@ -8,12 +8,12 @@ import android.support.v7.widget.RecyclerView
 import android.view.View
 import one.mixin.android.extension.dpToPx
 
-class SpaceItemDecoration : RecyclerView.ItemDecoration() {
+class SpaceItemDecoration(val position: Int = 0) : RecyclerView.ItemDecoration() {
 
     private val divider = ColorDrawable(Color.parseColor("#ECECEC"))
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-        if (parent.getChildAdapterPosition(view) != 0) {
+        if (parent.getChildAdapterPosition(view) >=position ) {
             outRect.top = parent.context.dpToPx(.5f)
         }
     }
@@ -27,7 +27,7 @@ class SpaceItemDecoration : RecyclerView.ItemDecoration() {
 
         for (i in 0 until itemCount) {
             val child = parent.getChildAt(i)
-            if (child != null) {
+            if (child != null && parent.getChildAdapterPosition(child) >= position) {
                 val lp = child.layoutParams as RecyclerView.LayoutParams
                 val top = child.bottom + lp.bottomMargin
                 val bottom = top + parent.context.dpToPx(.5f)
