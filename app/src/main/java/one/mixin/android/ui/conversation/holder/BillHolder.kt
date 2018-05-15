@@ -54,7 +54,21 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             }
         }
-        itemView.chat_layout.setOnClickListener { onItemListener.onBillClick(messageItem) }
+        itemView.chat_layout.setOnClickListener {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+            } else {
+                onItemListener.onBillClick(messageItem)
+            }
+        }
+        itemView.chat_layout.setOnLongClickListener {
+            if (!hasSelect) {
+                onItemListener.onLongClick(messageItem, adapterPosition)
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                true
+            }
+        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {

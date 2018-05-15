@@ -158,7 +158,11 @@ fun MessageItem.isMedia(): Boolean = this.type == MessageCategory.SIGNAL_IMAGE.n
     this.type == MessageCategory.SIGNAL_VIDEO.name ||
     this.type == MessageCategory.PLAIN_VIDEO.name
 
-fun MessageItem.canNotForward() = this.mediaStatus != MediaStatus.DONE.name && this.isMedia()
+fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name
+    || this.type == MessageCategory.APP_BUTTON_GROUP.name
+    || this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name
+    || this.type == MessageCategory.SYSTEM_CONVERSATION.name
+    || (this.mediaStatus != MediaStatus.DONE.name && this.isMedia())
 
 fun createMessage(
     messageId: String,
