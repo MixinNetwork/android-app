@@ -9,10 +9,14 @@
             android:id="@+id/link_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop=".5dp"
             android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground"
             android:visibility="gone">
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/divider"/>
 
         <TextView
                 android:id="@+id/link_tv"
@@ -113,18 +117,17 @@
                 tools:ignore="ContentDescription"/>
     </RelativeLayout>
 
-    <View
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:background="@color/divider"/>
-
     <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop=".5dp"
             android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground"
             android:visibility="gone">
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/divider"/>
 
         <TextView
                 android:layout_width="wrap_content"
@@ -155,6 +158,11 @@
             android:foreground="?attr/selectableItemBackground"
             android:visibility="gone">
 
+        <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:background="@color/divider"/>
+
         <ImageView
                 android:id="@+id/invite_iv"
                 android:layout_width="40dp"
@@ -173,6 +181,5 @@
                 android:layout_toEndOf="@id/invite_iv"
                 android:text="@string/group_invite"
                 android:textColor="@color/colorBlue"/>
-
     </RelativeLayout>
 </LinearLayout>

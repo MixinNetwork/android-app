@@ -118,51 +118,84 @@
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"/>
 
-    <View
-            android:layout_width="match_parent" android:layout_height=".5dp"
+    <FrameLayout
+            android:id="@+id/add_fl"
             android:layout_marginTop="30dp"
-            android:background="@color/bg_gray"/>
+            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
 
-    <TextView
-            android:id="@+id/add_contact_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:background="@android:color/white"
-            android:gravity="center"
-            android:text="@string/contact_other_add"
-            android:textColor="@color/colorBlue"
-            tools:ignore="RelativeOverlap"/>
+        <TextView
+                android:id="@+id/add_contact_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_gravity="center"
+                android:text="@string/contact_other_add"
+                android:textColor="@color/colorBlue"
+                tools:ignore="RelativeOverlap"/>
+        <View
+                android:layout_width="match_parent" android:layout_height=".5dp"
+                android:background="@color/bg_gray"/>
+    </FrameLayout>
 
-    <View
-            android:id="@+id/divider_send"
-            android:layout_width="match_parent" android:layout_height=".5dp"
-            android:background="@color/bg_gray"/>
+    <FrameLayout
+            android:id="@+id/send_fl"
+            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
 
-    <TextView
-            android:id="@+id/send_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:background="@android:color/white"
-            android:gravity="center"
-            android:text="@string/contact_other_send"
-            android:textColor="@color/colorBlue"
-            tools:ignore="RelativeOverlap"/>
+        <TextView
+                android:id="@+id/send_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_gravity="center"
+                android:text="@string/contact_other_send"
+                android:textColor="@color/colorBlue"
+                tools:ignore="RelativeOverlap"/>
+        <View
+                android:id="@+id/divider_send"
+                android:layout_width="match_parent" android:layout_height=".5dp"
+                android:background="@color/bg_gray"/>
+    </FrameLayout>
 
-    <View
-            android:id="@+id/divider_open"
-            android:layout_width="match_parent" android:layout_height=".5dp"
-            android:background="@color/bg_gray"/>
+    <FrameLayout
+            android:id="@+id/open_fl"
+            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
 
-    <TextView
-            android:id="@+id/open_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:background="@android:color/white"
-            android:gravity="center"
-            android:text="@string/open_app"
-            android:textColor="@color/colorBlue"
-            tools:ignore="RelativeOverlap"/>
+        <View
+                android:layout_width="match_parent" android:layout_height=".5dp"
+                android:background="@color/bg_gray"/>
+
+        <TextView
+                android:id="@+id/open_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_gravity="center"
+                android:text="@string/open_app"
+                android:textColor="@color/colorBlue"
+                tools:ignore="RelativeOverlap"/>
+    </FrameLayout>
+
+    <FrameLayout
+            android:id="@+id/unblock_fl"
+            android:visibility="gone"
+            android:layout_marginTop="30dp"
+            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
+
+        <TextView
+                android:id="@+id/unblock_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:layout_gravity="center"
+                android:text="@string/contact_other_unblock"
+                android:textColor="@color/colorRed"
+                tools:ignore="RelativeOverlap"/>
+        <View
+                android:layout_width="match_parent" android:layout_height=".5dp"
+                android:background="@color/bg_gray"/>
+    </FrameLayout>
 </LinearLayout>

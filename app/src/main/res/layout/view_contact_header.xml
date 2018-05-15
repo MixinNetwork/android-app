@@ -157,13 +157,6 @@
             android:layout_below="@id/center_add_contact"
             android:layout_toEndOf="@+id/add_contact_iv"
             android:text="@string/contact_add_contact_desc" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@+id/add_contact_iv"
-            android:background="@color/divider" />
     </RelativeLayout>
 
     <RelativeLayout

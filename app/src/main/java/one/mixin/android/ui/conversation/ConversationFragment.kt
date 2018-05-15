@@ -1021,7 +1021,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             it?.let {
                 groupName = it.name
                 action_bar.setSubTitle(groupName
-                    ?: "", getString(R.string.title_members, groupNumber))
+                    ?: "", getString(R.string.title_participants, groupNumber))
                 action_bar.avatar_iv.setGroup(it.iconUrl)
                 if (it.status == ConversationStatus.QUIT.ordinal) {
                     bottom_send_layout.visibility = GONE
@@ -1037,7 +1037,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             users?.let {
                 groupNumber = it.size
                 action_bar.setSubTitle(groupName
-                    ?: "", getString(R.string.title_members, groupNumber))
+                    ?: "", getString(R.string.title_participants, groupNumber))
             }
             mentionAdapter.list = users
             mentionAdapter.notifyDataSetChanged()
