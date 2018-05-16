@@ -30,7 +30,8 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.User
-import java.util.*
+import one.mixin.android.vo.UserRelationship
+import java.util.Collections
 import javax.inject.Inject
 
 class ContactsFragment : BaseFragment() {
@@ -49,7 +50,7 @@ class ContactsFragment : BaseFragment() {
     }
 
     companion object {
-        val TAG = "ContactsFragment"
+        const val TAG = "ContactsFragment"
 
         fun newInstance() = ContactsFragment()
     }
@@ -87,19 +88,18 @@ class ContactsFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contactsViewModel.getFriends().observe(this, Observer { users ->
-            if (users != null) {
-                val mutableList = mutableListOf<User>()
-                mutableList.addAll(contactAdapter.users)
-                contactAdapter.users.map { item ->
-                    for (u in users) {
-                        if (u.userId == item.userId) {
-                            mutableList.remove(item)
-                        }
+            if (users != null && users.isNotEmpty()) {
+                if (!hasContactPermission()) {
+                    contactAdapter.friendSize = users.size
+                    contactAdapter.users = users
+                } else {
+                    val newList = arrayListOf<User>().apply {
+                        addAll(users)
+                        addAll(contactAdapter.users.filter { it.relationship != UserRelationship.FRIEND.name })
                     }
+                    contactAdapter.friendSize = users.size
+                    contactAdapter.users = newList
                 }
-                mutableList.addAll(0, users)
-                contactAdapter.friendSize = users.size
-                contactAdapter.users = mutableList
             } else {
                 if (!hasContactPermission()) {
                     contactAdapter.users = Collections.emptyList()
