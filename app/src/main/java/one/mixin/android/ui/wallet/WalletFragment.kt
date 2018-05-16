@@ -153,7 +153,7 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         val cur = System.currentTimeMillis()
         val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
         var interval = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_INTERVAL, 0)
-        if (last != 0L && interval == 0L) {  // version until 0.3.0
+        if (last != 0L && interval == 0L) { // version until 0.3.0
            interval = Constants.INTERVAL_24_HOURS
         }
         if (cur - last > interval) {
