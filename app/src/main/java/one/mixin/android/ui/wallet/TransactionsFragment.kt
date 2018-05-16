@@ -83,7 +83,7 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
         adapter = TransactionsAdapter(snapshots, asset)
         adapter.setListener(this)
         adapter.header = header
-        recycler_view.addItemDecoration(SpaceItemDecoration())
+        recycler_view.addItemDecoration(SpaceItemDecoration(1))
         recycler_view.adapter = adapter
 
         walletViewModel.snapshotsFromDb(asset.assetId).observe(this, Observer {
