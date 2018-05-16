@@ -301,7 +301,7 @@ class GroupInfoFragment : BaseFragment() {
                         groupViewModel.exitGroup(conversationId)
                     }
                     TYPE_DELETE -> {
-                        groupViewModel.deleteGroup(conversationId)
+                        groupViewModel.deleteMessageByConversationId(conversationId)
                         startActivity(Intent(context, MainActivity::class.java))
                     }
                 }
