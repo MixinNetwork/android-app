@@ -30,7 +30,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.User
-import java.util.Collections
+import java.util.*
 import javax.inject.Inject
 
 class ContactsFragment : BaseFragment() {
@@ -66,7 +66,7 @@ class ContactsFragment : BaseFragment() {
         contact_recycler_view.adapter = contactAdapter
         contact_recycler_view.setHasFixedSize(true)
         contact_recycler_view.layoutManager = LinearLayoutManager(context)
-        contact_recycler_view.addItemDecoration(SpaceItemDecoration())
+        contact_recycler_view.addItemDecoration(SpaceItemDecoration(1))
         contact_recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
         val header = LayoutInflater.from(context).inflate(R.layout.view_contact_header, contact_recycler_view, false)
         contactAdapter.setHeader(header)

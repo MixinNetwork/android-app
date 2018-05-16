@@ -14,12 +14,7 @@ import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_fragment_header.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.max8
-import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.*
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BaseFragment
@@ -71,7 +66,7 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         assetsAdapter.setAssetListener(this)
         coins_rv.adapter = assetsAdapter
         coins_rv.setHasFixedSize(true)
-        coins_rv.addItemDecoration(SpaceItemDecoration())
+        coins_rv.addItemDecoration(SpaceItemDecoration(1))
 
         walletViewModel.assetItems().observe(this, android.arch.lifecycle.Observer { r: List<AssetItem>? ->
             r?.let {
