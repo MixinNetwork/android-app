@@ -21,7 +21,8 @@ class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView
         hasSelect: Boolean,
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener,
-        group: String?) {
+        group: String?
+    ) {
         val id = meId
 
         if (hasSelect && isSelect) {

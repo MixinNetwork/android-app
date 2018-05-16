@@ -16,7 +16,6 @@ import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -59,10 +58,9 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
-    private val adapter = TransactionsAdapter().apply { setListener(this@TransactionsFragment) }
+    private var snapshots = listOf<SnapshotItem>()
+    private lateinit var adapter: TransactionsAdapter
     private lateinit var asset: AssetItem
-
-    private var firstIn = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_transactions, container, false)
@@ -82,24 +80,20 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
             activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
         }
 
+        adapter = TransactionsAdapter(snapshots, asset)
+        adapter.setListener(this)
         adapter.header = header
         recycler_view.addItemDecoration(SpaceItemDecoration())
         recycler_view.adapter = adapter
 
         walletViewModel.snapshotsFromDb(asset.assetId).observe(this, Observer {
             it?.let {
-                adapter.submitList(it)
-
-                // Fix auto scroll to bottom
-                if (firstIn) {
-                    context?.mainThread {
-                        recycler_view.scrollToPosition(0)
-                    }
-                    firstIn = false
-                }
+                snapshots = it
+                adapter.snapshots = snapshots
+                adapter.notifyDataSetChanged()
 
                 doAsync {
-                    for (s in it) {
+                    for (s in snapshots) {
                         s.counterUserId?.let {
                             val u = walletViewModel.getUserById(it)
                             if (u == null) {
@@ -141,7 +135,7 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
                     WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
             }
             view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show
-                else R.string.wallet_transactions_hide)
+            else R.string.wallet_transactions_hide)
             view.hide.setOnClickListener {
                 doAsync {
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)

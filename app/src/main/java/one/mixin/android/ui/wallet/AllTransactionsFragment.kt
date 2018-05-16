@@ -15,12 +15,12 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
-import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
+import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.vo.SnapshotItem
 import org.jetbrains.anko.doAsync
 import javax.inject.Inject
 
-class AllTransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsListener {
+class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsListener {
     companion object {
         const val TAG = "AllTransactionsFragment"
 
@@ -35,7 +35,7 @@ class AllTransactionsFragment : BaseFragment(), TransactionsAdapter.Transactions
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    private val adapter = TransactionsAdapter().apply { setListener(this@AllTransactionsFragment) }
+    private val adapter = SnapshotAdapter().apply { setListener(this@AllTransactionsFragment) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         layoutInflater.inflate(R.layout.fragment_all_transactions, container, false)

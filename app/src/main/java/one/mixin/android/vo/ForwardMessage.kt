@@ -10,7 +10,7 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 data class ForwardMessage(
     val type: String,
-    val id:String? = null,
+    val id: String? = null,
     val content: String? = null,
     val mediaUrl: String? = null,
     val sharedUserId: String? = null
