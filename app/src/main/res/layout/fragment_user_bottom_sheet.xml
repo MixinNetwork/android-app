@@ -6,7 +6,8 @@
               android:background="@drawable/bg_upper_round"
               android:orientation="vertical">
 
-    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+    <RelativeLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
         <ImageView
                 android:id="@+id/left_iv"
                 android:layout_width="wrap_content"
@@ -40,7 +41,8 @@
     </RelativeLayout>
 
     <RelativeLayout
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin">
@@ -109,19 +111,21 @@
             android:textColor="@color/text_gray"/>
 
     <one.mixin.android.widget.linktext.AutoLinkTextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/detail_tv"
             android:textColor="@color/text_black"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"/>
+            android:layout_marginBottom="16dp"
+            android:layout_gravity="center"
+            android:gravity="center"/>
 
     <FrameLayout
             android:id="@+id/add_fl"
-            android:layout_marginTop="30dp"
-            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height">
 
         <TextView
                 android:id="@+id/add_contact_tv"
@@ -134,13 +138,15 @@
                 android:textColor="@color/colorBlue"
                 tools:ignore="RelativeOverlap"/>
         <View
-                android:layout_width="match_parent" android:layout_height=".5dp"
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
                 android:background="@color/bg_gray"/>
     </FrameLayout>
 
     <FrameLayout
             android:id="@+id/send_fl"
-            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height">
 
         <TextView
                 android:id="@+id/send_tv"
@@ -154,16 +160,19 @@
                 tools:ignore="RelativeOverlap"/>
         <View
                 android:id="@+id/divider_send"
-                android:layout_width="match_parent" android:layout_height=".5dp"
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
                 android:background="@color/bg_gray"/>
     </FrameLayout>
 
     <FrameLayout
             android:id="@+id/open_fl"
-            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height">
 
         <View
-                android:layout_width="match_parent" android:layout_height=".5dp"
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
                 android:background="@color/bg_gray"/>
 
         <TextView
@@ -182,7 +191,8 @@
             android:id="@+id/unblock_fl"
             android:visibility="gone"
             android:layout_marginTop="30dp"
-            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height">
 
         <TextView
                 android:id="@+id/unblock_tv"
@@ -195,7 +205,8 @@
                 android:textColor="@color/colorRed"
                 tools:ignore="RelativeOverlap"/>
         <View
-                android:layout_width="match_parent" android:layout_height=".5dp"
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
                 android:background="@color/bg_gray"/>
     </FrameLayout>
 </LinearLayout>
