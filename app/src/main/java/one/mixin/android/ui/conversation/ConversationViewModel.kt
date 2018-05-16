@@ -201,8 +201,8 @@ internal constructor(
                 } else {
                     Uri.parse(message.mediaUrl)
                 }
-                jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
-                    null, message.name, uri.toString(), message.mediaMineType!!, message.mediaSize!!, nowInUtc(), null,
+                jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+                    category, null, message.name, uri.toString(), message.mediaMineType!!, message.mediaSize!!, nowInUtc(), null,
                     null, MediaStatus.PENDING, MessageStatus.SENDING)))
             }
         }.observeOn(AndroidSchedulers.mainThread())!!

@@ -13,7 +13,7 @@ class SpaceItemDecoration(val position: Int = 0) : RecyclerView.ItemDecoration()
     private val divider = ColorDrawable(Color.parseColor("#ECECEC"))
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-        if (parent.getChildAdapterPosition(view) >=position ) {
+        if (parent.getChildAdapterPosition(view) >= position) {
             outRect.top = parent.context.dpToPx(.5f)
         }
     }
