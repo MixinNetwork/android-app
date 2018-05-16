@@ -27,8 +27,7 @@ class AboutFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         twitter.setOnClickListener { context?.openUrl("https://twitter.com/MixinMessenger") }
         facebook.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
-        // help.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
-        // service.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
-        // policy.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
+        terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
+        privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
     }
 }

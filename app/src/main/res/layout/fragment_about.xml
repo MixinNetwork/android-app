@@ -38,11 +38,10 @@
 
             <TextView
                 android:id="@+id/twitter"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:paddingBottom="12dp"
-                android:paddingTop="12dp"
+                android:gravity="center_vertical"
                 android:text="@string/about_follow_twitter"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
@@ -55,11 +54,10 @@
 
             <TextView
                 android:id="@+id/facebook"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:paddingBottom="12dp"
-                android:paddingTop="12dp"
+                android:gravity="center_vertical"
                 android:text="@string/about_follow_facebook"
                 android:textColor="@color/colorBlue"
                 android:textSize="16sp" />
@@ -70,6 +68,37 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:background="@color/divider" />
 
+            <TextView
+                    android:id="@+id/terms"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:gravity="center_vertical"
+                    android:text="@string/landing_terms_service"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp" />
+
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height=".5dp"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:background="@color/divider" />
+
+            <TextView
+                    android:id="@+id/privacy"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:gravity="center_vertical"
+                    android:text="@string/landing_privacy_policy"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp" />
+
+            <View
+                    android:layout_width="match_parent"
+                    android:layout_height=".5dp"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:background="@color/divider" />
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
