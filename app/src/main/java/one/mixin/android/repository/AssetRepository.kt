@@ -92,6 +92,6 @@ constructor(
     fun insertAddresses(addresses: List<Address>) = addressDao.insertList(addresses)
 
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
-    
+
     fun allSnapshots() = snapshotDao.allSnapshots()
 }
