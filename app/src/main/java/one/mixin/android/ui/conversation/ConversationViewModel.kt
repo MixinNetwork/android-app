@@ -19,8 +19,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
+import one.mixin.android.crypto.Util
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
+import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFilePath
@@ -69,7 +71,9 @@ import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
 import org.jetbrains.anko.doAsync
 import java.io.File
-import java.util.UUID
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.util.*
 import javax.inject.Inject
 
 class ConversationViewModel
@@ -217,7 +221,6 @@ internal constructor(
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int> {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         val mineType = getMineType(uri)
-        /* support send gif
         if (mineType == "image/gif") {
             return Flowable.just(uri).map {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp()
@@ -233,7 +236,6 @@ internal constructor(
                 return@map -0
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
         }
-        */
         val temp = MixinApplication.get().getImagePath().createImageTemp(type = if (mineType == "image/png") {
             ".png"
         } else {

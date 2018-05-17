@@ -40,6 +40,7 @@ import kotlinx.android.synthetic.main.bottom_qr.view.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import one.mixin.android.R
+import one.mixin.android.R.id.view_pager
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getClipboardManager
@@ -114,7 +115,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 mainThread {
                     index = it.indexOfFirst { item -> messageId == item.messageId }
                     it.map {
-                        if (it.type == MessageCategory.SIGNAL_VIDEO.name) {
+                        if (it.type == MessageCategory.SIGNAL_VIDEO.name
+                            || it.type == MessageCategory.PLAIN_VIDEO.name) {
                             playPosMap[it.messageId] = 0L
                         }
                     }
@@ -239,7 +241,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
             val messageItem = getItem(position)
-            val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name) {
+            val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
+                messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
                 createPhotoView(container, position, messageItem)
             } else {
                 createVideoView(container, position, messageItem)
