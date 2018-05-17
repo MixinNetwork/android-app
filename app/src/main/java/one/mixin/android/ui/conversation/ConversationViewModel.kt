@@ -73,7 +73,7 @@ import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 class ConversationViewModel

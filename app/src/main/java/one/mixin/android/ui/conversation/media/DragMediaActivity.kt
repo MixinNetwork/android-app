@@ -115,8 +115,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 mainThread {
                     index = it.indexOfFirst { item -> messageId == item.messageId }
                     it.map {
-                        if (it.type == MessageCategory.SIGNAL_VIDEO.name
-                            || it.type == MessageCategory.PLAIN_VIDEO.name) {
+                        if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
+                            it.type == MessageCategory.PLAIN_VIDEO.name) {
                             playPosMap[it.messageId] = 0L
                         }
                     }
