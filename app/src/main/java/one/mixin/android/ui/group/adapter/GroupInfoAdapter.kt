@@ -55,7 +55,7 @@ class GroupInfoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             return
         }
         if (holder is ItemHolder) {
-            holder.bind(if (filtered()) users!![position] else users!![position - 1], listener, self, participantsMap)
+            holder.bind(if (filtered() || position == 0) users!![position] else users!![position - 1], listener, self, participantsMap)
         } else {
             holder as HeaderHolder
             var inGroup = true
