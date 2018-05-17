@@ -27,7 +27,7 @@ class ForwardActivity : BlazeBaseActivity() {
         fun show(context: Context, link: String?) {
             val intent = Intent(context, ForwardActivity::class.java).apply {
                 val list = ArrayList<ForwardMessage>().apply {
-                    add(ForwardMessage(ForwardCategory.TEXT.name, link))
+                    add(ForwardMessage(ForwardCategory.TEXT.name, content = link))
                 }
                 putParcelableArrayListExtra(ARGS_MESSAGES, list)
             }
