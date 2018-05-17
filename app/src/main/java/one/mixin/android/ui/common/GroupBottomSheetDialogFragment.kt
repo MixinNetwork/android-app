@@ -270,7 +270,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val choices = arrayOf(getString(R.string.contact_mute_8hours),
             getString(R.string.contact_mute_1week), getString(R.string.contact_mute_1year))
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
-        val alert = android.support.v7.app.AlertDialog.Builder(context!!)
+        var whichItem = 0
+        val alert = AlertDialog.Builder(context!!)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel, { dialog, _ ->
                 dialog.dismiss()
@@ -279,12 +280,12 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val account = Session.getAccount()
                 account?.let {
                     bottomViewModel.mute(conversationId, duration.toLong())
-                    toast(getString(R.string.contact_mute_title) + " ${conversation.name} " +
-                        choices[if (which == -1) 0 else which])
+                    toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
                 }
                 dialog.dismiss()
             })
             .setSingleChoiceItems(choices, 0, { _, which ->
+                whichItem = which
                 when (which) {
                     0 -> duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
                     1 -> duration = UserBottomSheetDialogFragment.MUTE_1_WEEK

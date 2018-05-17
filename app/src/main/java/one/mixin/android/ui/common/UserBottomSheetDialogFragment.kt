@@ -253,7 +253,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val params = editText.layoutParams as FrameLayout.LayoutParams
         params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
         editText.layoutParams = params
-        val nameDialog = android.support.v7.app.AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+        val nameDialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setTitle(R.string.profile_modify_name)
             .setView(frameLayout)
             .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
@@ -274,6 +274,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             getString(R.string.contact_mute_1week),
             getString(R.string.contact_mute_1year))
         var duration = MUTE_8_HOURS
+        var whichItem = 0
         val alert = AlertDialog.Builder(context!!)
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel, { dialog, _ ->
@@ -283,12 +284,12 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val account = Session.getAccount()
                 account?.let {
                     bottomViewModel.mute(it.userId, user.userId, duration.toLong())
-                    toast(getString(R.string.contact_mute_title) + " ${user.fullName} " +
-                        choices[if (which == -1) 0 else which])
+                    toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
                 }
                 dialog.dismiss()
             })
             .setSingleChoiceItems(choices, 0, { _, which ->
+                whichItem = which
                 when (which) {
                     0 -> duration = MUTE_8_HOURS
                     1 -> duration = MUTE_1_WEEK
