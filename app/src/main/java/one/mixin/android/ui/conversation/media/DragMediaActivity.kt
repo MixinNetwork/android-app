@@ -20,7 +20,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.SeekBar
 import androidx.core.view.doOnPreDraw
+import androidx.core.view.isVisible
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
@@ -31,6 +33,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
@@ -38,6 +41,9 @@ import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
+import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
@@ -67,6 +73,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import java.io.FileNotFoundException
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
@@ -120,7 +127,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         view_pager.currentItem = 0
                         lastPos = 0
                     }
-                    play(index)
+                    load(index)
                 }
             }
         view_pager.addOnPageChangeListener(pageListener)
@@ -250,14 +257,57 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             view.play_view.setOnClickListener {
                 when (view.play_view.status) {
-                    STATUS_IDLE -> play(view_pager.currentItem)
-                    STATUS_LOADING, STATUS_PLAYING, STATUS_BUFFERING -> pause()
-                    STATUS_PAUSING -> start()
+                    STATUS_IDLE -> {
+                        play(view_pager.currentItem)
+                        view.play_view.fadeOut()
+                        view.controller.fadeOut()
+                    }
+                    STATUS_LOADING, STATUS_PLAYING, STATUS_BUFFERING -> {
+                        pause()
+                        view.play_view.fadeIn()
+                        view.controller.fadeIn()
+                    }
+                    STATUS_PAUSING -> {
+                        view.play_view.fadeOut()
+                        view.controller.fadeOut()
+                        start()
+                    }
                 }
             }
             view.video_texture.setOnClickListener {
-                finishAfterTransition()
+                if (view.controller.isVisible) {
+                    view.play_view.fadeOut()
+                    view.controller.fadeOut()
+                } else {
+                    view.play_view.fadeIn()
+                    view.controller.fadeIn()
+                }
             }
+            view.tag = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
+                if (mixinPlayer.duration() != 0) {
+                    view.remain_tv.text = (mixinPlayer.duration() - mixinPlayer.getCurrentPos()).formatMillis()
+                    if (mixinPlayer.isPlaying()) {
+                        view.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200
+                            / mixinPlayer.duration()).toInt()
+                        view.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
+                    }
+                }
+            }
+
+            view.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                }
+
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        mixinPlayer.seekTo(progress * mixinPlayer.duration() / 200)
+                    }
+                }
+            })
+
             return view
         }
 
@@ -327,6 +377,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
 
         override fun destroyItem(container: ViewGroup, position: Int, obj: Any) {
+            if (obj is View) {
+                obj.tag?.let {
+                    if (it is Disposable && !it.isDisposed) {
+                        it.dispose()
+                    }
+                }
+            }
             container.removeView(obj as View)
         }
 
@@ -419,7 +476,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         mixinPlayer.stop()
     }
 
-    private inline fun load(pos: Int, action: () -> Unit) {
+    private inline fun load(pos: Int, action: () -> Unit = {}) {
         val messageItem = pagerAdapter.getItem(pos)
         if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name) {
             messageItem.mediaUrl?.let {
@@ -468,7 +525,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
             stop()
             lastPos = position
-            preview(position)
+            load(position)
         }
     }
 

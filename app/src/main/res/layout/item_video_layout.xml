@@ -1,17 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
     <TextureView
-            android:id="@+id/video_texture"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
+        android:id="@+id/video_texture"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
 
     <one.mixin.android.widget.PlayView
-            android:id="@+id/play_view"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_gravity="center"/>
+        android:id="@+id/play_view"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:layout_gravity="center" />
+
+    <RelativeLayout
+        android:id="@+id/controller"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="24dp"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp">
+
+        <TextView
+            android:id="@+id/duration_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:text="@string/default_time"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/remain_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="@string/default_time"
+            android:textColor="@color/white" />
+
+        <one.mixin.android.widget.PagerSeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/duration_tv"
+            android:layout_toStartOf="@id/remain_tv"
+            android:max="200"
+            android:maxHeight="2dp"
+            android:minHeight="2dp"
+            android:progress="0"
+            android:progressDrawable="@drawable/layer_progress"
+            android:thumb="@drawable/shape_circle" />
+
+
+    </RelativeLayout>
 </FrameLayout>

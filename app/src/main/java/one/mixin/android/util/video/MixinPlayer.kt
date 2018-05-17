@@ -48,6 +48,18 @@ class MixinPlayer : Player.EventListener, VideoListener {
 
     fun currentPosition() = player.currentPosition
 
+    val period = Timeline.Period()
+
+    fun getCurrentPos(): Long {
+        var position = player.currentPosition
+        val currentTimeline = player.currentTimeline
+        if (!currentTimeline.isEmpty) {
+            position -= currentTimeline.getPeriod(player.currentPeriodIndex, period)
+                .positionInWindowMs
+        }
+        return position
+    }
+
     fun release() {
         player.release()
     }

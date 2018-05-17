@@ -16,7 +16,8 @@ class FixMultiViewPager : ViewPager {
             return super.onInterceptTouchEvent(ev)
         } catch (ex: IllegalArgumentException) {
             ex.printStackTrace()
+            return false
         }
-        return false
+
     }
 }

@@ -24,6 +24,8 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.text.DecimalFormat
+import kotlin.collections.HashMap
+import kotlin.collections.set
 
 fun String.generateQRCode(size: Int): Bitmap? {
     val result: BitMatrix
@@ -181,4 +183,30 @@ fun String.getPattern(count: Int = 8): String {
         sb.append('#')
     }
     return sb.toString()
+}
+
+fun Long.formatMillis(): String {
+    var millis = this
+    var result = ""
+    val hr = millis / 3600000
+    millis %= 3600000
+    val min = millis / 60000
+    millis %= 60000
+    val sec = millis / 1000
+    if (hr > 0) {
+        result += "$hr:"
+    }
+    if (min >= 0) {
+        result += if (min > 9) {
+            "$min:"
+        } else {
+            "0$min:"
+        }
+    }
+    result += if (sec > 9) {
+        sec
+    } else {
+        "0$sec"
+    }
+    return result
 }
