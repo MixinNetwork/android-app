@@ -6,10 +6,8 @@ import android.view.View
 import kotlinx.android.synthetic.main.item_search_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.formatPrice
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.max8
-import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColorResource
@@ -30,14 +28,14 @@ class AssetHolder constructor(containerView: View) : RecyclerView.ViewHolder(con
         itemView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         itemView.setOnClickListener { onItemClickListener?.onAsset(asset) }
 
-        itemView.balance.text = asset.balance.max8().numberFormat() + " " + asset.symbol
-        itemView.balance_as.text = itemView.context.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().toString().formatPrice().numberFormat()}")
+        itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
+        itemView.balance_as.text = itemView.context.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().toString().numberFormat8()}")
         if (asset.priceUsd == "0") {
             itemView.price_tv.text = "N/A"
             itemView.change_tv.visibility = View.GONE
         } else {
             itemView.change_tv.visibility = View.VISIBLE
-            itemView.price_tv.text = "$${asset.priceUsd.formatPrice().numberFormat()}"
+            itemView.price_tv.text = "$${asset.priceUsd.numberFormat8()}"
             if (asset.changeUsd.isNotEmpty()) {
                 val isPositive = asset.changeUsd.toFloat() > 0
                 val t = "${String.format("%.2f", asset.changeUsd.toFloat() * 100)}%"

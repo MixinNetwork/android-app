@@ -24,7 +24,6 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.text.DecimalFormat
-import java.util.Locale
 
 fun String.generateQRCode(size: Int): Bitmap? {
     val result: BitMatrix
@@ -126,26 +125,11 @@ fun String.formatPublicKey(): String {
     return substring(0, 6) + "..." + substring(length - 4, length)
 }
 
-private val decimalFormat = DecimalFormat.getNumberInstance(Locale.getDefault()).apply {
-    maximumFractionDigits = 64
-    minimumFractionDigits = 0
-    maximumIntegerDigits = 64
-    minimumIntegerDigits = 1
-    isGroupingUsed = true
-}
-
-private val decimalFormat2 = DecimalFormat.getNumberInstance(Locale.getDefault()).apply {
-    maximumFractionDigits = 2
-    minimumFractionDigits = 0
-    maximumIntegerDigits = 64
-    minimumIntegerDigits = 1
-    isGroupingUsed = true
-}
-
-fun String.numberFormat(): String {
+fun String.numberFormat8(): String {
     if (this.isEmpty()) return this
+
     return try {
-        decimalFormat.format(BigDecimal(this))
+        DecimalFormat(this.getPattern()).format(BigDecimal(this))
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
@@ -153,9 +137,21 @@ fun String.numberFormat(): String {
     }
 }
 
-fun BigDecimal.numberFormat(): String {
+fun String.numberFormat2(): String {
+    if (this.isEmpty()) return this
+
     return try {
-        decimalFormat.format(this)
+        DecimalFormat(",###.##").format(BigDecimal(this))
+    } catch (e: NumberFormatException) {
+        this
+    } catch (e: IllegalArgumentException) {
+        this
+    }
+}
+
+fun BigDecimal.numberFormat8(): String {
+    return try {
+        DecimalFormat(this.toPlainString().getPattern()).format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {
@@ -165,7 +161,7 @@ fun BigDecimal.numberFormat(): String {
 
 fun BigDecimal.numberFormat2(): String {
     return try {
-        decimalFormat2.format(this)
+        DecimalFormat(",###.##").format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {
@@ -173,58 +169,16 @@ fun BigDecimal.numberFormat2(): String {
     }
 }
 
-fun String.max8(): String {
-    if (this.isEmpty()) return this
+fun String.getPattern(count: Int = 8): String {
+    if (this.isEmpty()) return ""
 
     val index = this.indexOf('.')
-    val result: String
-    if (index == -1) {
-        result = this
-    } else {
-        result = if (index > 8) {
-            this.substring(0, index)
-        } else {
-            val pre = this.substring(0, index)
-            val post = this.substring(index + 1, this.length)
-            val max = 8 - pre.length
-            if (post.length > max) {
-                pre + '.' + post.substring(0, max)
-            } else {
-                this
-            }
-        }
+    if (index == -1) return ",###"
+    if (index >= count) return ",###"
+
+    val sb = StringBuilder(",###.")
+    for (i in 0 until (count - index)) {
+        sb.append('#')
     }
-    return result
-}
-
-fun String.formatPrice(): String {
-    if (this.isEmpty()) return this
-
-    val index = this.indexOf('.')
-    if (index == -1) return this
-
-    val post = this.substring(index + 1)
-    var pos = 0
-    var lookAhead: Char?
-    for (i in 0 until post.length) {
-        val c = post[i]
-        if (i % 2 == 1 && c == '0') continue
-
-        if (i + 1 <= post.length - 1) {
-            lookAhead = post[i + 1]
-            if (lookAhead == '0') {
-                if (c != '0') {
-                    pos = i
-                }
-                continue
-            } else {
-                pos = i + 1
-                break
-            }
-        } else {
-            pos = i
-            break
-        }
-    }
-    return this.substring(0, index + pos + 2)
+    return sb.toString()
 }

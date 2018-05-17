@@ -12,8 +12,8 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -86,11 +86,11 @@ class TransactionFragment : BaseFragment() {
         val isPositive = snapshot.amount.toFloat() > 0
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()} ${asset.symbol}"
-        else "${snapshot.amount.numberFormat()} ${asset.symbol}"
+        value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat8()} ${asset.symbol}"
+        else "${snapshot.amount.numberFormat8()} ${asset.symbol}"
         value_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
         val amount = (BigDecimal(snapshot.amount) * BigDecimal(asset.priceUsd)).numberFormat2()
-        value_as_tv.text = getString(R.string.wallet_unit_usd, amount)
+        value_as_tv.text = getString(R.string.wallet_unit_usd, "≈ $amount")
         transaction_id_tv.text = snapshot.snapshotId
         transaction_type_tv.text = snapshot.type
         asset_name_tv.text = asset.name

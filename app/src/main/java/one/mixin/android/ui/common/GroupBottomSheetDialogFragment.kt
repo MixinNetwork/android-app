@@ -196,7 +196,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             } else {
                 choices.add(getString(R.string.group_info_edit))
             }
-            choices.add(getString(R.string.edit_name))
+            choices.add(getString(R.string.group_edit_name))
         }
         if (notNullElse(conversation.muteUntil, {
                 Instant.now().isBefore(Instant.parse(it))
