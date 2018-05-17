@@ -1,5 +1,6 @@
 package one.mixin.android.db
 
+import android.arch.lifecycle.LiveData
 import android.arch.paging.DataSource
 import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Query
@@ -12,7 +13,7 @@ interface SnapshotDao : BaseDao<Snapshot> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT s.*, u.full_name as counterFullName, a.symbol as asset_symbol FROM snapshots s LEFT JOIN users u ON u.user_id = s.counter_user_id LEFT JOIN assets a ON a.asset_id = s.asset_id WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshots(assetId: String): DataSource.Factory<Int, SnapshotItem>
+    fun snapshots(assetId: String): LiveData<List<SnapshotItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT s.*, u.full_name as counterFullName, a.symbol as asset_symbol  FROM snapshots s LEFT JOIN users u ON u.user_id = s.counter_user_id LEFT JOIN assets a ON a.asset_id = s.asset_id WHERE s.asset_id = :assetId and snapshot_id = :snapshotId")
