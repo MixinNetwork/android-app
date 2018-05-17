@@ -38,7 +38,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val URL = "url"
         private const val CONVERSATION_ID = "conversation_id"
         private const val NAME = "name"
-        fun newInstance(url: String, conversationId: String, name: String = "Mixin") =
+        fun newInstance(url: String, conversationId: String?, name: String = "Mixin") =
             WebBottomSheetDialogFragment().withArgs {
                 putString(URL, url)
                 putString(CONVERSATION_ID, conversationId)
@@ -49,7 +49,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val url: String by lazy {
         arguments!!.getString(URL)
     }
-    private val conversationId: String by lazy {
+    private val conversationId: String? by lazy {
         arguments!!.getString(CONVERSATION_ID)
     }
     private val name: String by lazy {
@@ -85,6 +85,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.chat_web_view.settings.javaScriptEnabled = true
         contentView.chat_web_view.settings.domStorageEnabled = true
+
         contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
             override fun onPageFinished() {
@@ -143,7 +144,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.title_view.text = name
         dialog.setOnShowListener {
             val extraHeaders = HashMap<String, String>()
-            extraHeaders[Mixin_Conversation_ID_HEADER] = conversationId
+            conversationId?.let {
+                extraHeaders[Mixin_Conversation_ID_HEADER] = it
+            }
             contentView.chat_web_view.loadUrl(url, extraHeaders)
         }
         dialog.setOnDismissListener {
@@ -155,7 +158,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
-        val conversationId: String,
+        val conversationId: String?,
         val fragmentManager: FragmentManager
     ) : WebViewClient() {
 
@@ -173,7 +176,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 return true
             }
             val extraHeaders = HashMap<String, String>()
-            extraHeaders[Mixin_Conversation_ID_HEADER] = conversationId
+            conversationId?.let {
+                extraHeaders[Mixin_Conversation_ID_HEADER] = it
+            }
             if (url.isWebUrl()) {
                 view.loadUrl(url, extraHeaders)
                 return true
@@ -215,20 +220,24 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         checkEnable = true
     }
 
-    class WebAppInterface(val context: Context, val conversationId: String) {
+    class WebAppInterface(val context: Context, val conversationId: String?) {
         @JavascriptInterface
         fun showToast(toast: String) {
             Toast.makeText(context, toast, Toast.LENGTH_SHORT).show()
         }
 
         @JavascriptInterface
-        fun getContext(): String {
-            return Gson().toJson(MixinContext(conversationId))
+        fun getContext(): String? {
+            return if (conversationId != null) {
+                Gson().toJson(MixinContext(conversationId))
+            } else {
+                null
+            }
         }
     }
 
     class MixinContext(
         @SerializedName("conversation_id")
-        val conversationId: String
+        val conversationId: String?
     )
 }

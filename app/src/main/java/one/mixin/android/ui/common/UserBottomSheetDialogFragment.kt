@@ -109,7 +109,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 isMixinUrl(url) -> LinkBottomSheetDialogFragment
                     .newInstance(url).show(fragmentManager, LinkBottomSheetDialogFragment.TAG)
                 else -> WebBottomSheetDialogFragment
-                    .newInstance(url, conversationId!!)
+                    .newInstance(url, conversationId)
                     .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
             }
             dialog?.dismiss()
@@ -196,7 +196,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         contentView.open_fl.setOnClickListener {
                             dialog?.dismiss()
                             WebBottomSheetDialogFragment
-                                .newInstance(app.homeUri, conversationId!!, app.name)
+                                .newInstance(app.homeUri, conversationId, app.name)
                                 .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
                         }
                     }
