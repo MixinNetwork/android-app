@@ -39,9 +39,7 @@ internal constructor(
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
 
-    fun snapshotsFromDb(id: String): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.snapshotsFromDb(id), PagedList.Config.Builder()
-            .setPageSize(20).build()).build()
+    fun snapshotsFromDb(id: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id)
 
     fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
 
