@@ -15,6 +15,10 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import com.uber.autodispose.kotlin.autoDisposable
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.functions.BiFunction
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_verification.*
 import one.mixin.android.AppExecutors
 import one.mixin.android.Constants.KEYS
@@ -164,8 +168,14 @@ class VerificationFragment : BaseFragment() {
             purpose = VerificationPurpose.SESSION.name,
             pin = pin,
             session_secret = sessionSecret)
-        mobileViewModel.create(arguments!!.getString(ARGS_ID), accountRequest)
-            .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+        val clearObservable = Observable.just {
+            MixinApplication.get().closeAndClear(false)
+        }
+        val createObservable = mobileViewModel.create(arguments!!.getString(ARGS_ID), accountRequest)
+        Observable.zip(clearObservable, createObservable, BiFunction<Any, MixinResponse<Account>, MixinResponse<Account>> { _, r ->
+            return@BiFunction r
+        }).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(scopeProvider).subscribe({ r ->
                 if (!isAdded) {
                     return@subscribe
                 }
@@ -202,8 +212,8 @@ class VerificationFragment : BaseFragment() {
                 }
                 startActivity(Intent(intent))
                 activity?.finish()
-            }, { t: Throwable ->
-                handleError(t)
+            }, {
+                handleError(it)
             })
     }
 
