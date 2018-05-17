@@ -144,15 +144,33 @@ private val decimalFormat2 = DecimalFormat.getNumberInstance(Locale.getDefault()
 
 fun String.numberFormat(): String {
     if (this.isEmpty()) return this
-    return decimalFormat.format(BigDecimal(this))
+    return try {
+        decimalFormat.format(BigDecimal(this))
+    } catch (e: NumberFormatException) {
+        this
+    } catch (e: IllegalArgumentException) {
+        this
+    }
 }
 
 fun BigDecimal.numberFormat(): String {
-    return decimalFormat.format(this)
+    return try {
+        decimalFormat.format(this)
+    } catch (e: NumberFormatException) {
+        this.toPlainString()
+    } catch (e: IllegalArgumentException) {
+        this.toPlainString()
+    }
 }
 
 fun BigDecimal.numberFormat2(): String {
-    return decimalFormat2.format(this)
+    return try {
+        decimalFormat2.format(this)
+    } catch (e: NumberFormatException) {
+        this.toPlainString()
+    } catch (e: IllegalArgumentException) {
+        this.toPlainString()
+    }
 }
 
 fun String.max8(): String {
