@@ -14,7 +14,11 @@ import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_fragment_header.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.*
+import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BaseFragment
@@ -81,7 +85,7 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
                     totalUSD += it.usd()
                 }
 
-                header.total_as_tv.text = getString(R.string.wallet_unit_btc, totalBTC.toString().max8().numberFormat())
+                header.total_as_tv.text = getString(R.string.wallet_unit_btc, totalBTC.toString().numberFormat8())
                 header.total_tv.text = getString(R.string.wallet_unit_usd, totalUSD.numberFormat2())
 
                 if (totalUSD.compareTo(BigDecimal.ZERO) == 0) return@Observer

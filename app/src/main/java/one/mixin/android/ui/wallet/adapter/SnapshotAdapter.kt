@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.date
 import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.textColorResource
@@ -59,7 +59,7 @@ class SnapshotAdapter : PagedListAdapter<SnapshotItem, SnapshotAdapter.NormalHol
                 }
                 else -> itemView.name.text = snapshot.receiver!!.formatPublicKey()
             }
-            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat()} ${snapshot.assetSymbol}" else "${snapshot.amount.numberFormat()} ${snapshot.assetSymbol}"
+            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat8()} ${snapshot.assetSymbol}" else "${snapshot.amount.numberFormat8()} ${snapshot.assetSymbol}"
             itemView.value.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
 
             itemView.setOnClickListener { listener?.onItemClick(snapshot) }

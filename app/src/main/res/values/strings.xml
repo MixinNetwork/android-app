@@ -292,7 +292,7 @@
     <string name="group_info_delete_group">Delete Group</string>
     <string name="group_edit_title">Edit Group</string>
     <string name="group_edit_photo">Group Photo</string>
-    <string name="group_edit_name">Group Name</string>
+    <string name="group_edit_name">Edit Name</string>
     <string name="group_create_failure">Can\'t create, please click to retry.</string>
     <string name="group_create_success">Create success.</string>
     <string name="group_pop_menu_message">Message %s</string>

@@ -17,8 +17,8 @@ import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
@@ -117,7 +117,7 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
 
     @SuppressLint("SetTextI18n")
     private fun updateHeader(header: View, asset: AssetItem) {
-        header.balance.text = asset.balance.numberFormat() + " " + asset.symbol
+        header.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
         header.balance_as.text = getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
         header.deposit_animator.displayedChild = if (asset.publicKey.isEmpty()) POS_PB else POS_TEXT
     }

@@ -6,36 +6,36 @@ import org.junit.Test
 class StringExtensionTest {
 
     @Test
-    fun formatPrice() {
-        val price1 = "12345"
-        val price2 = "12345.6789"
-        val price3 = "12345.0600"
-        val price4 = "0.0001"
-        val price5 = "0.00101"
-        val price6 = "0.000101"
+    fun getPattern() {
+        val s1 = "12345678901"
+        val s2 = "123456789.1234567"
+        val s3 = "12345.0600"
+        val s4 = "0.00011231"
+        val s5 = "1234567.00101"
+        val s6 = "123.0001014324"
 
-        assertEquals(price1.formatPrice(), "12345")
-        assertEquals(price2.formatPrice(), "12345.67")
-        assertEquals(price3.formatPrice(), "12345.06")
-        assertEquals(price4.formatPrice(), "0.0001")
-        assertEquals(price5.formatPrice(), "0.00101")
-        assertEquals(price6.formatPrice(), "0.0001")
+        assertEquals(",###", s1.getPattern())
+        assertEquals(",###", s2.getPattern())
+        assertEquals(",###.###", s3.getPattern())
+        assertEquals(",###.#######", s4.getPattern())
+        assertEquals(",###.#", s5.getPattern())
+        assertEquals(",###.#####", s6.getPattern())
     }
 
     @Test
-    fun numberFormat() {
-        val num1 = "123"
-        val num2 = "1234567"
-        val num3 = "1234.5678"
-        val num4 = "12345678901234567890123456789.1234567890123456789"
-        val num5 = "123456789012345"
-        val num6 = "2158185835409464150507677.01642"
+    fun numberFormat8() {
+        val s1 = "12345678901"
+        val s2 = "123456789.1234567"
+        val s3 = "12345.0600"
+        val s4 = "0.00011231"
+        val s5 = "1234567.00101"
+        val s6 = "123.0001014324"
 
-        assertEquals("123", num1.numberFormat())
-        assertEquals("1,234,567", num2.numberFormat())
-        assertEquals("1,234.5678", num3.numberFormat())
-        assertEquals("12,345,678,901,234,567,890,123,456,789.1234567890123456789", num4.numberFormat())
-        assertEquals("123,456,789,012,345", num5.numberFormat())
-        assertEquals("2,158,185,835,409,464,150,507,677.01642", num6.numberFormat())
+        assertEquals("12,345,678,901", s1.numberFormat8())
+        assertEquals("123,456,789", s2.numberFormat8())
+        assertEquals("12,345.06", s3.numberFormat8())
+        assertEquals("0.0001123", s4.numberFormat8())
+        assertEquals("1,234,567", s5.numberFormat8())
+        assertEquals("123.0001", s6.numberFormat8())
     }
 }

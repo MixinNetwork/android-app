@@ -8,7 +8,7 @@ import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_bill.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
@@ -33,7 +33,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
         chatLayout(isMe, isLast)
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         itemView.bill_iv.loadImage(messageItem.assetIcon, R.drawable.ic_avatar_place_holder)
-        itemView.bill_tv.text = messageItem.snapshotAmount?.numberFormat()
+        itemView.bill_tv.text = messageItem.snapshotAmount?.numberFormat8()
         itemView.bill_symbol_tv.text = messageItem.assetSymbol
 
         itemView.setOnLongClickListener {
