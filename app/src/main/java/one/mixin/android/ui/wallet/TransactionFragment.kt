@@ -90,8 +90,7 @@ class TransactionFragment : BaseFragment() {
         else "${snapshot.amount.numberFormat()} ${asset.symbol}"
         value_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
         val amount = (BigDecimal(snapshot.amount) * BigDecimal(asset.priceUsd)).numberFormat2()
-        value_as_tv.text = getString(R.string.wallet_unit_usd,
-            "≈ ${amount.numberFormat()}")
+        value_as_tv.text = getString(R.string.wallet_unit_usd, amount)
         transaction_id_tv.text = snapshot.snapshotId
         transaction_type_tv.text = snapshot.type
         asset_name_tv.text = asset.name
