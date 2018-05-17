@@ -2,16 +2,18 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
              xmlns:app="http://schemas.android.com/apk/res-auto"
              xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent" android:layout_height="wrap_content">
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content">
 
-    <LinearLayout android:id="@+id/out_ll"
-                  android:layout_width="wrap_content"
-                  android:layout_height="wrap_content"
-                  android:orientation="vertical"
-                  android:layout_gravity="end"
-                  android:layout_marginEnd="4dp"
-                  android:layout_marginStart="4dp"
-                  tools:ignore="UselessParent">
+    <LinearLayout
+            android:id="@+id/out_ll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="end"
+            android:layout_marginEnd="4dp"
+            android:layout_marginStart="4dp"
+            tools:ignore="UselessParent">
 
         <TextView
                 android:id="@+id/chat_name"
@@ -24,12 +26,16 @@
 
         <RelativeLayout
                 android:id="@+id/chat_layout"
+                android:layout_marginTop="1.5dp"
                 android:layout_width="240dp"
                 android:layout_height="68dp"
                 android:background="@drawable/chat_bubble_other">
 
-            <Space android:id="@+id/center" android:layout_width="1dp" android:layout_height="1dp"
-                   android:layout_centerVertical="true"/>
+            <Space
+                    android:id="@+id/center"
+                    android:layout_width="1dp"
+                    android:layout_height="1dp"
+                    android:layout_centerVertical="true"/>
 
             <one.mixin.android.widget.AvatarView
                     android:id="@+id/avatar_iv"
@@ -87,6 +93,7 @@
                     android:layout_marginEnd="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_marginTop="2dp"
+                    android:fontFamily="@font/sf_pro_light"
                     android:layout_toEndOf="@id/avatar_iv"
                     android:layout_below="@id/center"
                     android:ellipsize="end"

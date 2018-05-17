@@ -7,7 +7,7 @@ buildscript {
         ext.roomVersion = '1.1.0'
         ext.constraintLayoutVersion = '1.1.0'
         ext.supportLibVersion = '27.1.1'
-        ext.daggerVersion = '2.15'
+        ext.daggerVersion = '2.16'
         ext.ktxVersion = '0.3'
         ext.espressoVersion = '3.0.1'
         ext.glideVersion = '4.7.1'
@@ -50,7 +50,7 @@ buildscript {
 
         ext.fasterxmlVersion= '2.8.11'
         ext.gsonVersion= '2.8.2'
-        ext.autodisposeVersion= '0.7.0'
+        ext.autodisposeVersion= '0.8.0'
         ext.bugsnagVersion= '4.3.3'
         ext.jsoupVersion= '1.11.2'
     }
