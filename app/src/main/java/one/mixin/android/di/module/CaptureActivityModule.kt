@@ -3,6 +3,7 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureFragment
 import one.mixin.android.ui.qr.EditFragment
 
@@ -16,4 +17,7 @@ abstract class CaptureActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeQrBottomSheetDialogFragment(): QrBottomSheetDialogFragment
 }

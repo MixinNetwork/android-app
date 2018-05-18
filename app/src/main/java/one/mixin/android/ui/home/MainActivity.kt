@@ -38,6 +38,7 @@ import one.mixin.android.job.UploadContactsService
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
@@ -142,7 +143,12 @@ class MainActivity : BlazeBaseActivity() {
     private var alertDialog: AlertDialog? = null
 
     private fun handlerCode(intent: Intent) {
-        if (intent.hasExtra(CODE)) {
+        if (intent.hasExtra(SCAN)) {
+            val scan = intent.getStringExtra(SCAN)
+            bottomSheet?.dismiss()
+            bottomSheet = QrBottomSheetDialogFragment.newInstance(scan)
+            bottomSheet?.show(supportFragmentManager, QrBottomSheetDialogFragment.TAG)
+        } else if (intent.hasExtra(CODE)) {
             val code = intent.getStringExtra(CODE)
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(code)
@@ -311,6 +317,8 @@ class MainActivity : BlazeBaseActivity() {
 
     companion object {
         private const val CODE = "code"
+        private const val SCAN = "scan"
+
         fun showGroup(context: Context, code: String) {
             Intent(context, MainActivity::class.java).apply { putExtra(CODE, code) }.run {
                 context.startActivity(this)
@@ -333,6 +341,10 @@ class MainActivity : BlazeBaseActivity() {
             }.run {
                 context.startActivity(this)
             }
+        }
+
+        fun showScan(context: Context, text: String) {
+            Intent(context, MainActivity::class.java).apply { putExtra(SCAN, text) }.run { context.startActivity(this) }
         }
 
         fun show(context: Context) {

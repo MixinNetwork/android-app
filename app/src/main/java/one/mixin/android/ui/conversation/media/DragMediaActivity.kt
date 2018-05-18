@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation.media
 import android.Manifest
 import android.app.Activity
 import android.app.ActivityOptions
-import android.content.ClipData
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.SurfaceTexture
@@ -18,8 +17,6 @@ import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPager
 import android.view.TextureView
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -36,16 +33,12 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_drag_media.*
-import kotlinx.android.synthetic.main.bottom_qr.view.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import one.mixin.android.R
-import one.mixin.android.R.id.view_pager
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
-import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThread
@@ -54,9 +47,8 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.save
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageCategory
@@ -70,7 +62,6 @@ import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
-import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -189,7 +180,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         LinkBottomSheetDialogFragment.newInstance(url)
                             .show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                     } else {
-                        showQrBottom(url)
+                        QrBottomSheetDialogFragment.newInstance(url)
+                            .show(supportFragmentManager, QrBottomSheetDialogFragment.TAG)
                     }
                 } else {
                     toast(R.string.can_not_recognize)
@@ -199,32 +191,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
         view.cancel.setOnClickListener { bottomSheet.dismiss() }
 
-        bottomSheet.show()
-    }
-
-    private fun showQrBottom(s: String) {
-        val builder = BottomSheet.Builder(this)
-        val view = View.inflate(this, R.layout.bottom_qr, null)
-        builder.setCustomView(view)
-        val bottomSheet = builder.create()
-        view.qr_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        view.qr_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        view.qr_tv.text = s
-        view.copy.setOnClickListener {
-            getClipboardManager().primaryClip = ClipData.newPlainText(null, s)
-            toast(R.string.copy_success)
-            bottomSheet.dismiss()
-        }
-        if (s.isWebUrl()) {
-            view.open.visibility = VISIBLE
-            view.open.setOnClickListener {
-                WebBottomSheetDialogFragment.newInstance(s, conversationId)
-                    .show(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
-                bottomSheet.dismiss()
-            }
-        } else {
-            view.open.visibility = GONE
-        }
         bottomSheet.show()
     }
 

@@ -47,6 +47,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.extension.xYuv2Simple
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
@@ -214,6 +215,12 @@ class CaptureFragment : BaseFragment() {
             }
             activity?.setResult(RESULT_CODE, result)
             activity?.finish()
+            return
+        }
+
+        if (!isMixinUrl(data)) {
+            MainActivity.showScan(context!!, data)
+            mCaptureManager.closeAndFinish()
             return
         }
 
