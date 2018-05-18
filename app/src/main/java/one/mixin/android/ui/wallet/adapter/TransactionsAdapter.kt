@@ -78,7 +78,8 @@ class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetIte
                 }
                 else -> itemView.name.text = snapshot.receiver!!.formatPublicKey()
             }
-            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat8()} ${asset.symbol}" else "${snapshot.amount.numberFormat8()} ${asset.symbol}"
+            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat8()} ${asset.symbol}"
+            else "${snapshot.amount.numberFormat8()} ${asset.symbol}"
             itemView.value.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
 
             itemView.setOnClickListener { listener?.onItemClick(snapshot) }

@@ -39,7 +39,7 @@ import one.mixin.android.vo.User
     (Hyperlink::class),
     (FloodMessage::class),
     (Address::class),
-    (ResendMessage::class)], version = 12)
+    (ResendMessage::class)], version = 13)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -90,12 +90,41 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_12_13: Migration = object : Migration(12, 13) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_10_13: Migration = object : Migration(10, 13) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE assets ADD COLUMN chain_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE messages ADD COLUMN shared_user_id TEXT")
+                database.execSQL("ALTER TABLE assets ADD COLUMN change_usd TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN change_btc TEXT NOT NULL DEFAULT ''")
+                database.execSQL("CREATE TABLE resend_messages(message_id TEXT NOT NULL, user_id TEXT NOT NULL, " +
+                    "status INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(message_id, user_id))")
+                database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_11_13: Migration = object : Migration(11, 13) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE assets ADD COLUMN change_usd TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN change_btc TEXT NOT NULL DEFAULT ''")
+                database.execSQL("CREATE TABLE resend_messages(message_id TEXT NOT NULL, user_id TEXT NOT NULL, " +
+                    "status INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(message_id, user_id))")
+                database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context,
                         MixinDatabase::class.java, "mixin.db")
-                        .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_10_12)
+                        .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_10_12, MIGRATION_12_13,
+                            MIGRATION_10_13, MIGRATION_11_13)
                         .addCallback(CALLBACK)
                         .build()
                 }

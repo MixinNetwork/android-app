@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.arch.lifecycle.Observer
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.text.TextUtils
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -186,12 +187,19 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.bot_iv.visibility = VISIBLE
             doAsync {
                 bottomViewModel.findAppById(user.appId!!)?.let { app ->
+                    val creator = bottomViewModel.getUserById(app.creatorId)
                     uiThread {
                         if (!isAdded) return@uiThread
 
                         contentView.detail_tv.visibility = VISIBLE
                         contentView.open_fl.visibility = VISIBLE
                         contentView.creator_tv.visibility = GONE
+                        if (!TextUtils.isEmpty(creator?.fullName)) {
+                            contentView.creator_tv.visibility = VISIBLE
+                            contentView.creator_tv.text = creator?.fullName
+                        } else {
+                            contentView.creator_tv.visibility = GONE
+                        }
                         contentView.detail_tv.text = app.description
                         contentView.open_fl.setOnClickListener {
                             dialog?.dismiss()

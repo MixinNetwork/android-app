@@ -59,7 +59,8 @@ class SnapshotAdapter : PagedListAdapter<SnapshotItem, SnapshotAdapter.NormalHol
                 }
                 else -> itemView.name.text = snapshot.receiver!!.formatPublicKey()
             }
-            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat8()} ${snapshot.assetSymbol}" else "${snapshot.amount.numberFormat8()} ${snapshot.assetSymbol}"
+            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat8()} ${snapshot.assetSymbol}"
+            else "${snapshot.amount.numberFormat8()} ${snapshot.assetSymbol}"
             itemView.value.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
 
             itemView.setOnClickListener { listener?.onItemClick(snapshot) }

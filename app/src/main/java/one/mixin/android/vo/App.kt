@@ -41,7 +41,10 @@ class App(
     val appSecret: String,
     @SerializedName("capabilites")
     @ColumnInfo(name = "capabilites")
-    val capabilites: ArrayList<String>?
+    val capabilites: ArrayList<String>?,
+    @SerializedName("creator_id")
+    @ColumnInfo(name = "creator_id")
+    val creatorId: String
 
 ) : Parcelable
 
