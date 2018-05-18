@@ -285,7 +285,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             view.tag = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
                 if (mixinPlayer.duration() != 0) {
-                    view.remain_tv.text = (mixinPlayer.duration() - mixinPlayer.getCurrentPos()).formatMillis()
+                    view.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
                     if (mixinPlayer.isPlaying()) {
                         view.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200
                             / mixinPlayer.duration()).toInt()
@@ -478,7 +478,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private inline fun load(pos: Int, action: () -> Unit = {}) {
         val messageItem = pagerAdapter.getItem(pos)
-        if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name) {
+        if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name ||
+            messageItem.type == MessageCategory.PLAIN_VIDEO.name) {
             messageItem.mediaUrl?.let {
                 mixinPlayer.loadVideo(it)
             }
