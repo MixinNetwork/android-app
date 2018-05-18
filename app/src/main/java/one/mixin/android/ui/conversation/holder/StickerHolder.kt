@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.item_chat_sticker.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
@@ -73,12 +74,12 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
             itemView.chat_sticker.layoutParams.width = dp160
             itemView.chat_time.layoutParams.width = dp160
             itemView.chat_sticker.layoutParams.height = dp160 * messageItem.assetHeight / messageItem.assetWidth
-            itemView.chat_sticker.loadImage(messageItem.assetUrl, static = false)
+            itemView.chat_sticker.loadSticker(messageItem.assetUrl)
         } else {
             itemView.chat_sticker.layoutParams.width = messageItem.assetWidth
             itemView.chat_time.layoutParams.width = messageItem.assetWidth
             itemView.chat_sticker.layoutParams.height = messageItem.assetHeight
-            itemView.chat_sticker.loadImage(messageItem.assetUrl, static = false)
+            itemView.chat_sticker.loadSticker(messageItem.assetUrl)
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
