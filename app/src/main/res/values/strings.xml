@@ -430,7 +430,7 @@
     <string name="pay_paid">Already paid</string>
 
     <string name="background_connection_enabled">Messaging node running</string>
-    
+
     <!--withdrawal-->
     <string name="withdrawal">Withdrawal</string>
     <string name="withdrawal_tap_add_addr">Tap to add address</string>
@@ -455,5 +455,8 @@
     <string name="group_info_show_more">show more</string>
     <string name="select_picture">Select Picture</string>
     <string name="select_video">Select Video</string>
+    <string name="send">Send</string>
+    <string name="send_file">Send \"%1$s\" to %2$s?</string>
+    <string name="send_file_group">Send \"%1$s\" to \"%2$s\"?</string>
 </resources>
 

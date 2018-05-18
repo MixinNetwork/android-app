@@ -47,12 +47,13 @@ class MenuAdapter(private val onMenuClickListener: OnMenuClickListener) : Recycl
     }
 
     companion object {
-        val icons = intArrayOf(R.drawable.ic_selector_transfer, R.drawable.ic_selector_camera,
-            R.drawable.ic_selector_gallery, R.drawable.ic_selector_document)
-        val backgrounds = intArrayOf(R.drawable.bg_selector_contact, R.drawable.bg_selector_camera,
-            R.drawable.bg_selector_gallery, R.drawable.bg_selector_document)
-        val titles = intArrayOf(R.string.transfer, R.string.camera, R.string.gallery, R.string.document)
-        val ids = intArrayOf(R.id.menu_transfer, R.id.menu_camera, R.id.menu_gallery, R.id.menu_document)
+        val icons = intArrayOf(R.drawable.ic_selector_transfer, R.drawable.ic_selector_camera, R.drawable
+            .ic_selector_gallery, R.drawable.ic_selector_video, R.drawable.ic_selector_document)
+        val backgrounds = intArrayOf(R.drawable.bg_selector_contact, R.drawable.bg_selector_camera, R.drawable
+            .bg_selector_gallery, R.drawable.bg_selector_video, R.drawable.bg_selector_document)
+        val titles = intArrayOf(R.string.transfer, R.string.camera, R.string.gallery, R.string.video, R.string.document)
+        val ids = intArrayOf(R.id.menu_transfer, R.id.menu_camera, R.id.menu_gallery, R.id.menu_video, R.id
+            .menu_document)
     }
 
     override fun getItemCount(): Int {
