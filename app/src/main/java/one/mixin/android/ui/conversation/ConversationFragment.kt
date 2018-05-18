@@ -31,8 +31,6 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import com.bugsnag.android.Bugsnag
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Flowable
@@ -40,7 +38,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_conversation.*
-import kotlinx.android.synthetic.main.view_dialog_media.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
@@ -95,6 +92,7 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.MenuAdapter
 import one.mixin.android.ui.conversation.media.DragMediaActivity
+import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.wallet.TransactionFragment
@@ -1294,14 +1292,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             data?.let {
-                showMediaDialog(it.data, { sendImageMessage(it) })
+                showPreview(it.data, { sendImageMessage(it) })
             }
         } else if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
-                showMediaDialog(it, { sendImageMessage(it) })
+                showPreview(it, { sendImageMessage(it) })
             }
         } else if (requestCode == REQUEST_GAMERA && resultCode == Activity.RESULT_OK) {
-            showMediaDialog(imageUri, { sendImageMessage(it) })
+            showPreview(imageUri, { sendImageMessage(it) })
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
             context?.getAttachment(uri)?.let {
@@ -1319,7 +1317,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         } else if (requestCode == REQUEST_VIDEO && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-            showMediaDialog(uri, { sendVideoMessage(it) })
+            showPreview(uri, { sendVideoMessage(it) })
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
@@ -1394,16 +1392,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private var mediaDialog: AlertDialog? = null
-    private var mediaDialogView: View? = null
-    private fun showMediaDialog(uri: Uri, action: (Uri) -> Unit) {
-        if (mediaDialog == null || mediaDialogView == null) {
-            mediaDialogView = LayoutInflater.from(context!!).inflate(R.layout.view_dialog_media, null, false)
-            mediaDialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
-                .setView(mediaDialogView).create()
+    private var previewDialogFragment: PreviewDialogFragment? = null
+
+    private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
+        if (previewDialogFragment == null) {
+            previewDialogFragment = PreviewDialogFragment()
         }
-        Glide.with(mediaDialogView!!.dialog_iv).load(uri).apply(RequestOptions().dontAnimate()).into(mediaDialogView!!.dialog_iv)
-        mediaDialogView!!.dialog_send_ib.setOnClickListener { action(uri); mediaDialog?.dismiss() }
-        mediaDialog?.show()
+        previewDialogFragment?.show(fragmentManager, uri, action)
     }
 }
