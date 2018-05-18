@@ -64,7 +64,7 @@ abstract class ActivityModule {
     internal abstract fun contributeCapture(): CaptureActivity
 
     @ContributesAndroidInjector(modules = [(ConversationActivityModule::class)])
-    internal abstract fun contributeDragPhoto(): DragMediaActivity
+    internal abstract fun contributeDragMedia(): DragMediaActivity
 
     @ContributesAndroidInjector(modules = [(UrlInterpreterActivityModule::class)])
     internal abstract fun contributeUrlInterpreter(): UrlInterpreterActivity
