@@ -19,7 +19,7 @@ interface MessageDao : BaseDao<Message> {
         "u.full_name as userFullName, u.identity_number as userIdentityNumber, u.app_id as appId, m.category as type, " +
         "m.content as content, m.created_at as createdAt, m.status as status, m.media_status as mediaStatus, " +
         "m.name as mediaName, m.media_mine_type as mediaMimeType, m.media_size as mediaSize, m.media_width as mediaWidth, m.media_height as mediaHeight, " +
-        "m.thumb_image as thumbImage, m.media_url as mediaUrl, " +
+        "m.thumb_image as thumbImage, m.media_url as mediaUrl, m.media_duration as mediaDuration, " +
         "u1.full_name as participantFullName, m.action as actionName, u1.user_id as participantUserId, " +
         "s.snapshot_id as snapshotId, s.type as snapshotType, s.amount as snapshotAmount, a.symbol as assetSymbol, a.asset_id as assetId, " +
         "a.icon_url as assetIcon, st.asset_url as assetUrl, st.asset_width as assetWidth, st.asset_height as assetHeight, st.album_id as albumId, " +
