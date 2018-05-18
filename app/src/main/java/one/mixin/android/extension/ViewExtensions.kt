@@ -185,7 +185,7 @@ fun ImageView.loadImage(uri: String?, requestListener: RequestListener<Drawable?
     Glide.with(this).load(uri).listener(requestListener).into(this)
 }
 
-fun ImageView.loadGif(uri: String?, requestListener: RequestListener<GifDrawable?> ? = null) {
+fun ImageView.loadGif(uri: String?, requestListener: RequestListener<GifDrawable?>? = null) {
     if (requestListener != null) {
         Glide.with(this).asGif().load(uri).listener(requestListener).into(this)
     } else {
@@ -193,15 +193,24 @@ fun ImageView.loadGif(uri: String?, requestListener: RequestListener<GifDrawable
     }
 }
 
-fun ImageView.loadImage(uri: String?, @DrawableRes holder: Int? = null) {
+fun ImageView.loadImage(uri: String?, @DrawableRes holder: Int? = null, static: Boolean = true
+) {
     if (uri.isNullOrBlank()) {
         if (holder != null) {
             setImageResource(holder)
         }
     } else if (holder == null) {
-        Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()).into(this)
+        if (static) {
+            Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()).into(this)
+        } else {
+            Glide.with(this).load(uri).into(this)
+        }
     } else {
-        Glide.with(this).load(uri).apply(RequestOptions().placeholder(holder).dontAnimate()).into(this)
+        if (static) {
+            Glide.with(this).load(uri).apply(RequestOptions().placeholder(holder).dontAnimate()).into(this)
+        } else {
+            Glide.with(this).load(uri).apply(RequestOptions().placeholder(holder)).into(this)
+        }
     }
 }
 
