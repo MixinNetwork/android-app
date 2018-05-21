@@ -93,6 +93,7 @@ abstract class MixinDatabase : RoomDatabase() {
         private val MIGRATION_12_13: Migration = object : Migration(12, 13) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
             }
         }
 
@@ -105,6 +106,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("CREATE TABLE resend_messages(message_id TEXT NOT NULL, user_id TEXT NOT NULL, " +
                     "status INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(message_id, user_id))")
                 database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
             }
         }
 
@@ -115,6 +117,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("CREATE TABLE resend_messages(message_id TEXT NOT NULL, user_id TEXT NOT NULL, " +
                     "status INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(message_id, user_id))")
                 database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
             }
         }
 
