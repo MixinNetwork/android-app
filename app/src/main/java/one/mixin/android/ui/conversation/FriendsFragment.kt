@@ -9,6 +9,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -31,6 +32,7 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
         const val ARGS_IS_BOT = "args_is_bot"
 
         fun newInstance(conversationId: String, isGroup: Boolean, isBot: Boolean) = FriendsFragment().apply {
+            bundleOf()
             arguments = Bundle().apply {
                 putString(CONVERSATION_ID, conversationId)
                 putBoolean(ARGS_IS_GROUP, isGroup)
@@ -92,6 +94,8 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
 
     override fun onFriendClick(user: User) {
         val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)
-        ConversationActivity.show(context!!, conversationId, null, messages = arrayListOf(fw), isGroup = isGroup, isBot = isBot)
+        context?.let {
+            ConversationActivity.show(it, conversationId, null, messages = arrayListOf(fw), isGroup = isGroup, isBot = isBot)
+        }
     }
 }
