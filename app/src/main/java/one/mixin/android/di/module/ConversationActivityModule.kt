@@ -69,7 +69,7 @@ abstract class ConversationActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeQrBottomSheetDialogFragment(): QrBottomSheetDialogFragment
-    
+
     @ContributesAndroidInjector
     internal abstract fun contributeFriendsFragment(): FriendsFragment
 }

@@ -14,7 +14,6 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MUTE
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository

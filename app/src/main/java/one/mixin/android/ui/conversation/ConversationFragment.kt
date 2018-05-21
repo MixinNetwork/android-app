@@ -1403,7 +1403,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 .setView(mediaDialogView).create()
         }
         Glide.with(mediaDialogView!!.dialog_iv).load(uri).apply(RequestOptions().dontAnimate()).into(mediaDialogView!!.dialog_iv)
-        mediaDialogView!!.dialog_send_ib.setOnClickListener { action(uri);mediaDialog?.dismiss() }
+        mediaDialogView!!.dialog_send_ib.setOnClickListener { action(uri); mediaDialog?.dismiss() }
         mediaDialog?.show()
     }
 }

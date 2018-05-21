@@ -20,7 +20,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.support.v4.toast
 
-class QrBottomSheetDialogFragment: MixinBottomSheetDialogFragment() {
+class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "QrBottomSheetDialogFragment"
         const val ARGS_TEXT = "args_text"

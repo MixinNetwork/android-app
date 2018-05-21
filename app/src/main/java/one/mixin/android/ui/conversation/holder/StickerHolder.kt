@@ -11,7 +11,6 @@ import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.item_chat_sticker.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
