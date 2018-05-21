@@ -32,12 +32,11 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
         const val ARGS_IS_BOT = "args_is_bot"
 
         fun newInstance(conversationId: String, isGroup: Boolean, isBot: Boolean) = FriendsFragment().apply {
-            bundleOf()
-            arguments = Bundle().apply {
-                putString(CONVERSATION_ID, conversationId)
-                putBoolean(ARGS_IS_GROUP, isGroup)
-                putBoolean(ARGS_IS_BOT, isBot)
-            }
+            arguments = bundleOf(
+                CONVERSATION_ID to conversationId,
+                ARGS_IS_GROUP to isGroup,
+                ARGS_IS_BOT to isBot
+            )
         }
     }
 
@@ -94,8 +93,6 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
 
     override fun onFriendClick(user: User) {
         val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)
-        context?.let {
-            ConversationActivity.show(it, conversationId, null, messages = arrayListOf(fw), isGroup = isGroup, isBot = isBot)
-        }
+        ConversationActivity.show(requireContext(), conversationId, null, messages = arrayListOf(fw), isGroup = isGroup, isBot = isBot)
     }
 }
