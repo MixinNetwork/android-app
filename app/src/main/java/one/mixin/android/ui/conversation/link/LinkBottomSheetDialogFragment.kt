@@ -37,7 +37,6 @@ import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
-import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
@@ -85,13 +84,6 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             behavior.setBottomSheetCallback(mBottomSheetBehaviorCallback)
             dialog.window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, context!!.dpToPx(300f))
             dialog.window.setGravity(Gravity.BOTTOM)
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        if (activity is UrlInterpreterActivity && !authOrPay) {
-            (activity as UrlInterpreterActivity).finish()
         }
     }
 
