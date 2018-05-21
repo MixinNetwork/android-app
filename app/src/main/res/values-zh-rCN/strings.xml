@@ -420,7 +420,7 @@
     <string name="document">文件</string>
     <string name="gallery">照片</string>
     <string name="video">视频</string>
-    <string name="contact">l联系人</string>
+    <string name="contact">联系人</string>
     <!--pay-->
     <string name="pay_paid">已支付完成</string>
 
