@@ -125,8 +125,8 @@ class AttachmentDownloadJob(private val message: Message)
             sink.writeAll(response.body()!!.source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
-                if ((message.mediaMineType.equals("image/jpeg", true) ||
-                        message.mediaMineType.equals("image/png", true))) {
+                if ((message.mediaMimeType.equals("image/jpeg", true) ||
+                        message.mediaMimeType.equals("image/png", true))) {
                     val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {
                         AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
                     } else {
@@ -137,7 +137,7 @@ class AttachmentDownloadJob(private val message: Message)
                     Log.e(TAG, imageFile.absolutePath)
                     messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
                     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
-                } else if (message.mediaMineType.equals("image/gif", true)) {
+                } else if (message.mediaMimeType.equals("image/gif", true)) {
                     val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {
                         AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
                     } else {

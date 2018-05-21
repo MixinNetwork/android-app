@@ -62,7 +62,7 @@ private fun Context.getAppPath(): File {
     }
 }
 
-fun getMineType(uri: Uri): String? {
+fun getMimeType(uri: Uri): String? {
     var type: String? = null
     if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
         type = MixinApplication.get().contentResolver.getType(uri)
@@ -321,9 +321,9 @@ fun String.decodeBase64(): ByteArray? {
     return Base64.decode(this, 0)
 }
 
-fun Bitmap.bitmap2String(mineType: String = "", bitmapQuality: Int = 90): String? {
+fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String? {
     val stream = ByteArrayOutputStream()
-    if (mineType == "image/png") {
+    if (mimeType == "image/png") {
         this.compress(Bitmap.CompressFormat.PNG, bitmapQuality, stream)
     } else {
         this.compress(Bitmap.CompressFormat.JPEG, bitmapQuality, stream)

@@ -73,7 +73,7 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        val isGif = messageItem.mediaMineType.equals("image/gif", true)
+        val isGif = messageItem.mediaMimeType.equals("image/gif", true)
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)

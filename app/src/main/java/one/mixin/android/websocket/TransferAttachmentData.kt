@@ -11,6 +11,8 @@ class TransferAttachmentData(
     var attachmentId: String,
     @SerializedName("mine_type")
     var mineType: String,
+    @SerializedName("mime_type")
+    var mimeType: String,
     @SerializedName("size")
     var size: Long,
     @SerializedName("name")

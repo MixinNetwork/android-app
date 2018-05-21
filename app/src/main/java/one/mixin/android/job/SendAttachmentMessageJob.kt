@@ -92,7 +92,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         }
         val inputStream = MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
         val attachmentData =
-            PushAttachmentData(message.mediaMineType,
+            PushAttachmentData(message.mediaMimeType,
                 inputStream,
                 message.mediaSize!!,
                 if (isPlain()) {
@@ -115,10 +115,10 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         val size = message.mediaSize
         val thumbnail = message.thumbImage
         val name = message.name
-        val mineType = message.mediaMineType!!
+        val mimeType = message.mediaMimeType!!
 
         val transferMediaData = TransferAttachmentData(key, digest, attachmentId,
-            mineType, size, name, width, height, thumbnail, message.mediaDuration)
+            mimeType, mimeType, size, name, width, height, thumbnail, message.mediaDuration)
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = Base64.encodeBytes(plainText.toByteArray())
         message.content = encoded

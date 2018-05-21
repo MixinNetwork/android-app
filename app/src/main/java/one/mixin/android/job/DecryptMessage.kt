@@ -183,9 +183,10 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createMediaMessage(data.messageId, data.conversationId, data.userId, data.category,
                     mediaData.attachmentId, null,
-                    mediaData.mineType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,
+                    mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,
                     mediaData.key, mediaData.digest, data.createdAt, MediaStatus.PENDING, MessageStatus.DELIVERED)
 
                 messageDao.insert(message)
@@ -195,9 +196,10 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createVideoMessage(data.messageId, data.conversationId, data.userId,
                     data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration?.toLong(),
-                    mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.mineType,
+                    mediaData.width, mediaData.height, mediaData.thumbnail, mimeType,
                     mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
@@ -205,9 +207,10 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_DATA") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createAttachmentMessage(data.messageId, data.conversationId, data.userId,
                     data.category, mediaData.attachmentId, mediaData.name, null,
-                    mediaData.mineType, mediaData.size, data.createdAt,
+                    mimeType, mediaData.size, data.createdAt,
                     mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)

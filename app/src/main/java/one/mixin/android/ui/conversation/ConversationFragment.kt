@@ -359,7 +359,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             @TargetApi(Build.VERSION_CODES.O)
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
-                    messageItem.mediaMineType.equals("application/vnd.android.package-archive", true)) {
+                    messageItem.mediaMimeType.equals("application/vnd.android.package-archive", true)) {
                     if (context!!.packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)
                     } else {
@@ -900,7 +900,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         sendFordDataMessage(item.id)
                     }
                     ForwardCategory.VIDEO.name -> {
-                        sendFordVideoMessage(item.id)
+                        sendForwardVideoMessage(item.id)
                     }
                 }
             }
@@ -960,7 +960,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendFordVideoMessage(id: String?) {
+    private fun sendForwardVideoMessage(id: String?) {
         id?.let {
             createConversation {
                 chatViewModel.sendFordVideoMessage(conversationId, sender, it, isPlainMessage())
@@ -1311,7 +1311,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (messageItem.userId == Session.getAccountId()) {
             try {
                 messageItem.mediaUrl?.let {
-                    intent.setDataAndType(Uri.parse(it), messageItem.mediaMineType)
+                    intent.setDataAndType(Uri.parse(it), messageItem.mediaMimeType)
                     context!!.startActivity(intent)
                 }
             } catch (e: ActivityNotFoundException) {
@@ -1325,7 +1325,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         toast(R.string.error_file_exists)
                     } else {
                         val uri = context!!.getUriForFile(file)
-                        intent.setDataAndType(uri, messageItem.mediaMineType)
+                        intent.setDataAndType(uri, messageItem.mediaMimeType)
                         context!!.startActivity(intent)
                     }
                 }

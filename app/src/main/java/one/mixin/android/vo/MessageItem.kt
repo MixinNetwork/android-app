@@ -24,7 +24,7 @@ data class MessageItem(
     val mediaStatus: String?,
     val userAvatarUrl: String?,
     val mediaName: String?,
-    val mediaMineType: String?,
+    val mediaMimeType: String?,
     val mediaSize: Long?,
     val mediaWidth: Int?,
     val mediaHeight: Int?,

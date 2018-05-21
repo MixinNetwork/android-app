@@ -44,7 +44,7 @@ class Message(
 
     @SerializedName("media_mine_type")
     @ColumnInfo(name = "media_mine_type")
-    val mediaMineType: String?,
+    val mediaMimeType: String?,
 
     @SerializedName("media_size")
     @ColumnInfo(name = "media_size")
@@ -190,7 +190,7 @@ fun createAttachmentMessage(
     content: String?,
     name: String?,
     mediaUrl: String?,
-    mediaMineType: String,
+    mediaMimeType: String,
     mediaSize: Long,
     createdAt: String,
     key: ByteArray?,
@@ -201,7 +201,7 @@ fun createAttachmentMessage(
     .setContent(content)
     .setName(name)
     .setMediaUrl(mediaUrl)
-    .setMediaMineType(mediaMineType)
+    .setMediaMimeType(mediaMimeType)
     .setMediaSize(mediaSize)
     .setMediaKey(key)
     .setMediaDigest(digest)
@@ -220,7 +220,7 @@ fun createVideoMessage(
     mediaWidth: Int? = null,
     mediaHeight: Int? = null,
     thumbImage: String? = null,
-    mediaMineType: String,
+    mediaMimeType: String,
     mediaSize: Long,
     createdAt: String,
     key: ByteArray?,
@@ -235,7 +235,7 @@ fun createVideoMessage(
     .setMediaWidth(mediaWidth)
     .setMediaHeight(mediaHeight)
     .setThumbImage(thumbImage)
-    .setMediaMineType(mediaMineType)
+    .setMediaMimeType(mediaMimeType)
     .setMediaSize(mediaSize)
     .setMediaKey(key)
     .setMediaDigest(digest)
@@ -249,7 +249,7 @@ fun createMediaMessage(
     category: String,
     content: String?,
     mediaUrl: String?,
-    mediaMineType: String,
+    mediaMimeType: String,
     mediaSize: Long,
     mediaWidth: Int?,
     mediaHeight: Int?,
@@ -262,7 +262,7 @@ fun createMediaMessage(
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)
-    .setMediaMineType(mediaMineType)
+    .setMediaMimeType(mediaMimeType)
     .setMediaSize(mediaSize)
     .setMediaWidth(mediaWidth)
     .setMediaHeight(mediaHeight)

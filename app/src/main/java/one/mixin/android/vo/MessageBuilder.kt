@@ -10,7 +10,7 @@ class MessageBuilder(
 ) {
     private var content: String? = null
     private var mediaUrl: String? = null
-    private var mediaMineType: String? = null
+    private var mediaMimeType: String? = null
     private var mediaSize: Long? = null
     private var mediaDuration: String? = null
     private var mediaWidth: Int? = null
@@ -38,8 +38,8 @@ class MessageBuilder(
         return this
     }
 
-    fun setMediaMineType(mediaMineType: String): MessageBuilder {
-        this.mediaMineType = mediaMineType
+    fun setMediaMimeType(mediaMimeType: String): MessageBuilder {
+        this.mediaMimeType = mediaMimeType
         return this
     }
 
@@ -125,7 +125,7 @@ class MessageBuilder(
 
     fun build(): Message =
         Message(id, conversationId, userId, category, content, mediaUrl,
-            mediaMineType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
+            mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, mediaKey, mediaDigest, mediaStatus, status, createdAt,
             action, participantId, snapshotId, hyperlink, name, albumId, sharedUserId)
 }

@@ -28,7 +28,7 @@ import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
-import one.mixin.android.extension.getMineType
+import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
@@ -129,7 +129,7 @@ internal constructor(
         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
         val message = createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
-            attachment.mineType, attachment.filesize, nowInUtc(), null,
+            attachment.mimeType, attachment.fileSize, nowInUtc(), null,
             null, MediaStatus.PENDING, MessageStatus.SENDING)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
@@ -177,7 +177,7 @@ internal constructor(
                 video.resultHeight, video.thumbnail, if (video.needChange) {
                 "video/mp4"
             } else {
-                getMineType(uri)!!
+                getMimeType(uri)!!
             },
                 videoFile.length(), nowInUtc(), null, null, MediaStatus.PENDING, MessageStatus.SENDING)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
@@ -190,7 +190,7 @@ internal constructor(
                 jobManager.addJobInBackground(SendAttachmentMessageJob(createVideoMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, message.name, message.mediaUrl,
                     message.mediaDuration?.toLong(), message.mediaWidth, message.mediaHeight, message.thumbImage,
-                    message.mediaMineType!!, message.mediaSize!!, nowInUtc(), null, null,
+                    message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null, null,
                     MediaStatus.PENDING, MessageStatus.SENDING
                 )))
             }
@@ -206,7 +206,7 @@ internal constructor(
                     Uri.parse(message.mediaUrl)
                 }
                 jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-                    category, null, message.name, uri.toString(), message.mediaMineType!!, message.mediaSize!!, nowInUtc(), null,
+                    category, null, message.name, uri.toString(), message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null,
                     null, MediaStatus.PENDING, MessageStatus.SENDING)))
             }
         }.observeOn(AndroidSchedulers.mainThread())!!
@@ -220,29 +220,29 @@ internal constructor(
 
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int> {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
-        val mineType = getMineType(uri)
-        if (mineType == "image/gif") {
+        val mimeType = getMimeType(uri)
+        if (mimeType == "image/gif") {
             return Flowable.just(uri).map {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp()
                 Util.copy(FileInputStream(uri.getFilePath(MixinApplication.get())), FileOutputStream(gifFile))
                 val size = getImageSize(gifFile)
-                val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mineType)
+                val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, Uri.fromFile(gifFile).toString(),
-                    mineType, gifFile.length(), size.width, size.height, thumbnail, null, null,
+                    mimeType, gifFile.length(), size.width, size.height, thumbnail, null, null,
                     nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
         }
-        val temp = MixinApplication.get().getImagePath().createImageTemp(type = if (mineType == "image/png") {
+        val temp = MixinApplication.get().getImagePath().createImageTemp(type = if (mimeType == "image/png") {
             ".png"
         } else {
             ".jpg"
         })
         return Compressor()
-            .setCompressFormat(if (mineType == "image/png") {
+            .setCompressFormat(if (mimeType == "image/png") {
                 Bitmap.CompressFormat.PNG
             } else {
                 Bitmap.CompressFormat.JPEG
@@ -254,16 +254,16 @@ internal constructor(
                 if (length <= 0) {
                     return@map -1
                 }
-                if (mineType == null || (mineType != "image/png" &&
-                        mineType != "image/jpg" && mineType != "image/jpeg")) {
+                if (mimeType == null || (mimeType != "image/png" &&
+                        mimeType != "image/jpg" && mimeType != "image/jpeg")) {
                     return@map -2
                 }
                 val size = getImageSize(imageFile)
-                val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mineType)
+                val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, imageUrl,
-                    mineType, length, size.width, size.height, thumbnail, null, null,
+                    mimeType, length, size.width, size.height, thumbnail, null, null,
                     nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
