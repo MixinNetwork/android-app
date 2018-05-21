@@ -46,7 +46,7 @@ class AssetAdapter(var assets: List<AssetItem>) : RecyclerView.Adapter<RecyclerV
                 holder.itemView.change_tv.visibility = GONE
             } else {
                 holder.itemView.change_tv.visibility = VISIBLE
-                holder.itemView.price_tv.text = "$${ asset.priceUsd.numberFormat2()}"
+                holder.itemView.price_tv.text = "$${ asset.priceUsd.numberFormat8()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO
