@@ -71,8 +71,4 @@ internal constructor(
                 recipientId = recipientId, type = TYPE_MUTE))
         }
     }
-
-    fun refreshUser(userId: String) {
-        jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
-    }
 }

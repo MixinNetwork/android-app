@@ -114,16 +114,17 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             dialog?.dismiss()
         })
+
+        bottomViewModel.refreshUser(user.userId)
     }
 
     private fun initMenu() {
         val choices = mutableListOf<String>()
+        choices.add(getString(R.string.contact_other_share))
         when (user.relationship) {
             UserRelationship.BLOCKING.name -> {
-                choices.add(getString(R.string.contact_other_share))
             }
             UserRelationship.FRIEND.name -> {
-                choices.add(getString(R.string.contact_other_share))
                 choices.add(getString(R.string.edit_name))
                 setMute(choices)
                 choices.add(getString(R.string.contact_other_remove))
