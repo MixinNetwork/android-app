@@ -78,7 +78,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             (dialog as BottomSheet).fakeDismiss()
             menu.show()
         }
-        initMenu()
 
         bottomViewModel.findUserById(user.userId).observe(this, Observer { u ->
             if (u == null) return@Observer
@@ -91,10 +90,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             user = u
             updateUserInfo(u)
+            initMenu()
         })
         contentView.add_fl.setOnClickListener {
             updateRelationship(UserRelationship.FRIEND.name)
-            dialog?.dismiss()
         }
         contentView.send_fl.setOnClickListener {
             // TODO [optimize] have conversation with same user
@@ -114,16 +113,17 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             dialog?.dismiss()
         })
+
+        bottomViewModel.refreshUser(user.userId)
     }
 
     private fun initMenu() {
         val choices = mutableListOf<String>()
+        choices.add(getString(R.string.contact_other_share))
         when (user.relationship) {
             UserRelationship.BLOCKING.name -> {
-                choices.add(getString(R.string.contact_other_share))
             }
             UserRelationship.FRIEND.name -> {
-                choices.add(getString(R.string.contact_other_share))
                 choices.add(getString(R.string.edit_name))
                 setMute(choices)
                 choices.add(getString(R.string.contact_other_remove))

@@ -8,6 +8,7 @@ import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationFragment
+import one.mixin.android.ui.conversation.FriendsFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.ui.conversation.TransferFragment
@@ -68,4 +69,7 @@ abstract class ConversationActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeQrBottomSheetDialogFragment(): QrBottomSheetDialogFragment
+    
+    @ContributesAndroidInjector
+    internal abstract fun contributeFriendsFragment(): FriendsFragment
 }

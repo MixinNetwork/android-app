@@ -280,6 +280,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                         hideMediaLayout()
                     }
+                    R.id.menu_contact -> {
+                        activity?.supportFragmentManager?.inTransaction {
+                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                                .anim.slide_in_bottom, R.anim.slide_out_bottom)
+                                .add(R.id.container, FriendsFragment.newInstance(conversationId, isGroup, isBot), FriendsFragment.TAG)
+                                .addToBackStack(null)
+                        }
+                    }
                 }
             }
         })

@@ -21,6 +21,7 @@ import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -171,5 +172,9 @@ class BottomSheetViewModel @Inject internal constructor(
             iconBase64 = iconBase64, announcement = announcement)
         jobManager.addJobInBackground(ConversationJob(conversationId = conversationId,
             request = request, type = ConversationJob.TYPE_UPDATE))
+    }
+
+    fun refreshUser(userId: String) {
+        jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
     }
 }
