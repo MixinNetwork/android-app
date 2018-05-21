@@ -266,7 +266,7 @@ class GroupInfoFragment : BaseFragment() {
             override fun afterTextChanged(s: Editable) {
                 val us = arrayListOf<User>()
                 users.forEach {
-                    if (it.fullName?.startsWith(s, true) == true) {
+                    if (it.fullName?.contains(s, true) == true) {
                         us.add(it)
                     }
                 }

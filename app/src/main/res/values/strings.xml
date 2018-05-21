@@ -426,6 +426,7 @@
     <string name="document">File</string>
     <string name="gallery">Photo</string>
     <string name="video">Video</string>
+    <string name="contact">Contact</string>
     <!--pay-->
     <string name="pay_paid">Already paid</string>
 
