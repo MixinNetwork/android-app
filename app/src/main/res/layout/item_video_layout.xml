@@ -26,20 +26,20 @@
 
         <TextView
             android:id="@+id/duration_tv"
-            android:layout_width="52dp"
+            android:layout_width="48dp"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:text="@string/default_time"
-            android:textColor="@color/white" />
+            android:textColor="@color/transparent_white" />
 
         <TextView
             android:id="@+id/remain_tv"
-            android:layout_width="52dp"
+            android:layout_width="48dp"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:text="@string/default_time"
-            android:textColor="@color/white" />
+            android:textColor="@color/transparent_white" />
 
         <one.mixin.android.widget.PagerSeekBar
             android:id="@+id/seek_bar"
@@ -49,12 +49,11 @@
             android:layout_toEndOf="@id/duration_tv"
             android:layout_toStartOf="@id/remain_tv"
             android:max="200"
-            android:maxHeight="2dp"
-            android:minHeight="2dp"
+            android:maxHeight="4dp"
+            android:minHeight="4dp"
             android:progress="0"
             android:progressDrawable="@drawable/layer_progress"
             android:thumb="@drawable/shape_circle" />
-
 
     </RelativeLayout>
 </FrameLayout>

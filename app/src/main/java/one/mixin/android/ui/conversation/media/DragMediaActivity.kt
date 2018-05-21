@@ -408,12 +408,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private fun setPlayViewStatus(status: Int, pos: Int = lastPos) {
-        findViewPagerChildByTag(pos, {
+        findViewPagerChildByTag(pos) {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
                 (parentView.getChildAt(1) as PlayView).status = status
             }
-        })
+        }
     }
 
     private fun setStartPostTransition(sharedView: View) {
@@ -488,7 +488,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun preview(pos: Int) = load(pos, {
+    private fun preview(pos: Int) = load(pos) {
         pagerAdapter.list?.let { list ->
             val seekPos = playPosMap[list[pos].messageId]
             if (seekPos != null && seekPos > 0) {
@@ -496,7 +496,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 mixinPlayer.pause()
             }
         }
-    })
+    }
 
     private fun play(pos: Int) = load(pos, { start() })
 
@@ -526,6 +526,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
             stop()
             lastPos = position
+            preview(position)
             load(position)
         }
     }
