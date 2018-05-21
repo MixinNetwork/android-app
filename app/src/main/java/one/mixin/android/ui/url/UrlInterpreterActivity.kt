@@ -12,8 +12,8 @@ import org.jetbrains.anko.toast
 
 class UrlInterpreterActivity : BaseActivity() {
     companion object {
-        private val CODE = 100
-        private val PAY = 101
+        private const val CODE = 100
+        private const val PAY = 101
         private val sURIMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
             addURI("codes", "*", CODE)
             addURI("pay", null, PAY)
@@ -42,14 +42,7 @@ class UrlInterpreterActivity : BaseActivity() {
 
     private fun interpretIntent(uri: Uri) {
         when (sURIMatcher.match(uri)) {
-            CODE -> {
-                val pathSegments = uri.pathSegments
-                if (pathSegments.size > 0) {
-                    val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
-                    bottomSheet.show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-                }
-            }
-            PAY -> {
+            CODE, PAY -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
