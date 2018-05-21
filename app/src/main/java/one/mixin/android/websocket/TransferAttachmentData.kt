@@ -24,5 +24,5 @@ class TransferAttachmentData(
     @SerializedName("thumbnail")
     var thumbnail: String?,
     @SerializedName("duration")
-    var duration: String? = null
+    var duration: Long? = null
 )

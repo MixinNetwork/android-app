@@ -94,6 +94,7 @@ abstract class MixinDatabase : RoomDatabase() {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
+                database.execSQL("UPDATE messages SET media_mime_type = media_mine_type")
             }
         }
 
@@ -107,6 +108,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     "status INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(message_id, user_id))")
                 database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
+                database.execSQL("UPDATE messages SET media_mime_type = media_mine_type")
             }
         }
 
@@ -118,6 +120,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     "status INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(message_id, user_id))")
                 database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
+                database.execSQL("UPDATE messages SET media_mime_type = media_mine_type")
             }
         }
 
