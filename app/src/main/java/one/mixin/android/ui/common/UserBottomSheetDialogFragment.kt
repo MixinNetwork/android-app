@@ -78,7 +78,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             (dialog as BottomSheet).fakeDismiss()
             menu.show()
         }
-        initMenu()
 
         bottomViewModel.findUserById(user.userId).observe(this, Observer { u ->
             if (u == null) return@Observer
@@ -91,10 +90,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             user = u
             updateUserInfo(u)
+            initMenu()
         })
         contentView.add_fl.setOnClickListener {
             updateRelationship(UserRelationship.FRIEND.name)
-            dialog?.dismiss()
         }
         contentView.send_fl.setOnClickListener {
             // TODO [optimize] have conversation with same user
