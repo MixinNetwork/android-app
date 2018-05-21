@@ -131,13 +131,13 @@ class ForwardFragment : BaseFragment() {
         override fun afterTextChanged(s: Editable?) {
             adapter.conversations = conversations?.filter {
                 if (it.isGroup()) {
-                    it.groupName != null && (it.groupName.contains(s.toString()))
+                    it.groupName != null && (it.groupName.contains(s.toString(), ignoreCase = true))
                 } else {
-                    it.name.contains(s.toString())
+                    it.name.contains(s.toString(), ignoreCase = true)
                 }
             }
             adapter.friends = friends?.filter {
-                it.fullName != null && it.fullName.contains(s.toString())
+                it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true)
             }
             adapter.showHeader = s.isNullOrEmpty()
             adapter.notifyDataSetChanged()
