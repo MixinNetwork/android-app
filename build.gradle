@@ -4,7 +4,7 @@ buildscript {
     ext {
         ext.lifecycleVersion = '1.1.1'
         ext.pagingVersion = '1.0.0'
-        ext.roomVersion = '1.1.0'
+        ext.roomVersion = '1.1.1-rc1'
         ext.constraintLayoutVersion = '1.1.0'
         ext.supportLibVersion = '27.1.1'
         ext.daggerVersion = '2.16'

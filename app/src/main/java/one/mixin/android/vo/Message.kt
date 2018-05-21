@@ -42,8 +42,8 @@ class Message(
     @ColumnInfo(name = "media_url")
     val mediaUrl: String?,
 
-    @SerializedName("media_mine_type")
-    @ColumnInfo(name = "media_mine_type")
+    @SerializedName("media_mime_type")
+    @ColumnInfo(name = "media_mime_type")
     val mediaMimeType: String?,
 
     @SerializedName("media_size")
@@ -113,7 +113,16 @@ class Message(
 
     @SerializedName("shared_user_id")
     @ColumnInfo(name = "shared_user_id")
-    val sharedUserId: String? = null
+    val sharedUserId: String? = null,
+
+    @Deprecated(
+        "Replace with mediaMimeType",
+        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Messages.mediaMimeType"),
+        DeprecationLevel.ERROR
+    )
+    @SerializedName("media_mine_type")
+    @ColumnInfo(name = "media_mine_type")
+    val mediaMineType: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
