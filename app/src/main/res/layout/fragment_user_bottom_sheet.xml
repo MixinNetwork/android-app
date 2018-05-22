@@ -119,6 +119,7 @@
             android:layout_marginEnd="32dp"
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="16dp"
+            android:textIsSelectable="true"
             android:layout_gravity="center"
             android:gravity="center"/>
 
