@@ -12,6 +12,8 @@ import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
@@ -233,10 +235,16 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             UserRelationship.FRIEND.name -> {
                 contentView.add_fl.visibility = GONE
+                contentView.send_fl.updateLayoutParams<LinearLayout.LayoutParams> {
+                    topMargin = resources.getDimensionPixelOffset(R.dimen.activity_vertical_margin)
+                }
                 contentView.unblock_fl.visibility = GONE
             }
             UserRelationship.STRANGER.name -> {
                 contentView.add_fl.visibility = VISIBLE
+                contentView.add_fl.updateLayoutParams<LinearLayout.LayoutParams> {
+                    topMargin = resources.getDimensionPixelOffset(R.dimen.activity_vertical_margin)
+                }
                 contentView.unblock_fl.visibility = GONE
             }
             else -> {

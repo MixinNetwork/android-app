@@ -60,6 +60,7 @@
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:textIsSelectable="true"
             android:layout_height="wrap_content"/>
 
     <LinearLayout
