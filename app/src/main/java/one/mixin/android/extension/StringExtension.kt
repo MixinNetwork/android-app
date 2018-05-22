@@ -3,6 +3,7 @@
 package one.mixin.android.extension
 
 import android.graphics.Bitmap
+import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
@@ -24,6 +25,7 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.text.DecimalFormat
+import java.util.*
 import kotlin.collections.HashMap
 import kotlin.collections.set
 
@@ -186,27 +188,8 @@ fun String.getPattern(count: Int = 8): String {
 }
 
 fun Long.formatMillis(): String {
-    var millis = this
-    var result = ""
-    val hr = millis / 3600000
-    millis %= 3600000
-    val min = millis / 60000
-    millis %= 60000
-    val sec = millis / 1000
-    if (hr > 0) {
-        result += "$hr:"
-    }
-    if (min >= 0) {
-        result += if (min > 9) {
-            "$min:"
-        } else {
-            "0$min:"
-        }
-    }
-    result += if (sec > 9) {
-        sec
-    } else {
-        "0$sec"
-    }
-    return result
+    val formatBuilder = StringBuilder()
+    val formatter = Formatter(formatBuilder, Locale.getDefault())
+    Util.getStringForTime(formatBuilder, formatter, this)
+    return formatBuilder.toString()
 }

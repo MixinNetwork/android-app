@@ -127,15 +127,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         view_pager.currentItem = 0
                         lastPos = 0
                     }
-                    load(index)
+                    play(index)
                 }
             }
         view_pager.addOnPageChangeListener(pageListener)
     }
 
-    override fun onStop() {
-        super.onStop()
-        stop()
+    override fun onPause() {
+        super.onPause()
+        pause()
     }
 
     override fun onDestroy() {
@@ -268,37 +268,54 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         view.controller.fadeIn()
                     }
                     STATUS_PAUSING -> {
-                        view.play_view.fadeOut()
-                        view.controller.fadeOut()
                         start()
+                        view.play_view.fadeIn()
+                        view.controller.fadeIn()
+                    }
+                }
+            }
+            view.setOnClickListener {
+                if (view.controller.isVisible) {
+                    view.controller.fadeOut()
+                    view.play_view.fadeOut()
+                } else {
+                    view.controller.fadeIn()
+                    if (!view.play_view.isVisible) {
+                        view.play_view.fadeIn()
                     }
                 }
             }
             view.video_texture.setOnClickListener {
                 if (view.controller.isVisible) {
-                    view.play_view.fadeOut()
                     view.controller.fadeOut()
+                    view.play_view.fadeOut()
                 } else {
-                    view.play_view.fadeIn()
                     view.controller.fadeIn()
+                    if (!view.play_view.isVisible) {
+                        view.play_view.fadeIn()
+                    }
                 }
             }
             view.tag = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
                 if (mixinPlayer.duration() != 0) {
                     view.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
-                    if (mixinPlayer.isPlaying()) {
-                        view.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200
-                            / mixinPlayer.duration()).toInt()
-                        view.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
-                    }
+                    view.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
+                        mixinPlayer.duration()).toInt()
+                    view.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
                 }
             }
 
+            var isPlaying = false
             view.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                    isPlaying = mixinPlayer.isPlaying()
+                    mixinPlayer.pause()
                 }
 
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    if (isPlaying) {
+                        mixinPlayer.start()
+                    }
                 }
 
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
@@ -524,7 +541,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         override fun onPageSelected(position: Int) {
             if (lastPos == position) return
 
-            stop()
+            pause()
             lastPos = position
             preview(position)
             load(position)

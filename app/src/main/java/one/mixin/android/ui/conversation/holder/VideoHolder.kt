@@ -16,7 +16,7 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadImageUseMark
+import one.mixin.android.extension.loadVideoUseMark
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
@@ -119,7 +119,7 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         val mark = R.drawable.chat_mark_image
 
         notNullElse(messageItem.mediaUrl, {
-            itemView.chat_image.loadImageUseMark(it, R.drawable.image_holder, mark)
+            itemView.chat_image.loadVideoUseMark(it, R.drawable.image_holder, mark)
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
                 if (thumbId != messageItem.thumbImage!!.hashCode()) {
