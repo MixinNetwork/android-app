@@ -13,7 +13,7 @@ buildscript {
         ext.glideVersion = '4.7.1'
         ext.timberVersion = '4.7.0'
         ext.okhttpVersion = '3.10.0'
-        ext.rxJavaVersion = '2.1.13'
+        ext.rxJavaVersion = '2.1.14'
         ext.rxAndroidVersion = '2.0.2'
         ext.retrofitVersion = '2.4.0'
         ext.stethoVersion = '1.5.0'
@@ -39,7 +39,7 @@ buildscript {
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.23.1'
-        ext.exoplayerVersion = '2.8.0'
+        ext.exoplayerVersion = '2.8.1'
 
         ext.junitVersion = '4.12'
         ext.leakcanaryVerison = '1.5.1'
@@ -51,7 +51,7 @@ buildscript {
         ext.fasterxmlVersion= '2.8.11'
         ext.gsonVersion= '2.8.2'
         ext.autodisposeVersion= '0.8.0'
-        ext.bugsnagVersion= '4.3.3'
+        ext.bugsnagVersion= '4.4.0'
         ext.jsoupVersion= '1.11.2'
     }
 

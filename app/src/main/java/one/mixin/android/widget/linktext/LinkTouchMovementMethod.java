@@ -45,7 +45,7 @@ class LinkTouchMovementMethod extends LinkMovementMethod {
 
     private void record(TextView textView) {
         if (textView instanceof AutoLinkTextView) {
-            ((AutoLinkTextView) textView).clickTime = System.currentTimeMillis();
+            ((AutoLinkTextView) textView).setClickTime(System.currentTimeMillis());
         }
     }
 

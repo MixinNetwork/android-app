@@ -53,6 +53,7 @@ import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
+import one.mixin.android.websocket.invalidData
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -183,6 +184,9 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                if (mediaData.invalidData()) {
+                    return
+                }
                 val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createMediaMessage(data.messageId, data.conversationId, data.userId, data.category,
                     mediaData.attachmentId, null,
@@ -196,9 +200,12 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                if (mediaData.invalidData()) {
+                    return
+                }
                 val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createVideoMessage(data.messageId, data.conversationId, data.userId,
-                    data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration?.toLong(),
+                    data.category, mediaData.attachmentId, mediaData.name, null, mediaData.duration,
                     mediaData.width, mediaData.height, mediaData.thumbnail, mimeType,
                     mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
                 messageDao.insert(message)
@@ -390,7 +397,8 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_DATA.name) {
             val decoded = Base64.decode(plainText)
             val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
-            messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mediaData.mineType, mediaData.size,
+            val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
+            messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, MessageStatus.DELIVERED.name)
             if (data.category == MessageCategory.SIGNAL_IMAGE.name) {

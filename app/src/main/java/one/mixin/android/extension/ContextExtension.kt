@@ -339,7 +339,6 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
             val fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
 
             val path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA))
-            val duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.DURATION))
             val m = MediaMetadataRetriever().apply {
                 setDataSource(path)
             }
@@ -348,7 +347,7 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
             val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
             val mediaWith = image.width
             val mediaHeight = image.height
-
+            val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
             val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
 
             val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight

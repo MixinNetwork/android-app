@@ -47,10 +47,7 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         itemView.context.dpToPx(194f)
     }
 
-    private val dp6 by lazy {
-        itemView.context.dpToPx(6f)
-    }
-
+    private val scale = 1.5f
     private var thumbId: Int? = null
 
     fun bind(
@@ -100,19 +97,19 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
             var maxWidth = dp194
             var minWidth = dp94
             when {
-                messageItem.mediaWidth!! > maxWidth -> {
+                messageItem.mediaWidth!! * scale > maxWidth -> {
                     itemView.chat_image.layoutParams.width = maxWidth
                     itemView.chat_image.layoutParams.height =
                         maxWidth * messageItem.mediaHeight!! / messageItem.mediaWidth
                 }
-                messageItem.mediaWidth < minWidth -> {
+                messageItem.mediaWidth * scale < minWidth -> {
                     itemView.chat_image.layoutParams.width = minWidth
                     itemView.chat_image.layoutParams.height =
                         minWidth * messageItem.mediaHeight!! / messageItem.mediaWidth
                 }
                 else -> {
-                    itemView.chat_image.layoutParams.width = messageItem.mediaWidth
-                    itemView.chat_image.layoutParams.height = messageItem.mediaHeight!!
+                    itemView.chat_image.layoutParams.width = (messageItem.mediaWidth * scale).toInt()
+                    itemView.chat_image.layoutParams.height = (messageItem.mediaHeight!! * scale).toInt()
                 }
             }
         }

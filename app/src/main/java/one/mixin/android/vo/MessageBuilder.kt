@@ -1,5 +1,7 @@
 package one.mixin.android.vo
 
+import kotlin.math.abs
+
 class MessageBuilder(
     val id: String,
     val conversationId: String,
@@ -54,12 +56,12 @@ class MessageBuilder(
     }
 
     fun setMediaWidth(mediaWidth: Int?): MessageBuilder {
-        this.mediaWidth = mediaWidth
+        this.mediaWidth = mediaWidth?.let { abs(it) }
         return this
     }
 
     fun setMediaHeight(mediaHeight: Int?): MessageBuilder {
-        this.mediaHeight = mediaHeight
+        this.mediaHeight = mediaHeight?.let { abs(it) }
         return this
     }
 
