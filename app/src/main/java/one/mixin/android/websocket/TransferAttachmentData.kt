@@ -26,3 +26,10 @@ class TransferAttachmentData(
     @SerializedName("duration")
     var duration: Long? = null
 )
+
+fun TransferAttachmentData.invalidData(): Boolean {
+    if (width == null || width == 0 || height == null || height == 0) {
+        return true
+    }
+    return false
+}
