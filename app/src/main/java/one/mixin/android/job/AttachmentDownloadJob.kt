@@ -10,9 +10,9 @@ import okhttp3.Request
 import okio.Okio
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.crypto.Util
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
 import one.mixin.android.event.ProgressEvent
+import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
@@ -29,7 +29,6 @@ import org.whispersystems.libsignal.logging.Log
 import org.whispersystems.libsignal.util.guava.Optional
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 
 class AttachmentDownloadJob(private val message: Message)
@@ -133,7 +132,7 @@ class AttachmentDownloadJob(private val message: Message)
                         FileInputStream(destination)
                     }
                     val imageFile = MixinApplication.get().getImagePath().createImageTemp(prefix = "REC")
-                    Util.copy(attachmentCipherInputStream, FileOutputStream(imageFile))
+                    imageFile.copyFromInputStream(attachmentCipherInputStream)
                     Log.e(TAG, imageFile.absolutePath)
                     messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
                     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
@@ -144,7 +143,7 @@ class AttachmentDownloadJob(private val message: Message)
                         FileInputStream(destination)
                     }
                     val imageFile = MixinApplication.get().getImagePath().createGifTemp()
-                    Util.copy(attachmentCipherInputStream, FileOutputStream(imageFile))
+                    imageFile.copyFromInputStream(attachmentCipherInputStream)
                     Log.e(TAG, imageFile.absolutePath)
                     messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
                     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
@@ -162,7 +161,7 @@ class AttachmentDownloadJob(private val message: Message)
                     } else {
                         ""
                     })
-                Util.copy(attachmentCipherInputStream, FileOutputStream(imageFile))
+                imageFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMediaMessageUrl(imageFile.absolutePath, message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             } else if (message.category.endsWith("_VIDEO")) {
@@ -178,7 +177,7 @@ class AttachmentDownloadJob(private val message: Message)
                     } else {
                         ""
                     })
-                Util.copy(attachmentCipherInputStream, FileOutputStream(imageFile))
+                imageFile.copyFromInputStream(attachmentCipherInputStream)
                 Log.e(TAG, imageFile.absolutePath)
                 messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)

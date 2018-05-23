@@ -19,9 +19,9 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
-import one.mixin.android.crypto.Util
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
+import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
@@ -72,7 +72,6 @@ import one.mixin.android.websocket.TransferStickerData
 import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.UUID
 import javax.inject.Inject
 
@@ -224,7 +223,7 @@ internal constructor(
         if (mimeType == "image/gif") {
             return Flowable.just(uri).map {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp()
-                Util.copy(FileInputStream(uri.getFilePath(MixinApplication.get())), FileOutputStream(gifFile))
+                gifFile.copyFromInputStream(FileInputStream(uri.getFilePath(MixinApplication.get())))
                 val size = getImageSize(gifFile)
                 val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
