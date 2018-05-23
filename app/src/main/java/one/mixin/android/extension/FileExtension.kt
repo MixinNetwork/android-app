@@ -10,6 +10,7 @@ import android.graphics.Matrix
 import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Environment
+import android.provider.MediaStore
 import android.provider.MediaStore.Images.ImageColumns
 import android.support.media.ExifInterface
 import android.support.v4.content.ContextCompat
@@ -18,6 +19,7 @@ import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
 import one.mixin.android.MixinApplication
+import one.mixin.android.crypto.Util
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -225,17 +227,17 @@ fun Uri.getFilePath(context: Context): String? {
     else if (ContentResolver.SCHEME_FILE == scheme) {
         data = this.path
     } else if (ContentResolver.SCHEME_CONTENT == scheme) {
-        val cursor = context.contentResolver.query(this, arrayOf(ImageColumns.DATA), null, null, null)
+        val cursor = context.contentResolver.query(this, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
         if (null != cursor) {
             if (cursor.moveToFirst()) {
                 val index = cursor.getColumnIndex(ImageColumns.DATA)
                 if (index > -1) {
                     data = cursor.getString(index)
-                    // from google photo cloud image
-                    // content://com.google.android.apps.photos.contentprovider/0/1/content%3A%2F%2Fmedia%2Fexternal%2Fimages%2Fmedia%2F75209/ACTUAL
                     if (data == null) {
                         return getImageUrlWithAuthority(context)
                     }
+                } else if (index == -1) {
+                    return getImageUrlWithAuthority(context)
                 }
             }
             cursor.close()
@@ -249,10 +251,10 @@ fun Uri.getImageUrlWithAuthority(context: Context): String? {
         var input: InputStream? = null
         try {
             input = context.contentResolver.openInputStream(this)
-            val bitmap = BitmapFactory.decodeStream(input)
-            val outFile = context.getImageCachePath().createImageTemp()
+            val mimeType = getMimeType(this)
+            val outFile = if (mimeType == "image/gif") context.getImageCachePath().createGifTemp() else context.getImageCachePath().createImageTemp()
             val out = FileOutputStream(outFile)
-            out.write(bitmap.toBytes())
+            Util.copy(input, out)
             return outFile.absolutePath
         } catch (ignored: Exception) {
         } finally {
