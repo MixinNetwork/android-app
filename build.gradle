@@ -13,7 +13,7 @@ buildscript {
         ext.glideVersion = '4.7.1'
         ext.timberVersion = '4.7.0'
         ext.okhttpVersion = '3.10.0'
-        ext.rxJavaVersion = '2.1.13'
+        ext.rxJavaVersion = '2.1.14'
         ext.rxAndroidVersion = '2.0.2'
         ext.retrofitVersion = '2.4.0'
         ext.stethoVersion = '1.5.0'
