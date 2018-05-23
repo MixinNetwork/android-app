@@ -19,7 +19,6 @@ import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
 import one.mixin.android.MixinApplication
-import one.mixin.android.crypto.Util
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -251,10 +250,10 @@ fun Uri.getImageUrlWithAuthority(context: Context): String? {
         var input: InputStream? = null
         try {
             input = context.contentResolver.openInputStream(this)
-            val mimeType = getMimeType(this)
-            val outFile = if (mimeType == "image/gif") context.getImageCachePath().createGifTemp() else context.getImageCachePath().createImageTemp()
-            val out = FileOutputStream(outFile)
-            Util.copy(input, out)
+            val mimeTypeMap = MimeTypeMap.getSingleton()
+            val type = mimeTypeMap.getExtensionFromMimeType(context.contentResolver.getType(this))
+            val outFile = context.getImageCachePath().createImageTemp(type = ".$type")
+            outFile.copyFromInputStream(input)
             return outFile.absolutePath
         } catch (ignored: Exception) {
         } finally {
@@ -262,6 +261,14 @@ fun Uri.getImageUrlWithAuthority(context: Context): String? {
         }
     }
     return null
+}
+
+fun File.copyFromInputStream(inputStream: InputStream) {
+    inputStream.use { input ->
+        this.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
 }
 
 fun File.copy(destFile: File) {
