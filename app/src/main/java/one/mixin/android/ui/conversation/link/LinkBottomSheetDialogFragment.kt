@@ -21,6 +21,9 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposable
+import io.reactivex.Flowable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
@@ -29,6 +32,8 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
@@ -103,7 +108,37 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.link_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        if (url.startsWith("https://mixin.one/pay", true) || url.startsWith("mixin://pay", true)) {
+        if (url.startsWith("mixin://users", true)) {
+            val segments = Uri.parse(url).pathSegments
+            val userId = segments[0]
+            if (!userId.isUUID()) {
+                toast(R.string.error_user_invalid_format)
+                dismiss()
+            } else {
+                Flowable.just(userId).subscribeOn(Schedulers.io()).map {
+                    var user = linkViewModel.getUserById(it)
+                    if (user == null) {
+                        val response = linkViewModel.getUser(it).execute()
+                        if (response.isSuccessful) {
+                            user = response.body()!!.data!!
+                        }
+                    }
+                    user
+                }.observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider).subscribe({
+                    notNullElse(it, {
+                        dialog?.dismiss()
+                        UserBottomSheetDialogFragment.newInstance(it)
+                            .show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                    }, {
+                        toast(R.string.error_user_not_found)
+                        dialog?.dismiss()
+                    })
+                }, {
+                    toast(R.string.error_user_not_found)
+                    dialog?.dismiss()
+                })
+            }
+        } else if (url.startsWith("https://mixin.one/pay", true) || url.startsWith("mixin://pay", true)) {
             val uri = Uri.parse(url)
             val userId = uri.getQueryParameter("recipient")
             val assetId = uri.getQueryParameter("asset")

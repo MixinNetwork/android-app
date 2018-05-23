@@ -88,6 +88,7 @@
     <string name="error_phone_sms_delivery">Failed to deliver SMS</string>
     <string name="error_bad_data">The request data has invalid field</string>
     <string name="error_permission">Please open the necessary permissions</string>
+    <string name="error_user_invalid_format">Invalid user id</string>
     <!--home-->
     <string name="title_home">Contacts</string>
     <string name="title_dashboard">Chats</string>

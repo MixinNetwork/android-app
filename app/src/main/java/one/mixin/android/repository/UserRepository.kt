@@ -32,6 +32,8 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun getFriend(id: String): User? = userDao.findFriend(id)
 
+    fun getUser(id: String) = userService.getUserById(id)
+
     fun findUserByConversationId(conversationId: String): LiveData<User> =
         userDao.findUserByConversationId(conversationId)
 
