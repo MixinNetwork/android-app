@@ -48,6 +48,7 @@ import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.loadGif
@@ -214,7 +215,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val url = pagerAdapter.list?.get(view_pager.currentItem)?.mediaUrl
             var uri = Uri.parse(url)
             if (ContentResolver.SCHEME_FILE == uri.scheme) {
-                uri = getUriForFile(File(url))
+                uri = getUriForFile(File(uri.getFilePath(this@DragMediaActivity)))
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             } else {
