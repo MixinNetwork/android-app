@@ -233,4 +233,3 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
     }
 }
 
-

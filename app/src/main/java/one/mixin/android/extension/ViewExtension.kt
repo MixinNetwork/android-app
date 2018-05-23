@@ -7,7 +7,6 @@ import android.content.Context
 import android.graphics.Outline
 import android.support.annotation.LayoutRes
 import android.support.v4.view.ViewCompat
-import android.support.v4.view.ViewPropertyAnimatorCompat
 import android.support.v4.view.ViewPropertyAnimatorListener
 import android.view.LayoutInflater
 import android.view.View

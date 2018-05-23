@@ -544,7 +544,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                             parentView.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
                                 mixinPlayer.duration()).toInt()
                             parentView.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
-                            if (parentView.remain_tv.text.isEmpty()) {  // from google photo
+                            if (parentView.remain_tv.text.isEmpty()) { // from google photo
                                 parentView.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
                             }
                         }

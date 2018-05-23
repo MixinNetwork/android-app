@@ -33,7 +33,7 @@ class PreviewDialogFragment : DialogFragment() {
         dialog.window.setBackgroundDrawable(ColorDrawable(0x00000000))
         dialog.window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         dialog.window.setWindowAnimations(R.style.BottomSheet_Animation)
-        mediaDialogView!!.dialog_send_ib.setOnClickListener { action!!(uri!!);dismiss() }
+        mediaDialogView!!.dialog_send_ib.setOnClickListener { action!!(uri!!); dismiss() }
         Glide.with(context!!).load(uri).apply(RequestOptions().fitCenter()).into(mediaDialogView!!.dialog_iv)
     }
 
