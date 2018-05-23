@@ -12,11 +12,11 @@ class FixMultiViewPager : ViewPager {
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
-        try {
-            return super.onInterceptTouchEvent(ev)
+        return try {
+            super.onInterceptTouchEvent(ev)
         } catch (ex: IllegalArgumentException) {
             ex.printStackTrace()
+            false
         }
-        return false
     }
 }

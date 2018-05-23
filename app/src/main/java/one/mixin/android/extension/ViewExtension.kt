@@ -7,6 +7,7 @@ import android.content.Context
 import android.graphics.Outline
 import android.support.annotation.LayoutRes
 import android.support.v4.view.ViewCompat
+import android.support.v4.view.ViewPropertyAnimatorCompat
 import android.support.v4.view.ViewPropertyAnimatorListener
 import android.view.LayoutInflater
 import android.view.View
@@ -39,16 +40,24 @@ fun View.fadeIn() {
 fun View.fadeIn(duration: Long) {
     this.visibility = View.VISIBLE
     this.alpha = 0f
-    ViewCompat.animate(this).alpha(1f).setDuration(duration).setListener(null).start()
+    ViewCompat.animate(this).alpha(1f).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
+        override fun onAnimationStart(view: View) {
+        }
+
+        override fun onAnimationEnd(view: View) {
+        }
+
+        override fun onAnimationCancel(view: View) {}
+    }).start()
 }
 
 fun View.fadeOut() {
     this.fadeOut(ANIMATION_DURATION_SHORTEST)
 }
 
-fun View.fadeOut(duration: Long) {
+fun View.fadeOut(duration: Long, delay: Long = 0) {
     this.alpha = 1f
-    ViewCompat.animate(this).alpha(0f).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
+    ViewCompat.animate(this).alpha(0f).setStartDelay(delay).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
         override fun onAnimationStart(view: View) {
             view.isDrawingCacheEnabled = true
         }

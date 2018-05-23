@@ -6,7 +6,6 @@ import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
-import one.mixin.android.ui.forward.ForwardFragment
 
 class InviteActivity : BlazeBaseActivity() {
 
@@ -24,6 +23,6 @@ class InviteActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        replaceFragment(InviteFragment.newInstance(intent.extras), R.id.container, ForwardFragment.TAG)
+        replaceFragment(InviteFragment.newInstance(intent.extras), R.id.container, InviteFragment.TAG)
     }
 }

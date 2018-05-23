@@ -30,6 +30,7 @@ data class MessageItem(
     val mediaHeight: Int?,
     val thumbImage: String?,
     val mediaUrl: String?,
+    val mediaDuration: String?,
     val participantFullName: String?,
     val participantUserId: String?,
     val actionName: String?,
@@ -60,6 +61,6 @@ data class MessageItem(
 fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
     type, null, createdAt
     ?: nowInUtc(), MessageStatus.READ.name, null,
-    null, null, null, null, null, null,
+    null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null, null)

@@ -59,6 +59,13 @@ fun ImageView.loadImageUseMark(uri: String?, @DrawableRes holder: Int, @Drawable
     }
 }
 
+fun ImageView.loadVideoUseMark(uri: String, @DrawableRes holder: Int, @DrawableRes mark: Int) {
+    Glide.with(this).load(uri).apply(RequestOptions().frame(0).centerCrop().transform(MaskTransformation(mark))
+        .signature(StringSignature("$uri$mark"))
+        .placeholder(holder).dontAnimate()
+    ).into(this)
+}
+
 fun ImageView.loadImage(uri: ByteArray?, width: Int, height: Int, @DrawableRes mark: Int? = null) {
     val multi = MultiTransformation(CropTransformation(width, height))
     if (mark == null) {
