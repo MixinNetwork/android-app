@@ -146,6 +146,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun getUserById(id: String) = userRepository.getUserById(id)
 
+    fun getUser(id: String) = userRepository.getUser(id)
+
     fun startGenerateAvatar(conversationId: String) {
         jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
     }

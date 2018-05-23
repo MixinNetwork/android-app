@@ -54,6 +54,10 @@
                 <data
                     android:host="pay"
                     android:scheme="mixin"/>
+
+                <data
+                    android:host="users"
+                    android:scheme="mixin"/>
             </intent-filter>
         </activity>
         <activity

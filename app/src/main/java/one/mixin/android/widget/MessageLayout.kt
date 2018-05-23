@@ -24,6 +24,8 @@ class MessageLayout : ViewGroup {
         offset = context.dpToPx(8f)
     }
 
+    var w: Int = 0
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val childCount = childCount
         if (childCount < 2) {
@@ -34,8 +36,9 @@ class MessageLayout : ViewGroup {
         }
         val paddingWidth = paddingStart + paddingEnd
         val paddingHeight = paddingTop + paddingBottom
-
-        val w = View.MeasureSpec.getSize(widthMeasureSpec)
+        if (w == 0) {
+            w = View.MeasureSpec.getSize(widthMeasureSpec)
+        }
 
         measureChildren(widthMeasureSpec, heightMeasureSpec)
         val firstView = getChildAt(0) as TextView
