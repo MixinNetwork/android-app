@@ -16,7 +16,6 @@ import android.provider.MediaStore
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPager
-import android.util.Log
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
@@ -293,6 +292,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.preview_iv.visibility = VISIBLE
             view.preview_iv.loadVideoUseMark(messageItem.mediaUrl ?: "", R.drawable.image_holder, R.drawable.chat_mark_image)
 
+            view.seek_bar.progress = 0
+            view.duration_tv.text = 0L.formatMillis()
+            view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
+
             if (position == index) {
                 ViewCompat.setTransitionName(view.video_texture, "transition")
                 setStartPostTransition(view.video_texture)
@@ -313,7 +316,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     }
                     STATUS_PAUSING -> {
                         start()
-                        fadeOut(view)
                     }
                 }
             }
@@ -454,6 +456,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private fun fadeOut(view: View, withoutPlay: Boolean = false) {
         if (!withoutPlay) {
             view.play_view.fadeOut()
+        } else {
+            view.play_view.fadeIn()
         }
         view.controller.fadeOut()
         view.close_iv.fadeOut()
@@ -497,22 +501,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun listenDuration() {
-        findViewPagerChildByTag {
-            val parentView = it.getChildAt(0)
-            if (parentView is FrameLayout) {
-                disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
-                    if (mixinPlayer.duration() != 0) {
-                        parentView.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
-                            mixinPlayer.duration()).toInt()
-                        parentView.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
-                    }
-                }
-                parentView.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
-            }
-        }
-    }
-
     private fun setStartPostTransition(sharedView: View) {
         sharedView.doOnPreDraw { startPostponedEnterTransition() }
     }
@@ -543,8 +531,27 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private fun start() {
-        setPlayViewStatus(STATUS_PLAYING)
-        listenDuration()
+        view_pager.post {
+            setPreviewIv(false, view_pager.currentItem)
+            findViewPagerChildByTag {
+                val parentView = it.getChildAt(0)
+                if (parentView is FrameLayout) {
+                    fadeOut(parentView)
+                    (parentView.getChildAt(2) as PlayView).status = STATUS_PLAYING
+                    disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
+                        if (mixinPlayer.duration() != 0) {
+                            parentView.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
+                                mixinPlayer.duration()).toInt()
+                            parentView.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
+                            if (parentView.remain_tv.text.isEmpty()) {  // from google photo
+                                parentView.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         mixinPlayer.start()
     }
 
@@ -577,13 +584,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
         override fun onRenderedFirstFrame() {
-            setPreviewIv(false, view_pager.currentItem)
-            findViewPagerChildByTag {
-                val parentView = it.getChildAt(0)
-                if (parentView is FrameLayout) {
-                    fadeOut(parentView)
-                }
-            }
         }
 
         override fun onLoadingChanged(isLoading: Boolean) {
@@ -593,7 +593,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-            Log.d("@@@", "onPlayerStateChanged  status:$playbackState")
         }
     }
 

@@ -56,7 +56,8 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT m.id as messageId, m.conversation_id as conversationId, u.user_id as userId, " +
         "u.full_name as userFullName, u.identity_number as userIdentityNumber, m.category as type, " +
         "m.content as content, m.created_at as createdAt, m.status as status, m.media_status as mediaStatus," +
-        "m.media_width as mediaWidth, m.media_height as mediaHeight, m.thumb_image as thumbImage, m.media_url as mediaUrl " +
+        "m.media_width as mediaWidth, m.media_height as mediaHeight, m.thumb_image as thumbImage, m.media_url as mediaUrl, " +
+        "m.media_mime_type as mediaMimeType, m.media_duration as mediaDuration " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
         "and (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category " +
         "= 'PLAIN_VIDEO') AND m.media_status = 'DONE' " +
