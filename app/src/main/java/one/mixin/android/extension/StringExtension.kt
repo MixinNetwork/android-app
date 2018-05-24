@@ -129,6 +129,18 @@ fun String.formatPublicKey(): String {
     return substring(0, 6) + "..." + substring(length - 4, length)
 }
 
+fun String.numberFormat(): String {
+    if (this.isEmpty()) return this
+
+    return try {
+        DecimalFormat(getPattern(64)).format(BigDecimal(this))
+    } catch (e: NumberFormatException) {
+        this
+    } catch (e: IllegalArgumentException) {
+        this
+    }
+}
+
 fun String.numberFormat8(): String {
     if (this.isEmpty()) return this
 
@@ -145,11 +157,21 @@ fun String.numberFormat2(): String {
     if (this.isEmpty()) return this
 
     return try {
-        DecimalFormat(",###.##").format(BigDecimal(this))
+        DecimalFormat(this.getPattern(2)).format(BigDecimal(this))
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
         this
+    }
+}
+
+fun BigDecimal.numberFormat(): String {
+    return try {
+        DecimalFormat(this.toPlainString().getPattern(64)).format(this)
+    } catch (e: NumberFormatException) {
+        this.toPlainString()
+    } catch (e: IllegalArgumentException) {
+        this.toPlainString()
     }
 }
 
@@ -165,7 +187,7 @@ fun BigDecimal.numberFormat8(): String {
 
 fun BigDecimal.numberFormat2(): String {
     return try {
-        DecimalFormat(",###.##").format(this)
+        DecimalFormat(this.toPlainString().getPattern(2)).format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {
@@ -180,8 +202,10 @@ fun String.getPattern(count: Int = 8): String {
     if (index == -1) return ",###"
     if (index >= count) return ",###"
 
+    val bit = if (index == 1 && this[0] == '0') count + 1 else count
+
     val sb = StringBuilder(",###.")
-    for (i in 0 until (count - index)) {
+    for (i in 0 until (bit - index)) {
         sb.append('#')
     }
     return sb.toString()

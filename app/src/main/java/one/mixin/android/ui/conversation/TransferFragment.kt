@@ -25,7 +25,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullElse
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.job.MixinJobManager
@@ -126,7 +126,7 @@ class TransferFragment : BaseFragment() {
                     override fun onTypeClick(asset: AssetItem) {
                         currentAsset = asset
                         asset_name.text = asset.name
-                        asset_desc.text = asset.balance.numberFormat8()
+                        asset_desc.text = asset.balance.numberFormat()
                         asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                         asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
                         adapter.notifyDataSetChanged()
@@ -172,14 +172,14 @@ class TransferFragment : BaseFragment() {
                     asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
                     asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
                     asset_name.text = a.name
-                    asset_desc.text = a.balance.numberFormat8()
+                    asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
                 }, {
                     val a = assets[0]
                     asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
                     asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
                     asset_name.text = a.name
-                    asset_desc.text = a.balance.numberFormat8()
+                    asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
                 })
             } else {
@@ -195,7 +195,7 @@ class TransferFragment : BaseFragment() {
                             asset_avatar.bg.loadImage(it.iconUrl, R.drawable.ic_avatar_place_holder)
                             asset_avatar.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder)
                             asset_name.text = it.name
-                            asset_desc.text = it.balance.numberFormat8()
+                            asset_desc.text = it.balance.numberFormat()
                         }, {
                             asset_avatar.bg.setImageResource(R.drawable.ic_avatar_place_holder)
                             asset_name.text = getString(R.string.app_name)
