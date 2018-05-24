@@ -5,11 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import org.jetbrains.anko.toast
 
 class ForwardActivity : BlazeBaseActivity() {
     companion object {
@@ -38,14 +38,18 @@ class ForwardActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        BlazeMessageService.startService(this.applicationContext)
-        val forwardMessageList = ShareHelper.get().generateForwardMessageList(intent)
-        if (forwardMessageList != null && forwardMessageList.isNotEmpty()) {
-            replaceFragment(ForwardFragment.newInstance(forwardMessageList, true), R.id.container, ForwardFragment.TAG)
-        } else {
-            val f = ForwardFragment.newInstance(intent.getParcelableArrayListExtra(ARGS_MESSAGES),
-                intent.getBooleanExtra(ARGS_SHARE, false))
+        val list = intent.getParcelableArrayListExtra<ForwardMessage>(ARGS_MESSAGES)
+        if (list != null && list.isNotEmpty()) {
+            val f = ForwardFragment.newInstance(list, intent.getBooleanExtra(ARGS_SHARE, false))
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
+        } else {
+            val forwardMessageList = ShareHelper.get().generateForwardMessageList(intent)
+            if (forwardMessageList != null && forwardMessageList.isNotEmpty()) {
+                replaceFragment(ForwardFragment.newInstance(forwardMessageList, true), R.id.container, ForwardFragment.TAG)
+            } else {
+                toast(R.string.error_share)
+                finish()
+            }
         }
     }
 }
