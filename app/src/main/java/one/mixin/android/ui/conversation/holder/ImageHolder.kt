@@ -104,42 +104,48 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
         } else {
             itemView.chat_name.visibility = View.GONE
         }
-        if (messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-            var maxWith = dp194
-            var minWitdh = dp94
-            when {
-                isLast && !isGif -> {
-                    maxWith = dp200
-                    minWitdh = dp100
-                    (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
-                    (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
-                }
-                isMe -> {
-                    (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
-                    (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
-                }
-                else -> {
-                    (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
-                    (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
-                }
+
+        var maxWidth = dp194
+        var minWidth = dp94
+        when {
+            isLast && !isGif -> {
+                maxWidth = dp200
+                minWidth = dp100
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
             }
+            isMe -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            else -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
+            }
+        }
+        if (messageItem.mediaWidth == null || messageItem.mediaHeight == null ||
+            messageItem.mediaWidth <= 0 || messageItem.mediaHeight <= 0) {
+            itemView.chat_image.layoutParams.width = minWidth
+            itemView.chat_image.layoutParams.height = minWidth
+        } else {
             when {
-                messageItem.mediaWidth!! > maxWith -> {
-                    itemView.chat_image.layoutParams.width = maxWith
+                messageItem.mediaWidth > maxWidth -> {
+                    itemView.chat_image.layoutParams.width = maxWidth
                     itemView.chat_image.layoutParams.height =
-                        maxWith * messageItem.mediaHeight!! / messageItem.mediaWidth
+                        maxWidth * messageItem.mediaHeight / messageItem.mediaWidth
                 }
-                messageItem.mediaWidth < minWitdh -> {
-                    itemView.chat_image.layoutParams.width = minWitdh
+                messageItem.mediaWidth < minWidth -> {
+                    itemView.chat_image.layoutParams.width = minWidth
                     itemView.chat_image.layoutParams.height =
-                        minWitdh * messageItem.mediaHeight!! / messageItem.mediaWidth
+                        minWidth * messageItem.mediaHeight / messageItem.mediaWidth
                 }
                 else -> {
                     itemView.chat_image.layoutParams.width = messageItem.mediaWidth
-                    itemView.chat_image.layoutParams.height = messageItem.mediaHeight!!
+                    itemView.chat_image.layoutParams.height = messageItem.mediaHeight
                 }
             }
         }
+
         val mark = when {
             isMe && isLast -> R.drawable.chat_mark_image_me
             isMe -> R.drawable.chat_mark_image
@@ -149,13 +155,13 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
         notNullElse(messageItem.mediaUrl, {
             if (isGif) {
                 itemView.chat_image.loadGif(it)
-            } else if (thumbId != messageItem.mediaUrl!!.hashCode() + mark) {
+            } else if (thumbId != it.hashCode() + mark) {
                 itemView.chat_image.loadImageUseMark(it, R.drawable.image_holder, mark)
-                thumbId = messageItem.mediaUrl.hashCode() + mark
+                thumbId = it.hashCode() + mark
             }
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (thumbId != messageItem.thumbImage!!.hashCode() + mark) {
+                if (messageItem.thumbImage != null && thumbId != messageItem.thumbImage.hashCode() + mark) {
                     itemView.chat_image.loadImage(messageItem.thumbImage.decodeBase64(),
                         itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
                     thumbId = messageItem.thumbImage.hashCode() + mark

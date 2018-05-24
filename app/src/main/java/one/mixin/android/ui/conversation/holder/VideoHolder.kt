@@ -93,23 +93,27 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         } else {
             itemView.chat_name.visibility = View.GONE
         }
-        if (messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-            var maxWidth = dp194
-            var minWidth = dp94
+        var maxWidth = dp194
+        var minWidth = dp94
+        if (messageItem.mediaWidth == null || messageItem.mediaHeight == null ||
+            messageItem.mediaWidth <= 0 || messageItem.mediaHeight <= 0) {
+            itemView.chat_image.layoutParams.width = minWidth
+            itemView.chat_image.layoutParams.height = minWidth
+        } else {
             when {
-                messageItem.mediaWidth!! * scale > maxWidth -> {
+                messageItem.mediaWidth * scale > maxWidth -> {
                     itemView.chat_image.layoutParams.width = maxWidth
                     itemView.chat_image.layoutParams.height =
-                        maxWidth * messageItem.mediaHeight!! / messageItem.mediaWidth
+                        maxWidth * messageItem.mediaHeight / messageItem.mediaWidth
                 }
                 messageItem.mediaWidth * scale < minWidth -> {
                     itemView.chat_image.layoutParams.width = minWidth
                     itemView.chat_image.layoutParams.height =
-                        minWidth * messageItem.mediaHeight!! / messageItem.mediaWidth
+                        minWidth * messageItem.mediaHeight / messageItem.mediaWidth
                 }
                 else -> {
                     itemView.chat_image.layoutParams.width = (messageItem.mediaWidth * scale).toInt()
-                    itemView.chat_image.layoutParams.height = (messageItem.mediaHeight!! * scale).toInt()
+                    itemView.chat_image.layoutParams.height = (messageItem.mediaHeight * scale).toInt()
                 }
             }
         }
@@ -119,7 +123,7 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
             itemView.chat_image.loadVideoUseMark(it, R.drawable.image_holder, mark)
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (thumbId != messageItem.thumbImage!!.hashCode()) {
+                if (messageItem.thumbImage != null && thumbId != messageItem.thumbImage.hashCode()) {
                     itemView.chat_image.loadImage(messageItem.thumbImage.decodeBase64(),
                         itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
                     thumbId = messageItem.thumbImage.hashCode()
