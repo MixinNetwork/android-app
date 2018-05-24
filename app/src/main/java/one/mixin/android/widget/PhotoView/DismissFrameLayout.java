@@ -44,6 +44,11 @@ public class DismissFrameLayout extends FrameLayout {
         swipeGestureDetector = new SwipeGestureDetector(getContext(),
                 new SwipeGestureDetector.OnSwipeGestureListener() {
                     @Override
+                    public void onStart() {
+                        dismissListener.onStartDrag();
+                    }
+
+                    @Override
                     public void onSwipeTopBottom(float deltaX, float deltaY) {
                         dragChildView(deltaX, deltaY);
                     }
@@ -140,6 +145,8 @@ public class DismissFrameLayout extends FrameLayout {
     }
 
     public interface OnDismissListener {
+        void onStartDrag();
+
         void onScaleProgress(float scale);
 
         void onDismiss();

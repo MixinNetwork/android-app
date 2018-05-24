@@ -97,6 +97,7 @@ class SwipeGestureDetector {
                         isBeingDragged = true;
                         //direction vertical
                         direction = DIRECTION_TOP_BOTTOM;
+                        listener.onStart();
                     }
                 }
                 break;
@@ -118,6 +119,8 @@ class SwipeGestureDetector {
     }
 
     public interface OnSwipeGestureListener {
+        void onStart();
+
         void onSwipeTopBottom(float deltaX, float deltaY);
 
         void onSwipeLeftRight(float deltaX, float deltaY);

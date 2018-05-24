@@ -24,15 +24,12 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.SeekBar
 import androidx.core.view.doOnPreDraw
-import androidx.core.view.isVisible
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Observable
@@ -41,13 +38,13 @@ import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
+import kotlinx.android.synthetic.main.layout_media_controller.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
-import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getUriForFile
@@ -58,7 +55,6 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.save
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
@@ -68,24 +64,18 @@ import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.MediaControllerView
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
-import one.mixin.android.widget.PlayView
-import one.mixin.android.widget.PlayView.Companion.STATUS_BUFFERING
-import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
-import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
-import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSING
-import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import java.io.File
 import java.io.FileNotFoundException
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener, MediaControllerView.MediaControllerCallback {
 
-class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private lateinit var colorDrawable: ColorDrawable
     private val conversationId by lazy {
         intent.getStringExtra(CONVERSATION_ID)
@@ -97,7 +87,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private var index: Int = 0
     private var lastPos: Int = -1
     private lateinit var pagerAdapter: MediaAdapter
-    private var disposable: Disposable? = null
 
     private val mixinPlayer: MixinPlayer by lazy {
         MixinPlayer().apply {
@@ -113,6 +102,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_drag_media)
+        controller_layout.callback = this
+        controller_layout.close_iv.setOnClickListener {
+            controller_layout.play_view.visibility = INVISIBLE
+            finishAfterTransition()
+        }
+        controller_layout.share_iv.setOnClickListener { shareVideo() }
         colorDrawable = ColorDrawable(Color.BLACK)
         view_pager.backgroundDrawable = colorDrawable
         Observable.just(conversationId).observeOn(Schedulers.io())
@@ -135,7 +130,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         view_pager.currentItem = 0
                         lastPos = 0
                     }
-                    play(index)
+                    load(index, { controller_layout.start() })
                 }
             }
         view_pager.addOnPageChangeListener(pageListener)
@@ -143,7 +138,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     override fun onPause() {
         super.onPause()
-        pause()
+        controller_layout.stop()
     }
 
     override fun onDestroy() {
@@ -256,13 +251,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         private fun createVideoView(container: ViewGroup, position: Int, messageItem: MessageItem): View {
             val view = View.inflate(container.context, R.layout.item_video_layout, null)
-            view.close_iv.setOnClickListener { finish() }
-            view.share_iv.setOnClickListener { shareVideo() }
-            view.close_iv.post {
-                val statusBarHeight = statusBarHeight().toFloat()
-                view.close_iv.translationY = statusBarHeight
-                view.share_iv.translationY = statusBarHeight
-            }
             view.video_texture.surfaceTextureListener = this
             val textureParams = view.video_texture.layoutParams
             val previewParams = view.video_texture.layoutParams
@@ -290,70 +278,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             view.video_texture.layoutParams = textureParams
             view.preview_iv.layoutParams = previewParams
-            view.preview_iv.visibility = VISIBLE
-            view.preview_iv.loadVideoUseMark(messageItem.mediaUrl ?: "", R.drawable.image_holder, R.drawable.chat_mark_image)
-
-            view.seek_bar.progress = 0
-            view.duration_tv.text = 0L.formatMillis()
-            view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
+            view.preview_iv.loadVideoUseMark(messageItem.mediaUrl
+                ?: "", R.drawable.image_holder, R.drawable.chat_mark_image)
 
             if (position == index) {
                 ViewCompat.setTransitionName(view.video_texture, "transition")
                 setStartPostTransition(view.video_texture)
             }
-
-            if (position != view_pager.currentItem) {
-                view.play_view.visibility = VISIBLE
-            }
-
-            view.play_view.setOnClickListener {
-                when (view.play_view.status) {
-                    STATUS_IDLE -> {
-                        setPreviewIv(false, view_pager.currentItem)
-                        play(view_pager.currentItem)
-                    }
-                    STATUS_LOADING, STATUS_PLAYING, STATUS_BUFFERING -> {
-                        pause()
-                    }
-                    STATUS_PAUSING -> {
-                        start()
-                    }
-                }
-            }
-            view.setOnClickListener {
-                if (view.controller.isVisible) {
-                    fadeOut(view)
-                } else {
-                    fadeIn(view)
-                }
-            }
-            view.video_texture.setOnClickListener {
-                if (view.controller.isVisible) {
-                    fadeOut(view)
-                } else {
-                    fadeIn(view)
-                }
-            }
-
-            var isPlaying = false
-            view.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                    isPlaying = mixinPlayer.isPlaying()
-                    mixinPlayer.pause()
-                }
-
-                override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                    if (isPlaying) {
-                        mixinPlayer.start()
-                    }
-                }
-
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                    if (fromUser) {
-                        mixinPlayer.seekTo(progress * mixinPlayer.duration() / 200)
-                    }
-                }
-            })
 
             return view
         }
@@ -445,26 +376,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun fadeIn(view: View, withoutPlay: Boolean = false) {
-        if (!withoutPlay) {
-            view.play_view.fadeIn()
-        }
-        view.controller.fadeIn()
-        view.close_iv.fadeIn()
-        view.share_iv.fadeIn()
-    }
-
-    private fun fadeOut(view: View, withoutPlay: Boolean = false) {
-        if (!withoutPlay) {
-            view.play_view.fadeOut()
-        } else {
-            view.play_view.fadeIn()
-        }
-        view.controller.fadeOut()
-        view.close_iv.fadeOut()
-        view.share_iv.fadeOut()
-    }
-
     private fun setTextureView() {
         findViewPagerChildByTag {
             val parentView = it.getChildAt(0)
@@ -474,20 +385,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun setPlayViewStatus(status: Int, pos: Int = lastPos) {
-        findViewPagerChildByTag(pos) {
-            val parentView = it.getChildAt(0)
-            if (parentView is FrameLayout) {
-                (parentView.getChildAt(2) as PlayView).status = status
-            }
-        }
-    }
-
     private fun setPreviewIv(visible: Boolean, pos: Int = lastPos) {
         findViewPagerChildByTag(pos) {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
-                parentView.preview_iv.visibility = if (visible) VISIBLE else INVISIBLE
+                if (visible) {
+                    parentView.preview_iv.fadeIn()
+                } else {
+                    parentView.preview_iv.fadeOut()
+                }
             }
         }
     }
@@ -496,7 +402,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         findViewPagerChildByTag(lastPos) {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
-                fadeOut(parentView, true)
                 parentView.preview_iv.visibility = VISIBLE
             }
         }
@@ -504,6 +409,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun setStartPostTransition(sharedView: View) {
         sharedView.doOnPreDraw { startPostponedEnterTransition() }
+    }
+
+    override fun onStartDrag() {
+        controller_layout.hide()
     }
 
     override fun onScaleProgress(scale: Float) {
@@ -531,42 +440,43 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun start() {
-        view_pager.post {
-            setPreviewIv(false, view_pager.currentItem)
-            findViewPagerChildByTag {
-                val parentView = it.getChildAt(0)
-                if (parentView is FrameLayout) {
-                    fadeOut(parentView)
-                    (parentView.getChildAt(2) as PlayView).status = STATUS_PLAYING
-                    disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
-                        if (mixinPlayer.duration() != 0) {
-                            parentView.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
-                                mixinPlayer.duration()).toInt()
-                            parentView.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
-                            if (parentView.remain_tv.text.isEmpty()) { // from google photo
-                                parentView.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
-                            }
-                        }
-                    }
-                }
-            }
+    override fun start(reload: Boolean) {
+        view_pager.post { setPreviewIv(false, view_pager.currentItem) }
+        if (reload) {
+            load(view_pager.currentItem, {
+                mixinPlayer.start()
+            })
+        } else {
+            mixinPlayer.start()
         }
-
-        mixinPlayer.start()
     }
 
-    private fun pause() {
-        setPlayViewStatus(STATUS_PAUSING)
-        disposable?.dispose()
+    override fun pause() {
         mixinPlayer.pause()
     }
 
-    private fun stop() {
-        setPlayViewStatus(STATUS_IDLE)
+    override fun stop() {
         handleLast()
-        disposable?.dispose()
+        mixinPlayer.pause()
         mixinPlayer.stop()
+    }
+
+    override fun seekTo(pos: Long) {
+        mixinPlayer.seekTo(pos)
+    }
+
+    override fun isPlaying() = mixinPlayer.isPlaying()
+
+    override fun getCurrentPosition() = mixinPlayer.currentPosition().toInt()
+
+    override fun getDuration() = mixinPlayer.duration()
+
+    override fun isVideo(): Boolean {
+        val m = pagerAdapter.list?.get(view_pager.currentItem)
+        m?.let {
+            return m.type == MessageCategory.SIGNAL_VIDEO.name || m.type == MessageCategory.PLAIN_VIDEO.name
+        }
+        return false
     }
 
     private inline fun load(pos: Int, action: () -> Unit = {}) {
@@ -578,19 +488,16 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             setTextureView()
             action()
+        } else {
+            controller_layout.hide()
         }
     }
-
-    private fun play(pos: Int) = load(pos, { start() })
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
         override fun onRenderedFirstFrame() {
         }
 
         override fun onLoadingChanged(isLoading: Boolean) {
-            if (mixinPlayer.isPlaying() && isLoading && mixinPlayer.player.playbackState == STATE_BUFFERING) {
-                setPlayViewStatus(STATE_BUFFERING)
-            }
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
@@ -598,16 +505,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private val pageListener = object : ViewPager.OnPageChangeListener {
-        override fun onPageScrollStateChanged(state: Int) {
-        }
+        override fun onPageScrollStateChanged(state: Int) {}
 
-        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
-        }
+        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {}
 
         override fun onPageSelected(position: Int) {
             if (lastPos == -1 || lastPos == position) return
 
-            stop()
+            controller_layout.stop()
             lastPos = position
         }
     }

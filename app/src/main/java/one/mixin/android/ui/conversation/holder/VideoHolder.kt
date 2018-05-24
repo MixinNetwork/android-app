@@ -127,10 +127,10 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
             }
         })
         notNullElse(messageItem.mediaDuration, {
-            itemView.duration_tv.visibility = VISIBLE
-            itemView.duration_tv.text = it.toLong().formatMillis()
+            itemView.cur_tv.visibility = VISIBLE
+            itemView.cur_tv.text = it.toLong().formatMillis()
         }, {
-            itemView.duration_tv.visibility = GONE
+            itemView.cur_tv.visibility = GONE
         })
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)

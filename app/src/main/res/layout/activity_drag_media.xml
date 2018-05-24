@@ -9,4 +9,9 @@
         android:id="@+id/view_pager"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+
+    <one.mixin.android.widget.MediaControllerView
+            android:id="@+id/controller_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
 </FrameLayout>

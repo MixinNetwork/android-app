@@ -62,7 +62,7 @@
         </one.mixin.android.widget.ShadowLayout>
 
         <TextView
-            android:id="@+id/duration_tv"
+            android:id="@+id/cur_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="4dp"
