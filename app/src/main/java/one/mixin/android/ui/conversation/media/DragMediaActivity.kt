@@ -291,7 +291,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.video_texture.layoutParams = textureParams
             view.preview_iv.layoutParams = previewParams
             view.preview_iv.visibility = VISIBLE
-            view.preview_iv.loadVideoUseMark(messageItem.mediaUrl ?: "", R.drawable.image_holder, R.drawable.chat_mark_image)
+            view.preview_iv.loadVideoUseMark(messageItem.mediaUrl
+                ?: "", R.drawable.image_holder, R.drawable.chat_mark_image)
 
             view.seek_bar.progress = 0
             view.duration_tv.text = 0L.formatMillis()
@@ -362,7 +363,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val imageView = PhotoView(container.context)
             imageView.layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            if (messageItem.mediaUrl.equals("image/gif", true)) {
+            if (messageItem.mediaMimeType.equals("image/gif", true)) {
                 imageView.loadGif(messageItem.mediaUrl, object : RequestListener<GifDrawable?> {
                     override fun onResourceReady(
                         resource: GifDrawable?,

@@ -24,9 +24,9 @@ fun ImageView.loadImage(uri: String?, requestListener: RequestListener<Drawable?
 
 fun ImageView.loadGif(uri: String?, requestListener: RequestListener<GifDrawable?>? = null) {
     if (requestListener != null) {
-        Glide.with(this).asGif().load(uri).listener(requestListener).into(this)
+        Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform()).listener(requestListener).into(this)
     } else {
-        Glide.with(this).load(uri).into(this)
+        Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform()).into(this)
     }
 }
 
