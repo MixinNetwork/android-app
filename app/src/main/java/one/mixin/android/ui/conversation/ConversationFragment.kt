@@ -1317,7 +1317,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         } else if (requestCode == REQUEST_VIDEO && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-            showPreview(uri, { sendVideoMessage(it) })
+            showVideoPreview(uri, { sendVideoMessage(it) })
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
@@ -1396,8 +1396,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
         if (previewDialogFragment == null) {
-            previewDialogFragment = PreviewDialogFragment()
+            previewDialogFragment = PreviewDialogFragment.newInstance()
         }
         previewDialogFragment?.show(fragmentManager, uri, action)
+    }
+
+    private var previewVideoDialogFragment: PreviewDialogFragment? = null
+
+    private fun showVideoPreview(uri: Uri, action: (Uri) -> Unit) {
+        if (previewVideoDialogFragment == null) {
+            previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
+        }
+        previewVideoDialogFragment?.show(fragmentManager, uri, action)
     }
 }
