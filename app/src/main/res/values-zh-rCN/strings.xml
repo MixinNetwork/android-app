@@ -85,6 +85,7 @@
     <string name="error_bad_data">数据请求错误，请升级版本或稍后重试</string>
     <string name="error_permission">请开启相关权限</string>
     <string name="error_user_invalid_format">用户数据不合法</string>
+    <string name="error_share">分享出错</string>
     <!--home-->
     <string name="title_home">联系人</string>
     <string name="title_dashboard">Chats</string>
