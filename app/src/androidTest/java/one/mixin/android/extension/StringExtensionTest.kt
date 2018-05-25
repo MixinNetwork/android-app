@@ -49,6 +49,9 @@ class StringExtensionTest {
         val s8 = "779.99640892283"
         val s9 = "1.000112312"
         val s10 = "129.99641012"
+        val s11 = "-0.00000001"
+        val s12 = "-0.000000001"
+        val s13 = "0.0000000001"
 
         assertEquals("12,345,678,901", s1.numberFormat8())
         assertEquals("123,456,789", s2.numberFormat8())
@@ -60,6 +63,9 @@ class StringExtensionTest {
         assertEquals("779.99641", s8.numberFormat8())
         assertEquals("1.0001123", s9.numberFormat8())
         assertEquals("129.99641", s10.numberFormat8())
+        assertEquals("-0.00000001", s11.numberFormat8())
+        assertEquals("-0", s12.numberFormat8())
+        assertEquals("0.00000000", s13.numberFormat8())
     }
 
     @Test
@@ -80,6 +86,8 @@ class StringExtensionTest {
     @Test
     fun toDot() {
         val s1 = "123,456"
+        val s2 = "-123,456"
         assertEquals("123.456", s1.toDot())
+        assertEquals("-123.456", s2.toDot())
     }
 }

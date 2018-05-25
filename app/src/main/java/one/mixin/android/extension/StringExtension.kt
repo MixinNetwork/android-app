@@ -28,7 +28,6 @@ import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.util.Formatter
 import java.util.Locale
-import kotlin.collections.HashMap
 import kotlin.collections.set
 
 fun String.generateQRCode(size: Int): Bitmap? {
@@ -204,7 +203,12 @@ fun String.getPattern(count: Int = 8): String {
     if (index == -1) return ",###"
     if (index >= count) return ",###"
 
-    val bit = if (index == 1 && this[0] == '0') count + 1 else count
+    val bit = if (index == 1 && this[0] == '0')
+        count + 1
+    else if (index == 2 && this[0] == '-' && this[1] == '0')
+        count + 2
+    else
+        count
 
     val sb = StringBuilder(",###.")
     for (i in 0 until (bit - index)) {
@@ -223,7 +227,12 @@ fun Long.formatMillis(): String {
 fun Editable.maxDecimal(bit: Int = 8) {
     val index = this.indexOf('.')
     if (index > -1) {
-        val max = if (index == 1 && this[0] == '0') bit else bit - 1
+        val max = if (index == 1 && this[0] == '0')
+            bit
+        else if (index == 2 && this[0] == '-' && this[1] == '0')
+            bit + 1
+        else
+            bit - 1
         if (this.length - 1 - index > max) {
             this.delete(this.length - 1, this.length)
         }
@@ -233,7 +242,7 @@ fun Editable.maxDecimal(bit: Int = 8) {
 fun String.toDot(): String {
     for (i in 0 until this.length) {
         val c = this[i]
-        if (!c.isDigit() && c != '.') {
+        if (!c.isDigit() && c != '.' && c != '-') {
             return this.replace(c, '.')
         }
     }
