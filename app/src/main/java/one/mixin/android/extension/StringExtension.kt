@@ -3,6 +3,7 @@
 package one.mixin.android.extension
 
 import android.graphics.Bitmap
+import android.text.Editable
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -25,7 +26,8 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.text.DecimalFormat
-import java.util.*
+import java.util.Formatter
+import java.util.Locale
 import kotlin.collections.HashMap
 import kotlin.collections.set
 
@@ -216,4 +218,24 @@ fun Long.formatMillis(): String {
     val formatter = Formatter(formatBuilder, Locale.getDefault())
     Util.getStringForTime(formatBuilder, formatter, this)
     return formatBuilder.toString()
+}
+
+fun Editable.maxDecimal(bit: Int = 8) {
+    val index = this.indexOf('.')
+    if (index > -1) {
+        val max = if (index == 1 && this[0] == '0') bit else bit - 1
+        if (this.length - 1 - index > max) {
+            this.delete(this.length - 1, this.length)
+        }
+    }
+}
+
+fun String.toDot(): String {
+    for (i in 0 until this.length) {
+        val c = this[i]
+        if (!c.isDigit() && c != '.') {
+            return this.replace(c, '.')
+        }
+    }
+    return this
 }

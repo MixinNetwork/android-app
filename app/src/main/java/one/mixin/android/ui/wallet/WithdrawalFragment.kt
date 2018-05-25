@@ -23,7 +23,9 @@ import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.toDot
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -115,7 +117,7 @@ class WithdrawalFragment : BaseFragment() {
         title_view.right_animator.setOnClickListener {
             val amount = amount_et.text.toString()
             val withdrawalItem = WithdrawalBottomSheetDialogFragment.WithdrawalItem(currAddr!!.publicKey,
-                amount, memo_et.text.toString(), currAddr!!.addressId, currAddr!!.label)
+                amount, memo_et.text.toString().toDot(), currAddr!!.addressId, currAddr!!.label)
             val bottom = WithdrawalBottomSheetDialogFragment.newInstance(withdrawalItem, asset)
             bottom.setCallback(object : WithdrawalBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
@@ -220,6 +222,7 @@ class WithdrawalFragment : BaseFragment() {
         }
 
         override fun afterTextChanged(s: Editable) {
+            s.maxDecimal()
             if (s.isNotEmpty()) {
                 amount_et.textSize = 26f
             } else {

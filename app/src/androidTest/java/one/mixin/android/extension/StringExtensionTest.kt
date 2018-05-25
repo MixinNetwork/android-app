@@ -76,4 +76,10 @@ class StringExtensionTest {
         assertEquals("0.000112312000827543897052", s4.numberFormat())
         assertEquals("1,234,567.0010123049580234598807834658927346001234", s5.numberFormat())
     }
+
+    @Test
+    fun toDot() {
+        val s1 = "123,456"
+        assertEquals("123.456", s1.toDot())
+    }
 }
