@@ -81,8 +81,7 @@ class MixinPlayer : Player.EventListener, VideoListener {
     fun seekTo(timeMillis: Int) {
         val seekPos = (if (player.duration == C.TIME_UNSET)
             0
-        else
-            Math.min(Math.max(0, timeMillis), duration())).toLong()
+        else Math.min(Math.max(0, timeMillis), duration())).toLong()
         seekTo(seekPos)
     }
 
