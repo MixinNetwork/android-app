@@ -49,6 +49,11 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        mixinPlayer.release()
+    }
+
     override fun onPause() {
         super.onPause()
         mixinPlayer.pause()
