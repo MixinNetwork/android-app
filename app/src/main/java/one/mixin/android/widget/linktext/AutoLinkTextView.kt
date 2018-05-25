@@ -35,10 +35,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
     private val linkTouchMovementMethod = LinkTouchMovementMethod()
     var clickTime: Long = 0
 
-    override fun setHighlightColor(color: Int) {
-        super.setHighlightColor(Color.TRANSPARENT)
-    }
-
     override fun setText(text: CharSequence, type: TextView.BufferType) {
         if (TextUtils.isEmpty(text)) {
             super.setText(text, type)

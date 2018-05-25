@@ -8,13 +8,16 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
+import org.jetbrains.anko.dip
 
 class MessageLayout : ViewGroup {
     private val offset: Int
     private var type: Int = 0
     private var lastLineTop: Int = 0
     private var lastLineRight: Float = 0.toFloat()
+    private var maxWidth: Int = 0
 
     constructor(context: Context) : this(context, null)
 
@@ -22,6 +25,11 @@ class MessageLayout : ViewGroup {
 
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         offset = context.dpToPx(8f)
+        val ta = context.obtainStyledAttributes(attrs, R.styleable.MessageLayout, defStyleAttr, 0)
+        ta?.let {
+            maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, context.dip(300))
+            ta.recycle()
+        }
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -34,16 +42,15 @@ class MessageLayout : ViewGroup {
         }
         val paddingWidth = paddingStart + paddingEnd
         val paddingHeight = paddingTop + paddingBottom
-        val w = View.MeasureSpec.getSize(widthMeasureSpec)
 
-        measureChildren(widthMeasureSpec, heightMeasureSpec)
+        measureChildren(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.AT_MOST), heightMeasureSpec)
         val firstView = getChildAt(0) as TextView
         val secondView = getChildAt(1)
         val third = getThird()
         initTextParams(firstView.text, firstView.measuredWidth, firstView.paint)
 
         type = when {
-            firstView.measuredWidth + secondView.measuredWidth + offset <= w - paddingWidth -> {
+            firstView.measuredWidth + secondView.measuredWidth + offset <= maxWidth - paddingWidth -> {
                 val width = firstView.measuredWidth + secondView.measuredWidth
                 val height = Math.max(firstView.measuredHeight, secondView.measuredHeight)
                 if (third != null) {
@@ -60,7 +67,7 @@ class MessageLayout : ViewGroup {
                 }
                 SINGLE_LINE
             }
-            lastLineRight + secondView.measuredWidth + offset > w - paddingWidth -> {
+            lastLineRight + secondView.measuredWidth + offset > maxWidth - paddingWidth -> {
                 if (third != null) {
                     setMeasuredDimension(firstView.measuredWidth + paddingWidth,
                         firstView.measuredHeight + secondView.measuredHeight + third.measuredHeight + paddingHeight)
