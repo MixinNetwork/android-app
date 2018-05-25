@@ -22,6 +22,7 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
+import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.toast
 import java.util.concurrent.TimeUnit
 
@@ -31,10 +32,9 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         const val IS_VIDEO: String = "IS_VIDEO"
         fun newInstance(isVideo: Boolean = false): PreviewDialogFragment {
             val previewDialogFragment = PreviewDialogFragment()
-            val b = Bundle().apply {
-                putBoolean(IS_VIDEO, isVideo)
-            }
-            previewDialogFragment.arguments = b
+            previewDialogFragment.arguments = bundleOf(
+                IS_VIDEO to isVideo
+            )
             return previewDialogFragment
         }
     }
