@@ -19,8 +19,10 @@ import kotlinx.android.synthetic.main.fragment_preview_video.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.getMimeType
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
+import org.jetbrains.anko.toast
 import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
@@ -88,6 +90,11 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         dialog.window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         dialog.window.setWindowAnimations(R.style.BottomSheet_Animation)
         if (isVideo) {
+            val mimeType = getMimeType(uri!!)
+            if (mimeType == null || !mimeType.startsWith("video", true)) {
+                context?.toast(R.string.error_format)
+                dismiss()
+            }
             mixinPlayer.loadVideo(uri.toString())
             mixinPlayer.setVideoTextureView(mediaDialogView!!.dialog_video_texture)
             mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(context!!))

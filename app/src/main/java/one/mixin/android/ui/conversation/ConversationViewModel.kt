@@ -25,6 +25,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
@@ -159,13 +160,15 @@ internal constructor(
         Flowable.just(uri).subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).map {
             val video = MixinApplication.appContext.getVideoModel(it)!!
             val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-            val videoFile = MixinApplication.get().getVideoPath()
-                .createVideoTemp(
-                    when {
-                        video.needChange -> "mp4"
-                        video.fileName.contains(".") -> video.fileName.substring(video.fileName.lastIndexOf(".") + 1)
-                        else -> ""
-                    })
+            val mimeType = getMimeType(uri)
+            if (mimeType != "video/mp4") {
+                video.needChange = true
+            }
+            if (!video.fileName.endsWith(".mp4")) {
+                video.fileName = "${video.fileName.getFileNameNoEx()}.mp4"
+            }
+            val videoFile = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
+
             MediaController().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight, video
                 .originalWidth, video
                 .originalHeight, videoFile, video.needChange)
@@ -173,11 +176,8 @@ internal constructor(
             val message = createVideoMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
                 category, null, video.fileName, videoFile.toUri().toString(), video.duration, video
                 .resultWidth,
-                video.resultHeight, video.thumbnail, if (video.needChange) {
-                "video/mp4"
-            } else {
-                getMimeType(uri)!!
-            },
+                video.resultHeight, video.thumbnail,
+                "video/mp4",
                 videoFile.length(), nowInUtc(), null, null, MediaStatus.PENDING, MessageStatus.SENDING)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }.observeOn(AndroidSchedulers.mainThread())!!
