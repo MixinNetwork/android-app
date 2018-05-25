@@ -135,7 +135,7 @@ fun String.numberFormat(): String {
     if (this.isEmpty()) return this
 
     return try {
-        DecimalFormat(getPattern(64)).format(BigDecimal(this))
+        DecimalFormat(getPattern(32)).format(BigDecimal(this))
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
@@ -159,7 +159,7 @@ fun String.numberFormat2(): String {
     if (this.isEmpty()) return this
 
     return try {
-        DecimalFormat(this.getPattern(2)).format(BigDecimal(this))
+        DecimalFormat(",###.##").format(BigDecimal(this))
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {
@@ -169,7 +169,7 @@ fun String.numberFormat2(): String {
 
 fun BigDecimal.numberFormat(): String {
     return try {
-        DecimalFormat(this.toPlainString().getPattern(64)).format(this)
+        DecimalFormat(this.toPlainString().getPattern(32)).format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {
@@ -189,7 +189,7 @@ fun BigDecimal.numberFormat8(): String {
 
 fun BigDecimal.numberFormat2(): String {
     return try {
-        DecimalFormat(this.toPlainString().getPattern(2)).format(this)
+        DecimalFormat(",###.##").format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {

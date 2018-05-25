@@ -28,13 +28,13 @@ class StringExtensionTest {
         val s2 = "0.123"
         val s3 = "0.103"
         val s4 = "0.108"
-        val s5 = "1.123"
+        val s5 = "0.0000000023"
 
         assertEquals("12,345", s1.numberFormat2())
         assertEquals("0.12", s2.numberFormat2())
         assertEquals("0.1", s3.numberFormat2())
         assertEquals("0.11", s4.numberFormat2())
-        assertEquals("1.1", s5.numberFormat2())
+        assertEquals("0.00", s5.numberFormat2())
     }
 
     @Test
