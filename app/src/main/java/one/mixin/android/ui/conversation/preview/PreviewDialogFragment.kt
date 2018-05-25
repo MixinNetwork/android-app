@@ -43,20 +43,31 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         arguments!!.getBoolean(IS_VIDEO)
     }
 
+    private var currentState = false
+
     private val mixinPlayer: MixinPlayer by lazy {
         MixinPlayer().apply {
             setOnVideoPlayerListener(videoListener)
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        mixinPlayer.release()
+    override fun onResume() {
+        super.onResume()
+        if (currentState) {
+            mixinPlayer.start()
+        }
     }
 
     override fun onPause() {
         super.onPause()
+        currentState = mixinPlayer.isPlaying()
         mixinPlayer.pause()
+    }
+
+    fun release() {
+        if (isVideo) {
+            mixinPlayer.release()
+        }
     }
 
     private var mediaDialogView: View? = null
@@ -147,7 +158,6 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         }
     }
 
-    private var currentState = false
     override fun didStopDragging() {
         if (currentState) {
             mixinPlayer.start()

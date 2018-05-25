@@ -43,6 +43,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.R.id.chat_et
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
@@ -604,6 +605,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onDestroy() {
         MixinApplication.conversationId = null
         super.onDestroy()
+        previewVideoDialogFragment?.release()
     }
 
     @SuppressLint("CheckResult")

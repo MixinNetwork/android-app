@@ -270,8 +270,15 @@ public class VideoTimelineView extends View {
         int startX = dp(16);
         int endX = width + dp(16);
 
+        int borderoffset = dp(2);
+
+        int borderTop = dp(16);
+        int needleTop = borderTop - borderoffset;
+        int borderBottom = borderTop + dp(40);
+        int needleBottom = borderBottom + borderoffset;
+
         canvas.save();
-        canvas.clipRect(dp(16), dp(4), width + dp(20), dp(44));
+        canvas.clipRect(dp(16), needleTop, width + dp(20), needleBottom);
         if (frames.isEmpty() && currentTask == null) {
             reloadFrames(0);
         } else {
@@ -280,7 +287,7 @@ public class VideoTimelineView extends View {
                 Bitmap bitmap = frames.get(a);
                 if (bitmap != null) {
                     int x = dp(16) + offset * (isRoundFrames ? frameWidth / 2 : frameWidth);
-                    int y = dp(2 + 4);
+                    int y = borderTop + borderoffset;
                     if (isRoundFrames) {
                         rect2.set(x, y, x + dp(28), y + dp(28));
                         canvas.drawBitmap(bitmap, rect1, rect2, null);
@@ -292,23 +299,22 @@ public class VideoTimelineView extends View {
             }
         }
 
-        int top = dp(2 + 4);
-        int end = dp(44);
+        int top = borderoffset + borderTop;
 
         canvas.drawRect(dp(16), top, startX, dp(42), paint2);
         canvas.drawRect(endX + dp(4), top, dp(16) + width + dp(4), dp(42), paint2);
 
-        canvas.drawRect(startX, dp(4), startX + dp(2), end, paint);
-        canvas.drawRect(endX + dp(2), dp(4), endX + dp(4), end, paint);
-        canvas.drawRect(startX + dp(2), dp(4), endX + dp(4), top, paint);
-        canvas.drawRect(startX + dp(2), end - dp(2), endX + dp(4), end, paint);
+        canvas.drawRect(startX, borderTop, startX + borderoffset, borderBottom, paint);
+        canvas.drawRect(endX + borderoffset, borderTop, endX + dp(4), borderBottom, paint);
+        canvas.drawRect(startX + borderoffset, borderTop, endX + dp(4), top, paint);
+        canvas.drawRect(startX + borderoffset, borderBottom - borderoffset, endX + dp(4), borderBottom, paint);
         canvas.restore();
 
         float cx = dp(18) + width * playProgress;
-        rect3.set(cx - dp(1.5f), dp(2), cx + dp(1.5f), dp(46));
+        rect3.set(cx - dp(1.5f), needleTop, cx + dp(1.5f), needleBottom);
         canvas.drawRoundRect(rect3, dp(1), dp(1), paint2);
 
-        rect3.set(cx - dp(1), dp(2), cx + dp(1), dp(46));
+        rect3.set(cx - dp(1), needleTop, cx + dp(1), needleBottom);
         canvas.drawRoundRect(rect3, dp(1), dp(1), paint);
 
     }
