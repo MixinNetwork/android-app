@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadVideoUseMark
@@ -130,12 +131,21 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 }
             }
         })
-        notNullElse(messageItem.mediaDuration, {
-            itemView.duration_tv.visibility = VISIBLE
-            itemView.duration_tv.text = it.toLong().formatMillis()
-        }, {
-            itemView.duration_tv.visibility = GONE
-        })
+        if (messageItem.mediaStatus == MediaStatus.DONE.name) {
+            notNullElse(messageItem.mediaDuration, {
+                itemView.duration_tv.visibility = VISIBLE
+                itemView.duration_tv.text = it.toLong().formatMillis()
+            }, {
+                itemView.duration_tv.visibility = GONE
+            })
+        } else {
+            notNullElse(messageItem.mediaSize, {
+                itemView.duration_tv.visibility = VISIBLE
+                itemView.duration_tv.text = it.fileSize()
+            }, {
+                itemView.duration_tv.visibility = GONE
+            })
+        }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         messageItem.mediaStatus?.let {

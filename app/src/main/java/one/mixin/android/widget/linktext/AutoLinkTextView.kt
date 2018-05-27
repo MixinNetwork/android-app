@@ -228,4 +228,3 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
         private const val DEFAULT_COLOR = Color.RED
     }
 }
-
