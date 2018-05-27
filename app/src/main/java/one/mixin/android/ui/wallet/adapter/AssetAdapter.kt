@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.item_wallet_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.AssetItem
@@ -46,7 +47,7 @@ class AssetAdapter(var assets: List<AssetItem>) : RecyclerView.Adapter<RecyclerV
                 holder.itemView.change_tv.visibility = GONE
             } else {
                 holder.itemView.change_tv.visibility = VISIBLE
-                holder.itemView.price_tv.text = "$${ asset.priceUsd.numberFormat8()}"
+                holder.itemView.price_tv.text = "$${asset.priceUsd.numberFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO

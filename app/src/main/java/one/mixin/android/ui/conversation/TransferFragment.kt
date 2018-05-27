@@ -24,10 +24,12 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.notNullElse
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.toDot
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BaseFragment
@@ -126,7 +128,7 @@ class TransferFragment : BaseFragment() {
                     override fun onTypeClick(asset: AssetItem) {
                         currentAsset = asset
                         asset_name.text = asset.name
-                        asset_desc.text = asset.balance.numberFormat8()
+                        asset_desc.text = asset.balance.numberFormat()
                         asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
                         asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
                         adapter.notifyDataSetChanged()
@@ -149,7 +151,7 @@ class TransferFragment : BaseFragment() {
 
             transfer_amount.hideKeyboard()
             val bottom = TransferBottomSheetDialogFragment
-                .newInstance(user, transfer_amount.text.toString(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
+                .newInstance(user, transfer_amount.text.toString().toDot(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
                     transfer_memo.text.toString())
             bottom.show(fragmentManager, TransferBottomSheetDialogFragment.TAG)
             bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
@@ -172,14 +174,14 @@ class TransferFragment : BaseFragment() {
                     asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
                     asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
                     asset_name.text = a.name
-                    asset_desc.text = a.balance.numberFormat8()
+                    asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
                 }, {
                     val a = assets[0]
                     asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
                     asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
                     asset_name.text = a.name
-                    asset_desc.text = a.balance.numberFormat8()
+                    asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
                 })
             } else {
@@ -195,7 +197,7 @@ class TransferFragment : BaseFragment() {
                             asset_avatar.bg.loadImage(it.iconUrl, R.drawable.ic_avatar_place_holder)
                             asset_avatar.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder)
                             asset_name.text = it.name
-                            asset_desc.text = it.balance.numberFormat8()
+                            asset_desc.text = it.balance.numberFormat()
                         }, {
                             asset_avatar.bg.setImageResource(R.drawable.ic_avatar_place_holder)
                             asset_name.text = getString(R.string.app_name)
@@ -210,13 +212,14 @@ class TransferFragment : BaseFragment() {
     }
 
     private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
         }
 
         override fun afterTextChanged(s: Editable) {
+            s.maxDecimal()
             if (s.isNotEmpty() && asset_rl.isEnabled) {
                 transfer_amount.textSize = 26f
                 continue_animator.visibility = VISIBLE

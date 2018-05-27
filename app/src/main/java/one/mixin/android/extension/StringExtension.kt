@@ -3,6 +3,7 @@
 package one.mixin.android.extension
 
 import android.graphics.Bitmap
+import android.text.Editable
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -25,8 +26,8 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.text.DecimalFormat
-import java.util.*
-import kotlin.collections.HashMap
+import java.util.Formatter
+import java.util.Locale
 import kotlin.collections.set
 
 fun String.generateQRCode(size: Int): Bitmap? {
@@ -129,6 +130,18 @@ fun String.formatPublicKey(): String {
     return substring(0, 6) + "..." + substring(length - 4, length)
 }
 
+fun String.numberFormat(): String {
+    if (this.isEmpty()) return this
+
+    return try {
+        DecimalFormat(getPattern(32)).format(BigDecimal(this))
+    } catch (e: NumberFormatException) {
+        this
+    } catch (e: IllegalArgumentException) {
+        this
+    }
+}
+
 fun String.numberFormat8(): String {
     if (this.isEmpty()) return this
 
@@ -150,6 +163,16 @@ fun String.numberFormat2(): String {
         this
     } catch (e: IllegalArgumentException) {
         this
+    }
+}
+
+fun BigDecimal.numberFormat(): String {
+    return try {
+        DecimalFormat(this.toPlainString().getPattern(32)).format(this)
+    } catch (e: NumberFormatException) {
+        this.toPlainString()
+    } catch (e: IllegalArgumentException) {
+        this.toPlainString()
     }
 }
 
@@ -180,8 +203,15 @@ fun String.getPattern(count: Int = 8): String {
     if (index == -1) return ",###"
     if (index >= count) return ",###"
 
+    val bit = if (index == 1 && this[0] == '0')
+        count + 1
+    else if (index == 2 && this[0] == '-' && this[1] == '0')
+        count + 2
+    else
+        count
+
     val sb = StringBuilder(",###.")
-    for (i in 0 until (count - index)) {
+    for (i in 0 until (bit - index)) {
         sb.append('#')
     }
     return sb.toString()
@@ -192,4 +222,29 @@ fun Long.formatMillis(): String {
     val formatter = Formatter(formatBuilder, Locale.getDefault())
     Util.getStringForTime(formatBuilder, formatter, this)
     return formatBuilder.toString()
+}
+
+fun Editable.maxDecimal(bit: Int = 8) {
+    val index = this.indexOf('.')
+    if (index > -1) {
+        val max = if (index == 1 && this[0] == '0')
+            bit
+        else if (index == 2 && this[0] == '-' && this[1] == '0')
+            bit + 1
+        else
+            bit - 1
+        if (this.length - 1 - index > max) {
+            this.delete(this.length - 1, this.length)
+        }
+    }
+}
+
+fun String.toDot(): String {
+    for (i in 0 until this.length) {
+        val c = this[i]
+        if (!c.isDigit() && c != '.' && c != '-') {
+            return this.replace(c, '.')
+        }
+    }
+    return this
 }

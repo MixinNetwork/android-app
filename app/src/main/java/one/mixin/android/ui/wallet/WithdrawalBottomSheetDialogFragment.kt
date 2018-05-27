@@ -18,7 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -92,7 +92,7 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val a = bottomViewModel.simpleAssetItem(asset.assetId)
             uiThread { a?.let { contentView.asset_icon.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder) } }
         }
-        contentView.balance.text = withdrawalItem.amount.numberFormat8() + " " + asset.symbol
+        contentView.balance.text = withdrawalItem.amount.numberFormat() + " " + asset.symbol
         contentView.balance_as.text = getString(R.string.wallet_unit_usd,
             "≈ ${(BigDecimal(withdrawalItem.amount) * BigDecimal(asset.priceUsd)).numberFormat2()}")
         contentView.keyboard.setKeyboardKeys(KEYS)
