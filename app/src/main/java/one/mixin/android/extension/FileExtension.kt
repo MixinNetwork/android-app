@@ -342,6 +342,14 @@ fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String
     return Base64.encodeToString(data, Base64.NO_WRAP)
 }
 
+fun String.getFileNameNoEx(): String {
+    val dot = this.lastIndexOf('.')
+    if (dot > -1 && dot < this.length) {
+        return this.substring(0, dot)
+    }
+    return this
+}
+
 fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
     var sentBitmap = this
 

@@ -43,6 +43,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.R.id.chat_et
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
@@ -604,6 +605,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onDestroy() {
         MixinApplication.conversationId = null
         super.onDestroy()
+        previewVideoDialogFragment?.release()
     }
 
     @SuppressLint("CheckResult")
@@ -1317,7 +1319,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         } else if (requestCode == REQUEST_VIDEO && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-            showPreview(uri, { sendVideoMessage(it) })
+            showVideoPreview(uri, { sendVideoMessage(it) })
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
@@ -1396,8 +1398,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun showPreview(uri: Uri, action: (Uri) -> Unit) {
         if (previewDialogFragment == null) {
-            previewDialogFragment = PreviewDialogFragment()
+            previewDialogFragment = PreviewDialogFragment.newInstance()
         }
         previewDialogFragment?.show(fragmentManager, uri, action)
+    }
+
+    private var previewVideoDialogFragment: PreviewDialogFragment? = null
+
+    private fun showVideoPreview(uri: Uri, action: (Uri) -> Unit) {
+        if (previewVideoDialogFragment == null) {
+            previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
+        }
+        previewVideoDialogFragment?.show(fragmentManager, uri, action)
     }
 }
