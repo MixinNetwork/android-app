@@ -173,7 +173,7 @@ class MainActivity : BlazeBaseActivity() {
             supportFragmentManager?.inTransaction {
                 setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                     R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                    .add(R.id.home_container, TransferFragment.newInstance(user), TransferFragment.TAG)
+                    .add(R.id.home_container, TransferFragment.newInstance(user.userId), TransferFragment.TAG)
                     .addToBackStack(null)
             }
         } else if (intent.extras != null && intent.extras.getString("conversation_id", null) != null) {

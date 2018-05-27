@@ -18,7 +18,7 @@ import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
-import one.mixin.android.Constants
+import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
@@ -32,6 +32,7 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toDot
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
@@ -51,13 +52,10 @@ class TransferFragment : BaseFragment() {
         const val TAG = "TransferFragment"
         const val ASSERT_PREFERENCE = "TRANSFER_ASSERT"
 
-        fun newInstance(user: User): TransferFragment {
-            val fragment = TransferFragment()
-            val b = bundleOf(
-                Constants.ARGS_USER to user
+        fun newInstance(userId: String) = TransferFragment().apply {
+            arguments = bundleOf(
+                ARGS_USER_ID to userId
             )
-            fragment.arguments = b
-            return fragment
         }
     }
 
@@ -82,10 +80,9 @@ class TransferFragment : BaseFragment() {
         TypeAdapter()
     }
 
-    private val user: User by lazy {
-        val u = arguments!!.getParcelable(Constants.ARGS_USER) as User
-        u
-    }
+    private val userId: String by lazy { arguments!!.getString(ARGS_USER_ID) }
+
+    private var user: User? = null
 
     private val assetsView: View by lazy {
         val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null)
@@ -115,12 +112,6 @@ class TransferFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.avatar_iv.visibility = View.VISIBLE
         title_view.avatar_iv.setTextSize(16f)
-        title_view.avatar_iv.setInfo(if (!user.fullName.isNullOrEmpty()) user.fullName!![0] else ' ',
-            user.avatarUrl, user.identityNumber)
-        title_view.avatar_iv.setOnClickListener {
-            UserBottomSheetDialogFragment.newInstance(user).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
-        }
-        title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, user.fullName))
         transfer_amount.addTextChangedListener(mWatcher)
         asset_rl.setOnClickListener {
             transfer_amount.hideKeyboard()
@@ -149,11 +140,11 @@ class TransferFragment : BaseFragment() {
             }
         }
         continue_animator.setOnClickListener {
-            if (!isAdded) return@setOnClickListener
+            if (!isAdded || user == null) return@setOnClickListener
 
             transfer_amount.hideKeyboard()
             val bottom = TransferBottomSheetDialogFragment
-                .newInstance(user, transfer_amount.text.toString().toDot(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
+                .newInstance(user!!, transfer_amount.text.toString().toDot(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
                     transfer_memo.text.toString())
             bottom.show(fragmentManager, TransferBottomSheetDialogFragment.TAG)
             bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
@@ -206,6 +197,20 @@ class TransferFragment : BaseFragment() {
                             asset_desc.text = "0"
                         })
                     }
+                }
+            }
+        })
+        chatViewModel.findUserById(userId).observe(this, Observer { u ->
+            if (u == null) {
+                jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))   
+            } else {
+                user = u
+
+                title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, u.fullName))
+                title_view.avatar_iv.setInfo(if (!u.fullName.isNullOrEmpty()) u.fullName!![0] else ' ',
+                    u.avatarUrl, u.identityNumber)
+                title_view.avatar_iv.setOnClickListener {
+                    UserBottomSheetDialogFragment.newInstance(u).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
             }
         })

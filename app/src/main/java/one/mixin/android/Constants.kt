@@ -23,6 +23,7 @@ object Constants {
     const val INTERVAL_10_MINS: Long = 1000 * 60 * 10
 
     const val ARGS_USER = "args_user"
+    const val ARGS_USER_ID = "args_user_id"
 
     const val Mixin_Conversation_ID_HEADER = "Mixin-Conversation-ID"
     val KEYS = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
