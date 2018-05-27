@@ -192,8 +192,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 val url = (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
                 if (url != null) {
                     if (isMixinUrl(url)) {
-                        LinkBottomSheetDialogFragment.newInstance(url)
-                            .show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                        if (url.startsWith("mixin://transfer/", true)) {
+                            val segments = Uri.parse(url).pathSegments
+                            val userId = segments[0]
+                        } else {
+                            LinkBottomSheetDialogFragment.newInstance(url)
+                                .show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                        }
                     } else {
                         QrBottomSheetDialogFragment.newInstance(url)
                             .show(supportFragmentManager, QrBottomSheetDialogFragment.TAG)

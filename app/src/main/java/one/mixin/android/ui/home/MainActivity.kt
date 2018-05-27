@@ -24,6 +24,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -41,6 +42,7 @@ import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment.Companion.ARGS_AMOUNT
@@ -166,6 +168,14 @@ class MainActivity : BlazeBaseActivity() {
             val user = intent.getParcelableExtra<User>(ARGS_USER)
             bottomSheet?.dismiss()
             UserBottomSheetDialogFragment.newInstance(user).show(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+        } else if (intent.hasExtra(TRANSFER)) {
+            val user = intent.getParcelableExtra<User>(TRANSFER)
+            supportFragmentManager?.inTransaction {
+                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                    R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                    .add(R.id.home_container, TransferFragment.newInstance(user), TransferFragment.TAG)
+                    .addToBackStack(null)
+            }
         } else if (intent.extras != null && intent.extras.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()
@@ -318,6 +328,7 @@ class MainActivity : BlazeBaseActivity() {
     companion object {
         private const val CODE = "code"
         private const val SCAN = "scan"
+        private const val TRANSFER = "transfer"
 
         fun showGroup(context: Context, code: String) {
             Intent(context, MainActivity::class.java).apply { putExtra(CODE, code) }.run {
@@ -327,6 +338,12 @@ class MainActivity : BlazeBaseActivity() {
 
         fun showUser(context: Context, user: User) {
             Intent(context, MainActivity::class.java).apply { putExtra(ARGS_USER, user) }.run {
+                context.startActivity(this)
+            }
+        }
+
+        fun showTransfer(context: Context, user: User) {
+            Intent(context, MainActivity::class.java).apply { putExtra(TRANSFER, user) }.run {
                 context.startActivity(this)
             }
         }

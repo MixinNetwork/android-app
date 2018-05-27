@@ -53,6 +53,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.CameraOpView
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.UI
 import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.yesButton
@@ -255,6 +256,19 @@ class CaptureFragment : BaseFragment() {
                 ErrorHandler.handleError(it)
             })
             return
+        } else if (data.startsWith("mixin://transfer/", true)) {
+            val segments = Uri.parse(data).pathSegments
+            val userId = segments[0]
+            doAsync {
+                val user = captureViewModel.queryUser(userId)
+                // TODO get user from server
+                UI {
+                    user.let {
+                        MainActivity.showTransfer(requireContext(), it!!)
+                        mCaptureManager.closeAndFinish()
+                    }
+                }
+            }
         } else {
             val code = if (data.startsWith("https://mixin.one/codes/", true)) {
                 val segments = Uri.parse(data).pathSegments

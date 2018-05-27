@@ -39,6 +39,7 @@ import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragme
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
+import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.util.UUID
@@ -52,8 +53,9 @@ class TransferFragment : BaseFragment() {
 
         fun newInstance(user: User): TransferFragment {
             val fragment = TransferFragment()
-            val b = Bundle()
-            b.putParcelable(Constants.ARGS_USER, user)
+            val b = bundleOf(
+                Constants.ARGS_USER to user
+            )
             fragment.arguments = b
             return fragment
         }

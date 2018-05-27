@@ -28,6 +28,10 @@ internal constructor(
     fun pay(request: TransferRequest): Observable<MixinResponse<PaymentResponse>> =
         assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
+    fun queryUser(userId: String): User? {
+        return userRepository.getUserById(userId)
+    }
+
     fun saveAsset(asset: Asset) {
         assetRepository.upsert(asset)
     }

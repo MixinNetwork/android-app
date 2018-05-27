@@ -15,10 +15,12 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val CODE = 100
         private const val PAY = 101
         private const val USER = 102
+        private const val TRANSFER = 103
         private val sURIMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
             addURI("codes", "*", CODE)
             addURI("pay", null, PAY)
             addURI("users", null, USER)
+            addURI("transfer", null, TRANSFER)
         }
     }
 
@@ -48,6 +50,9 @@ class UrlInterpreterActivity : BaseActivity() {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
+            TRANSFER -> {
+
+            }
             else -> {
             }
         }
@@ -68,7 +73,8 @@ fun isMixinUrl(url: String): Boolean {
             }
         }
         return false
-    } else if (url.startsWith("mixin://codes/", true)) {
+    } else if (url.startsWith("mixin://codes/", true) ||
+        url.startsWith("mixin://transfer/", true)) {
         val segments = Uri.parse(url).pathSegments
         if (segments.size >= 1) {
             val data = segments[0]

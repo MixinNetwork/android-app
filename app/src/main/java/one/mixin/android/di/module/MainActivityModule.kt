@@ -6,9 +6,10 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.search.SearchFragment
@@ -45,4 +46,7 @@ abstract class MainActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeQrBottomSheetDialogFragment(): QrBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeTransferFragment(): TransferFragment
 }
