@@ -70,6 +70,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         context!!.displaySize().y * 3 / 4
     }
 
+    private val closeHeight by lazy {
+        context!!.displaySize().y / 2
+    }
+
     private val maxHeight by lazy {
         context!!.displaySize().y - context!!.statusBarHeight()
     }
@@ -110,14 +114,22 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             override fun onUp() {
                 ((dialog as BottomSheet).getCustomView())?.let {
                     val height = it.layoutParams.height
-                    if (height < middleHeight) {
-                        (dialog as BottomSheet).setCustomViewHeight(miniHeight)
-                        changeCheck(false)
-                    } else {
-                        (dialog as BottomSheet).setCustomViewHeight(maxHeight)
-                        checkEnable = false
-                        changeCheck(true)
-                        checkEnable = true
+                    when {
+                        height < closeHeight -> {
+                            (dialog as BottomSheet).setCustomViewHeight(0) {
+                                dismiss()
+                            }
+                        }
+                        height < middleHeight -> {
+                            (dialog as BottomSheet).setCustomViewHeight(miniHeight)
+                            changeCheck(false)
+                        }
+                        else -> {
+                            (dialog as BottomSheet).setCustomViewHeight(maxHeight)
+                            checkEnable = false
+                            changeCheck(true)
+                            checkEnable = true
+                        }
                     }
                 }
             }
@@ -125,7 +137,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             override fun onScroll(disY: Float): Boolean {
                 return notNullElse((dialog as BottomSheet).getCustomView(), {
                     val height = it.layoutParams.height - disY.toInt()
-                    return if (height in miniHeight..maxHeight) {
+                    return if (height in 0..maxHeight) {
                         (dialog as BottomSheet).setCustomViewHeightSync(height)
                         true
                     } else {
