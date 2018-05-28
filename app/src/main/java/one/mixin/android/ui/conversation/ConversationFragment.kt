@@ -43,7 +43,6 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.R.id.chat_et
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
@@ -434,6 +433,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }, {
                     Timber.e(it)
                 })
+            }
+
+            override fun onTransferClick(userId: String) {
+                activity?.supportFragmentManager?.inTransaction {
+                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                        R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                        .add(R.id.container, TransferFragment.newInstance(userId), TransferFragment.TAG)
+                        .addToBackStack(null)
+                }
             }
         }
     }

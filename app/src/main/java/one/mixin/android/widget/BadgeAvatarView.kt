@@ -7,9 +7,9 @@ import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 
-open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+class BadgeAvatarView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
     init {
-        LayoutInflater.from(context).inflate(R.layout.view_badge_circle_image, this, true)
+        LayoutInflater.from(context).inflate(R.layout.view_badge_avatar, this, true)
     }
 
     var pos: Int = START_BOTTOM
@@ -26,7 +26,7 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) : FrameL
         if (pos == START_BOTTOM) {
             badge.layout(0, 5 * i, 2 * i, 7 * i)
         } else if (pos == END_BOTTOM) {
-            badge.layout(5 * i, 5 * i, 7 * i, 7 * i)
+            badge.layout(6 * i, 6 * i, 8 * i, 8 * i)
         }
     }
 

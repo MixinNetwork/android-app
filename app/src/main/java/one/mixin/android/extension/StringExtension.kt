@@ -3,6 +3,7 @@
 package one.mixin.android.extension
 
 import android.graphics.Bitmap
+import android.graphics.Color
 import android.text.Editable
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson
@@ -30,7 +31,7 @@ import java.util.Formatter
 import java.util.Locale
 import kotlin.collections.set
 
-fun String.generateQRCode(size: Int): Bitmap? {
+fun String.generateQRCode(size: Int, color: Int? = null): Bitmap? {
     val result: BitMatrix
     try {
         val hints = HashMap<EncodeHintType, Any>()
@@ -48,7 +49,11 @@ fun String.generateQRCode(size: Int): Bitmap? {
     for (y in 0 until height) {
         val offset = y * width
         for (x in 0 until width) {
-            pixels[offset + x] = if (result.get(x, y)) QRFragment.BLACK else QRFragment.WHITE
+            pixels[offset + x] = if (result.get(x, y)) {
+                color ?: QRFragment.BLACK
+            } else {
+                QRFragment.WHITE
+            }
         }
     }
     val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)

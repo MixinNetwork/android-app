@@ -9,6 +9,7 @@ public enum AutoLinkMode {
     MODE_PHONE("Phone"),
     MODE_EMAIL("Email"),
     MODE_ACCOUNT("Account"),
+    MODE_TRANSFER("Transfer"),
     MODE_CUSTOM("Custom");
 
     private String name;

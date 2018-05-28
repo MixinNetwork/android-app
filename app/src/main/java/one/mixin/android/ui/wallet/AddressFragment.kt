@@ -17,9 +17,9 @@ import kotlinx.android.synthetic.main.fragment_address.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getAddressCodePath
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.isAddressCodeFileExists
+import one.mixin.android.extension.getQRCodePath
+import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.Session
@@ -70,8 +70,8 @@ class AddressFragment : Fragment() {
             toast(R.string.copy_success)
         }
         key_code.text = asset.publicKey
-        if (context!!.isAddressCodeFileExists(asset.publicKey)) {
-            qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getAddressCodePath(asset.publicKey).absolutePath))
+        if (context!!.isQRCodeFileExists(asset.publicKey)) {
+            qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.publicKey).absolutePath))
         } else {
             qr.post {
                 Observable.create<Bitmap> { e ->

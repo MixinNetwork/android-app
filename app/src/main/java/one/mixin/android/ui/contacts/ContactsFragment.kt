@@ -25,6 +25,9 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
@@ -109,7 +112,7 @@ class ContactsFragment : BaseFragment() {
         })
         contactsViewModel.findSelf().observe(this, Observer { self ->
             if (self != null) {
-                contactAdapter.setSelf(self)
+                contactAdapter.self = self
                 contactAdapter.notifyDataSetChanged()
             }
         })
@@ -174,11 +177,18 @@ class ContactsFragment : BaseFragment() {
             ContactBottomSheetDialog.newInstance(user).show(fragmentManager, ContactBottomSheetDialog.TAG)
         }
 
-        override fun onMyQr() {
-            
+        override fun onMyQr(self: User?) {
+            self?.let {
+                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
+                    .show(fragmentManager, QrBottomSheetDialogFragment.TAG)
+            }
         }
 
-        override fun onReceiveQr() {
+        override fun onReceiveQr(self: User?) {
+            self?.let {
+                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
+                    .show(fragmentManager, QrBottomSheetDialogFragment.TAG)
+            }
         }
     }
 }

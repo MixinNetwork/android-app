@@ -75,32 +75,48 @@
 
     <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="56dp"
             android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground">
 
-        <TextView
-                android:id="@+id/receive_tv"
+        <FrameLayout
+                android:id="@+id/receive_fl"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="match_parent"
-                android:drawableStart="@drawable/ic_share_black_24dp"
-                android:textColor="@color/black"
-                android:text="@string/contact_receive_money"/>
+                android:layout_height="match_parent">
+
+            <TextView
+                    android:id="@+id/receive_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:drawablePadding="8dp"
+                    android:drawableStart="@drawable/ic_share_black_24dp"
+                    android:textColor="@color/black"
+                    android:text="@string/contact_receive_money"/>
+        </FrameLayout>
 
         <View
                 android:layout_width=".5dp"
                 android:layout_height="match_parent"
                 android:background="@color/divider"/>
 
-        <TextView
-                android:id="@+id/my_qr_tv"
+        <FrameLayout
+                android:id="@+id/my_qr_fl"
                 android:layout_width="0dp"
                 android:layout_weight="1"
-                android:layout_height="match_parent"
-                android:drawableStart="@drawable/ic_qr_code_preview"
-                android:textColor="@color/black"
-                android:text="@string/contact_my_qr_title"/>
+                android:layout_height="match_parent">
+
+            <TextView
+                    android:id="@+id/my_qr_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:drawablePadding="8dp"
+                    android:drawableStart="@drawable/ic_qr_code_preview"
+                    android:textColor="@color/black"
+                    android:text="@string/contact_my_qr_title"/>
+        </FrameLayout>
     </LinearLayout>
 
     <include layout="@layout/view_item_divider"/>
