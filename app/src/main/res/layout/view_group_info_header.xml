@@ -7,12 +7,12 @@
               android:orientation="vertical">
 
     <TextView
-            android:layout_marginBottom="1dp"
+            android:layout_marginBottom="8dp"
             android:id="@+id/group_info_not_in"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginTop="8dp"
             android:text="@string/group_info_not_in"
             android:visibility="gone"/>
 
