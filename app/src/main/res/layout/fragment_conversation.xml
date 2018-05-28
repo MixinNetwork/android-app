@@ -232,13 +232,23 @@
                     tools:visibility="gone">
 
                     <ImageButton
-                        android:id="@+id/chat_sticker"
+                        android:id="@+id/chat_bot"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
                         android:layout_gravity="center_vertical"
                         android:background="@null"
                         android:paddingStart="16dp"
+                        app:srcCompat="@drawable/ic_chat_bot"
+                        tools:ignore="ContentDescription" />
+
+                    <ImageButton
+                        android:id="@+id/chat_sticker"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center_vertical"
+                        android:background="@null"
                         android:paddingEnd="16dp"
+                        android:paddingStart="16dp"
                         app:srcCompat="@drawable/ic_chat_sticker"
                         tools:ignore="ContentDescription" />
 

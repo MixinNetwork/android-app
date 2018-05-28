@@ -741,12 +741,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         menu_rv.adapter = menuAdapter
 
-        app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        app_rv.adapter = appAdapter
+        if (isBot || recipient?.isBot() != true) {
+            app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            app_rv.adapter = appAdapter
+        }
 
         shadow.setOnClickListener {
             hideMediaLayout()
         }
+
         if (isGroup || isBot || if (recipient != null) recipient!!.isBot() else false) {
             menuAdapter.showTransfer = false
         }
@@ -879,16 +882,32 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 })
             }, {})
 
-        chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
-            appAdapter.appList = it
-            if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
-                app_rv.visibility = GONE
-                extensions.visibility = GONE
-            } else {
-                app_rv.visibility = VISIBLE
-                extensions.visibility = VISIBLE
-            }
-        })
+        if (isBot || recipient?.isBot() == true) {
+            app_rv.visibility = GONE
+            extensions.visibility = GONE
+            chat_bot.visibility = VISIBLE
+            chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
+                notNullElse(it, { app ->
+                    chat_bot.setOnClickListener {
+                        openUrl(app[0].homeUri, conversationId)
+                    }
+                }, {
+                    chat_bot.setOnClickListener(null)
+                })
+            })
+        } else {
+            chat_bot.visibility = GONE
+            chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
+                appAdapter.appList = it
+                if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
+                    app_rv.visibility = GONE
+                    extensions.visibility = GONE
+                } else {
+                    app_rv.visibility = VISIBLE
+                    extensions.visibility = VISIBLE
+                }
+            })
+        }
     }
 
     private fun sendForwardMessages() {
