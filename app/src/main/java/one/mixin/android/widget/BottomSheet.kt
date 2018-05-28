@@ -286,6 +286,14 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         }
     }
 
+    fun setCustomViewHeightSync(height: Int) {
+        customViewHeight = height
+        customView?.layoutParams?.let { params ->
+            params.height = height
+            customView?.layoutParams = params
+        }
+    }
+
     fun getCustomViewHeight() = customViewHeight
 
     private fun cancelSheetAnimation() {

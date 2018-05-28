@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
 import android.view.View
+import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -19,6 +20,7 @@ import kotlinx.android.synthetic.main.fragment_web.view.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.R
 import one.mixin.android.extension.displaySize
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.statusBarHeight
@@ -26,6 +28,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.url.isMixinUrl
+import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DragWebView
 import java.net.URISyntaxException
@@ -76,10 +79,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private var checkEnable = true
+    private var keyBoardAssist: KeyBoardAssist? = null
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        keyBoardAssist = KeyBoardAssist.assistContent(contentView as ViewGroup)
         contentView.close_iv.setOnClickListener {
             dialog.dismiss()
         }
@@ -121,8 +126,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 return notNullElse((dialog as BottomSheet).getCustomView(), {
                     val height = it.layoutParams.height - disY.toInt()
                     return if (height in miniHeight..maxHeight) {
-                        it.layoutParams.height = height
-                        it.requestLayout()
+                        (dialog as BottomSheet).setCustomViewHeightSync(height)
                         true
                     } else {
                         false
@@ -134,9 +138,15 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.zoom_out.setOnCheckedChangeListener { _, isChecked ->
             if (checkEnable) {
                 if (!isChecked) {
+                    contentView.hideKeyboard()
                     (dialog as BottomSheet).setCustomViewHeight(miniHeight)
                 } else {
-                    (dialog as BottomSheet).setCustomViewHeight(maxHeight)
+                    if (keyBoardAssist?.keyBoardShow == true) {
+                        (dialog as BottomSheet).setCustomViewHeightSync(maxHeight)
+                        contentView.hideKeyboard()
+                    } else {
+                        (dialog as BottomSheet).setCustomViewHeight(maxHeight)
+                    }
                 }
             }
         }
@@ -150,6 +160,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.loadUrl(url, extraHeaders)
         }
         dialog.setOnDismissListener {
+            contentView.hideKeyboard()
             contentView.chat_web_view.stopLoading()
             dismiss()
         }

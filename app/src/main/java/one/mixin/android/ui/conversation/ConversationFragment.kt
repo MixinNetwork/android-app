@@ -741,7 +741,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         menu_rv.adapter = menuAdapter
 
-        if (isBot || recipient?.isBot() != true) {
+        if (!isBot && recipient?.isBot() != true) {
             app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             app_rv.adapter = appAdapter
         }
