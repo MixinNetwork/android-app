@@ -11,8 +11,6 @@ import android.support.annotation.StringRes
 import android.support.design.widget.BottomSheetBehavior
 import android.support.design.widget.BottomSheetDialogFragment
 import android.support.design.widget.CoordinatorLayout
-import android.support.v4.app.DialogFragment
-import android.support.v4.content.ContextCompat
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Gravity
 import android.view.View
@@ -65,16 +63,12 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
 
     private var authOrPay = false
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.AppTheme_Dialog)
-    }
+    override fun getTheme() = R.style.AppTheme_Dialog
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         if (Build.VERSION.SDK_INT >= 26) {
-            dialog.window.navigationBarColor = ContextCompat.getColor(context!!, R.color.white)
             dialog.window.decorView.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR

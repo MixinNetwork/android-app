@@ -23,13 +23,10 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
         ViewModelProviders.of(this, viewModelFactory).get(BottomSheetViewModel::class.java)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.AppTheme_Dialog)
-    }
+    override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
-        return BottomSheet.Builder(context!!, true).create()
+        return BottomSheet.Builder(requireContext(), true).create()
     }
 
     override fun onDestroy() {
