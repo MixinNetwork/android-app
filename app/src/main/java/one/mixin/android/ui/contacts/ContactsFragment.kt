@@ -139,6 +139,7 @@ class ContactsFragment : BaseFragment() {
     }
 
     private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
+
         override fun onHeaderRl() {
             activity?.addFragment(this@ContactsFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
         }
@@ -171,6 +172,13 @@ class ContactsFragment : BaseFragment() {
 
         override fun onContactItem(user: User) {
             ContactBottomSheetDialog.newInstance(user).show(fragmentManager, ContactBottomSheetDialog.TAG)
+        }
+
+        override fun onMyQr() {
+            
+        }
+
+        override fun onReceiveQr() {
         }
     }
 }

@@ -201,6 +201,8 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                 itemView.contact_header_rl.setOnClickListener { listener.onHeaderRl() }
                 itemView.new_group_rl.setOnClickListener { listener.onNewGroup() }
                 itemView.add_contact_rl.setOnClickListener { listener.onAddContact() }
+                itemView.my_qr_tv.setOnClickListener { listener.onMyQr() }
+                itemView.receive_tv.setOnClickListener { listener.onReceiveQr() }
             }
         }
     }
@@ -244,5 +246,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun onEmptyRl()
         fun onFriendItem(user: User)
         fun onContactItem(user: User)
+        fun onMyQr()
+        fun onReceiveQr()
     }
 }

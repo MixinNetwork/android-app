@@ -39,7 +39,7 @@ import one.mixin.android.job.UploadContactsService
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
@@ -148,8 +148,8 @@ class MainActivity : BlazeBaseActivity() {
         if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)
             bottomSheet?.dismiss()
-            bottomSheet = QrBottomSheetDialogFragment.newInstance(scan)
-            bottomSheet?.show(supportFragmentManager, QrBottomSheetDialogFragment.TAG)
+            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
+            bottomSheet?.show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(CODE)) {
             val code = intent.getStringExtra(CODE)
             bottomSheet?.dismiss()

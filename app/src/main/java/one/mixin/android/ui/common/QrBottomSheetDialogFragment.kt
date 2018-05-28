@@ -2,76 +2,66 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.ClipData
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
-import kotlinx.android.synthetic.main.bottom_qr.view.*
+import androidx.core.os.bundleOf
+import com.uber.autodispose.kotlin.autoDisposable
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.fragment_qr_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.isWebUrl
-import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
-import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
-import one.mixin.android.ui.url.isMixinUrl
+import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.getQRCodePath
+import one.mixin.android.extension.isQRCodeFileExists
+import one.mixin.android.extension.saveQRCode
+import one.mixin.android.util.Session
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.linktext.AutoLinkMode
-import org.jetbrains.anko.support.v4.toast
 
-class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class QrBottomSheetDialogFragment: MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "QrBottomSheetDialogFragment"
-        const val ARGS_TEXT = "args_text"
 
-        fun newInstance(text: String, conversationId: String? = null) = QrBottomSheetDialogFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARGS_TEXT, text)
-                putString(ARGS_CONVERSATION_ID, conversationId)
-            }
+        fun newInstance(userId: String) = QrBottomSheetDialogFragment().apply {
+            arguments = bundleOf(
+                ARGS_USER_ID to userId
+            )
         }
     }
-
-    private val text: String by lazy { arguments!!.getString(ARGS_TEXT) }
-    private val conversationId: String? by lazy { arguments!!.getString(ARGS_CONVERSATION_ID) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.bottom_qr, null)
+        contentView = View.inflate(context, R.layout.fragment_qr_bottom_sheet, null)
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.qr_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        contentView.qr_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        contentView.qr_tv.setAutoLinkOnClickListener({ _, url ->
-            when {
-                isMixinUrl(url) -> LinkBottomSheetDialogFragment
-                    .newInstance(url).show(fragmentManager, LinkBottomSheetDialogFragment.TAG)
-                else -> WebBottomSheetDialogFragment
-                    .newInstance(url, conversationId)
-                    .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
-            }
-            dialog?.dismiss()
-        })
-        contentView.qr_tv.text = text
-        contentView.copy.setOnClickListener {
-            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, text)
-            toast(R.string.copy_success)
-            dialog?.dismiss()
-        }
-        if (text.isWebUrl()) {
-            contentView.open_fl.visibility = VISIBLE
-            contentView.open.setOnClickListener {
-                WebBottomSheetDialogFragment.newInstance(text, conversationId)
-                    .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
-                dialog.dismiss()
-            }
+        contentView.title.left_ib.setOnClickListener { activity?.onBackPressed() }
+
+        if (context!!.isQRCodeFileExists()) {
+            contentView.qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath().absolutePath))
         } else {
-            contentView.open_fl.visibility = GONE
+            contentView.qr.post {
+                Observable.create<Bitmap> { e ->
+                    val account = Session.getAccount() ?: return@create
+                    val b = account.code_url.generateQRCode(contentView.qr.width)
+                    if (b != null) {
+                        b.saveQRCode(context!!)
+                        e.onNext(b)
+                    }
+                }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDisposable(scopeProvider)
+                    .subscribe({ r ->
+                        contentView.qr.setImageBitmap(r)
+                    }, { _ ->
+                    })
+            }
         }
     }
 }
