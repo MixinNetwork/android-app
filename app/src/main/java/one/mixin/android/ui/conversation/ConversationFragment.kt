@@ -269,7 +269,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 activity?.supportFragmentManager?.inTransaction {
                                     setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                                         R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                        .add(R.id.container, TransferFragment.newInstance(it), TransferFragment.TAG)
+                                        .add(R.id.container, TransferFragment.newInstance(it.userId), TransferFragment.TAG)
                                         .addToBackStack(null)
                                 }
                             }

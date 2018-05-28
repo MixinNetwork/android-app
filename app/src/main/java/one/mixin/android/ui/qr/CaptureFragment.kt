@@ -259,16 +259,8 @@ class CaptureFragment : BaseFragment() {
         } else if (data.startsWith("mixin://transfer/", true)) {
             val segments = Uri.parse(data).pathSegments
             val userId = segments[0]
-            doAsync {
-                val user = captureViewModel.queryUser(userId)
-                // TODO get user from server
-                UI {
-                    user.let {
-                        MainActivity.showTransfer(requireContext(), it!!)
-                        mCaptureManager.closeAndFinish()
-                    }
-                }
-            }
+            MainActivity.showTransfer(requireContext(), userId)
+            mCaptureManager.closeAndFinish()
         } else {
             val code = if (data.startsWith("https://mixin.one/codes/", true)) {
                 val segments = Uri.parse(data).pathSegments
