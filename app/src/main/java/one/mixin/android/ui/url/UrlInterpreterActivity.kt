@@ -3,10 +3,15 @@ package one.mixin.android.ui.url
 import android.content.UriMatcher
 import android.net.Uri
 import android.os.Bundle
+import android.support.v4.app.FragmentManager
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.Session
 import org.jetbrains.anko.toast
 
@@ -85,5 +90,26 @@ fun isMixinUrl(url: String): Boolean {
         return false
     } else {
         return false
+    }
+}
+
+fun openUrl(url: String, conversationId: String?, supportFragmentManager: FragmentManager) {
+    if (url.startsWith(Constants.MIXIN_TRANSFER_PREFIX, true)) {
+        val userId = url.substring(url.lastIndexOf('/') + 1)
+        supportFragmentManager.inTransaction {
+            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                .add(R.id.container, TransferFragment.newInstance(userId), TransferFragment.TAG)
+                .addToBackStack(null)
+        }
+        return
+    }
+    when {
+        isMixinUrl(url) -> LinkBottomSheetDialogFragment
+            .newInstance(url)
+            .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        else -> WebBottomSheetDialogFragment
+            .newInstance(url, conversationId)
+            .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
     }
 }

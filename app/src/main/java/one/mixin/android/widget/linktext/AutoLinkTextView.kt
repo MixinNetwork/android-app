@@ -30,7 +30,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
     private var phoneModeColor = DEFAULT_COLOR
     private var emailModeColor = DEFAULT_COLOR
     private var accountModeColor = DEFAULT_COLOR
-    private var transferModeColor = DEFAULT_COLOR
     private var customModeColor = DEFAULT_COLOR
     private var defaultSelectedColor = Color.LTGRAY
     private val linkTouchMovementMethod = LinkTouchMovementMethod()
@@ -164,7 +163,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
             AutoLinkMode.MODE_PHONE -> phoneModeColor
             AutoLinkMode.MODE_EMAIL -> emailModeColor
             AutoLinkMode.MODE_ACCOUNT -> accountModeColor
-            AutoLinkMode.MODE_TRANSFER -> transferModeColor
             AutoLinkMode.MODE_CUSTOM -> customModeColor
         }
     }
@@ -191,10 +189,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
 
     fun setAccountModeColor(@ColorInt accountModeColor: Int) {
         this.accountModeColor = accountModeColor
-    }
-
-    fun setTransferModeColor(@ColorInt transferColor: Int) {
-        this.transferModeColor = transferModeColor
     }
 
     fun setCustomModeColor(@ColorInt customModeColor: Int) {

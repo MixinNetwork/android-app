@@ -22,11 +22,10 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
-import one.mixin.android.ui.url.isMixinUrl
+import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -107,13 +106,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener({ _, url ->
-            when {
-                isMixinUrl(url) -> LinkBottomSheetDialogFragment
-                    .newInstance(url).show(fragmentManager, LinkBottomSheetDialogFragment.TAG)
-                else -> WebBottomSheetDialogFragment
-                    .newInstance(url, conversationId)
-                    .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
-            }
+            openUrl(url, conversationId, requireFragmentManager())
             dialog?.dismiss()
         })
 
@@ -296,7 +289,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             .setNegativeButton(R.string.cancel, { dialog, _ ->
                 dialog.dismiss()
             })
-            .setPositiveButton(R.string.confirm, { dialog, which ->
+            .setPositiveButton(R.string.confirm, { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     bottomViewModel.mute(it.userId, user.userId, duration.toLong())
