@@ -43,7 +43,6 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.R.id.chat_et
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
@@ -238,7 +237,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         RxPermissions(activity!!)
                             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
                                 Manifest.permission.READ_EXTERNAL_STORAGE)
-                            .autoDisposable(scopeProvider)
                             .subscribe({ granted ->
                                 if (granted) {
                                     openVideo()
@@ -250,19 +248,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             })
                         hideMediaLayout()
                     }
-                    R.id.menu_document -> RxPermissions(activity!!)
-                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .autoDisposable(scopeProvider)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                selectDocument()
-                                hideMediaLayout()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
+                    R.id.menu_document -> {
+                        RxPermissions(activity!!)
+                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    selectDocument()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                                Bugsnag.notify(it)
+                            })
+                        hideMediaLayout()
+                    }
                     R.id.menu_transfer -> {
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {

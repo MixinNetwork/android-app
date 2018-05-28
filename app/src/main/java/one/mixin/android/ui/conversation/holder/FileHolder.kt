@@ -8,7 +8,7 @@ import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
-import android.widget.FrameLayout
+import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_file.view.*
 import one.mixin.android.R
@@ -194,9 +194,9 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
             } else {
                 itemView.chat_layout.setBackgroundResource(R.drawable.bill_bubble_me)
             }
-            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
         } else {
-            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
             if (isLast) {
                 itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other_last)
             } else {
