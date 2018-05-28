@@ -249,7 +249,7 @@
     <string name="wallet_transfer_confirm_send">Send(%d)</string>
     <string name="wallet_transfer_confirm_title">转账确认</string>
     <string name="wallet_transfer_coin">%s 转账</string>
-    <string name="wallet_transfer_type">Transfer Type</string>
+    <string name="wallet_transfer_type">转账类型</string>
     <string name="wallet_pay_with_pwd">用钱包密码支付</string>
     <string name="wallet_transfer_amount">转账金额</string>
     <string name="wallet_transfer_memo">备注（可选）</string>
