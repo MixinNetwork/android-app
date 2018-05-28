@@ -70,7 +70,7 @@ fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
 fun getRSAPrivateKeyFromString(privateKeyPEM: String): PrivateKey {
     val striped = stripRsaPrivateKeyHeaders(privateKeyPEM)
     val keySpec = PKCS8EncodedKeySpec(Base64.decode(striped))
-    val kf = KeyFactory.getInstance("RSA", "BC")
+    val kf = KeyFactory.getInstance("RSA")
     return kf.generatePrivate(keySpec)
 }
 

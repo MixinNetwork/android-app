@@ -9,6 +9,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.MotionEvent
@@ -123,6 +124,11 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.setWindowAnimations(R.style.DialogNoAnimation)
+        if (Build.VERSION.SDK_INT >= 26) {
+            window.decorView.systemUiVisibility =
+                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        }
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
         sheetContainer.fitsSystemWindows = true
