@@ -29,10 +29,14 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
         return BottomSheet.Builder(requireContext(), true).create()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDetach() {
+        super.onDetach()
         if (activity is UrlInterpreterActivity) {
-            (activity as UrlInterpreterActivity).finish()
+            fragmentManager?.fragments?.let {
+                if (it.size <= 0) {
+                    activity?.finish()
+                }
+            }
         }
     }
 
