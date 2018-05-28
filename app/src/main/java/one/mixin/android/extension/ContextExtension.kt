@@ -46,8 +46,6 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import org.jetbrains.anko.displayMetrics
-import org.jetbrains.anko.support.v4.toast
-import org.jetbrains.anko.toast
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
@@ -266,7 +264,7 @@ fun Fragment.openCamera(output: Uri) {
     if (intent.resolveActivity(context!!.packageManager) != null) {
         startActivityForResult(intent, REQUEST_GAMERA)
     } else {
-        toast(R.string.error_no_camera)
+        context?.toast(R.string.error_no_camera)
     }
 }
 

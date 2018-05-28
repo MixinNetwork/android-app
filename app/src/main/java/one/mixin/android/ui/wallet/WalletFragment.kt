@@ -24,6 +24,7 @@ import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
+import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PieItemView
@@ -152,7 +153,8 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         val cur = System.currentTimeMillis()
         val last = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_CHECK, 0)
         var interval = defaultSharedPreferences.getLong(Constants.Account.PREF_PIN_INTERVAL, 0)
-        if (last != 0L && interval == 0L) { // version until 0.3.0
+        val account = Session.getAccount()
+        if (account != null && account.hasPin && last == 0L) {
             interval = Constants.INTERVAL_24_HOURS
         }
         if (cur - last > interval) {

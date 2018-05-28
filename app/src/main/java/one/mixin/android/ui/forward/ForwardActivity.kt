@@ -5,11 +5,11 @@ import android.content.Intent
 import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import org.jetbrains.anko.toast
 
 class ForwardActivity : BlazeBaseActivity() {
     companion object {

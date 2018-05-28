@@ -1,14 +1,13 @@
 package one.mixin.android.util
 
 import android.content.Context
-import android.util.Log
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
+import one.mixin.android.extension.toast
 import org.jetbrains.anko.runOnUiThread
-import org.jetbrains.anko.toast
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -37,7 +36,6 @@ open class ErrorHandler {
                     }
                     else -> ctx.toast(R.string.error_unknown)
                 }
-                Log.e("Error", "", throwable)
             }
         }
 

@@ -79,6 +79,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.title.title_tv.text = getString(R.string.contact_receive_money)
             contentView.tip_tv.text = getString(R.string.contact_receive_tip)
         }
+        dialog?.dismiss()
         bottomViewModel.findUserById(userId).observe(this, Observer { user ->
             if (user == null) {
                 bottomViewModel.refreshUser(userId)

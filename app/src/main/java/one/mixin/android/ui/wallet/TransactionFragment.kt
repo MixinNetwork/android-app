@@ -14,6 +14,7 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -22,7 +23,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColorResource
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
@@ -71,7 +71,7 @@ class TransactionFragment : BaseFragment() {
                 val snapshot = walletViewModel.snapshotLocal(assetId!!, snapshotId!!)
                 uiThread {
                     if (asset == null || snapshot == null) {
-                        toast(R.string.error_unknown)
+                        context?.toast(R.string.error_unknown)
                     } else {
                         updateUI(asset, snapshot)
                     }

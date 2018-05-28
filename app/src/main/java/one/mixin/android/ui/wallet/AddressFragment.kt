@@ -21,12 +21,12 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.saveQRCode
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
-import org.jetbrains.anko.support.v4.toast
 
 class AddressFragment : Fragment() {
     companion object {
@@ -67,7 +67,7 @@ class AddressFragment : Fragment() {
         }
         address_layout.setOnClickListener {
             context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.publicKey)
-            toast(R.string.copy_success)
+            context?.toast(R.string.copy_success)
         }
         key_code.text = asset.publicKey
         if (context!!.isQRCodeFileExists(asset.publicKey)) {

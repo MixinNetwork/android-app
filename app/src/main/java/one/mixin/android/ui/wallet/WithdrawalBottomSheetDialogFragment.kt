@@ -17,8 +17,9 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -30,7 +31,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 import java.util.UUID
@@ -124,7 +124,7 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         .autoDisposable(scopeProvider).subscribe({
                         if (it.isSuccess) {
                             context?.updatePinCheck()
-                            toast(R.string.withdrawal_success)
+                            context?.toast(R.string.withdrawal_success)
                             callback?.onSuccess()
                             bottomViewModel.insertSnapshot(it.data!!)
                             dismiss()

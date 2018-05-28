@@ -42,6 +42,7 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.rotate
 import one.mixin.android.extension.toBytes
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.extension.xYuv2Simple
@@ -55,7 +56,6 @@ import one.mixin.android.widget.CameraOpView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.UI
 import org.jetbrains.anko.support.v4.alert
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.yesButton
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -241,7 +241,7 @@ class CaptureFragment : BaseFragment() {
                     captureViewModel.saveAsset(paymentResponse.asset)
                     captureViewModel.saveUser(paymentResponse.recipient)
                     if (paymentResponse.status == PaymentStatus.paid.name) {
-                        toast(R.string.pay_paid)
+                        context?.toast(R.string.pay_paid)
                     } else {
                         MainActivity.showPay(context!!, paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
                     }
@@ -284,7 +284,7 @@ class CaptureFragment : BaseFragment() {
                             pb?.visibility = View.GONE
                             val account = Session.getAccount()
                             if (account != null && account.userId == (result.second as User).userId) {
-                                toast("It's your QR Code, please try another.")
+                                context?.toast("It's your QR Code, please try another.")
                                 mCaptureManager.resume()
                                 return@subscribe
                             }

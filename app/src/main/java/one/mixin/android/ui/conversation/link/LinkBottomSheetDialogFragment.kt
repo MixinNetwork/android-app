@@ -32,6 +32,7 @@ import one.mixin.android.di.Injectable
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
@@ -44,7 +45,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import javax.inject.Inject
 
@@ -106,7 +106,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
             val segments = Uri.parse(url).pathSegments
             val userId = segments[0]
             if (!userId.isUUID()) {
-                toast(R.string.error_user_invalid_format)
+                context?.toast(R.string.error_user_invalid_format)
                 dismiss()
             } else {
                 Flowable.just(userId).subscribeOn(Schedulers.io()).map {
@@ -124,11 +124,11 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         UserBottomSheetDialogFragment.newInstance(it)
                             .show(fragmentManager, UserBottomSheetDialogFragment.TAG)
                     }, {
-                        toast(R.string.error_user_not_found)
+                        context?.toast(R.string.error_user_not_found)
                         dialog?.dismiss()
                     })
                 }, {
-                    toast(R.string.error_user_not_found)
+                    context?.toast(R.string.error_user_not_found)
                     dialog?.dismiss()
                 })
             }
@@ -144,7 +144,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                 if (r.isSuccess) {
                     val paymentResponse = r.data!!
                     if (paymentResponse.status == PaymentStatus.paid.name) {
-                        toast(R.string.pay_paid)
+                        context?.toast(R.string.pay_paid)
                     } else {
                         authOrPay = true
                         TransferBottomSheetDialogFragment
@@ -174,7 +174,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         val found = response.participants.find { it.userId == Session.getAccountId() }
                         if (found != null) {
                             linkViewModel.refreshConversation(response.conversationId)
-                            toast(R.string.group_already_in)
+                            context?.toast(R.string.group_already_in)
                             context?.let {
                                 if (isAdded)
                                     ConversationActivity.show(it, response.conversationId, isGroup = true)
@@ -190,7 +190,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         val user = result.second as User
                         val account = Session.getAccount()
                         if (account != null && account.userId == (result.second as User).userId) {
-                            toast("It's your QR Code, please try another.")
+                            context?.toast("It's your QR Code, please try another.")
                             dismiss()
                             return@subscribe
                         }

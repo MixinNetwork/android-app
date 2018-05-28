@@ -20,6 +20,7 @@ import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -36,7 +37,6 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.margin
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import org.threeten.bp.Instant
 
@@ -182,19 +182,9 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.bot_iv.visibility = VISIBLE
             doAsync {
                 bottomViewModel.findAppById(user.appId!!)?.let { app ->
-                    val creator = bottomViewModel.getUserById(app.creatorId)
                     uiThread {
-                        if (!isAdded) return@uiThread
-
                         contentView.detail_tv.visibility = VISIBLE
                         contentView.open_fl.visibility = VISIBLE
-                        contentView.creator_tv.visibility = GONE
-                        if (!TextUtils.isEmpty(creator?.fullName)) {
-                            contentView.creator_tv.visibility = VISIBLE
-                            contentView.creator_tv.text = creator?.fullName
-                        } else {
-                            contentView.creator_tv.visibility = GONE
-                        }
                         contentView.detail_tv.text = app.description
                         contentView.open_fl.setOnClickListener {
                             dialog?.dismiss()
@@ -202,6 +192,18 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 .newInstance(app.homeUri, conversationId, app.name)
                                 .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
                         }
+                        bottomViewModel.findUserById(app.creatorId).observe(this@UserBottomSheetDialogFragment, Observer {
+                            if (it != null) {
+                                if (!TextUtils.isEmpty(it.fullName)) {
+                                    contentView.creator_tv.visibility = VISIBLE
+                                    contentView.creator_tv.text = it.fullName
+                                } else {
+                                    contentView.creator_tv.visibility = GONE
+                                }
+                            } else {
+                                bottomViewModel.refreshUser(app.creatorId)
+                            }
+                        })
                     }
                 }
             }
@@ -293,7 +295,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val account = Session.getAccount()
                 account?.let {
                     bottomViewModel.mute(it.userId, user.userId, duration.toLong())
-                    toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
+                    context?.toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
                 }
                 dialog.dismiss()
             })
@@ -317,7 +319,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val account = Session.getAccount()
         account?.let {
             bottomViewModel.mute(it.userId, user.userId, 0)
-            toast(getString(R.string.un_mute) + " ${user.fullName}")
+            context?.toast(getString(R.string.un_mute) + " ${user.fullName}")
         }
     }
 

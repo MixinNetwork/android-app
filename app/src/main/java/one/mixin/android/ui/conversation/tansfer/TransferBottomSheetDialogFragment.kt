@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
@@ -29,7 +30,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 
@@ -138,7 +138,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             contentView.pin_va.displayedChild = POS_PIN
                             if (it.isSuccess) {
                                 context?.updatePinCheck()
-                                toast(R.string.transfer_success)
+                                context?.toast(R.string.transfer_success)
                                 dismiss()
                                 callback?.onSuccess()
                             } else {

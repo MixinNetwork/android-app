@@ -75,6 +75,7 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.round
 import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.ui.camera.CameraActivity.Companion.REQUEST_CODE
@@ -125,7 +126,6 @@ import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHid
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.dip
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
@@ -715,7 +715,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             try {
                 context?.getClipboardManager()?.primaryClip =
                     ClipData.newPlainText(null, chatAdapter.selectSet.valueAt(0)?.content)
-                toast(R.string.copy_success)
+                context?.toast(R.string.copy_success)
             } catch (e: ArrayIndexOutOfBoundsException) {
             }
             closeTool()
@@ -890,7 +890,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 notNullElse(it, { app ->
                     chat_bot.setOnClickListener {
-                        openUrl(app[0].homeUri, conversationId)
+                        openUrl(app[0].homeUri, conversationId, requireFragmentManager())
                     }
                 }, {
                     chat_bot.setOnClickListener(null)
@@ -972,12 +972,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         0 -> {
                             markRead()
                         }
-                        -1 -> toast(R.string.error_image)
-                        -2 -> toast(R.string.error_format)
+                        -1 -> context?.toast(R.string.error_image)
+                        -2 -> context?.toast(R.string.error_format)
                     }
                     scrollTo(0)
                 }, {
-                    toast(R.string.error_image)
+                    context?.toast(R.string.error_image)
                 })
         }
     }
@@ -1357,14 +1357,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     context!!.startActivity(intent)
                 }
             } catch (e: ActivityNotFoundException) {
-                toast(R.string.error_unable_to_open_media)
+                context?.toast(R.string.error_unable_to_open_media)
             }
         } else {
             try {
                 messageItem.mediaUrl?.let {
                     val file = File(it)
                     if (!file.exists()) {
-                        toast(R.string.error_file_exists)
+                        context?.toast(R.string.error_file_exists)
                     } else {
                         val uri = context!!.getUriForFile(file)
                         intent.setDataAndType(uri, messageItem.mediaMimeType)
@@ -1372,7 +1372,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
             } catch (e: ActivityNotFoundException) {
-                toast(R.string.error_unable_to_open_media)
+                context?.toast(R.string.error_unable_to_open_media)
             }
         }
     }
