@@ -169,11 +169,11 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             UserBottomSheetDialogFragment.newInstance(user).show(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(TRANSFER)) {
-            val user = intent.getParcelableExtra<User>(TRANSFER)
+            val userId = intent.getStringExtra(TRANSFER)
             supportFragmentManager?.inTransaction {
                 setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                     R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                    .add(R.id.home_container, TransferFragment.newInstance(user.userId), TransferFragment.TAG)
+                    .add(R.id.home_container, TransferFragment.newInstance(userId), TransferFragment.TAG)
                     .addToBackStack(null)
             }
         } else if (intent.extras != null && intent.extras.getString("conversation_id", null) != null) {
@@ -342,8 +342,8 @@ class MainActivity : BlazeBaseActivity() {
             }
         }
 
-        fun showTransfer(context: Context, user: User) {
-            Intent(context, MainActivity::class.java).apply { putExtra(TRANSFER, user) }.run {
+        fun showTransfer(context: Context, userId: String) {
+            Intent(context, MainActivity::class.java).apply { putExtra(TRANSFER, userId) }.run {
                 context.startActivity(this)
             }
         }

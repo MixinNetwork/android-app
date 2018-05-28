@@ -139,6 +139,22 @@ class TransferFragment : BaseFragment() {
                 }
             }
         }
+
+        chatViewModel.findUserById(userId).observe(this, Observer { u ->
+            if (u == null) {
+                jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
+            } else {
+                user = u
+
+                title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, u.fullName))
+                title_view.avatar_iv.setInfo(if (!u.fullName.isNullOrEmpty()) u.fullName!![0] else ' ',
+                    u.avatarUrl, u.identityNumber)
+                title_view.avatar_iv.setOnClickListener {
+                    UserBottomSheetDialogFragment.newInstance(u).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                }
+            }
+        })
+
         continue_animator.setOnClickListener {
             if (!isAdded || user == null) return@setOnClickListener
 
@@ -197,20 +213,6 @@ class TransferFragment : BaseFragment() {
                             asset_desc.text = "0"
                         })
                     }
-                }
-            }
-        })
-        chatViewModel.findUserById(userId).observe(this, Observer { u ->
-            if (u == null) {
-                jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))   
-            } else {
-                user = u
-
-                title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, u.fullName))
-                title_view.avatar_iv.setInfo(if (!u.fullName.isNullOrEmpty()) u.fullName!![0] else ' ',
-                    u.avatarUrl, u.identityNumber)
-                title_view.avatar_iv.setOnClickListener {
-                    UserBottomSheetDialogFragment.newInstance(u).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
             }
         })
