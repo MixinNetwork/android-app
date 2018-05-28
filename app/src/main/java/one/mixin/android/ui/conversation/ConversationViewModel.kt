@@ -16,6 +16,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
@@ -33,8 +34,10 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAckMessageJob
@@ -217,9 +220,13 @@ internal constructor(
             }
         }.observeOn(AndroidSchedulers.mainThread())!!
 
-    fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int> {
+    fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         val mimeType = getMimeType(uri)
+        if (mimeType?.isImageSupport() != true) {
+            MixinApplication.get().toast(R.string.error_format)
+            return null
+        }
         if (mimeType == "image/gif") {
             return Flowable.just(uri).map {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp()
@@ -235,6 +242,7 @@ internal constructor(
                 return@map -0
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
         }
+
         val temp = MixinApplication.get().getImagePath().createImageTemp(type = if (mimeType == "image/png") {
             ".png"
         } else {
@@ -252,10 +260,6 @@ internal constructor(
                 val length = imageFile.length()
                 if (length <= 0) {
                     return@map -1
-                }
-                if (mimeType == null || (mimeType != "image/png" &&
-                        mimeType != "image/jpg" && mimeType != "image/jpeg")) {
-                    return@map -2
                 }
                 val size = getImageSize(imageFile)
                 val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)

@@ -23,8 +23,8 @@ interface MessageDao : BaseDao<Message> {
         "u1.full_name as participantFullName, m.action as actionName, u1.user_id as participantUserId, " +
         "s.snapshot_id as snapshotId, s.type as snapshotType, s.amount as snapshotAmount, a.symbol as assetSymbol, a.asset_id as assetId, " +
         "a.icon_url as assetIcon, st.asset_url as assetUrl, st.asset_width as assetWidth, st.asset_height as assetHeight, st.album_id as albumId, " +
-        "st.name as assetName, h.site_name as siteName, h.site_title as siteTitle, h.site_description as siteDescription, h.site_image as siteImage, " +
-        "m.shared_user_id as sharedUserId, su.full_name as sharedUserFullName, su.identity_number as sharedUserIdentityNumber, " +
+        "st.name as assetName, st.asset_type as assetType, h.site_name as siteName, h.site_title as siteTitle, h.site_description as siteDescription, " +
+        "h.site_image as siteImage, m.shared_user_id as sharedUserId, su.full_name as sharedUserFullName, su.identity_number as sharedUserIdentityNumber, " +
         "su.avatar_url as sharedUserAvatarUrl, su.is_verified as sharedUserIsVerified, su.app_id as sharedUserAppId " +
         "FROM messages m " +
         "INNER JOIN users u ON m.user_id = u.user_id " +

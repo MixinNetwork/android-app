@@ -10,8 +10,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_preview.view.*
@@ -20,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
@@ -105,27 +104,29 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
         dialog.window.setBackgroundDrawable(ColorDrawable(0x00000000))
         dialog.window.setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT)
         dialog.window.setWindowAnimations(R.style.BottomSheet_Animation)
-        if (isVideo) {
-            val mimeType = getMimeType(uri!!)
-            if (mimeType == null || !mimeType.startsWith("video", true)) {
-                context?.toast(R.string.error_format)
-                dismiss()
-            }
-            mixinPlayer.loadVideo(uri.toString())
-            mixinPlayer.setVideoTextureView(mediaDialogView!!.dialog_video_texture)
-            mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(context!!))
-            Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
-                if (mixinPlayer.duration() != 0 && mixinPlayer.isPlaying()) {
-                    mediaDialogView!!.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
+        dialog.setOnShowListener {
+            if (isVideo) {
+                val mimeType = getMimeType(uri!!)
+                if (mimeType == null || !mimeType.startsWith("video", true)) {
+                    context?.toast(R.string.error_format)
+                    dismiss()
                 }
+                mixinPlayer.loadVideo(uri.toString())
+                mixinPlayer.setVideoTextureView(mediaDialogView!!.dialog_video_texture)
+                mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(context!!))
+                Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
+                    if (mixinPlayer.duration() != 0 && mixinPlayer.isPlaying()) {
+                        mediaDialogView!!.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
+                    }
+                }
+                mediaDialogView!!.dialog_ok.setOnClickListener {
+                    action!!(uri!!)
+                    dismiss()
+                }
+            } else {
+                mediaDialogView!!.dialog_send_ib.setOnClickListener { action!!(uri!!); dismiss() }
+                mediaDialogView!!.dialog_iv.loadImage(uri)
             }
-            mediaDialogView!!.dialog_ok.setOnClickListener {
-                action!!(uri!!)
-                dismiss()
-            }
-        } else {
-            mediaDialogView!!.dialog_send_ib.setOnClickListener { action!!(uri!!); dismiss() }
-            Glide.with(context!!).load(uri).apply(RequestOptions().fitCenter()).into(mediaDialogView!!.dialog_iv)
         }
     }
 

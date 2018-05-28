@@ -9,6 +9,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
@@ -16,8 +17,8 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadVideoUseMark
+import one.mixin.android.extension.loadBase64
+import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
@@ -36,19 +37,36 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         itemView.progress.round(radius)
     }
 
+    private val dp4 by lazy {
+        itemView.context.dpToPx(4f)
+    }
+
+    private val dp6 by lazy {
+        itemView.context.dpToPx(6f)
+    }
+
     private val dp10 by lazy {
         itemView.context.dpToPx(10f)
     }
 
+    private val dp100 by lazy {
+        itemView.context.dpToPx(100f)
+    }
+
     private val dp94 by lazy {
-        itemView.context.dpToPx(94f)
+        dp100 - dp6
     }
 
     private val dp194 by lazy {
-        itemView.context.dpToPx(194f)
+        dp200 - dp6
+    }
+
+    private val dp200 by lazy {
+        itemView.context.dpToPx(200f)
     }
 
     private val scale = 1.5f
+
     private var thumbId: Int? = null
 
     fun bind(
@@ -94,8 +112,25 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         } else {
             itemView.chat_name.visibility = View.GONE
         }
+
         var maxWidth = dp194
         var minWidth = dp94
+        when {
+            isLast -> {
+                maxWidth = dp200
+                minWidth = dp100
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            isMe -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            else -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
+            }
+        }
         if (messageItem.mediaWidth == null || messageItem.mediaHeight == null ||
             messageItem.mediaWidth <= 0 || messageItem.mediaHeight <= 0) {
             itemView.chat_image.layoutParams.width = minWidth
@@ -118,16 +153,26 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 }
             }
         }
-        val mark = R.drawable.chat_mark_image
 
+        val mark = when {
+            isMe && isLast -> R.drawable.chat_mark_image_me
+            isMe -> R.drawable.chat_mark_image
+            !isMe && isLast -> R.drawable.chat_mark_image_other
+            else -> R.drawable.chat_mark_image
+        }
+
+        itemView.chat_image.setShape(mark)
         notNullElse(messageItem.mediaUrl, {
-            itemView.chat_image.loadVideoUseMark(it, R.drawable.image_holder, mark)
+            if (thumbId != it.hashCode() + mark) {
+                itemView.chat_image.loadVideoMark(it, R.drawable.image_holder, mark)
+                thumbId = it.hashCode() + mark
+            }
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (messageItem.thumbImage != null && thumbId != messageItem.thumbImage.hashCode()) {
-                    itemView.chat_image.loadImage(messageItem.thumbImage.decodeBase64(),
+                if (messageItem.thumbImage != null && thumbId != messageItem.thumbImage.hashCode() + mark) {
+                    itemView.chat_image.loadBase64(messageItem.thumbImage.decodeBase64(),
                         itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
-                    thumbId = messageItem.thumbImage.hashCode()
+                    thumbId = messageItem.thumbImage.hashCode() + mark
                 }
             }
         })
@@ -271,11 +316,23 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
         if (isMe) {
+            if (isLast) {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow_last)
+            } else {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            }
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
         } else {
+            if (isLast) {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            } else {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            }
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
         }
     }
 }

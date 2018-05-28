@@ -11,6 +11,7 @@ buildscript {
         ext.ktxVersion = '0.3'
         ext.espressoVersion = '3.0.1'
         ext.glideVersion = '4.7.1'
+        ext.webpdecoderVesion = '0.0.7.4.6.1'
         ext.timberVersion = '4.7.0'
         ext.okhttpVersion = '3.10.0'
         ext.rxJavaVersion = '2.1.14'
@@ -48,11 +49,11 @@ buildscript {
         ext.mockitoCoreVersion = '2.7.19'
         ext.testSupVersion = '1.0.1'
 
-        ext.fasterxmlVersion= '2.8.11'
-        ext.gsonVersion= '2.8.5'
-        ext.autodisposeVersion= '0.8.0'
-        ext.bugsnagVersion= '4.4.0'
-        ext.jsoupVersion= '1.11.2'
+        ext.fasterxmlVersion = '2.8.11'
+        ext.gsonVersion = '2.8.5'
+        ext.autodisposeVersion = '0.8.0'
+        ext.bugsnagVersion = '4.4.0'
+        ext.jsoupVersion = '1.11.2'
     }
 
     repositories {

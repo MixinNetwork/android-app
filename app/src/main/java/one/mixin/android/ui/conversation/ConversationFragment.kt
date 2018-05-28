@@ -210,7 +210,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 Manifest.permission.READ_EXTERNAL_STORAGE)
                             .subscribe({ granted ->
                                 if (granted) {
-                                    openCamera(imageUri)
+                                    imageUri = createImageUri()
+                                    imageUri?.let {
+                                        openCamera(it)
+                                    }
                                 } else {
                                     context?.openPermissionSetting()
                                 }
@@ -453,9 +456,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
     }
 
-    private val imageUri: Uri by lazy {
-        Uri.fromFile(context?.getImagePath()?.createImageTemp())
-    }
+    private var imageUri: Uri? = null
+    private fun createImageUri() = Uri.fromFile(context?.getImagePath()?.createImageTemp())
 
     private val conversationId: String by lazy {
         var cid = arguments!!.getString(CONVERSATION_ID)
@@ -978,7 +980,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun sendImageMessage(uri: Uri) {
         createConversation {
             chatViewModel.sendImageMessage(conversationId, sender, uri, isPlainMessage())
-                .autoDisposable(scopeProvider).subscribe({
+                ?.autoDisposable(scopeProvider)?.subscribe({
                     when (it) {
                         0 -> {
                             markRead()
@@ -1325,14 +1327,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             data?.let {
-                showPreview(it.data, { sendImageMessage(it) })
+                showPreview(it.data) { sendImageMessage(it) }
             }
         } else if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
-                showPreview(it, { sendImageMessage(it) })
+                showPreview(it) { sendImageMessage(it) }
             }
         } else if (requestCode == REQUEST_GAMERA && resultCode == Activity.RESULT_OK) {
-            showPreview(imageUri, { sendImageMessage(it) })
+            imageUri?.let { imageUri ->
+                showPreview(imageUri) { sendImageMessage(it) }
+            }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
             context?.getAttachment(uri)?.let {
@@ -1342,15 +1346,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     } else {
                         context!!.getString(R.string.send_file, it.filename, recipient?.fullName)
                     })
-                    .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-                    .setPositiveButton(R.string.send, { dialog, _ ->
+                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                    .setPositiveButton(R.string.send) { dialog, _ ->
                         sendAttachmentMessage(it)
                         dialog.dismiss()
-                    }).show()
+                    }.show()
             }
         } else if (requestCode == REQUEST_VIDEO && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-            showVideoPreview(uri, { sendVideoMessage(it) })
+            showVideoPreview(uri) { sendVideoMessage(it) }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }

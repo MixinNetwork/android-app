@@ -147,6 +147,7 @@ dependencies {
     implementation "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
     implementation "org.jetbrains.anko:anko-coroutines:$anko_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "com.zlc.glide:webpdecoder:$webpdecoderVesion"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
