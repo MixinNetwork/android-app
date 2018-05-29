@@ -139,7 +139,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
                 android:src="@drawable/ic_new_group"
                 tools:ignore="ContentDescription"/>
 
@@ -187,7 +188,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
                 android:src="@drawable/ic_add_contact"
                 tools:ignore="ContentDescription"/>
 
@@ -208,6 +210,12 @@
                 android:layout_below="@id/center_add_contact"
                 android:layout_toEndOf="@+id/add_contact_iv"
                 android:text="@string/contact_add_contact_desc"/>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
+                android:layout_alignParentBottom="true"
+                android:background="@color/divider"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -229,7 +237,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
                 android:src="@drawable/ic_qr_code"
                 tools:ignore="ContentDescription"/>
 
@@ -273,7 +282,8 @@
                 android:layout_height="wrap_content"
                 android:src="@drawable/ic_invite"
                 android:layout_centerVertical="true"
-                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="24dp"
+                android:layout_marginEnd="24dp"
                 tools:ignore="ContentDescription"/>
 
         <TextView
