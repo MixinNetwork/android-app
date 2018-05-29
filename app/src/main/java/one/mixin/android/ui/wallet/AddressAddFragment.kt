@@ -22,6 +22,8 @@ import one.mixin.android.ui.qr.CaptureFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ADD
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ARGS_TYPE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.decodeICAP
+import one.mixin.android.util.isIcapAddress
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColor
@@ -106,8 +108,12 @@ class AddressAddFragment : BaseFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == IntentIntegrator.REQUEST_CODE && resultCode == CaptureFragment.RESULT_CODE) {
-            val addr = data?.getStringExtra(CaptureFragment.ARGS_ADDRESS_RESULT)
-            addr_et.setText(addr)
+            val addr = data?.getStringExtra(CaptureFragment.ARGS_ADDRESS_RESULT) ?: return
+            if (isIcapAddress(addr)) {
+                addr_et.setText(decodeICAP(addr))
+            } else {
+                addr_et.setText(addr)
+            }
         }
     }
 
