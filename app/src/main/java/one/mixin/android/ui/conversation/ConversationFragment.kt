@@ -890,7 +890,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 notNullElse(it, { app ->
                     chat_bot.setOnClickListener {
-                        openUrl(app[0].homeUri, conversationId)
+                        openUrl(app[0].homeUri, conversationId, requireFragmentManager())
                     }
                 }, {
                     chat_bot.setOnClickListener(null)
