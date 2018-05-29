@@ -86,7 +86,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val info = if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0] else ' '
                 contentView.badge_view.bg.setInfo(info, user.avatarUrl, user.identityNumber)
                 if (type == TYPE_RECEIVE_QR) {
-                    contentView.badge_view.badge.setImageResource(R.drawable.ic_qr_code_preview)
+                    contentView.badge_view.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
                     contentView.badge_view.pos = END_BOTTOM
                 }
 

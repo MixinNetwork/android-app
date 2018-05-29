@@ -91,7 +91,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:drawablePadding="8dp"
-                    android:drawableStart="@drawable/ic_share_black_24dp"
+                    android:drawableStart="@drawable/ic_contacts_receive"
                     android:textColor="@color/black"
                     android:text="@string/contact_receive_money"/>
         </FrameLayout>
@@ -113,7 +113,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
                     android:drawablePadding="8dp"
-                    android:drawableStart="@drawable/ic_qr_code_preview"
+                    android:drawableStart="@drawable/ic_contacts_qr"
                     android:textColor="@color/black"
                     android:text="@string/contact_my_qr_title"/>
         </FrameLayout>

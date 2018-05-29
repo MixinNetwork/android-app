@@ -108,7 +108,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             val view = parent.inflate(R.layout.item_contact_contact, false)
             ContactViewHolder(view)
         } else {
-            val view = parent.inflate(R.layout.item_contact_normal, false)
+            val view = parent.inflate(R.layout.item_contact_friend, false)
             FriendViewHolder(view)
         }
     }

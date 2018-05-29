@@ -28,7 +28,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
@@ -70,7 +69,6 @@ class ContactsFragment : BaseFragment() {
         contact_recycler_view.adapter = contactAdapter
         contact_recycler_view.setHasFixedSize(true)
         contact_recycler_view.layoutManager = LinearLayoutManager(context)
-        contact_recycler_view.addItemDecoration(SpaceItemDecoration(1))
         contact_recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
         val header = LayoutInflater.from(context).inflate(R.layout.view_contact_header, contact_recycler_view, false)
         contactAdapter.setHeader(header)
