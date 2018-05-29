@@ -13,6 +13,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_qr.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
+import one.mixin.android.Constants.MY_QR
 import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getQRCodePath
@@ -24,10 +25,10 @@ import one.mixin.android.vo.User
 
 class QRFragment : BaseFragment() {
     companion object {
-        val TAG = "QRFragment"
+        const val TAG = "QRFragment"
 
-        val WHITE = -0x1
-        val BLACK = -0x1000000
+        const val WHITE = -0x1
+        const val BLACK = -0x1000000
 
         fun newInstance(user: User?): QRFragment {
             val f = QRFragment()
@@ -51,26 +52,26 @@ class QRFragment : BaseFragment() {
             qr_avatar.setInfo(info, user.avatarUrl, user.identityNumber)
             name.text = user.fullName
             user_id.text = context?.getString(R.string.contact_mixin_id, user.identityNumber)
-        }
 
-        if (context!!.isQRCodeFileExists()) {
-            qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath().absolutePath))
-        } else {
-            qr.post {
-                Observable.create<Bitmap> { e ->
-                    val account = Session.getAccount() ?: return@create
-                    val b = account.code_url.generateQRCode(qr.width)
-                    if (b != null) {
-                        b.saveQRCode(context!!)
-                        e.onNext(b)
-                    }
-                }.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDisposable(scopeProvider)
-                    .subscribe({ r ->
-                        qr.setImageBitmap(r)
-                    }, { _ ->
-                    })
+            if (context!!.isQRCodeFileExists(MY_QR)) {
+                qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(MY_QR).absolutePath))
+            } else {
+                qr.post {
+                    Observable.create<Bitmap> { e ->
+                        val account = Session.getAccount() ?: return@create
+                        val b = account.code_url.generateQRCode(qr.width)
+                        if (b != null) {
+                            b.saveQRCode(context!!, account.code_url)
+                            e.onNext(b)
+                        }
+                    }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDisposable(scopeProvider)
+                        .subscribe({ r ->
+                            qr.setImageBitmap(r)
+                        }, { _ ->
+                        })
+                }
             }
         }
     }

@@ -25,7 +25,9 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
@@ -67,7 +69,6 @@ class ContactsFragment : BaseFragment() {
         contact_recycler_view.adapter = contactAdapter
         contact_recycler_view.setHasFixedSize(true)
         contact_recycler_view.layoutManager = LinearLayoutManager(context)
-        contact_recycler_view.addItemDecoration(SpaceItemDecoration(1))
         contact_recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(contactAdapter))
         val header = LayoutInflater.from(context).inflate(R.layout.view_contact_header, contact_recycler_view, false)
         contactAdapter.setHeader(header)
@@ -109,7 +110,7 @@ class ContactsFragment : BaseFragment() {
         })
         contactsViewModel.findSelf().observe(this, Observer { self ->
             if (self != null) {
-                contactAdapter.setSelf(self)
+                contactAdapter.me = self
                 contactAdapter.notifyDataSetChanged()
             }
         })
@@ -139,6 +140,7 @@ class ContactsFragment : BaseFragment() {
     }
 
     private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
+
         override fun onHeaderRl() {
             activity?.addFragment(this@ContactsFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
         }
@@ -171,6 +173,20 @@ class ContactsFragment : BaseFragment() {
 
         override fun onContactItem(user: User) {
             ContactBottomSheetDialog.newInstance(user).show(fragmentManager, ContactBottomSheetDialog.TAG)
+        }
+
+        override fun onMyQr(self: User?) {
+            self?.let {
+                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
+                    .show(fragmentManager, QrBottomSheetDialogFragment.TAG)
+            }
+        }
+
+        override fun onReceiveQr(self: User?) {
+            self?.let {
+                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
+                    .show(fragmentManager, QrBottomSheetDialogFragment.TAG)
+            }
         }
     }
 }

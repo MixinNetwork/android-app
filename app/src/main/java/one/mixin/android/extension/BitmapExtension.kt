@@ -28,14 +28,10 @@ fun Bitmap.toBytes(): ByteArray {
     return data
 }
 
-fun Bitmap.saveQRCode(ctx: Context, name: String? = null) {
+fun Bitmap.saveQRCode(ctx: Context, name: String) {
     val bos = ByteArrayOutputStream()
     compress(Bitmap.CompressFormat.PNG, 100, bos)
-    val fos = if (name != null) {
-        FileOutputStream(ctx.getAddressCodePath(name))
-    } else {
-        FileOutputStream(ctx.getQRCodePath())
-    }
+    val fos = FileOutputStream(ctx.getQRCodePath(name))
     fos.write(bos.toByteArray())
     fos.flush()
     fos.closeSilently()

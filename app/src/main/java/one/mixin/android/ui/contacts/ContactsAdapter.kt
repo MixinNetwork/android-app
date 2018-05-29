@@ -34,7 +34,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     private var mHeaderView: View? = null
     private var mFooterView: View? = null
     private var mContactListener: ContactListener? = null
-    private var mSelf: User? = null
+    var me: User? = null
 
     override fun getItemCount(): Int {
         return if (mHeaderView == null && mFooterView == null) {
@@ -108,7 +108,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             val view = parent.inflate(R.layout.item_contact_contact, false)
             ContactViewHolder(view)
         } else {
-            val view = parent.inflate(R.layout.item_contact_normal, false)
+            val view = parent.inflate(R.layout.item_contact_friend, false)
             FriendViewHolder(view)
         }
     }
@@ -116,7 +116,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (holder) {
             is HeadViewHolder -> {
-                holder.bind(mSelf, mContactListener)
+                holder.bind(me, mContactListener)
             }
             is FootViewHolder -> {
                 holder.bind(mContactListener)
@@ -151,10 +151,6 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
     fun removeFooter() {
         mFooterView = null
-    }
-
-    fun setSelf(self: User) {
-        mSelf = self
     }
 
     fun setContactListener(listener: ContactListener) {
@@ -201,6 +197,8 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                 itemView.contact_header_rl.setOnClickListener { listener.onHeaderRl() }
                 itemView.new_group_rl.setOnClickListener { listener.onNewGroup() }
                 itemView.add_contact_rl.setOnClickListener { listener.onAddContact() }
+                itemView.my_qr_fl.setOnClickListener { listener.onMyQr(self) }
+                itemView.receive_fl.setOnClickListener { listener.onReceiveQr(self) }
             }
         }
     }
@@ -244,5 +242,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun onEmptyRl()
         fun onFriendItem(user: User)
         fun onContactItem(user: User)
+        fun onMyQr(self: User?)
+        fun onReceiveQr(self: User?)
     }
 }

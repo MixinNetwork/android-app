@@ -25,6 +25,9 @@ object Constants {
     const val ARGS_USER = "args_user"
     const val ARGS_USER_ID = "args_user_id"
 
+    const val MIXIN_TRANSFER_PREFIX = "mixin://transfer/"
+    const val MY_QR = "my_qr"
+
     const val Mixin_Conversation_ID_HEADER = "Mixin-Conversation-ID"
     val KEYS = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
 

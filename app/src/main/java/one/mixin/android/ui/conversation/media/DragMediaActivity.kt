@@ -61,7 +61,7 @@ import one.mixin.android.extension.save
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.util.video.MixinPlayer
@@ -200,8 +200,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                                 .show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                         }
                     } else {
-                        QrBottomSheetDialogFragment.newInstance(url)
-                            .show(supportFragmentManager, QrBottomSheetDialogFragment.TAG)
+                        QrScanBottomSheetDialogFragment.newInstance(url)
+                            .show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
                     }
                 } else {
                     toast(R.string.can_not_recognize)

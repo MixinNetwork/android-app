@@ -4,7 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
@@ -45,7 +45,7 @@ abstract class MainActivityModule {
     internal abstract fun contributeGroupEditFragment(): GroupEditFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeQrBottomSheetDialogFragment(): QrBottomSheetDialogFragment
+    internal abstract fun contributeQrBottomSheetDialogFragment(): QrScanBottomSheetDialogFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeTransferFragment(): TransferFragment

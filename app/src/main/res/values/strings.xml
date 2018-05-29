@@ -146,6 +146,8 @@
     <string name="contact_sq_scan_title">Scan QR Code</string>
     <string name="contact_my_qr_title">My QR Code</string>
     <string name="contact_my_qr_tip">Scan the QR code to add me on Mixin</string>
+    <string name="contact_receive_money">Receive Money</string>
+    <string name="contact_receive_tip">Scan the QR Code to pay me</string>
     <!--profile-->
     <string name="profile_my_title">My Profile</string>
     <string name="profile_photo">Profile Photo</string>

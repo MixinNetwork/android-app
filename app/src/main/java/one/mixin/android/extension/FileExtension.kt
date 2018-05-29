@@ -131,28 +131,13 @@ fun Context.getImageCachePath(): File {
     return File("$root${File.separator}Images")
 }
 
-fun Context.isQRCodeFileExists(): Boolean {
-    val root = getBestAvailableCacheRoot()
-    val file = File("$root${File.separator}QRCodeUrl.png")
-    return file.exists() && file.length() > 0
-}
-
-fun Context.getQRCodePath(): File {
-    val root = getBestAvailableCacheRoot()
-    val file = File("$root${File.separator}QRCodeUrl.png")
-    if (!file.exists()) {
-        file.createNewFile()
-    }
-    return file
-}
-
-fun Context.isAddressCodeFileExists(name: String): Boolean {
+fun Context.isQRCodeFileExists(name: String): Boolean {
     val root = getBestAvailableCacheRoot()
     val file = File("$root${File.separator}$name.png")
     return file.exists() && file.length() > 0
 }
 
-fun Context.getAddressCodePath(name: String): File {
+fun Context.getQRCodePath(name: String): File {
     val root = getBestAvailableCacheRoot()
     val file = File("$root${File.separator}$name.png")
     if (!file.exists()) {
