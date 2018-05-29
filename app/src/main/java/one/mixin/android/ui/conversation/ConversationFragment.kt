@@ -43,7 +43,6 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.R.id.chat_et
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
@@ -238,7 +237,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         RxPermissions(activity!!)
                             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
                                 Manifest.permission.READ_EXTERNAL_STORAGE)
-                            .autoDisposable(scopeProvider)
                             .subscribe({ granted ->
                                 if (granted) {
                                     openVideo()
@@ -250,19 +248,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             })
                         hideMediaLayout()
                     }
-                    R.id.menu_document -> RxPermissions(activity!!)
-                        .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .autoDisposable(scopeProvider)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                selectDocument()
-                                hideMediaLayout()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
+                    R.id.menu_document -> {
+                        RxPermissions(activity!!)
+                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    selectDocument()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                                Bugsnag.notify(it)
+                            })
+                        hideMediaLayout()
+                    }
                     R.id.menu_transfer -> {
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
@@ -741,12 +741,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         menu_rv.adapter = menuAdapter
 
-        app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        app_rv.adapter = appAdapter
+        if (!isBot && recipient?.isBot() != true) {
+            app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+            app_rv.adapter = appAdapter
+        }
 
         shadow.setOnClickListener {
             hideMediaLayout()
         }
+
         if (isGroup || isBot || if (recipient != null) recipient!!.isBot() else false) {
             menuAdapter.showTransfer = false
         }
@@ -879,16 +882,32 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 })
             }, {})
 
-        chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
-            appAdapter.appList = it
-            if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
-                app_rv.visibility = GONE
-                extensions.visibility = GONE
-            } else {
-                app_rv.visibility = VISIBLE
-                extensions.visibility = VISIBLE
-            }
-        })
+        if (isBot || recipient?.isBot() == true) {
+            app_rv.visibility = GONE
+            extensions.visibility = GONE
+            chat_bot.visibility = VISIBLE
+            chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
+                notNullElse(it, { app ->
+                    chat_bot.setOnClickListener {
+                        openUrl(app[0].homeUri, conversationId)
+                    }
+                }, {
+                    chat_bot.setOnClickListener(null)
+                })
+            })
+        } else {
+            chat_bot.visibility = GONE
+            chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
+                appAdapter.appList = it
+                if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
+                    app_rv.visibility = GONE
+                    extensions.visibility = GONE
+                } else {
+                    app_rv.visibility = VISIBLE
+                    extensions.visibility = VISIBLE
+                }
+            })
+        }
     }
 
     private fun sendForwardMessages() {

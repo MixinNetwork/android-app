@@ -27,8 +27,11 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import one.mixin.android.R
 import one.mixin.android.extension.isTablet
+import one.mixin.android.extension.notNullElse
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
+import kotlin.math.abs
+import kotlin.math.min
 
 class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(context, R.style.TransparentDialog) {
 
@@ -269,18 +272,35 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
 
     fun getCustomView() = customView
 
-    fun setCustomViewHeight(height: Int) {
+    fun setCustomViewHeight(height: Int, endAction: (() -> Unit)? = null) {
         customViewHeight = height
         val params = customView?.layoutParams
+        val duration = notNullElse(customView?.layoutParams, {
+            min(abs(height - it.height), 200)
+        }, 200).toLong()
+        if (duration == 0L) {
+            return
+        }
         if (params != null) {
             val anim = ValueAnimator.ofInt(customView!!.height, height)
             anim.addUpdateListener {
                 val value = it.animatedValue as Int
                 params.height = value
                 customView?.layoutParams = params
+                if (value == height) {
+                    endAction?.let { it() }
+                }
             }
-            anim.duration = 200
+            anim.duration = duration
             anim.start()
+        }
+    }
+
+    fun setCustomViewHeightSync(height: Int) {
+        customViewHeight = height
+        customView?.layoutParams?.let { params ->
+            params.height = height
+            customView?.layoutParams = params
         }
     }
 
