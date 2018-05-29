@@ -17,6 +17,7 @@ import kotlinx.android.synthetic.main.fragment_add_people.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -24,7 +25,6 @@ import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.widget.Keyboard
-import org.jetbrains.anko.support.v4.toast
 import java.util.Locale
 import javax.inject.Inject
 
@@ -87,7 +87,7 @@ class AddPeopleFragment : BaseFragment() {
                         }
                     }
                 } else if (r.errorCode == ErrorHandler.NOT_FOUND) {
-                    toast(R.string.error_user_not_found)
+                    context?.toast(R.string.error_user_not_found)
                 } else {
                     ErrorHandler.handleMixinError(r.errorCode)
                 }

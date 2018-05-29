@@ -25,10 +25,6 @@ import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
-import one.mixin.android.R.id.empty_view
-import one.mixin.android.R.id.message_rv
-import one.mixin.android.R.id.shadow_view
-import one.mixin.android.R.id.start_bn
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyOrElse
@@ -36,6 +32,7 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.timeAgo
+import one.mixin.android.extension.toast
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.LinkFragment
@@ -52,7 +49,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import java.io.File
 import javax.inject.Inject
 
@@ -133,7 +129,7 @@ class ConversationListFragment : LinkFragment() {
                 if (conversation.isGroup() && (conversation.status == ConversationStatus.START.ordinal ||
                         conversation.status == ConversationStatus.FAILURE.ordinal)) {
                     if (!context!!.networkConnected()) {
-                        toast(R.string.error_network)
+                        context?.toast(R.string.error_network)
                         return
                     }
                     doAsync { messagesViewModel.createGroupConversation(conversation.conversationId) }

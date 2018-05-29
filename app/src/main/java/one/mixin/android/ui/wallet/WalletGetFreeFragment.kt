@@ -19,6 +19,7 @@ import kotlinx.android.synthetic.main.fragment_get_free.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
@@ -26,12 +27,11 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class WalletGetFreeFragment : BaseFragment() {
     companion object {
-        val TAG = "WalletGetFreeFragment"
+        const val TAG = "WalletGetFreeFragment"
 
         fun newInstance(): WalletGetFreeFragment = WalletGetFreeFragment()
     }
@@ -84,7 +84,7 @@ class WalletGetFreeFragment : BaseFragment() {
 
     private fun redeem(code: String) {
         if (code.isEmpty()) {
-            toast(R.string.can_not_empty)
+            context?.toast(R.string.can_not_empty)
             return
         }
         dialog?.dismiss()

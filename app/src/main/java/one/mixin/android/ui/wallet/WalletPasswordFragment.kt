@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -28,7 +29,6 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.support.v4.indeterminateProgressDialog
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
@@ -168,7 +168,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     private fun validatePin(): Boolean {
         val pin = pin.code()
         if (pin == "123456") {
-            toast(R.string.wallet_password_unsafe)
+            context?.toast(R.string.wallet_password_unsafe)
             return false
         }
 
@@ -179,7 +179,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
             }
         }
         if (numKind.size <= 2) {
-            toast(R.string.wallet_password_unsafe)
+            context?.toast(R.string.wallet_password_unsafe)
             return false
         }
 
@@ -212,15 +212,15 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
                                 activity?.let {
                                     if (it is ConversationActivity) {
-                                        toast(R.string.wallet_set_password_success)
+                                        context?.toast(R.string.wallet_set_password_success)
                                         it.onBackPressed()
                                     } else {
                                         if (change) {
                                             it.supportFragmentManager.popBackStackImmediate()
                                             it.supportFragmentManager.popBackStackImmediate()
-                                            toast(R.string.wallet_change_password_success)
+                                            context?.toast(R.string.wallet_change_password_success)
                                         } else {
-                                            toast(R.string.wallet_set_password_success)
+                                            context?.toast(R.string.wallet_set_password_success)
                                         }
                                         (it as AppCompatActivity).replaceFragment(WalletFragment.newInstance(),
                                             R.id.container, WalletFragment.TAG)
@@ -241,7 +241,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
     private fun checkEqual(): Boolean {
         if (lastPassword != pin.code()) {
-            toast(R.string.wallet_password_not_equal)
+            context?.toast(R.string.wallet_password_not_equal)
             toStep1()
             return true
         }

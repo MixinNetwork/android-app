@@ -20,6 +20,7 @@ import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
@@ -40,7 +41,6 @@ import org.jetbrains.anko.dimen
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.margin
 import org.jetbrains.anko.support.v4.dip
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import org.threeten.bp.Instant
@@ -218,7 +218,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
                             conversationId, conversation.announcement), GroupEditFragment.TAG)
                     }
-                    getString(R.string.edit_name) -> {
+                    getString(R.string.group_edit_name) -> {
                         keepDialog = true
                         showDialog(conversation.name)
                     }
@@ -254,7 +254,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val account = Session.getAccount()
         account?.let {
             bottomViewModel.mute(conversationId, 0)
-            toast(getString(R.string.un_mute) + " ${conversation.name}")
+            context?.toast(getString(R.string.un_mute) + " ${conversation.name}")
         }
     }
 
@@ -272,7 +272,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val account = Session.getAccount()
                 account?.let {
                     bottomViewModel.mute(conversationId, duration.toLong())
-                    toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
+                    context?.toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
                 }
                 dialog.dismiss()
             })

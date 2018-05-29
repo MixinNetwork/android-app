@@ -17,13 +17,13 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import java.io.File
 
@@ -79,7 +79,7 @@ class EditFragment : BaseFragment() {
                             val outFile = context!!.getImagePath().createImageTemp()
                             File(path).copy(outFile)
 
-                            uiThread { toast(R.string.save_success) }
+                            uiThread { context?.toast(R.string.save_success) }
                         }
                     } else {
                         context?.openPermissionSetting()

@@ -39,6 +39,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.util.ErrorHandler
@@ -51,7 +52,6 @@ import org.jetbrains.anko.margin
 import org.jetbrains.anko.noButton
 import org.jetbrains.anko.singleLine
 import org.jetbrains.anko.support.v4.alert
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class ProfileFragment : BaseFragment() {
@@ -169,7 +169,7 @@ class ProfileFragment : BaseFragment() {
         } else if (resultCode == UCrop.RESULT_ERROR) {
             if (data != null) {
                 val cropError = UCrop.getError(data)
-                toast(cropError.toString())
+                context?.toast(cropError.toString())
             }
         }
     }
@@ -216,7 +216,7 @@ class ProfileFragment : BaseFragment() {
 
     private fun redeem(code: String) {
         if (code.isEmpty()) {
-            toast(R.string.can_not_empty)
+            context?.toast(R.string.can_not_empty)
             return
         }
         dialog?.dismiss()

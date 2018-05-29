@@ -14,11 +14,11 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
 import one.mixin.android.util.ErrorHandler
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColorResource
 import javax.inject.Inject
 
@@ -65,7 +65,7 @@ class GroupEditFragment : BaseFragment() {
         title_view.right_tv.isEnabled = false
         title_view.right_tv.setOnClickListener {
             if (desc_et.text.length > 1024) {
-                toast(R.string.error_too_small)
+                context?.toast(R.string.error_too_small)
             } else {
                 title_view.pb.visibility = View.VISIBLE
                 title_view.right_tv.visibility = View.GONE

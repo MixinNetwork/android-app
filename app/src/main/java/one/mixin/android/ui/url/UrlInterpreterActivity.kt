@@ -8,12 +8,12 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.Session
-import org.jetbrains.anko.toast
 
 class UrlInterpreterActivity : BaseActivity() {
     companion object {

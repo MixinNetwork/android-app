@@ -15,16 +15,16 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.InviteActivity.Companion.ARGS_ID
 import one.mixin.android.util.ErrorHandler
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class InviteFragment : BaseFragment() {
     companion object {
-        val TAG = "InviteFragment"
+        const val TAG = "InviteFragment"
 
         fun putBundle(id: String): Bundle {
             return Bundle().apply {
@@ -83,7 +83,7 @@ class InviteFragment : BaseFragment() {
                 }
                 invite_copy.setOnClickListener {
                     context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, url)
-                    toast(R.string.copy_success)
+                    context?.toast(R.string.copy_success)
                 }
                 invite_share.setOnClickListener {
                     val sendIntent = Intent()
@@ -93,7 +93,7 @@ class InviteFragment : BaseFragment() {
                     startActivity(Intent.createChooser(sendIntent, resources.getText(R.string.invite_title)))
                 }
             }, {
-                toast(R.string.invite_invalid)
+                context?.toast(R.string.invite_invalid)
             })
         })
 

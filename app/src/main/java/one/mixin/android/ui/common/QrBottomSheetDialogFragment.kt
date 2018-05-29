@@ -6,7 +6,7 @@ import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.Canvas
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -79,6 +79,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.title.title_tv.text = getString(R.string.contact_receive_money)
             contentView.tip_tv.text = getString(R.string.contact_receive_tip)
         }
+        dialog?.dismiss()
         bottomViewModel.findUserById(userId).observe(this, Observer { user ->
             if (user == null) {
                 bottomViewModel.refreshUser(userId)
@@ -143,7 +144,10 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         if (granted) {
                             doAsync {
                                 val outFile = ctx.getImagePath().createImageTemp()
-                                (contentView.qr.drawable as BitmapDrawable).bitmap.save(outFile)
+                                val b = Bitmap.createBitmap(contentView.qr_fl.width, contentView.qr_fl.height, Bitmap.Config.ARGB_8888)
+                                val c = Canvas(b)
+                                contentView.qr_fl.draw(c)
+                                b.save(outFile)
                                 try {
                                     MediaStore.Images.Media.insertImage(ctx.contentResolver,
                                         outFile.absolutePath, outFile.name, null)

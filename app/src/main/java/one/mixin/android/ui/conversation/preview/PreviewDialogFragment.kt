@@ -20,10 +20,10 @@ import one.mixin.android.R
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
+import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
 import org.jetbrains.anko.bundleOf
-import org.jetbrains.anko.toast
 import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
