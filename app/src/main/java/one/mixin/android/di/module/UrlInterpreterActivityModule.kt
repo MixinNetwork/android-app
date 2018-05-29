@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -32,4 +33,7 @@ abstract class UrlInterpreterActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeGroupEditFragment(): GroupEditFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeTransferFragment(): TransferFragment
 }

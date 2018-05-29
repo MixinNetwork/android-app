@@ -34,7 +34,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     private var mHeaderView: View? = null
     private var mFooterView: View? = null
     private var mContactListener: ContactListener? = null
-    var self: User? = null
+    var me: User? = null
 
     override fun getItemCount(): Int {
         return if (mHeaderView == null && mFooterView == null) {
@@ -116,7 +116,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (holder) {
             is HeadViewHolder -> {
-                holder.bind(self, mContactListener)
+                holder.bind(me, mContactListener)
             }
             is FootViewHolder -> {
                 holder.bind(mContactListener)

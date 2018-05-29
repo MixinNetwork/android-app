@@ -110,7 +110,7 @@ class ContactsFragment : BaseFragment() {
         })
         contactsViewModel.findSelf().observe(this, Observer { self ->
             if (self != null) {
-                contactAdapter.self = self
+                contactAdapter.me = self
                 contactAdapter.notifyDataSetChanged()
             }
         })

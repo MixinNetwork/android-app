@@ -56,7 +56,12 @@ class UrlInterpreterActivity : BaseActivity() {
                 bottomSheet.show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
             TRANSFER -> {
-
+                supportFragmentManager.inTransaction {
+                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                        R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                        .add(R.id.container, TransferFragment.newInstance(uri.lastPathSegment), TransferFragment.TAG)
+                        .addToBackStack(null)
+                }
             }
             else -> {
             }
@@ -95,7 +100,8 @@ fun isMixinUrl(url: String): Boolean {
 
 fun openUrl(url: String, conversationId: String?, supportFragmentManager: FragmentManager) {
     if (url.startsWith(Constants.MIXIN_TRANSFER_PREFIX, true)) {
-        val userId = url.substring(url.lastIndexOf('/') + 1)
+        val uri = Uri.parse(url)
+        val userId = uri.lastPathSegment
         supportFragmentManager.inTransaction {
             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                 R.anim.slide_in_bottom, R.anim.slide_out_bottom)
