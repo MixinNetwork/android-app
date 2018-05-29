@@ -96,7 +96,7 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
             ConversationViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_forward_conversation,
                 parent, false))
         } else {
-            FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_normal,
+            FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_friend,
                 parent, false))
         }
     }

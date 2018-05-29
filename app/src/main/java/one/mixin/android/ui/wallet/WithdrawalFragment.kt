@@ -117,7 +117,7 @@ class WithdrawalFragment : BaseFragment() {
         title_view.right_animator.setOnClickListener {
             val amount = amount_et.text.toString()
             val withdrawalItem = WithdrawalBottomSheetDialogFragment.WithdrawalItem(currAddr!!.publicKey,
-                amount, memo_et.text.toString().toDot(), currAddr!!.addressId, currAddr!!.label)
+                amount.toDot(), memo_et.text.toString(), currAddr!!.addressId, currAddr!!.label)
             val bottom = WithdrawalBottomSheetDialogFragment.newInstance(withdrawalItem, asset)
             bottom.setCallback(object : WithdrawalBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {

@@ -138,7 +138,9 @@
     <string name="contact_item_title">联系人</string>
     <string name="contact_sq_scan_title">扫描二维码</string>
     <string name="contact_my_qr_title">我的二维码</string>
-    <string name="contact_my_qr_tip">Scan the QR code to add me on Mixin</string>
+    <string name="contact_my_qr_tip">用 Mixin 扫描二维码加我为联系人</string>
+    <string name="contact_receive_money">我的收款码</string>
+    <string name="contact_receive_tip">用 Mixin 扫描二维码给我转账</string>
     <!--profile-->
     <string name="profile_my_title">我的</string>
     <string name="profile_photo">个人头像</string>

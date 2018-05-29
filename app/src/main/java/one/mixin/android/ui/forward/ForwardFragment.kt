@@ -14,7 +14,6 @@ import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
@@ -72,7 +71,6 @@ class ForwardFragment : BaseFragment() {
         }
         title_view.setOnClickListener { activity?.onBackPressed() }
         forward_rv.adapter = adapter
-        forward_rv.addItemDecoration(SpaceItemDecoration())
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onConversationItemClick(item: ConversationItem) {
