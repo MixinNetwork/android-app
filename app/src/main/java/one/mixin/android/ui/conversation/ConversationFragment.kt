@@ -890,6 +890,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 notNullElse(it, { app ->
                     chat_bot.setOnClickListener {
+                        if (sticker_container.visibility == VISIBLE) {
+                            cover.alpha = 0f
+                            sticker_container.visibility = GONE
+                            activity?.window?.statusBarColor = Color.TRANSPARENT
+                            updateChatSendIv()
+                            chat_sticker.setImageResource(R.drawable.ic_chat_sticker)
+                            input_layout.hideCurrentInput(chat_et)
+                        }
+                        if (mediaVisibility) {
+                            hideMediaLayout()
+                        }
                         openUrl(app[0].homeUri, conversationId, requireFragmentManager())
                     }
                 }, {
