@@ -41,8 +41,6 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         itemView.context.dpToPx(4f)
     }
 
-    private var thumbId: Int? = null
-
     fun bind(
         messageItem: MessageItem,
         isLast: Boolean,
@@ -105,11 +103,11 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
         if (messageItem.mediaWidth == null || messageItem.mediaHeight == null ||
             messageItem.mediaWidth <= 0 || messageItem.mediaHeight <= 0) {
-            itemView.chat_image.layoutParams.width = mediaWidth
-            itemView.chat_image.layoutParams.height = mediaWidth
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width
         } else {
-            itemView.chat_image.layoutParams.width = mediaWidth
-            itemView.chat_image.layoutParams.height = mediaWidth * messageItem.mediaHeight / messageItem.mediaWidth
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width * messageItem.mediaHeight / messageItem.mediaWidth
         }
 
         val mark = when {
@@ -121,16 +119,12 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
 
         itemView.chat_image.setShape(mark)
         notNullElse(messageItem.mediaUrl, {
-            if (thumbId != it.hashCode() + mark) {
-                itemView.chat_image.loadVideoMark(it, R.drawable.image_holder, mark)
-                thumbId = it.hashCode() + mark
-            }
+            itemView.chat_image.loadVideoMark(it, R.drawable.image_holder, mark)
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (messageItem.thumbImage != null && thumbId != messageItem.thumbImage.hashCode() + mark) {
+                if (messageItem.thumbImage != null) {
                     itemView.chat_image.loadBase64(messageItem.thumbImage.decodeBase64(),
                         itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
-                    thumbId = messageItem.thumbImage.hashCode() + mark
                 }
             }
         })

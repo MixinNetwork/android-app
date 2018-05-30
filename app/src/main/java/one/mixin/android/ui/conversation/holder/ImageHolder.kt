@@ -34,8 +34,6 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         itemView.progress.round(radius)
     }
 
-    private var thumbId: Int? = null
-
     fun bind(
         messageItem: MessageItem,
         isLast: Boolean,
@@ -118,16 +116,14 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         notNullElse(messageItem.mediaUrl, {
             if (isGif) {
                 itemView.chat_image.loadGif(it)
-            } else if (thumbId != it.hashCode() + mark) {
+            } else {
                 itemView.chat_image.loadImageMark(it, R.drawable.image_holder, mark)
-                thumbId = it.hashCode() + mark
             }
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (messageItem.thumbImage != null && thumbId != messageItem.thumbImage.hashCode() + mark) {
+                if (messageItem.thumbImage != null) {
                     itemView.chat_image.loadBase64(messageItem.thumbImage.decodeBase64(),
                         itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
-                    thumbId = messageItem.thumbImage.hashCode() + mark
                 }
             }
         })
