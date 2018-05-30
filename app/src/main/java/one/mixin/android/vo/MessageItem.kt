@@ -38,6 +38,7 @@ data class MessageItem(
     val snapshotType: String?,
     val snapshotAmount: String?,
     val assetId: String?,
+    val assetType: String?,
     val assetSymbol: String?,
     val assetIcon: String?,
     val assetUrl: String?,
@@ -63,4 +64,4 @@ fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", ""
     ?: nowInUtc(), MessageStatus.READ.name, null,
     null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null,
-    null, null, null, null, null, null, null, null, null)
+    null, null, null, null, null, null, null, null, null, null)

@@ -54,7 +54,7 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadVideoUseMark
+import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
@@ -297,8 +297,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.video_texture.layoutParams = textureParams
             view.preview_iv.layoutParams = previewParams
             view.preview_iv.visibility = VISIBLE
-            view.preview_iv.loadVideoUseMark(messageItem.mediaUrl
-                ?: "", R.drawable.image_holder, R.drawable.chat_mark_image)
+
+            view.preview_iv.loadVideo(messageItem.mediaUrl ?: "", R.drawable.image_holder)
 
             view.seek_bar.progress = 0
             view.duration_tv.text = 0L.formatMillis()

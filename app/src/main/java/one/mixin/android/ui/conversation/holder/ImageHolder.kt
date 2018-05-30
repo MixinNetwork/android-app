@@ -13,9 +13,9 @@ import kotlinx.android.synthetic.main.item_chat_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.loadBase64
 import one.mixin.android.extension.loadGif
-import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadImageUseMark
+import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
@@ -47,7 +47,7 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
     }
 
     private val dp100 by lazy {
-        itemView.context.dpToPx(200f)
+        itemView.context.dpToPx(100f)
     }
 
     private val dp194 by lazy {
@@ -108,7 +108,7 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
         var maxWidth = dp194
         var minWidth = dp94
         when {
-            isLast && !isGif -> {
+            isLast -> {
                 maxWidth = dp200
                 minWidth = dp100
                 (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
@@ -152,22 +152,25 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
             !isMe && isLast -> R.drawable.chat_mark_image_other
             else -> R.drawable.chat_mark_image
         }
+
+        itemView.chat_image.setShape(mark)
         notNullElse(messageItem.mediaUrl, {
             if (isGif) {
                 itemView.chat_image.loadGif(it)
             } else if (thumbId != it.hashCode() + mark) {
-                itemView.chat_image.loadImageUseMark(it, R.drawable.image_holder, mark)
+                itemView.chat_image.loadImageMark(it, R.drawable.image_holder, mark)
                 thumbId = it.hashCode() + mark
             }
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
                 if (messageItem.thumbImage != null && thumbId != messageItem.thumbImage.hashCode() + mark) {
-                    itemView.chat_image.loadImage(messageItem.thumbImage.decodeBase64(),
+                    itemView.chat_image.loadBase64(messageItem.thumbImage.decodeBase64(),
                         itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
                     thumbId = messageItem.thumbImage.hashCode() + mark
                 }
             }
         })
+
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         messageItem.mediaStatus?.let {
             when (it) {
@@ -283,11 +286,7 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
         } else {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
         }
-        if (isGif) {
-            chatLayout(isMe, false)
-        } else {
-            chatLayout(isMe, isLast)
-        }
+        chatLayout(isMe, isLast)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {

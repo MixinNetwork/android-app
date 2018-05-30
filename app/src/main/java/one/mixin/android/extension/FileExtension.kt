@@ -76,6 +76,13 @@ fun getMimeType(uri: Uri): String? {
     return type
 }
 
+fun String.isImageSupport(): Boolean {
+    return this.equals("image/gif", true) ||
+        this.equals("image/jpeg", true) ||
+        this.equals("image/png", true) ||
+        this.equals("image/jpg", true)
+}
+
 fun getImageSize(file: File): Size {
     val options = BitmapFactory.Options()
     options.inJustDecodeBounds = true
