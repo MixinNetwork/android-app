@@ -4,6 +4,8 @@ import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import one.mixin.android.extension.hasNavBar
+import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.statusBarHeight
 
 class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean = false) {
@@ -29,14 +31,22 @@ class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean
                 frameLayoutParams.height = usableHeightSansKeyboard - heightDifference - if (isFull) {
                     0
                 } else {
-                    mChildOfContent.context.statusBarHeight()
+                    mChildOfContent.context.statusBarHeight() + if (mChildOfContent.context.hasNavBar()) {
+                        mChildOfContent.context.navigationBarHeight()
+                    } else {
+                        0
+                    }
                 }
             } else {
                 keyBoardShow = false
                 frameLayoutParams.height = usableHeightSansKeyboard - if (isFull) {
                     0
                 } else {
-                    mChildOfContent.context.statusBarHeight()
+                    mChildOfContent.context.statusBarHeight() + if (mChildOfContent.context.hasNavBar()) {
+                        mChildOfContent.context.navigationBarHeight()
+                    } else {
+                        0
+                    }
                 }
             }
             mChildOfContent.requestLayout()
