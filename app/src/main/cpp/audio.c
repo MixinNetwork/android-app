@@ -505,7 +505,7 @@ int writeFrame(uint8_t *framePcmBytes, unsigned int frameByteCount) {
     return 1;
 }
 
-JNIEXPORT int Java_one_mixin_android_MixinRecorder_startRecord(JNIEnv *env, jclass class, jstring path) {
+JNIEXPORT int Java_one_mixin_android_jni_OpusAudioRecorder_startRecord(JNIEnv *env, jclass class, jstring path) {
     const char *pathStr = (*env)->GetStringUTFChars(env, path, 0);
     
     int result = initRecorder(pathStr);
@@ -517,12 +517,12 @@ JNIEXPORT int Java_one_mixin_android_MixinRecorder_startRecord(JNIEnv *env, jcla
     return result;
 }
 
-JNIEXPORT int Java_one_mixin_android_MixinRecorder_writeFrame(JNIEnv *env, jclass class, jobject frame, jint len) {
+JNIEXPORT int Java_one_mixin_android_jni_OpusAudioRecorder_writeFrame(JNIEnv *env, jclass class, jobject frame, jint len) {
     jbyte *frameBytes = (*env)->GetDirectBufferAddress(env, frame);
     return writeFrame(frameBytes, len);
 }
 
-JNIEXPORT void Java_one_mixin_android_MixinRecorder_stopRecord(JNIEnv *env, jclass class) {
+JNIEXPORT void Java_one_mixin_android_jni_OpusAudioRecorder_stopRecord(JNIEnv *env, jclass class) {
     cleanupRecorder();
 }
 
@@ -532,7 +532,7 @@ static inline void set_bits(uint8_t *bytes, int32_t bitOffset, int32_t value) {
     *((int32_t *) bytes) |= (value << bitOffset);
 }
 
-JNIEXPORT jbyteArray Java_one_mixin_android_MixinRecorder_getWaveform2(JNIEnv *env, jclass class, jshortArray array, jint length) {
+JNIEXPORT jbyteArray Java_one_mixin_android_jni_OpusAudioRecorder_getWaveform2(JNIEnv *env, jclass class, jshortArray array, jint length) {
     
     jshort *sampleBuffer = (*env)->GetShortArrayElements(env, array, 0);
     
@@ -593,7 +593,7 @@ JNIEXPORT jbyteArray Java_one_mixin_android_MixinRecorder_getWaveform2(JNIEnv *e
 /* need opusfile
 int16_t *sampleBuffer = NULL;
 
-JNIEXPORT jbyteArray Java_one_mixin_android_MixinRecorder_getWaveform(JNIEnv *env, jclass class, jstring path) {
+JNIEXPORT jbyteArray Java_one_mixin_android_jni_OpusAudioRecorder_getWaveform(JNIEnv *env, jclass class, jstring path) {
     const char *pathStr = (*env)->GetStringUTFChars(env, path, 0);
     jbyteArray result = 0;
 

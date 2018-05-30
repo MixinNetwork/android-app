@@ -133,6 +133,11 @@ fun Context.getVideoPath(): File {
     return File("$root${File.separator}Video")
 }
 
+fun Context.getAudioPath(): File {
+    val root = getAppPath()
+    return File("$root${File.separator}Audio")
+}
+
 fun Context.getImageCachePath(): File {
     val root = getBestAvailableCacheRoot()
     return File("$root${File.separator}Images")
@@ -162,7 +167,7 @@ fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
     return file
 }
 
-fun File.createImageDir() {
+fun File.createNoMediaDir() {
     if (!this.exists()) {
         this.mkdirs()
     }
@@ -205,8 +210,13 @@ fun File.createVideoTemp(type: String): File {
     return createTempFile("VIDEO_$time", ".$type")
 }
 
+fun File.createAudioTemp(type: String): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    return createTempFile("Audio_$time", ".$type")
+}
+
 fun File.createTempFile(name: String, type: String): File {
-    createImageDir()
+    createNoMediaDir()
     return createTempFile(name, type, absoluteFile)
 }
 

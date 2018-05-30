@@ -4,11 +4,10 @@ import android.os.Handler;
 import android.os.Looper;
 import android.support.annotation.NonNull;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 /**
  * Global executor pools for the whole application.
@@ -33,7 +32,7 @@ public class AppExecutors {
 
     @Inject
     public AppExecutors() {
-        this(Executors.newSingleThreadExecutor(), Executors.newFixedThreadPool(3),
+        this(Executors.newFixedThreadPool(2), Executors.newFixedThreadPool(3),
                 new MainThreadExecutor());
     }
 

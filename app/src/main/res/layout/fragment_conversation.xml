@@ -278,10 +278,17 @@
                         android:paddingStart="16dp"
                         android:src="@drawable/ic_chat_ext"
                         tools:ignore="ContentDescription" />
-
                 </LinearLayout>
             </FrameLayout>
 
+            <com.tougee.demo.AudioRecordView
+                    android:id="@+id/recorder_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp"
+                    android:background="@color/white"
+                    app:layout_constraintBottom_toBottomOf="@id/bottom_layout"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"/>
         </android.support.constraint.ConstraintLayout>
 
         <View

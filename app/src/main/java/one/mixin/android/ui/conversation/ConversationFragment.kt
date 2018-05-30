@@ -34,6 +34,7 @@ import android.view.animation.DecelerateInterpolator
 import androidx.core.net.toUri
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.tougee.demo.AudioRecordView
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -80,6 +81,7 @@ import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
+import one.mixin.android.jni.OpusAudioRecorder
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.ui.camera.CameraActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
@@ -136,7 +138,7 @@ import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
-class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener {
+class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener, AudioRecordView.AudioRecorderCallback {
 
     companion object {
         const val CONVERSATION_ID = "conversation_id"
@@ -186,6 +188,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
     private val chatAdapter: ConversationAdapter by lazy {
         ConversationAdapter(keyword, onItemListener, isGroup)
+    }
+
+    private val audioRecorder: OpusAudioRecorder by lazy {
+        OpusAudioRecorder(requireContext())
     }
 
     private val appAdapter: AppAdapter by lazy {
@@ -627,12 +633,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (sticker_container.isShowing) {
                     updateSticker()
                 } else {
-                    toggleMediaLayout()
+//                    toggleMediaLayout()
+                    recorder_view.visibility = VISIBLE
+                    audioRecorder.startRecording()
                 }
             } else {
                 sendMessage(c.toString())
             }
         }
+        recorder_view.callback = this
         chat_et.setOnClickListener {
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT
@@ -1142,6 +1151,28 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         hideMediaLayout()
     }
 
+    override fun onCancel() {
+        audioRecorder.stopRecording()
+    }
+
+    override fun onEnd() {
+        audioRecorder.stopRecording()
+    }
+
+    override fun onRecordStart() {
+        RxPermissions(activity!!)
+            .request(Manifest.permission.RECORD_AUDIO)
+            .subscribe({ granted ->
+                if (granted) {
+                    audioRecorder.startRecording()
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }, {
+                Bugsnag.notify(it)
+            })
+    }
+
     private fun renderUser(user: User) {
         action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
         action_bar.avatar_iv.visibility = VISIBLE
@@ -1149,7 +1180,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         action_bar.avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0]
         else ' ', user.avatarUrl, user.identityNumber)
         action_bar.avatar_iv.setOnClickListener {
-            UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+//            UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+            audioRecorder.playAudio()
         }
         recipient?.let {
             if (it.relationship == UserRelationship.BLOCKING.name) {
