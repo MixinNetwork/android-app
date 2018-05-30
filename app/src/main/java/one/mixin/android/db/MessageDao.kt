@@ -96,7 +96,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
-        "thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, " +
+        "thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, " +
         "media_status = :mediaStatus, status = :status, name = :name WHERE id = :messageId")
     fun updateAttachmentMessage(
         messageId: String,
@@ -107,6 +107,7 @@ interface MessageDao : BaseDao<Message> {
         mediaHeight: Int?,
         thumbImage: String?,
         name: String?,
+        mediaDuration: String?,
         mediaKey: ByteArray?,
         mediaDigest: ByteArray?,
         mediaStatus: String,
