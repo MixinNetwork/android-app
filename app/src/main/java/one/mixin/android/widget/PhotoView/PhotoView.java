@@ -8,8 +8,8 @@ import android.net.Uri;
 import android.support.v7.widget.AppCompatImageView;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
+import android.view.MotionEvent;
 
-@SuppressWarnings("unused")
 public class PhotoView extends AppCompatImageView {
 
     private PhotoViewAttacher attacher;
@@ -30,14 +30,16 @@ public class PhotoView extends AppCompatImageView {
 
     private void init() {
         attacher = new PhotoViewAttacher(this);
-        //We always pose as a Matrix scale type, though we can change to another scale type
-        //via the attacher
         super.setScaleType(ScaleType.MATRIX);
-        //apply the previously applied scale type
         if (pendingScaleType != null) {
             setScaleType(pendingScaleType);
             pendingScaleType = null;
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return attacher.onTouch(this, event);
     }
 
     public PhotoViewAttacher getAttacher() {
@@ -76,7 +78,6 @@ public class PhotoView extends AppCompatImageView {
     @Override
     public void setImageDrawable(Drawable drawable) {
         super.setImageDrawable(drawable);
-        // setImageBitmap calls through to this method
         if (attacher != null) {
             attacher.update();
         }
