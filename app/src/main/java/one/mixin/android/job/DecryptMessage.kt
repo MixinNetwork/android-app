@@ -397,9 +397,10 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_DATA.name) {
             val decoded = Base64.decode(plainText)
             val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+            val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
             val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
             messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mimeType, mediaData.size,
-                mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name,
+                mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, MessageStatus.DELIVERED.name)
             if (data.category == MessageCategory.SIGNAL_IMAGE.name) {
                 val message = messageDao.findMessageById(messageId)!!
