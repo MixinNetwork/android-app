@@ -15,19 +15,32 @@ class DragWebView : WebView {
     constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int) : super(context, attrs, defStyleAttr, defStyleRes)
 
     private var tempY = 0f
+    private var processed = false
     override fun onTouchEvent(event: MotionEvent): Boolean {
         return if (event.action == MotionEvent.ACTION_DOWN) {
+            processed = false
             tempY = event.rawY
             super.onTouchEvent(event)
         } else if (event.action == MotionEvent.ACTION_MOVE) {
             val dis = event.rawY - tempY
             tempY = event.rawY
             if (dis > 0 && canScrollVertically(-dis.toInt())) {
-                super.onTouchEvent(event)
-            } else if (!onDragListener.onScroll(dis)) {
+                processed = false
                 super.onTouchEvent(event)
             } else {
+                if (!onDragListener.onScroll(dis)) {
+                    processed = false
+                    super.onTouchEvent(event)
+                } else {
+                    true
+                }
+            }
+        } else if (event.action == MotionEvent.ACTION_UP) {
+            onDragListener.onUp()
+            if (processed) {
                 true
+            } else {
+                super.onTouchEvent(event)
             }
         } else {
             onDragListener.onUp()
@@ -37,8 +50,8 @@ class DragWebView : WebView {
 
     private lateinit var onDragListener: OnDragListener
 
-    fun setOnScrollListener(onDargListener: OnDragListener) {
-        this.onDragListener = onDargListener
+    fun setOnScrollListener(onDragListener: OnDragListener) {
+        this.onDragListener = onDragListener
     }
 
     interface OnDragListener {
