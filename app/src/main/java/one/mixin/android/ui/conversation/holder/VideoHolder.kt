@@ -28,7 +28,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 
-class VideoHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class VideoHolder constructor(containerView: View) : MediaHolder(containerView) {
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
@@ -40,32 +40,6 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
     private val dp4 by lazy {
         itemView.context.dpToPx(4f)
     }
-
-    private val dp6 by lazy {
-        itemView.context.dpToPx(6f)
-    }
-
-    private val dp10 by lazy {
-        itemView.context.dpToPx(10f)
-    }
-
-    private val dp100 by lazy {
-        itemView.context.dpToPx(100f)
-    }
-
-    private val dp94 by lazy {
-        dp100 - dp6
-    }
-
-    private val dp194 by lazy {
-        dp200 - dp6
-    }
-
-    private val dp200 by lazy {
-        itemView.context.dpToPx(200f)
-    }
-
-    private val scale = 1.5f
 
     private var thumbId: Int? = null
 
@@ -113,12 +87,10 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
             itemView.chat_name.visibility = View.GONE
         }
 
-        var maxWidth = dp194
-        var minWidth = dp94
+        var width = mediaWidth - dp6
         when {
             isLast -> {
-                maxWidth = dp200
-                minWidth = dp100
+                width = mediaWidth
                 (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
                 (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
             }
@@ -133,25 +105,11 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         }
         if (messageItem.mediaWidth == null || messageItem.mediaHeight == null ||
             messageItem.mediaWidth <= 0 || messageItem.mediaHeight <= 0) {
-            itemView.chat_image.layoutParams.width = minWidth
-            itemView.chat_image.layoutParams.height = minWidth
+            itemView.chat_image.layoutParams.width = mediaWidth
+            itemView.chat_image.layoutParams.height = mediaWidth
         } else {
-            when {
-                messageItem.mediaWidth * scale > maxWidth -> {
-                    itemView.chat_image.layoutParams.width = maxWidth
-                    itemView.chat_image.layoutParams.height =
-                        maxWidth * messageItem.mediaHeight / messageItem.mediaWidth
-                }
-                messageItem.mediaWidth * scale < minWidth -> {
-                    itemView.chat_image.layoutParams.width = minWidth
-                    itemView.chat_image.layoutParams.height =
-                        minWidth * messageItem.mediaHeight / messageItem.mediaWidth
-                }
-                else -> {
-                    itemView.chat_image.layoutParams.width = (messageItem.mediaWidth * scale).toInt()
-                    itemView.chat_image.layoutParams.height = (messageItem.mediaHeight * scale).toInt()
-                }
-            }
+            itemView.chat_image.layoutParams.width = mediaWidth
+            itemView.chat_image.layoutParams.height = mediaWidth * messageItem.mediaHeight / messageItem.mediaWidth
         }
 
         val mark = when {
