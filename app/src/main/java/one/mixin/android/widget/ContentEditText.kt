@@ -1,0 +1,66 @@
+package one.mixin.android.widget
+
+import android.content.Context
+import android.os.Build
+import android.os.Bundle
+import android.support.v13.view.inputmethod.EditorInfoCompat
+import android.support.v13.view.inputmethod.InputConnectionCompat
+import android.support.v13.view.inputmethod.InputContentInfoCompat
+import android.support.v7.widget.AppCompatEditText
+import android.util.AttributeSet
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputConnection
+
+class ContentEditText : AppCompatEditText {
+
+    constructor(context: Context) : super(context)
+
+    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+
+    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+
+    var listener: OnCommitContentListener? = null
+
+    private val mimeTypes = arrayOf("image/png", "image/gif", "image/jpeg", "image/webp")
+    override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection {
+        val ic = super.onCreateInputConnection(editorInfo)
+        if (listener == null) {
+            return ic
+        }
+
+        EditorInfoCompat.setContentMimeTypes(editorInfo, mimeTypes)
+        val callback = InputConnectionCompat.OnCommitContentListener { inputContentInfo, flags, opts ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && (flags and InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION != 0)) {
+                try {
+                    inputContentInfo.requestPermission()
+                } catch (e: Exception) {
+                    return@OnCommitContentListener false
+                }
+            }
+
+            var supported = false
+            for (mimeType in mimeTypes) {
+                if (inputContentInfo.description.hasMimeType(mimeType)) {
+                    supported = true
+                    break
+                }
+            }
+            if (!supported) {
+                return@OnCommitContentListener false
+            }
+            if (this.listener != null) {
+                return@OnCommitContentListener this.listener!!.onCommitContent(inputContentInfo, flags, opts)
+            }
+            return@OnCommitContentListener false
+        }
+        return InputConnectionCompat.createWrapper(ic, editorInfo, callback)
+    }
+
+    fun setCommitContentListener(listener: OnCommitContentListener) {
+        this.listener = listener
+    }
+
+    interface OnCommitContentListener {
+        fun onCommitContent(inputContentInfo: InputContentInfoCompat?, flags: Int, opts: Bundle?): Boolean
+    }
+}

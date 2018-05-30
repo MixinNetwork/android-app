@@ -252,7 +252,7 @@
                         app:srcCompat="@drawable/ic_chat_sticker"
                         tools:ignore="ContentDescription" />
 
-                    <EditText
+                    <one.mixin.android.widget.ContentEditText
                         android:id="@+id/chat_et"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"

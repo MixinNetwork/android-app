@@ -19,6 +19,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.support.v13.view.inputmethod.InputContentInfoCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -30,6 +31,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import androidx.core.net.toUri
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
@@ -59,6 +61,7 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
@@ -116,6 +119,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckParamBlazeMessage
+import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.SimpleAnimatorListener
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager
@@ -506,8 +510,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         recipient = arguments!!.getParcelable(RECIPIENT)
-        initView()
         MixinApplication.conversationId = conversationId
+        initView()
         chat_et.post { sendForwardMessages() }
     }
 
@@ -634,6 +638,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             updateChatSendIv()
             chat_sticker.setImageResource(R.drawable.ic_chat_sticker)
         }
+        chat_et.setCommitContentListener(object : ContentEditText.OnCommitContentListener {
+            override fun onCommitContent(inputContentInfo: InputContentInfoCompat?, flags: Int, opts: Bundle?): Boolean {
+                if (inputContentInfo != null) {
+                    val url = inputContentInfo.contentUri.getFilePath(requireContext()) ?: return false
+                    sendImageMessage(url.toUri())
+                }
+                return true
+            }
+        })
         chat_et.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 if (!isAdded || chat_et == null) {

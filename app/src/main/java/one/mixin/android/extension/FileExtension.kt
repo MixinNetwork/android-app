@@ -232,6 +232,8 @@ fun Uri.getFilePath(context: Context): String? {
                 }
             }
             cursor.close()
+        } else {
+            return getImageUrlWithAuthority(context)
         }
     }
     return data

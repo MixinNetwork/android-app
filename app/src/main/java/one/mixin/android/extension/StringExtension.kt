@@ -3,7 +3,6 @@
 package one.mixin.android.extension
 
 import android.graphics.Bitmap
-import android.graphics.Color
 import android.text.Editable
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson

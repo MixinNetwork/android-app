@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 
-class KeyBoardAssist  constructor(content: ViewGroup) {
+class KeyBoardAssist constructor(content: ViewGroup) {
 
     private val mChildOfContent: View = content.getChildAt(0)
     private var usableHeightPrevious: Int = 0

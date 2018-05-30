@@ -54,7 +54,6 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.CameraOpView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.UI
 import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.yesButton
 import java.io.FileOutputStream
