@@ -184,7 +184,7 @@ class VerificationFragment : BaseFragment() {
                         ctx.windowManager.defaultDisplay?.getSize(p)
                         val size = minOf(p.x, p.y)
                         val b = account.code_url.generateQRCode(size)
-                        b?.saveQRCode(ctx, account.code_url)
+                        b?.saveQRCode(ctx, account.userId)
                     }
                 }
                 Session.storeAccount(account)

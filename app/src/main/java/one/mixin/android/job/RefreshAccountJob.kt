@@ -31,7 +31,7 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(RefreshAccoun
                 MixinApplication.appContext.windowManager.defaultDisplay?.getSize(p)
                 val size = minOf(p.x, p.y)
                 val b = account.code_url.generateQRCode(size)
-                b?.saveQRCode(MixinApplication.appContext, account.code_url)
+                b?.saveQRCode(MixinApplication.appContext, account.userId)
             }
 
             val receive = MixinApplication.appContext.defaultSharedPreferences

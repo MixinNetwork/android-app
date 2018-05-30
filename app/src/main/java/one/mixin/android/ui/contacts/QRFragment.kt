@@ -61,7 +61,7 @@ class QRFragment : BaseFragment() {
                         val account = Session.getAccount() ?: return@create
                         val b = account.code_url.generateQRCode(qr.width)
                         if (b != null) {
-                            b.saveQRCode(context!!, account.code_url)
+                            b.saveQRCode(context!!, account.userId)
                             e.onNext(b)
                         }
                     }.subscribeOn(Schedulers.io())
