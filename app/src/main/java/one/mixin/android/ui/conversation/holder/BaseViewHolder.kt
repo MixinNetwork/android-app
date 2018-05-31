@@ -38,26 +38,26 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
     }
 
     protected fun setStatusIcon(isMe: Boolean, status: String, setIcon: (Drawable?) -> Unit,
-        hideIcon: () -> Unit, isWihte: Boolean = false) {
+        hideIcon: () -> Unit, isWhite: Boolean = false) {
         if (isMe) {
             val drawable: Drawable? =
                 when (status) {
                     MessageStatus.SENDING.name ->
                         AppCompatResources.getDrawable(itemView.context,
-                            if (isWihte) {
+                            if (isWhite) {
                                 R.drawable.ic_status_sending_white
                             } else {
                                 R.drawable.ic_status_sending
                             })
                     MessageStatus.SENT.name ->
                         AppCompatResources.getDrawable(itemView.context,
-                            if (isWihte) {
+                            if (isWhite) {
                                 R.drawable.ic_status_sent_white
                             } else {
                                 R.drawable.ic_status_sent
                             })
                     MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, if (isWihte) {
+                        AppCompatResources.getDrawable(itemView.context, if (isWhite) {
                             R.drawable.ic_status_delivered_white
                         } else {
                             R.drawable.ic_status_delivered
