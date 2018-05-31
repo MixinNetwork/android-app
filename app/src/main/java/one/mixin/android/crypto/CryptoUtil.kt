@@ -1,6 +1,7 @@
 @file:Suppress("NOTHING_TO_INLINE")
 package one.mixin.android.crypto
 
+import android.os.Build
 import one.mixin.android.extension.toLeByteArray
 import one.mixin.android.util.Session
 import org.spongycastle.asn1.pkcs.PrivateKeyInfo
@@ -70,7 +71,11 @@ fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
 fun getRSAPrivateKeyFromString(privateKeyPEM: String): PrivateKey {
     val striped = stripRsaPrivateKeyHeaders(privateKeyPEM)
     val keySpec = PKCS8EncodedKeySpec(Base64.decode(striped))
-    val kf = KeyFactory.getInstance("RSA")
+    val kf = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        KeyFactory.getInstance("RSA")
+    } else {
+        KeyFactory.getInstance("RSA", "BC")
+    }
     return kf.generatePrivate(keySpec)
 }
 
