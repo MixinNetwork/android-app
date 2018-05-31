@@ -275,6 +275,18 @@ internal constructor(
             .observeOn(AndroidSchedulers.mainThread())
     }
 
+    fun sendFordImageMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
+        Flowable.just(id).observeOn(Schedulers.io()).map {
+            val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+            conversationRepository.findMessageById(id)?.let { message ->
+                jobManager.addJobInBackground(SendAttachmentMessageJob(createMediaMessage(UUID.randomUUID().toString(),
+                    conversationId, sender.userId, category, null, message.mediaUrl, message.mediaMimeType!!, message.mediaSize!!,
+                    message.mediaWidth, message.mediaHeight, message.thumbImage, null, null, nowInUtc(),
+                    MediaStatus.PENDING, MessageStatus.SENDING
+                )))
+            }
+        }.observeOn(AndroidSchedulers.mainThread())!!
+
     fun updateRelationship(request: RelationshipRequest) {
         jobManager.addJobInBackground(UpdateRelationshipJob(request))
     }

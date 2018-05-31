@@ -740,7 +740,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             list += chatAdapter.selectSet.sortedBy { it.createdAt }.map {
                 when {
                     it.type.endsWith("_TEXT") -> ForwardMessage(ForwardCategory.TEXT.name, content = it.content)
-                    it.type.endsWith("_IMAGE") -> ForwardMessage(ForwardCategory.IMAGE.name, mediaUrl = it.mediaUrl)
+                    it.type.endsWith("_IMAGE") -> ForwardMessage(ForwardCategory.IMAGE.name, id = it.messageId)
                     it.type.endsWith("_DATA") -> ForwardMessage(ForwardCategory.DATA.name, id = it.messageId)
                     it.type.endsWith("_VIDEO") -> ForwardMessage(ForwardCategory.VIDEO.name, id = it.messageId)
                     it.type.endsWith("_CONTACT") -> ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = it.sharedUserId)
@@ -946,7 +946,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         sendContactMessage(item.sharedUserId!!)
                     }
                     ForwardCategory.IMAGE.name -> {
-                        sendImageMessage(Uri.parse(item.mediaUrl))
+                        if (item.id != null) {
+                            sendForwardImageMessage(item.id)
+                        } else if (item.mediaUrl != null) {
+                            sendImageMessage(Uri.parse(item.mediaUrl))
+                        }
                     }
                     ForwardCategory.TEXT.name -> {
                         item.content?.let { sendMessage(it) }
@@ -1015,6 +1019,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }, {
                     Timber.e(it)
                 })
+        }
+    }
+
+    private fun sendForwardImageMessage(id: String?) {
+        id?.let {
+            createConversation {
+                chatViewModel.sendFordImageMessage(conversationId, sender, it, isPlainMessage())
+                    .autoDisposable(scopeProvider).subscribe({
+                    }, {
+                        Timber.e(id)
+                    })
+            }
         }
     }
 
