@@ -641,7 +641,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_et.setCommitContentListener(object : ContentEditText.OnCommitContentListener {
             override fun onCommitContent(inputContentInfo: InputContentInfoCompat?, flags: Int, opts: Bundle?): Boolean {
                 if (inputContentInfo != null) {
-                    val url = inputContentInfo.contentUri.getFilePath(requireContext()) ?: return false
+                    val url = inputContentInfo.contentUri.getFilePath(requireContext())
+                        ?: return false
                     sendImageMessage(url.toUri())
                 }
                 return true
@@ -941,28 +942,27 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
         messages?.let {
             for (item in it) {
-                when (item.type) {
-                    ForwardCategory.CONTACT.name -> {
-                        sendContactMessage(item.sharedUserId!!)
-                    }
-                    ForwardCategory.IMAGE.name -> {
-                        if (item.id != null) {
-                            sendForwardImageMessage(item.id)
-                        } else if (item.mediaUrl != null) {
+                if (item.id != null) {
+                    sendForwardMessage(item.id)
+                } else {
+                    when (item.type) {
+                        ForwardCategory.CONTACT.name -> {
+                            sendContactMessage(item.sharedUserId!!)
+                        }
+                        ForwardCategory.IMAGE.name -> {
                             sendImageMessage(Uri.parse(item.mediaUrl))
                         }
-                    }
-                    ForwardCategory.TEXT.name -> {
-                        item.content?.let { sendMessage(it) }
-                    }
-                    ForwardCategory.STICKER.name -> {
-                        sendFordStickerMessage(item.id)
-                    }
-                    ForwardCategory.DATA.name -> {
-                        sendFordDataMessage(item.id)
-                    }
-                    ForwardCategory.VIDEO.name -> {
-                        sendForwardVideoMessage(item.id)
+                        ForwardCategory.DATA.name -> {
+                            context?.getAttachment(Uri.parse(item.mediaUrl))?.let {
+                                sendAttachmentMessage(it)
+                            }
+                        }
+                        ForwardCategory.VIDEO.name -> {
+                            sendVideoMessage(Uri.parse(item.mediaUrl))
+                        }
+                        ForwardCategory.TEXT.name -> {
+                            item.content?.let { sendMessage(it) }
+                        }
                     }
                 }
             }
@@ -1022,46 +1022,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendForwardImageMessage(id: String?) {
+    private fun sendForwardMessage(id: String?) {
         id?.let {
             createConversation {
-                chatViewModel.sendFordImageMessage(conversationId, sender, it, isPlainMessage())
-                    .autoDisposable(scopeProvider).subscribe({
-                    }, {
-                        Timber.e(id)
-                    })
-            }
-        }
-    }
-
-    private fun sendForwardVideoMessage(id: String?) {
-        id?.let {
-            createConversation {
-                chatViewModel.sendFordVideoMessage(conversationId, sender, it, isPlainMessage())
-                    .autoDisposable(scopeProvider).subscribe({
-                    }, {
-                        Timber.e(id)
-                    })
-            }
-        }
-    }
-
-    private fun sendFordDataMessage(id: String?) {
-        id?.let {
-            createConversation {
-                chatViewModel.sendFordDataMessage(conversationId, sender, it, isPlainMessage())
-                    .autoDisposable(scopeProvider).subscribe({
-                    }, {
-                        Timber.e(id)
-                    })
-            }
-        }
-    }
-
-    private fun sendFordStickerMessage(id: String?) {
-        id?.let {
-            createConversation {
-                chatViewModel.sendFordStickerMessage(conversationId, sender, it, isPlainMessage())
+                chatViewModel.sendFordMessage(conversationId, sender, it, isPlainMessage())
                     .autoDisposable(scopeProvider).subscribe({
                     }, {
                         Timber.e(id)
