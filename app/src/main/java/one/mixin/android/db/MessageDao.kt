@@ -72,7 +72,7 @@ interface MessageDao : BaseDao<Message> {
         "m.content as content, m.created_at as createdAt, m.status as status, m.media_status as mediaStatus," +
         "m.name as mediaName, m.media_width as mediaWidth, m.media_height as mediaHeight, m.thumb_image as thumbImage, m.media_url as mediaUrl " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id " +
-        "WHERE (m.category = 'SIGNAL_TEXT' AND m.status != 'FAILED' AND m.content LIKE :query) " +
+        "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
         "OR (m.category = 'SIGNAL_DATA' AND m.status != 'FAILED' AND m.name LIKE :query) ORDER BY m.created_at DESC")
     fun fuzzySearchMessage(query: String): List<MessageItem>
 
