@@ -11,7 +11,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.View
-import android.widget.LinearLayout
 import androidx.core.os.bundleOf
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
@@ -145,13 +144,8 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         if (granted) {
                             doAsync {
                                 val outFile = ctx.getImagePath().createImageTemp()
-                                val x = (contentView.qr_fl.layoutParams as LinearLayout.LayoutParams).marginStart
-                                val y = contentView.tip_tv.paddingBottom
-                                val w = contentView.bottom_ll.width - x * 2
-                                val h = contentView.bottom_ll.height - y
-                                val b = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+                                val b = Bitmap.createBitmap(contentView.bottom_ll.width, contentView.bottom_ll.height, Bitmap.Config.ARGB_8888)
                                 val c = Canvas(b)
-                                c.translate(-x.toFloat(), 0f)
                                 contentView.bottom_ll.draw(c)
                                 b.save(outFile)
                                 try {
