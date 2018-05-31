@@ -240,7 +240,6 @@ internal constructor(
             .observeOn(AndroidSchedulers.mainThread())
     }
 
-
     fun sendFordMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
         Flowable.just(id).observeOn(Schedulers.io()).map {
             conversationRepository.findMessageById(id)?.let { message ->

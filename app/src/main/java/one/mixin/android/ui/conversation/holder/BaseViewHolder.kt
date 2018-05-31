@@ -37,8 +37,13 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
         Session.getAccountId()
     }
 
-    protected fun setStatusIcon(isMe: Boolean, status: String, setIcon: (Drawable?) -> Unit,
-        hideIcon: () -> Unit, isWhite: Boolean = false) {
+    protected fun setStatusIcon(
+        isMe: Boolean,
+        status: String,
+        setIcon: (Drawable?) -> Unit,
+        hideIcon: () -> Unit,
+        isWhite: Boolean = false
+    ) {
         if (isMe) {
             val drawable: Drawable? =
                 when (status) {

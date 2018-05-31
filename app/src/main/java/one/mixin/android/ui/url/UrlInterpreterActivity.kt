@@ -4,7 +4,7 @@ import android.content.UriMatcher
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
-import one.mixin.android.Constants
+import one.mixin.android.Constants.MIXIN_TRANSFER_PREFIX
 import one.mixin.android.R
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
@@ -98,24 +98,48 @@ fun isMixinUrl(url: String): Boolean {
     }
 }
 
-fun openUrl(url: String, conversationId: String?, supportFragmentManager: FragmentManager) {
-    if (url.startsWith(Constants.MIXIN_TRANSFER_PREFIX, true)) {
-        val uri = Uri.parse(url)
-        val userId = uri.lastPathSegment
-        supportFragmentManager.inTransaction {
-            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                .add(R.id.container, TransferFragment.newInstance(userId), TransferFragment.TAG)
-                .addToBackStack(null)
-        }
-        return
+inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAction: () -> Unit) {
+    val openWithLink = if (url.startsWith("https://mixin.one/pay", true) ||
+        url.startsWith("mixin://pay", true) ||
+        url.startsWith("mixin://users", true)) {
+        true
+    } else if (url.startsWith("https://mixin.one/codes/", true)) {
+        val segments = Uri.parse(url).pathSegments
+        segments.size >= 2 && segments[1].isUUID()
+    } else if (url.startsWith("mixin://codes/", true)) {
+        val segments = Uri.parse(url).pathSegments
+        segments.size >= 1 && segments[0].isUUID()
+    } else {
+        false
     }
+
     when {
-        isMixinUrl(url) -> LinkBottomSheetDialogFragment
+        url.startsWith(MIXIN_TRANSFER_PREFIX, true) -> {
+            val segments = Uri.parse(url).pathSegments
+            if (segments.size >= 1) {
+                val data = segments[0]
+                if (data.isUUID()) {
+                    supportFragmentManager.inTransaction {
+                        setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                            R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                            .add(R.id.container, TransferFragment.newInstance(data), TransferFragment.TAG)
+                            .addToBackStack(null)
+                    }
+                }
+            }
+        }
+        openWithLink -> LinkBottomSheetDialogFragment
             .newInstance(url)
             .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        else -> WebBottomSheetDialogFragment
-            .newInstance(url, conversationId)
-            .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+        else -> extraAction()
     }
 }
+
+fun openWebBottomSheet(url: String, conversationId: String?, supportFragmentManager: FragmentManager) {
+    WebBottomSheetDialogFragment
+        .newInstance(url, conversationId)
+        .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+}
+
+fun openUrlWithExtraWeb(url: String, conversationId: String?, supportFragmentManager: FragmentManager) =
+    openUrl(url, supportFragmentManager, { openWebBottomSheet(url, conversationId, supportFragmentManager) })

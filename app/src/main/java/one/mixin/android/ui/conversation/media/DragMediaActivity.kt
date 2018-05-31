@@ -64,8 +64,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.url.isMixinUrl
+import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -192,18 +191,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 val imageView = it.getChildAt(0) as ImageView
                 val url = (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
                 if (url != null) {
-                    if (isMixinUrl(url)) {
-                        if (url.startsWith("mixin://transfer/", true)) {
-                            val segments = Uri.parse(url).pathSegments
-                            val userId = segments[0]
-                        } else {
-                            LinkBottomSheetDialogFragment.newInstance(url)
-                                .show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-                        }
-                    } else {
+                    openUrl(url, supportFragmentManager, {
                         QrScanBottomSheetDialogFragment.newInstance(url)
                             .show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-                    }
+                    })
                 } else {
                     toast(R.string.can_not_recognize)
                 }

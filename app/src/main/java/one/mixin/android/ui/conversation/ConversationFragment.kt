@@ -99,7 +99,7 @@ import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.url.openUrl
+import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
@@ -401,7 +401,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onUrlClick(url: String) {
-                openUrl(url, conversationId, requireFragmentManager())
+                openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
             }
 
             override fun onMentionClick(name: String) {
@@ -422,7 +422,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onActionClick(action: String) {
-                openUrl(action, conversationId, requireFragmentManager())
+                openUrlWithExtraWeb(action, conversationId, requireFragmentManager())
             }
 
             override fun onBillClick(messageItem: MessageItem) {
@@ -917,7 +917,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (mediaVisibility) {
                             hideMediaLayout()
                         }
-                        openUrl(app[0].homeUri, conversationId, requireFragmentManager())
+                        openUrlWithExtraWeb(app[0].homeUri, conversationId, requireFragmentManager())
                     }
                 }, {
                     chat_bot.setOnClickListener(null)
