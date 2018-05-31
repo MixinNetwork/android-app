@@ -25,6 +25,7 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -138,7 +139,8 @@ import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
-class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener, AudioRecordView.AudioRecorderCallback {
+class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener, AudioRecordView.AudioRecorderCallback,
+    OpusAudioRecorder.Callback {
 
     companion object {
         const val CONVERSATION_ID = "conversation_id"
@@ -191,7 +193,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private val audioRecorder: OpusAudioRecorder by lazy {
-        OpusAudioRecorder(requireContext())
+        OpusAudioRecorder(requireContext()).apply { callback = this@ConversationFragment }
     }
 
     private val appAdapter: AppAdapter by lazy {
@@ -1152,11 +1154,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onCancel() {
-        audioRecorder.stopRecording()
+        audioRecorder.stopRecording(false)
     }
 
     override fun onEnd() {
-        audioRecorder.stopRecording()
+        audioRecorder.stopRecording(true)
     }
 
     override fun onRecordStart() {
@@ -1171,6 +1173,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }, {
                 Bugsnag.notify(it)
             })
+    }
+
+    override fun sendAudio(file: File, duration: Long, waveForm: ByteArray) {
+        //TODO
     }
 
     private fun renderUser(user: User) {

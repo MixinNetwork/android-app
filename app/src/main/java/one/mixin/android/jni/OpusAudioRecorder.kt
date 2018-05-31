@@ -26,8 +26,12 @@ class OpusAudioRecorder(ctx: Context) {
     private var recordingAudioFile: File? = null
     private val recordSamples = ShortArray(1024)
     private var samplesCount = 0L
+    private var recordTimeCount = 0L
+    private var sendAfterDone = false
 
     private val mixinPlayer = MixinPlayer()
+
+    var callback: Callback? = null
 
     init {
         recordBufferSize = AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
@@ -101,8 +105,9 @@ class OpusAudioRecorder(ctx: Context) {
                             }
                             fileBuffer.put(buffer)
                             if (fileBuffer.position() == fileBuffer.limit() || flush) {
-                                if (writeFrame(fileBuffer, if (!flush) fileBuffer.limit() else fileBuffer.position()) != 0) {
+                                if (writeFrame(fileBuffer, if (!flush) fileBuffer.limit() else buffer.position()) != 0) {
                                     fileBuffer.rewind()
+                                    recordTimeCount += fileBuffer.limit() / 2 / 16
                                 }
                             }
                             if (oldLimit != -1) {
@@ -114,7 +119,7 @@ class OpusAudioRecorder(ctx: Context) {
                     AppExecutors().diskIO().execute(recordRunnable)
                 } else {
                     recordBuffers.add(buffer)
-                    stopRecordingInternal()
+                    stopRecordingInternal(sendAfterDone)
                 }
             }
         }
@@ -135,6 +140,7 @@ class OpusAudioRecorder(ctx: Context) {
             audioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, recordBufferSize * 10)
             samplesCount = 0
+            recordTimeCount = 0
 
             audioRecord?.startRecording()
         } catch (e: Exception) {
@@ -155,16 +161,17 @@ class OpusAudioRecorder(ctx: Context) {
         AppExecutors().diskIO().execute(recodeStartRunnable)
     }
 
-    fun stopRecording() {
+    fun stopRecording(send: Boolean) {
         // remove startRecordingRunnable
         AppExecutors().diskIO().execute {
             audioRecord?.let { audioRecord ->
                 try {
+                    sendAfterDone = send
                     audioRecord.stop()
                 } catch (e: Exception) {
                     recordingAudioFile?.delete()
                 }
-                stopRecordingInternal()
+                stopRecordingInternal(send)
             }
         }
     }
@@ -176,17 +183,31 @@ class OpusAudioRecorder(ctx: Context) {
         }
     }
 
-    private fun stopRecordingInternal() {
+    private fun stopRecordingInternal(send: Boolean) {
+        if (send) {
+            AppExecutors().mainThread().execute {
+                val duration = recordTimeCount / 1000
+                val waveForm = getWaveform2(recordSamples, recordSamples.size)
+                if (recordingAudioFile != null) {
+                    callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
+                }
+                recordingAudioFile = null
+            }
+        }
+
         try {
             audioRecord?.release()
             audioRecord = null
         } catch (ignore: Exception) {
         }
-//        recordingAudioFile = null
     }
 
     private external fun startRecord(path: String): Int
     private external fun writeFrame(frame: ByteBuffer, len: Int): Int
     private external fun stopRecord()
     private external fun getWaveform2(arr: ShortArray, len: Int): ByteArray
+
+    interface Callback {
+        fun sendAudio(file: File, duration: Long, waveForm: ByteArray)
+    }
 }
