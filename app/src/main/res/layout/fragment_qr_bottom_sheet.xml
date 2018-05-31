@@ -15,39 +15,45 @@
             app:rightIcon="@drawable/ic_more"
             app:titleText="@string/contact_my_qr_title"/>
 
-    <FrameLayout
-            android:id="@+id/qr_fl"
+    <LinearLayout
+            android:id="@+id/bottom_ll"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white">
+            android:layout_height="match_parent"
+            android:background="@color/white"
+            android:orientation="vertical">
 
-        <ImageView
-                android:id="@+id/qr"
+        <FrameLayout
+                android:id="@+id/qr_fl"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="32dp"
                 android:layout_marginEnd="32dp"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                tools:ignore="ContentDescription"/>
+                android:layout_marginTop="@dimen/activity_vertical_margin">
 
-        <one.mixin.android.widget.BadgeAvatarView
-                android:id="@+id/badge_view"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:layout_gravity="center"
-                app:border_color="@color/white"
-                app:border_width="2dp"/>
-    </FrameLayout>
+            <ImageView
+                    android:id="@+id/qr"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:ignore="ContentDescription"/>
 
-    <TextView
-            android:id="@+id/tip_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/white"
-            android:gravity="center_horizontal"
-            android:paddingBottom="48dp"
-            android:text="@string/contact_my_qr_tip"
-            android:textColor="@color/text_gray"
-            android:textSize="13sp"/>
+            <one.mixin.android.widget.BadgeAvatarView
+                    android:id="@+id/badge_view"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_gravity="center"
+                    app:border_color="@color/white"
+                    app:border_width="2dp"/>
+        </FrameLayout>
+
+        <TextView
+                android:id="@+id/tip_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:gravity="center_horizontal"
+                android:paddingBottom="48dp"
+                android:text="@string/contact_my_qr_tip"
+                android:textColor="@color/text_gray"
+                android:textSize="13sp"/>
+    </LinearLayout>
 </LinearLayout>
