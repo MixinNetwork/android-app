@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/chat_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start|top"
+        android:layout_marginBottom="2.5dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="1.5dp"
+        android:ellipsize="end"
+        android:lines="1"
+        android:maxWidth="280dp"
+        android:textColor="#19BEF1"
+        android:textSize="14sp" />
+
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/chat_layout"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="1.5dp">
+
+        <one.mixin.android.widget.CircleProgress
+            android:id="@+id/audio_progress"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/ic_avatar_place_holder"
+            app:border="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:progressColor="#1987FF"
+            app:progressWidth="1.5dp"
+            app:shadowColor="@color/white"
+            app:size="40dp" />
+
+        <ImageView
+            android:id="@+id/audio_expired"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_expired"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <one.mixin.android.widget.WaveformView
+            android:id="@+id/audio_waveform"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginStart="8dp"
+            android:textColor="@color/text_black"
+            android:textSize="16sp"
+            app:layout_constraintBottom_toTopOf="@id/audio_duration"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/audio_progress"
+            app:layout_constraintTop_toTopOf="@id/audio_progress" />
+
+        <TextView
+            android:id="@+id/audio_duration"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_marginStart="8dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textColor="@color/gray_50"
+            android:textSize="12sp"
+            app:layout_constraintBottom_toBottomOf="@id/audio_progress"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/audio_progress" />
+
+        <include
+            android:id="@+id/bill_time"
+            layout="@layout/date_wrapper" />
+
+    </android.support.constraint.ConstraintLayout>
+</LinearLayout>
+
+

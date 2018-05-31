@@ -339,6 +339,7 @@
     <string name="conversation_status_pic">照片</string>
     <string name="conversation_status_video">视频</string>
     <string name="conversation_status_file">文件</string>
+    <string name="conversation_status_audio">语音</string>
     <string name="conversation_status_pic_group">%s: 照片</string>
     <string name="conversation_status_transfer">转账</string>
     <string name="conversation_status_sticker">贴纸</string>
@@ -392,6 +393,7 @@
     <string name="alert_key_group_image_message">%s 发送一张照片</string>
     <string name="alert_key_group_video_message">%s 发送一个视频</string>
     <string name="alert_key_group_data_message">%s 发送一个文件</string>
+    <string name="alert_key_group_audio_message">%s 发送一条语音</string>
     <string name="alert_key_group_sticker_message">%s 发送一张贴纸</string>
     <string name="alert_key_group_contact_message">%s 分享了一个联系人</string>
     <string name="alert_key_contact_message">发送一条消息</string>
@@ -400,6 +402,7 @@
     <string name="alert_key_contact_video_message">发送一个视频</string>
     <string name="alert_key_contact_transfer_message">发送一笔转账</string>
     <string name="alert_key_contact_data_message">发送一个文件</string>
+    <string name="alert_key_contact_audio_message">发送一条语音</string>
     <string name="alert_key_contact_sticker_message">发送一张贴纸</string>
     <string name="alert_key_contact_contact_message">分享了一个联系人</string>
 

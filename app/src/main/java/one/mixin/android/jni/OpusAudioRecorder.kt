@@ -186,7 +186,7 @@ class OpusAudioRecorder(ctx: Context) {
     private fun stopRecordingInternal(send: Boolean) {
         if (send) {
             AppExecutors().mainThread().execute {
-                val duration = recordTimeCount / 1000
+                val duration = recordTimeCount
                 val waveForm = getWaveform2(recordSamples, recordSamples.size)
                 if (recordingAudioFile != null) {
                     callback?.sendAudio(recordingAudioFile!!, duration, waveForm)

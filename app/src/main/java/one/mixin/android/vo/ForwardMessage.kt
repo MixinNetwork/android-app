@@ -22,7 +22,8 @@ enum class ForwardCategory {
     DATA,
     VIDEO,
     STICKER,
-    CONTACT
+    CONTACT,
+    AUDIO
 }
 
 fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {

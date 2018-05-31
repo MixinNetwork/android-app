@@ -25,7 +25,6 @@ import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -416,6 +415,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onMentionClick(name: String) {
             }
 
+            override fun onAudioClick(messageItem: MessageItem) {
+                // Todo
+            }
+
             override fun onAddClick() {
                 recipient?.let { user ->
                     chatViewModel.updateRelationship(RelationshipRequest(user.userId,
@@ -760,6 +763,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     it.type.endsWith("_VIDEO") -> ForwardMessage(ForwardCategory.VIDEO.name, id = it.messageId)
                     it.type.endsWith("_CONTACT") -> ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = it.sharedUserId)
                     it.type.endsWith("_STICKER") -> ForwardMessage(ForwardCategory.STICKER.name, id = it.messageId)
+                    it.type.endsWith("_AUDIO") -> ForwardMessage(ForwardCategory.AUDIO.name, id = it.messageId)
                     else -> ForwardMessage(ForwardCategory.TEXT.name)
                 }
             }
@@ -1029,6 +1033,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    override fun sendAudio(file: File, duration: Long, waveForm: ByteArray) {
+        createConversation {
+            chatViewModel.sendAudioMessage(conversationId, sender, file, duration, waveForm, isPlainMessage())
+        }
+    }
+
     private fun sendVideoMessage(uri: Uri) {
         createConversation {
             chatViewModel.sendVideoMessage(conversationId, sender, uri, isPlainMessage()).autoDisposable(scopeProvider)
@@ -1173,10 +1183,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }, {
                 Bugsnag.notify(it)
             })
-    }
-
-    override fun sendAudio(file: File, duration: Long, waveForm: ByteArray) {
-        //TODO
     }
 
     private fun renderUser(user: User) {

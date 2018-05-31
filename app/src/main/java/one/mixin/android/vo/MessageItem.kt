@@ -56,7 +56,8 @@ data class MessageItem(
     val sharedUserIdentityNumber: String? = null,
     val sharedUserAvatarUrl: String? = null,
     val sharedUserIsVerified: Boolean? = null,
-    val sharedUserAppId: String? = null
+    val sharedUserAppId: String? = null,
+    val mediaWaveform: ByteArray? = null
 ) : Parcelable
 
 fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
@@ -78,4 +79,3 @@ fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name ||
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
     this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
     (this.mediaStatus != MediaStatus.DONE.name && this.isMedia())
-

@@ -30,6 +30,7 @@ import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.createAttachmentMessage
+import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
@@ -57,7 +58,7 @@ import one.mixin.android.websocket.invalidData
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
-import java.util.UUID
+import java.util.*
 
 class DecryptMessage : Injector() {
 
@@ -162,6 +163,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_IMAGE.name ||
             data.category == MessageCategory.PLAIN_VIDEO.name ||
             data.category == MessageCategory.PLAIN_DATA.name ||
+            data.category == MessageCategory.PLAIN_AUDIO.name ||
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name) {
             if (!data.representativeId.isNullOrBlank()){
@@ -222,6 +224,15 @@ class DecryptMessage : Injector() {
                     data.category, mediaData.attachmentId, mediaData.name, null,
                     mimeType, mediaData.size, data.createdAt,
                     mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
+                messageDao.insert(message)
+                sendNotificationJob(message, data.source)
+            }
+            data.category.endsWith("_AUDIO") -> {
+                val decoded = Base64.decode(plainText)
+                val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val message = createAudioMessage(data.messageId, data.conversationId, data.userId, data.category, mediaData.size,
+                        null, mediaData.duration.toString(), nowInUtc(), mediaData.waveform, null, null,
+                        MediaStatus.PENDING, MessageStatus.SENDING)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
             }
@@ -385,6 +396,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
             data.category == MessageCategory.SIGNAL_DATA.name ||
+            data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_STICKER.name ||
             data.category == MessageCategory.SIGNAL_CONTACT.name) {
             messageDao.insert(createMessage(data.messageId, data.conversationId,
@@ -397,6 +409,7 @@ class DecryptMessage : Injector() {
             messageDao.updateMessageContentAndStatus(plainText, MessageStatus.DELIVERED.name, messageId)
         } else if (data.category == MessageCategory.SIGNAL_IMAGE.name ||
             data.category == MessageCategory.SIGNAL_VIDEO.name ||
+            data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_DATA.name) {
             val decoded = Base64.decode(plainText)
             val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)

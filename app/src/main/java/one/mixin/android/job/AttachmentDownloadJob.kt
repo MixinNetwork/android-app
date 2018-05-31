@@ -13,11 +13,13 @@ import one.mixin.android.RxBus
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.createWebpTemp
+import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
@@ -174,6 +176,17 @@ class AttachmentDownloadJob(private val message: Message)
                 }
                 val imageFile = MixinApplication.get().getVideoPath()
                     .createVideoTemp(extensionName)
+                imageFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+            } else if (message.category.endsWith("_AUDIO")) {
+                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_AUDIO.name) {
+                    AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
+                } else {
+                    FileInputStream(destination)
+                }
+                val imageFile = MixinApplication.get().getAudioPath()
+                    .createAudioTemp("ogg")
                 imageFile.copyFromInputStream(attachmentCipherInputStream)
                 messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)

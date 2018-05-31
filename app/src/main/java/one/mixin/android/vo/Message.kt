@@ -115,6 +115,9 @@ class Message(
     @ColumnInfo(name = "shared_user_id")
     val sharedUserId: String? = null,
 
+    @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
+    val mediaWaveform: ByteArray? = null,
+
     @Deprecated(
         "Replace with mediaMimeType",
         ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Messages.mediaMimeType"),
@@ -145,12 +148,14 @@ enum class MessageCategory {
     SIGNAL_STICKER,
     SIGNAL_DATA,
     SIGNAL_CONTACT,
+    SIGNAL_AUDIO,
     PLAIN_TEXT,
     PLAIN_IMAGE,
     PLAIN_VIDEO,
     PLAIN_DATA,
     PLAIN_STICKER,
     PLAIN_CONTACT,
+    PLAIN_AUDIO,
     PLAIN_JSON,
     STRANGER,
     SYSTEM_CONVERSATION,
@@ -300,4 +305,29 @@ fun createContactMessage(
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
     .setSharedUserId(sharedUserId)
+    .build()
+
+fun createAudioMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    mediaSize:Long,
+    mediaUrl: String?,
+    mediaDuration: String,
+    createdAt: String,
+    mediaWaveform: ByteArray?,
+    key: ByteArray?,
+    digest: ByteArray?,
+    mediaStatus: MediaStatus,
+    status: MessageStatus
+) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    .setMediaUrl(mediaUrl)
+    .setMediaWaveform(mediaWaveform)
+    .setMediaKey(key)
+    .setMediaSize(mediaSize)
+    .setMediaDuration(mediaDuration)
+    .setMediaMimeType("audio/ogg")
+    .setMediaDigest(digest)
+    .setMediaStatus(mediaStatus.name)
     .build()

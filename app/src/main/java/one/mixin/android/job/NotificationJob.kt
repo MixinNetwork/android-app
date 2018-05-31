@@ -136,6 +136,19 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_data_message))
                 }
             }
+            MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name -> {
+                if (conversation?.isGroup() == true) {
+                    notificationBuilder.setTicker(
+                        context.getString(R.string.alert_key_group_audio_message, user.fullName))
+                    notificationBuilder.setContentTitle(conversation.name)
+                    notificationBuilder.setContentText(
+                        context.getString(R.string.alert_key_group_audio_message, user.fullName))
+                } else {
+                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_audio_message))
+                    notificationBuilder.setContentTitle(user.fullName)
+                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_audio_message))
+                }
+            }
             MessageCategory.SIGNAL_STICKER.name, MessageCategory.PLAIN_STICKER.name -> {
                 if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(

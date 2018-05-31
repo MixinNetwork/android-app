@@ -286,6 +286,12 @@ class ConversationListFragment : LinkFragment() {
                     itemView.msg_tv.setText(R.string.conversation_status_file)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file)
                 }
+                conversationItem.contentType == MessageCategory.SIGNAL_AUDIO.name ||
+                    conversationItem.contentType == MessageCategory.PLAIN_AUDIO.name -> {
+                    setConversationName(conversationItem)
+                    itemView.msg_tv.setText(R.string.conversation_status_audio)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_voice)
+                }
                 conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
                     itemView.group_name_tv.visibility = GONE
                     val buttons = Gson().fromJson(conversationItem.content, Array<AppButtonData>::class.java)
