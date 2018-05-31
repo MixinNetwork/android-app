@@ -26,8 +26,8 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.url.isMixinUrl
+import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DragWebView
@@ -195,7 +195,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 return false
             }
             if (isMixinUrl(url)) {
-                LinkBottomSheetDialogFragment.newInstance(url).show(fragmentManager, LinkBottomSheetDialogFragment.TAG)
+                openUrl(url, fragmentManager, {})
                 return true
             }
             val extraHeaders = HashMap<String, String>()

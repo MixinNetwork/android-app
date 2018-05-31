@@ -12,10 +12,9 @@ import one.mixin.android.R
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
-import one.mixin.android.ui.url.isMixinUrl
+import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.support.v4.toast
@@ -48,13 +47,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.qr_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.qr_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.qr_tv.setAutoLinkOnClickListener({ _, url ->
-            when {
-                isMixinUrl(url) -> LinkBottomSheetDialogFragment
-                    .newInstance(url).show(fragmentManager, LinkBottomSheetDialogFragment.TAG)
-                else -> WebBottomSheetDialogFragment
-                    .newInstance(url, conversationId)
-                    .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
-            }
+            openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
             dialog?.dismiss()
         })
         contentView.qr_tv.text = text

@@ -28,7 +28,7 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
-import one.mixin.android.ui.url.openUrl
+import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -111,7 +111,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener({ _, url ->
-            openUrl(url, conversationId, requireFragmentManager())
+            openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
             dialog?.dismiss()
         })
 
