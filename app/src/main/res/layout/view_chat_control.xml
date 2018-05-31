@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="8dp"
+        android:paddingTop="8dp"
+        android:layout_gravity="center_vertical">
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+        <ImageButton
+                android:id="@+id/chat_bot_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:paddingStart="16dp"
+                app:srcCompat="@drawable/ic_chat_bot"
+                tools:ignore="ContentDescription"/>
+
+        <ImageButton
+                android:id="@+id/chat_more_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:paddingEnd="16dp"
+                android:paddingStart="16dp"
+                app:srcCompat="@drawable/ic_chat_ext"
+                tools:ignore="ContentDescription"/>
+
+        <one.mixin.android.widget.ContentEditText
+                android:id="@+id/chat_et"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@drawable/bg_input"
+                android:drawableEnd="@drawable/ic_chat_sticker"
+                android:inputType="textMultiLine|textNoSuggestions"
+                android:maxLines="5"
+                android:paddingBottom="6dp"
+                android:paddingEnd="12dp"
+                android:paddingStart="12dp"
+                android:paddingTop="6dp"
+                android:layout_marginEnd="48dp"
+                android:textSize="14sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                tools:ignore="LabelFor"/>
+    </LinearLayout>
+
+    <one.mixin.android.widget.audio.SlidePanelView
+            android:id="@+id/chat_slide"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"/>
+
+    <ImageButton
+            android:id="@+id/chat_send_ib"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@null"
+            android:paddingEnd="16dp"
+            android:paddingStart="16dp"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_mic_none_black_24dp"
+            tools:ignore="ContentDescription"/>
+</FrameLayout>

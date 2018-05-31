@@ -27,4 +27,8 @@
     <dimen name="bottom_group_avatar_size">40dp</dimen>
     <dimen name="bottom_button_height">56dp</dimen>
     <dimen name="bottom_name_text_size">18sp</dimen>
+    <dimen name="margin16">16dp</dimen>
+    <dimen name="margin12">12dp</dimen>
+    <dimen name="blink_size">8dp</dimen>
+    <dimen name="padding8">8dp</dimen>
 </resources>
