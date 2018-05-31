@@ -513,8 +513,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         sharedView.doOnPreDraw { startPostponedEnterTransition() }
     }
 
-    override fun onScaleProgress(scale: Float) {
-        colorDrawable.alpha = Math.min(ALPHA_MAX, colorDrawable.alpha - (scale * ALPHA_MAX).toInt())
+    override fun onDismissProgress(progress: Float) {
+        colorDrawable.alpha = Math.min(ALPHA_MAX, ((1 - progress) * ALPHA_MAX).toInt())
     }
 
     override fun onDismiss() {

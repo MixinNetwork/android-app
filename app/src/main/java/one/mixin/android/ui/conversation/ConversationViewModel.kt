@@ -76,7 +76,7 @@ import one.mixin.android.websocket.TransferStickerData
 import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.FileInputStream
-import java.util.UUID
+import java.util.*
 import javax.inject.Inject
 
 class ConversationViewModel
@@ -185,41 +185,6 @@ internal constructor(
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }.observeOn(AndroidSchedulers.mainThread())!!
 
-    fun sendFordVideoMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
-        Flowable.just(id).observeOn(Schedulers.io()).map {
-            val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-            conversationRepository.findMessageById(id)?.let { message ->
-                jobManager.addJobInBackground(SendAttachmentMessageJob(createVideoMessage(UUID.randomUUID().toString(),
-                    conversationId, sender.userId, category, null, message.name, message.mediaUrl,
-                    message.mediaDuration?.toLong(), message.mediaWidth, message.mediaHeight, message.thumbImage,
-                    message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null, null,
-                    MediaStatus.PENDING, MessageStatus.SENDING
-                )))
-            }
-        }.observeOn(AndroidSchedulers.mainThread())!!
-
-    fun sendFordDataMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
-        Flowable.just(id).observeOn(Schedulers.io()).map {
-            val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-            conversationRepository.findMessageById(id)?.let { message ->
-                val uri: Uri = if (message.userId != Session.getAccountId()) {
-                    MixinApplication.appContext.getUriForFile(File(message.mediaUrl))
-                } else {
-                    Uri.parse(message.mediaUrl)
-                }
-                jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-                    category, null, message.name, uri.toString(), message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null,
-                    null, MediaStatus.PENDING, MessageStatus.SENDING)))
-            }
-        }.observeOn(AndroidSchedulers.mainThread())!!
-
-    fun sendFordStickerMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
-        Flowable.just(id).observeOn(Schedulers.io()).map {
-            conversationRepository.findMessageById(id)?.let { message ->
-                sendStickerMessage(conversationId, sender, TransferStickerData(message.albumId!!, message.name!!), isPlain)
-            }
-        }.observeOn(AndroidSchedulers.mainThread())!!
-
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         val mimeType = getMimeType(uri)
@@ -274,6 +239,46 @@ internal constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
+
+
+    fun sendFordMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
+        Flowable.just(id).observeOn(Schedulers.io()).map {
+            conversationRepository.findMessageById(id)?.let { message ->
+                when {
+                    message.category.endsWith("_IMAGE") -> {
+                        val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                        jobManager.addJobInBackground(SendAttachmentMessageJob(createMediaMessage(UUID.randomUUID().toString(),
+                            conversationId, sender.userId, category, null, message.mediaUrl, message.mediaMimeType!!, message.mediaSize!!,
+                            message.mediaWidth, message.mediaHeight, message.thumbImage, null, null, nowInUtc(),
+                            MediaStatus.PENDING, MessageStatus.SENDING
+                        )))
+                    }
+                    message.category.endsWith("_VIDEO") -> {
+                        val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+                        jobManager.addJobInBackground(SendAttachmentMessageJob(createVideoMessage(UUID.randomUUID().toString(),
+                            conversationId, sender.userId, category, null, message.name, message.mediaUrl,
+                            message.mediaDuration?.toLong(), message.mediaWidth, message.mediaHeight, message.thumbImage,
+                            message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null, null,
+                            MediaStatus.PENDING, MessageStatus.SENDING
+                        )))
+                    }
+                    message.category.endsWith("_DATA") -> {
+                        val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
+                        val uri: Uri = if (message.userId != Session.getAccountId()) {
+                            MixinApplication.appContext.getUriForFile(File(message.mediaUrl))
+                        } else {
+                            Uri.parse(message.mediaUrl)
+                        }
+                        jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+                            category, null, message.name, uri.toString(), message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null,
+                            null, MediaStatus.PENDING, MessageStatus.SENDING)))
+                    }
+                    message.category.endsWith("_STICKER") -> {
+                        sendStickerMessage(conversationId, sender, TransferStickerData(message.albumId!!, message.name!!), isPlain)
+                    }
+                }
+            }
+        }.observeOn(AndroidSchedulers.mainThread())!!
 
     fun updateRelationship(request: RelationshipRequest) {
         jobManager.addJobInBackground(UpdateRelationshipJob(request))

@@ -2,9 +2,7 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.graphics.drawable.Drawable
 import android.support.v4.widget.TextViewCompat
-import android.support.v7.content.res.AppCompatResources
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
@@ -15,7 +13,6 @@ import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColorResource
 
@@ -23,10 +20,6 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
 
     init {
         itemView.chat_time.textColorResource = R.color.color_chat_date
-    }
-
-    private val dp10 by lazy {
-        itemView.context.dpToPx(10f)
     }
 
     private val dp160 by lazy {
@@ -96,26 +89,11 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         } else {
             itemView.chat_name.visibility = View.GONE
         }
-        if (isMe) {
-            val drawable: Drawable? =
-                when (messageItem.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            drawable.also {
-                it?.setBounds(0, 0, dp10, dp10)
-                TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, drawable, null)
-            }
-        } else {
+        setStatusIcon(isMe,messageItem.status,{
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
+        },{
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        }
+        })
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {

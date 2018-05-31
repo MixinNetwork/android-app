@@ -186,9 +186,18 @@ fun File.createGifTemp(): File {
     return createTempFile("IMAGE_$time", ".gif")
 }
 
-fun File.createDocumentTemp(type: String): File {
+fun File.createWebpTemp(): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("FILE_$time", ".$type")
+    return createTempFile("IMAGE_$time", ".webp")
+}
+
+fun File.createDocumentTemp(type: String?): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    return createTempFile("FILE_$time", if (type == null) {
+        null
+    } else {
+        ".$type"
+    })
 }
 
 fun File.createVideoTemp(type: String): File {
@@ -342,6 +351,16 @@ fun String.getFileNameNoEx(): String {
         return this.substring(0, dot)
     }
     return this
+}
+
+fun String.getExtensionName(): String? {
+    if (this.isNotEmpty()) {
+        val dot = this.lastIndexOf('.')
+        if (dot > -1 && dot < this.length - 1) {
+            return this.substring(dot + 1)
+        }
+    }
+    return null
 }
 
 fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {

@@ -12,8 +12,6 @@ import android.util.AttributeSet
 import android.util.Log
 import android.widget.ImageView
 
-import one.mixin.android.R
-
 abstract class PorterImageView : AppCompatImageView {
 
     private var maskCanvas: Canvas? = null
@@ -26,31 +24,20 @@ abstract class PorterImageView : AppCompatImageView {
     private var drawablePaint: Paint? = null
 
     private var invalidated = true
-    private var square = false
 
     constructor(context: Context) : super(context) {
-        setup(context, null, 0)
+        setup()
     }
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        setup(context, attrs, 0)
+        setup()
     }
 
     constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        setup(context, attrs, defStyle)
+        setup()
     }
 
-    fun setSquare(square: Boolean) {
-        this.square = square
-    }
-
-    private fun setup(context: Context, attrs: AttributeSet?, defStyle: Int) {
-        if (attrs != null) {
-            val typedArray = context.obtainStyledAttributes(attrs, R.styleable.ShaderImageView, defStyle, 0)
-            square = typedArray.getBoolean(R.styleable.ShaderImageView_siSquare, false)
-            typedArray.recycle()
-        }
-
+    private fun setup() {
         if (scaleType == ImageView.ScaleType.FIT_CENTER) {
             scaleType = ImageView.ScaleType.CENTER_CROP
         }
@@ -73,16 +60,15 @@ abstract class PorterImageView : AppCompatImageView {
     }
 
     protected fun createMaskCanvas() {
-        if (maskCanvas != null) {
-            val width = maskCanvas!!.width
-            val height = maskCanvas!!.height
+        maskCanvas?.let {
+            val width = it.width
+            val height = it.height
             maskCanvas = null
-            createMaskCanvas(width, height, 0, 0)
-            invalidate()
+            createMaskCanvas(width, height)
         }
     }
 
-    private fun createMaskCanvas(width: Int, height: Int, oldw: Int, oldh: Int) {
+    private fun createMaskCanvas(width: Int, height: Int, oldw: Int = 0, oldh: Int = 0) {
         val sizeChanged = width != oldw || height != oldh
         val isValid = width > 0 && height > 0
         if (isValid && (maskCanvas == null || sizeChanged)) {
@@ -112,27 +98,32 @@ abstract class PorterImageView : AppCompatImageView {
                     if (drawable != null) {
                         invalidated = false
                         val imageMatrix = imageMatrix
-                        if (imageMatrix == null) {// && mPaddingTop == 0 && mPaddingLeft == 0) {
-                            drawable.draw(drawableCanvas!!)
+                        if (imageMatrix == null) {
+                            drawableCanvas?.let {
+                                drawable.draw(it)
+                            }
                         } else {
-                            val drawableSaveCount = drawableCanvas!!.saveCount
-                            drawableCanvas!!.save()
-                            drawableCanvas!!.concat(imageMatrix)
-                            drawableCanvas!!.drawPaint(erasePaint)
-                            drawable.draw(drawableCanvas!!)
-                            drawableCanvas!!.restoreToCount(drawableSaveCount)
+                            drawableCanvas?.let {
+                                val drawableSaveCount = it.saveCount
+                                it.save()
+                                it.concat(imageMatrix)
+                                it.drawPaint(erasePaint)
+                                drawable.draw(it)
+                                it.restoreToCount(drawableSaveCount)
+                            }
                         }
 
-                        drawablePaint!!.reset()
-                        drawablePaint!!.isFilterBitmap = false
-                        drawablePaint!!.xfermode = PORTER_DUFF_XFERMODE
-                        drawableCanvas!!.drawBitmap(maskBitmap!!, 0.0f, 0.0f, drawablePaint)
+                        drawablePaint?.reset()
+                        drawablePaint?.isFilterBitmap = false
+                        drawablePaint?.xfermode = PORTER_DUFF_XFERMODE
+                        drawableCanvas?.drawBitmap(maskBitmap!!, 0.0f, 0.0f, drawablePaint)
                     }
                 }
-
                 if (!invalidated) {
-                    drawablePaint!!.xfermode = null
-                    canvas.drawBitmap(drawableBitmap!!, 0.0f, 0.0f, drawablePaint)
+                    drawablePaint?.xfermode = null
+                    drawableBitmap?.let {
+                        canvas.drawBitmap(it, 0.0f, 0.0f, drawablePaint)
+                    }
                 }
             } catch (e: Exception) {
                 val log = "Exception occured while drawing $id"
@@ -142,16 +133,6 @@ abstract class PorterImageView : AppCompatImageView {
             }
         } else {
             super.onDraw(canvas)
-        }
-    }
-
-    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        if (square) {
-            val width = measuredWidth
-            val height = measuredHeight
-            val dimen = Math.min(width, height)
-            setMeasuredDimension(dimen, dimen)
         }
     }
 

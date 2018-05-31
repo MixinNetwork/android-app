@@ -72,7 +72,4 @@
     <declare-styleable name="MessageLayout">
         <attr name="max_width" format="dimension" />
     </declare-styleable>
-    <declare-styleable name="ShaderImageView">
-        <attr name="siSquare" format="boolean" />
-    </declare-styleable>
 </resources>

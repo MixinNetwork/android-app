@@ -1,10 +1,8 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.support.constraint.ConstraintLayout
 import android.support.v4.widget.TextViewCompat
-import android.support.v7.content.res.AppCompatResources
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -22,10 +20,9 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 
-class ImageHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class ImageHolder constructor(containerView: View) : MediaHolder(containerView) {
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
@@ -33,32 +30,6 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
         itemView.chat_time.round(radius)
         itemView.progress.round(radius)
     }
-
-    private val dp10 by lazy {
-        itemView.context.dpToPx(10f)
-    }
-
-    private val dp200 by lazy {
-        itemView.context.dpToPx(200f)
-    }
-
-    private val dp94 by lazy {
-        dp100 - dp6
-    }
-
-    private val dp100 by lazy {
-        itemView.context.dpToPx(100f)
-    }
-
-    private val dp194 by lazy {
-        dp200 - dp6
-    }
-
-    private val dp6 by lazy {
-        itemView.context.dpToPx(6f)
-    }
-
-    private var thumbId: Int? = null
 
     fun bind(
         messageItem: MessageItem,
@@ -105,12 +76,10 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
             itemView.chat_name.visibility = View.GONE
         }
 
-        var maxWidth = dp194
-        var minWidth = dp94
+        var width = mediaWidth - dp6
         when {
             isLast -> {
-                maxWidth = dp200
-                minWidth = dp100
+                width = mediaWidth
                 (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
                 (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
             }
@@ -125,25 +94,12 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
         }
         if (messageItem.mediaWidth == null || messageItem.mediaHeight == null ||
             messageItem.mediaWidth <= 0 || messageItem.mediaHeight <= 0) {
-            itemView.chat_image.layoutParams.width = minWidth
-            itemView.chat_image.layoutParams.height = minWidth
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width
         } else {
-            when {
-                messageItem.mediaWidth > maxWidth -> {
-                    itemView.chat_image.layoutParams.width = maxWidth
-                    itemView.chat_image.layoutParams.height =
-                        maxWidth * messageItem.mediaHeight / messageItem.mediaWidth
-                }
-                messageItem.mediaWidth < minWidth -> {
-                    itemView.chat_image.layoutParams.width = minWidth
-                    itemView.chat_image.layoutParams.height =
-                        minWidth * messageItem.mediaHeight / messageItem.mediaWidth
-                }
-                else -> {
-                    itemView.chat_image.layoutParams.width = messageItem.mediaWidth
-                    itemView.chat_image.layoutParams.height = messageItem.mediaHeight
-                }
-            }
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height =
+                width * messageItem.mediaHeight / messageItem.mediaWidth
         }
 
         val mark = when {
@@ -157,16 +113,14 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
         notNullElse(messageItem.mediaUrl, {
             if (isGif) {
                 itemView.chat_image.loadGif(it)
-            } else if (thumbId != it.hashCode() + mark) {
+            } else {
                 itemView.chat_image.loadImageMark(it, R.drawable.image_holder, mark)
-                thumbId = it.hashCode() + mark
             }
         }, {
             if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (messageItem.thumbImage != null && thumbId != messageItem.thumbImage.hashCode() + mark) {
+                if (messageItem.thumbImage != null) {
                     itemView.chat_image.loadBase64(messageItem.thumbImage.decodeBase64(),
                         itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
-                    thumbId = messageItem.thumbImage.hashCode() + mark
                 }
             }
         })
@@ -266,26 +220,11 @@ class ImageHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 }
             }
         }
-        if (isMe) {
-            val drawable: Drawable? =
-                when (messageItem.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending_white)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent_white)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered_white)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            drawable.also {
-                it?.setBounds(0, 0, dp10, dp10)
-                TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, drawable, null)
-            }
-        } else {
+        setStatusIcon(isMe, messageItem.status, {
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
+        }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        }
+        }, true)
         chatLayout(isMe, isLast)
     }
 
