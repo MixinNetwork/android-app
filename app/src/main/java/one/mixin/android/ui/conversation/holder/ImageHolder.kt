@@ -1,10 +1,8 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.support.constraint.ConstraintLayout
 import android.support.v4.widget.TextViewCompat
-import android.support.v7.content.res.AppCompatResources
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +20,6 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 
 class ImageHolder constructor(containerView: View) : MediaHolder(containerView) {
@@ -223,26 +220,11 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
                 }
             }
         }
-        if (isMe) {
-            val drawable: Drawable? =
-                when (messageItem.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending_white)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent_white)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered_white)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            drawable.also {
-                it?.setBounds(0, 0, dp10, dp10)
-                TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, drawable, null)
-            }
-        } else {
+        setStatusIcon(isMe, messageItem.status, {
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
+        }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        }
+        }, true)
         chatLayout(isMe, isLast)
     }
 

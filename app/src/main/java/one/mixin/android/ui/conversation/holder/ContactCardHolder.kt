@@ -1,8 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.support.v7.content.res.AppCompatResources
 import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
@@ -15,7 +13,6 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 
 class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
@@ -34,7 +31,8 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
         itemView.avatar_iv.setInfo(if (item.sharedUserFullName != null && item.sharedUserFullName.isNotEmpty())
-            item.sharedUserFullName[0] else ' ', item.sharedUserAvatarUrl, item.sharedUserIdentityNumber ?: "0")
+            item.sharedUserFullName[0] else ' ', item.sharedUserAvatarUrl, item.sharedUserIdentityNumber
+            ?: "0")
         itemView.name_tv.text = item.sharedUserFullName
         itemView.id_tv.text = item.sharedUserIdentityNumber
         itemView.chat_time.timeAgoClock(item.createdAt)
@@ -57,24 +55,12 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
             itemView.chat_name.visibility = View.GONE
         }
 
-        if (isMe) {
-            val drawable: Drawable? =
-                when (item.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            itemView.chat_flag.setImageDrawable(drawable)
+        setStatusIcon(isMe, item.status, {
+            itemView.chat_flag.setImageDrawable(it)
             itemView.chat_flag.visibility = View.VISIBLE
-        } else {
+        }, {
             itemView.chat_flag.visibility = View.GONE
-        }
+        })
         chatLayout(isMe, isLast)
 
         itemView.setOnClickListener {

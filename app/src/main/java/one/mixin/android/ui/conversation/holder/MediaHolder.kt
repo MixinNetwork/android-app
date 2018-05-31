@@ -9,10 +9,6 @@ abstract class MediaHolder constructor(containerView: View) : BaseViewHolder(con
         itemView.context.dpToPx(6f)
     }
 
-    protected val dp10 by lazy {
-        itemView.context.dpToPx(10f)
-    }
-
     protected val mediaWidth by lazy {
         (itemView.context.displaySize().x * 0.6).toInt()
     }

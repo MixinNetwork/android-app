@@ -1,9 +1,7 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.support.constraint.ConstraintLayout
-import android.support.v7.content.res.AppCompatResources
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
@@ -17,7 +15,6 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
@@ -149,24 +146,12 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        if (isMe) {
-            val drawable: Drawable? =
-                when (messageItem.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            itemView.chat_flag.setImageDrawable(drawable)
+        setStatusIcon(isMe, messageItem.status, {
+            itemView.chat_flag.setImageDrawable(it)
             itemView.chat_flag.visibility = View.VISIBLE
-        } else {
+        }, {
             itemView.chat_flag.visibility = View.GONE
-        }
+        })
 
         itemView.setOnClickListener {
             if (hasSelect) {

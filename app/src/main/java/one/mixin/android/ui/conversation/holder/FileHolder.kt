@@ -1,8 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.support.v7.content.res.AppCompatResources
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
@@ -18,7 +16,6 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
@@ -79,24 +76,12 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         } else {
             itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
         }
-        if (isMe) {
-            val drawable: Drawable? =
-                when (messageItem.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            itemView.chat_flag.setImageDrawable(drawable)
+        setStatusIcon(isMe, messageItem.status, {
+            itemView.chat_flag.setImageDrawable(it)
             itemView.chat_flag.visibility = View.VISIBLE
-        } else {
+        }, {
             itemView.chat_flag.visibility = View.GONE
-        }
+        })
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
