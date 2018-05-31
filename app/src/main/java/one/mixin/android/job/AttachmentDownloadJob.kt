@@ -148,7 +148,6 @@ class AttachmentDownloadJob(private val message: Message)
                         }
                     }
                     imageFile.copyFromInputStream(attachmentCipherInputStream)
-                    Log.e(TAG, imageFile.absolutePath)
                     messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
                     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 }
@@ -176,7 +175,6 @@ class AttachmentDownloadJob(private val message: Message)
                 val imageFile = MixinApplication.get().getVideoPath()
                     .createVideoTemp(extensionName)
                 imageFile.copyFromInputStream(attachmentCipherInputStream)
-                Log.e(TAG, imageFile.absolutePath)
                 messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             }
