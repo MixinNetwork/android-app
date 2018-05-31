@@ -76,7 +76,7 @@ import one.mixin.android.websocket.TransferStickerData
 import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.FileInputStream
-import java.util.*
+import java.util.UUID
 import javax.inject.Inject
 
 class ConversationViewModel
@@ -374,6 +374,8 @@ internal constructor(
             conversationRepository.getConversationApp(userId)
         }
     }
+
+    fun findAppById(id: String) = userRepository.findAppById(id)
 
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 }

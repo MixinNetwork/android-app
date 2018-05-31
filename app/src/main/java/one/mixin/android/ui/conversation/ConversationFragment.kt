@@ -1161,6 +1161,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     RelationshipAction.UNBLOCK.name, user.fullName))
             }
         }
+
+        if (user.isBot()) {
+            doAsync {
+                val app = chatViewModel.findAppById(user.appId!!)
+                if (app != null && app.creatorId == Session.getAccountId()) {
+                    uiThread {
+                        menuAdapter.showTransfer = true
+                    }
+                }
+            }
+        }
     }
 
     private fun clickSticker() {
