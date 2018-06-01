@@ -33,7 +33,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
@@ -122,8 +121,7 @@ class MobileFragment : BaseFragment() {
                 webViewFragment.show(requireFragmentManager(), WebViewFragment.TAG)
                 webViewFragment.callback = object : WebViewFragment.Callback {
                     override fun onMessage(value: String) {
-                        toast(value)
-                        //TODO
+                        mobile_fab.post { requestSend(value) }
                     }
                 }
                 dialog.dismiss()
@@ -131,14 +129,15 @@ class MobileFragment : BaseFragment() {
             .show()
     }
 
-    private fun requestSend() {
+    private fun requestSend(gRecaptchaResponse: String) {
         mobile_fab.show()
         mobile_cover.visibility = VISIBLE
         val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
         val verificationRequest = VerificationRequest(
             phoneNum,
             null,
-            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name)
+            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
+            if (pin == null) gRecaptchaResponse else null)
         mobileViewModel.verification(verificationRequest)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
                 mobile_fab?.hide()
@@ -150,7 +149,7 @@ class MobileFragment : BaseFragment() {
                 }
                 mNeedInvitation = false
                 activity?.addFragment(this@MobileFragment,
-                    VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
+                    VerificationFragment.newInstance(r.data!!.id, phoneNum, pin, gRecaptchaResponse), VerificationFragment.TAG)
             }, { t: Throwable ->
                 mobile_fab?.hide()
                 mobile_cover?.visibility = GONE

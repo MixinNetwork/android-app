@@ -1,67 +1,25 @@
 <html>
 <head>
-    <meta name="viewport" content="width=device-width" />
     <script type="text/javascript">
-  var post = function(value) {
-    window.MixinContext.postMessage(value)
-  };
+      var verifyCallback = function(response) {
+        window.MixinContext.postMessage(response);
+      }
 
-  console.log = function(message) {
-      post({log: message});
-  };
+      var onloadCallback = function() {
+        grecaptcha.render('html_element', {
+          'sitekey' : '#apiKey',
+          'callback' : verifyCallback
+        });
+      };
 
-  var showReCaptcha = function() {
-      console.log("showReCaptcha");
-      post({action: "showReCaptcha"});
-  };
-
-  var observeDOM = function(element, completion) {
-    new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutationRecord) {
-        completion();
-      });
-    })
-    .observe(element, {attributes: true, attributeFilter: ['style']})
-  };
-
-  var execute = function() {
-    console.log("executing");
-
-    // Removes ReCaptcha dismissal when clicking outside div area
-    try {
-        document.getElementsByTagName("div")[4].outerHTML = ""
-    }
-    catch(e) {
-    }
-
-    // Listens to changes on the div element that presents the ReCaptcha challenge
-    observeDOM(document.getElementsByTagName("div")[3], showReCaptcha);
-
-    grecaptcha.execute();
-  };
-
-  var onSubmit = function(token) {
-    console.log(token);
-    post({token: token});
-  };
-
-  var onloadCallback = function() {
-    console.log("did load");
-    grecaptcha.render('submit', {
-      'sitekey' : '#apiKey',
-      'callback' : onSubmit,
-      'size': 'invisible'
-    });
-  };
-
-  var reset = function() {
-      console.log("resetting");
-      grecaptcha.reset();
-  };
-  </script>
+    </script>
 </head>
 <body>
-<span id="submit" style="visibility: hidden;"></span>
-<script src="https://www.recaptcha.net/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
+<form action="?" method="POST" style="hidden">
+    <div id="html_element"></div>
+</form>
+<script src="https://www.google.com/recaptcha/api.js?onload=onloadCallback&render=explicit"
+        async defer>
+</script>
 </body>
 </html>

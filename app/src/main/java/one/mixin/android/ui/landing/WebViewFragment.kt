@@ -2,18 +2,20 @@ package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Context
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
-import android.util.Log
+import android.view.Gravity
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
+import android.widget.FrameLayout
+import android.widget.ProgressBar
 import okio.Okio
 import one.mixin.android.BuildConfig
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.fadeOut
 import java.nio.charset.Charset
 
 class WebViewFragment : DialogFragment() {
@@ -24,16 +26,23 @@ class WebViewFragment : DialogFragment() {
 
     var callback: Callback? = null
 
-    lateinit var webView: WebView
+    private lateinit var webView: WebView
+    private lateinit var pb: ProgressBar
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = Dialog(requireContext())
-        webView = WebView(context)
-        dialog.setContentView(webView)
+        val fl = FrameLayout(requireContext())
+        pb = ProgressBar(requireContext())
+        webView = WebView(requireContext())
+        fl.addView(webView, MATCH_PARENT, MATCH_PARENT)
+        val pbParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
+        pbParams.gravity = Gravity.CENTER
+        fl.addView(pb, pbParams)
+        dialog.setContentView(fl)
         val lp = WindowManager.LayoutParams()
         lp.copyFrom(dialog.window.attributes)
-        lp.width = requireContext().dip(420)
-        lp.height = requireContext().dip(360)
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT
         dialog.window.attributes = lp
         return dialog
     }
@@ -46,32 +55,23 @@ class WebViewFragment : DialogFragment() {
         }
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
-        webView.addJavascriptInterface(WebViewFragment.WebAppInterface(context!!), "MixinContext")
-        webView.webViewClient = object: WebViewClient() {
+        webView.addJavascriptInterface(this, "MixinContext")
+        webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                Log.e("Hello", url)
-                view!!.loadUrl("javascript:execute();")
-
+                pb.fadeOut()
             }
         }
         val input = requireContext().assets.open("recaptcha.html")
         var html = Okio.buffer(Okio.source(input)).readByteString().string(Charset.forName("utf-8"))
         html = html.replace("#apiKey", BuildConfig.RECAPTCHA_KEY)
-        webView.loadData(html, "text/html", "UTF-8")
+        webView.loadDataWithBaseURL("https://mixin.one", html, "text/html", "UTF-8", null)
     }
 
-
-
-    class WebAppInterface(val context: Context) {
-        @JavascriptInterface
-        fun postMessage(value: String) {
-            Log.e("Hello", value)
-            Toast.makeText(context, value, Toast.LENGTH_SHORT).show()
-//            callback?.onMessage(value)
-//            dismiss()
-        }
-
+    @JavascriptInterface
+    fun postMessage(value: String) {
+        callback?.onMessage(value)
+        dismiss()
     }
 
     interface Callback {
