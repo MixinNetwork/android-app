@@ -3,7 +3,7 @@
     <meta name="viewport" content="width=device-width" />
     <script type="text/javascript">
   var post = function(value) {
-    window.mixin.postMessage(value)
+    window.MixinContext.postMessage(value)
   };
 
   console.log = function(message) {
@@ -62,6 +62,6 @@
 </head>
 <body>
 <span id="submit" style="visibility: hidden;"></span>
-<script src="https://www.recaptcha.net/recaptcha/api.js" async defer></script>
+<script src="https://www.recaptcha.net/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer></script>
 </body>
 </html>

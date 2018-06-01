@@ -12,12 +12,6 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import com.google.android.gms.common.ConnectionResult
-import com.google.android.gms.common.GoogleApiAvailability
-import com.google.android.gms.safetynet.SafetyNet
-import com.google.android.gms.safetynet.SafetyNetApi
-import com.google.android.gms.tasks.OnFailureListener
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -25,8 +19,6 @@ import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_mobile.*
-import one.mixin.android.AppExecutors
-import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -126,27 +118,12 @@ class MobileFragment : BaseFragment() {
                 mCountry.dialCode + " " + mobile_et.text.toString()))
             .setNegativeButton(R.string.change, { dialog, _ -> dialog.dismiss() })
             .setPositiveButton(R.string.confirm, { dialog, _ ->
-                if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(requireContext()) == ConnectionResult.SUCCESS &&
-                    mCountry.code != "CN") {
-                    SafetyNet.getClient(requireActivity()).verifyWithRecaptcha(BuildConfig.RECAPTCHA_KEY)
-                        .addOnSuccessListener(AppExecutors().mainThread(),
-                            OnSuccessListener<SafetyNetApi.RecaptchaTokenResponse> { response ->
-                                val userResponseToken = response.tokenResult
-                                if (!userResponseToken.isEmpty()) {
-                                    requestSend()
-                                }
-                            })
-                        .addOnFailureListener(AppExecutors().mainThread(), OnFailureListener { e ->
-                            toast(R.string.error_network)
-                        })
-                } else {
-                    val webViewFragment = WebViewFragment()
-                    webViewFragment.show(requireFragmentManager(), WebViewFragment.TAG)
-                    webViewFragment.callback = object : WebViewFragment.Callback {
-                        override fun onMessage(value: String) {
-                            toast(value)
-                            //TODO
-                        }
+                val webViewFragment = WebViewFragment()
+                webViewFragment.show(requireFragmentManager(), WebViewFragment.TAG)
+                webViewFragment.callback = object : WebViewFragment.Callback {
+                    override fun onMessage(value: String) {
+                        toast(value)
+                        //TODO
                     }
                 }
                 dialog.dismiss()

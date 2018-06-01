@@ -32,7 +32,7 @@ android {
         }
 
         buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
-        buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('RECAPTCHA_KEY')}\""
+        buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
 
     }
 
@@ -139,7 +139,6 @@ dependencies {
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"
     implementation "com.google.firebase:firebase-messaging:${firebaseVersion}"
-    implementation "com.google.android.gms:play-services-safetynet:15.0.1"
     implementation "com.timehop.stickyheadersrecyclerview:library:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
     implementation 'org.whispersystems:curve25519-android:0.5.0'
