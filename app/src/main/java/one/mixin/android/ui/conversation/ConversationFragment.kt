@@ -105,6 +105,7 @@ import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.DataPackage
 import one.mixin.android.util.Session
+import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
@@ -490,6 +491,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
     private var recipient: User? = null
+    private var app: App? = null
 
     private var isFirstMessage = false
     private var isFirstLoad = true
@@ -904,7 +906,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             extensions.visibility = GONE
             chat_bot.visibility = VISIBLE
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
-                notNullElse(it, { app ->
+                if (it != null && it.isNotEmpty()) {
+                    this.app = it[0]
                     chat_bot.setOnClickListener {
                         if (sticker_container.visibility == VISIBLE) {
                             cover.alpha = 0f
@@ -917,11 +920,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (mediaVisibility) {
                             hideMediaLayout()
                         }
-                        openUrlWithExtraWeb(app[0].homeUri, conversationId, requireFragmentManager())
+                        this.app?.let {
+                            openUrlWithExtraWeb(it.homeUri, conversationId, requireFragmentManager())
+                        }
                     }
-                }, {
+                } else {
                     chat_bot.setOnClickListener(null)
-                })
+                }
             })
         } else {
             chat_bot.visibility = GONE
