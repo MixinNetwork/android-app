@@ -12,6 +12,12 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
+import com.google.android.gms.safetynet.SafetyNet
+import com.google.android.gms.safetynet.SafetyNetApi
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -19,6 +25,8 @@ import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_mobile.*
+import one.mixin.android.AppExecutors
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -33,6 +41,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
+import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
@@ -117,34 +126,59 @@ class MobileFragment : BaseFragment() {
                 mCountry.dialCode + " " + mobile_et.text.toString()))
             .setNegativeButton(R.string.change, { dialog, _ -> dialog.dismiss() })
             .setPositiveButton(R.string.confirm, { dialog, _ ->
-                mobile_fab.show()
-                mobile_cover.visibility = VISIBLE
-
-                val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
-                val verificationRequest = VerificationRequest(
-                    phoneNum,
-                    null,
-                    if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name)
-                mobileViewModel.verification(verificationRequest)
-                    .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
-                        mobile_fab?.hide()
-                        mobile_cover?.visibility = GONE
-                        if (!r.isSuccess) {
-                            mNeedInvitation = true
-                            ErrorHandler.handleMixinError(r.errorCode)
-                            return@subscribe
+                if (GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(requireContext()) == ConnectionResult.SUCCESS &&
+                    mCountry.code != "CN") {
+                    SafetyNet.getClient(requireActivity()).verifyWithRecaptcha(BuildConfig.RECAPTCHA_KEY)
+                        .addOnSuccessListener(AppExecutors().mainThread(),
+                            OnSuccessListener<SafetyNetApi.RecaptchaTokenResponse> { response ->
+                                val userResponseToken = response.tokenResult
+                                if (!userResponseToken.isEmpty()) {
+                                    requestSend()
+                                }
+                            })
+                        .addOnFailureListener(AppExecutors().mainThread(), OnFailureListener { e ->
+                            toast(R.string.error_network)
+                        })
+                } else {
+                    val webViewFragment = WebViewFragment()
+                    webViewFragment.show(requireFragmentManager(), WebViewFragment.TAG)
+                    webViewFragment.callback = object : WebViewFragment.Callback {
+                        override fun onMessage(value: String) {
+                            toast(value)
+                            //TODO
                         }
-                        mNeedInvitation = false
-                        activity?.addFragment(this@MobileFragment,
-                            VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
-                    }, { t: Throwable ->
-                        mobile_fab?.hide()
-                        mobile_cover?.visibility = GONE
-                        ErrorHandler.handleError(t)
-                    })
+                    }
+                }
                 dialog.dismiss()
             })
             .show()
+    }
+
+    private fun requestSend() {
+        mobile_fab.show()
+        mobile_cover.visibility = VISIBLE
+        val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
+        val verificationRequest = VerificationRequest(
+            phoneNum,
+            null,
+            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name)
+        mobileViewModel.verification(verificationRequest)
+            .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
+                mobile_fab?.hide()
+                mobile_cover?.visibility = GONE
+                if (!r.isSuccess) {
+                    mNeedInvitation = true
+                    ErrorHandler.handleMixinError(r.errorCode)
+                    return@subscribe
+                }
+                mNeedInvitation = false
+                activity?.addFragment(this@MobileFragment,
+                    VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
+            }, { t: Throwable ->
+                mobile_fab?.hide()
+                mobile_cover?.visibility = GONE
+                ErrorHandler.handleError(t)
+            })
     }
 
     private fun handleEditView(str: String) {
