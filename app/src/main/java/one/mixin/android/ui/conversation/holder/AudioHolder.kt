@@ -11,6 +11,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.util.AudioPlay
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
@@ -99,9 +100,9 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_expired.visibility = View.GONE
                     itemView.audio_progress.visibility = View.VISIBLE
                     itemView.audio_progress.enableLoading()
-                    itemView.audio_progress.setBindId(messageItem.messageId)
+                    itemView.audio_progress.setBindOnly(messageItem.messageId)
                     itemView.audio_progress.setOnClickListener {
-                        onItemListener.onCancel(messageItem.messageId)
+                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                     itemView.setOnClickListener {
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
@@ -110,9 +111,18 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 MediaStatus.DONE.name -> {
                     itemView.audio_expired.visibility = View.GONE
                     itemView.audio_progress.visibility = View.VISIBLE
-                    itemView.audio_progress.setDone()
-                    itemView.audio_progress.setBindId(null)
+                    itemView.audio_progress.setBindOnly(messageItem.messageId)
+                    if (AudioPlay.instance.isPlay(messageItem.messageId)) {
+                        itemView.audio_progress.setPause()
+                    } else {
+                        itemView.audio_progress.setPlay()
+                    }
                     itemView.audio_progress.setOnClickListener {
+                        if (AudioPlay.instance.isPlay(messageItem.messageId)) {
+                            AudioPlay.instance.stop()
+                        } else {
+                            AudioPlay.instance.play(messageItem)
+                        }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                     itemView.setOnClickListener {
@@ -127,7 +137,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     } else {
                         itemView.audio_progress.enableDownload()
                     }
-                    itemView.audio_progress.setBindId(messageItem.messageId)
+                    itemView.audio_progress.setBindOnly(messageItem.messageId)
                     itemView.audio_progress.setProgress(-1)
                     itemView.audio_progress.setOnClickListener {
                         if (isMe) {
@@ -172,7 +182,6 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
             onItemListener.onCancel(messageItem.messageId)
         } else if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
         } else {
-            onItemListener.onAudioClick(messageItem)
         }
     }
 

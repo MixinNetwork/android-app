@@ -19,7 +19,9 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.support.design.widget.CoordinatorLayout.Behavior.setTag
 import android.support.v13.view.inputmethod.InputContentInfoCompat
+import android.support.v4.content.ContextCompat.startActivity
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -105,6 +107,7 @@ import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.AudioPlay
 import one.mixin.android.util.DataPackage
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
@@ -415,10 +418,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onMentionClick(name: String) {
             }
 
-            override fun onAudioClick(messageItem: MessageItem) {
-                // Todo
-            }
-
             override fun onAddClick() {
                 recipient?.let { user ->
                     chatViewModel.updateRelationship(RelationshipRequest(user.userId,
@@ -574,6 +573,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         markRead()
         if (disposable?.isDisposed == false) {
             disposable?.dispose()
+        }
+        if (AudioPlay.isInit) {
+            AudioPlay.instance.stop()
         }
     }
 
@@ -1034,8 +1036,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun sendAudio(file: File, duration: Long, waveForm: ByteArray) {
-        createConversation {
-            chatViewModel.sendAudioMessage(conversationId, sender, file, duration, waveForm, isPlainMessage())
+        if (duration < 500) {
+            file.deleteOnExit()
+        } else {
+            createConversation {
+                chatViewModel.sendAudioMessage(conversationId, sender, file, duration, waveForm, isPlainMessage())
+            }
         }
     }
 
@@ -1192,7 +1198,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         action_bar.avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0]
         else ' ', user.avatarUrl, user.identityNumber)
         action_bar.avatar_iv.setOnClickListener {
-//            UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+            //            UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
             audioRecorder.playAudio()
         }
         recipient?.let {
