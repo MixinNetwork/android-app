@@ -48,7 +48,7 @@ class WebViewFragment : DialogFragment() {
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                pb.fadeOut()
+                webView.evaluateJavascript("javascript:gReCaptchaExecute()", null)
             }
         }
         val input = requireContext().assets.open("recaptcha.html")
@@ -59,6 +59,13 @@ class WebViewFragment : DialogFragment() {
 
     @JavascriptInterface
     fun postMessage(value: String) {
+        if (value == "challenge_change") {
+            pb.fadeOut()
+        }
+    }
+
+    @JavascriptInterface
+    fun postToken(value: String) {
         callback?.onMessage(value)
         dismiss()
     }

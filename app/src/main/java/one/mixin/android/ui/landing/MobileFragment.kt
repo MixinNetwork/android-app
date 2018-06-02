@@ -137,7 +137,7 @@ class MobileFragment : BaseFragment() {
             phoneNum,
             null,
             if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
-            if (pin == null) gRecaptchaResponse else null)
+            gRecaptchaResponse)
         mobileViewModel.verification(verificationRequest)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
                 mobile_fab?.hide()
