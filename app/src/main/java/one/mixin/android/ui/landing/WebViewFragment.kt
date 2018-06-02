@@ -4,17 +4,15 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.support.v4.app.DialogFragment
-import android.view.Gravity
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-import android.view.WindowManager
+import android.view.View
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.FrameLayout
 import android.widget.ProgressBar
+import kotlinx.android.synthetic.main.fragment_webview.view.*
 import okio.Okio
 import one.mixin.android.BuildConfig
+import one.mixin.android.R
 import one.mixin.android.extension.fadeOut
 import java.nio.charset.Charset
 
@@ -31,19 +29,10 @@ class WebViewFragment : DialogFragment() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val dialog = Dialog(requireContext())
-        val fl = FrameLayout(requireContext())
-        pb = ProgressBar(requireContext())
-        webView = WebView(requireContext())
-        fl.addView(webView, MATCH_PARENT, MATCH_PARENT)
-        val pbParams = FrameLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
-        pbParams.gravity = Gravity.CENTER
-        fl.addView(pb, pbParams)
-        dialog.setContentView(fl)
-        val lp = WindowManager.LayoutParams()
-        lp.copyFrom(dialog.window.attributes)
-        lp.width = WindowManager.LayoutParams.MATCH_PARENT
-        lp.height = WindowManager.LayoutParams.MATCH_PARENT
-        dialog.window.attributes = lp
+        val contentView = View.inflate(context, R.layout.fragment_webview, null)
+        webView = contentView.webView
+        pb = contentView.progressBar
+        dialog.setContentView(contentView)
         return dialog
     }
 
