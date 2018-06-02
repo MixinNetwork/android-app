@@ -117,34 +117,44 @@ class MobileFragment : BaseFragment() {
                 mCountry.dialCode + " " + mobile_et.text.toString()))
             .setNegativeButton(R.string.change, { dialog, _ -> dialog.dismiss() })
             .setPositiveButton(R.string.confirm, { dialog, _ ->
-                mobile_fab.show()
-                mobile_cover.visibility = VISIBLE
-
-                val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
-                val verificationRequest = VerificationRequest(
-                    phoneNum,
-                    null,
-                    if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name)
-                mobileViewModel.verification(verificationRequest)
-                    .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
-                        mobile_fab?.hide()
-                        mobile_cover?.visibility = GONE
-                        if (!r.isSuccess) {
-                            mNeedInvitation = true
-                            ErrorHandler.handleMixinError(r.errorCode)
-                            return@subscribe
-                        }
-                        mNeedInvitation = false
-                        activity?.addFragment(this@MobileFragment,
-                            VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
-                    }, { t: Throwable ->
-                        mobile_fab?.hide()
-                        mobile_cover?.visibility = GONE
-                        ErrorHandler.handleError(t)
-                    })
+                val webViewFragment = WebViewFragment()
+                webViewFragment.show(requireFragmentManager(), WebViewFragment.TAG)
+                webViewFragment.callback = object : WebViewFragment.Callback {
+                    override fun onMessage(value: String) {
+                        mobile_fab.post { requestSend(value) }
+                    }
+                }
                 dialog.dismiss()
             })
             .show()
+    }
+
+    private fun requestSend(gRecaptchaResponse: String) {
+        mobile_fab.show()
+        mobile_cover.visibility = VISIBLE
+        val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
+        val verificationRequest = VerificationRequest(
+            phoneNum,
+            null,
+            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
+            gRecaptchaResponse)
+        mobileViewModel.verification(verificationRequest)
+            .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
+                mobile_fab?.hide()
+                mobile_cover?.visibility = GONE
+                if (!r.isSuccess) {
+                    mNeedInvitation = true
+                    ErrorHandler.handleMixinError(r.errorCode)
+                    return@subscribe
+                }
+                mNeedInvitation = false
+                activity?.addFragment(this@MobileFragment,
+                    VerificationFragment.newInstance(r.data!!.id, phoneNum, pin, gRecaptchaResponse), VerificationFragment.TAG)
+            }, { t: Throwable ->
+                mobile_fab?.hide()
+                mobile_cover?.visibility = GONE
+                ErrorHandler.handleError(t)
+            })
     }
 
     private fun handleEditView(str: String) {

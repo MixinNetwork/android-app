@@ -57,13 +57,15 @@ class VerificationFragment : BaseFragment() {
     companion object {
         const val TAG: String = "VerificationFragment"
         private const val ARGS_ID = "args_id"
+        const val ARGS_G_RECAPTCHA_RESPONSE = "args_g_recaptcha_response"
 
-        fun newInstance(id: String, phoneNum: String, pin: String? = null): VerificationFragment {
+        fun newInstance(id: String, phoneNum: String, pin: String? = null, gRecaptchaResponse: String? = null): VerificationFragment {
             val verificationFragment = VerificationFragment()
             val b = bundleOf(
                 ARGS_ID to id,
                 ARGS_PHONE_NUM to phoneNum,
-                ARGS_PIN to pin
+                ARGS_PIN to pin,
+                ARGS_G_RECAPTCHA_RESPONSE to gRecaptchaResponse
             )
             verificationFragment.arguments = b
             return verificationFragment
@@ -83,6 +85,10 @@ class VerificationFragment : BaseFragment() {
 
     private val pin: String? by lazy {
         arguments!!.getString(ARGS_PIN)
+    }
+
+    private val gRecaptchaResponse: String? by lazy {
+        arguments!!.getString(ARGS_G_RECAPTCHA_RESPONSE)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -234,7 +240,8 @@ class VerificationFragment : BaseFragment() {
         val verificationRequest = VerificationRequest(
             arguments!!.getString(ARGS_PHONE_NUM),
             null,
-            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name)
+            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
+            gRecaptchaResponse)
         mobileViewModel.verification(verificationRequest)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
                 if (!r.isSuccess) {

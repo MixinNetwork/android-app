@@ -32,6 +32,7 @@ android {
         }
 
         buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
+        buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
 
     }
 
