@@ -11,7 +11,7 @@
 
       var gReCaptchaExecute = function() {
         var observer = new MutationObserver(function(mutations) { postMessage("challenge_change"); });
-        observer.observe(document.getElementsByTagName("div")[4], { attributes: true, attributeFilter: ['style'] })
+        observer.observe(document.getElementsByTagName("div")[4], { attributes: true, attributeFilter: ['style'] });
         grecaptcha.execute();
       };
 
