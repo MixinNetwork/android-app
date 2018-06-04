@@ -123,6 +123,10 @@ class MobileFragment : BaseFragment() {
     }
 
     override fun onBackPressed(): Boolean {
+        if (recaptchaView.isVisible()) {
+            hideLoading()
+            return true
+        }
         if (pin == null) {
             activity?.supportFragmentManager?.popBackStackImmediate()
             return true
@@ -156,20 +160,25 @@ class MobileFragment : BaseFragment() {
                 if (!r.isSuccess) {
                     if (r.errorCode == NEED_RECAPTCHA) {
                         recaptchaView.loadRecaptcha()
+                    } else {
+                        hideLoading()
                     }
                     ErrorHandler.handleMixinError(r.errorCode)
                     return@subscribe
                 }
-                mobile_fab?.hide()
-                mobile_cover?.visibility = GONE
+                hideLoading()
                 activity?.addFragment(this@MobileFragment,
                     VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
             }, { t: Throwable ->
-                mobile_fab?.hide()
-                mobile_cover?.visibility = GONE
-                recaptchaView.webView.visibility = GONE
+                hideLoading()
                 ErrorHandler.handleError(t)
             })
+    }
+
+    private fun hideLoading() {
+        mobile_fab?.hide()
+        mobile_cover?.visibility = GONE
+        recaptchaView.webView.visibility = GONE
     }
 
     private fun handleEditView(str: String) {

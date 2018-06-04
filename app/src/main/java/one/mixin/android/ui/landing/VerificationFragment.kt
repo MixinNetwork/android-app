@@ -125,6 +125,14 @@ class VerificationFragment : BaseFragment() {
         mCountDownTimer?.cancel()
     }
 
+    override fun onBackPressed(): Boolean {
+        if (recaptchaView.isVisible()) {
+            hideLoading()
+            return true
+        }
+        return false
+    }
+
     private fun handlePinVerification() {
         if (pin == null) {
             handleLogin()
@@ -250,6 +258,7 @@ class VerificationFragment : BaseFragment() {
         verification_next_fab.hide()
         verification_next_fab.visibility = GONE
         verification_cover.visibility = GONE
+        recaptchaView.webView.visibility = GONE
     }
 
     private fun sendVerification(gRecaptchaResponse: String? = null) {
@@ -264,6 +273,8 @@ class VerificationFragment : BaseFragment() {
                 if (!r.isSuccess) {
                     if (r.errorCode == NEED_RECAPTCHA) {
                         recaptchaView.loadRecaptcha()
+                    } else {
+                        hideLoading()
                     }
                     ErrorHandler.handleMixinError(r.errorCode)
                     return@subscribe

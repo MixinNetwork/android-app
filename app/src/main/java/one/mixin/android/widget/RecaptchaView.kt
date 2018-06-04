@@ -61,6 +61,8 @@ class RecaptchaView(private val context: Context, private val callback: Callback
         webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
     }
 
+    fun isVisible() = webView.visibility == VISIBLE
+
     @JavascriptInterface
     fun postMessage(value: String) {
         if (value == "challenge_change") {
