@@ -14,15 +14,15 @@ import one.mixin.android.vo.ConversationItemMinimal
 interface ConversationDao : BaseDao<Conversation> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT c.conversation_id as conversationId, c.icon_url as groupIconUrl, c.category as category, " +
-        "c.name as groupName, c.status as status, c.last_read_message_id as lastReadMessageId, " +
-        "c.unseen_message_count as unseenMessageCount, c.owner_id as ownerId, c.pin_time as pinTime, c.mute_until as muteUntil, " +
-        "ou.avatar_url as avatarUrl, ou.full_name as name, ou.is_verified as ownerVerified, " +
-        "ou.identity_number as ownerIdentityNumber, ou.mute_until as ownerMuteUntil, ou.app_id as appId, " +
-        "m.content as content, m.category as contentType, m.created_at as createdAt, m.media_url as mediaUrl, " +
-        "m.user_id as senderId, m.action as actionName, m.status as messageStatus, " +
-        "mu.full_name as senderFullName, s.type as SnapshotType,  " +
-        "pu.full_name as participantFullName, pu.user_id as participantUserId " +
+    @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, " +
+        "c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId, " +
+        "c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil, " +
+        "ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified, " +
+        "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId, " +
+        "m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl, " +
+        "m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus, " +
+        "mu.full_name AS senderFullName, s.type AS SnapshotType,  " +
+        "pu.full_name AS participantFullName, pu.user_id AS participantUserId " +
         "FROM conversations c " +
         "INNER JOIN users ou ON ou.user_id = c.owner_id " +
         "LEFT JOIN messages m ON c.last_message_id = m.id " +
@@ -34,8 +34,8 @@ interface ConversationDao : BaseDao<Conversation> {
     fun conversationList(): LiveData<List<ConversationItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT c.conversation_id as conversationId, c.icon_url as groupIconUrl, c.category as category, c.name as groupName, " +
-        "ou.identity_number as ownerIdentityNumber " +
+    @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName, " +
+        "ou.identity_number AS ownerIdentityNumber " +
         "FROM conversations c " +
         "INNER JOIN users ou ON ou.user_id = c.owner_id " +
         "WHERE c.category = 'GROUP' AND c.status != 'SUCCESS' AND c.name LIKE :query ORDER BY c.created_at DESC")
