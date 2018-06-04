@@ -118,5 +118,6 @@
             android:layout_height="match_parent"
             android:visibility="invisible"
             android:clickable="true"
-            android:background="@android:color/transparent" android:focusable="true"/>
+            android:background="@android:color/transparent"
+            android:focusable="true"/>
 </RelativeLayout>
