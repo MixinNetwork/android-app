@@ -7,7 +7,8 @@ data class VerificationRequest(
     val invitation: String?,
     val purpose: String,
     @SerializedName("g_recaptcha_response")
-    val gRecaptchaResponse: String?)
+    val gRecaptchaResponse: String?
+)
 
 enum class VerificationPurpose {
     SESSION,

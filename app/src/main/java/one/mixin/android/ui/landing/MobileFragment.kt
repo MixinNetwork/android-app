@@ -1,7 +1,9 @@
 package one.mixin.android.ui.landing
 
+import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
+import android.graphics.Bitmap
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.text.Editable
@@ -12,6 +14,9 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.webkit.JavascriptInterface
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -19,6 +24,9 @@ import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_mobile.*
+import okio.Okio
+import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.API.DOMAIN
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -26,13 +34,17 @@ import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.cancelRunOnUIThread
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.runOnUIThread
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
+import org.jetbrains.anko.support.v4.toast
+import java.nio.charset.Charset
 import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
@@ -40,6 +52,8 @@ class MobileFragment : BaseFragment() {
     companion object {
         const val TAG: String = "MobileFragment"
         const val ARGS_PHONE_NUM = "args_phone_num"
+
+        private const val WEB_VIEW_TIME_OUT = 10000L
 
         fun newInstance(pin: String? = null): MobileFragment = MobileFragment().apply {
             val b = Bundle().apply {
@@ -68,6 +82,7 @@ class MobileFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_mobile, container, false)
 
+    @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         pin = arguments!!.getString(ARGS_PIN)
@@ -101,6 +116,24 @@ class MobileFragment : BaseFragment() {
         keyboard.setKeyboardKeys(KEYS)
         keyboard.setOnClickKeyboardListener(mKeyboardListener)
         keyboard.animate().translationY(0f).start()
+
+        webView.settings.apply {
+            defaultTextEncodingName = "utf-8"
+        }
+        webView.settings.javaScriptEnabled = true
+        webView.settings.domStorageEnabled = true
+        webView.addJavascriptInterface(this, "MixinContext")
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                context?.runOnUIThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                webView.evaluateJavascript("javascript:gReCaptchaExecute()", null)
+            }
+        }
     }
 
     override fun onBackPressed(): Boolean {
@@ -117,13 +150,14 @@ class MobileFragment : BaseFragment() {
                 mCountry.dialCode + " " + mobile_et.text.toString()))
             .setNegativeButton(R.string.change, { dialog, _ -> dialog.dismiss() })
             .setPositiveButton(R.string.confirm, { dialog, _ ->
-                val webViewFragment = WebViewFragment()
-                webViewFragment.show(requireFragmentManager(), WebViewFragment.TAG)
-                webViewFragment.callback = object : WebViewFragment.Callback {
-                    override fun onMessage(value: String) {
-                        mobile_fab.post { requestSend(value) }
-                    }
-                }
+                mobile_fab.show()
+                mobile_cover.visibility = VISIBLE
+
+                val input = requireContext().assets.open("recaptcha.html")
+                var html = Okio.buffer(Okio.source(input)).readByteString().string(Charset.forName("utf-8"))
+                html = html.replace("#apiKey", BuildConfig.RECAPTCHA_KEY)
+                webView.loadDataWithBaseURL(DOMAIN, html, "text/html", "UTF-8", null)
+
                 dialog.dismiss()
             })
             .show()
@@ -153,6 +187,7 @@ class MobileFragment : BaseFragment() {
             }, { t: Throwable ->
                 mobile_fab?.hide()
                 mobile_cover?.visibility = GONE
+                webView.visibility = GONE
                 ErrorHandler.handleError(t)
             })
     }
@@ -188,6 +223,36 @@ class MobileFragment : BaseFragment() {
             setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
                 .hide(this@MobileFragment).add(R.id.container, countryPicker).addToBackStack(null)
         }
+    }
+
+    private val stopWebViewRunnable = Runnable {
+        mobile_fab?.hide()
+        mobile_cover?.visibility = GONE
+        webView.stopLoading()
+        webView.visibility = GONE
+        toast(R.string.error_recaptcha_timeout)
+    }
+
+    @JavascriptInterface
+    fun postMessage(value: String) {
+        if (value == "challenge_change") {
+            context?.cancelRunOnUIThread(stopWebViewRunnable)
+            webView.post {
+                webView.visibility = VISIBLE
+            }
+        }
+    }
+
+    @JavascriptInterface
+    fun postToken(value: String) {
+        context?.cancelRunOnUIThread(stopWebViewRunnable)
+        mobile_fab.post {
+            requestSend(value)
+        }
+    }
+
+    interface Callback {
+        fun onMessage(value: String)
     }
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
