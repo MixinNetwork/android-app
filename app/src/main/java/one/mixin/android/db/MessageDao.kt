@@ -15,17 +15,17 @@ import one.mixin.android.vo.MessageItem
 interface MessageDao : BaseDao<Message> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT m.id as messageId, m.conversation_id as conversationId, u.user_id as userId, " +
-        "u.full_name as userFullName, u.identity_number as userIdentityNumber, u.app_id as appId, m.category as type, " +
-        "m.content as content, m.created_at as createdAt, m.status as status, m.media_status as mediaStatus, " +
-        "m.name as mediaName, m.media_mime_type as mediaMimeType, m.media_size as mediaSize, m.media_width as mediaWidth, m.media_height as mediaHeight, " +
-        "m.thumb_image as thumbImage, m.media_url as mediaUrl, m.media_duration as mediaDuration, " +
-        "u1.full_name as participantFullName, m.action as actionName, u1.user_id as participantUserId, " +
-        "s.snapshot_id as snapshotId, s.type as snapshotType, s.amount as snapshotAmount, a.symbol as assetSymbol, a.asset_id as assetId, " +
-        "a.icon_url as assetIcon, st.asset_url as assetUrl, st.asset_width as assetWidth, st.asset_height as assetHeight, st.album_id as albumId, " +
-        "st.name as assetName, st.asset_type as assetType, h.site_name as siteName, h.site_title as siteTitle, h.site_description as siteDescription, " +
-        "h.site_image as siteImage, m.shared_user_id as sharedUserId, su.full_name as sharedUserFullName, su.identity_number as sharedUserIdentityNumber, " +
-        "su.avatar_url as sharedUserAvatarUrl, su.is_verified as sharedUserIsVerified, su.app_id as sharedUserAppId " +
+    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
+        "u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type, " +
+        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, " +
+        "m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight, " +
+        "m.thumb_image AS thumbImage, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, " +
+        "u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId, " +
+        "s.snapshot_id AS snapshotId, s.type AS snapshotType, s.amount AS snapshotAmount, a.symbol AS assetSymbol, a.asset_id AS assetId, " +
+        "a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.album_id AS albumId, " +
+        "st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription, " +
+        "h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber, " +
+        "su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId " +
         "FROM messages m " +
         "INNER JOIN users u ON m.user_id = u.user_id " +
         "LEFT JOIN users u1 ON m.participant_id = u1.user_id " +
@@ -38,7 +38,7 @@ interface MessageDao : BaseDao<Message> {
         "ORDER BY m.created_at DESC")
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @Query("SELECT m.id as messageId " +
+    @Query("SELECT m.id AS messageId " +
         "FROM messages m " +
         "WHERE m.conversation_id = :conversationId " +
         "ORDER BY m.created_at DESC")
@@ -55,25 +55,25 @@ interface MessageDao : BaseDao<Message> {
     fun getMessageList(conversationId: String): List<Message>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT m.id as messageId, m.conversation_id as conversationId, u.user_id as userId, " +
-        "u.full_name as userFullName, u.identity_number as userIdentityNumber, m.category as type, " +
-        "m.content as content, m.created_at as createdAt, m.status as status, m.media_status as mediaStatus," +
-        "m.media_width as mediaWidth, m.media_height as mediaHeight, m.thumb_image as thumbImage, m.media_url as mediaUrl, " +
-        "m.media_mime_type as mediaMimeType, m.media_duration as mediaDuration " +
+    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
+        "u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type, " +
+        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus," +
+        "m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.media_url AS mediaUrl, " +
+        "m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
-        "and (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category " +
-        "= 'PLAIN_VIDEO') AND m.media_status = 'DONE' " +
+        "and (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO') " +
+        "AND m.media_status = 'DONE' " +
         "ORDER BY m.created_at DESC")
     fun getMediaMessages(conversationId: String): List<MessageItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT m.id as messageId, m.conversation_id as conversationId, u.user_id as userId, " +
-        "u.avatar_url as userAvatarUrl, u.full_name as userFullName, u.identity_number as userIdentityNumber, m.category as type, " +
-        "m.content as content, m.created_at as createdAt, m.status as status, m.media_status as mediaStatus," +
-        "m.name as mediaName, m.media_width as mediaWidth, m.media_height as mediaHeight, m.thumb_image as thumbImage, m.media_url as mediaUrl " +
+    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
+        "u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type, " +
+        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus," +
+        "m.name AS mediaName, m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.media_url AS mediaUrl " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id " +
         "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
-        "OR (m.category = 'SIGNAL_DATA' AND m.status != 'FAILED' AND m.name LIKE :query) ORDER BY m.created_at DESC")
+        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) ORDER BY m.created_at DESC LIMIT 200")
     fun fuzzySearchMessage(query: String): List<MessageItem>
 
     @Query("DELETE FROM messages WHERE id = :id")
@@ -138,10 +138,10 @@ interface MessageDao : BaseDao<Message> {
     fun findMessageIdById(messageId: String): String?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT m.id as messageId, m.conversation_id as conversationId, u.user_id as userId, " +
-        "u.full_name as userFullName, u.identity_number as userIdentityNumber, m.category as type, " +
-        "m.content as content, m.created_at as createdAt, m.status as status, m.media_status as mediaStatus," +
-        "m.media_width as mediaWidth, m.media_height as mediaHeight, m.thumb_image as thumbImage, m.media_url as mediaUrl " +
+    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
+        "u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type, " +
+        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus," +
+        "m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.media_url AS mediaUrl " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
         "AND u.user_id != :userId AND m.status == 'DELIVERED' " +
         "ORDER BY m.created_at ASC")
