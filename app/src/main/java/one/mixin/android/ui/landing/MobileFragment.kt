@@ -42,6 +42,7 @@ import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
 import org.jetbrains.anko.support.v4.toast
 import java.nio.charset.Charset
@@ -73,7 +74,6 @@ class MobileFragment : BaseFragment() {
     }
     private lateinit var countryPicker: CountryPicker
     private lateinit var mCountry: Country
-    private var mNeedInvitation: Boolean = true
     private val phoneUtil = PhoneNumberUtil.getInstance()
     private var phoneNumber: Phonenumber.PhoneNumber? = null
 
@@ -150,20 +150,13 @@ class MobileFragment : BaseFragment() {
                 mCountry.dialCode + " " + mobile_et.text.toString()))
             .setNegativeButton(R.string.change, { dialog, _ -> dialog.dismiss() })
             .setPositiveButton(R.string.confirm, { dialog, _ ->
-                mobile_fab.show()
-                mobile_cover.visibility = VISIBLE
-
-                val input = requireContext().assets.open("recaptcha.html")
-                var html = Okio.buffer(Okio.source(input)).readByteString().string(Charset.forName("utf-8"))
-                html = html.replace("#apiKey", BuildConfig.RECAPTCHA_KEY)
-                webView.loadDataWithBaseURL(DOMAIN, html, "text/html", "UTF-8", null)
-
+                requestSend()
                 dialog.dismiss()
             })
             .show()
     }
 
-    private fun requestSend(gRecaptchaResponse: String) {
+    private fun requestSend(gRecaptchaResponse: String? = null) {
         mobile_fab.show()
         mobile_cover.visibility = VISIBLE
         val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
@@ -177,11 +170,15 @@ class MobileFragment : BaseFragment() {
                 mobile_fab?.hide()
                 mobile_cover?.visibility = GONE
                 if (!r.isSuccess) {
-                    mNeedInvitation = true
+                    if (r.errorCode == NEED_RECAPTCHA) {
+                        val input = requireContext().assets.open("recaptcha.html")
+                        var html = Okio.buffer(Okio.source(input)).readByteString().string(Charset.forName("utf-8"))
+                        html = html.replace("#apiKey", BuildConfig.RECAPTCHA_KEY)
+                        webView.loadDataWithBaseURL(DOMAIN, html, "text/html", "UTF-8", null)
+                    }
                     ErrorHandler.handleMixinError(r.errorCode)
                     return@subscribe
                 }
-                mNeedInvitation = false
                 activity?.addFragment(this@MobileFragment,
                     VerificationFragment.newInstance(r.data!!.id, phoneNum, pin, gRecaptchaResponse), VerificationFragment.TAG)
             }, { t: Throwable ->
