@@ -13,6 +13,7 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.os.bundleOf
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_verification.*
@@ -40,10 +41,12 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.RecaptchaView
 import one.mixin.android.widget.VerificationCodeView.OnCodeEnteredListener
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.alert
@@ -57,15 +60,13 @@ class VerificationFragment : BaseFragment() {
     companion object {
         const val TAG: String = "VerificationFragment"
         private const val ARGS_ID = "args_id"
-        const val ARGS_G_RECAPTCHA_RESPONSE = "args_g_recaptcha_response"
 
-        fun newInstance(id: String, phoneNum: String, pin: String? = null, gRecaptchaResponse: String? = null): VerificationFragment {
+        fun newInstance(id: String, phoneNum: String, pin: String? = null): VerificationFragment {
             val verificationFragment = VerificationFragment()
             val b = bundleOf(
                 ARGS_ID to id,
                 ARGS_PHONE_NUM to phoneNum,
-                ARGS_PIN to pin,
-                ARGS_G_RECAPTCHA_RESPONSE to gRecaptchaResponse
+                ARGS_PIN to pin
             )
             verificationFragment.arguments = b
             return verificationFragment
@@ -87,12 +88,22 @@ class VerificationFragment : BaseFragment() {
         arguments!!.getString(ARGS_PIN)
     }
 
-    private val gRecaptchaResponse: String? by lazy {
-        arguments!!.getString(ARGS_G_RECAPTCHA_RESPONSE)
-    }
+    private lateinit var recaptchaView: RecaptchaView
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_verification, container, false)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val parent = inflater.inflate(R.layout.fragment_verification, container, false) as ViewGroup
+        recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
+            override fun onStop() {
+                hideLoading()
+            }
+
+            override fun onPostToken(value: String) {
+                sendVerification(value)
+            }
+        })
+        parent.addView(recaptchaView.webView, MATCH_PARENT, MATCH_PARENT)
+        return parent
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -112,6 +123,14 @@ class VerificationFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         mCountDownTimer?.cancel()
+    }
+
+    override fun onBackPressed(): Boolean {
+        if (recaptchaView.isVisible()) {
+            hideLoading()
+            return true
+        }
+        return false
     }
 
     private fun handlePinVerification() {
@@ -226,8 +245,7 @@ class VerificationFragment : BaseFragment() {
         if (!isAdded) {
             return
         }
-        verification_next_fab.hide()
-        verification_cover.visibility = GONE
+        hideLoading()
     }
 
     private fun showLoading() {
@@ -236,7 +254,15 @@ class VerificationFragment : BaseFragment() {
         verification_cover.visibility = VISIBLE
     }
 
-    private fun sendVerification() {
+    private fun hideLoading() {
+        verification_next_fab.hide()
+        verification_next_fab.visibility = GONE
+        verification_cover.visibility = GONE
+        recaptchaView.webView.visibility = GONE
+    }
+
+    private fun sendVerification(gRecaptchaResponse: String? = null) {
+        showLoading()
         val verificationRequest = VerificationRequest(
             arguments!!.getString(ARGS_PHONE_NUM),
             null,
@@ -245,12 +271,19 @@ class VerificationFragment : BaseFragment() {
         mobileViewModel.verification(verificationRequest)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
                 if (!r.isSuccess) {
+                    if (r.errorCode == NEED_RECAPTCHA) {
+                        recaptchaView.loadRecaptcha()
+                    } else {
+                        hideLoading()
+                    }
                     ErrorHandler.handleMixinError(r.errorCode)
                     return@subscribe
                 } else {
+                    hideLoading()
                 }
             }, { t: Throwable ->
-                ErrorHandler.handleError(t)
+                handleError(t)
+                recaptchaView.webView.visibility = GONE
             })
         startCountDown()
     }

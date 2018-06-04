@@ -3,6 +3,7 @@ package one.mixin.android
 object Constants {
 
     object API {
+        const val DOMAIN = "https://mixin.one"
         const val URL = "https://api.mixin.one/"
         const val WS_URL = "wss://blaze.mixin.one"
     }
