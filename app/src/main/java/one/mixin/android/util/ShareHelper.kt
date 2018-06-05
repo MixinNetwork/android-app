@@ -16,7 +16,7 @@ class ShareHelper {
 
         fun get(): ShareHelper =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: ShareHelper()
+                INSTANCE ?: ShareHelper().also { INSTANCE = it }
             }
     }
 
