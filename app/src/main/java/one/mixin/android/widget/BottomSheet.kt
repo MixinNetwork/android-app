@@ -24,6 +24,7 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import one.mixin.android.R
 import one.mixin.android.extension.isTablet
@@ -44,6 +45,8 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
     private val sheetContainer: FrameLayout by lazy { FrameLayout(context) }
     private var customView: View? = null
     private var customViewHeight: Int = 0
+
+    private val speed = context.dip(0.5f)
 
     private val backDrawable = ColorDrawable(-0x1000000)
 
@@ -276,13 +279,15 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         customViewHeight = height
         val params = customView?.layoutParams
         val duration = notNullElse(customView?.layoutParams, {
-            min(abs(height - it.height), 200)
+            min(abs(height - it.height) / speed, 200)
         }, 200).toLong()
+
         if (duration == 0L) {
             return
         }
         if (params != null) {
             val anim = ValueAnimator.ofInt(customView!!.height, height)
+            anim.interpolator = LinearInterpolator()
             anim.addUpdateListener {
                 val value = it.animatedValue as Int
                 params.height = value
