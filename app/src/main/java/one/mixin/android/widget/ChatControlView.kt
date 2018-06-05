@@ -85,20 +85,19 @@ class ChatControlView : LinearLayout {
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
     }
 
-    fun checkSend() {
-        if (!calledClickRunnable) {
-            sendStatus = if (stickerStatus == KEYBOARD) {
-                if (isUp) UP else DOWN
+    fun setSendWithSticker() {
+        sendStatus = if (stickerStatus == KEYBOARD) {
+            if (isUp) UP else DOWN
+        } else {
+            if (chat_et.text.trim().isBlank()) {
+                lastSendStatus
             } else {
-                if (chat_et.text.trim().isBlank()) {
-                    lastSendStatus
-                } else {
-                    SEND
-                }
+                SEND
             }
         }
-        calledClickRunnable = false
+    }
 
+    private fun checkSend() {
         val d = when (sendStatus) {
             SEND -> sendDrawable
             AUDIO -> audioDrawable
@@ -138,7 +137,7 @@ class ChatControlView : LinearLayout {
                 } else {
                     STICKER
                 }
-                checkSend()
+                setSendWithSticker()
                 return@OnTouchListener true
             }
         }
@@ -147,7 +146,7 @@ class ChatControlView : LinearLayout {
 
     private val editTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            checkSend()
+            setSendWithSticker()
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -225,12 +224,12 @@ class ChatControlView : LinearLayout {
                 sendStatus = lastSendStatus
             }
             AUDIO -> {
-                lastSendStatus = sendStatus
                 sendStatus = VIDEO
+                lastSendStatus = sendStatus
             }
             VIDEO -> {
-                lastSendStatus = sendStatus
                 sendStatus = AUDIO
+                lastSendStatus = sendStatus
             }
             UP -> {
                 callback?.onUpClick()
@@ -243,6 +242,8 @@ class ChatControlView : LinearLayout {
 
     private val recordRunnable: Runnable by lazy {
         Runnable {
+            removeCallbacks(sendClickRunnable)
+
             if (activity == null || !audioOrVideo()) return@Runnable
 
             if (sendStatus == AUDIO) {
@@ -259,8 +260,6 @@ class ChatControlView : LinearLayout {
                     return@Runnable
                 }
             }
-
-            removeCallbacks(sendClickRunnable)
             calledRecordRunnable = true
             callback?.onRecordStart(sendStatus == AUDIO)
             post(checkReadyRunnable)
