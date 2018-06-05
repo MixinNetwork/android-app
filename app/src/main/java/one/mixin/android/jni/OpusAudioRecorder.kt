@@ -4,6 +4,9 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.telephony.PhoneStateListener
+import android.telephony.TelephonyManager
+import androidx.core.content.systemService
 import one.mixin.android.AppExecutors
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
@@ -35,7 +38,7 @@ class OpusAudioRecorder(ctx: Context) {
         }
     }
     private val fileEncodingQueue: DispatchQueue by lazy {
-        DispatchQueue("recordQueue").apply {
+        DispatchQueue("fileEncodingQueue").apply {
             priority = Thread.MAX_PRIORITY
         }
     }
@@ -47,12 +50,24 @@ class OpusAudioRecorder(ctx: Context) {
         if (recordBufferSize <= 0) {
             recordBufferSize = 1280
         }
-        for (i in 0..5) {
+        for (i in 0 until 5) {
             val buffer = ByteBuffer.allocateDirect(4096)
             buffer.order(ByteOrder.nativeOrder())
             recordBuffers.add(buffer)
         }
         fileBuffer = ByteBuffer.allocateDirect(1920)
+
+        try {
+            val phoneStateListener = object : PhoneStateListener() {
+                override fun onCallStateChanged(state: Int, incomingNumber: String?) {
+                    if (state != TelephonyManager.CALL_STATE_IDLE) {
+                        stopRecording(false)
+                    }
+                }
+            }
+            ctx.systemService<TelephonyManager>()?.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+        } catch (ignore: Exception) {
+        }
     }
 
     private val recordRunnable: Runnable by lazy {
@@ -155,6 +170,7 @@ class OpusAudioRecorder(ctx: Context) {
             samplesCount = 0
             recordTimeCount = 0
             fileBuffer.rewind()
+
             audioRecord?.startRecording()
         } catch (e: Exception) {
             stopRecord()
