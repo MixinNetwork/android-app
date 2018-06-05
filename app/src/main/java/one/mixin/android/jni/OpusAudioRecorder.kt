@@ -74,7 +74,7 @@ class OpusAudioRecorder(ctx: Context) {
                     var sum = 0
                     try {
                         val newSamplesCount = samplesCount + len / 2
-                        val currPart = (samplesCount / newSamplesCount * recordSamples.size).toInt()
+                        val currPart = (samplesCount / newSamplesCount.toDouble() * recordSamples.size).toInt()
                         val newPart = recordSamples.size - currPart
                         var sampleStep: Float
                         if (currPart != 0) {
@@ -107,8 +107,8 @@ class OpusAudioRecorder(ctx: Context) {
                     val flush = len != buffer.capacity()
                     if (len != 0) {
                         fileEncodingQueue.postRunnable(Runnable {
-                            var oldLimit = -1
                             while (buffer.hasRemaining()) {
+                                var oldLimit = -1
                                 if (buffer.remaining() > fileBuffer.remaining()) {
                                     oldLimit = buffer.limit()
                                     buffer.limit(fileBuffer.remaining() + buffer.position())
@@ -123,8 +123,10 @@ class OpusAudioRecorder(ctx: Context) {
                                 if (oldLimit != -1) {
                                     buffer.limit(oldLimit)
                                 }
-                                recordBuffers.add(buffer)
                             }
+                            recordQueue.postRunnable(Runnable {
+                                recordBuffers.add(buffer)
+                            })
                         })
                     }
                     recordQueue.postRunnable(recordRunnable)
