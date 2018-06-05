@@ -60,6 +60,8 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getParcelable<AssetItem>(ARGS_ASSET)
     }
 
+    private val trace = UUID.randomUUID().toString()
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -120,7 +122,7 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (index == contentView.pin.getCount()) {
                     contentView.pin_va.displayedChild = POS_PB
                     bottomViewModel.withdrawal(withdrawalItem.addressId, withdrawalItem.amount,
-                        contentView.pin.code(), UUID.randomUUID().toString(), withdrawalItem.memo)
+                        contentView.pin.code(), trace, withdrawalItem.memo)
                         .autoDisposable(scopeProvider).subscribe({
                         if (it.isSuccess) {
                             context?.updatePinCheck()
