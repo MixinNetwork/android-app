@@ -55,6 +55,9 @@ open class ErrorHandler {
                     RECAPTCHA_IS_INVALID -> {
                         toast(R.string.error_recaptcha_is_invalid)
                     }
+                    OLD_VERSION -> {
+                        toast(R.string.error_old_version)
+                    }
                     PHONE_INVALID_FORMAT -> {
                         toast(R.string.error_phone_invalid_format)
                     }
@@ -144,6 +147,7 @@ open class ErrorHandler {
         private const val PHONE_SMS_DELIVERY = 10003
         private const val RECAPTCHA_IS_INVALID = 10004
         const val NEED_RECAPTCHA = 10005
+        private const val OLD_VERSION = 10006
         private const val PHONE_INVALID_FORMAT = 20110
         private const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         private const val INVALID_INVITATION_CODE = 20112

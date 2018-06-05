@@ -92,6 +92,7 @@
     <string name="error_share">Share error.</string>
     <string name="error_recaptcha_is_invalid">Recaptcha is invalid</string>
     <string name="error_recaptcha_timeout">Recaptcha timeout</string>
+    <string name="error_old_version">Please update Mixin to continue use the service.</string>
     <!--home-->
     <string name="title_home">Contacts</string>
     <string name="title_dashboard">Chats</string>
