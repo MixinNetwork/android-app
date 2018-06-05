@@ -7,7 +7,7 @@ import android.media.MediaRecorder
 import one.mixin.android.AppExecutors
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
-import one.mixin.android.util.video.MixinPlayer
+import one.mixin.android.util.DispatchQueue
 import java.io.File
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -29,7 +29,16 @@ class OpusAudioRecorder(ctx: Context) {
     private var recordTimeCount = 0L
     private var sendAfterDone = false
 
-    private val mixinPlayer = MixinPlayer()
+    private val recordQueue: DispatchQueue by lazy {
+        DispatchQueue("recordQueue").apply {
+            priority = Thread.MAX_PRIORITY
+        }
+    }
+    private val fileEncodingQueue: DispatchQueue by lazy {
+        DispatchQueue("recordQueue").apply {
+            priority = Thread.MAX_PRIORITY
+        }
+    }
 
     var callback: Callback? = null
 
@@ -96,27 +105,29 @@ class OpusAudioRecorder(ctx: Context) {
 
                     buffer.position(0)
                     val flush = len != buffer.capacity()
-                    AppExecutors().diskIO().execute {
-                        var oldLimit = -1
-                        while (buffer.hasRemaining()) {
-                            if (buffer.remaining() > fileBuffer.remaining()) {
-                                oldLimit = buffer.limit()
-                                buffer.limit(fileBuffer.remaining() + buffer.position())
-                            }
-                            fileBuffer.put(buffer)
-                            if (fileBuffer.position() == fileBuffer.limit() || flush) {
-                                if (writeFrame(fileBuffer, if (!flush) fileBuffer.limit() else buffer.position()) != 0) {
-                                    fileBuffer.rewind()
-                                    recordTimeCount += fileBuffer.limit() / 2 / 16
+                    if (len != 0) {
+                        fileEncodingQueue.postRunnable(Runnable {
+                            var oldLimit = -1
+                            while (buffer.hasRemaining()) {
+                                if (buffer.remaining() > fileBuffer.remaining()) {
+                                    oldLimit = buffer.limit()
+                                    buffer.limit(fileBuffer.remaining() + buffer.position())
                                 }
+                                fileBuffer.put(buffer)
+                                if (fileBuffer.position() == fileBuffer.limit() || flush) {
+                                    if (writeFrame(fileBuffer, if (!flush) fileBuffer.limit() else buffer.position()) != 0) {
+                                        fileBuffer.rewind()
+                                        recordTimeCount += fileBuffer.limit() / 2 / 16
+                                    }
+                                }
+                                if (oldLimit != -1) {
+                                    buffer.limit(oldLimit)
+                                }
+                                recordBuffers.add(buffer)
                             }
-                            if (oldLimit != -1) {
-                                buffer.limit(oldLimit)
-                            }
-                            recordBuffers.add(buffer)
-                        }
+                        })
                     }
-                    AppExecutors().diskIO().execute(recordRunnable)
+                    recordQueue.postRunnable(recordRunnable)
                 } else {
                     recordBuffers.add(buffer)
                     stopRecordingInternal(sendAfterDone)
@@ -154,16 +165,16 @@ class OpusAudioRecorder(ctx: Context) {
             return@Runnable
         }
 
-        AppExecutors().diskIO().execute(recordRunnable)
+        recordQueue.postRunnable(recordRunnable)
     }
 
     fun startRecording() {
-        AppExecutors().diskIO().execute(recodeStartRunnable)
+        recordQueue.postRunnable(recodeStartRunnable)
     }
 
     fun stopRecording(send: Boolean) {
-        // remove startRecordingRunnable
-        AppExecutors().diskIO().execute {
+        recordQueue.cancelRunnable(recodeStartRunnable)
+        recordQueue.postRunnable(Runnable {
             audioRecord?.let { audioRecord ->
                 try {
                     sendAfterDone = send
@@ -173,26 +184,23 @@ class OpusAudioRecorder(ctx: Context) {
                 }
                 stopRecordingInternal(send)
             }
-        }
-    }
-
-    fun playAudio() {
-        recordingAudioFile?.let {
-            mixinPlayer.loadVideo(it.absolutePath)
-            mixinPlayer.start()
-        }
+        })
     }
 
     private fun stopRecordingInternal(send: Boolean) {
         if (send) {
-            AppExecutors().mainThread().execute {
-                val duration = recordTimeCount
-                val waveForm = getWaveform2(recordSamples, recordSamples.size)
-                if (recordingAudioFile != null) {
-                    callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
+            fileEncodingQueue.postRunnable(Runnable {
+                stopRecord()
+
+                AppExecutors().mainThread().execute {
+                    val duration = recordTimeCount
+                    val waveForm = getWaveform2(recordSamples, recordSamples.size)
+                    if (recordingAudioFile != null) {
+                        callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
+                    }
+                    recordingAudioFile = null
                 }
-                recordingAudioFile = null
-            }
+            })
         }
 
         try {
