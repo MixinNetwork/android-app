@@ -118,19 +118,23 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                         itemView.audio_progress.setPlay()
                     }
                     itemView.audio_progress.setOnClickListener {
-                        if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
-                            AudioPlayer.instance.stop()
-                        } else {
-                            AudioPlayer.instance.play(messageItem)
+                        if (!hasSelect) {
+                            if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
+                                AudioPlayer.instance.stop()
+                            } else {
+                                AudioPlayer.instance.play(messageItem)
+                            }
                         }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
 
                     itemView.setOnClickListener {
-                        if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
-                            AudioPlayer.instance.stop()
-                        } else {
-                            AudioPlayer.instance.play(messageItem)
+                        if (!hasSelect) {
+                            if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
+                                AudioPlayer.instance.stop()
+                            } else {
+                                AudioPlayer.instance.play(messageItem)
+                            }
                         }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }

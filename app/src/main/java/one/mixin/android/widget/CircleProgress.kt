@@ -160,6 +160,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         disposable?.let {
             if (!it.isDisposed) {
                 it.dispose()
+                disposable = null
             }
         }
         disposable = null

@@ -311,6 +311,7 @@ fun createAudioMessage(
     messageId: String,
     conversationId: String,
     userId: String,
+    content: String?,
     category: String,
     mediaSize:Long,
     mediaUrl: String?,
@@ -323,6 +324,7 @@ fun createAudioMessage(
     status: MessageStatus
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setMediaUrl(mediaUrl)
+    .setContent(content)
     .setMediaWaveform(mediaWaveform)
     .setMediaKey(key)
     .setMediaSize(mediaSize)

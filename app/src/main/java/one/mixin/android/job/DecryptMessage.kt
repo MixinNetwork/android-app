@@ -58,7 +58,7 @@ import one.mixin.android.websocket.invalidData
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
-import java.util.*
+import java.util.UUID
 
 class DecryptMessage : Injector() {
 
@@ -230,10 +230,11 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_AUDIO") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
-                val message = createAudioMessage(data.messageId, data.conversationId, data.userId, data.category, mediaData.size,
-                        null, mediaData.duration.toString(), nowInUtc(), mediaData.waveform, null, null,
-                        MediaStatus.PENDING, MessageStatus.SENDING)
+                val message = createAudioMessage(data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
+                    data.category, mediaData.size, null, mediaData.duration.toString(), nowInUtc(), mediaData.waveform,
+                    mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
                 messageDao.insert(message)
+                jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_STICKER") -> {
@@ -416,7 +417,7 @@ class DecryptMessage : Injector() {
             val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
             val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
             messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mimeType, mediaData.size,
-                mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, duration,
+                mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, MessageStatus.DELIVERED.name)
             if (data.category == MessageCategory.SIGNAL_IMAGE.name) {
                 val message = messageDao.findMessageById(messageId)!!

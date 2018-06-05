@@ -140,7 +140,7 @@ internal constructor(
 
     fun sendAudioMessage(conversationId: String, sender: User, file: File, duration: Long, waveForm: ByteArray, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-        val message = createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
+        val message = createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
             MediaStatus.PENDING, MessageStatus.SENDING)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
@@ -287,7 +287,7 @@ internal constructor(
                     message.category.endsWith("_AUDIO") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-                            category, message.mediaSize!!, message.mediaUrl, message.mediaDuration!!, nowInUtc(), message.mediaWaveform!!, null,
+                            null, category, message.mediaSize!!, message.mediaUrl, message.mediaDuration!!, nowInUtc(), message.mediaWaveform!!, null,
                             null, MediaStatus.PENDING, MessageStatus.SENDING)))
                     }
                 }
