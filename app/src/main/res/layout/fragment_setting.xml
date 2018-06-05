@@ -12,8 +12,6 @@
         android:layout_height="wrap_content"
         app:titleText="@string/setting_title" />
 
-    <include layout="@layout/view_item_divider"/>
-
     <RelativeLayout
         android:id="@+id/notification_rl"
         android:layout_width="match_parent"

@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:leftIcon="@drawable/ic_more"
-        app:rightIcon="@drawable/ic_arrow_forward_black_24dp"
+        app:rightIcon="@drawable/ic_chat"
         app:titleText="@string/wallet_title" />
 
     <include layout="@layout/view_link_state" />
