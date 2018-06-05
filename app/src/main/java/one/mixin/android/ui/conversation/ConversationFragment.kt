@@ -544,11 +544,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 showAlert()
             }
             if (disposable == null || disposable?.isDisposed == true) {
-                disposable = RxBus.getInstance().toFlowable(GroupEvent::class.java)
-                    .onBackpressureBuffer()
+                disposable = RxBus.listen(GroupEvent::class.java)
                     .observeOn(AndroidSchedulers.mainThread())
                     .subscribe {
-                        if (it.convsersationId == conversationId) {
+                        if (it.conversationId == conversationId) {
                             showGroupNotification = true
                             showAlert()
                         }

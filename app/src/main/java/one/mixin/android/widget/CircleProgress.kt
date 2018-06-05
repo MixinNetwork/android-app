@@ -122,8 +122,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
 
     override fun onAttachedToWindow() {
         if (disposable == null) {
-            disposable = RxBus.getInstance().toFlowable(ProgressEvent::class.java)
-                .onBackpressureBuffer()
+            disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.id == mBindId) {
@@ -149,6 +148,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                 it.dispose()
             }
         }
+        disposable = null
         super.onDetachedFromWindow()
     }
 

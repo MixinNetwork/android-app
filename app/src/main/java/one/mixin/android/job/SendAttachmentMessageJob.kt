@@ -101,7 +101,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
                     AttachmentCipherOutputStreamFactory(key)
                 },
                 PushAttachmentData.ProgressListener { total, progress ->
-                    RxBus.getInstance().post(ProgressEvent(message.id, progress.toFloat() / total.toFloat()))
+                    RxBus.publish(ProgressEvent(message.id, progress.toFloat() / total.toFloat()))
                 })
         val digest = if (isPlain()) {
             uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)

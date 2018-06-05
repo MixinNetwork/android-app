@@ -49,7 +49,7 @@ class RefreshConversationJob(val conversationId: String)
                         .setAnnouncement(data.announcement)
                         .setCodeUrl(data.codeUrl).build()
                     if (c.announcement.isNullOrBlank()) {
-                        RxBus.getInstance().post(GroupEvent(data.conversationId))
+                        RxBus.publish(GroupEvent(data.conversationId))
                         applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
                             .putBoolean(data.conversationId, true)
                     }
@@ -61,7 +61,7 @@ class RefreshConversationJob(val conversationId: String)
                         ConversationStatus.QUIT.ordinal
                     }
                     if (!data.announcement.isNullOrBlank() && c.announcement != data.announcement) {
-                        RxBus.getInstance().post(GroupEvent(data.conversationId))
+                        RxBus.publish(GroupEvent(data.conversationId))
                         applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
                             .putBoolean(data.conversationId, true)
                     }
