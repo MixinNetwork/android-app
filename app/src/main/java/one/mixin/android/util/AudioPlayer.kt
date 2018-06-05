@@ -9,12 +9,12 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 
-class AudioPlay private constructor() {
+class AudioPlayer private constructor() {
     companion object {
         var isInit = false
-        val instance: AudioPlay by lazy {
+        val instance: AudioPlayer by lazy {
             isInit = true
-            AudioPlay()
+            AudioPlayer()
         }
     }
 
@@ -23,7 +23,7 @@ class AudioPlay private constructor() {
         it.setOnVideoPlayerListener(object : MixinPlayer.VideoPlayerListenerWrapper() {
             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
                 status = if (playbackState == Player.STATE_ENDED) {
-                    RxBus.getInstance().post(ProgressEvent(id!!, 0f, STATUS_PAUSE))
+                    RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
                     STATUS_PAUSE
                 } else {
                     STATUS_PLAY
@@ -32,7 +32,7 @@ class AudioPlay private constructor() {
 
             override fun onPlayerError(error: ExoPlaybackException) {
                 status = STATUS_PAUSE
-                RxBus.getInstance().post(ProgressEvent(id!!, 0f, STATUS_PAUSE))
+                RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
             }
         })
     }
@@ -51,7 +51,7 @@ class AudioPlay private constructor() {
         player.seekTo(0)
         player.start()
         if (id != null) {
-            RxBus.getInstance().post(ProgressEvent(id!!, 0f, STATUS_PLAY))
+            RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PLAY))
         }
     }
 
@@ -59,7 +59,7 @@ class AudioPlay private constructor() {
         status = STATUS_PAUSE
         player.stop()
         if (id != null) {
-            RxBus.getInstance().post(ProgressEvent(id!!, 0f, STATUS_PAUSE))
+            RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
         }
     }
 

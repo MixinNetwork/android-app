@@ -11,7 +11,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
-import one.mixin.android.util.AudioPlay
+import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
@@ -112,20 +112,26 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_expired.visibility = View.GONE
                     itemView.audio_progress.visibility = View.VISIBLE
                     itemView.audio_progress.setBindOnly(messageItem.messageId)
-                    if (AudioPlay.instance.isPlay(messageItem.messageId)) {
+                    if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
                         itemView.audio_progress.setPause()
                     } else {
                         itemView.audio_progress.setPlay()
                     }
                     itemView.audio_progress.setOnClickListener {
-                        if (AudioPlay.instance.isPlay(messageItem.messageId)) {
-                            AudioPlay.instance.stop()
+                        if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
+                            AudioPlayer.instance.stop()
                         } else {
-                            AudioPlay.instance.play(messageItem)
+                            AudioPlayer.instance.play(messageItem)
                         }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
+
                     itemView.setOnClickListener {
+                        if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
+                            AudioPlayer.instance.stop()
+                        } else {
+                            AudioPlayer.instance.play(messageItem)
+                        }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }

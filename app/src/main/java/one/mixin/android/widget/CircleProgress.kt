@@ -16,12 +16,10 @@ import android.view.View
 import android.view.animation.LinearInterpolator
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
 import org.jetbrains.anko.sp
-import timber.log.Timber
 
 class CircleProgress @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
     : View(context, attrs, defStyleAttr) {
@@ -54,9 +52,6 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
     private var mBorder = false
 
     private var status = STATUS_LOADING
-
-    fun isPause() = status == STATUS_PAUSE
-    fun isPlay() = status == STATUS_PLAY
 
     @Suppress("unused")
     val progress: Float
@@ -130,7 +125,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         if (disposable == null) {
             disposable = RxBus.listen(ProgressEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe({
+                .subscribe {
                     if (it.id == mBindId) {
                         when {
                             status == STATUS_LOADING -> {
@@ -145,15 +140,18 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                             }
                             it.status == STATUS_PAUSE -> {
                                 setPlay()
+                                invalidate()
                             }
                             it.status == STATUS_PLAY -> {
                                 setPause()
+                                invalidate()
                             }
                         }
-                    } else {
+                    } else if (this.status == STATUS_PAUSE || this.status == STATUS_PLAY) {
                         setPlay()
+                        invalidate()
                     }
-                }, { Timber.e(it) })
+                }
         }
         super.onAttachedToWindow()
     }
