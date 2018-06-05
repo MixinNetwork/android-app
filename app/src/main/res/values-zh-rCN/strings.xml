@@ -88,6 +88,7 @@
     <string name="error_share">分享出错</string>
     <string name="error_recaptcha_is_invalid">验证失败</string>
     <string name="error_recaptcha_timeout">验证超时</string>
+    <string name="error_old_version">请更新 Mixin 至最新版。</string>
     <!--home-->
     <string name="title_home">联系人</string>
     <string name="title_dashboard">Chats</string>
