@@ -93,7 +93,7 @@ class AttachmentDownloadJob(private val message: Message)
     override fun onAdded() {
         super.onAdded()
         messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.id)
-        RxBus.getInstance().post(ProgressEvent(message.id, 0f))
+        RxBus.publish(ProgressEvent(message.id, 0f))
     }
 
     private fun decryptAttachment(url: String): Boolean {
@@ -106,7 +106,7 @@ class AttachmentDownloadJob(private val message: Message)
                 originalResponse.newBuilder().body(ProgressResponseBody(originalResponse.body(),
                     ProgressListener { bytesRead, contentLength, done ->
                         if (!done) {
-                            RxBus.getInstance().post(ProgressEvent(message.id,
+                            RxBus.publish(ProgressEvent(message.id,
                                 bytesRead.toFloat() / contentLength.toFloat()))
                         }
                     })).build()
