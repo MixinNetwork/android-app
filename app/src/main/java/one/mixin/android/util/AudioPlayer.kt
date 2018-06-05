@@ -22,11 +22,9 @@ class AudioPlayer private constructor() {
         it.setCycle(false)
         it.setOnVideoPlayerListener(object : MixinPlayer.VideoPlayerListenerWrapper() {
             override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-                status = if (playbackState == Player.STATE_ENDED) {
+                if (playbackState == Player.STATE_ENDED) {
                     RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
-                    STATUS_PAUSE
-                } else {
-                    STATUS_PLAY
+                    status = STATUS_PAUSE
                 }
             }
 
@@ -37,7 +35,7 @@ class AudioPlayer private constructor() {
         })
     }
 
-    var id: String? = null
+    private var id: String? = null
     private var url: String? = null
     private var status = STATUS_PAUSE
 
@@ -45,11 +43,12 @@ class AudioPlayer private constructor() {
         if (id != messageItem.messageId) {
             id = messageItem.messageId
             url = messageItem.mediaUrl
-            player.loadAudio(messageItem.mediaUrl!!)
         }
         status = STATUS_PLAY
-        player.seekTo(0)
-        player.start()
+        url?.let {
+            player.loadAudio(it)
+            player.start()
+        }
         if (id != null) {
             RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PLAY))
         }

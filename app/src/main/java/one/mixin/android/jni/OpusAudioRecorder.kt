@@ -154,7 +154,7 @@ class OpusAudioRecorder(ctx: Context) {
                 AudioFormat.ENCODING_PCM_16BIT, recordBufferSize * 10)
             samplesCount = 0
             recordTimeCount = 0
-
+            fileBuffer.rewind()
             audioRecord?.startRecording()
         } catch (e: Exception) {
             stopRecord()
