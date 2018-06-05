@@ -124,7 +124,7 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_10_14: Migration = object : Migration(13, 14) {
+        private val MIGRATION_10_14: Migration = object : Migration(10, 14) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE assets ADD COLUMN chain_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE messages ADD COLUMN shared_user_id TEXT")
@@ -139,7 +139,7 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_11_14: Migration = object : Migration(13, 14) {
+        private val MIGRATION_11_14: Migration = object : Migration(11, 14) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE assets ADD COLUMN change_usd TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE assets ADD COLUMN change_btc TEXT NOT NULL DEFAULT ''")
@@ -152,7 +152,7 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_12_14: Migration = object : Migration(13, 14) {
+        private val MIGRATION_12_14: Migration = object : Migration(12, 14) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
@@ -173,8 +173,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     INSTANCE = Room.databaseBuilder(context,
                         MixinDatabase::class.java, "mixin.db")
                         .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_10_12, MIGRATION_12_13,
-                            MIGRATION_11_13, MIGRATION_10_13, MIGRATION_13_14, MIGRATION_12_14,
-                            MIGRATION_11_14, MIGRATION_10_14)
+                            MIGRATION_10_13, MIGRATION_11_13, MIGRATION_10_14, MIGRATION_11_14, MIGRATION_12_14, MIGRATION_13_14)
                         .addCallback(CALLBACK)
                         .build()
                 }

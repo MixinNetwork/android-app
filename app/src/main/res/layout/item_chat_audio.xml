@@ -40,7 +40,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:progressColor="#1987FF"
+            app:progressColor="@color/colorBlue"
             app:progressWidth="1.5dp"
             app:shadowColor="@color/white"
             app:size="40dp" />
