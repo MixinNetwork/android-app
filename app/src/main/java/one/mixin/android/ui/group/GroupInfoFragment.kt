@@ -206,6 +206,11 @@ class GroupInfoFragment : BaseFragment() {
         })
 
         groupViewModel.getGroupParticipantsLiveData(conversationId).observe(this, Observer { u ->
+            adapter.users?.let {
+                if (it.size != users.size) {
+                    return@Observer
+                }
+            }
             u?.let {
                 var role: String? = null
                 self?.let {

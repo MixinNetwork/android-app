@@ -32,7 +32,6 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.extension.REQUEST_IMAGE
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.inTransaction
@@ -88,11 +87,6 @@ class ProfileFragment : BaseFragment() {
         if (account != null) {
             name_desc_tv.text = account.full_name
             phone_desc_tv.text = account.phone
-//            renderInvitation(account)
-
-            qr_rl.setOnClickListener {
-                activity?.addFragment(this@ProfileFragment, QRFragment.newInstance(user), QRFragment.TAG)
-            }
 
             name_rl.setOnClickListener { showDialog(false) }
             phone_rl.setOnClickListener {

@@ -10,7 +10,6 @@ import one.mixin.android.ui.contacts.AddPeopleFragment
 import one.mixin.android.ui.contacts.ContactBottomSheetDialog
 import one.mixin.android.ui.contacts.ContactsFragment
 import one.mixin.android.ui.contacts.ProfileFragment
-import one.mixin.android.ui.contacts.QRFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 
 @Module
@@ -20,9 +19,6 @@ abstract class ContactActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeProfileFragment(): ProfileFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeQRFragment(): QRFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeContactBottomSheetDialogFragment(): ContactBottomSheetDialog

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.setting
 
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
@@ -10,7 +11,9 @@ import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.vo.MessageSource
 import javax.inject.Inject
 
 class SettingFragment : BaseFragment() {
@@ -34,17 +37,42 @@ class SettingFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        notification_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                NotificationsFragment.newInstance(), NotificationsFragment.TAG)
-        }
-        privacy_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                SettingPrivacyFragment.newInstance(), SettingPrivacyFragment.TAG)
-        }
         about_rl.setOnClickListener {
             activity?.addFragment(this@SettingFragment,
                 AboutFragment.newInstance(), AboutFragment.TAG)
+        }
+
+        settingViewModel.countBlockingUsers().observe(this, Observer {
+            it?.let {
+                blocking_tv.text = "${it.size}"
+            }
+        })
+        blocked_rl.setOnClickListener {
+            activity?.addFragment(this@SettingFragment,
+                SettingBlockedFragment.newInstance(), SettingBlockedFragment.TAG)
+        }
+        conversation_rl.setOnClickListener {
+            activity?.addFragment(this@SettingFragment,
+                SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
+        }
+        loadConversationSource()
+    }
+
+    private fun loadConversationSource() {
+        context!!.defaultSharedPreferences.getInt(SettingConversationFragment.CONVERSATION_KEY,
+            MessageSource.EVERYBODY.ordinal).apply {
+            if (this == MessageSource.EVERYBODY.ordinal) {
+                conversation_source_tv.setText(R.string.setting_everybody)
+            } else {
+                conversation_source_tv.setText(R.string.setting_my_contacts)
+            }
+        }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (!hidden) {
+            loadConversationSource()
         }
     }
 }

@@ -92,7 +92,7 @@ class TransactionFragment : BaseFragment() {
         val amount = (BigDecimal(snapshot.amount) * BigDecimal(asset.priceUsd)).numberFormat2()
         value_as_tv.text = getString(R.string.wallet_unit_usd, "≈ $amount")
         transaction_id_tv.text = snapshot.snapshotId
-        transaction_type_tv.text = snapshot.type
+        transaction_type_tv.text = getSnapshotType(snapshot.type)
         asset_name_tv.text = asset.name
         memo_tv.text = snapshot.memo
         date_tv.text = snapshot.createdAt.fullDate()
@@ -117,5 +117,17 @@ class TransactionFragment : BaseFragment() {
                 receiver_tv.text = snapshot.receiver
             }
         }
+    }
+
+    private fun getSnapshotType(type: String): String {
+        val s = when (type) {
+            "transfer" -> R.string.transfer
+            "deposit" -> R.string.wallet_bottom_deposit
+            "withdrawal" -> R.string.withdrawal
+            "fee" -> R.string.fee
+            "rebate" -> R.string.rebate
+            else -> throw IllegalArgumentException("error snapshot type")
+        }
+        return requireContext().getString(s)
     }
 }

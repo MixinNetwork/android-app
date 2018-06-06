@@ -14,25 +14,12 @@
 
     <ViewAnimator android:id="@+id/block_va"
                   android:layout_width="match_parent" android:layout_height="match_parent">
-        <LinearLayout android:layout_width="match_parent" android:layout_height="match_parent"
-                      android:orientation="vertical">
-            <android.support.v7.widget.RecyclerView
-                    android:id="@+id/blocked_rv"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    app:layoutManager="LinearLayoutManager"/>
+        <android.support.v7.widget.RecyclerView
+                android:id="@+id/blocked_rv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:layoutManager="LinearLayoutManager"/>
 
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:layout_marginBottom="8dp"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:textSize="12sp"
-                    android:textColor="@color/text_gray"
-                    android:text="@string/setting_block_tip"/>
-        </LinearLayout>
         <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent"
                         android:orientation="vertical" tools:ignore="UseCompoundDrawables">
             <ImageView android:layout_width="42dp" android:layout_height="42dp"

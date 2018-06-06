@@ -19,7 +19,6 @@ import okio.GzipSink
 import okio.GzipSource
 import okio.Okio
 import okio.Source
-import one.mixin.android.ui.contacts.QRFragment
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
 import java.io.IOException
@@ -49,9 +48,9 @@ fun String.generateQRCode(size: Int, color: Int? = null): Bitmap? {
         val offset = y * width
         for (x in 0 until width) {
             pixels[offset + x] = if (result.get(x, y)) {
-                color ?: QRFragment.BLACK
+                color ?: -0x1000000  //black
             } else {
-                QRFragment.WHITE
+                -0x1  //white
             }
         }
     }

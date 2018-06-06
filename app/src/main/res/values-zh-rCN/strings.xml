@@ -16,7 +16,7 @@
     <string name="none">无</string>
     <string name="from">From</string>
     <string name="to">To %s</string>
-    <string name="fee">Fee</string>
+    <string name="fee">手续费</string>
     <string name="memo">备注</string>
     <string name="date">日期</string>
     <string name="slow">慢</string>
@@ -47,6 +47,7 @@
     <string name="participants">成员</string>
     <string name="copy">复制</string>
     <string name="open">打开</string>
+    <string name="rebate">退款</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -345,8 +346,8 @@
     <string name="setting_logout_message">退出将无法接受任何消息，本地已有的消息记录也将丢失! 请慎重!</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <!--about-->
-    <string name="about_follow_twitter">Follow us on Twitter</string>
-    <string name="about_follow_facebook">Follow us on Facebook</string>
+    <string name="about_follow_twitter">关注我们的 Twitter</string>
+    <string name="about_follow_facebook">关注我们的 Facebook</string>
     <string name="about_help_center">帮助中心</string>
     <string name="about_version">版本 %s</string>
     <string name="conversation_delete">删除</string>

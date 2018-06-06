@@ -139,7 +139,6 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             view.save.setOnClickListener {
                 RxPermissions(activity!!)
                     .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDisposable(scopeProvider)
                     .subscribe({ granted ->
                         if (granted) {
                             doAsync {
