@@ -5,10 +5,10 @@ import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.CornerPathEffect
 import android.graphics.Paint
 import android.graphics.Paint.Cap
 import android.graphics.Path
-import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.util.AttributeSet
@@ -19,6 +19,7 @@ import io.reactivex.disposables.Disposable
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
+import org.jetbrains.anko.dip
 import org.jetbrains.anko.sp
 
 class CircleProgress @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
@@ -57,15 +58,17 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
     val progress: Float
         get() = mProgress.toFloat()
 
-    init {
+    private val cornerRadius by lazy {
+        context.dip(3f).toFloat()
+    }
 
-        val density = context.resources.displayMetrics.density
+    init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.CircleProgress, defStyleAttr, 0)
-        mSize = a.getDimensionPixelSize(R.styleable.CircleProgress_size, (density * 40).toInt())
+        mSize = a.getDimensionPixelSize(R.styleable.CircleProgress_size, context.dip(40))
         mBorderWidth = a.getDimensionPixelSize(R.styleable.CircleProgress_progressWidth,
-            (DEFAULT_BORDER_WIDTH * density).toInt())
-        mShadowColor = a.getColor(R.styleable.CircleProgress_shadowColor, 0x33000000)
-        mProgressColor = a.getColor(R.styleable.CircleProgress_progressColor, Color.WHITE)
+            context.dip(DEFAULT_BORDER_WIDTH))
+        mShadowColor = a.getColor(R.styleable.CircleProgress_shadowColor, Color.WHITE)
+        mProgressColor = a.getColor(R.styleable.CircleProgress_progressColor, Color.BLUE)
         mBorder = a.getBoolean(R.styleable.CircleProgress_border, false)
         mProgress = a.getInt(R.styleable.CircleProgress_progress, mProgress)
         mMaxProgress = a.getInt(R.styleable.CircleProgress_maxProgress, mMaxProgress)
@@ -77,6 +80,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         mPaint.strokeCap = Cap.ROUND
         mPaint.strokeJoin = Paint.Join.ROUND
         mPaint.strokeWidth = mBorderWidth.toFloat()
+        mPaint.pathEffect = CornerPathEffect(cornerRadius)
         mPaint.color = mProgressColor
         mBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         mBackgroundPaint.color = mShadowColor
@@ -173,19 +177,14 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         val centerY = h / 2
         bounds.set((centerX - mSize / 2).toFloat(), (centerY - mSize / 2).toFloat(),
             (centerX + mSize / 2).toFloat(), (centerY + mSize / 2).toFloat())
-        fBounds.left = bounds.left + mBorderWidth * 2
-        fBounds.right = bounds.right - mBorderWidth * 2
-        fBounds.top = bounds.top + mBorderWidth * 2
-        fBounds.bottom = bounds.bottom - mBorderWidth * 2
+        fBounds.left = bounds.left + mBorderWidth
+        fBounds.right = bounds.right - mBorderWidth
+        fBounds.top = bounds.top + mBorderWidth
+        fBounds.bottom = bounds.bottom - mBorderWidth
     }
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        if (status == STATUS_DONE) {
-            mBackgroundPaint.color = 0xFFEDEEEE.toInt()
-        } else {
-            mBackgroundPaint.color = mShadowColor
-        }
         canvas.drawCircle(bounds.centerX(), bounds.centerY(), bounds.width() / 2, mBackgroundPaint)
         when (status) {
             STATUS_DOWNLOAD -> {
@@ -222,14 +221,17 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                 drawPause(canvas)
             }
             else -> {
-                mPaint.style = Paint.Style.STROKE
                 when {
                     mProgress < 100 -> {
-                        drawFork(canvas)
+                        mPaint.style = Paint.Style.FILL
+                        drawStop(canvas)
+                        mPaint.style = Paint.Style.STROKE
                         drawArc(canvas)
                     }
                     else -> {
-                        drawFork(canvas)
+                        mPaint.style = Paint.Style.FILL
+                        drawStop(canvas)
+                        mPaint.style = Paint.Style.STROKE
                         canvas.drawArc(fBounds, 0f, 360f, false, mPaint)
                     }
                 }
@@ -237,32 +239,32 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         }
     }
 
-    private fun drawFork(canvas: Canvas) {
-        mForkPath.reset()
-        mForkPath.moveTo(fBounds.centerX() + fBounds.width() * 0.15f, fBounds.centerY() - fBounds.height() * 0.15f)
-        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.15f, fBounds.centerY() + fBounds.height() * 0.15f)
-        mForkPath.moveTo(fBounds.centerX() - fBounds.width() * 0.15f, fBounds.centerY() - fBounds.height() * 0.15f)
-        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.15f, fBounds.centerY() + fBounds.height() * 0.15f)
-        canvas.drawPath(mForkPath, mPaint)
+    private fun drawStop(canvas: Canvas) {
+        canvas.drawRoundRect(RectF(
+            fBounds.centerX() - fBounds.width() * 0.16f,
+            fBounds.centerY() - fBounds.height() * 0.16f,
+            fBounds.centerX() + fBounds.width() * 0.16f,
+            fBounds.centerY() + fBounds.height() * 0.16f
+        ), cornerRadius, 0f, mPaint)
     }
 
     private fun drawDownArrow(canvas: Canvas) {
         mForkPath.reset()
         mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)
+        mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f - mBorderWidth)
+        mForkPath.moveTo(fBounds.centerX() + fBounds.width() * 0.16f, fBounds.centerY())
         mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
-        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.20f, fBounds.centerY())
-        mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
-        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.20f, fBounds.centerY())
+        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.16f, fBounds.centerY())
         canvas.drawPath(mForkPath, mPaint)
     }
 
     private fun drawUpArrow(canvas: Canvas) {
         mForkPath.reset()
         mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() + fBounds.height() * 0.25f)
+        mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f + mBorderWidth)
+        mForkPath.moveTo(fBounds.centerX() - fBounds.width() * 0.16f, fBounds.centerY())
         mForkPath.lineTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)
-        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.20f, fBounds.centerY())
-        mForkPath.moveTo(fBounds.centerX(), fBounds.centerY() - fBounds.height() * 0.25f)
-        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.20f, fBounds.centerY())
+        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.16f, fBounds.centerY())
         canvas.drawPath(mForkPath, mPaint)
     }
 
@@ -274,19 +276,20 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
 
     private fun drawPlay(canvas: Canvas) {
         mForkPath.reset()
-        mForkPath.moveTo(fBounds.centerX() - fBounds.width() * 0.2f, fBounds.centerY() - fBounds.height() * 0.25f)
-        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.25f, fBounds.centerY())
-        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.2f, fBounds.centerY() + fBounds.height() * 0.25f)
+        mForkPath.moveTo(fBounds.centerX() - fBounds.width() * 0.20f, fBounds.centerY() - fBounds.height() * 0.2f)
+        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.2f, fBounds.centerY())
+        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.15f, fBounds.centerY() + fBounds.height() * 0.2f)
+        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.15f, fBounds.centerY() - fBounds.height() * 0.2f)
+        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.2f, fBounds.centerY())
         canvas.drawPath(mForkPath, mPaint)
     }
 
     private fun drawPause(canvas: Canvas) {
-        val width = (fBounds.width() / 8)
-        val height = (fBounds.height() / 5)
-        canvas.drawRect(Rect((fBounds.centerX() - width * 0.2).toInt(), (fBounds.centerY() - height).toInt(),
-            (fBounds.centerX() - width * 1.2).toInt(), (fBounds.centerY() + height).toInt()), mPaint)
-        canvas.drawRect(Rect((fBounds.centerX() + 0.2 * width).toInt(), (fBounds.centerY() - height).toInt(),
-            (fBounds.centerX() + width * 1.2).toInt(), (fBounds.centerY() + height).toInt()), mPaint)
+        val height = (fBounds.height() / 8)
+        canvas.drawLine((fBounds.centerX() - fBounds.width() * 0.1f), (fBounds.centerY() - height),
+            (fBounds.centerX() - fBounds.width() * 0.1f), (fBounds.centerY() + height), mPaint)
+        canvas.drawLine((fBounds.centerX() + width * 0.1f), (fBounds.centerY() - height),
+            (fBounds.centerX() + fBounds.width() * 0.1f), (fBounds.centerY() + height), mPaint)
     }
 
     private fun drawArc(canvas: Canvas) {

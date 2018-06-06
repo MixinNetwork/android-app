@@ -36,13 +36,12 @@
             android:layout_marginStart="8dp"
             android:layout_marginTop="8dp"
             android:src="@drawable/ic_avatar_place_holder"
-            app:border="true"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:progressColor="@color/colorBlue"
             app:progressWidth="1.5dp"
-            app:shadowColor="@color/white"
+            app:shadowColor="@color/progress_gary"
             app:size="40dp" />
 
         <ImageView

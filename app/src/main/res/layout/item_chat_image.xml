@@ -65,11 +65,15 @@
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_gravity="center"
+            android:background="@color/shadow"
             app:layout_constraintBottom_toBottomOf="@id/chat_image_layout"
             app:layout_constraintEnd_toEndOf="@id/chat_image_layout"
             app:layout_constraintStart_toStartOf="@id/chat_image_layout"
             app:layout_constraintTop_toTopOf="@id/chat_image_layout"
-            app:size="56dp" />
+            app:progressColor="@color/colorBlue"
+            app:progressWidth="1.5dp"
+            app:shadowColor="@color/progress_gary"
+            app:size="40dp" />
 
         <LinearLayout
             android:id="@+id/chat_warning"
