@@ -31,4 +31,5 @@
     <dimen name="margin12">12dp</dimen>
     <dimen name="blink_size">8dp</dimen>
     <dimen name="padding8">8dp</dimen>
+    <dimen name="chat_control_height">52dp</dimen>
 </resources>
