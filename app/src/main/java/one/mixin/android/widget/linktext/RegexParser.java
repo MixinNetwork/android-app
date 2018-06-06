@@ -9,6 +9,5 @@ class RegexParser {
     static final String EMAIL_PATTERN = Patterns.EMAIL_ADDRESS.pattern();
     static final String HASHTAG_PATTERN = "(?:^|\\s|$)#[\\p{L}0-9_]*";
     static final String MENTION_PATTERN = "(?:^|\\s|$|[.])@[\\p{L}0-9_]*";
-    static final String ACCOUNT_PATTERN = "^<a href=\"(\\S+)\"\\s*(color=\"(\\S+)\")*?>(.*)<\\/a>";
     static final String URL_PATTERN = "[a-zA-z]+://[^\\s]*";
 }
