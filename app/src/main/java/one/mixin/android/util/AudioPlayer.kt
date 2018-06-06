@@ -16,6 +16,13 @@ class AudioPlayer private constructor() {
             isInit = true
             AudioPlayer()
         }
+
+        fun release() {
+            if (isInit) {
+                instance.player.release()
+                isInit = false
+            }
+        }
     }
 
     private val player: MixinPlayer = MixinPlayer(true).also {
@@ -43,20 +50,20 @@ class AudioPlayer private constructor() {
         if (id != messageItem.messageId) {
             id = messageItem.messageId
             url = messageItem.mediaUrl
+            url?.let {
+                player.loadAudio(it)
+            }
         }
         status = STATUS_PLAY
-        url?.let {
-            player.loadAudio(it)
-            player.start()
-        }
+        player.start()
         if (id != null) {
             RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PLAY))
         }
     }
 
-    fun stop() {
+    fun pause() {
         status = STATUS_PAUSE
-        player.stop()
+        player.pause()
         if (id != null) {
             RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
         }

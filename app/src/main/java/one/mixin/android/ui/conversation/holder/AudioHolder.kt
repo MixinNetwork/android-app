@@ -24,7 +24,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
     }
 
     private val maxWidth by lazy {
-        itemView.context.dpToPx(240f)
+        itemView.context.dpToPx(255f)
     }
 
     private val minWidth by lazy {
@@ -120,7 +120,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_progress.setOnClickListener {
                         if (!hasSelect) {
                             if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
-                                AudioPlayer.instance.stop()
+                                AudioPlayer.instance.pause()
                             } else {
                                 AudioPlayer.instance.play(messageItem)
                             }
@@ -131,7 +131,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.setOnClickListener {
                         if (!hasSelect) {
                             if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
-                                AudioPlayer.instance.stop()
+                                AudioPlayer.instance.pause()
                             } else {
                                 AudioPlayer.instance.play(messageItem)
                             }

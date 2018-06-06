@@ -574,7 +574,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         if (AudioPlayer.isInit) {
-            AudioPlayer.instance.stop()
+            AudioPlayer.instance.pause()
         }
     }
 
@@ -627,6 +627,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         MixinApplication.conversationId = null
         super.onDestroy()
         previewVideoDialogFragment?.release()
+        AudioPlayer.release()
     }
 
     @SuppressLint("CheckResult")
@@ -713,7 +714,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         tool_view.delete_iv.setOnClickListener {
             chatAdapter.selectSet.filter { it.type.endsWith("_AUDIO") }.forEach {
                 if (AudioPlayer.instance.isPlay(it.messageId)) {
-                    AudioPlayer.instance.stop()
+                    AudioPlayer.instance.pause()
                 }
             }
             chatViewModel.deleteMessages(chatAdapter.selectSet)
@@ -1476,7 +1477,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun onRecordStart(audio: Boolean) {
-            AudioPlayer.instance.stop()
+            AudioPlayer.instance.pause()
             audioRecorder.startRecording()
         }
 

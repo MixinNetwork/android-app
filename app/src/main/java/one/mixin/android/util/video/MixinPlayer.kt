@@ -78,9 +78,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         return position
     }
 
-    fun release() {
-        player.release()
-    }
+    fun release() = player.release()
 
     fun stop() = player.stop()
 
