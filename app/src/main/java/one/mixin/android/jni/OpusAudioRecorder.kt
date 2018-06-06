@@ -62,6 +62,7 @@ class OpusAudioRecorder(ctx: Context) {
                 override fun onCallStateChanged(state: Int, incomingNumber: String?) {
                     if (state != TelephonyManager.CALL_STATE_IDLE) {
                         stopRecording(false)
+                        callback?.onCancel()
                     }
                 }
             }
@@ -234,6 +235,7 @@ class OpusAudioRecorder(ctx: Context) {
     private external fun getWaveform2(arr: ShortArray, len: Int): ByteArray
 
     interface Callback {
+        fun onCancel()
         fun sendAudio(file: File, duration: Long, waveForm: ByteArray)
     }
 }

@@ -98,6 +98,13 @@ class ChatControlView : LinearLayout {
         }
     }
 
+    fun cancelExternal() {
+        removeCallbacks(recordRunnable)
+        chat_slide.onEnd()
+        cleanUp()
+        chat_slide.parent.requestDisallowInterceptTouchEvent(false)
+    }
+
     private fun checkSend() {
         val d = when (sendStatus) {
             SEND -> sendDrawable
