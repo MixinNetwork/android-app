@@ -343,7 +343,7 @@ class ConversationAdapter(
                 item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
                 item.status == MessageStatus.FAILED.name -> WAITING_TYPE
                 item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
-                    if (item.siteName != null) {
+                    if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
                         LINK_TYPE
                     } else {
                         MESSAGE_TYPE

@@ -25,7 +25,9 @@ class ParseHyperlinkJob(private val hyperlink: String, private val messageId: St
             } catch (e: Exception) {
             }
 
-            hyperlinkDao.insert(Hyperlink(hyperlink, doc.title() ?: "title", "", description ?: "", null))
+            if (!doc.title().isNullOrBlank() || !description.isNullOrBlank()) {
+                hyperlinkDao.insert(Hyperlink(hyperlink, doc.title(), "", description ?: "", null))
+            }
         }
         messageDao.updateHyperlink(hyperlink, messageId)
     }

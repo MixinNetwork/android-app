@@ -159,7 +159,13 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
             }
         }
 
-        itemView.chat_name_tv.text = messageItem.siteName
+        itemView.chat_name_tv.visibility = if (messageItem.siteName.isNullOrBlank()) {
+            View.GONE
+        } else {
+            itemView.chat_name_tv.text = messageItem.siteName
+            View.VISIBLE
+        }
+
         itemView.chat_description_tv.visibility = if (messageItem.siteDescription.isNullOrBlank()) {
             View.GONE
         } else {
