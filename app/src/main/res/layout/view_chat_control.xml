@@ -10,6 +10,7 @@
         android:layout_gravity="center_vertical">
 
     <LinearLayout
+            android:id="@+id/bottom_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
@@ -20,7 +21,7 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
                 android:background="@null"
-                android:paddingStart="16dp"
+                android:paddingStart="12dp"
                 app:srcCompat="@drawable/ic_chat_bot"
                 tools:ignore="ContentDescription"/>
 
@@ -30,8 +31,8 @@
                 android:layout_height="match_parent"
                 android:layout_gravity="center_vertical"
                 android:background="@null"
-                android:paddingEnd="16dp"
-                android:paddingStart="16dp"
+                android:paddingEnd="12dp"
+                android:paddingStart="12dp"
                 app:srcCompat="@drawable/ic_chat_ext"
                 tools:ignore="ContentDescription"/>
 
@@ -42,6 +43,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/bg_input"
                 android:drawableEnd="@drawable/ic_chat_sticker"
+                android:drawablePadding="4dp"
                 android:inputType="textMultiLine|textNoSuggestions"
                 android:maxLines="5"
                 android:paddingBottom="6dp"
@@ -63,11 +65,13 @@
     <ImageButton
             android:id="@+id/chat_send_ib"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:background="@null"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:layout_gravity="end"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:layout_gravity="center_vertical|end"
             android:src="@drawable/ic_record_mic"
             tools:ignore="ContentDescription"/>
 </FrameLayout>
