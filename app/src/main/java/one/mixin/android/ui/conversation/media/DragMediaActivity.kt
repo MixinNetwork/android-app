@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation.media
 
 import android.Manifest
+import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.ContentResolver
@@ -11,8 +12,10 @@ import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.support.v4.content.ContextCompat
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPager
@@ -45,6 +48,7 @@ import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
+import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
@@ -110,6 +114,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= 26) {
+            window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
+            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        }
+
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_drag_media)
         colorDrawable = ColorDrawable(Color.BLACK)
@@ -514,6 +523,25 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         super.finishAfterTransition()
     } else {
         finish()
+    }
+
+    override fun finish() {
+        ValueAnimator.ofInt(0, 100)
+            .setDuration(400)
+            .apply {
+                addUpdateListener {
+                    (it.animatedValue as Int).apply {
+                        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${view_pager.currentItem}")
+                        v.translationY = (displaySize().y * this / 100).toFloat()
+                        colorDrawable.alpha = ALPHA_MAX * (100 - this) / 100
+                        if (it.animatedValue == 100) {
+                            super.finish()
+                            overridePendingTransition(R.anim.no_transition, R.anim.no_transition)
+                        }
+                    }
+                }
+            }
+            .start()
     }
 
     override fun onCancel() {
