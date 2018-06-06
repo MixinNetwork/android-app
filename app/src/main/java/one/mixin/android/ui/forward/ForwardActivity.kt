@@ -7,6 +7,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.util.Session
 import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -43,6 +44,11 @@ class ForwardActivity : BlazeBaseActivity() {
             val f = ForwardFragment.newInstance(list, intent.getBooleanExtra(ARGS_SHARE, false))
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else {
+            if (Session.getAccount() == null) {
+                toast(R.string.not_logged_in)
+                finish()
+                return
+            }
             val forwardMessageList = ShareHelper.get().generateForwardMessageList(intent)
             if (forwardMessageList != null && forwardMessageList.isNotEmpty()) {
                 replaceFragment(ForwardFragment.newInstance(forwardMessageList, true), R.id.container, ForwardFragment.TAG)
