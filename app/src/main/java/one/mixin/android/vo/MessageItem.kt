@@ -57,7 +57,11 @@ data class MessageItem(
     val sharedUserAvatarUrl: String? = null,
     val sharedUserIsVerified: Boolean? = null,
     val sharedUserAppId: String? = null
-) : Parcelable
+) : Parcelable{
+    fun isBot(): Boolean {
+        return appId != null
+    }
+}
 
 fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
     type, null, createdAt

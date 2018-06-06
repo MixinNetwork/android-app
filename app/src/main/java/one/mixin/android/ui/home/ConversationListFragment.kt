@@ -48,6 +48,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.linktext.getTagData
 import org.jetbrains.anko.doAsync
 import java.io.File
 import javax.inject.Inject
@@ -236,6 +237,7 @@ class ConversationListFragment : LinkFragment() {
         var context: Context = itemView.context
         private fun getText(id: Int) = context.getText(id).toString()
 
+        @SuppressLint("SetTextI18n")
         fun bind(onItemClickListener: OnItemClickListener?, position: Int, conversationItem: ConversationItem) {
             val id = Session.getAccountId()
             conversationItem.getConversationName().let {
@@ -253,8 +255,19 @@ class ConversationListFragment : LinkFragment() {
                 conversationItem.contentType == MessageCategory.SIGNAL_TEXT.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_TEXT.name -> {
                     conversationItem.content?.let {
-                        setConversationName(conversationItem)
-                        itemView.msg_tv.text = it
+                        if (conversationItem.isBot() && conversationItem.senderId != Session.getAccountId() && it.startsWith("<a href=\"mixin://")) {
+                            notNullElse(getTagData(it), {
+                                itemView.group_name_tv.text = it.first
+                                itemView.msg_tv.text = it.second
+                                itemView.group_name_tv.visibility = VISIBLE
+                            }, {
+                                setConversationName(conversationItem)
+                                itemView.msg_tv.text = it
+                            })
+                        } else {
+                            setConversationName(conversationItem)
+                            itemView.msg_tv.text = it
+                        }
                     }
                     null
                 }

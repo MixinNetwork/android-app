@@ -22,7 +22,6 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
 
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        itemView.chat_tv.supportAccount(true)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
         itemView.chat_tv.setAccountModeColor(LINK_COLOR)
 
@@ -78,6 +77,11 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
+        if (messageItem.isBot()) {
+            itemView.chat_tv.supportAccount(true)
+        } else {
+            itemView.chat_tv.supportAccount(false)
+        }
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
         } else {
