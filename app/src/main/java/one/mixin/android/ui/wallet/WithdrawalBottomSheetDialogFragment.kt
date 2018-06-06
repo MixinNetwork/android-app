@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.text.TextUtils
 import android.view.View
-import android.view.View.GONE
 import android.view.View.VISIBLE
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.parcel.Parcelize
@@ -73,18 +72,8 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.title_view.left_ib.setOnClickListener { dialog?.dismiss() }
-        contentView.title_view.right_animator.setOnClickListener {
-            if (contentView.addr_tv.visibility == GONE) {
-                contentView.addr_tv.visibility = VISIBLE
-                contentView.title_view.right_ib.setImageResource(R.drawable.ic_arrow_up)
-            } else {
-                contentView.addr_tv.visibility = GONE
-                contentView.title_view.right_ib.setImageResource(R.drawable.ic_arrow_down)
-            }
-        }
         contentView.title_view.setSubTitle(getString(R.string.withdrawal_to, withdrawalItem.label),
             withdrawalItem.publicKey.formatPublicKey())
-        contentView.addr_tv.text = withdrawalItem.publicKey
         if (!TextUtils.isEmpty(withdrawalItem.memo)) {
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = withdrawalItem.memo

@@ -2,6 +2,7 @@
 
 package one.mixin.android.extension
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.text.Editable
 import com.google.android.exoplayer2.util.Util
@@ -19,7 +20,8 @@ import okio.GzipSink
 import okio.GzipSource
 import okio.Okio
 import okio.Source
-import one.mixin.android.ui.contacts.QRFragment
+import one.mixin.android.R
+import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
 import java.io.IOException
@@ -49,9 +51,9 @@ fun String.generateQRCode(size: Int, color: Int? = null): Bitmap? {
         val offset = y * width
         for (x in 0 until width) {
             pixels[offset + x] = if (result.get(x, y)) {
-                color ?: QRFragment.BLACK
+                color ?: QrBottomSheetDialogFragment.BLACK
             } else {
-                QRFragment.WHITE
+                QrBottomSheetDialogFragment.WHITE
             }
         }
     }
@@ -251,4 +253,16 @@ fun String.toDot(): String {
         }
     }
     return this
+}
+
+fun String.getSnapshotType(context: Context): String {
+    val s = when (this) {
+        "transfer" -> R.string.transfer
+        "deposit" -> R.string.wallet_bottom_deposit
+        "withdrawal" -> R.string.withdrawal
+        "fee" -> R.string.fee
+        "rebate" -> R.string.rebate
+        else -> throw IllegalArgumentException("error snapshot type")
+    }
+    return context.getString(s)
 }

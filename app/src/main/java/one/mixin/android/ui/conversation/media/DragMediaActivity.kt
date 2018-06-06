@@ -35,7 +35,6 @@ import com.bumptech.glide.request.target.Target
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -159,7 +158,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         view.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDisposable(scopeProvider)
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {

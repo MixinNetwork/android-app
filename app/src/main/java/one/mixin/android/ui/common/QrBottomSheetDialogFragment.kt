@@ -50,6 +50,9 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TYPE_MY_QR = 0
         const val TYPE_RECEIVE_QR = 1
 
+        const val WHITE = -0x1
+        const val BLACK = -0x1000000
+
         fun newInstance(userId: String, type: Int) = QrBottomSheetDialogFragment().apply {
             arguments = bundleOf(
                 ARGS_USER_ID to userId,
@@ -139,7 +142,6 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             view.save.setOnClickListener {
                 RxPermissions(activity!!)
                     .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDisposable(scopeProvider)
                     .subscribe({ granted ->
                         if (granted) {
                             doAsync {

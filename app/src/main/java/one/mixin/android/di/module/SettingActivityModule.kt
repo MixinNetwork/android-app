@@ -8,15 +8,11 @@ import one.mixin.android.ui.setting.NotificationsFragment
 import one.mixin.android.ui.setting.SettingBlockedFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.ui.setting.SettingFragment
-import one.mixin.android.ui.setting.SettingPrivacyFragment
 
 @Module
 abstract class SettingActivityModule {
     @ContributesAndroidInjector
     internal abstract fun contributeSettingFragment(): SettingFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeSettingPrivacyFragment(): SettingPrivacyFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeNotificationsFragment(): NotificationsFragment

@@ -192,11 +192,15 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 .newInstance(app.homeUri, conversationId, app.name)
                                 .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
                         }
-                        bottomViewModel.findUserById(app.creatorId).observe(this@UserBottomSheetDialogFragment, Observer {
-                            if (it != null) {
-                                if (!TextUtils.isEmpty(it.fullName)) {
+                        bottomViewModel.findUserById(app.creatorId).observe(this@UserBottomSheetDialogFragment, Observer { u ->
+                            if (u != null) {
+                                if (!TextUtils.isEmpty(u.fullName)) {
                                     contentView.creator_tv.visibility = VISIBLE
-                                    contentView.creator_tv.text = it.fullName
+                                    contentView.creator_tv.text = u.fullName
+                                    contentView.creator_tv.setOnClickListener {
+                                        dialog?.dismiss()
+                                        UserBottomSheetDialogFragment.newInstance(u).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                                    }
                                 } else {
                                     contentView.creator_tv.visibility = GONE
                                 }

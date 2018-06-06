@@ -17,7 +17,6 @@ import one.mixin.android.ui.qr.CaptureViewModel
 import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.ui.setting.SettingBlockedViewModel
 import one.mixin.android.ui.setting.SettingConversationViewModel
-import one.mixin.android.ui.setting.SettingPrivacyViewModel
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.wallet.PinCheckViewModel
 import one.mixin.android.ui.wallet.WalletViewModel
@@ -75,11 +74,6 @@ internal abstract class ViewModelModule {
     @ViewModelKey(SettingConversationViewModel::class)
     internal abstract fun bindSettingConversationViewModel(settingConversationViewModel: SettingConversationViewModel):
         ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(SettingPrivacyViewModel::class)
-    internal abstract fun bindSettingPrivacyViewModel(settingPrivacyViewModel: SettingPrivacyViewModel): ViewModel
 
     @Binds
     @IntoMap

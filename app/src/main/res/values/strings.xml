@@ -50,6 +50,7 @@
     <string name="participants">Participants</string>
     <string name="copy">Copy</string>
     <string name="open">Open</string>
+    <string name="rebate">Rebate</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

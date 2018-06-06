@@ -1,112 +1,179 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
-        android:id="@+id/title_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:titleText="@string/setting_title" />
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleText="@string/setting_title"/>
 
-    <RelativeLayout
-        android:id="@+id/notification_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground"
-        android:visibility="gone">
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_gray">
 
         <TextView
-            android:id="@+id/notification_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/notification"
-            tools:ignore="RelativeOverlap" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:text="@string/setting_privacy_title"
+                android:textColor="@color/text_gray"
+                android:textSize="12sp"/>
+    </FrameLayout>
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:background="@color/divider"/>
+
+    <RelativeLayout
+            android:id="@+id/blocked_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+                android:id="@+id/blocked_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/setting_blocked"
+                tools:ignore="RelativeOverlap"/>
 
         <ImageView
-            android:id="@+id/notification_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_chevron_right_gray_24dp"
-            tools:ignore="ContentDescription" />
+                android:id="@+id/blocked_iv"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:src="@drawable/ic_chevron_right_gray_24dp"
+                tools:ignore="ContentDescription"/>
+
+        <TextView
+                android:id="@+id/blocking_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_toStartOf="@id/blocked_iv"
+                android:text="@string/none"
+                android:textColor="@color/text_gray"/>
     </RelativeLayout>
 
+    <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:background="@color/divider"/>
+
     <RelativeLayout
-        android:id="@+id/privacy_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
+            android:id="@+id/conversation_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:layout_marginTop=".5dp"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground">
 
         <TextView
-            android:id="@+id/privacy_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_privacy"
-            tools:ignore="RelativeOverlap" />
+                android:id="@+id/conversation_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/setting_conversation"
+                tools:ignore="RelativeOverlap"/>
 
         <ImageView
-            android:id="@+id/privacy_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_chevron_right_gray_24dp"
-            tools:ignore="ContentDescription" />
+                android:id="@+id/conversation_iv"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:src="@drawable/ic_chevron_right_gray_24dp"
+                tools:ignore="ContentDescription"/>
+
+        <TextView
+                android:id="@+id/conversation_source_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_toStartOf="@id/conversation_iv"
+                android:text="@string/setting_my_contacts"
+                android:textColor="@color/text_gray"/>
     </RelativeLayout>
 
-    <include layout="@layout/view_item_divider"/>
+    <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:background="@color/divider"/>
 
-    <RelativeLayout
-        android:id="@+id/about_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_gray">
 
         <TextView
-            android:id="@+id/about_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/about"
-            tools:ignore="RelativeOverlap" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="8dp"
+                android:text="@string/setting_privacy_tip"
+                android:textColor="@color/text_gray"
+                android:textSize="12sp"/>
+    </FrameLayout>
+
+    <RelativeLayout
+            android:id="@+id/about_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+                android:id="@+id/about_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/about"
+                tools:ignore="RelativeOverlap"/>
 
         <ImageView
-            android:id="@+id/about_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_chevron_right_gray_24dp"
-            tools:ignore="ContentDescription" />
+                android:id="@+id/about_iv"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:src="@drawable/ic_chevron_right_gray_24dp"
+                tools:ignore="ContentDescription"/>
     </RelativeLayout>
 
 
     <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider"/>
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:background="@color/divider"/>
 
     <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/bg_gray"/>
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/bg_gray"/>
 </LinearLayout>
