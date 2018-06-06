@@ -18,6 +18,8 @@ class SlidePanelView: FrameLayout {
     private var blinkingDrawable: BlinkingDrawable? = null
     private var timeValue = 0
 
+    var callback: Callback? = null
+
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
@@ -36,6 +38,7 @@ class SlidePanelView: FrameLayout {
         translationX = (width).toFloat()
         animate().apply {
             translationX(0f)
+            alpha(1f)
             interpolator = DecelerateInterpolator()
             duration = 200
             setListener(object : AnimatorListenerAdapter() {
@@ -64,6 +67,7 @@ class SlidePanelView: FrameLayout {
         context.vibrate(longArrayOf(0, 30))
         animate().apply {
             translationX(width.toFloat())
+            alpha(0f)
             interpolator = AccelerateInterpolator()
             duration = 200
             setListener(object : AnimatorListenerAdapter() {
@@ -91,11 +95,18 @@ class SlidePanelView: FrameLayout {
 
     private val updateTimeRunnable: Runnable by lazy {
         Runnable {
-            if (timeValue > 60) return@Runnable
+            if (timeValue > 59) {
+                callback?.onTimeout()
+                return@Runnable
+            }
 
             timeValue++
             time_tv.text = context.getString(R.string.time, timeValue)
             postDelayed(updateTimeRunnable, 1000)
         }
+    }
+
+    interface Callback {
+        fun onTimeout()
     }
 }

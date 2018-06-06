@@ -4,7 +4,7 @@
     android:id="@+id/state_layout"
     android:layout_width="match_parent"
     android:layout_height="26dp"
-    android:background="#2CC3FA"
+    android:background="@color/colorBlue"
     android:visibility="gone">
 
     <ProgressBar

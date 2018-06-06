@@ -21,6 +21,7 @@ import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
+import one.mixin.android.widget.audio.SlidePanelView
 import org.jetbrains.anko.dip
 import kotlin.math.abs
 
@@ -62,14 +63,13 @@ class ChatControlView : LinearLayout {
 
     private val touchSlop: Int by lazy { ViewConfiguration.get(context).scaledTouchSlop }
     private var isRecording = false
-    private var calledRecordRunnable = false
-    private var calledClickRunnable = false
 
     var activity: Activity? = null
 
     private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_send, null) }
-    private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_mic_none_black_24dp, null) }
-    private val videoDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_video_black_24dp, null) }
+    private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_record_mic, null) }
+    private val audioActiveDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_record_mic_blue, null) }
+    private val videoDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_record_mic, null) }
     private val upDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_arrow_up, null) }
     private val downDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_arrow_down, null) }
 
@@ -83,6 +83,7 @@ class ChatControlView : LinearLayout {
         chat_et.setOnTouchListener(editTouchListener)
         chat_et.addTextChangedListener(editTextWatcher)
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
+        chat_slide.callback = chatSlideCallback
     }
 
     fun setSendWithSticker() {
@@ -100,7 +101,7 @@ class ChatControlView : LinearLayout {
     private fun checkSend() {
         val d = when (sendStatus) {
             SEND -> sendDrawable
-            AUDIO -> audioDrawable
+            AUDIO -> if (isRecording) audioActiveDrawable else audioDrawable
             VIDEO -> videoDrawable
             UP -> upDrawable
             DOWN -> downDrawable
@@ -120,6 +121,7 @@ class ChatControlView : LinearLayout {
         startX = 0f
         originX = 0f
         isRecording = false
+        checkSend()
     }
 
     private fun audioOrVideo() = sendStatus == AUDIO || sendStatus == VIDEO
@@ -195,6 +197,7 @@ class ChatControlView : LinearLayout {
                 startX = moveX
             }
             ACTION_UP, ACTION_CANCEL -> {
+                cleanUp()
                 if (!audioOrVideo()) return@OnTouchListener false
                 if (triggeredCancel) {
                     triggeredCancel = false
@@ -208,7 +211,6 @@ class ChatControlView : LinearLayout {
                 } else {
                     removeCallbacks(recordRunnable)
                 }
-                cleanUp()
             }
         }
         return@OnTouchListener true
@@ -216,17 +218,13 @@ class ChatControlView : LinearLayout {
 
     private val sendClickRunnable = Runnable {
         removeCallbacks(recordRunnable)
-        calledClickRunnable = true
         when (sendStatus) {
             SEND -> {
                 val t = chat_et.text.trim().toString()
                 callback?.onSendClick(t)
                 sendStatus = lastSendStatus
             }
-            AUDIO -> {
-                sendStatus = VIDEO
-                lastSendStatus = sendStatus
-            }
+            AUDIO -> {}
             VIDEO -> {
                 sendStatus = AUDIO
                 lastSendStatus = sendStatus
@@ -260,7 +258,6 @@ class ChatControlView : LinearLayout {
                     return@Runnable
                 }
             }
-            calledRecordRunnable = true
             callback?.onRecordStart(sendStatus == AUDIO)
             post(checkReadyRunnable)
             chat_send_ib.parent.requestDisallowInterceptTouchEvent(true)
@@ -270,10 +267,20 @@ class ChatControlView : LinearLayout {
     private val checkReadyRunnable: Runnable by lazy {
         Runnable {
             if (callback?.isReady() == true) {
+                isRecording = true
+                checkSend()
                 chat_slide.onStart()
             } else {
                 postDelayed(checkReadyRunnable, 100)
             }
+        }
+    }
+
+    private val chatSlideCallback = object : SlidePanelView.Callback {
+        override fun onTimeout() {
+            chat_slide.onEnd()
+            callback?.onRecordEnd()
+            cleanUp()
         }
     }
 

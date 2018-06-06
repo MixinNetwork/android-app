@@ -68,6 +68,6 @@
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:layout_gravity="end"
-            android:src="@drawable/ic_mic_none_black_24dp"
+            android:src="@drawable/ic_record_mic"
             tools:ignore="ContentDescription"/>
 </FrameLayout>
