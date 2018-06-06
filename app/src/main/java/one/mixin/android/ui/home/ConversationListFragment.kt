@@ -290,7 +290,7 @@ class ConversationListFragment : LinkFragment() {
                     conversationItem.contentType == MessageCategory.PLAIN_AUDIO.name -> {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_audio)
-                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_voice)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_audio)
                 }
                 conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
                     itemView.group_name_tv.visibility = GONE
