@@ -31,30 +31,33 @@ class RecaptchaView(private val context: Context, private val callback: Callback
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             addJavascriptInterface(this@RecaptchaView, "MixinContext")
-            webViewClient = object : WebViewClient() {
-                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                    super.onPageStarted(view, url, favicon)
-                    context.runOnUIThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
-                }
-
-                override fun onPageFinished(view: WebView?, url: String?) {
-                    super.onPageFinished(view, url)
-                    evaluateJavascript("javascript:gReCaptchaExecute()", null)
-                }
-            }
             visibility = GONE
         }
     }
 
+    private var hasPostToken = false
+
     private val stopWebViewRunnable = Runnable {
         webView.stopLoading()
         webView.visibility = GONE
+        webView.webViewClient = null
         context.toast(R.string.error_recaptcha_timeout)
-
-        webView.post { callback.onStop() }
+        callback.onStop()
     }
 
     fun loadRecaptcha() {
+        hasPostToken = false
+        webView.webViewClient = object : WebViewClient() {
+            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                super.onPageStarted(view, url, favicon)
+                context.runOnUIThread(stopWebViewRunnable, WEB_VIEW_TIME_OUT)
+            }
+
+            override fun onPageFinished(view: WebView?, url: String?) {
+                super.onPageFinished(view, url)
+                webView.evaluateJavascript("javascript:gReCaptchaExecute()", null)
+            }
+        }
         val input = context.assets.open("recaptcha.html")
         var html = Okio.buffer(Okio.source(input)).readByteString().string(Charset.forName("utf-8"))
         html = html.replace("#apiKey", BuildConfig.RECAPTCHA_KEY)
@@ -65,7 +68,7 @@ class RecaptchaView(private val context: Context, private val callback: Callback
 
     @JavascriptInterface
     fun postMessage(value: String) {
-        if (value == "challenge_change") {
+        if (!hasPostToken && value == "challenge_change") {
             context.cancelRunOnUIThread(stopWebViewRunnable)
             webView.post { webView.visibility = VISIBLE }
         }
@@ -73,6 +76,7 @@ class RecaptchaView(private val context: Context, private val callback: Callback
 
     @JavascriptInterface
     fun postToken(value: String) {
+        hasPostToken = true
         context.cancelRunOnUIThread(stopWebViewRunnable)
         webView.post {
             webView.visibility = GONE
