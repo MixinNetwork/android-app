@@ -164,8 +164,8 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_DATA.name ||
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name) {
-            data.representativeId?.let {
-                data.userId = it
+            if (!data.representativeId.isNullOrBlank()){
+                data.userId = data.representativeId!!
             }
             processDecryptSuccess(data, data.data)
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
