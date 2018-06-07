@@ -72,6 +72,11 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         this.onItemListener = onItemListener
+        if (messageItem.isBot()) {
+            itemView.chat_tv.supportAccount(true)
+        } else {
+            itemView.chat_tv.supportAccount(false)
+        }
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
         } else {
