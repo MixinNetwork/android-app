@@ -114,11 +114,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
-        if (Build.VERSION.SDK_INT >= 26) {
-            window.navigationBarColor = ContextCompat.getColor(this, R.color.black)
-            window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-        }
-
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_drag_media)
         colorDrawable = ColorDrawable(Color.BLACK)
