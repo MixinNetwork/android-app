@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
@@ -17,12 +18,14 @@ import android.widget.Toast
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.synthetic.main.fragment_web.view.*
+import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.R
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -82,13 +85,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         (miniHeight + maxHeight) / 2
     }
 
-    private var checkEnable = true
-    private var keyBoardAssist: KeyBoardAssist? = null
-
     @SuppressLint("SetJavaScriptEnabled")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        keyBoardAssist = KeyBoardAssist.assistContent(contentView as ViewGroup)
+        KeyBoardAssist.assistContent(contentView as ViewGroup)
         contentView.close_iv.setOnClickListener {
             dialog.dismiss()
         }
@@ -122,13 +122,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }
                         height < middleHeight -> {
                             (dialog as BottomSheet).setCustomViewHeight(miniHeight)
-                            changeCheck(false)
                         }
                         else -> {
                             (dialog as BottomSheet).setCustomViewHeight(maxHeight)
-                            checkEnable = false
-                            changeCheck(true)
-                            checkEnable = true
                         }
                     }
                 }
@@ -147,20 +143,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         })
 
-        contentView.zoom_out.setOnCheckedChangeListener { _, isChecked ->
-            if (checkEnable) {
-                if (!isChecked) {
-                    contentView.hideKeyboard()
-                    (dialog as BottomSheet).setCustomViewHeight(miniHeight)
-                } else {
-                    if (keyBoardAssist?.keyBoardShow == true) {
-                        (dialog as BottomSheet).setCustomViewHeightSync(maxHeight)
-                        contentView.hideKeyboard()
-                    } else {
-                        (dialog as BottomSheet).setCustomViewHeight(maxHeight)
-                    }
-                }
-            }
+        contentView.more_iv.setOnClickListener {
+            showBottomSheet()
         }
 
         contentView.title_view.text = name
@@ -179,6 +163,23 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dismiss()
         }
         (dialog as BottomSheet).setCustomViewHeight(miniHeight)
+    }
+
+    private fun showBottomSheet() {
+        val builder = BottomSheet.Builder(context!!)
+        val view = LayoutInflater.from(context).inflate(R.layout.view_web_bottom, null, false)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.refresh.setOnClickListener {
+            contentView.chat_web_view.loadUrl(contentView.chat_web_view.url)
+            bottomSheet.dismiss()
+        }
+        view.open.setOnClickListener {
+            context?.openUrl(contentView.chat_web_view.url)
+            bottomSheet.dismiss()
+        }
+        view.cancel_tv.setOnClickListener { bottomSheet.dismiss() }
+        bottomSheet.show()
     }
 
     class WebViewClientImpl(
@@ -237,12 +238,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         interface OnPageFinishedListener {
             fun onPageFinished()
         }
-    }
-
-    fun changeCheck(checked: Boolean) {
-        checkEnable = false
-        contentView.zoom_out.isChecked = checked
-        checkEnable = true
     }
 
     class WebAppInterface(val context: Context, val conversationId: String?) {
