@@ -61,6 +61,7 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversation(conversationId: String): Conversation?
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, " +
         "c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId, " +
         "c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil, " +

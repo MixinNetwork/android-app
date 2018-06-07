@@ -104,7 +104,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 else -> ""
                             }
                             val b = code.generateQRCode(contentView.qr.width,
-                                if (type == TYPE_MY_QR) context?.getColor(R.color.colorBlueDark) else null)
+                                if (type == TYPE_MY_QR) context?.getColor(R.color.colorDarkBlue) else null)
                             if (b != null) {
                                 b.saveQRCode(context!!, name)
                                 e.onNext(b)
