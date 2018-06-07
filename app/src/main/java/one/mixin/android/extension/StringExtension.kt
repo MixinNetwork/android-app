@@ -48,9 +48,9 @@ fun String.generateQRCode(size: Int, color: Int? = null): Bitmap? {
         val offset = y * width
         for (x in 0 until width) {
             pixels[offset + x] = if (result.get(x, y)) {
-                color ?: -0x1000000  //black
+                color ?: -0x1000000 // black
             } else {
-                -0x1  //white
+                -0x1 // white
             }
         }
     }

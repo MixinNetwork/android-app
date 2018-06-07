@@ -19,8 +19,10 @@ import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
+import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -85,9 +87,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (u == null) return@Observer
             // prevent add self
             if (u.userId == Session.getAccountId()) {
-                contentView.send_fl.visibility = GONE
-                contentView.add_fl.visibility = GONE
-                contentView.right_iv.visibility = GONE
+                activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                dialog?.dismiss()
                 return@Observer
             }
             user = u
@@ -198,8 +199,12 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     contentView.creator_tv.visibility = VISIBLE
                                     contentView.creator_tv.text = u.fullName
                                     contentView.creator_tv.setOnClickListener {
+                                        if (app.creatorId == Session.getAccountId()) {
+                                            activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                                        } else {
+                                            UserBottomSheetDialogFragment.newInstance(u).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                                        }
                                         dialog?.dismiss()
-                                        UserBottomSheetDialogFragment.newInstance(u).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
                                     }
                                 } else {
                                     contentView.creator_tv.visibility = GONE
