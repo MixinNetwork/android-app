@@ -133,6 +133,10 @@ fun Message.isPlain(): Boolean {
     return category.startsWith("PLAIN_")
 }
 
+fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
+    return conversation.category == ConversationCategory.CONTACT.name && conversation.ownerId != userId
+}
+
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,
@@ -159,19 +163,6 @@ enum class MessageCategory {
 enum class MessageStatus { SENDING, SENT, DELIVERED, READ, FAILED }
 
 enum class MediaStatus { PENDING, DONE, CANCELED, EXPIRED }
-
-fun MessageItem.isMedia(): Boolean = this.type == MessageCategory.SIGNAL_IMAGE.name ||
-    this.type == MessageCategory.PLAIN_IMAGE.name ||
-    this.type == MessageCategory.SIGNAL_DATA.name ||
-    this.type == MessageCategory.PLAIN_DATA.name ||
-    this.type == MessageCategory.SIGNAL_VIDEO.name ||
-    this.type == MessageCategory.PLAIN_VIDEO.name
-
-fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name ||
-    this.type == MessageCategory.APP_BUTTON_GROUP.name ||
-    this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
-    this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-    (this.mediaStatus != MediaStatus.DONE.name && this.isMedia())
 
 fun createMessage(
     messageId: String,
