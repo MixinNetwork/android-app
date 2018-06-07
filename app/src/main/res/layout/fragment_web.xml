@@ -17,6 +17,7 @@
 
             <ImageView
                 android:id="@+id/close_iv"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
@@ -26,16 +27,18 @@
                 android:src="@drawable/ic_close_black_24dp"
                 tools:ignore="ContentDescription" />
 
-            <CheckBox
-                android:id="@+id/zoom_out"
+            <ImageView
+                android:id="@+id/more_iv"
+                android:background="?android:attr/selectableItemBackground"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="8dp"
-                android:button="@drawable/selector_zoom"
+                android:src="@drawable/ic_more"
                 android:checked="false"
-                android:padding="8dp" />
+                android:padding="8dp"
+                tools:ignore="ContentDescription" />
 
             <TextView
                 android:id="@+id/title_view"
@@ -45,7 +48,7 @@
                 android:layout_marginEnd="8dp"
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@+id/close_iv"
-                android:layout_toStartOf="@id/zoom_out"
+                android:layout_toStartOf="@id/more_iv"
                 android:background="@color/white"
                 android:ellipsize="end"
                 android:gravity="center"
