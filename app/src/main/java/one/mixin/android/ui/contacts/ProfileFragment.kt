@@ -174,7 +174,6 @@ class ProfileFragment : BaseFragment() {
             return
         }
         val editText = EditText(context!!)
-        editText.id = R.id.profile_edit_name_et
         editText.singleLine = true
         if (!isRedeem) {
             editText.hint = getString(R.string.profile_modify_name_hint)

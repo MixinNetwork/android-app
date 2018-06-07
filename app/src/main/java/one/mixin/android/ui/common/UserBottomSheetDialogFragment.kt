@@ -257,7 +257,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             return
         }
         val editText = EditText(context!!)
-        editText.id = R.id.profile_edit_name_et
         editText.hint = getString(R.string.profile_modify_name_hint)
         editText.setText(name)
         if (name != null) {

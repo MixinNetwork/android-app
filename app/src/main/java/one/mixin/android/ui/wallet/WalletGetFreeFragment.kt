@@ -61,7 +61,6 @@ class WalletGetFreeFragment : BaseFragment() {
             return
         }
         val editText = EditText(context!!)
-        editText.id = R.id.profile_edit_name_et
         editText.hint = getString(R.string.wallet_redeem)
         editText.inputType = InputType.TYPE_CLASS_NUMBER
         val frameLayout = FrameLayout(context)
