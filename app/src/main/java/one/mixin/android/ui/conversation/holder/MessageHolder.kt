@@ -22,10 +22,7 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
 
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
-        itemView.chat_tv.supportAccount(true)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-        itemView.chat_tv.setAccountModeColor(LINK_COLOR)
-
         (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).also {
             it.matchConstraintMaxWidth = itemView.context.maxItemWidth()
         }
@@ -37,9 +34,6 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
                 }
                 AutoLinkMode.MODE_MENTION -> {
                     onItemListener?.onMentionClick(matchedText)
-                }
-                AutoLinkMode.MODE_ACCOUNT -> {
-                    onItemListener?.onUrlClick(matchedText)
                 }
                 else -> {
                 }

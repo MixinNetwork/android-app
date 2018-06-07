@@ -695,6 +695,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.findUserById(it.userId).observe(this, Observer {
                     it?.let {
                         recipient = it
+                        chatAdapter.recipient = it
                         renderUser(it)
                     }
                 })
@@ -702,6 +703,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.findUserByConversationId(conversationId).observe(this, Observer {
                     it?.let {
                         recipient = it
+                        chatAdapter.recipient = it
                         renderUser(it)
                     }
                 })

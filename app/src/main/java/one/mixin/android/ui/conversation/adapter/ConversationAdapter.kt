@@ -34,6 +34,7 @@ import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 
@@ -46,6 +47,8 @@ class ConversationAdapter(
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
     var unreadIndex: Int? = null
+    var recipient: User? = null
+
     var groupName: String? = null
         set(value) {
             field = value
@@ -189,8 +192,11 @@ class ConversationAdapter(
     }
 
     private fun isFirst(position: Int): Boolean {
-        return if (isGroup) {
+        return if (isGroup || recipient != null) {
             val currentItem = getItem(position)
+            if (!isGroup && (recipient?.isBot() == false || recipient?.userId == currentItem?.userId)) {
+                return false
+            }
             val nextItem = next(position)
             when {
                 currentItem == null ->

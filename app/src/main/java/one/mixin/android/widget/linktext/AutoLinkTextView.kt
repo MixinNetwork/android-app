@@ -18,7 +18,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
     private var autoLinkOnClickListener: ((AutoLinkMode, String) -> Unit)? = null
 
     private var autoLinkModes: Array<out AutoLinkMode>? = null
-    private var supportAccount: Boolean = false
 
     private var customRegex: String? = null
 
@@ -29,7 +28,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
     private var urlModeColor = DEFAULT_COLOR
     private var phoneModeColor = DEFAULT_COLOR
     private var emailModeColor = DEFAULT_COLOR
-    private var accountModeColor = DEFAULT_COLOR
     private var customModeColor = DEFAULT_COLOR
     private var defaultSelectedColor = Color.LTGRAY
     private val linkTouchMovementMethod = LinkTouchMovementMethod()
@@ -41,52 +39,9 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
             return
         }
 
-        if (supportAccount && text.startsWith("<a href=\"mixin://")) {
-            val regex = Utils.getRegexByAutoLinkMode(AutoLinkMode.MODE_ACCOUNT, customRegex)
-            val pattern = Pattern.compile(regex)
-            val matcher = pattern.matcher(text)
-            var autoLinkMode: AutoLinkItem? = null
-            var link: String? = null
-            var color: Int = getColorByMode(AutoLinkMode.MODE_ACCOUNT)
-            var name: String? = null
-            while (matcher.find()) {
-                link = matcher.group(1)
-                name = matcher.group(4)
-                try {
-                    color = Color.parseColor(matcher.group(3))
-                } catch (e: Exception) {
-                }
-                autoLinkMode = AutoLinkItem(matcher.start(), matcher.end(), matcher.group(), AutoLinkMode.MODE_ACCOUNT)
-            }
-
-            if (autoLinkMode != null) {
-                val replaceText = text.replaceRange(autoLinkMode.startPoint, autoLinkMode.endPoint, name!!)
-                val spannableString = SpannableString(replaceText)
-                val clickableSpan = object : TouchableSpan(color, defaultSelectedColor, isUnderLineEnabled) {
-                    override fun onClick(widget: View) {
-                        autoLinkOnClickListener?.let {
-                            it(AutoLinkMode.MODE_ACCOUNT, link!!)
-                        }
-                    }
-                }
-                spannableString.setSpan(
-                    clickableSpan,
-                    autoLinkMode.startPoint,
-                    autoLinkMode.startPoint + name.length,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-                makeSpannableString(spannableString)
-                movementMethod = linkTouchMovementMethod
-                super.setText(spannableString as CharSequence, type)
-            } else {
-                val spannableString = makeSpannableString(text)
-                movementMethod = linkTouchMovementMethod
-                super.setText(spannableString as CharSequence, type)
-            }
-        } else {
-            val spannableString = makeSpannableString(text)
-            movementMethod = linkTouchMovementMethod
-            super.setText(spannableString as CharSequence, type)
-        }
+        val spannableString = makeSpannableString(text)
+        movementMethod = linkTouchMovementMethod
+        super.setText(spannableString as CharSequence, type)
     }
 
     private fun makeSpannableString(text: CharSequence, spannable: SpannableString? = null): SpannableString {
@@ -162,7 +117,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
             AutoLinkMode.MODE_URL -> urlModeColor
             AutoLinkMode.MODE_PHONE -> phoneModeColor
             AutoLinkMode.MODE_EMAIL -> emailModeColor
-            AutoLinkMode.MODE_ACCOUNT -> accountModeColor
             AutoLinkMode.MODE_CUSTOM -> customModeColor
         }
     }
@@ -187,10 +141,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
         this.emailModeColor = emailModeColor
     }
 
-    fun setAccountModeColor(@ColorInt accountModeColor: Int) {
-        this.accountModeColor = accountModeColor
-    }
-
     fun setCustomModeColor(@ColorInt customModeColor: Int) {
         this.customModeColor = customModeColor
     }
@@ -201,10 +151,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
 
     fun addAutoLinkMode(vararg autoLinkModes: AutoLinkMode) {
         this.autoLinkModes = autoLinkModes
-    }
-
-    fun supportAccount(support: Boolean) {
-        this.supportAccount = support
     }
 
     fun setCustomRegex(regex: String) {
