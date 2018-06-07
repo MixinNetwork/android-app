@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.fragment_qr_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_avatar.view.*
 import kotlinx.android.synthetic.main.view_qr_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.MIXIN_TRANSFER_PREFIX
 import one.mixin.android.Constants.MY_QR
@@ -103,8 +104,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 TYPE_RECEIVE_QR -> "$MIXIN_TRANSFER_PREFIX${user.userId}"
                                 else -> ""
                             }
-                            val b = code.generateQRCode(contentView.qr.width,
-                                if (type == TYPE_MY_QR) context?.getColor(R.color.colorDarkBlue) else null)
+                            val b = code.generateQRCode(contentView.qr.width)
                             if (b != null) {
                                 b.saveQRCode(context!!, name)
                                 e.onNext(b)
@@ -124,7 +124,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun getName(user: User): String {
         return when (type) {
-            TYPE_MY_QR -> MY_QR
+            TYPE_MY_QR -> "${BuildConfig.VERSION_CODE}-$MY_QR"
             TYPE_RECEIVE_QR -> "$TYPE_RECEIVE_QR-${user.userId}"
             else -> ""
         }

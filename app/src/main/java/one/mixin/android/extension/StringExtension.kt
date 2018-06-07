@@ -29,7 +29,7 @@ import java.util.Formatter
 import java.util.Locale
 import kotlin.collections.set
 
-fun String.generateQRCode(size: Int, color: Int? = null): Bitmap? {
+fun String.generateQRCode(size: Int): Bitmap? {
     val result: BitMatrix
     try {
         val hints = HashMap<EncodeHintType, Any>()
@@ -48,7 +48,7 @@ fun String.generateQRCode(size: Int, color: Int? = null): Bitmap? {
         val offset = y * width
         for (x in 0 until width) {
             pixels[offset + x] = if (result.get(x, y)) {
-                color ?: -0x1000000 // black
+                -0x1000000 // black
             } else {
                 -0x1 // white
             }
