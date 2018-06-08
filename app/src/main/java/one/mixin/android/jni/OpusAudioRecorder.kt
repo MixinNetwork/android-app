@@ -74,19 +74,9 @@ class OpusAudioRecorder(ctx: Context) {
     private val recordRunnable: Runnable by lazy {
         Runnable {
             audioRecord?.let { audioRecord ->
-                val buffer = if (recordBuffers.isNotEmpty()) {
-                    val b = recordBuffers[0]
-                    recordBuffers.removeAt(0)
-                    b
-                } else {
-                    val b = ByteBuffer.allocateDirect(recordBufferSize)
-                    b.order(ByteOrder.nativeOrder())
-                }
-                buffer.rewind()
-
-                val len = audioRecord.read(buffer, buffer.capacity())
+                val shortArray = ShortArray(recordBufferSize)
+                val len = audioRecord.read(shortArray, 0, recordBufferSize)
                 if (len > 0) {
-                    buffer.limit(len)
                     var sum = 0
                     try {
                         val newSamplesCount = samplesCount + len / 2
@@ -104,8 +94,8 @@ class OpusAudioRecorder(ctx: Context) {
                         var currNum = currPart
                         var nextNum = 0f
                         sampleStep = len / 2f / newPart
-                        for (i in 0 until len / 2) {
-                            val peak = buffer.short
+                        for (i in 0 until len) {
+                            val peak = shortArray[i]
                             if (peak > 2500) {
                                 sum += peak * peak
                             }
@@ -119,35 +109,12 @@ class OpusAudioRecorder(ctx: Context) {
                     } catch (e: Exception) {
                     }
 
-                    buffer.position(0)
-                    val flush = len != buffer.capacity()
-                    if (len != 0) {
-                        fileEncodingQueue.postRunnable(Runnable {
-                            while (buffer.hasRemaining()) {
-                                var oldLimit = -1
-                                if (buffer.remaining() > fileBuffer.remaining()) {
-                                    oldLimit = buffer.limit()
-                                    buffer.limit(fileBuffer.remaining() + buffer.position())
-                                }
-                                fileBuffer.put(buffer)
-                                if (fileBuffer.position() == fileBuffer.limit() || flush) {
-                                    if (writeFrame(fileBuffer, if (!flush) fileBuffer.limit() else buffer.position()) != 0) {
-                                        fileBuffer.rewind()
-                                        recordTimeCount += fileBuffer.limit() / 2 / 16
-                                    }
-                                }
-                                if (oldLimit != -1) {
-                                    buffer.limit(oldLimit)
-                                }
-                            }
-                            recordQueue.postRunnable(Runnable {
-                                recordBuffers.add(buffer)
-                            })
-                        })
-                    }
+                    fileEncodingQueue.postRunnable(Runnable {
+                        writeFrame(shortArray, len)
+                        recordTimeCount += len / 16
+                    })
                     recordQueue.postRunnable(recordRunnable)
                 } else {
-                    recordBuffers.add(buffer)
                     stopRecordingInternal(sendAfterDone)
                 }
             }
@@ -230,7 +197,7 @@ class OpusAudioRecorder(ctx: Context) {
     }
 
     private external fun startRecord(path: String): Int
-    private external fun writeFrame(frame: ByteBuffer, len: Int): Int
+    private external fun writeFrame(frame: ShortArray, len: Int): Int
     private external fun stopRecord()
     private external fun getWaveform2(arr: ShortArray, len: Int): ByteArray
 
