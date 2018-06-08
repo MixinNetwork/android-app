@@ -6,6 +6,10 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import one.mixin.android.RxBus
+import one.mixin.android.event.ProgressEvent
 import org.jetbrains.anko.dip
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -24,10 +28,58 @@ class WaveformView : View {
     private var waveformBytes: ByteArray? = null
 
     private var innerColor = Color.parseColor("#C4C4C4")
-    private var outerColor = Color.parseColor("#C4C4C4")
+    private var outerColor = Color.parseColor("#9B9B9B")
     private var paintInner: Paint = Paint()
     private var paintOuter: Paint = Paint()
     private var thumbX = 0
+
+    private fun setProgress(progress: Float) {
+        if (progress < 0) {
+            return
+        }
+        thumbX = Math.ceil((width * progress).toDouble()).toInt()
+        if (thumbX < 0) {
+            thumbX = 0
+        } else if (thumbX > width) {
+            thumbX = width
+        }
+        invalidate()
+    }
+
+    private var disposable: Disposable? = null
+    private var mBindId: String? = null
+
+    fun setBind(id: String?) {
+        if (id != mBindId) {
+            mBindId = id
+        }
+    }
+
+    override fun onAttachedToWindow() {
+        if (disposable == null) {
+            disposable = RxBus.listen(ProgressEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (it.id == mBindId) {
+                        setProgress(it.progress)
+                    } else if (it.status == CircleProgress.STATUS_PLAY) {
+                        setProgress(0f)
+                    }
+                }
+        }
+        super.onAttachedToWindow()
+    }
+
+    override fun onDetachedFromWindow() {
+        disposable?.let {
+            if (!it.isDisposed) {
+                it.dispose()
+                disposable = null
+            }
+        }
+        disposable = null
+        super.onDetachedFromWindow()
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)

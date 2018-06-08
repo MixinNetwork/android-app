@@ -112,6 +112,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_expired.visibility = View.GONE
                     itemView.audio_progress.visibility = View.VISIBLE
                     itemView.audio_progress.setBindOnly(messageItem.messageId)
+                    itemView.audio_waveform.setBind(messageItem.messageId)
                     if (AudioPlayer.get().isPlay(messageItem.messageId)) {
                         itemView.audio_progress.setPause()
                     } else {
