@@ -244,7 +244,7 @@ class ChatControlView : FrameLayout {
 
                 originX = event.rawX
                 startX = event.rawX
-                val w = chat_slide.slideWidth()
+                val w = chat_slide.slideWidth
                 if (w > 0) {
                     maxScrollX = w
                 }

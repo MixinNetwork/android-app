@@ -17,6 +17,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.vibrate
 import one.mixin.android.widget.AndroidUtilities
 import org.jetbrains.anko.backgroundColor
+import org.jetbrains.anko.dip
 import kotlin.math.abs
 
 class SlidePanelView : RelativeLayout {
@@ -62,7 +63,11 @@ class SlidePanelView : RelativeLayout {
         }.start()
     }
 
-    fun slideWidth() = slide_ll.width
+    val slideWidth by lazy {
+        val location = IntArray(2)
+        slide_ll.getLocationOnScreen(location)
+        location[0] - context.dip(64)
+    }
 
     fun slideText(x: Float) {
         val preX = slide_ll.translationX

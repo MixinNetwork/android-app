@@ -1278,7 +1278,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun showMediaLayout() {
         if (!mediaVisibility) {
             shadow.fadeIn()
-            media_layout.translationY(dip(32).toFloat())
+            media_layout.translationY(dip(8).toFloat())
             chat_control.chat_et.hideKeyboard()
             hideStickerContainer()
             mediaVisibility = true
@@ -1296,7 +1296,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun scrollTo(position: Int, offset: Int = -1, type: Float? = null) {
         context?.mainThreadDelayed({
             chat_rv?.let {
-                chat_rv.post({
+                chat_rv.post {
                     chat_rv?.let {
                         if (position == 0 && offset == 0) {
                             chat_rv.run {
@@ -1309,7 +1309,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
                         }
                     }
-                })
+                }
             }
         }, 30)
     }
@@ -1317,11 +1317,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun scrollY(offset: Int) {
         context?.mainThreadDelayed({
             chat_rv?.let {
-                chat_rv.post({
+                chat_rv.post {
                     chat_rv?.let {
                         chat_rv.smoothScrollBy(0, offset)
                     }
-                })
+                }
             }
         }, 30)
     }

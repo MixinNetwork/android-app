@@ -27,7 +27,7 @@ class WaveformView : View {
 
     private var waveformBytes: ByteArray? = null
 
-    private var innerColor = Color.parseColor("#C4C4C4")
+    private var innerColor = Color.parseColor("#DDDDDD")
     private var outerColor = Color.parseColor("#9B9B9B")
     private var paintInner: Paint = Paint()
     private var paintOuter: Paint = Paint()
