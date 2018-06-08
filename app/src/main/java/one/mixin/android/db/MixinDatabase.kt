@@ -136,6 +136,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
                 database.execSQL("UPDATE messages SET media_mime_type = media_mine_type WHERE media_mine_type IS NOT NULL")
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
+                database.execSQL("CREATE  INDEX index_messages_user_id ON messages(user_id)")
             }
         }
 
@@ -149,6 +150,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
                 database.execSQL("UPDATE messages SET media_mime_type = media_mine_type WHERE media_mine_type IS NOT NULL")
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
+                database.execSQL("CREATE  INDEX index_messages_user_id ON messages(user_id)")
             }
         }
 
@@ -158,12 +160,14 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
                 database.execSQL("UPDATE messages SET media_mime_type = media_mine_type WHERE media_mine_type IS NOT NULL")
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
+                database.execSQL("CREATE  INDEX index_messages_user_id ON messages(user_id)")
             }
         }
 
         private val MIGRATION_13_14: Migration = object : Migration(13, 14) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
+                database.execSQL("CREATE  INDEX index_messages_user_id ON messages(user_id)")
             }
         }
 

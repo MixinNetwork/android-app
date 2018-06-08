@@ -69,7 +69,7 @@
             app:layout_constraintEnd_toEndOf="@id/chat_image_layout"
             app:layout_constraintStart_toStartOf="@id/chat_image_layout"
             app:layout_constraintTop_toTopOf="@id/chat_image_layout"
-            app:progressColor="@color/colorBlue"
+            app:progressColor="@color/colorDarkBlue"
             app:progressWidth="1.5dp"
             app:shadowColor="@color/progress_gary"
             app:size="40dp" />

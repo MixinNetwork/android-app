@@ -10,12 +10,11 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 @Entity(tableName = "messages",
-    indices = [Index(value = arrayOf("conversation_id")), Index(value = arrayOf("created_at"))],
+    indices = [Index(value = arrayOf("conversation_id")), Index(value = arrayOf("created_at")), Index(value = arrayOf("user_id"))],
     foreignKeys = [(ForeignKey(entity = Conversation::class,
         onDelete = CASCADE,
         parentColumns = arrayOf("conversation_id"),
         childColumns = arrayOf("conversation_id")))])
-
 class Message(
     @PrimaryKey
     @SerializedName("id")
@@ -313,7 +312,7 @@ fun createAudioMessage(
     userId: String,
     content: String?,
     category: String,
-    mediaSize:Long,
+    mediaSize: Long,
     mediaUrl: String?,
     mediaDuration: String,
     createdAt: String,
