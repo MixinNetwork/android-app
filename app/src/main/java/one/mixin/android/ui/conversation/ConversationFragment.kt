@@ -638,6 +638,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT
         }
+        chat_control.setCircle(record_circle)
         chat_control.chat_et.setCommitContentListener(object : ContentEditText.OnCommitContentListener {
             override fun onCommitContent(inputContentInfo: InputContentInfoCompat?, flags: Int, opts: Bundle?): Boolean {
                 if (inputContentInfo != null) {
@@ -648,7 +649,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 return true
             }
         })
-        chat_control.chat_more_ib.setOnClickListener { showMediaLayout() }
+        chat_control.chat_more_ib.setOnClickListener { toggleMediaLayout() }
         chat_rv.layoutManager = SmoothScrollLinearLayoutManager(context!!, LinearLayoutManager.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
 

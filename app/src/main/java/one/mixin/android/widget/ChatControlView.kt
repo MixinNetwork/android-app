@@ -94,6 +94,12 @@ class ChatControlView : FrameLayout {
         chat_et.addTextChangedListener(editTextWatcher)
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
         chat_slide.callback = chatSlideCallback
+    }
+
+    lateinit var record_circle: RecordCircleView
+
+    fun setCircle(record_circle: RecordCircleView) {
+        this.record_circle = record_circle
         record_circle.callback = recordCircleCallback
     }
 
@@ -189,7 +195,7 @@ class ChatControlView : FrameLayout {
         if (event.action == MotionEvent.ACTION_UP) {
             v as TextView
             val endCompound = v.compoundDrawables[2] ?: return@OnTouchListener false
-            if (event.rawX >= v.right - endCompound.bounds.width()) {
+            if (event.rawX >= v.right - endCompound.bounds.width() - context.dip(10)) {
                 stickerStatus = if (inputLayout.currentInput == stickerContainer) {
                     inputLayout.showSoftKey(chat_et)
                     STICKER

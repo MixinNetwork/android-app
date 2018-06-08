@@ -75,12 +75,5 @@
             android:layout_gravity="bottom|end"
             android:src="@drawable/ic_record_mic_black"
             tools:ignore="ContentDescription"/>
-    
-    <one.mixin.android.widget.RecordCircleView
-            android:id="@+id/record_circle"
-            android:layout_width="124dp"
-            android:layout_height="194dp"
-            android:layout_marginEnd="-36dp"
-            android:visibility="gone"
-            android:layout_gravity="end|bottom"/>
+
 </merge>
