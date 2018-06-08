@@ -112,17 +112,17 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_expired.visibility = View.GONE
                     itemView.audio_progress.visibility = View.VISIBLE
                     itemView.audio_progress.setBindOnly(messageItem.messageId)
-                    if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
+                    if (AudioPlayer.get().isPlay(messageItem.messageId)) {
                         itemView.audio_progress.setPause()
                     } else {
                         itemView.audio_progress.setPlay()
                     }
                     itemView.audio_progress.setOnClickListener {
                         if (!hasSelect) {
-                            if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
-                                AudioPlayer.instance.pause()
+                            if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                                AudioPlayer.get().pause()
                             } else {
-                                AudioPlayer.instance.play(messageItem)
+                                AudioPlayer.get().play(messageItem)
                             }
                         }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
@@ -130,10 +130,10 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
 
                     itemView.setOnClickListener {
                         if (!hasSelect) {
-                            if (AudioPlayer.instance.isPlay(messageItem.messageId)) {
-                                AudioPlayer.instance.pause()
+                            if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                                AudioPlayer.get().pause()
                             } else {
-                                AudioPlayer.instance.play(messageItem)
+                                AudioPlayer.get().play(messageItem)
                             }
                         }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)

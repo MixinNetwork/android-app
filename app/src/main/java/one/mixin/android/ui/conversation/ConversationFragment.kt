@@ -573,9 +573,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (disposable?.isDisposed == false) {
             disposable?.dispose()
         }
-        if (AudioPlayer.isInit) {
-            AudioPlayer.instance.pause()
-        }
+        AudioPlayer.pause()
     }
 
     override fun onBackPressed(): Boolean {
@@ -713,8 +711,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         tool_view.close_iv.setOnClickListener { activity?.onBackPressed() }
         tool_view.delete_iv.setOnClickListener {
             chatAdapter.selectSet.filter { it.type.endsWith("_AUDIO") }.forEach {
-                if (AudioPlayer.instance.isPlay(it.messageId)) {
-                    AudioPlayer.instance.pause()
+                if (AudioPlayer.get().isPlay(it.messageId)) {
+                    AudioPlayer.get().pause()
                 }
             }
             chatViewModel.deleteMessages(chatAdapter.selectSet)
@@ -1477,7 +1475,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun onRecordStart(audio: Boolean) {
-            AudioPlayer.instance.pause()
+            AudioPlayer.get().pause()
             audioRecorder.startRecording()
         }
 

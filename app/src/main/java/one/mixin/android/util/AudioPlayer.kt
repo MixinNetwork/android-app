@@ -11,17 +11,24 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 
 class AudioPlayer private constructor() {
     companion object {
-        var isInit = false
-        val instance: AudioPlayer by lazy {
-            isInit = true
-            AudioPlayer()
+        fun get(): AudioPlayer {
+            if (instance == null) {
+                instance = AudioPlayer()
+            }
+            return instance!!
         }
 
+        private var instance: AudioPlayer? = null
+
         fun release() {
-            if (isInit) {
-                instance.player.release()
-                isInit = false
+            instance?.let {
+                it.player.release()
             }
+            instance = null
+        }
+
+        fun pause() {
+            instance?.pause()
         }
     }
 

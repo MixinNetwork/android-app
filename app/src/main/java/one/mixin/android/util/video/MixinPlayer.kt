@@ -11,7 +11,6 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory
-import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
@@ -116,8 +115,8 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     fun loadAudio(url: String) {
-        val mediaSource = ExtractorMediaSource(Uri.parse(url), DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID),
-            DefaultExtractorsFactory(), null, null)
+        val mediaSource = ExtractorMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
+            .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
 
@@ -133,7 +132,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
             .readTimeout(30, TimeUnit.SECONDS)
             .addNetworkInterceptor(logging)
             .build()
-        return OkHttpDataSourceFactory(okHttpClient, Util.getUserAgent(MixinApplication.appContext, "Shou"), null)
+        return OkHttpDataSourceFactory(okHttpClient, Util.getUserAgent(MixinApplication.appContext, BuildConfig.APPLICATION_ID), null)
     }
 
     override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
