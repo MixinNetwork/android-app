@@ -7,6 +7,8 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Environment
@@ -344,6 +346,12 @@ fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String
     stream.closeSilently()
     return Base64.encodeToString(data, Base64.NO_WRAP)
 }
+
+fun ByteArray.encodeBitmap(): Bitmap = BitmapFactory.decodeByteArray(this, 0, this.size)
+
+fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
+
+fun String.toDrawable() = this.decodeBase64()?.encodeBitmap()?.toDrawable()
 
 fun String.getFileNameNoEx(): String {
     val dot = this.lastIndexOf('.')
