@@ -84,6 +84,12 @@ class RefreshConversationJob(val conversationId: String)
                         userIdList.add(p.userId)
                     }
                 }
+                val local = participantDao.getRealParticipants(data.conversationId)
+                val remoteIds = participants.map { it.userId }
+                val needRemove = local.filter { !remoteIds.contains(it.userId) }
+                if (needRemove.isNotEmpty()) {
+                    participantDao.deleteList(needRemove)
+                }
                 participantDao.insertList(participants)
                 if (userIdList.isNotEmpty()) {
                     jobManager.addJobInBackground(RefreshUserJob(userIdList, conversationId))
