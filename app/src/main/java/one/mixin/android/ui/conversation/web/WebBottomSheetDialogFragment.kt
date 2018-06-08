@@ -171,7 +171,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.refresh.setOnClickListener {
-            contentView.chat_web_view.loadUrl(contentView.chat_web_view.url)
+            contentView.chat_web_view.clearCache(true)
+            contentView.chat_web_view.reload()
             bottomSheet.dismiss()
         }
         view.open.setOnClickListener {

@@ -84,6 +84,7 @@ class DecryptMessage : Injector() {
             processAppCard(data)
         } catch (e: Exception) {
             Log.e(TAG, "Process error: ", e)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         }
     }
 
