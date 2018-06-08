@@ -9,12 +9,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.item_chat_image.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadBase64
-import one.mixin.android.extension.loadGif
+import one.mixin.android.extension.loadGifMark
 import one.mixin.android.extension.loadImageMark
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -110,20 +107,11 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         itemView.chat_image.setShape(mark)
-        notNullElse(messageItem.mediaUrl, {
-            if (isGif) {
-                itemView.chat_image.loadGif(it)
-            } else {
-                itemView.chat_image.loadImageMark(it, R.drawable.image_holder, mark)
-            }
-        }, {
-            if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (messageItem.thumbImage != null) {
-                    itemView.chat_image.loadBase64(messageItem.thumbImage.decodeBase64(),
-                        itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
-                }
-            }
-        })
+        if (isGif) {
+            itemView.chat_image.loadGifMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
+        } else {
+            itemView.chat_image.loadImageMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
+        }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         messageItem.mediaStatus?.let {

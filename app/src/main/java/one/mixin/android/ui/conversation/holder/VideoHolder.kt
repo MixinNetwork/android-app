@@ -115,16 +115,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         itemView.chat_image.setShape(mark)
-        notNullElse(messageItem.mediaUrl, {
-            itemView.chat_image.loadVideoMark(it, R.drawable.image_holder, mark)
-        }, {
-            if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (messageItem.thumbImage != null) {
-                    itemView.chat_image.loadBase64(messageItem.thumbImage.decodeBase64(),
-                        itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
-                }
-            }
-        })
+        itemView.chat_image.loadVideoMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
         if (messageItem.mediaStatus == MediaStatus.DONE.name) {
             notNullElse(messageItem.mediaDuration, {
                 itemView.duration_tv.visibility = VISIBLE
