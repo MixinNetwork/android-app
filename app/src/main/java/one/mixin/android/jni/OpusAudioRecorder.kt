@@ -12,20 +12,19 @@ import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.util.DispatchQueue
 import java.io.File
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
 
 class OpusAudioRecorder(ctx: Context) {
     companion object {
         init {
             System.loadLibrary("mixin")
         }
+        private const val SAMPLE_RATE = 16000
+        private const val BUFFER_SIZE_FACTOR = 2
     }
+
 
     private var audioRecord: AudioRecord? = null
     private var recordBufferSize: Int
-    private val recordBuffers = arrayListOf<ByteBuffer>()
-    private var fileBuffer: ByteBuffer
     private var recordingAudioFile: File? = null
     private val recordSamples = ShortArray(1024)
     private var samplesCount = 0L
@@ -46,16 +45,7 @@ class OpusAudioRecorder(ctx: Context) {
     var callback: Callback? = null
 
     init {
-        recordBufferSize = AudioRecord.getMinBufferSize(16000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
-        if (recordBufferSize <= 0) {
-            recordBufferSize = 1280
-        }
-        for (i in 0 until 5) {
-            val buffer = ByteBuffer.allocateDirect(4096)
-            buffer.order(ByteOrder.nativeOrder())
-            recordBuffers.add(buffer)
-        }
-        fileBuffer = ByteBuffer.allocateDirect(1920)
+        recordBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
 
         try {
             val phoneStateListener = object : PhoneStateListener() {
@@ -75,7 +65,7 @@ class OpusAudioRecorder(ctx: Context) {
         Runnable {
             audioRecord?.let { audioRecord ->
                 val shortArray = ShortArray(recordBufferSize)
-                val len = audioRecord.read(shortArray, 0, recordBufferSize)
+                val len = audioRecord.read(shortArray, 0, shortArray.size)
                 if (len > 0) {
                     var sum = 0
                     try {
@@ -129,16 +119,15 @@ class OpusAudioRecorder(ctx: Context) {
         recordingAudioFile = ctx.getAudioPath().createAudioTemp("ogg")
 
         try {
-            if (startRecord(recordingAudioFile!!.absolutePath) == 0) {
+            if (startRecord(recordingAudioFile!!.absolutePath) != 0) {
                 return@Runnable
             }
 
-            audioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, 16000, AudioFormat.CHANNEL_IN_MONO,
-                AudioFormat.ENCODING_PCM_16BIT, recordBufferSize * 10)
+            audioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, recordBufferSize * BUFFER_SIZE_FACTOR)
+
             samplesCount = 0
             recordTimeCount = 0
-            fileBuffer.rewind()
-
             audioRecord?.startRecording()
         } catch (e: Exception) {
             stopRecord()
@@ -177,7 +166,6 @@ class OpusAudioRecorder(ctx: Context) {
         if (send) {
             fileEncodingQueue.postRunnable(Runnable {
                 stopRecord()
-
                 AppExecutors().mainThread().execute {
                     val duration = recordTimeCount
                     val waveForm = getWaveform2(recordSamples, recordSamples.size)

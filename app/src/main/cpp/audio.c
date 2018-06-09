@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include "utils.h"
 
-FILE *fin;
 OggOpusEnc *enc;
 OggOpusComments *comments;
 int error;
@@ -16,47 +15,37 @@ static inline void set_bits(uint8_t *bytes, int32_t bitOffset, int32_t value) {
     *((int32_t *) bytes) |= (value << bitOffset);
 }
 
-JNIEXPORT int Java_one_mixin_android_jni_OpusAudioRecorder_startRecord(JNIEnv *env, jclass class, jstring path) {
+JNIEXPORT int Java_one_mixin_android_jni_OpusAudioRecorder_startRecord(JNIEnv *env, jclass clazz, jstring path) {
     const char *pathStr = (*env)->GetStringUTFChars(env, path, 0);
     if (!pathStr) {
         LOGE("Error path");
         return 0;
     }
-    fin = fopen(pathStr, "rb");
-    if (!fin) {
-        LOGE("Open file failed");
-        return 0;
-    }
     comments = ope_comments_create();
     enc = ope_encoder_create_file(pathStr, comments, 16000, 1, 0, &error);
-    if (!enc) {
+    if (error != OPE_OK) {
         LOGE("Create OggOpusEnc failed");
-        fclose(fin);
-        return 0;
+        return error;
     }
-    return 1;
+    return OPE_OK;
 }
 
 JNIEXPORT int
-Java_one_mixin_android_jni_OpusAudioRecorder_writeFrame(JNIEnv *env, jclass class, jobject frame, jint len) {
-    jshort *frameShort = (*env) -> GetShortArrayElements(env, frame, 0);
-    ope_encoder_write(enc, frameShort, len);
-    return 1;
+Java_one_mixin_android_jni_OpusAudioRecorder_writeFrame(JNIEnv *env, jclass clazz, jobject frame, jint len) {
+    jshort *sampleBuffer = (*env) -> GetShortArrayElements(env, frame, 0);
+    int result = ope_encoder_write(enc, sampleBuffer, len);
+    (*env)->ReleaseShortArrayElements(env, frame, sampleBuffer, 0);
+    return result;
 }
 
-JNIEXPORT void Java_one_mixin_android_jni_OpusAudioRecorder_stopRecord(JNIEnv *env, jclass class) {
+JNIEXPORT void Java_one_mixin_android_jni_OpusAudioRecorder_stopRecord(JNIEnv *env, jclass clazz) {
     ope_encoder_drain(enc);
-    LOGE("ope_encoder_drain");
     ope_encoder_destroy(enc);
-    LOGE("ope_encoder_destroy");
     ope_comments_destroy(comments);
-    LOGE("ope_comments_destroy");
-    fclose(fin);
-    LOGE("Close file");
+    LOGI("ope encoder destroy");
 }
 
-JNIEXPORT jbyteArray
-Java_one_mixin_android_jni_OpusAudioRecorder_getWaveform2(JNIEnv *env, jclass class, jshortArray array, jint length) {
+JNIEXPORT jbyteArray Java_one_mixin_android_jni_OpusAudioRecorder_getWaveform2(JNIEnv *env, jclass clazz, jshortArray array, jint length) {
     jshort *sampleBuffer = (*env)->GetShortArrayElements(env, array, 0);
 
     jbyteArray result = 0;
