@@ -44,7 +44,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val URL = "url"
         private const val CONVERSATION_ID = "conversation_id"
         private const val NAME = "name"
-        fun newInstance(url: String, conversationId: String?, name: String = "Mixin") =
+        fun newInstance(url: String, conversationId: String?, name: String? = null) =
             WebBottomSheetDialogFragment().withArgs {
                 putString(URL, url)
                 putString(CONVERSATION_ID, conversationId)
@@ -58,7 +58,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val conversationId: String? by lazy {
         arguments!!.getString(CONVERSATION_ID)
     }
-    private val name: String by lazy {
+    private val name: String? by lazy {
         arguments!!.getString(NAME)
     }
 
@@ -98,6 +98,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
             override fun onPageFinished() {
+                contentView.progress.visibility = View.GONE
+                contentView.title_view.visibility = View.VISIBLE
             }
         }, conversationId, this.requireFragmentManager())
 
@@ -147,7 +149,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             showBottomSheet()
         }
 
-        contentView.title_view.text = name
+        name?.let {
+            contentView.title_view.text = it
+            contentView.progress.visibility = View.GONE
+            contentView.title_view.visibility = View.VISIBLE
+        }
+
         dialog.setOnShowListener {
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {

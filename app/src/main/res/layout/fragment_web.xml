@@ -40,6 +40,13 @@
                 android:padding="8dp"
                 tools:ignore="ContentDescription" />
 
+            <ProgressBar
+                    android:id="@+id/progress"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    style="?android:attr/progressBarStyleSmall"/>
             <TextView
                 android:id="@+id/title_view"
                 android:layout_width="match_parent"
@@ -54,6 +61,7 @@
                 android:gravity="center"
                 android:maxLines="2"
                 android:padding="16dp"
+                android:visibility="invisible"
                 android:textColor="@color/black" />
 
         </RelativeLayout>
