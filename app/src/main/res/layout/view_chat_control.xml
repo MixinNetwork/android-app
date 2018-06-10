@@ -6,10 +6,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+    <View android:layout_width="match_parent"
+          android:layout_height=".5dp"
+          android:background="@color/divider"/>
+
     <LinearLayout
             android:id="@+id/bottom_ll"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_height="wrap_content"
+            android:minHeight="@dimen/chat_control_height"
             android:background="@color/white"
             android:layout_gravity="bottom"
             android:orientation="horizontal">
@@ -17,7 +22,7 @@
         <ImageButton
                 android:id="@+id/chat_bot_ib"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="@dimen/chat_control_height"
                 android:layout_gravity="center_vertical"
                 android:background="@null"
                 android:paddingStart="12dp"
@@ -25,14 +30,14 @@
                 tools:ignore="ContentDescription"/>
 
         <ImageButton
-                android:id="@+id/chat_more_ib"
+                android:id="@+id/chat_sticker_ib"
                 android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_height="@dimen/chat_control_height"
                 android:layout_gravity="center_vertical"
                 android:background="@null"
                 android:paddingEnd="12dp"
                 android:paddingStart="12dp"
-                app:srcCompat="@drawable/ic_chat_ext"
+                app:srcCompat="@drawable/ic_chat_sticker"
                 tools:ignore="ContentDescription"/>
 
         <one.mixin.android.widget.ContentEditText
@@ -42,18 +47,37 @@
                 android:layout_weight="1"
                 android:layout_gravity="center_vertical"
                 android:background="@drawable/bg_input"
-                android:drawableEnd="@drawable/ic_chat_sticker"
-                android:drawablePadding="8dp"
                 android:inputType="textMultiLine|textNoSuggestions"
                 android:maxLines="5"
-                android:paddingBottom="6dp"
                 android:paddingEnd="12dp"
                 android:paddingStart="12dp"
-                android:paddingTop="6dp"
-                android:layout_marginEnd="48dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:layout_marginTop="6dp"
+                android:layout_marginBottom="6dp"
                 android:textSize="14sp"
-                app:layout_constraintBottom_toBottomOf="parent"
                 tools:ignore="LabelFor"/>
+
+        <ImageButton
+                android:id="@+id/chat_more_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/chat_control_height"
+                android:layout_gravity="center_vertical"
+                android:background="@null"
+                android:paddingStart="12dp"
+                app:srcCompat="@drawable/ic_chat_ext"
+                tools:ignore="ContentDescription"/>
+
+        <ImageButton
+                android:id="@+id/chat_send_ib"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/chat_control_height"
+                android:background="@null"
+                android:layout_gravity="center_vertical"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:src="@drawable/ic_record_mic_black"
+                tools:ignore="ContentDescription"/>
     </LinearLayout>
 
     <one.mixin.android.widget.audio.SlidePanelView
@@ -62,18 +86,4 @@
             android:layout_height="@dimen/chat_control_height"
             android:layout_gravity="bottom"
             android:visibility="gone"/>
-
-    <ImageButton
-            android:id="@+id/chat_send_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/chat_control_height"
-            android:background="@null"
-            android:paddingTop="6dp"
-            android:paddingBottom="6dp"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
-            android:layout_gravity="bottom|end"
-            android:src="@drawable/ic_record_mic_black"
-            tools:ignore="ContentDescription"/>
-
 </merge>

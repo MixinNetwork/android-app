@@ -122,8 +122,6 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckParamBlazeMessage
 import one.mixin.android.widget.ChatControlView
-import one.mixin.android.widget.ChatControlView.Companion.DOWN
-import one.mixin.android.widget.ChatControlView.Companion.UP
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.SimpleAnimatorListener
@@ -1179,7 +1177,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun clickSticker() {
         hideMediaLayout()
-        chat_control.sendStatus = UP
         var stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
         if (stickerAlbumFragment == null) {
             stickerAlbumFragment = StickerAlbumFragment.newInstance()
@@ -1248,23 +1245,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         anim.addListener(object : SimpleAnimatorListener() {
             override fun onAnimationEnd(animation: Animator?) {
                 if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
-                    updateUpOrDown(false)
                     cover.alpha = COVER_MAX_ALPHA
                     val coverColor = (cover.background as ColorDrawable).color
                     activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
                 } else {
-                    updateUpOrDown(true)
                     cover.alpha = 0f
                     activity?.window?.statusBarColor = Color.TRANSPARENT
                 }
             }
         })
         anim.start()
-    }
-
-    private fun updateUpOrDown(up: Boolean) {
-        chat_control.isUp = up
-        chat_control.sendStatus = if (up) UP else DOWN
     }
 
     private var mediaVisibility = false
@@ -1279,7 +1269,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun showMediaLayout() {
         if (!mediaVisibility) {
             shadow.fadeIn()
-            media_layout.translationY(dip(8).toFloat())
+            media_layout.translationY(0f)
             chat_control.chat_et.hideKeyboard()
             hideStickerContainer()
             mediaVisibility = true
@@ -1465,14 +1455,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 sendMessage(text)
             }
-        }
-
-        override fun onUpClick() {
-            updateSticker()
-        }
-
-        override fun onDownClick() {
-            updateSticker()
         }
 
         override fun onRecordStart(audio: Boolean) {
