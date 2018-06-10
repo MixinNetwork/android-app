@@ -35,6 +35,8 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
+import com.shizhefei.view.largeimage.LargeImageView
+import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -46,6 +48,7 @@ import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
+import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -238,7 +241,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val messageItem = getItem(position)
             val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
                 messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
-                createPhotoView(container, position, messageItem)
+                if (messageItem.mediaHeight!! > displayHeight() * 3) {
+                    createLargeImageView(container, position, messageItem)
+                } else {
+                    createPhotoView(container, position, messageItem)
+                }
             } else {
                 createVideoView(container, position, messageItem)
             }
@@ -354,6 +361,23 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             })
 
             return view
+        }
+
+        private fun createLargeImageView(container: ViewGroup, position: Int, messageItem: MessageItem): LargeImageView {
+            val imageView = LargeImageView(container.context)
+            imageView.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
+            if (position == index) {
+                ViewCompat.setTransitionName(imageView, "transition")
+                setStartPostTransition(imageView)
+            }
+            imageView.setOnClickListener {
+                finishAfterTransition()
+            }
+            imageView.setOnLongClickListener {
+                showBottom()
+                return@setOnLongClickListener true
+            }
+            return imageView
         }
 
         private fun createPhotoView(container: ViewGroup, position: Int, messageItem: MessageItem): PhotoView {
