@@ -1269,7 +1269,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun showMediaLayout() {
         if (!mediaVisibility) {
             shadow.fadeIn()
-            media_layout.translationY(0f)
+            media_layout.translationY(16f)
             chat_control.chat_et.hideKeyboard()
             hideStickerContainer()
             mediaVisibility = true
