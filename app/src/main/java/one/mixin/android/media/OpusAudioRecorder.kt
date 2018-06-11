@@ -1,4 +1,4 @@
-package one.mixin.android.jni
+package one.mixin.android.media
 
 import android.content.Context
 import android.media.AudioFormat

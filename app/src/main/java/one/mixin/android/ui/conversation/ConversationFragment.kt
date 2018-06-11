@@ -79,7 +79,7 @@ import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
-import one.mixin.android.jni.OpusAudioRecorder
+import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.ui.camera.CameraActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
