@@ -1185,7 +1185,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 override fun onMove(dis: Float) {
                     val params = sticker_container.layoutParams
                     val targetH = params.height - dis.toInt()
-                    val total = input_layout.height - bar_fl.height - bottom_layout.height
+                    val total = input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height
                     if (targetH <= input_layout.keyboardHeight || targetH >= total) return
 
                     params.height = targetH
@@ -1204,7 +1204,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
                 override fun onRelease() {
                     val curH = sticker_container.height
-                    val total = input_layout.height - bar_fl.height - bottom_layout.height
+                    val total = input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height
                     val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
                     val targetH = if (curH <= mid) {
                         input_layout.keyboardHeight
@@ -1244,7 +1244,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         anim.addListener(object : SimpleAnimatorListener() {
             override fun onAnimationEnd(animation: Animator?) {
-                if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
+                if (targetH == input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height) {
                     cover.alpha = COVER_MAX_ALPHA
                     val coverColor = (cover.background as ColorDrawable).color
                     activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)

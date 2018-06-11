@@ -243,7 +243,7 @@
                 android:id="@+id/cover"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginBottom="48dp"
+                android:layout_marginBottom="@dimen/chat_control_height"
                 android:alpha="0"
                 android:background="@android:color/black"/>
     </RelativeLayout>

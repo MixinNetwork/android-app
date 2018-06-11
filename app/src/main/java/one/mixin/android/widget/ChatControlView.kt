@@ -48,7 +48,7 @@ class ChatControlView : FrameLayout {
     lateinit var inputLayout: InputAwareLayout
     lateinit var stickerContainer: StickerLayout
 
-    var sendStatus = AUDIO
+    private var sendStatus = AUDIO
         set(value) {
             if (value == field) return
 
@@ -69,6 +69,7 @@ class ChatControlView : FrameLayout {
     private var isRecording = false
 
     var activity: Activity? = null
+    lateinit var recordCircle: RecordCircleView
 
     private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_send, null) }
     private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_record_mic_black, null) }
@@ -89,8 +90,6 @@ class ChatControlView : FrameLayout {
         chat_sticker_ib.setOnClickListener(stickerClickListener)
         chat_slide.callback = chatSlideCallback
     }
-
-    lateinit var recordCircle: RecordCircleView
 
     fun setCircle(record_circle: RecordCircleView) {
         this.recordCircle = record_circle
