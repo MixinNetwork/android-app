@@ -165,7 +165,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_DATA.name ||
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name) {
-            if (!data.representativeId.isNullOrBlank()){
+            if (!data.representativeId.isNullOrBlank()) {
                 data.userId = data.representativeId!!
             }
             processDecryptSuccess(data, data.data)
@@ -174,6 +174,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
+        syncUser(data.userId)
         when {
             data.category.endsWith("_TEXT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
