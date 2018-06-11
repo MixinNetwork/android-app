@@ -124,7 +124,13 @@ class Message(
     )
     @SerializedName("media_mine_type")
     @ColumnInfo(name = "media_mine_type")
-    val mediaMineType: String? = null
+    val mediaMineType: String? = null,
+    @SerializedName("quote_message_id")
+    @ColumnInfo(name = "quote_message_id")
+    val quote_message_id: String? = null,
+    @SerializedName("quote_content")
+    @ColumnInfo(name = "quote_content")
+    val quote_content: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
