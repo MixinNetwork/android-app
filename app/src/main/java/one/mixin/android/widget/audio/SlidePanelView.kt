@@ -57,7 +57,7 @@ class SlidePanelView : RelativeLayout {
                     setListener(null)
 
                     blinkingDrawable?.blinking()
-                    post(updateTimeRunnable)
+                    postDelayed(updateTimeRunnable, 400)
                 }
             })
         }.start()

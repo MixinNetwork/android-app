@@ -136,7 +136,7 @@ class RecordCircleView : View {
             } else if (pressedEnd) {
                 if (event.action == MotionEvent.ACTION_UP) {
                     if (lockBackgroundDrawable.bounds.contains(x, y)) {
-                        callback.onSend()
+                        callback.onCancel()
                     }
                 }
                 return true
@@ -258,5 +258,6 @@ class RecordCircleView : View {
 
     interface Callback {
         fun onSend()
+        fun onCancel()
     }
 }

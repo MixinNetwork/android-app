@@ -14,6 +14,7 @@ import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
+import android.view.VelocityTracker
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.View.OnTouchListener
@@ -67,6 +68,8 @@ class ChatControlView : FrameLayout {
 
     private val touchSlop: Int by lazy { ViewConfiguration.get(context).scaledTouchSlop }
     private var isRecording = false
+    private val maximumFlingVelocity: Int by lazy { ViewConfiguration.get(context).scaledMaximumFlingVelocity }
+    private val minimumFlingVelocity = 2000
 
     var activity: Activity? = null
     lateinit var recordCircle: RecordCircleView
@@ -225,8 +228,13 @@ class ChatControlView : FrameLayout {
     private var startTime = 0L
     private var triggeredCancel = false
     private var maxScrollX = context.dip(150f)
+    private var velocityTracker: VelocityTracker? = null
 
     private val sendOnTouchListener = OnTouchListener { _, event ->
+        if (velocityTracker == null) {
+            velocityTracker = VelocityTracker.obtain()
+        }
+        velocityTracker?.addMovement(event)
         when (event.action) {
             ACTION_DOWN -> {
                 if (recordCircle.sendButtonVisible) {
@@ -277,6 +285,19 @@ class ChatControlView : FrameLayout {
                 startX = moveX
             }
             ACTION_UP, ACTION_CANCEL -> {
+                velocityTracker?.let {
+                    it.computeCurrentVelocity(1000, maximumFlingVelocity.toFloat())
+                    val vx = it.xVelocity
+                    val vy = it.yVelocity
+                    if (abs(vy)> minimumFlingVelocity || abs(vx) > minimumFlingVelocity) {
+                        removeCallbacks(recordRunnable)
+                        handleCancelOrEnd(true)
+                        velocityTracker?.recycle()
+                        velocityTracker = null
+                        return@OnTouchListener false
+                    }
+                }
+
                 if (triggeredCancel) {
                     triggeredCancel = false
                     return@OnTouchListener false
@@ -367,6 +388,10 @@ class ChatControlView : FrameLayout {
     private val recordCircleCallback = object : RecordCircleView.Callback {
         override fun onSend() {
             handleCancelOrEnd(false)
+        }
+
+        override fun onCancel() {
+            handleCancelOrEnd(true)
         }
     }
 
