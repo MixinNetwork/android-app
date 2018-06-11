@@ -27,6 +27,11 @@ JNIEXPORT int Java_one_mixin_android_jni_OpusAudioRecorder_startRecord(JNIEnv *e
         LOGE("Create OggOpusEnc failed");
         return error;
     }
+    error = ope_encoder_ctl(enc, OPUS_SET_BITRATE_REQUEST, 16 * 1024);
+    if (error != OPE_OK) {
+        return error;
+    }
+
     return OPE_OK;
 }
 
