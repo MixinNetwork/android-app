@@ -26,6 +26,7 @@
                 android:layout_gravity="center_vertical"
                 android:background="@null"
                 android:paddingStart="12dp"
+                android:paddingEnd="6dp"
                 app:srcCompat="@drawable/ic_chat_bot"
                 tools:ignore="ContentDescription"/>
 
@@ -35,8 +36,8 @@
                 android:layout_height="@dimen/chat_control_height"
                 android:layout_gravity="center_vertical"
                 android:background="@null"
-                android:paddingEnd="12dp"
                 android:paddingStart="12dp"
+                android:paddingEnd="12dp"
                 app:srcCompat="@drawable/ic_chat_sticker"
                 tools:ignore="ContentDescription"/>
 
@@ -65,6 +66,7 @@
                 android:layout_gravity="center_vertical"
                 android:background="@null"
                 android:paddingStart="12dp"
+                android:paddingEnd="6dp"
                 app:srcCompat="@drawable/ic_chat_ext"
                 tools:ignore="ContentDescription"/>
 

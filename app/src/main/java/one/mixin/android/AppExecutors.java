@@ -32,7 +32,7 @@ public class AppExecutors {
 
     @Inject
     public AppExecutors() {
-        this(Executors.newFixedThreadPool(2), Executors.newFixedThreadPool(3),
+        this(Executors.newSingleThreadExecutor(), Executors.newFixedThreadPool(3),
                 new MainThreadExecutor());
     }
 
