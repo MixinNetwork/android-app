@@ -259,7 +259,7 @@ class TransferFragment : BaseFragment() {
             holder.itemView.type_avatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.type_avatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.asset_name.text = itemAssert.name
-            holder.itemView.value.text = itemAssert.balance
+            holder.itemView.value.text = itemAssert.balance.numberFormat()
             currentAsset?.let {
                 holder.itemView.check_iv.visibility = if (itemAssert.assetId == currentAsset?.assetId) VISIBLE else GONE
             }

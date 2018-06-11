@@ -60,6 +60,7 @@ class AddressAddFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        title_view.right_animator.isEnabled = false
         title_view.left_ib.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 

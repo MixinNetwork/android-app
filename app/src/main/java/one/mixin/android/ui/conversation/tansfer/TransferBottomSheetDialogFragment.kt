@@ -16,12 +16,10 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Asset
@@ -91,9 +89,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.title_view.avatar_iv.setTextSize(16f)
         contentView.title_view.avatar_iv.setInfo(if (user.fullName!!.isNotEmpty()) user.fullName!![0]
         else ' ', user.avatarUrl, user.identityNumber)
-        contentView.title_view.avatar_iv.setOnClickListener {
-            UserBottomSheetDialogFragment.newInstance(user).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
-        }
         if (!TextUtils.isEmpty(memo)) {
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = memo
@@ -138,7 +133,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             contentView.pin_va.displayedChild = POS_PIN
                             if (it.isSuccess) {
                                 context?.updatePinCheck()
-                                context?.toast(R.string.transfer_success)
                                 dismiss()
                                 callback?.onSuccess()
                             } else {
