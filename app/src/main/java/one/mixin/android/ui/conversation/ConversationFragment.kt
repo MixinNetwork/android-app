@@ -23,8 +23,6 @@ import android.support.v13.view.inputmethod.InputContentInfoCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -40,6 +38,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_conversation.*
+import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
@@ -80,6 +79,7 @@ import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
+import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.ui.camera.CameraActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
@@ -103,6 +103,7 @@ import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.DataPackage
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
@@ -120,6 +121,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckParamBlazeMessage
+import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.SimpleAnimatorListener
@@ -136,7 +138,8 @@ import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
-class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener {
+class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
+    OpusAudioRecorder.Callback {
 
     companion object {
         const val CONVERSATION_ID = "conversation_id"
@@ -186,6 +189,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
     private val chatAdapter: ConversationAdapter by lazy {
         ConversationAdapter(keyword, onItemListener, isGroup)
+    }
+
+    private val audioRecorder: OpusAudioRecorder by lazy {
+        OpusAudioRecorder(requireContext()).apply { callback = this@ConversationFragment }
     }
 
     private val appAdapter: AppAdapter by lazy {
@@ -454,8 +461,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private val mentionAdapter: MentionAdapter by lazy {
         MentionAdapter(object : OnUserClickListener {
             override fun onUserClick(keyword: String?, userName: String) {
-                chat_et.setText(chat_et.text.toString().removeEnd(keyword).plus(" @$userName "))
-                chat_et.setSelection(chat_et.text.length)
+                chat_control.chat_et.setText(chat_control.chat_et.text.toString().removeEnd(keyword).plus(" @$userName "))
+                chat_control.chat_et.setSelection(chat_control.chat_et.text.length)
                 mentionAdapter.clear()
             }
         })
@@ -514,7 +521,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         recipient = arguments!!.getParcelable(RECIPIENT)
         MixinApplication.conversationId = conversationId
         initView()
-        chat_et.post { sendForwardMessages() }
+        chat_control.post { sendForwardMessages() }
     }
 
     private val notificationManager: NotificationManager by lazy {
@@ -564,6 +571,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (disposable?.isDisposed == false) {
             disposable?.dispose()
         }
+        AudioPlayer.pause()
     }
 
     override fun onBackPressed(): Boolean {
@@ -573,12 +581,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 true
             }
             sticker_container.visibility == VISIBLE -> {
-                cover.alpha = 0f
-                sticker_container.visibility = GONE
-                activity?.window?.statusBarColor = Color.TRANSPARENT
-                updateChatSendIv()
-                chat_sticker.setImageResource(R.drawable.ic_chat_sticker)
-                input_layout.hideCurrentInput(chat_et)
+                hideStickerContainer()
                 true
             }
             mediaVisibility -> {
@@ -587,6 +590,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             else -> false
         }
+    }
+
+    private fun hideStickerContainer() {
+        cover.alpha = 0f
+        activity?.window?.statusBarColor = Color.TRANSPARENT
+        chat_control.reset()
     }
 
     private fun closeTool() {
@@ -601,7 +610,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onStop() {
-        val draftText = chat_et.text
+        val draftText = chat_control.chat_et.text
         if (draftText != null) {
             context!!.async {
                 chatViewModel.saveDraft(conversationId, draftText.toString())
@@ -614,32 +623,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         MixinApplication.conversationId = null
         super.onDestroy()
         previewVideoDialogFragment?.release()
+        AudioPlayer.release()
     }
 
     @SuppressLint("CheckResult")
     private fun initView() {
-        chat_sticker.setOnClickListener { clickSticker() }
-        media_layout.setOnClickListener { }
-        bottom_layout.setOnClickListener { }
-        chat_send_iv.setOnClickListener {
-            val c = chat_et.text.trim()
-            if (c.isBlank()) {
-                if (sticker_container.isShowing) {
-                    updateSticker()
-                } else {
-                    toggleMediaLayout()
-                }
-            } else {
-                sendMessage(c.toString())
-            }
-        }
-        chat_et.setOnClickListener {
+        chat_control.callback = chatControlCallback
+        chat_control.activity = requireActivity()
+        chat_control.inputLayout = input_layout
+        chat_control.stickerContainer = sticker_container
+        chat_control.chat_et.setOnClickListener {
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT
-            updateChatSendIv()
-            chat_sticker.setImageResource(R.drawable.ic_chat_sticker)
         }
-        chat_et.setCommitContentListener(object : ContentEditText.OnCommitContentListener {
+        chat_control.setCircle(record_circle)
+        chat_control.chat_et.setCommitContentListener(object : ContentEditText.OnCommitContentListener {
             override fun onCommitContent(inputContentInfo: InputContentInfoCompat?, flags: Int, opts: Bundle?): Boolean {
                 if (inputContentInfo != null) {
                     val url = inputContentInfo.contentUri.getFilePath(requireContext())
@@ -649,20 +647,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 return true
             }
         })
-        chat_et.addTextChangedListener(object : TextWatcher {
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (!isAdded || chat_et == null) {
-                    return
-                }
-                updateChatSendIv()
-            }
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-            }
-        })
+        chat_control.chat_more_ib.setOnClickListener { toggleMediaLayout() }
         chat_rv.layoutManager = SmoothScrollLinearLayoutManager(context!!, LinearLayoutManager.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
 
@@ -716,7 +701,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             .autoDisposable(scopeProvider).subscribe({
                 it?.draft?.let { str ->
                     if (isAdded) {
-                        chat_et.setText(str)
+                        chat_control.chat_et.setText(str)
                     }
                 }
             }, {
@@ -724,6 +709,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             })
         tool_view.close_iv.setOnClickListener { activity?.onBackPressed() }
         tool_view.delete_iv.setOnClickListener {
+            chatAdapter.selectSet.filter { it.type.endsWith("_AUDIO") }.forEach {
+                if (AudioPlayer.get().isPlay(it.messageId)) {
+                    AudioPlayer.get().pause()
+                }
+            }
             chatViewModel.deleteMessages(chatAdapter.selectSet)
             closeTool()
         }
@@ -749,13 +739,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     it.type.endsWith("_VIDEO") -> ForwardMessage(ForwardCategory.VIDEO.name, id = it.messageId)
                     it.type.endsWith("_CONTACT") -> ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = it.sharedUserId)
                     it.type.endsWith("_STICKER") -> ForwardMessage(ForwardCategory.STICKER.name, id = it.messageId)
+                    it.type.endsWith("_AUDIO") -> ForwardMessage(ForwardCategory.AUDIO.name, id = it.messageId)
                     else -> ForwardMessage(ForwardCategory.TEXT.name)
                 }
             }
             ForwardActivity.show(context!!, list)
             closeTool()
         }
-        chat_et.requestFocus()
+        chat_control.chat_et.requestFocus()
 
         media_layout.round(dip(8))
         menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
@@ -778,17 +769,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun updateSticker() {
         if (sticker_container.height == input_layout.keyboardHeight) {
-            stickerAnim(sticker_container.height, input_layout.height - bar_fl.height - bottom_layout.height)
+            stickerAnim(sticker_container.height, input_layout.height - bar_fl.height - chat_control.height)
         } else {
             stickerAnim(sticker_container.height, input_layout.keyboardHeight)
-        }
-    }
-
-    private fun updateChatSendIv() {
-        if (chat_et.text.trim().isBlank()) {
-            chat_send_iv.setImageResource(R.drawable.ic_chat_ext)
-        } else {
-            chat_send_iv.setImageResource(R.drawable.ic_send)
         }
     }
 
@@ -905,18 +888,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (isBot || recipient?.isBot() == true) {
             app_rv.visibility = GONE
             extensions.visibility = GONE
-            chat_bot.visibility = VISIBLE
+            chat_control.chat_bot_ib.visibility = VISIBLE
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 if (it != null && it.isNotEmpty()) {
                     this.app = it[0]
-                    chat_bot.setOnClickListener {
+                    chat_control.chat_bot_ib.setOnClickListener {
                         if (sticker_container.visibility == VISIBLE) {
                             cover.alpha = 0f
                             sticker_container.visibility = GONE
                             activity?.window?.statusBarColor = Color.TRANSPARENT
-                            updateChatSendIv()
-                            chat_sticker.setImageResource(R.drawable.ic_chat_sticker)
-                            input_layout.hideCurrentInput(chat_et)
+                            input_layout.hideCurrentInput(chat_control.chat_et)
                         }
                         if (mediaVisibility) {
                             hideMediaLayout()
@@ -926,11 +907,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                 } else {
-                    chat_bot.setOnClickListener(null)
+                    chat_control.chat_bot_ib.setOnClickListener(null)
                 }
             })
         } else {
-            chat_bot.visibility = GONE
+            chat_control.chat_bot_ib.visibility = GONE
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 appAdapter.appList = it
                 if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
@@ -1018,6 +999,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    override fun onCancel() {
+        chat_control.cancelExternal()
+    }
+
+    override fun sendAudio(file: File, duration: Long, waveForm: ByteArray) {
+        if (duration < 500) {
+            file.deleteOnExit()
+        } else {
+            createConversation {
+                chatViewModel.sendAudioMessage(conversationId, sender, file, duration, waveForm, isPlainMessage())
+            }
+        }
+    }
+
     private fun sendVideoMessage(uri: Uri) {
         createConversation {
             chatViewModel.sendVideoMessage(conversationId, sender, uri, isPlainMessage()).autoDisposable(scopeProvider)
@@ -1067,7 +1062,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun sendMessage(message: String) {
         if (message.isNotBlank()) {
-            chat_et.setText("")
+            chat_control.chat_et.setText("")
             createConversation {
                 chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
                 markRead()
@@ -1105,11 +1100,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     ?: "", getString(R.string.title_participants, groupNumber))
                 action_bar.avatar_iv.setGroup(it.iconUrl)
                 if (it.status == ConversationStatus.QUIT.ordinal) {
-                    bottom_send_layout.visibility = GONE
+                    chat_control.visibility = GONE
                     bottom_cant_send.visibility = VISIBLE
-                    chat_et.hideKeyboard()
+                    chat_control.chat_et.hideKeyboard()
                 } else {
-                    bottom_send_layout.visibility = VISIBLE
+                    chat_control.visibility = VISIBLE
                     bottom_cant_send.visibility = GONE
                 }
             }
@@ -1153,11 +1148,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         recipient?.let {
             if (it.relationship == UserRelationship.BLOCKING.name) {
-                bottom_send_layout.visibility = GONE
+                chat_control.visibility = GONE
                 bottom_unblock.visibility = VISIBLE
-                chat_et.hideKeyboard()
+                chat_control.chat_et.hideKeyboard()
             } else {
-                bottom_send_layout.visibility = VISIBLE
+                chat_control.visibility = VISIBLE
                 bottom_unblock.visibility = GONE
             }
         }
@@ -1181,62 +1176,51 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun clickSticker() {
-        if (input_layout.currentInput == sticker_container) {
-            input_layout.showSoftKey(chat_et)
-            cover.alpha = 0f
-            activity?.window?.statusBarColor = Color.TRANSPARENT
-            chat_sticker.setImageResource(R.drawable.ic_chat_sticker)
-            updateChatSendIv()
-        } else {
-            input_layout.show(chat_et, sticker_container)
-            hideMediaLayout()
-            chat_send_iv.setImageResource(R.drawable.ic_arrow_up)
-            chat_sticker.setImageResource(R.drawable.ic_keyboard)
-            var stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
-            if (stickerAlbumFragment == null) {
-                stickerAlbumFragment = StickerAlbumFragment.newInstance()
-                activity?.replaceFragment(stickerAlbumFragment, R.id.sticker_container, StickerAlbumFragment.TAG)
-                stickerAlbumFragment.setCallback(object : StickerAlbumFragment.Callback {
-                    override fun onMove(dis: Float) {
-                        val params = sticker_container.layoutParams
-                        val targetH = params.height - dis.toInt()
-                        val total = input_layout.height - bar_fl.height - bottom_layout.height
-                        if (targetH <= input_layout.keyboardHeight || targetH >= total) return
+        hideMediaLayout()
+        var stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
+        if (stickerAlbumFragment == null) {
+            stickerAlbumFragment = StickerAlbumFragment.newInstance()
+            activity?.replaceFragment(stickerAlbumFragment, R.id.sticker_container, StickerAlbumFragment.TAG)
+            stickerAlbumFragment.setCallback(object : StickerAlbumFragment.Callback {
+                override fun onMove(dis: Float) {
+                    val params = sticker_container.layoutParams
+                    val targetH = params.height - dis.toInt()
+                    val total = input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height
+                    if (targetH <= input_layout.keyboardHeight || targetH >= total) return
 
-                        params.height = targetH
-                        sticker_container.layoutParams = params
+                    params.height = targetH
+                    sticker_container.layoutParams = params
 
-                        val per = Math.abs(dis / (total - input_layout.keyboardHeight))
-                        if (dis > 0) {
-                            cover.alpha -= COVER_MAX_ALPHA * per
-                        } else {
-                            cover.alpha += COVER_MAX_ALPHA * per
-                        }
-
-                        val coverColor = (cover.background as ColorDrawable).color
-                        activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
+                    val per = Math.abs(dis / (total - input_layout.keyboardHeight))
+                    if (dis > 0) {
+                        cover.alpha -= COVER_MAX_ALPHA * per
+                    } else {
+                        cover.alpha += COVER_MAX_ALPHA * per
                     }
 
-                    override fun onRelease() {
-                        val curH = sticker_container.height
-                        val total = input_layout.height - bar_fl.height - bottom_layout.height
-                        val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
-                        val targetH = if (curH <= mid) {
-                            input_layout.keyboardHeight
-                        } else {
-                            total
-                        }
-                        stickerAnim(curH, targetH)
-                    }
+                    val coverColor = (cover.background as ColorDrawable).color
+                    activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
+                }
 
-                    override fun onStickerClick(albumId: String, name: String) {
-                        sendStickerMessage(albumId, name)
-                        if (sticker_container.height != input_layout.keyboardHeight) {
-                            stickerAnim(sticker_container.height, input_layout.keyboardHeight)
-                        }
+                override fun onRelease() {
+                    val curH = sticker_container.height
+                    val total = input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height
+                    val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
+                    val targetH = if (curH <= mid) {
+                        input_layout.keyboardHeight
+                    } else {
+                        total
                     }
-                })
-            }
+                    stickerAnim(curH, targetH)
+                }
+
+                override fun onStickerClick(albumId: String, name: String) {
+                    sendStickerMessage(albumId, name)
+                    if (sticker_container.height != input_layout.keyboardHeight) {
+                        stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                    }
+                }
+            })
         }
     }
 
@@ -1260,13 +1244,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         anim.addListener(object : SimpleAnimatorListener() {
             override fun onAnimationEnd(animation: Animator?) {
-                if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
-                    chat_send_iv.setImageResource(R.drawable.ic_arrow_down)
+                if (targetH == input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height) {
                     cover.alpha = COVER_MAX_ALPHA
                     val coverColor = (cover.background as ColorDrawable).color
                     activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
                 } else {
-                    chat_send_iv.setImageResource(R.drawable.ic_arrow_up)
                     cover.alpha = 0f
                     activity?.window?.statusBarColor = Color.TRANSPARENT
                 }
@@ -1287,8 +1269,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun showMediaLayout() {
         if (!mediaVisibility) {
             shadow.fadeIn()
-            media_layout.translationY(dip(32).toFloat())
-            chat_et.hideKeyboard()
+            media_layout.translationY(16f)
+            chat_control.chat_et.hideKeyboard()
+            hideStickerContainer()
             mediaVisibility = true
         }
     }
@@ -1304,7 +1287,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun scrollTo(position: Int, offset: Int = -1, type: Float? = null) {
         context?.mainThreadDelayed({
             chat_rv?.let {
-                chat_rv.post({
+                chat_rv.post {
                     chat_rv?.let {
                         if (position == 0 && offset == 0) {
                             chat_rv.run {
@@ -1317,7 +1300,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
                         }
                     }
-                })
+                }
             }
         }, 30)
     }
@@ -1325,11 +1308,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun scrollY(offset: Int) {
         context?.mainThreadDelayed({
             chat_rv?.let {
-                chat_rv.post({
+                chat_rv.post {
                     chat_rv?.let {
                         chat_rv.smoothScrollBy(0, offset)
                     }
-                })
+                }
             }
         }, 30)
     }
@@ -1455,5 +1438,40 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
         }
         previewVideoDialogFragment?.show(fragmentManager, uri, action)
+    }
+
+    private val chatControlCallback = object : ChatControlView.Callback {
+        override fun onStickerClick() {
+            clickSticker()
+        }
+
+        override fun onSendClick(text: String) {
+            if (text.isBlank()) {
+                if (sticker_container.isShowing) {
+                    updateSticker()
+                } else {
+                    toggleMediaLayout()
+                }
+            } else {
+                sendMessage(text)
+            }
+        }
+
+        override fun onRecordStart(audio: Boolean) {
+            AudioPlayer.get().pause()
+            audioRecorder.startRecording()
+        }
+
+        override fun isReady(): Boolean {
+            return true
+        }
+
+        override fun onRecordEnd() {
+            audioRecorder.stopRecording(true)
+        }
+
+        override fun onRecordCancel() {
+            audioRecorder.stopRecording(false)
+        }
     }
 }

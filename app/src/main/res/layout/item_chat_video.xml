@@ -87,12 +87,15 @@
             app:layout_constraintEnd_toEndOf="@id/chat_image_layout"
             app:layout_constraintStart_toStartOf="@id/chat_image_layout"
             app:layout_constraintTop_toTopOf="@id/chat_image_layout"
-            app:size="56dp" />
+            app:progressColor="@color/colorDarkBlue"
+            app:progressWidth="1.5dp"
+            app:shadowColor="@color/progress_gary"
+            app:size="40dp" />
 
         <ImageView
             android:id="@+id/play"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:background="@drawable/bg_round_shadow"
             android:src="@drawable/ic_play_arrow"
             android:visibility="gone"

@@ -30,6 +30,11 @@
     <color name="pie_item_third">#70BEFF</color>
     <color name="blue_highlight">#660D94FC</color>
     <color name="transparent_white">#CCFFFFFF</color>
+    <color name="color_blink">#FF5E5E</color>
+    <color name="color_gray">#D6D6D6</color>
+    <color name="progress_gary">#F2F2F6</color>
+    <color name="shadow">#33000000</color>
+    <color name="color_record_circle_bg">#EE2CC3FA</color>
 
     <array name="name_colors">
         <item>#AA4848</item>

@@ -346,6 +346,7 @@
     <string name="conversation_status_pic">Photo</string>
     <string name="conversation_status_video">Video</string>
     <string name="conversation_status_file">File</string>
+    <string name="conversation_status_audio">Audio</string>
     <string name="conversation_status_pic_group">%s: photo</string>
     <string name="conversation_status_transfer">Transfer</string>
     <string name="conversation_status_sticker">Sticker</string>
@@ -399,6 +400,7 @@
     <string name="alert_key_group_image_message">%s send a photo</string>
     <string name="alert_key_group_video_message">%s send a video</string>
     <string name="alert_key_group_data_message">%s send a file</string>
+    <string name="alert_key_group_audio_message">%s send a audio</string>
     <string name="alert_key_group_sticker_message">%s send a sticker</string>
     <string name="alert_key_group_contact_message">%s shared a contact</string>
     <string name="alert_key_contact_message">send you a message</string>
@@ -407,6 +409,7 @@
     <string name="alert_key_contact_video_message">send you a video</string>
     <string name="alert_key_contact_transfer_message">send you a transfer</string>
     <string name="alert_key_contact_data_message">send a file</string>
+    <string name="alert_key_contact_audio_message">send a audio</string>
     <string name="alert_key_contact_sticker_message">send you a sticker</string>
     <string name="alert_key_contact_contact_message">shared a contact</string>
     <string name="unread">%d new messages</string>
@@ -470,5 +473,7 @@
     <string name="default_time" translatable="false">00:00</string>
     <string name="action_open">Open in browser</string>
     <string name="action_refresh">Refresh</string>
+    <string name="slide_to_cancel">Slide to Cancel</string>
+    <string name="time">%d\'</string>
 </resources>
 

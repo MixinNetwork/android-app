@@ -24,7 +24,9 @@ class TransferAttachmentData(
     @SerializedName("thumbnail")
     var thumbnail: String?,
     @SerializedName("duration")
-    var duration: Long? = null
+    var duration: Long? = null,
+    @SerializedName("waveform")
+    var waveform: ByteArray? = null
 )
 
 fun TransferAttachmentData.invalidData(): Boolean {

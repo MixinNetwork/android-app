@@ -15,6 +15,7 @@ import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
+import one.mixin.android.ui.conversation.holder.AudioHolder
 import one.mixin.android.ui.conversation.holder.BillHolder
 import one.mixin.android.ui.conversation.holder.CardHolder
 import one.mixin.android.ui.conversation.holder.ContactCardHolder
@@ -108,6 +109,10 @@ class ConversationAdapter(
                 VIDEO_TYPE -> {
                     (holder as VideoHolder).bind(it, isLast(position),
                         isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                }
+                AUDIO_TYPE -> {
+                    (holder as AudioHolder).bind(it, isFirst(position),
+                        isLast(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 INFO_TYPE -> {
                     (holder as InfoHolder).bind(it, selectSet.size > 0, isSelect(position), onItemListener, groupName)
@@ -307,6 +312,10 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_file, parent, false)
                 FileHolder(item)
             }
+            AUDIO_TYPE -> {
+                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_audio, parent, false)
+                AudioHolder(item)
+            }
             STICKER_TYPE -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_sticker, parent, false)
                 StickerHolder(item)
@@ -363,6 +372,8 @@ class ConversationAdapter(
                     item.type == MessageCategory.PLAIN_CONTACT.name -> CONTACT_CARD_TYPE
                 item.type == MessageCategory.SIGNAL_VIDEO.name ||
                     item.type == MessageCategory.PLAIN_VIDEO.name -> VIDEO_TYPE
+                item.type == MessageCategory.SIGNAL_AUDIO.name ||
+                    item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
                 else -> UNKNOWN_TYPE
             }
         }, NULL_TYPE)
@@ -387,6 +398,7 @@ class ConversationAdapter(
         const val STRANGER_TYPE = 13
         const val CONTACT_CARD_TYPE = 14
         const val VIDEO_TYPE = 15
+        const val AUDIO_TYPE = 16
 
         private var lastId: String? = null
 

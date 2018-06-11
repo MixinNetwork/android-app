@@ -6,6 +6,10 @@
     android:background="@color/white"
     android:orientation="vertical">
 
+    <View android:layout_width="match_parent"
+          android:layout_height=".5dp"
+          android:background="@color/divider"/>
+
     <android.support.design.widget.TabLayout
         android:id="@+id/album_tl"
         android:layout_width="match_parent"

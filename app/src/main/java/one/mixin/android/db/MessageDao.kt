@@ -17,7 +17,7 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
         "u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type, " +
-        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, " +
+        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform, " +
         "m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight, " +
         "m.thumb_image AS thumbImage, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, " +
         "u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId, " +
@@ -97,7 +97,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
         "thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, " +
-        "media_status = :mediaStatus, status = :status, name = :name WHERE id = :messageId")
+        "media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId")
     fun updateAttachmentMessage(
         messageId: String,
         content: String,
@@ -107,6 +107,7 @@ interface MessageDao : BaseDao<Message> {
         mediaHeight: Int?,
         thumbImage: String?,
         name: String?,
+        mediaWaveform: ByteArray?,
         mediaDuration: String?,
         mediaKey: ByteArray?,
         mediaDigest: ByteArray?,

@@ -29,6 +29,7 @@ class MessageBuilder(
     private var name: String? = null
     private var albumId: String? = null
     private var sharedUserId: String? = null
+    private var mediaWaveform: ByteArray? = null
 
     fun setContent(content: String?): MessageBuilder {
         this.content = content
@@ -125,9 +126,14 @@ class MessageBuilder(
         return this
     }
 
+    fun setMediaWaveform(mediaWaveform: ByteArray?): MessageBuilder {
+        this.mediaWaveform = mediaWaveform
+        return this
+    }
+
     fun build(): Message =
         Message(id, conversationId, userId, category, content, mediaUrl,
             mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, mediaKey, mediaDigest, mediaStatus, status, createdAt,
-            action, participantId, snapshotId, hyperlink, name, albumId, sharedUserId)
+            action, participantId, snapshotId, hyperlink, name, albumId, sharedUserId, mediaWaveform)
 }

@@ -10,12 +10,11 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 @Entity(tableName = "messages",
-    indices = [Index(value = arrayOf("conversation_id")), Index(value = arrayOf("created_at"))],
+    indices = [Index(value = arrayOf("conversation_id")), Index(value = arrayOf("created_at")), Index(value = arrayOf("user_id"))],
     foreignKeys = [(ForeignKey(entity = Conversation::class,
         onDelete = CASCADE,
         parentColumns = arrayOf("conversation_id"),
         childColumns = arrayOf("conversation_id")))])
-
 class Message(
     @PrimaryKey
     @SerializedName("id")
@@ -115,6 +114,9 @@ class Message(
     @ColumnInfo(name = "shared_user_id")
     val sharedUserId: String? = null,
 
+    @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
+    val mediaWaveform: ByteArray? = null,
+
     @Deprecated(
         "Replace with mediaMimeType",
         ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Messages.mediaMimeType"),
@@ -122,7 +124,13 @@ class Message(
     )
     @SerializedName("media_mine_type")
     @ColumnInfo(name = "media_mine_type")
-    val mediaMineType: String? = null
+    val mediaMineType: String? = null,
+    @SerializedName("quote_message_id")
+    @ColumnInfo(name = "quote_message_id")
+    val quote_message_id: String? = null,
+    @SerializedName("quote_content")
+    @ColumnInfo(name = "quote_content")
+    val quote_content: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -145,12 +153,14 @@ enum class MessageCategory {
     SIGNAL_STICKER,
     SIGNAL_DATA,
     SIGNAL_CONTACT,
+    SIGNAL_AUDIO,
     PLAIN_TEXT,
     PLAIN_IMAGE,
     PLAIN_VIDEO,
     PLAIN_DATA,
     PLAIN_STICKER,
     PLAIN_CONTACT,
+    PLAIN_AUDIO,
     PLAIN_JSON,
     STRANGER,
     SYSTEM_CONVERSATION,
@@ -300,4 +310,31 @@ fun createContactMessage(
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
     .setSharedUserId(sharedUserId)
+    .build()
+
+fun createAudioMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    content: String?,
+    category: String,
+    mediaSize: Long,
+    mediaUrl: String?,
+    mediaDuration: String,
+    createdAt: String,
+    mediaWaveform: ByteArray?,
+    key: ByteArray?,
+    digest: ByteArray?,
+    mediaStatus: MediaStatus,
+    status: MessageStatus
+) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    .setMediaUrl(mediaUrl)
+    .setContent(content)
+    .setMediaWaveform(mediaWaveform)
+    .setMediaKey(key)
+    .setMediaSize(mediaSize)
+    .setMediaDuration(mediaDuration)
+    .setMediaMimeType("audio/ogg")
+    .setMediaDigest(digest)
+    .setMediaStatus(mediaStatus.name)
     .build()

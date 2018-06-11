@@ -64,6 +64,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAttachmentMessage
+import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
@@ -134,6 +135,14 @@ internal constructor(
             null, attachment.filename, attachment.uri.toString(),
             attachment.mimeType, attachment.fileSize, nowInUtc(), null,
             null, MediaStatus.PENDING, MessageStatus.SENDING)
+        jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+    }
+
+    fun sendAudioMessage(conversationId: String, sender: User, file: File, duration: Long, waveForm: ByteArray, isPlain: Boolean) {
+        val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+        val message = createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
+            file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
+            MediaStatus.PENDING, MessageStatus.SENDING)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 
@@ -274,6 +283,12 @@ internal constructor(
                     }
                     message.category.endsWith("_STICKER") -> {
                         sendStickerMessage(conversationId, sender, TransferStickerData(message.albumId!!, message.name!!), isPlain)
+                    }
+                    message.category.endsWith("_AUDIO") -> {
+                        val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+                        jobManager.addJobInBackground(SendAttachmentMessageJob(createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+                            null, category, message.mediaSize!!, message.mediaUrl, message.mediaDuration!!, nowInUtc(), message.mediaWaveform!!, null,
+                            null, MediaStatus.PENDING, MessageStatus.SENDING)))
                     }
                 }
             }
