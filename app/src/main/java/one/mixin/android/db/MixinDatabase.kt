@@ -138,7 +138,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
-                database.execSQL("CREATE  INDEX index_messages_user_id ON messages(user_id)")
+                database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
             }
         }
 
@@ -154,7 +154,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
-                database.execSQL("CREATE  INDEX index_messages_user_id ON messages(user_id)")
+                database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
             }
         }
 
@@ -166,7 +166,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
-                database.execSQL("CREATE  INDEX index_messages_user_id ON messages(user_id)")
+                database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
             }
         }
 
@@ -175,7 +175,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
-                database.execSQL("CREATE  INDEX index_messages_user_id ON messages(user_id)")
+                database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
             }
         }
 

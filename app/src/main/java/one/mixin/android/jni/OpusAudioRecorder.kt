@@ -22,7 +22,6 @@ class OpusAudioRecorder(ctx: Context) {
         private const val BUFFER_SIZE_FACTOR = 2
     }
 
-
     private var audioRecord: AudioRecord? = null
     private var recordBufferSize: Int
     private var recordingAudioFile: File? = null

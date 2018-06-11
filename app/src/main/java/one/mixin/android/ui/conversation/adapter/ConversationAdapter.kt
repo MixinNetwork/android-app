@@ -449,7 +449,6 @@ class ConversationAdapter(
         open fun onContactCardClick(userId: String) {}
 
         open fun onTransferClick(userId: String) {}
-
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {
