@@ -137,10 +137,10 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                 }
             }
             MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name -> {
-                if (conversation?.isGroup() == true) {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_audio_message, user.fullName))
-                    notificationBuilder.setContentTitle(conversation.name)
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setContentText(
                         context.getString(R.string.alert_key_group_audio_message, user.fullName))
                 } else {
