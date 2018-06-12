@@ -148,6 +148,7 @@ dependencies {
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"
     implementation "com.google.firebase:firebase-messaging:${firebaseVersion}"
+    implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.timehop.stickyheadersrecyclerview:library:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
     implementation 'org.whispersystems:curve25519-android:0.5.0'
@@ -174,7 +175,7 @@ dependencies {
     implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
     implementation "com.github.tougee:rx-contacts2:${rxContactsVersion}"
-    implementation "com.github.tougee:zxing-android-embedded:${zxingVersion}"
+    implementation "com.github.tougee:zxing-android-embedded:${zxingEmbeddedVersion}"
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
     implementation "com.tbruyelle.rxpermissions2:rxpermissions:${rxpermissionsVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}") {

@@ -101,6 +101,10 @@
     <string name="search_hint">Contacts and Chats</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="open_app">Open App</string>
+    <string name="text_qr">TEXT QR CODE</string>
+    <string name="detect_qr_tip">Detected a Mixin QR code, tap to recognize</string>
+    <string name="qr_code_camera">QR Code Camera</string>
+    <string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
     <!--search-->
     <string name="search_title_assets">ASSETS</string>
     <string name="search_title_contacts">CONTACTS</string>

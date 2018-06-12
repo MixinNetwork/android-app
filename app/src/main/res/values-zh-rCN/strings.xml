@@ -97,6 +97,10 @@
     <string name="search_hint">搜索</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="open_app">打开应用</string>
+    <string name="text_qr">文本二维码</string>
+    <string name="detect_qr_tip">检测到一个 Mixin 二维码，点击识别</string>
+    <string name="qr_code_camera">自动识别二维码</string>
+    <string name="qr_code_camera_code">打开相机会默认开启二维码识别，当二维码被检测到时会显示一个通知，点击通知识别二维码。</string>
     <!--search-->
     <string name="search_title_assets">资产</string>
     <string name="search_title_contacts">联系人</string>
