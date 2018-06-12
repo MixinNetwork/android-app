@@ -33,7 +33,7 @@ class WaveformView : View {
     private var paintOuter: Paint = Paint()
     private var thumbX = 0
 
-    private fun setProgress(progress: Float) {
+    fun setProgress(progress: Float) {
         if (progress < 0) {
             return
         }

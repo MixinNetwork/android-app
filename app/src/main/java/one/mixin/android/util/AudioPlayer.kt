@@ -51,6 +51,7 @@ class AudioPlayer private constructor() {
             override fun onPlayerError(error: ExoPlaybackException) {
                 status = STATUS_PAUSE
                 stopTimber()
+                it.stop()
                 RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
             }
         })
