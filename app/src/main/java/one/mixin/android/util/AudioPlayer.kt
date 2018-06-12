@@ -92,6 +92,10 @@ class AudioPlayer private constructor() {
         return status == STATUS_PLAY && this.id == id
     }
 
+    fun isLoaded(id: String): Boolean {
+        return this.id == id
+    }
+
     var timerDisposable: Disposable? = null
     var progress = 0f
     private fun startTimer() {

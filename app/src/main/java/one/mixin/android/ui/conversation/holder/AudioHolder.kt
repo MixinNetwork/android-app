@@ -87,6 +87,11 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         messageItem.mediaWaveform?.let {
             itemView.audio_waveform.setWaveform(it)
         }
+        if (AudioPlayer.get().isLoaded(messageItem.messageId)) {
+            itemView.audio_waveform.setProgress(AudioPlayer.get().progress)
+        } else {
+            itemView.audio_waveform.setProgress(0f)
+        }
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -115,10 +120,8 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_waveform.setBind(messageItem.messageId)
                     if (AudioPlayer.get().isPlay(messageItem.messageId)) {
                         itemView.audio_progress.setPause()
-                        itemView.audio_waveform.setProgress(AudioPlayer.get().progress)
                     } else {
                         itemView.audio_progress.setPlay()
-                        itemView.audio_waveform.setProgress(0f)
                     }
                     itemView.audio_progress.setOnClickListener {
                         if (!hasSelect) {
