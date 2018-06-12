@@ -82,11 +82,12 @@ class ConversationActivity : BlazeBaseActivity() {
             isGroup: Boolean = false,
             messageId: String? = null,
             keyword: String? = null,
-            messages: ArrayList<ForwardMessage>? = null
+            messages: ArrayList<ForwardMessage>? = null,
+            isBot: Boolean = false
         ) =
             Intent(context, ConversationActivity::class.java).apply {
                 putExtras(ConversationFragment.putBundle(conversationId,
-                    recipient, isGroup, messageId, keyword, messages))
+                    recipient, isGroup, messageId, keyword, messages, isBot))
             }
     }
 }
