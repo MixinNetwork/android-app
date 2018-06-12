@@ -14,4 +14,7 @@ abstract class MediaHolder constructor(containerView: View) : BaseViewHolder(con
         (itemView.context.displaySize().x * 0.6).toInt()
     }
 
+    protected val mediaHeight by lazy {
+        (itemView.context.displayHeight() * 2 / 3)
+    }
 }

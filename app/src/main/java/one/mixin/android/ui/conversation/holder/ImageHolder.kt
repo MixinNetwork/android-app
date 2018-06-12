@@ -18,6 +18,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
+import kotlin.math.min
 
 class ImageHolder constructor(containerView: View) : MediaHolder(containerView) {
 
@@ -95,7 +96,8 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
             itemView.chat_image.layoutParams.height = width
         } else {
             itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height = width * messageItem.mediaHeight / messageItem.mediaWidth
+            itemView.chat_image.layoutParams.height =
+                min(width * messageItem.mediaHeight / messageItem.mediaWidth, mediaHeight)
         }
 
         val mark = when {
