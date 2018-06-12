@@ -117,6 +117,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                         itemView.audio_progress.setPause()
                     } else {
                         itemView.audio_progress.setPlay()
+                        itemView.audio_waveform.setProgress(0f)
                     }
                     itemView.audio_progress.setOnClickListener {
                         if (!hasSelect) {

@@ -14,6 +14,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.RelativeLayout
 import kotlinx.android.synthetic.main.view_slide_panel.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.vibrate
 import one.mixin.android.widget.AndroidUtilities
 import org.jetbrains.anko.backgroundColor
@@ -57,7 +58,7 @@ class SlidePanelView : RelativeLayout {
                     setListener(null)
 
                     blinkingDrawable?.blinking()
-                    postDelayed(updateTimeRunnable, 400)
+                    postDelayed(updateTimeRunnable, 200)
                 }
             })
         }.start()
@@ -128,7 +129,7 @@ class SlidePanelView : RelativeLayout {
         blinkingDrawable?.stopBlinking()
         removeCallbacks(updateTimeRunnable)
         timeValue = 0
-        time_tv.text = context.getString(R.string.time, 0)
+        time_tv.text = 0L.formatMillis()
     }
 
     private val updateTimeRunnable: Runnable by lazy {
@@ -139,7 +140,7 @@ class SlidePanelView : RelativeLayout {
             }
 
             timeValue++
-            time_tv.text = context.getString(R.string.time, timeValue)
+            time_tv.text = (timeValue * 1000L).formatMillis()
             postDelayed(updateTimeRunnable, 1000)
         }
     }

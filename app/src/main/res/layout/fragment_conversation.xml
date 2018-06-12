@@ -49,7 +49,7 @@
                     android:clipChildren="false"
                     android:clipToPadding="false"
                     android:paddingBottom="6dp"
-                    app:layout_constraintBottom_toTopOf="@id/chat_control"
+                    app:layout_constraintBottom_toTopOf="@id/bottom_layout"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/state_layout"
@@ -177,9 +177,9 @@
             <FrameLayout
                     android:id="@+id/bottom_layout"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="@dimen/chat_control_height"
                     android:background="@color/white"
-                    app:layout_constraintBottom_toTopOf="@id/chat_control"
+                    app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/chat_rv">
@@ -193,7 +193,7 @@
                 <TextView
                         android:id="@+id/bottom_cant_send"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
+                        android:layout_height="match_parent"
                         android:layout_gravity="center"
                         android:background="@color/white"
                         android:gravity="center_vertical"
@@ -207,7 +207,7 @@
                 <TextView
                         android:id="@+id/bottom_unblock"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
+                        android:layout_height="match_parent"
                         android:layout_gravity="center"
                         android:background="@color/white"
                         android:gravity="center"
