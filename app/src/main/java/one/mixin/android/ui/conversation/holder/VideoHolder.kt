@@ -11,11 +11,9 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.loadBase64
 import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.round

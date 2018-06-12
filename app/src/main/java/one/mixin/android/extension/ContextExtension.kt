@@ -349,7 +349,7 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
                 cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA))
             } catch (e: IllegalStateException) {
                 uri.getFilePath()
-            } ?: throw  IllegalStateException("Can't get video path")
+            } ?: throw IllegalStateException("Can't get video path")
             val m = MediaMetadataRetriever().apply {
                 setDataSource(path)
             }

@@ -117,7 +117,7 @@ fun Bitmap.decodeQR(): String? {
             val hybridBitmap = BinaryBitmap(HybridBinarizer(source))
             val theResult = reader.decode(hybridBitmap, hints)
             if (theResult != null) {
-                results.add(theResult);
+                results.add(theResult)
             }
         } catch (e: ReaderException) {
             readException = e

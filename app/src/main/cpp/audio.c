@@ -35,8 +35,7 @@ JNIEXPORT int Java_one_mixin_android_media_OpusAudioRecorder_startRecord(JNIEnv 
     return OPE_OK;
 }
 
-JNIEXPORT int
-Java_one_mixin_android_media_OpusAudioRecorder_writeFrame(JNIEnv *env, jclass clazz, jobject frame, jint len) {
+JNIEXPORT int Java_one_mixin_android_media_OpusAudioRecorder_writeFrame(JNIEnv *env, jclass clazz, jobject frame, jint len) {
     jshort *sampleBuffer = (*env) -> GetShortArrayElements(env, frame, 0);
     int result = ope_encoder_write(enc, sampleBuffer, len);
     (*env)->ReleaseShortArrayElements(env, frame, sampleBuffer, 0);

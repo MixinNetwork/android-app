@@ -14,7 +14,7 @@ import one.mixin.android.ui.url.isMixinUrl
 import org.jetbrains.anko.backgroundResource
 import org.jetbrains.anko.dip
 
-class PseudoNotificationView: RelativeLayout {
+class PseudoNotificationView : RelativeLayout {
 
     var currContent: String? = null
 
