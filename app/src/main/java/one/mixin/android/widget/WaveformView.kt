@@ -62,7 +62,7 @@ class WaveformView : View {
                 .subscribe {
                     if (it.id == mBindId) {
                         setProgress(it.progress)
-                    } else if (it.status == CircleProgress.STATUS_PLAY) {
+                    } else if (it.status == CircleProgress.STATUS_PAUSE || it.status == CircleProgress.STATUS_PLAY) {
                         setProgress(0f)
                     }
                 }
