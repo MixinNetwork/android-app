@@ -115,6 +115,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_waveform.setBind(messageItem.messageId)
                     if (AudioPlayer.get().isPlay(messageItem.messageId)) {
                         itemView.audio_progress.setPause()
+                        itemView.audio_waveform.setProgress(AudioPlayer.get().progress)
                     } else {
                         itemView.audio_progress.setPlay()
                         itemView.audio_waveform.setProgress(0f)
