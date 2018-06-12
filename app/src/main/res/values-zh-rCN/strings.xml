@@ -215,15 +215,15 @@
     <string name="wallet_password_tip">请输入 6 位数字钱包密码，这也是你的支付密码</string>
     <string name="wallet_password_confirm_title">确认钱包密码</string>
     <string name="wallet_password_confirm_tip">请再次输入 6 位数字钱包密码并且牢记该密码。如果忘记，你的钱包将无法恢复！</string>
-    <string name="wallet_password_set_pin">设置支付密码</string>
-    <string name="wallet_password_set_new_pin">设置新的支付密码</string>
-    <string name="wallet_password_set_pin_desc">设置 6 位数字支付密码。</string>
-    <string name="wallet_password_set_new_pin_desc">设置新的 6 位数字支付密码</string>
-    <string name="wallet_password_confirm_pin">确认支付密码</string>
-    <string name="wallet_password_confirm_1">确认 6 位数字支付密码并牢记它。如果忘记，你的钱包将无法找回。</string>
-    <string name="wallet_password_confirm_2">请再次确认您的 6 位数字密码。 很少看到第三次确认吧！所以请牢记，支付密码丢失是无法找回的。</string>
-    <string name="wallet_password_confirm_3">这是最后一次确认支付密码，记住：支付密码丢失将永远无法找回！</string>
-    <string name="wallet_password_unsafe">支付密码过于简单不安全</string>
+    <string name="wallet_password_set_pin">设置钱包密码</string>
+    <string name="wallet_password_set_new_pin">设置新的钱包密码</string>
+    <string name="wallet_password_set_pin_desc">设置 6 位数字钱包密码。</string>
+    <string name="wallet_password_set_new_pin_desc">设置新的 6 位数字钱包密码</string>
+    <string name="wallet_password_confirm_pin">确认钱包密码</string>
+    <string name="wallet_password_confirm_1">确认 6 位钱包密码并牢记它。如果忘记，你的钱包将无法找回。</string>
+    <string name="wallet_password_confirm_2">请再次确认您的 6 位钱包密码。 很少看到第三次确认吧！所以请牢记，钱包密码丢失是无法找回的。</string>
+    <string name="wallet_password_confirm_3">这是最后一次确认钱包密码，记住：钱包密码丢失将永远无法找回！</string>
+    <string name="wallet_password_unsafe">钱包密码过于简单不安全</string>
     <string name="wallet_bottom_show_hidden">显示所有隐藏的资产</string>
     <string name="wallet_hidden_assets">隐藏资产</string>
     <string name="wallet_bottom_password">修改钱包密码</string>
@@ -237,7 +237,7 @@
     <string name="wallet_transactions_hide">隐藏</string>
     <string name="wallet_transaction_title">交易详情</string>
     <string name="wallet_password_change">修改钱包密码</string>
-    <string name="wallet_password_old_title">验证旧的支付密码</string>
+    <string name="wallet_password_old_title">验证旧的钱包密码</string>
     <string name="wallet_password_new_title">新钱包密码</string>
     <string name="wallet_password_new_title_confirm">确认新钱包密码</string>
     <string name="wallet_password_not_equal">钱包密码不一致, 请重新输入</string>
@@ -468,4 +468,5 @@
     <string name="send_file_group">将 \"%1$s\" 发送给 \"%2$s\"?</string>
     <string name="action_open">在浏览器中打开</string>
     <string name="action_refresh">刷新</string>
+    <string name="slide_to_cancel">滑动取消</string>
 </resources>
