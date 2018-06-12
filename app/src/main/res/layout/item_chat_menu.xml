@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                             xmlns:app="http://schemas.android.com/apk/res-auto"
-                                             xmlns:tools="http://schemas.android.com/tools"
-                                             android:layout_width="wrap_content"
-                                             android:layout_height="wrap_content">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:layout_height="wrap_content">
+
     <ImageView
-            android:id="@+id/menu_icon"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:padding="16dp"
-            tools:ignore="ContentDescription"/>
+        android:id="@+id/menu_icon"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:padding="16dp"
+        tools:ignore="ContentDescription"/>
 
     <TextView
-            android:id="@+id/menu_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:singleLine="true"
-            android:text="@string/gallery"
-            app:layout_constraintEnd_toEndOf="@id/menu_icon"
-            app:layout_constraintStart_toStartOf="@id/menu_icon"
-            app:layout_constraintTop_toBottomOf="@id/menu_icon"/>
+        android:id="@+id/menu_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:singleLine="true"
+        android:text="@string/gallery"
+        android:maxWidth="64dp"/>
 
-</android.support.constraint.ConstraintLayout>
+</LinearLayout>

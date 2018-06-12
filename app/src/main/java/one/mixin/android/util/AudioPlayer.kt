@@ -93,10 +93,12 @@ class AudioPlayer private constructor() {
     }
 
     var timerDisposable: Disposable? = null
+    var progress = 0f
     private fun startTimer() {
         if (timerDisposable == null) {
             timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
-                RxBus.publish(ProgressEvent(id!!, player.getCurrentPos().toFloat() / player.duration()))
+                progress = player.getCurrentPos().toFloat() / player.duration()
+                RxBus.publish(ProgressEvent(id!!, progress))
             }
         }
     }

@@ -132,7 +132,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                 .subscribe {
                     if (it.id == mBindId) {
                         when {
-                            status == STATUS_LOADING -> {
+                            it.status == 0 && status == STATUS_LOADING -> {
                                 val progress = (it.progress * mMaxProgress).toInt().let {
                                     if (it >= mMaxProgress) {
                                         (mMaxProgress * 0.95).toInt()
@@ -151,7 +151,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                                 invalidate()
                             }
                         }
-                    } else if (this.status == STATUS_PAUSE || this.status == STATUS_PLAY) {
+                    } else if (it.status != 0 && (this.status == STATUS_PAUSE || this.status == STATUS_PLAY)) {
                         setPlay()
                         invalidate()
                     }
