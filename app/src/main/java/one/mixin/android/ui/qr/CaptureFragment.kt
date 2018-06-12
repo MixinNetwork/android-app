@@ -29,7 +29,9 @@ import com.journeyapps.barcodescanner.SourceData
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_capture.*
+import kotlinx.android.synthetic.main.view_camera_tip.view.*
 import kotlinx.android.synthetic.main.view_custom_barcode_scannner.*
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentStatus
@@ -39,7 +41,9 @@ import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.rotate
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
@@ -53,8 +57,11 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.CameraOpView
+import one.mixin.android.widget.PseudoNotificationView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.alert
+import org.jetbrains.anko.support.v4.defaultSharedPreferences
+import org.jetbrains.anko.support.v4.dip
 import org.jetbrains.anko.yesButton
 import java.io.FileOutputStream
 import javax.inject.Inject
@@ -113,6 +120,13 @@ class CaptureFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_CAMERA_TIP, false)) {
+            val v = stub.inflate()
+            v.continue_tv.setOnClickListener {
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_CAMERA_TIP, true)
+                v.visibility = GONE
+            }
+        }
         op.post {
             val b = op.bottom
             val hasNavigationBar = context!!.hasNavigationBar(b)
@@ -158,6 +172,8 @@ class CaptureFragment : BaseFragment() {
                 mode = Mode.SCAN
             }
         })
+        pseudo_view.translationY = -dip(300).toFloat()
+        pseudo_view.callback = pseudoViewCallback
 
         val p = Point()
         activity?.windowManager?.defaultDisplay?.getSize(p)
@@ -340,9 +356,18 @@ class CaptureFragment : BaseFragment() {
         }
     }
 
+    private val pseudoViewCallback = object : PseudoNotificationView.Callback {
+        override fun onClick(content: String) {
+            handleScanResult(content)
+        }
+    }
+
     private val captureCallback = object : CaptureManagerCallback {
         override fun onScanResult(result: BarcodeResult) {
-            handleScanResult(result.text)
+            pseudo_view.addContent(result.text)
+            requireContext().mainThreadDelayed({
+                mCaptureManager.decode()
+            }, 1000)
         }
 
         override fun onPreview(sourceData: SourceData) {

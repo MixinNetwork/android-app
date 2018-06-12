@@ -9,6 +9,7 @@
 
     <color name="black">#ff000000</color>
     <color name="black_50">#88000000</color>
+    <color name="black_70">#B2000000</color>
     <color name="gray_50">#88888888</color>
     <color name="color_chat_date">#ff7799A9</color>
     <color name="bg_gray">#F5F5F5</color>
