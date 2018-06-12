@@ -217,17 +217,10 @@ internal constructor(
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
         }
 
-        val temp = MixinApplication.get().getImagePath().createImageTemp(type = if (mimeType == "image/png") {
-            ".png"
-        } else {
-            ".jpg"
-        })
+        val temp = MixinApplication.get().getImagePath().createImageTemp(type = ".jpg")
+
         return Compressor()
-            .setCompressFormat(if (mimeType == "image/png") {
-                Bitmap.CompressFormat.PNG
-            } else {
-                Bitmap.CompressFormat.JPEG
-            })
+            .setCompressFormat(Bitmap.CompressFormat.JPEG)
             .compressToFileAsFlowable(File(uri.getFilePath(MixinApplication.get())), temp.absolutePath)
             .map { imageFile ->
                 val imageUrl = Uri.fromFile(temp).toString()
@@ -240,7 +233,7 @@ internal constructor(
 
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, imageUrl,
-                    mimeType, length, size.width, size.height, thumbnail, null, null,
+                    "image/jpeg", length, size.width, size.height, thumbnail, null, null,
                     nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
