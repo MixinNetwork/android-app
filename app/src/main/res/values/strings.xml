@@ -223,7 +223,9 @@
     <string name="wallet_password_confirm_title">Confirm Wallet PIN</string>
     <string name="wallet_password_confirm_tip">Please confirm the 6 digit Wallet PIN and remember it. If lost, there is no way to recover your wallet.</string>
     <string name="wallet_password_set_pin">Set PIN</string>
+    <string name="wallet_password_set_new_pin">Set a new PIN</string>
     <string name="wallet_password_set_pin_desc">Please set a 6 digit PIN.</string>
+    <string name="wallet_password_set_new_pin_desc">Please set a new 6 digit PIN.</string>
     <string name="wallet_password_confirm_pin">Confirm PIN</string>
     <string name="wallet_password_confirm_1">Please confirm the 6 digit PIN and remember it. If lost, there is no way to recover your wallet.</string>
     <string name="wallet_password_confirm_2">Please confirm your 6 digit PIN again. It’s rare to see a third confirmation somewhere else, so please remember the PIN is unrecoverable if lost.</string>
@@ -242,7 +244,7 @@
     <string name="wallet_transactions_hide">Hide</string>
     <string name="wallet_transaction_title">Transaction</string>
     <string name="wallet_password_change">Change Wallet PIN</string>
-    <string name="wallet_password_old_title">Old Wallet PIN</string>
+    <string name="wallet_password_old_title">Old PIN</string>
     <string name="wallet_password_new_title">Set Wallet PIN</string>
     <string name="wallet_password_new_title_confirm">Confirm Wallet PIN</string>
     <string name="wallet_password_not_equal">The Wallet PIN did not match the re-typed Wallet PIN, please try again.</string>
