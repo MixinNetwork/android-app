@@ -28,10 +28,10 @@ import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.SignalDatabase
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.job.BaseJob
@@ -80,9 +80,9 @@ internal class AppModule {
         builder.writeTimeout(10, TimeUnit.SECONDS)
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
+        builder.retryOnConnectionFailure(false)
 
         builder.addInterceptor({ chain ->
-
             val request = chain.request().newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
