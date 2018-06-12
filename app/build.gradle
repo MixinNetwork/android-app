@@ -194,6 +194,8 @@ dependencies {
     implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
     implementation "com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}"
     implementation 'com.googlecode.mp4parser:isoparser:1.0.6'
+    implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
+    implementation "com.shizhefei:LargeImageView:${largeImageViewVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

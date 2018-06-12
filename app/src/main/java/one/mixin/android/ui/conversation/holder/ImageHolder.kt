@@ -95,8 +95,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
             itemView.chat_image.layoutParams.height = width
         } else {
             itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height =
-                width * messageItem.mediaHeight / messageItem.mediaWidth
+            itemView.chat_image.layoutParams.height = width * messageItem.mediaHeight / messageItem.mediaWidth
         }
 
         val mark = when {

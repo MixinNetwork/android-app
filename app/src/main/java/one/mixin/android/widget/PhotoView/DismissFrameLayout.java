@@ -10,6 +10,7 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import com.shizhefei.view.largeimage.LargeImageView;
 
 public class DismissFrameLayout extends FrameLayout {
     private SwipeGestureDetector swipeGestureDetector;
@@ -84,6 +85,10 @@ public class DismissFrameLayout extends FrameLayout {
                     if (view.onTouchEvent(event)) {
                         return true;
                     }
+                }
+            } else if (view instanceof LargeImageView) {
+                if (view.onTouchEvent(event)) {
+                    return true;
                 }
             }
         }

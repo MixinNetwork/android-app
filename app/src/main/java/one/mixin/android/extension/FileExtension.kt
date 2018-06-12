@@ -231,7 +231,9 @@ fun File.processing(to: File) {
     outStream.close()
 }
 
-fun Uri.getFilePath(context: Context): String? {
+fun String.getFilePath(): String? = Uri.parse(this).getFilePath()
+
+fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
     val scheme = this.scheme
     var data: String? = null
     if (scheme == null)

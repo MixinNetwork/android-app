@@ -137,7 +137,7 @@ class AttachmentDownloadJob(private val message: Message)
                     }
                     val imageFile = when {
                         message.mediaMimeType.equals("image/png", true) -> {
-                            MixinApplication.get().getImagePath().createImageTemp("REC", "png")
+                            MixinApplication.get().getImagePath().createImageTemp("REC", ".png")
                         }
                         message.mediaMimeType.equals("image/gif", true) -> {
                             MixinApplication.get().getImagePath().createGifTemp()
@@ -146,7 +146,7 @@ class AttachmentDownloadJob(private val message: Message)
                             MixinApplication.get().getImagePath().createWebpTemp()
                         }
                         else -> {
-                            MixinApplication.get().getImagePath().createImageTemp("REC", "jpg")
+                            MixinApplication.get().getImagePath().createImageTemp("REC", ".jpg")
                         }
                     }
                     imageFile.copyFromInputStream(attachmentCipherInputStream)

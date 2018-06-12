@@ -54,6 +54,8 @@ buildscript {
         ext.autodisposeVersion = '0.8.0'
         ext.bugsnagVersion = '4.4.0'
         ext.jsoupVersion = '1.11.2'
+        ext.isoparserVersion = '1.0.6'
+        ext.largeImageViewVersion = '1.1.0'
     }
 
     repositories {
