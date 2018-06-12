@@ -189,14 +189,21 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         view.decode.setOnClickListener {
             findViewPagerChildByTag {
                 val imageView = it.getChildAt(0) as ImageView
-                val url = (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
-                if (url != null) {
-                    openUrl(url, supportFragmentManager, {
-                        QrScanBottomSheetDialogFragment.newInstance(url)
-                            .show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-                    })
-                } else {
-                    toast(R.string.can_not_recognize)
+                doAsync {
+                    val url = (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
+                    uiThread {
+                        if (isDestroyed) {
+                            return@uiThread
+                        }
+                        if (url != null) {
+                            openUrl(url, supportFragmentManager, {
+                                QrScanBottomSheetDialogFragment.newInstance(url)
+                                    .show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                            })
+                        } else {
+                            toast(R.string.can_not_recognize)
+                        }
+                    }
                 }
             }
             bottomSheet.dismiss()
