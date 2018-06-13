@@ -823,6 +823,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 chatAdapter.hasBottomView = false
                                 chatAdapter.submitList(data)
                                 if (index > 0) {
+                                    chatAdapter.loadAround(index)
                                     scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4)
                                 } else {
                                     scrollTo(0)
@@ -1121,6 +1122,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun renderUser(user: User) {
+        chatAdapter.recipient = user
         action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
         action_bar.avatar_iv.visibility = VISIBLE
         action_bar.avatar_iv.setTextSize(16f)

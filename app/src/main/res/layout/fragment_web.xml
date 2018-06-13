@@ -22,8 +22,8 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="8dp"
                 android:padding="8dp"
+                android:layout_margin="8dp"
                 android:src="@drawable/ic_close_black_24dp"
                 tools:ignore="ContentDescription" />
 
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:layout_marginEnd="8dp"
+                android:layout_margin="8dp"
                 android:src="@drawable/ic_more"
                 android:checked="false"
                 android:padding="8dp"
@@ -47,6 +47,7 @@
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     style="?android:attr/progressBarStyleSmall"/>
+
             <TextView
                 android:id="@+id/title_view"
                 android:layout_width="match_parent"
@@ -56,11 +57,12 @@
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@+id/close_iv"
                 android:layout_toStartOf="@id/more_iv"
+                android:layout_centerInParent="true"
                 android:background="@color/white"
                 android:ellipsize="end"
                 android:gravity="center"
                 android:maxLines="2"
-                android:padding="16dp"
+                android:maxHeight="50dp"
                 android:visibility="invisible"
                 android:textColor="@color/black" />
 

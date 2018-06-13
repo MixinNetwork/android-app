@@ -61,6 +61,10 @@ class ConversationAdapter(
             notifyDataSetChanged()
         }
 
+    fun loadAround(position:Int){
+        currentList?.loadAround(position)
+    }
+
     override fun getAttachIndex(): Int? = unreadIndex
 
     override fun onCreateAttach(parent: ViewGroup): View =
