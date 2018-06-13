@@ -76,6 +76,7 @@ class ChatControlView : FrameLayout {
     var activity: Activity? = null
     lateinit var recordCircle: RecordCircleView
     lateinit var cover: View
+    private var upBeforeGrant = false
 
     private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_send, null) }
     private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_record_mic_black, null) }
@@ -170,7 +171,9 @@ class ChatControlView : FrameLayout {
     }
 
     private fun handleCancelOrEnd(cancel: Boolean) {
-        if (cancel) callback.onRecordCancel() else callback.onRecordEnd()
+        if (callback.isReady()) {
+            if (cancel) callback.onRecordCancel() else callback.onRecordEnd()
+        }
         chat_slide.onEnd()
         cleanUp()
         updateRecordCircleAndSendIcon()
@@ -309,7 +312,7 @@ class ChatControlView : FrameLayout {
                 cleanUp()
                 if (System.currentTimeMillis() - startTime >= SEND_CLICK_DELAY) {
                     removeCallbacks(sendClickRunnable)
-                    if (event.action == ACTION_UP) callback.onRecordEnd() else callback.onRecordCancel()
+                    if (event.action == ACTION_UP && callback.isReady()) callback.onRecordEnd() else callback.onRecordCancel()
                     chat_slide.onEnd()
                     updateRecordCircleAndSendIcon()
                 } else {
@@ -317,6 +320,10 @@ class ChatControlView : FrameLayout {
                 }
                 chat_slide.onEnd()
                 updateRecordCircleAndSendIcon()
+
+                if (!callback.isReady()) {
+                    upBeforeGrant = true
+                }
             }
         }
         return@OnTouchListener true
@@ -366,6 +373,7 @@ class ChatControlView : FrameLayout {
                 }
             }
             callback.onRecordStart(sendStatus == AUDIO)
+            upBeforeGrant = false
             post(checkReadyRunnable)
             chat_send_ib.parent.requestDisallowInterceptTouchEvent(true)
         }
@@ -374,13 +382,17 @@ class ChatControlView : FrameLayout {
     private val checkReadyRunnable: Runnable by lazy {
         Runnable {
             if (callback.isReady()) {
+                if (upBeforeGrant) {
+                    upBeforeGrant = false
+                    return@Runnable
+                }
                 isRecording = true
                 checkSend()
                 chat_slide.onStart()
                 updateRecordCircleAndSendIcon()
                 recordCircle.setLockTranslation(10000f)
             } else {
-                postDelayed(checkReadyRunnable, 100)
+                postDelayed(checkReadyRunnable, 50)
             }
         }
     }

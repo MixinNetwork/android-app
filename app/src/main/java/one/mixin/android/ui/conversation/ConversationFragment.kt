@@ -760,6 +760,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideMediaLayout()
         }
 
+        initStickerLayout()
+
         if (isGroup || isBot) {
             menuAdapter.showTransfer = false
         }
@@ -1181,51 +1183,55 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun clickSticker() {
         hideMediaLayout()
         chat_control.sendStatus = UP
-        var stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
+        val stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
         if (stickerAlbumFragment == null) {
-            stickerAlbumFragment = StickerAlbumFragment.newInstance()
-            activity?.replaceFragment(stickerAlbumFragment, R.id.sticker_container, StickerAlbumFragment.TAG)
-            stickerAlbumFragment.setCallback(object : StickerAlbumFragment.Callback {
-                override fun onMove(dis: Float) {
-                    val params = sticker_container.layoutParams
-                    val targetH = params.height - dis.toInt()
-                    val total = input_layout.height - bar_fl.height - bottom_layout.height
-                    if (targetH <= input_layout.keyboardHeight || targetH >= total) return
-
-                    params.height = targetH
-                    sticker_container.layoutParams = params
-
-                    val per = Math.abs(dis / (total - input_layout.keyboardHeight))
-                    if (dis > 0) {
-                        cover.alpha -= COVER_MAX_ALPHA * per
-                    } else {
-                        cover.alpha += COVER_MAX_ALPHA * per
-                    }
-
-                    val coverColor = (cover.background as ColorDrawable).color
-                    activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
-                }
-
-                override fun onRelease() {
-                    val curH = sticker_container.height
-                    val total = input_layout.height - bar_fl.height - bottom_layout.height
-                    val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
-                    val targetH = if (curH <= mid) {
-                        input_layout.keyboardHeight
-                    } else {
-                        total
-                    }
-                    stickerAnim(curH, targetH)
-                }
-
-                override fun onStickerClick(albumId: String, name: String) {
-                    sendStickerMessage(albumId, name)
-                    if (sticker_container.height != input_layout.keyboardHeight) {
-                        stickerAnim(sticker_container.height, input_layout.keyboardHeight)
-                    }
-                }
-            })
+            initStickerLayout()
         }
+    }
+
+    private fun initStickerLayout() {
+        val stickerAlbumFragment = StickerAlbumFragment.newInstance()
+        activity?.replaceFragment(stickerAlbumFragment, R.id.sticker_container, StickerAlbumFragment.TAG)
+        stickerAlbumFragment.setCallback(object : StickerAlbumFragment.Callback {
+            override fun onMove(dis: Float) {
+                val params = sticker_container.layoutParams
+                val targetH = params.height - dis.toInt()
+                val total = input_layout.height - bar_fl.height - bottom_layout.height
+                if (targetH <= input_layout.keyboardHeight || targetH >= total) return
+
+                params.height = targetH
+                sticker_container.layoutParams = params
+
+                val per = Math.abs(dis / (total - input_layout.keyboardHeight))
+                if (dis > 0) {
+                    cover.alpha -= COVER_MAX_ALPHA * per
+                } else {
+                    cover.alpha += COVER_MAX_ALPHA * per
+                }
+
+                val coverColor = (cover.background as ColorDrawable).color
+                activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
+            }
+
+            override fun onRelease() {
+                val curH = sticker_container.height
+                val total = input_layout.height - bar_fl.height - bottom_layout.height
+                val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
+                val targetH = if (curH <= mid) {
+                    input_layout.keyboardHeight
+                } else {
+                    total
+                }
+                stickerAnim(curH, targetH)
+            }
+
+            override fun onStickerClick(albumId: String, name: String) {
+                sendStickerMessage(albumId, name)
+                if (sticker_container.height != input_layout.keyboardHeight) {
+                    stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                }
+            }
+        })
     }
 
     private fun updateUpOrDown(up: Boolean) {
@@ -1474,7 +1480,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun isReady(): Boolean {
-            return true
+            return audioRecorder.statusSuccess
         }
 
         override fun onRecordEnd() {
