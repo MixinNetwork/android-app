@@ -10,6 +10,7 @@ import io.reactivex.Maybe
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.SearchMessageItem
 
 @Dao
 interface MessageDao : BaseDao<Message> {
@@ -68,13 +69,16 @@ interface MessageDao : BaseDao<Message> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
-        "u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type, " +
-        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus," +
-        "m.name AS mediaName, m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.media_url AS mediaUrl " +
+        "u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, m.category AS type, " +
+        "u1.avatar_url AS botAvatarUrl, u1.full_name AS botFullName, u1.user_id AS botUserId,"+
+        "m.content AS content, m.created_at AS createdAt, m.name AS mediaName, " +
+        "c.icon_url AS conversationAvatarUrl, c.name AS conversationName, c.category AS conversationCategory " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id " +
+        "LEFT JOIN conversations c ON c.conversation_id = m.conversation_id " +
+        "LEFT JOIN users u1 ON c.owner_id = u1.user_id " +
         "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
         "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) ORDER BY m.created_at DESC LIMIT 200")
-    fun fuzzySearchMessage(query: String): List<MessageItem>
+    fun fuzzySearchMessage(query: String): List<SearchMessageItem>
 
     @Query("DELETE FROM messages WHERE id = :id")
     fun deleteMessage(id: String)

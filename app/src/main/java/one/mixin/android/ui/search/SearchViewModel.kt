@@ -10,7 +10,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItemMinimal
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import javax.inject.Inject
 
@@ -24,7 +24,7 @@ internal constructor(
     fun fuzzySearchUser(query: String): List<User> =
         userRepository.fuzzySearchUser("%${query.trim()}%")
 
-    fun fuzzySearchMessage(query: String): List<MessageItem> =
+    fun fuzzySearchMessage(query: String): List<SearchMessageItem> =
         conversationRepository.fuzzySearchMessage("%${query.trim()}%")
 
     fun fuzzySearchAsset(query: String): List<AssetItem> =

@@ -18,7 +18,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationItemMinimal
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.runOnUiThread
@@ -93,7 +93,7 @@ class SearchFragment : Fragment(), Injectable {
                 }
             }
 
-            override fun onMessageClick(message: MessageItem) {
+            override fun onMessageClick(message: SearchMessageItem) {
                 searchViewModel.findConversationById(message.conversationId).subscribe {
                     search_rv.hideKeyboard()
                     ConversationActivity.show(context!!,
@@ -113,7 +113,7 @@ class SearchFragment : Fragment(), Injectable {
     interface OnSearchClickListener {
         fun onUserClick(user: User)
         fun onGroupClick(conversationItemMinimal: ConversationItemMinimal)
-        fun onMessageClick(message: MessageItem)
+        fun onMessageClick(message: SearchMessageItem)
         fun onAsset(assetItem: AssetItem)
     }
 }
