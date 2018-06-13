@@ -518,8 +518,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         MixinApplication.conversationId = conversationId
-        initView()
-        chat_control.post { sendForwardMessages() }
+        val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
+        if (messages != null) {
+            sendForwardMessages(messages)
+        } else {
+            initView()
+        }
     }
 
     private val notificationManager: NotificationManager by lazy {
@@ -909,36 +913,38 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendForwardMessages() {
-        val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
-        messages?.let {
-            for (item in it) {
-                if (item.id != null) {
-                    sendForwardMessage(item.id)
-                } else {
-                    when (item.type) {
-                        ForwardCategory.CONTACT.name -> {
-                            sendContactMessage(item.sharedUserId!!)
-                        }
-                        ForwardCategory.IMAGE.name -> {
-                            sendImageMessage(Uri.parse(item.mediaUrl))
-                        }
-                        ForwardCategory.DATA.name -> {
-                            context?.getAttachment(Uri.parse(item.mediaUrl))?.let {
-                                sendAttachmentMessage(it)
+    private fun sendForwardMessages(messages: List<ForwardMessage>) {
+        createConversation {
+            initView()
+            messages.let {
+                for (item in it) {
+                    if (item.id != null) {
+                        sendForwardMessage(item.id)
+                    } else {
+                        when (item.type) {
+                            ForwardCategory.CONTACT.name -> {
+                                sendContactMessage(item.sharedUserId!!)
                             }
-                        }
-                        ForwardCategory.VIDEO.name -> {
-                            sendVideoMessage(Uri.parse(item.mediaUrl))
-                        }
-                        ForwardCategory.TEXT.name -> {
-                            item.content?.let { sendMessage(it) }
+                            ForwardCategory.IMAGE.name -> {
+                                sendImageMessage(Uri.parse(item.mediaUrl))
+                            }
+                            ForwardCategory.DATA.name -> {
+                                context?.getAttachment(Uri.parse(item.mediaUrl))?.let {
+                                    sendAttachmentMessage(it)
+                                }
+                            }
+                            ForwardCategory.VIDEO.name -> {
+                                sendVideoMessage(Uri.parse(item.mediaUrl))
+                            }
+                            ForwardCategory.TEXT.name -> {
+                                item.content?.let { sendMessage(it) }
+                            }
                         }
                     }
                 }
+                scrollTo(0)
             }
         }
-        scrollTo(0)
     }
 
     private inline fun createConversation(crossinline action: () -> Unit) {
