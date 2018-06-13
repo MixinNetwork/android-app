@@ -10,6 +10,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import org.jetbrains.anko.dip
 import kotlin.experimental.and
 import kotlin.experimental.or
@@ -62,7 +64,7 @@ class WaveformView : View {
                 .subscribe {
                     if (it.id == mBindId) {
                         setProgress(it.progress)
-                    } else if (it.status == CircleProgress.STATUS_PAUSE || it.status == CircleProgress.STATUS_PLAY) {
+                    } else if (it.status == STATUS_PAUSE || it.status == STATUS_PLAY) {
                         setProgress(0f)
                     }
                 }

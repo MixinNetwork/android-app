@@ -34,6 +34,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId")
     fun findPlainUserByConversationId(conversationId: String): User?
 
+    @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
+    fun findContactByConversationId(conversationId: String): User?
+
     @Query("SELECT * FROM users WHERE user_id != :id AND relationship = 'FRIEND' AND (full_name LIKE :username OR " +
         "identity_number like :identityNumber)")
     fun fuzzySearchUser(username: String, identityNumber: String, id: String = Session.getAccountId()!!): List<User>

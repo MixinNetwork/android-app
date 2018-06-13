@@ -7,15 +7,16 @@ import one.mixin.android.AppExecutors
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.AppDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationItemMinimal
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.SearchMessageItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -65,7 +66,7 @@ internal constructor(
 
     fun getConversation(conversationId: String) = conversationDao.getConversation(conversationId)
 
-    fun fuzzySearchMessage(query: String): List<MessageItem> = messageDao.fuzzySearchMessage(query)
+    fun fuzzySearchMessage(query: String): List<SearchMessageItem> = messageDao.fuzzySearchMessage(query)
 
     fun fuzzySearchGroup(query: String): List<ConversationItemMinimal> = conversationDao.fuzzySearchGroup(query)
 

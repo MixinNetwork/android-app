@@ -9,6 +9,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import java.util.concurrent.TimeUnit
@@ -44,7 +45,7 @@ class AudioPlayer private constructor() {
                 if (playbackState == Player.STATE_ENDED) {
                     RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
                     stopTimber()
-                    status = 0
+                    status = STATUS_ERROR
                 }
             }
 
@@ -68,7 +69,7 @@ class AudioPlayer private constructor() {
             url?.let {
                 player.loadAudio(it)
             }
-        } else if (status == 0) {
+        } else if (status == STATUS_ERROR) {
             player.loadAudio(url!!)
         }
         status = STATUS_PLAY
@@ -93,7 +94,7 @@ class AudioPlayer private constructor() {
     }
 
     fun isLoaded(id: String): Boolean {
-        return this.id == id && status != 0
+        return this.id == id && status != STATUS_ERROR
     }
 
     var timerDisposable: Disposable? = null

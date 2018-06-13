@@ -179,7 +179,7 @@ class NewGroupFragment : BaseFragment() {
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
                         startActivity(Intent(context, MainActivity::class.java))
-                        ConversationActivity.show(context!!, conversation.conversationId, null, true)
+                        ConversationActivity.show(context!!, conversation.conversationId, null)
                     }
                     c.status == ConversationStatus.FAILURE.ordinal -> {
                         name_desc_et.hideKeyboard()

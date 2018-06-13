@@ -145,9 +145,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     companion object {
         const val CONVERSATION_ID = "conversation_id"
+        const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
-        private const val IS_GROUP = "is_group"
-        private const val IS_BOT = "is_bot"
         private const val MESSAGE_ID = "message_id"
         private const val KEY_WORD = "key_word"
         private const val MESSAGES = "messages"
@@ -156,15 +155,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         fun putBundle(
             conversationId: String?,
-            recipient: User? = null,
-            isGroup: Boolean,
+            recipientId: String?,
             messageId: String?,
             keyword: String?,
-            messages: ArrayList<ForwardMessage>?,
-            isBot: Boolean = false
+            messages: ArrayList<ForwardMessage>?
         ): Bundle =
             Bundle().apply {
-                if (conversationId == null && recipient == null) {
+                if (conversationId == null && recipientId == null) {
                     throw IllegalArgumentException("lose data")
                 }
                 messageId?.let {
@@ -174,10 +171,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     putString(KEY_WORD, keyword)
                 }
                 putString(CONVERSATION_ID, conversationId)
-                putParcelable(RECIPIENT, recipient)
-                putBoolean(IS_GROUP, isGroup)
+                putString(RECIPIENT_ID, recipientId)
                 putParcelableArrayList(MESSAGES, messages)
-                putBoolean(IS_BOT, isBot)
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
@@ -482,12 +477,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         cid
     }
 
+    private val recipient: User? by lazy {
+        arguments!!.getParcelable<User?>(RECIPIENT)
+    }
+
     private val isGroup: Boolean by lazy {
-        arguments!!.getBoolean(IS_GROUP)
+        recipient == null
     }
 
     private val isBot: Boolean by lazy {
-        arguments!!.getBoolean(IS_BOT)
+        recipient?.isBot() == true
     }
 
     private val messageId: String? by lazy {
@@ -499,7 +498,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
-    private var recipient: User? = null
     private var app: App? = null
 
     private var isFirstMessage = false
@@ -515,15 +513,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         chat_rv.adapter = chatAdapter
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        recipient = arguments!!.getParcelable(RECIPIENT)
         MixinApplication.conversationId = conversationId
-        initView()
-        chat_control.post { sendForwardMessages() }
+        val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
+        if (messages != null) {
+            sendForwardMessages(messages)
+        } else {
+            initView()
+        }
     }
 
     private val notificationManager: NotificationManager by lazy {
@@ -688,24 +690,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (isGroup) {
             renderGroup()
         } else {
-            notNullElse(recipient, {
-                chatViewModel.findUserById(it.userId).observe(this, Observer {
-                    it?.let {
-                        recipient = it
-                        chatAdapter.recipient = it
-                        renderUser(it)
-                    }
-                })
-            }, {
-                chatViewModel.findUserByConversationId(conversationId).observe(this, Observer {
-                    it?.let {
-                        recipient = it
-                        chatAdapter.recipient = it
-                        renderUser(it)
-                    }
-                })
-            })
+            renderUser(recipient!!)
         }
+
         bg_quick_flag.setOnClickListener {
             scrollTo(0)
         }
@@ -764,7 +751,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         menu_rv.adapter = menuAdapter
 
-        if (!isBot && recipient?.isBot() != true) {
+        if (!isBot) {
             app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
             app_rv.adapter = appAdapter
         }
@@ -773,7 +760,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideMediaLayout()
         }
 
-        if (isGroup || isBot || if (recipient != null) recipient!!.isBot() else false) {
+        if (isGroup || isBot) {
             menuAdapter.showTransfer = false
         }
         bindData()
@@ -852,6 +839,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 chatAdapter.hasBottomView = false
                                 chatAdapter.submitList(data)
                                 if (index > 0) {
+                                    chatAdapter.loadAround(index)
                                     scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4)
                                 } else {
                                     scrollTo(0)
@@ -897,7 +885,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 })
             }, {})
 
-        if (isBot || recipient?.isBot() == true) {
+        if (isBot) {
             app_rv.visibility = GONE
             extensions.visibility = GONE
             chat_control.chat_bot_ib.visibility = VISIBLE
@@ -937,36 +925,38 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendForwardMessages() {
-        val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
-        messages?.let {
-            for (item in it) {
-                if (item.id != null) {
-                    sendForwardMessage(item.id)
-                } else {
-                    when (item.type) {
-                        ForwardCategory.CONTACT.name -> {
-                            sendContactMessage(item.sharedUserId!!)
-                        }
-                        ForwardCategory.IMAGE.name -> {
-                            sendImageMessage(Uri.parse(item.mediaUrl))
-                        }
-                        ForwardCategory.DATA.name -> {
-                            context?.getAttachment(Uri.parse(item.mediaUrl))?.let {
-                                sendAttachmentMessage(it)
+    private fun sendForwardMessages(messages: List<ForwardMessage>) {
+        createConversation {
+            initView()
+            messages.let {
+                for (item in it) {
+                    if (item.id != null) {
+                        sendForwardMessage(item.id)
+                    } else {
+                        when (item.type) {
+                            ForwardCategory.CONTACT.name -> {
+                                sendContactMessage(item.sharedUserId!!)
                             }
-                        }
-                        ForwardCategory.VIDEO.name -> {
-                            sendVideoMessage(Uri.parse(item.mediaUrl))
-                        }
-                        ForwardCategory.TEXT.name -> {
-                            item.content?.let { sendMessage(it) }
+                            ForwardCategory.IMAGE.name -> {
+                                sendImageMessage(Uri.parse(item.mediaUrl))
+                            }
+                            ForwardCategory.DATA.name -> {
+                                context?.getAttachment(Uri.parse(item.mediaUrl))?.let {
+                                    sendAttachmentMessage(it)
+                                }
+                            }
+                            ForwardCategory.VIDEO.name -> {
+                                sendVideoMessage(Uri.parse(item.mediaUrl))
+                            }
+                            ForwardCategory.TEXT.name -> {
+                                item.content?.let { sendMessage(it) }
+                            }
                         }
                     }
                 }
+                scrollTo(0)
             }
         }
-        scrollTo(0)
     }
 
     private inline fun createConversation(crossinline action: () -> Unit) {
@@ -1150,6 +1140,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun renderUser(user: User) {
+        chatAdapter.recipient = user
         action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
         action_bar.avatar_iv.visibility = VISIBLE
         action_bar.avatar_iv.setTextSize(16f)

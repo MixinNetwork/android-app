@@ -75,13 +75,12 @@ class ForwardFragment : BaseFragment() {
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onConversationItemClick(item: ConversationItem) {
                 sharePreOperation()
-                ConversationActivity.show(context!!, item.conversationId,
-                    null, messages = messages, isGroup = item.isGroup(), isBot = item.isBot())
+                ConversationActivity.show(context!!, item.conversationId, null, messages = messages)
             }
 
             override fun onUserItemClick(user: User) {
                 sharePreOperation()
-                ConversationActivity.show(ctx, null, user, messages = messages)
+                ConversationActivity.show(ctx, null, user.userId, messages = messages)
             }
         })
 

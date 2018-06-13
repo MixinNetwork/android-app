@@ -1,3 +1,5 @@
 package one.mixin.android.event
 
-class ProgressEvent(val id: String, var progress: Float, val status: Int = 0)
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
+
+class ProgressEvent(val id: String, var progress: Float, val status: Int = STATUS_ERROR)

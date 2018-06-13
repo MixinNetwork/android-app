@@ -421,7 +421,7 @@ class DecryptMessage : Injector() {
             messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mimeType, mediaData.size,
                 mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.name, mediaData.waveform, duration,
                 mediaData.key, mediaData.digest, MediaStatus.CANCELED.name, MessageStatus.DELIVERED.name)
-            if (data.category == MessageCategory.SIGNAL_IMAGE.name) {
+            if (data.category == MessageCategory.SIGNAL_IMAGE.name || data.category == MessageCategory.SIGNAL_AUDIO.name) {
                 val message = messageDao.findMessageById(messageId)!!
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
             }

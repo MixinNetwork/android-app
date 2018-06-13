@@ -100,7 +100,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.send_fl.setOnClickListener {
             // TODO [optimize] have conversation with same user
-            context?.let { ctx -> ConversationActivity.show(ctx, null, user) }
+            context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             dialog?.dismiss()
         }
 

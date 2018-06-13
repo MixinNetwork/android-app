@@ -9,8 +9,9 @@ import kotlinx.android.synthetic.main.item_search_message.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.ui.search.SearchFragment
+import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.SearchMessageItem
 import org.jetbrains.anko.dip
 
 class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
@@ -20,11 +21,11 @@ class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
         }
     }
 
-    fun bind(message: MessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+    fun bind(message: SearchMessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?) {
         bind(message, onItemClickListener, false)
     }
 
-    fun bind(message: MessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean) {
+    fun bind(message: SearchMessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean) {
         itemView.search_name_tv.text = message.userFullName
         if (message.type == MessageCategory.SIGNAL_DATA.name || message.type == MessageCategory.PLAIN_DATA.name) {
             TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, icon, null, null, null)
@@ -34,8 +35,16 @@ class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
             itemView.search_msg_tv.text = message.content
         }
         itemView.search_time_tv.timeAgo(message.createdAt)
-        itemView.search_avatar_iv.setInfo(if (message.userFullName.isNotEmpty()) message.userFullName[0]
-        else ' ', message.userAvatarUrl, message.userId)
+        if (message.conversationCategory == ConversationCategory.CONTACT.name) {
+            if (message.botUserId != null && message.botUserId != message.userId && message.botFullName != null) {
+                itemView.search_avatar_iv.setInfo(if (message.botFullName.isNotEmpty()) message.botFullName[0] else ' ', message.botAvatarUrl, message.botUserId)
+            } else if (message.userFullName != null) {
+                itemView.search_avatar_iv.setInfo(if (message.userFullName.isNotEmpty()) message.userFullName[0] else ' ', message.userAvatarUrl, message.userId)
+            }
+        } else {
+            itemView.search_avatar_iv.setGroup(message.conversationAvatarUrl)
+        }
+
         itemView.divider.visibility = View.VISIBLE
         itemView.setOnClickListener {
             onItemClickListener?.onMessageClick(message)

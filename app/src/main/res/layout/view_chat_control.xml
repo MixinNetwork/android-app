@@ -6,10 +6,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-    <View android:layout_width="match_parent"
-          android:layout_height=".5dp"
-          android:background="@color/divider"/>
-
     <LinearLayout
             android:id="@+id/bottom_ll"
             android:layout_width="match_parent"
@@ -88,4 +84,10 @@
             android:layout_height="@dimen/chat_control_height"
             android:layout_gravity="bottom"
             android:visibility="gone"/>
+
+    <View android:layout_width="match_parent"
+          android:layout_height=".5dp"
+          android:layout_gravity="top"
+          android:background="@color/divider"/>
+
 </merge>

@@ -37,6 +37,9 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     fun findUserByConversationId(conversationId: String): LiveData<User> =
         userDao.findUserByConversationId(conversationId)
 
+    fun findContactByConversationId(conversationId: String): User? =
+        userDao.findContactByConversationId(conversationId)
+
     fun findSelf(): LiveData<User?> = userDao.findSelf(Session.getAccountId() ?: "")
 
     fun relationship(request: RelationshipRequest): Observable<MixinResponse<User>> =

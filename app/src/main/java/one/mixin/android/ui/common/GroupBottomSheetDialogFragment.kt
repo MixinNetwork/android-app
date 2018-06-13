@@ -98,7 +98,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
                 if (it.isSuccess) {
                     dialog?.dismiss()
-                    ConversationActivity.show(context!!, conversationId, isGroup = true)
+                    ConversationActivity.show(context!!, conversationId)
                 } else {
                     contentView.join_va.displayedChild = POS_TV
                     ErrorHandler.handleMixinError(it.errorCode)

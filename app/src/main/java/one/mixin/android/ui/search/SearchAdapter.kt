@@ -12,7 +12,7 @@ import one.mixin.android.ui.search.holder.HeaderHolder
 import one.mixin.android.ui.search.holder.MessageHolder
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationItemMinimal
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
@@ -40,7 +40,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         assetList: List<AssetItem>?,
         userList: List<User>?,
         groupList: List<ConversationItemMinimal>?,
-        messageList: List<MessageItem>?
+        messageList: List<SearchMessageItem>?
     ) {
         this.assetList = assetList
         this.userList = userList
@@ -58,7 +58,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     private var assetList: List<AssetItem>? = null
     private var userList: List<User>? = null
     private var groupList: List<ConversationItemMinimal>? = null
-    private var messageList: List<MessageItem>? = null
+    private var messageList: List<SearchMessageItem>? = null
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
@@ -92,7 +92,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             }
             3 -> {
                 dataList[position].let {
-                    (holder as MessageHolder).bind(it as MessageItem, onItemClickListener,
+                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener,
                         !(if (userList != null && groupList != null) {
                             position == userList!!.size + groupList!!.size + messageList!!.size - 1
                         } else if (userList != null) {

@@ -93,6 +93,6 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
 
     override fun onFriendClick(user: User) {
         val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)
-        ConversationActivity.show(requireContext(), conversationId, null, messages = arrayListOf(fw), isGroup = isGroup, isBot = isBot)
+        ConversationActivity.show(requireContext(), conversationId, null, messages = arrayListOf(fw))
     }
 }
