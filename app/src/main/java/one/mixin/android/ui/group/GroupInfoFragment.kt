@@ -283,7 +283,7 @@ class GroupInfoFragment : BaseFragment() {
     }
 
     private fun openChat(user: User) {
-        context?.let { ctx -> ConversationActivity.show(ctx, null, user) }
+        context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
     }
 
     override fun onDestroyView() {

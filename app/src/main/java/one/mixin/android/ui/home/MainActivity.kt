@@ -241,7 +241,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
                 if (conversation?.isGroup() == true) {
-                    innerIntent = ConversationActivity.putIntent(this, conversationId, isGroup = true)
+                    innerIntent = ConversationActivity.putIntent(this, conversationId)
                 } else {
                     var user = userDao.findPlainUserByConversationId(conversationId)
                     if (user == null) {
@@ -255,7 +255,7 @@ class MainActivity : BlazeBaseActivity() {
                             user = response.data?.get(0)
                         }
                     }
-                    innerIntent = ConversationActivity.putIntent(this, conversationId, user, isGroup = false)
+                    innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)
                 }
                 runOnUiThread { alertDialog?.dismiss() }
                 innerIntent

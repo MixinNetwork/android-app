@@ -62,7 +62,7 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         }
         val mainIntent = MainActivity.getSingleIntent(context)
         val conversationIntent = ConversationActivity
-            .putIntent(context, message.conversationId, isGroup = notNullElse(conversation, { it.isGroup() }, false), isBot = message.isRepresentativeMessage(conversation))
+            .putIntent(context, message.conversationId)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = if (conversation.isGroup()) {

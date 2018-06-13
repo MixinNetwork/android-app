@@ -11,11 +11,13 @@ import kotlinx.android.synthetic.main.activity_chat.*
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.repository.QrCodeType
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT
+import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.User
 import javax.inject.Inject
 
 class ConversationActivity : BlazeBaseActivity() {
@@ -35,41 +37,50 @@ class ConversationActivity : BlazeBaseActivity() {
 
     @Inject
     lateinit var conversationRepository: ConversationRepository
+    @Inject
+    lateinit var userRepository: UserRepository
 
     private fun showConversation(intent: Intent) {
         val bundle = intent.extras
         if (bundle.getString(CONVERSATION_ID) == null) {
-            val user = bundle.getParcelable<User>(RECIPIENT)
-            Observable.just(user).map {
-                conversationRepository.getConversationIdIfExistsSync(user.userId)
-            }
-                .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(scopeProvider)
+            val userId = bundle.getString(RECIPIENT_ID)
+            Observable.just(QrCodeType.user).map {
+                userRepository.getUserById(userId)!!
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider)
                 .subscribe({
-                    bundle.putString(CONVERSATION_ID, it)
+                    bundle.putParcelable(RECIPIENT, it)
                     replaceFragment(ConversationFragment.newInstance(bundle), R.id.container)
                 }, {
                     replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container)
                 })
         } else {
-            replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container)
+            Observable.just(bundle.getString(CONVERSATION_ID)).map {
+                userRepository.findContactByConversationId(it)
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider)
+                .subscribe({
+                    bundle.putParcelable(RECIPIENT, it)
+                    replaceFragment(ConversationFragment.newInstance(bundle), R.id.container)
+                }, {
+                    replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container)
+                })
         }
     }
 
     companion object {
+
         fun show(
             context: Context,
             conversationId: String? = null,
-            recipient: User? = null,
-            isGroup: Boolean = false,
+            recipientId: String? = null,
             messageId: String? = null,
             keyword: String? = null,
-            messages: ArrayList<ForwardMessage>? = null,
-            isBot: Boolean = false
+            messages: ArrayList<ForwardMessage>? = null
         ) {
+            if (conversationId == null && recipientId == null) {
+                throw IllegalArgumentException("lose data")
+            }
             Intent(context, ConversationActivity::class.java).apply {
-                putExtras(ConversationFragment.putBundle(conversationId,
-                    recipient, isGroup, messageId, keyword, messages, isBot))
+                putExtras(ConversationFragment.putBundle(conversationId, recipientId, messageId, keyword, messages))
             }.run {
                 context.startActivity(this)
             }
@@ -78,16 +89,17 @@ class ConversationActivity : BlazeBaseActivity() {
         fun putIntent(
             context: Context,
             conversationId: String? = null,
-            recipient: User? = null,
-            isGroup: Boolean = false,
+            recipientId: String? = null,
             messageId: String? = null,
             keyword: String? = null,
-            messages: ArrayList<ForwardMessage>? = null,
-            isBot: Boolean = false
-        ) =
-            Intent(context, ConversationActivity::class.java).apply {
-                putExtras(ConversationFragment.putBundle(conversationId,
-                    recipient, isGroup, messageId, keyword, messages, isBot))
+            messages: ArrayList<ForwardMessage>? = null
+        ): Intent {
+            if (conversationId == null && recipientId == null) {
+                throw IllegalArgumentException("lose data")
             }
+            return Intent(context, ConversationActivity::class.java).apply {
+                putExtras(ConversationFragment.putBundle(conversationId, recipientId, messageId, keyword, messages))
+            }
+        }
     }
 }

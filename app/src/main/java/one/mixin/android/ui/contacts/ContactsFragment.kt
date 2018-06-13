@@ -168,7 +168,7 @@ class ContactsFragment : BaseFragment() {
         }
 
         override fun onFriendItem(user: User) {
-            context?.let { ctx -> ConversationActivity.show(ctx, null, user) }
+            context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
         }
 
         override fun onContactItem(user: User) {

@@ -177,7 +177,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                             context?.toast(R.string.group_already_in)
                             context?.let {
                                 if (isAdded)
-                                    ConversationActivity.show(it, response.conversationId, isGroup = true)
+                                    ConversationActivity.show(it, response.conversationId)
                             }
                             dismiss()
                         } else {

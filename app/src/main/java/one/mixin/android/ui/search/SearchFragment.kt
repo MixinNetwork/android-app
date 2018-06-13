@@ -14,14 +14,12 @@ import kotlinx.android.synthetic.main.fragment_search.*
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationItemMinimal
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.isGroup
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.runOnUiThread
 import javax.inject.Inject
@@ -91,8 +89,7 @@ class SearchFragment : Fragment(), Injectable {
             override fun onGroupClick(conversationItemMinimal: ConversationItemMinimal) {
                 search_rv.hideKeyboard()
                 context?.let { ctx ->
-                    ConversationActivity.show(ctx,
-                        conversationItemMinimal.conversationId, null, true)
+                    ConversationActivity.show(ctx, conversationItemMinimal.conversationId, null)
                 }
             }
 
@@ -102,14 +99,13 @@ class SearchFragment : Fragment(), Injectable {
                     ConversationActivity.show(context!!,
                         conversationId = message.conversationId,
                         messageId = message.messageId,
-                        keyword = keyword,
-                        isGroup = notNullElse(it, { it.isGroup() }, false))
+                        keyword = keyword)
                 }
             }
 
             override fun onUserClick(user: User) {
                 search_rv.hideKeyboard()
-                context?.let { ctx -> ConversationActivity.show(ctx, null, user) }
+                context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             }
         }
     }

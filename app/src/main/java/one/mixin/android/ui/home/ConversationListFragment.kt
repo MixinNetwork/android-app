@@ -134,8 +134,7 @@ class ConversationListFragment : LinkFragment() {
                     }
                     doAsync { messagesViewModel.createGroupConversation(conversation.conversationId) }
                 } else {
-                    ConversationActivity.show(context!!, conversationId = conversation.conversationId,
-                        isGroup = conversation.isGroup(), isBot = conversation.isBot())
+                    ConversationActivity.show(context!!, conversationId = conversation.conversationId)
                 }
             }
         }
