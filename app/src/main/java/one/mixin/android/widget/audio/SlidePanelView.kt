@@ -45,7 +45,7 @@ class SlidePanelView : RelativeLayout {
     }
 
     fun onStart() {
-        context.vibrate(longArrayOf(0, 30))
+        context.vibrate(longArrayOf(0, 10))
         visibility = VISIBLE
         translationX = (width).toFloat()
         animate().apply {
@@ -97,7 +97,7 @@ class SlidePanelView : RelativeLayout {
     }
 
     fun onEnd() {
-        context.vibrate(longArrayOf(0, 30))
+        context.vibrate(longArrayOf(0, 10))
         animate().apply {
             translationX(width.toFloat())
             alpha(0f)

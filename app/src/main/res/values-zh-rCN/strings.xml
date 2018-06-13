@@ -446,7 +446,7 @@
     <!--withdrawal-->
     <string name="withdrawal">提现</string>
     <string name="withdrawal_tap_add_addr">点击添加地址</string>
-    <string name="withdrawal_fee">A transaction fee of %s is required for withdrawing %s</string>
+    <string name="withdrawal_fee">需要 %s 作为 %s 的提现手续费</string>
     <string name="withdrawal_asset">%s 提现</string>
     <string name="withdrawal_addr_book">%s 地址簿</string>
     <string name="withdrawal_addr_add">添加地址</string>
