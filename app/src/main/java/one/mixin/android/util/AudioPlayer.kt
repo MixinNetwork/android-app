@@ -93,7 +93,7 @@ class AudioPlayer private constructor() {
     }
 
     fun isLoaded(id: String): Boolean {
-        return this.id == id
+        return this.id == id && status != 0
     }
 
     var timerDisposable: Disposable? = null
