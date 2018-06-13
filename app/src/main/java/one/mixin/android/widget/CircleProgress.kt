@@ -376,13 +376,14 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
 
     companion object {
         private val ANGLE_INTERPOLATOR = LinearInterpolator()
-        private val ANGLE_ANIMATOR_DURATION = 3000
-        private val DEFAULT_BORDER_WIDTH = 3
-        private val STATUS_LOADING = 0
-        private val STATUS_UPLOAD = 1
-        private val STATUS_DOWNLOAD = 2
-        private val STATUS_DONE = 3
-        val STATUS_PLAY = 4
-        val STATUS_PAUSE = 5
+        private const val ANGLE_ANIMATOR_DURATION = 3000
+        private const val DEFAULT_BORDER_WIDTH = 3
+        private const val STATUS_LOADING = 0
+        private const val STATUS_UPLOAD = 1
+        private const val STATUS_DOWNLOAD = 2
+        private const val STATUS_DONE = 3
+        const val STATUS_PLAY = 4
+        const val STATUS_PAUSE = 5
+        const val STATUS_ERROR = -1
     }
 }
