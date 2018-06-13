@@ -16,7 +16,6 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.View.OnClickListener
-import android.view.View.OnFocusChangeListener
 import android.view.View.OnTouchListener
 import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
@@ -52,7 +51,7 @@ class ChatControlView : FrameLayout {
     lateinit var inputLayout: InputAwareLayout
     lateinit var stickerContainer: StickerLayout
 
-    var sendStatus = AUDIO
+    private var sendStatus = AUDIO
         set(value) {
             if (value == field) return
 
@@ -68,7 +67,7 @@ class ChatControlView : FrameLayout {
         }
 
     private var lastSendStatus = AUDIO
-    var isUp = true
+    private var isUp = true
 
     private val touchSlop: Int by lazy { ViewConfiguration.get(context).scaledTouchSlop }
     var isRecording = false
@@ -77,6 +76,8 @@ class ChatControlView : FrameLayout {
     lateinit var recordCircle: RecordCircleView
     lateinit var cover: View
     private var upBeforeGrant = false
+    private var keyboardShown = false
+    private var stickerShown = false
 
     private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_send, null) }
     private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_record_mic_black, null) }
@@ -94,7 +95,6 @@ class ChatControlView : FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
 
         chat_et.addTextChangedListener(editTextWatcher)
-        chat_et.onFocusChangeListener = editOnFocusChangeListener
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
         chat_sticker_ib.setOnClickListener(stickerClickListener)
         chat_slide.callback = chatSlideCallback
@@ -105,8 +105,8 @@ class ChatControlView : FrameLayout {
         recordCircle.callback = recordCircleCallback
     }
 
-    fun setSendWithSticker() {
-        val editEmpty = chat_et.text.toString().isBlank()
+    fun setSend() {
+        val editEmpty = chat_et.text.toString().isBlank() && chat_et.lineCount <= 1
         sendStatus = if (!editEmpty) {
             if (chat_more_ib.visibility != View.GONE) {
                 chat_more_ib.visibility = View.GONE
@@ -116,8 +116,12 @@ class ChatControlView : FrameLayout {
             if (chat_more_ib.visibility != View.VISIBLE) {
                 chat_more_ib.visibility = View.VISIBLE
             }
-            if (stickerStatus == KEYBOARD) {
-                if (isUp) UP else DOWN
+            if (!keyboardShown) {
+                if (stickerShown) {
+                    if (isUp) UP else DOWN
+                } else {
+                    lastSendStatus
+                }
             } else {
                 lastSendStatus
             }
@@ -127,7 +131,8 @@ class ChatControlView : FrameLayout {
     fun reset() {
         stickerStatus = STICKER
         isUp = true
-        setSendWithSticker()
+        stickerShown = false
+        setSend()
         inputLayout.hideCurrentInput(chat_et)
     }
 
@@ -204,41 +209,40 @@ class ChatControlView : FrameLayout {
 
     private fun audioOrVideo() = sendStatus == AUDIO || sendStatus == VIDEO
 
-    private val editOnFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
-        if (hasFocus) {
-            inputLayout.showSoftKey(chat_et)
-            stickerStatus = STICKER
+    fun toggleKeyboard(shown: Boolean) {
+        keyboardShown = shown
+        if (shown) {
             isUp = true
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT
+            if (stickerShown){
+                stickerStatus = STICKER
+            }
         } else {
-            inputLayout.show(chat_et, stickerContainer)
-            stickerStatus = KEYBOARD
+            if (stickerShown) {
+                stickerStatus = KEYBOARD
+            }
         }
-        setSendWithSticker()
+        setSend()
     }
 
     private val stickerClickListener = OnClickListener {
-        stickerStatus = if (inputLayout.currentInput == stickerContainer) {
+        if (stickerStatus == KEYBOARD) {
+            stickerShown = false
+            stickerStatus = STICKER
             inputLayout.showSoftKey(chat_et)
-            STICKER
         } else {
+            stickerShown = true
+            stickerStatus = KEYBOARD
             inputLayout.show(chat_et, stickerContainer)
-            chat_et.clearFocus()
             callback.onStickerClick()
-            KEYBOARD
         }
-        setSendWithSticker()
+        setSend()
     }
 
     private val editTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            stickerStatus = if (inputLayout.currentInput == stickerContainer) {
-                KEYBOARD
-            } else {
-                STICKER
-            }
-            setSendWithSticker()
+            setSend()
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -335,7 +339,6 @@ class ChatControlView : FrameLayout {
             SEND -> {
                 val t = chat_et.text.trim().toString()
                 callback.onSendClick(t)
-                sendStatus = lastSendStatus
             }
             AUDIO -> {
             }
@@ -345,9 +348,11 @@ class ChatControlView : FrameLayout {
             }
             UP -> {
                 callback.onUp()
+                sendStatus = DOWN
             }
             DOWN -> {
                 callback.onDown()
+                sendStatus = UP
             }
         }
     }

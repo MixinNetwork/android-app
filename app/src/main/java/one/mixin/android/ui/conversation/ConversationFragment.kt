@@ -122,8 +122,6 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckParamBlazeMessage
 import one.mixin.android.widget.ChatControlView
-import one.mixin.android.widget.ChatControlView.Companion.DOWN
-import one.mixin.android.widget.ChatControlView.Companion.UP
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.SimpleAnimatorListener
@@ -1135,10 +1133,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onKeyboardHidden() {
+        chat_control.toggleKeyboard(false)
     }
 
     override fun onKeyboardShown() {
         hideMediaLayout()
+        chat_control.toggleKeyboard(true)
     }
 
     private fun renderUser(user: User) {
@@ -1182,7 +1182,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun clickSticker() {
         hideMediaLayout()
-        chat_control.sendStatus = UP
         val stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
         if (stickerAlbumFragment == null) {
             initStickerLayout()
@@ -1234,11 +1233,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
     }
 
-    private fun updateUpOrDown(up: Boolean) {
-        chat_control.isUp = up
-        chat_control.sendStatus = if (up) UP else DOWN
-    }
-
     private fun adjustAlpha(color: Int, factor: Float): Int {
         val alpha = Math.round(Color.alpha(color) * factor)
         val red = Color.red(color)
@@ -1260,12 +1254,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         anim.addListener(object : SimpleAnimatorListener() {
             override fun onAnimationEnd(animation: Animator?) {
                 if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
-                    updateUpOrDown(false)
                     cover.alpha = COVER_MAX_ALPHA
                     val coverColor = (cover.background as ColorDrawable).color
                     activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
                 } else {
-                    updateUpOrDown(true)
                     cover.alpha = 0f
                     activity?.window?.statusBarColor = Color.TRANSPARENT
                 }
