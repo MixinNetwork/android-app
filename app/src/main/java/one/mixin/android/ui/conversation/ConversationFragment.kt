@@ -79,8 +79,8 @@ import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
-import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.job.RefreshConversationJob
+import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.ui.camera.CameraActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
@@ -122,6 +122,8 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckParamBlazeMessage
 import one.mixin.android.widget.ChatControlView
+import one.mixin.android.widget.ChatControlView.Companion.DOWN
+import one.mixin.android.widget.ChatControlView.Companion.UP
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.SimpleAnimatorListener
@@ -588,6 +590,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 hideMediaLayout()
                 true
             }
+            chat_control.isRecording -> {
+                audioRecorder.stopRecording(false)
+                chat_control.cancelExternal()
+                true
+            }
             else -> false
         }
     }
@@ -637,6 +644,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             activity?.window?.statusBarColor = Color.TRANSPARENT
         }
         chat_control.setCircle(record_circle)
+        chat_control.cover = cover
         chat_control.chat_et.setCommitContentListener(object : ContentEditText.OnCommitContentListener {
             override fun onCommitContent(inputContentInfo: InputContentInfoCompat?, flags: Int, opts: Bundle?): Boolean {
                 if (inputContentInfo != null) {
@@ -1177,6 +1185,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun clickSticker() {
         hideMediaLayout()
+        chat_control.sendStatus = UP
         var stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
         if (stickerAlbumFragment == null) {
             stickerAlbumFragment = StickerAlbumFragment.newInstance()
@@ -1185,7 +1194,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 override fun onMove(dis: Float) {
                     val params = sticker_container.layoutParams
                     val targetH = params.height - dis.toInt()
-                    val total = input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height
+                    val total = input_layout.height - bar_fl.height - bottom_layout.height
                     if (targetH <= input_layout.keyboardHeight || targetH >= total) return
 
                     params.height = targetH
@@ -1204,7 +1213,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
                 override fun onRelease() {
                     val curH = sticker_container.height
-                    val total = input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height
+                    val total = input_layout.height - bar_fl.height - bottom_layout.height
                     val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
                     val targetH = if (curH <= mid) {
                         input_layout.keyboardHeight
@@ -1222,6 +1231,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             })
         }
+    }
+
+    private fun updateUpOrDown(up: Boolean) {
+        chat_control.isUp = up
+        chat_control.sendStatus = if (up) UP else DOWN
     }
 
     private fun adjustAlpha(color: Int, factor: Float): Int {
@@ -1244,11 +1258,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         anim.addListener(object : SimpleAnimatorListener() {
             override fun onAnimationEnd(animation: Animator?) {
-                if (targetH == input_layout.height - bar_fl.height - bottom_layout.height - chat_control.height) {
+                if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
+                    updateUpOrDown(false)
                     cover.alpha = COVER_MAX_ALPHA
                     val coverColor = (cover.background as ColorDrawable).color
                     activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
                 } else {
+                    updateUpOrDown(true)
                     cover.alpha = 0f
                     activity?.window?.statusBarColor = Color.TRANSPARENT
                 }
@@ -1472,6 +1488,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onRecordCancel() {
             audioRecorder.stopRecording(false)
+        }
+
+        override fun onUp() {
+            updateSticker()
+        }
+
+        override fun onDown() {
+            updateSticker()
         }
     }
 }

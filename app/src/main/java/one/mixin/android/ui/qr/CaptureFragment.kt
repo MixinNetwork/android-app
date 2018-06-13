@@ -225,15 +225,6 @@ class CaptureFragment : BaseFragment() {
 
     @SuppressLint("CheckResult")
     fun handleScanResult(data: String) {
-        if (forAddress) {
-            val result = Intent().apply {
-                putExtra(ARGS_ADDRESS_RESULT, data)
-            }
-            activity?.setResult(RESULT_CODE, result)
-            activity?.finish()
-            return
-        }
-
         if (!isMixinUrl(data)) {
             MainActivity.showScan(context!!, data)
             mCaptureManager.closeAndFinish()
@@ -363,8 +354,16 @@ class CaptureFragment : BaseFragment() {
     }
 
     private val captureCallback = object : CaptureManagerCallback {
-        override fun onScanResult(result: BarcodeResult) {
-            pseudo_view.addContent(result.text)
+        override fun onScanResult(barcodeResult: BarcodeResult) {
+            if (forAddress) {
+                val result = Intent().apply {
+                    putExtra(ARGS_ADDRESS_RESULT, barcodeResult.text)
+                }
+                activity?.setResult(RESULT_CODE, result)
+                activity?.finish()
+                return
+            }
+            pseudo_view.addContent(barcodeResult.text)
             requireContext().mainThreadDelayed({
                 mCaptureManager.decode()
             }, 1000)
