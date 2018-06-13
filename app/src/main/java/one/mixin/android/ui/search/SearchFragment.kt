@@ -62,6 +62,9 @@ class SearchFragment : Fragment(), Injectable {
                     val messageList = searchViewModel.fuzzySearchMessage(text)
                     context?.runOnUiThread {
                         searchAdapter.setData(assetList, userList, groupList, messageList)
+                        if (assetList.isNotEmpty() || userList.isNotEmpty() || groupList.isNotEmpty() || messageList.isNotEmpty()) {
+                            search_rv.scrollToPosition(0)
+                        }
                     }
                 }
             }

@@ -1,8 +1,7 @@
 package one.mixin.android.widget
 
 import android.Manifest
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
@@ -10,7 +9,6 @@ import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_DOWN
@@ -25,6 +23,7 @@ import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import androidx.core.animation.addListener
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -75,7 +74,7 @@ class ChatControlView : FrameLayout {
     private val touchSlop: Int by lazy { ViewConfiguration.get(context).scaledTouchSlop }
     var isRecording = false
     private val maximumFlingVelocity: Int by lazy { ViewConfiguration.get(context).scaledMaximumFlingVelocity }
-    private val minimumFlingVelocity: Int by lazy { context.dip(400) }
+    private val minimumFlingVelocity: Int by lazy { ViewConfiguration.get(context).scaledMinimumFlingVelocity }
 
     var activity: Activity? = null
     lateinit var recordCircle: RecordCircleView
@@ -106,7 +105,6 @@ class ChatControlView : FrameLayout {
     fun setCircle(record_circle: RecordCircleView) {
         recordCircle = record_circle
         recordCircle.callback = recordCircleCallback
-        recordCircle.scale = 0f
     }
 
     fun setSendWithSticker() {
@@ -130,6 +128,7 @@ class ChatControlView : FrameLayout {
 
     fun reset() {
         stickerStatus = STICKER
+        isUp = true
         setSendWithSticker()
         inputLayout.hideCurrentInput(chat_et)
     }
@@ -184,21 +183,19 @@ class ChatControlView : FrameLayout {
         if (isRecording) {
             recordCircle.visibility = View.VISIBLE
             recordCircle.setAmplitude(.0)
-            recordCircle.animate().apply {
-                recordCircle.scale = 1f
+            ObjectAnimator.ofFloat(recordCircle, "scale", 1f).apply {
                 interpolator = DecelerateInterpolator()
             }.start()
             chat_send_ib.animate().alpha(0f).start()
         } else {
-            recordCircle.animate().apply {
-                recordCircle.scale = 0f
+            ObjectAnimator.ofFloat(recordCircle, "scale", 0f).apply {
                 interpolator = AccelerateInterpolator()
-                setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        setListener(null)
-                        recordCircle.visibility = View.GONE
-                        recordCircle.setSendButtonInvisible()
-                    }
+                addListener(onEnd = {
+                    recordCircle.visibility = View.GONE
+                    recordCircle.setSendButtonInvisible()
+                }, onCancel = {
+                    recordCircle.visibility = View.GONE
+                    recordCircle.setSendButtonInvisible()
                 })
             }.start()
             chat_send_ib.animate().alpha(1f).start()
@@ -314,9 +311,7 @@ class ChatControlView : FrameLayout {
                 velocityTracker?.let {
                     it.computeCurrentVelocity(1000, maximumFlingVelocity.toFloat())
                     val vx = it.xVelocity
-                    val vy = it.yVelocity
-                    Log.d("@@@", "vx: $vx, vy: $vy")
-                    if (abs(vy)> minimumFlingVelocity || abs(vx) > minimumFlingVelocity) {
+                    if (abs(vx) > minimumFlingVelocity) {
                         removeCallbacks(recordRunnable)
                         handleCancelOrEnd(true)
                         velocityTracker?.recycle()

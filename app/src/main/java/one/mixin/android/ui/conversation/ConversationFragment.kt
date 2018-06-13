@@ -574,6 +574,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         AudioPlayer.pause()
+        audioRecorder.stopRecording(false)
+        if (chat_control.isRecording) {
+            chat_control.cancelExternal()
+        }
     }
 
     override fun onBackPressed(): Boolean {
