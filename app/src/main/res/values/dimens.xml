@@ -32,4 +32,6 @@
     <dimen name="blink_size">8dp</dimen>
     <dimen name="padding8">8dp</dimen>
     <dimen name="chat_control_height">52dp</dimen>
+    <dimen name="chat_menu_height">87dp</dimen>
+    <dimen name="chat_app_height">103dp</dimen>
 </resources>
