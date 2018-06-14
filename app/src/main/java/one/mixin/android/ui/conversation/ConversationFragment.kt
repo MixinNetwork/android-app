@@ -1149,24 +1149,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun renderUser(user: User) {
         chatAdapter.recipient = user
-        action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
-        action_bar.avatar_iv.visibility = VISIBLE
-        action_bar.avatar_iv.setTextSize(16f)
-        action_bar.avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0]
-        else ' ', user.avatarUrl, user.identityNumber)
+        renderUserInfo(user)
+        chatViewModel.findUserById(user.userId).observe(this, Observer {
+            it?.let {
+                renderUserInfo(it)
+            }
+        })
         action_bar.avatar_iv.setOnClickListener {
             hideIfShowBottomSheet()
             UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
-        }
-        recipient?.let {
-            if (it.relationship == UserRelationship.BLOCKING.name) {
-                chat_control.visibility = GONE
-                bottom_unblock.visibility = VISIBLE
-                chat_control.chat_et.hideKeyboard()
-            } else {
-                chat_control.visibility = VISIBLE
-                bottom_unblock.visibility = GONE
-            }
         }
         bottom_unblock.setOnClickListener {
             recipient?.let { user ->
@@ -1183,6 +1174,24 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         menuAdapter.showTransfer = true
                     }
                 }
+            }
+        }
+    }
+
+    private fun renderUserInfo(user: User) {
+        action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
+        action_bar.avatar_iv.visibility = VISIBLE
+        action_bar.avatar_iv.setTextSize(16f)
+        action_bar.avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0]
+        else ' ', user.avatarUrl, user.identityNumber)
+        user.let {
+            if (it.relationship == UserRelationship.BLOCKING.name) {
+                chat_control.visibility = GONE
+                bottom_unblock.visibility = VISIBLE
+                chat_control.chat_et.hideKeyboard()
+            } else {
+                chat_control.visibility = VISIBLE
+                bottom_unblock.visibility = GONE
             }
         }
     }
