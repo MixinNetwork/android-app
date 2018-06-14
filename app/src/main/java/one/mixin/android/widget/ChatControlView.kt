@@ -330,6 +330,7 @@ class ChatControlView : FrameLayout {
                 } else {
                     removeCallbacks(recordRunnable)
                     removeCallbacks(checkReadyRunnable)
+                    callback.onRecordCancel()
                 }
                 updateRecordCircleAndSendIcon()
 

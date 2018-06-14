@@ -1261,6 +1261,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     min(COVER_MAX_ALPHA, (this.toFloat() - curH) / (targetH - curH))
                 }
+                if (this == targetH) {
+                    chat_control.updateUp(targetH > curH)
+                }
                 val coverColor = (cover.background as ColorDrawable).color
                 activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
             }
