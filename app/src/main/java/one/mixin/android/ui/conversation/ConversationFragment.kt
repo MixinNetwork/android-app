@@ -575,7 +575,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         AudioPlayer.pause()
-        audioRecorder.stopRecording(false)
+        audioRecorder.stopRecording(false, false)
         if (chat_control.isRecording) {
             chat_control.cancelExternal()
         }

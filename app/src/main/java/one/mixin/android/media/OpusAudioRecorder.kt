@@ -161,9 +161,9 @@ class OpusAudioRecorder(private val ctx: Context) {
         recordQueue.postRunnable(recodeStartRunnable)
     }
 
-    fun stopRecording(send: Boolean) {
+    fun stopRecording(send: Boolean, vibrate: Boolean = true) {
         recordQueue.cancelRunnable(recodeStartRunnable)
-        ctx.vibrate(longArrayOf(0, 10))
+        if (vibrate) ctx.vibrate(longArrayOf(0, 10))
         recordQueue.postRunnable(Runnable {
             audioRecord?.let { audioRecord ->
                 try {
