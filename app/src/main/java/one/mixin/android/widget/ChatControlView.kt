@@ -43,7 +43,7 @@ class ChatControlView : FrameLayout {
         const val STICKER = 0
         const val KEYBOARD = 1
 
-        const val SEND_CLICK_DELAY = 300L
+        const val SEND_CLICK_DELAY = 200L
         const val RECORD_DELAY = 100L
     }
 
@@ -138,10 +138,14 @@ class ChatControlView : FrameLayout {
 
     fun cancelExternal() {
         removeCallbacks(recordRunnable)
-        chat_slide.onEnd()
         cleanUp()
         updateRecordCircleAndSendIcon()
         chat_slide.parent.requestDisallowInterceptTouchEvent(false)
+    }
+
+    fun updateUp(up: Boolean) {
+        isUp = up
+        setSend()
     }
 
     private fun checkSend() {
@@ -176,10 +180,7 @@ class ChatControlView : FrameLayout {
     }
 
     private fun handleCancelOrEnd(cancel: Boolean) {
-        if (callback.isReady()) {
-            if (cancel) callback.onRecordCancel() else callback.onRecordEnd()
-        }
-        chat_slide.onEnd()
+        if (cancel) callback.onRecordCancel() else callback.onRecordEnd()
         cleanUp()
         updateRecordCircleAndSendIcon()
     }
@@ -190,11 +191,19 @@ class ChatControlView : FrameLayout {
             recordCircle.setAmplitude(.0)
             ObjectAnimator.ofFloat(recordCircle, "scale", 1f).apply {
                 interpolator = DecelerateInterpolator()
+                duration = 200
+                addListener(onEnd = {
+                    recordCircle.visibility = View.VISIBLE
+                }, onCancel = {
+                    recordCircle.visibility = View.VISIBLE
+                })
             }.start()
-            chat_send_ib.animate().alpha(0f).start()
+            chat_send_ib.animate().setDuration(200).alpha(0f).start()
+            chat_slide.onStart()
         } else {
             ObjectAnimator.ofFloat(recordCircle, "scale", 0f).apply {
                 interpolator = AccelerateInterpolator()
+                duration = 200
                 addListener(onEnd = {
                     recordCircle.visibility = View.GONE
                     recordCircle.setSendButtonInvisible()
@@ -203,7 +212,8 @@ class ChatControlView : FrameLayout {
                     recordCircle.setSendButtonInvisible()
                 })
             }.start()
-            chat_send_ib.animate().alpha(1f).start()
+            chat_send_ib.animate().setDuration(200).alpha(1f).start()
+            chat_slide.onEnd()
         }
     }
 
@@ -215,7 +225,7 @@ class ChatControlView : FrameLayout {
             isUp = true
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT
-            if (stickerShown){
+            if (stickerShown) {
                 stickerStatus = STICKER
             }
         } else {
@@ -317,12 +327,10 @@ class ChatControlView : FrameLayout {
                 if (System.currentTimeMillis() - startTime >= SEND_CLICK_DELAY) {
                     removeCallbacks(sendClickRunnable)
                     if (event.action == ACTION_UP && callback.isReady()) callback.onRecordEnd() else callback.onRecordCancel()
-                    chat_slide.onEnd()
-                    updateRecordCircleAndSendIcon()
                 } else {
                     removeCallbacks(recordRunnable)
+                    removeCallbacks(checkReadyRunnable)
                 }
-                chat_slide.onEnd()
                 updateRecordCircleAndSendIcon()
 
                 if (!callback.isReady()) {
@@ -348,11 +356,9 @@ class ChatControlView : FrameLayout {
             }
             UP -> {
                 callback.onUp()
-                sendStatus = DOWN
             }
             DOWN -> {
                 callback.onDown()
-                sendStatus = UP
             }
         }
     }
@@ -393,7 +399,6 @@ class ChatControlView : FrameLayout {
                 }
                 isRecording = true
                 checkSend()
-                chat_slide.onStart()
                 updateRecordCircleAndSendIcon()
                 recordCircle.setLockTranslation(10000f)
             } else {

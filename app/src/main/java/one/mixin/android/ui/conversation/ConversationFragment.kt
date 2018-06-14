@@ -603,6 +603,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    private fun hideIfShowBottomSheet() {
+        if (sticker_container.visibility == VISIBLE) {
+            hideStickerContainer()
+        }
+        if (mediaVisibility) {
+            hideMediaLayout()
+        }
+        if (chat_control.isRecording) {
+            audioRecorder.stopRecording(false)
+            chat_control.cancelExternal()
+        }
+    }
+
     private fun hideStickerContainer() {
         cover.alpha = 0f
         activity?.window?.statusBarColor = Color.TRANSPARENT
@@ -893,15 +906,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (it != null && it.isNotEmpty()) {
                     this.app = it[0]
                     chat_control.chat_bot_ib.setOnClickListener {
-                        if (sticker_container.visibility == VISIBLE) {
-                            cover.alpha = 0f
-                            sticker_container.visibility = GONE
-                            activity?.window?.statusBarColor = Color.TRANSPARENT
-                            input_layout.hideCurrentInput(chat_control.chat_et)
-                        }
-                        if (mediaVisibility) {
-                            hideMediaLayout()
-                        }
+                        hideIfShowBottomSheet()
                         this.app?.let {
                             openUrlWithExtraWeb(it.homeUri, conversationId, requireFragmentManager())
                         }
@@ -1123,6 +1128,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun showGroupBottomSheet(expand: Boolean) {
+        hideIfShowBottomSheet()
         val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(conversationId = conversationId, expand = expand)
         bottomSheetDialogFragment.show(fragmentManager, GroupBottomSheetDialogFragment.TAG)
         bottomSheetDialogFragment.callback = object : GroupBottomSheetDialogFragment.Callback {
@@ -1149,6 +1155,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         action_bar.avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0]
         else ' ', user.avatarUrl, user.identityNumber)
         action_bar.avatar_iv.setOnClickListener {
+            hideIfShowBottomSheet()
             UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
         }
         recipient?.let {
@@ -1254,10 +1261,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         anim.addListener(object : SimpleAnimatorListener() {
             override fun onAnimationEnd(animation: Animator?) {
                 if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
+                    chat_control.updateUp(false)
                     cover.alpha = COVER_MAX_ALPHA
                     val coverColor = (cover.background as ColorDrawable).color
                     activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
                 } else {
+                    chat_control.updateUp(true)
                     cover.alpha = 0f
                     activity?.window?.statusBarColor = Color.TRANSPARENT
                 }

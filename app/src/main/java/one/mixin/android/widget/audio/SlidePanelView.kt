@@ -47,21 +47,22 @@ class SlidePanelView : RelativeLayout {
     fun onStart() {
         context.vibrate(longArrayOf(0, 10))
         visibility = VISIBLE
-        translationX = (width).toFloat()
-        animate().apply {
-            translationX(0f)
-            alpha(1f)
+        translationX = measuredWidth.toFloat()
+        val animSet = AnimatorSet().apply {
             interpolator = DecelerateInterpolator()
             duration = 200
-            setListener(object : AnimatorListenerAdapter() {
+            addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
-                    setListener(null)
-
                     blinkingDrawable?.blinking()
                     postDelayed(updateTimeRunnable, 200)
                 }
             })
-        }.start()
+        }
+        animSet.playTogether(
+            ObjectAnimator.ofFloat(this, "translationX", 0f),
+            ObjectAnimator.ofFloat(this, "alpha", 1f)
+        )
+        animSet.start()
     }
 
     val slideWidth by lazy {
@@ -83,7 +84,7 @@ class SlidePanelView : RelativeLayout {
 
     fun toCancel() {
         val animSet = AnimatorSet().apply {
-            duration = 150
+            duration = 200
             interpolator = DecelerateInterpolator()
         }
         animSet.playTogether(
@@ -98,12 +99,10 @@ class SlidePanelView : RelativeLayout {
 
     fun onEnd() {
         context.vibrate(longArrayOf(0, 10))
-        animate().apply {
-            translationX(width.toFloat())
-            alpha(0f)
+        val animSet = AnimatorSet().apply {
             interpolator = AccelerateInterpolator()
             duration = 200
-            setListener(object : AnimatorListenerAdapter() {
+            addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     handleEnd()
                 }
@@ -112,11 +111,15 @@ class SlidePanelView : RelativeLayout {
                     handleEnd()
                 }
             })
-        }.start()
+        }
+        animSet.playTogether(
+            ObjectAnimator.ofFloat(this, "translationX", measuredWidth.toFloat()),
+            ObjectAnimator.ofFloat(this, "alpha", 0f)
+        )
+        animSet.start()
     }
 
     private fun handleEnd() {
-        animate().setListener(null)
         if (toCanceled) {
             toCanceled = false
             cancel_tv.alpha = 0f
