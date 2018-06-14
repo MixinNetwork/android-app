@@ -22,7 +22,7 @@
                 android:paddingEnd="48dp"
                 android:alpha="0"
                 android:layout_gravity="center"
-                android:textColor="@color/colorBlue"
+                android:textColor="@color/colorDarkBlue"
                 android:textSize="18sp"
                 android:text="@string/cancel"/>
 

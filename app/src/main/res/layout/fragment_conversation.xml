@@ -243,10 +243,12 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/white"
                 android:padding="4dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="40dp"
                 android:visibility="invisible"
-                android:background="@color/colorBlue"
+                android:background="@drawable/bg_record_tip"
                 android:text="@string/hold_to_record_audio"
-                app:layout_constraintBottom_toTopOf="@id/bottom_layout"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 
         </android.support.constraint.ConstraintLayout>

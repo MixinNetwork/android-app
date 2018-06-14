@@ -28,6 +28,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -1271,14 +1272,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     min(COVER_MAX_ALPHA, (this.toFloat() - curH) / (targetH - curH))
                 }
-                if (this == targetH) {
-                    chat_control.updateUp(targetH > curH)
-                }
                 val coverColor = (cover.background as ColorDrawable).color
                 activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
             }
 
             sticker_container.layoutParams = params
+        }
+        anim.doOnEnd {
+            if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
+                chat_control.updateUp(false)
+            } else {
+                chat_control.updateUp(true)
+            }
         }
         anim.start()
     }
