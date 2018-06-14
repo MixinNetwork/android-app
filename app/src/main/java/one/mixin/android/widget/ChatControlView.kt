@@ -26,6 +26,8 @@ import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fadeOut
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
@@ -50,6 +52,7 @@ class ChatControlView : FrameLayout {
     lateinit var callback: Callback
     lateinit var inputLayout: InputAwareLayout
     lateinit var stickerContainer: StickerLayout
+    lateinit var recordTipView: View
 
     private var sendStatus = AUDIO
         set(value) {
@@ -350,6 +353,13 @@ class ChatControlView : FrameLayout {
                 callback.onSendClick(t)
             }
             AUDIO -> {
+                if (recordTipView.visibility == View.INVISIBLE) {
+                    recordTipView.fadeIn()
+                    postDelayed(hideRecordTipRunnable, 3000)
+                } else {
+                    removeCallbacks(hideRecordTipRunnable)
+                }
+                postDelayed(hideRecordTipRunnable, 3000)
             }
             VIDEO -> {
                 sendStatus = AUDIO
@@ -364,9 +374,17 @@ class ChatControlView : FrameLayout {
         }
     }
 
+    private val hideRecordTipRunnable =  Runnable {
+        if (recordTipView.visibility == View.VISIBLE) {
+            recordTipView.fadeOut()
+        }
+    }
+
     private val recordRunnable: Runnable by lazy {
         Runnable {
             removeCallbacks(sendClickRunnable)
+            removeCallbacks(hideRecordTipRunnable)
+            post(hideRecordTipRunnable)
 
             if (activity == null || !audioOrVideo()) return@Runnable
 

@@ -15,7 +15,6 @@ import android.widget.RelativeLayout
 import kotlinx.android.synthetic.main.view_slide_panel.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.vibrate
 import one.mixin.android.widget.AndroidUtilities
 import org.jetbrains.anko.backgroundColor
 import org.jetbrains.anko.dip
@@ -45,7 +44,6 @@ class SlidePanelView : RelativeLayout {
     }
 
     fun onStart() {
-        context.vibrate(longArrayOf(0, 10))
         visibility = VISIBLE
         translationX = measuredWidth.toFloat()
         val animSet = AnimatorSet().apply {
@@ -98,7 +96,6 @@ class SlidePanelView : RelativeLayout {
     }
 
     fun onEnd() {
-        context.vibrate(longArrayOf(0, 10))
         val animSet = AnimatorSet().apply {
             interpolator = AccelerateInterpolator()
             duration = 200

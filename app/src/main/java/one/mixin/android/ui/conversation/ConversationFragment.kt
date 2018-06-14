@@ -656,6 +656,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control.activity = requireActivity()
         chat_control.inputLayout = input_layout
         chat_control.stickerContainer = sticker_container
+        chat_control.recordTipView = record_tip_tv
         chat_control.chat_et.setOnClickListener {
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT

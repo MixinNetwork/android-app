@@ -10,10 +10,11 @@ import androidx.core.content.systemService
 import one.mixin.android.AppExecutors
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.vibrate
 import one.mixin.android.util.DispatchQueue
 import java.io.File
 
-class OpusAudioRecorder(ctx: Context) {
+class OpusAudioRecorder(private val ctx: Context) {
     companion object {
         init {
             System.loadLibrary("mixin")
@@ -138,6 +139,7 @@ class OpusAudioRecorder(ctx: Context) {
                 audioRecord = null
                 return@Runnable
             }
+            ctx.vibrate(longArrayOf(0, 10))
             statusSuccess = true
 
         } catch (e: Exception) {
@@ -161,6 +163,7 @@ class OpusAudioRecorder(ctx: Context) {
 
     fun stopRecording(send: Boolean) {
         recordQueue.cancelRunnable(recodeStartRunnable)
+        ctx.vibrate(longArrayOf(0, 10))
         recordQueue.postRunnable(Runnable {
             audioRecord?.let { audioRecord ->
                 try {

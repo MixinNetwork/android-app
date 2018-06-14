@@ -237,6 +237,18 @@
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"/>
 
+            <TextView
+                android:id="@+id/record_tip_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/white"
+                android:padding="4dp"
+                android:visibility="invisible"
+                android:background="@color/colorBlue"
+                android:text="@string/hold_to_record_audio"
+                app:layout_constraintBottom_toTopOf="@id/bottom_layout"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
         </android.support.constraint.ConstraintLayout>
 
         <View

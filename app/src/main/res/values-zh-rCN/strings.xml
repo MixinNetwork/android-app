@@ -185,6 +185,7 @@
     <string name="title_participants">%d 成员</string>
     <string name="save_success">保存成功</string>
     <string name="save_failure">保存失败</string>
+    <string name="hold_to_record_audio">长按说话，松手发送</string>
     <!--contact-->
     <string name="contact_other_title">信息</string>
     <string name="contact_other_add">添加联系人</string>
