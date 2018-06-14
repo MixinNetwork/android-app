@@ -17,11 +17,11 @@ import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.View.OnTouchListener
-import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -31,7 +31,6 @@ import one.mixin.android.extension.fadeOut
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
-import kotlin.math.abs
 
 class ChatControlView : FrameLayout {
 
@@ -45,8 +44,7 @@ class ChatControlView : FrameLayout {
         const val STICKER = 0
         const val KEYBOARD = 1
 
-        const val SEND_CLICK_DELAY = 200L
-        const val RECORD_DELAY = 100L
+        const val RECORD_DELAY = 200L
     }
 
     lateinit var callback: Callback
@@ -72,7 +70,6 @@ class ChatControlView : FrameLayout {
     private var lastSendStatus = AUDIO
     private var isUp = true
 
-    private val touchSlop: Int by lazy { ViewConfiguration.get(context).scaledTouchSlop }
     var isRecording = false
 
     var activity: Activity? = null
@@ -239,6 +236,34 @@ class ChatControlView : FrameLayout {
         setSend()
     }
 
+    private fun clickSend() {
+        when (sendStatus) {
+            SEND -> {
+                val t = chat_et.text.trim().toString()
+                callback.onSendClick(t)
+            }
+            AUDIO -> {
+                if (recordTipView.visibility == View.INVISIBLE) {
+                    recordTipView.fadeIn()
+                    postDelayed(hideRecordTipRunnable, 3000)
+                } else {
+                    removeCallbacks(hideRecordTipRunnable)
+                }
+                postDelayed(hideRecordTipRunnable, 3000)
+            }
+            VIDEO -> {
+                sendStatus = AUDIO
+                lastSendStatus = sendStatus
+            }
+            UP -> {
+                callback.onUp()
+            }
+            DOWN -> {
+                callback.onDown()
+            }
+        }
+    }
+
     private val stickerClickListener = OnClickListener {
         if (stickerStatus == KEYBOARD) {
             stickerShown = false
@@ -267,6 +292,8 @@ class ChatControlView : FrameLayout {
     private var originX = 0f
     private var startTime = 0L
     private var triggeredCancel = false
+    private var hasStartRecord = false
+    private var locked = false
     private var maxScrollX = context.dip(150f)
 
     private val sendOnTouchListener = OnTouchListener { _, event ->
@@ -283,30 +310,29 @@ class ChatControlView : FrameLayout {
                     maxScrollX = w
                 }
                 startTime = System.currentTimeMillis()
+                hasStartRecord = false
+                locked = false
                 if (audioOrVideo()) {
                     postDelayed(recordRunnable, RECORD_DELAY)
                 }
-                postDelayed(sendClickRunnable, SEND_CLICK_DELAY)
                 return@OnTouchListener true
             }
             ACTION_MOVE -> {
-                if (!audioOrVideo() || recordCircle.sendButtonVisible) return@OnTouchListener false
+                if (!audioOrVideo() || recordCircle.sendButtonVisible || !hasStartRecord) return@OnTouchListener false
 
                 val x = recordCircle.setLockTranslation(event.y)
                 if (x == 2) {
-                    recordCircle.animate().apply {
-                        recordCircle.lockAnimatedTranslation = recordCircle.startTranslation
+                    ObjectAnimator.ofFloat(recordCircle, "lockAnimatedTranslation",
+                        recordCircle.startTranslation).apply {
                         duration = 150
                         interpolator = DecelerateInterpolator()
+                        doOnEnd { locked = true }
                     }.start()
                     chat_slide.toCancel()
                     return@OnTouchListener false
                 }
 
                 val moveX = event.rawX
-                if (abs(moveX - startX) > touchSlop) {
-                    removeCallbacks(sendClickRunnable)
-                }
                 if (moveX != 0f) {
                     chat_slide.slideText(startX - moveX)
                     if (originX - moveX > maxScrollX) {
@@ -321,21 +347,41 @@ class ChatControlView : FrameLayout {
             }
             ACTION_UP, ACTION_CANCEL -> {
                 if (triggeredCancel) {
+                    cleanUp()
                     triggeredCancel = false
                     return@OnTouchListener false
                 }
-                if (!audioOrVideo() || recordCircle.sendButtonVisible) return@OnTouchListener false
+                if (!audioOrVideo()) {
+                    cleanUp()
+                    return@OnTouchListener false
+                }
 
-                cleanUp()
-                if (System.currentTimeMillis() - startTime >= SEND_CLICK_DELAY) {
-                    removeCallbacks(sendClickRunnable)
-                    if (event.action == ACTION_UP && callback.isReady()) callback.onRecordEnd() else callback.onRecordCancel()
-                } else {
+                if (!hasStartRecord) {
                     removeCallbacks(recordRunnable)
                     removeCallbacks(checkReadyRunnable)
-                    callback.onRecordCancel()
+                    cleanUp()
+                    if (!post(sendClickRunnable)) {
+                        clickSend()
+                    }
+                } else if (hasStartRecord && !locked && System.currentTimeMillis() - startTime < 500) {
+                    removeCallbacks(recordRunnable)
+                    removeCallbacks(checkReadyRunnable)
+                    // delay check sendButtonVisible
+                    postDelayed({
+                        if (!recordCircle.sendButtonVisible) {
+                            handleCancelOrEnd(true)
+                        } else {
+                            recordCircle.sendButtonVisible = false
+                        }
+                    }, 200)
+                    return@OnTouchListener false
                 }
-                updateRecordCircleAndSendIcon()
+
+                if (isRecording && !recordCircle.sendButtonVisible) {
+                    handleCancelOrEnd(event.action == ACTION_CANCEL)
+                } else {
+                    cleanUp()
+                }
 
                 if (!callback.isReady()) {
                     upBeforeGrant = true
@@ -345,36 +391,9 @@ class ChatControlView : FrameLayout {
         return@OnTouchListener true
     }
 
-    private val sendClickRunnable = Runnable {
-        removeCallbacks(recordRunnable)
-        when (sendStatus) {
-            SEND -> {
-                val t = chat_et.text.trim().toString()
-                callback.onSendClick(t)
-            }
-            AUDIO -> {
-                if (recordTipView.visibility == View.INVISIBLE) {
-                    recordTipView.fadeIn()
-                    postDelayed(hideRecordTipRunnable, 3000)
-                } else {
-                    removeCallbacks(hideRecordTipRunnable)
-                }
-                postDelayed(hideRecordTipRunnable, 3000)
-            }
-            VIDEO -> {
-                sendStatus = AUDIO
-                lastSendStatus = sendStatus
-            }
-            UP -> {
-                callback.onUp()
-            }
-            DOWN -> {
-                callback.onDown()
-            }
-        }
-    }
+    private val sendClickRunnable = Runnable { clickSend() }
 
-    private val hideRecordTipRunnable =  Runnable {
+    private val hideRecordTipRunnable = Runnable {
         if (recordTipView.visibility == View.VISIBLE) {
             recordTipView.fadeOut()
         }
@@ -382,7 +401,7 @@ class ChatControlView : FrameLayout {
 
     private val recordRunnable: Runnable by lazy {
         Runnable {
-            removeCallbacks(sendClickRunnable)
+            hasStartRecord = true
             removeCallbacks(hideRecordTipRunnable)
             post(hideRecordTipRunnable)
 
