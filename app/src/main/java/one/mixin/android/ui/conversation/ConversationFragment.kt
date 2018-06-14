@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation
 
 import android.Manifest
-import android.animation.Animator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
@@ -124,7 +123,6 @@ import one.mixin.android.websocket.createAckParamBlazeMessage
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
-import one.mixin.android.widget.SimpleAnimatorListener
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager.Companion.FAST_SPEED
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager.Companion.MEDIUM_SPEED
@@ -137,6 +135,8 @@ import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
     OpusAudioRecorder.Callback {
@@ -1255,23 +1255,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         anim.addUpdateListener {
             val params = sticker_container.layoutParams
-            params.height = it.animatedValue as Int
+            params.height = (it.animatedValue as Int).apply {
+                cover.alpha = if (curH > targetH) {
+                    max(0f, min(this.toFloat() / targetH - 1f, COVER_MAX_ALPHA))
+                } else {
+                    min(COVER_MAX_ALPHA, (this.toFloat() - curH) / (targetH - curH))
+                }
+                val coverColor = (cover.background as ColorDrawable).color
+                activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
+            }
+
             sticker_container.layoutParams = params
         }
-        anim.addListener(object : SimpleAnimatorListener() {
-            override fun onAnimationEnd(animation: Animator?) {
-                if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
-                    chat_control.updateUp(false)
-                    cover.alpha = COVER_MAX_ALPHA
-                    val coverColor = (cover.background as ColorDrawable).color
-                    activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
-                } else {
-                    chat_control.updateUp(true)
-                    cover.alpha = 0f
-                    activity?.window?.statusBarColor = Color.TRANSPARENT
-                }
-            }
-        })
         anim.start()
     }
 
