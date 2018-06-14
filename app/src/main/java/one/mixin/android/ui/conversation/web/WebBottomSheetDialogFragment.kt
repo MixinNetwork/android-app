@@ -2,15 +2,18 @@ package one.mixin.android.ui.conversation.web
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -34,12 +37,15 @@ import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DragWebView
+import org.jetbrains.anko.support.v4.toast
 import java.net.URISyntaxException
 
 class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "WebBottomSheetDialogFragment"
+
+        private const val FILE_CHOOSER = 0x01
 
         private const val URL = "url"
         private const val CONVERSATION_ID = "conversation_id"
@@ -85,6 +91,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         (miniHeight + maxHeight) / 2
     }
 
+    var uploadMessage: ValueCallback<Array<Uri>>? = null
     @SuppressLint("SetJavaScriptEnabled")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -109,6 +116,20 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (!title.equals(url)) {
                     contentView.title_view.text = title
                 }
+            }
+
+            override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
+                uploadMessage?.onReceiveValue(null)
+                uploadMessage = filePathCallback
+                val intent: Intent? = fileChooserParams?.createIntent()
+                try {
+                    startActivityForResult(intent, FILE_CHOOSER)
+                } catch (e: ActivityNotFoundException) {
+                    uploadMessage = null
+                    toast(R.string.error_file_chooser)
+                    return false
+                }
+                return true
             }
         }
 
@@ -170,6 +191,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dismiss()
         }
         (dialog as BottomSheet).setCustomViewHeight(miniHeight)
+    }
+
+    @Override
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == FILE_CHOOSER) {
+            uploadMessage?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
+            uploadMessage = null
+        }
     }
 
     private fun showBottomSheet() {
