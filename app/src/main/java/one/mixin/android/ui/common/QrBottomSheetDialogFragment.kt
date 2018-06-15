@@ -34,12 +34,12 @@ import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.save
 import one.mixin.android.extension.saveQRCode
+import one.mixin.android.extension.toast
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BadgeCircleImageView.Companion.END_BOTTOM
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import java.io.FileNotFoundException
 
@@ -155,13 +155,13 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 }
                                 ctx.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
 
-                                uiThread { toast(R.string.save_success) }
+                                uiThread { context?.toast(R.string.save_success) }
                             }
                         } else {
                             ctx.openPermissionSetting()
                         }
                     }, {
-                        toast(R.string.save_failure)
+                        context?.toast(R.string.save_failure)
                     })
                 bottomSheet.dismiss()
             }
