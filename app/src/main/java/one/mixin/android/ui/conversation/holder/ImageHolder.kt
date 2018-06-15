@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGifMark
 import one.mixin.android.extension.loadImageMark
+import one.mixin.android.extension.loadLongImageMark
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -110,6 +111,8 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         itemView.chat_image.setShape(mark)
         if (isGif) {
             itemView.chat_image.loadGifMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
+        } else if (itemView.chat_image.layoutParams.height == mediaHeight) {
+            itemView.chat_image.loadLongImageMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
         } else {
             itemView.chat_image.loadImageMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
         }
