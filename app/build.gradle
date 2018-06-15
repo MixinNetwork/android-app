@@ -35,8 +35,10 @@ android {
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
 
         packagingOptions {
-            exclude 'META-INF/rxjava.properties'
-            exclude 'META-INF/main.kotlin_module'
+            exclude 'kotlin/**'
+            exclude '**/*.kotlin_metadata'
+            exclude 'META-INF/*.kotlin_module'
+            exclude 'META-INF/*.version'
         }
     }
 
