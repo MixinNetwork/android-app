@@ -1270,7 +1270,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 cover.alpha = if (curH > targetH) {
                     max(0f, min(this.toFloat() / targetH - 1f, COVER_MAX_ALPHA))
                 } else {
-                    min(COVER_MAX_ALPHA, (this.toFloat() - curH) / (targetH - curH))
+                    var a = (this.toFloat() - curH) / (targetH - curH)
+                    if (java.lang.Float.isNaN(a)) {
+                        a = 0f
+                    } else {
+                        a = min(COVER_MAX_ALPHA, (this.toFloat() - curH) / (targetH - curH))
+                    }
+                    a
                 }
                 val coverColor = (cover.background as ColorDrawable).color
                 activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)

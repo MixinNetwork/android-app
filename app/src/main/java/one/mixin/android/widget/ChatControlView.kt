@@ -351,10 +351,6 @@ class ChatControlView : FrameLayout {
                     triggeredCancel = false
                     return@OnTouchListener false
                 }
-                if (!audioOrVideo()) {
-                    cleanUp()
-                    return@OnTouchListener false
-                }
 
                 if (!hasStartRecord) {
                     removeCallbacks(recordRunnable)
