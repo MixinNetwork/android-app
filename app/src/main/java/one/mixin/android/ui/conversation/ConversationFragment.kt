@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation
 
 import android.Manifest
-import android.animation.Animator
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
@@ -29,6 +28,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
+import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -122,11 +122,8 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckParamBlazeMessage
 import one.mixin.android.widget.ChatControlView
-import one.mixin.android.widget.ChatControlView.Companion.DOWN
-import one.mixin.android.widget.ChatControlView.Companion.UP
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
-import one.mixin.android.widget.SimpleAnimatorListener
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager.Companion.FAST_SPEED
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager.Companion.MEDIUM_SPEED
@@ -139,6 +136,8 @@ import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
+import kotlin.math.max
+import kotlin.math.min
 
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
     OpusAudioRecorder.Callback {
@@ -576,7 +575,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         AudioPlayer.pause()
-        audioRecorder.stopRecording(false)
+        audioRecorder.stopRecording(false, false)
         if (chat_control.isRecording) {
             chat_control.cancelExternal()
         }
@@ -602,6 +601,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 true
             }
             else -> false
+        }
+    }
+
+    private fun hideIfShowBottomSheet() {
+        if (sticker_container.visibility == VISIBLE) {
+            hideStickerContainer()
+        }
+        if (mediaVisibility) {
+            hideMediaLayout()
+        }
+        if (chat_control.isRecording) {
+            audioRecorder.stopRecording(false)
+            chat_control.cancelExternal()
         }
     }
 
@@ -645,6 +657,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control.activity = requireActivity()
         chat_control.inputLayout = input_layout
         chat_control.stickerContainer = sticker_container
+        chat_control.recordTipView = record_tip_tv
         chat_control.chat_et.setOnClickListener {
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT
@@ -759,6 +772,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         shadow.setOnClickListener {
             hideMediaLayout()
         }
+
+        initStickerLayout()
 
         if (isGroup || isBot) {
             menuAdapter.showTransfer = false
@@ -893,15 +908,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (it != null && it.isNotEmpty()) {
                     this.app = it[0]
                     chat_control.chat_bot_ib.setOnClickListener {
-                        if (sticker_container.visibility == VISIBLE) {
-                            cover.alpha = 0f
-                            sticker_container.visibility = GONE
-                            activity?.window?.statusBarColor = Color.TRANSPARENT
-                            input_layout.hideCurrentInput(chat_control.chat_et)
-                        }
-                        if (mediaVisibility) {
-                            hideMediaLayout()
-                        }
+                        hideIfShowBottomSheet()
                         this.app?.let {
                             openUrlWithExtraWeb(it.homeUri, conversationId, requireFragmentManager())
                         }
@@ -1123,6 +1130,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun showGroupBottomSheet(expand: Boolean) {
+        hideIfShowBottomSheet()
         val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(conversationId = conversationId, expand = expand)
         bottomSheetDialogFragment.show(fragmentManager, GroupBottomSheetDialogFragment.TAG)
         bottomSheetDialogFragment.callback = object : GroupBottomSheetDialogFragment.Callback {
@@ -1133,31 +1141,25 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onKeyboardHidden() {
+        chat_control.toggleKeyboard(false)
     }
 
     override fun onKeyboardShown() {
         hideMediaLayout()
+        chat_control.toggleKeyboard(true)
     }
 
     private fun renderUser(user: User) {
         chatAdapter.recipient = user
-        action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
-        action_bar.avatar_iv.visibility = VISIBLE
-        action_bar.avatar_iv.setTextSize(16f)
-        action_bar.avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0]
-        else ' ', user.avatarUrl, user.identityNumber)
-        action_bar.avatar_iv.setOnClickListener {
-            UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
-        }
-        recipient?.let {
-            if (it.relationship == UserRelationship.BLOCKING.name) {
-                chat_control.visibility = GONE
-                bottom_unblock.visibility = VISIBLE
-                chat_control.chat_et.hideKeyboard()
-            } else {
-                chat_control.visibility = VISIBLE
-                bottom_unblock.visibility = GONE
+        renderUserInfo(user)
+        chatViewModel.findUserById(user.userId).observe(this, Observer {
+            it?.let {
+                renderUserInfo(it)
             }
+        })
+        action_bar.avatar_iv.setOnClickListener {
+            hideIfShowBottomSheet()
+            UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
         }
         bottom_unblock.setOnClickListener {
             recipient?.let { user ->
@@ -1178,59 +1180,75 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun clickSticker() {
-        hideMediaLayout()
-        chat_control.sendStatus = UP
-        var stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
-        if (stickerAlbumFragment == null) {
-            stickerAlbumFragment = StickerAlbumFragment.newInstance()
-            activity?.replaceFragment(stickerAlbumFragment, R.id.sticker_container, StickerAlbumFragment.TAG)
-            stickerAlbumFragment.setCallback(object : StickerAlbumFragment.Callback {
-                override fun onMove(dis: Float) {
-                    val params = sticker_container.layoutParams
-                    val targetH = params.height - dis.toInt()
-                    val total = input_layout.height - bar_fl.height - bottom_layout.height
-                    if (targetH <= input_layout.keyboardHeight || targetH >= total) return
-
-                    params.height = targetH
-                    sticker_container.layoutParams = params
-
-                    val per = Math.abs(dis / (total - input_layout.keyboardHeight))
-                    if (dis > 0) {
-                        cover.alpha -= COVER_MAX_ALPHA * per
-                    } else {
-                        cover.alpha += COVER_MAX_ALPHA * per
-                    }
-
-                    val coverColor = (cover.background as ColorDrawable).color
-                    activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
-                }
-
-                override fun onRelease() {
-                    val curH = sticker_container.height
-                    val total = input_layout.height - bar_fl.height - bottom_layout.height
-                    val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
-                    val targetH = if (curH <= mid) {
-                        input_layout.keyboardHeight
-                    } else {
-                        total
-                    }
-                    stickerAnim(curH, targetH)
-                }
-
-                override fun onStickerClick(albumId: String, name: String) {
-                    sendStickerMessage(albumId, name)
-                    if (sticker_container.height != input_layout.keyboardHeight) {
-                        stickerAnim(sticker_container.height, input_layout.keyboardHeight)
-                    }
-                }
-            })
+    private fun renderUserInfo(user: User) {
+        action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
+        action_bar.avatar_iv.visibility = VISIBLE
+        action_bar.avatar_iv.setTextSize(16f)
+        action_bar.avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0]
+        else ' ', user.avatarUrl, user.identityNumber)
+        user.let {
+            if (it.relationship == UserRelationship.BLOCKING.name) {
+                chat_control.visibility = GONE
+                bottom_unblock.visibility = VISIBLE
+                chat_control.chat_et.hideKeyboard()
+            } else {
+                chat_control.visibility = VISIBLE
+                bottom_unblock.visibility = GONE
+            }
         }
     }
 
-    private fun updateUpOrDown(up: Boolean) {
-        chat_control.isUp = up
-        chat_control.sendStatus = if (up) UP else DOWN
+    private fun clickSticker() {
+        hideMediaLayout()
+        val stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
+        if (stickerAlbumFragment == null) {
+            initStickerLayout()
+        }
+    }
+
+    private fun initStickerLayout() {
+        val stickerAlbumFragment = StickerAlbumFragment.newInstance()
+        activity?.replaceFragment(stickerAlbumFragment, R.id.sticker_container, StickerAlbumFragment.TAG)
+        stickerAlbumFragment.setCallback(object : StickerAlbumFragment.Callback {
+            override fun onMove(dis: Float) {
+                val params = sticker_container.layoutParams
+                val targetH = params.height - dis.toInt()
+                val total = input_layout.height - bar_fl.height - bottom_layout.height
+                if (targetH <= input_layout.keyboardHeight || targetH >= total) return
+
+                params.height = targetH
+                sticker_container.layoutParams = params
+
+                val per = Math.abs(dis / (total - input_layout.keyboardHeight))
+                if (dis > 0) {
+                    cover.alpha -= COVER_MAX_ALPHA * per
+                } else {
+                    cover.alpha += COVER_MAX_ALPHA * per
+                }
+
+                val coverColor = (cover.background as ColorDrawable).color
+                activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
+            }
+
+            override fun onRelease() {
+                val curH = sticker_container.height
+                val total = input_layout.height - bar_fl.height - bottom_layout.height
+                val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
+                val targetH = if (curH <= mid) {
+                    input_layout.keyboardHeight
+                } else {
+                    total
+                }
+                stickerAnim(curH, targetH)
+            }
+
+            override fun onStickerClick(albumId: String, name: String) {
+                sendStickerMessage(albumId, name)
+                if (sticker_container.height != input_layout.keyboardHeight) {
+                    stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                }
+            }
+        })
     }
 
     private fun adjustAlpha(color: Int, factor: Float): Int {
@@ -1248,23 +1266,31 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         anim.addUpdateListener {
             val params = sticker_container.layoutParams
-            params.height = it.animatedValue as Int
+            params.height = (it.animatedValue as Int).apply {
+                cover.alpha = if (curH > targetH) {
+                    max(0f, min(this.toFloat() / targetH - 1f, COVER_MAX_ALPHA))
+                } else {
+                    var a = (this.toFloat() - curH) / (targetH - curH)
+                    if (java.lang.Float.isNaN(a)) {
+                        a = 0f
+                    } else {
+                        a = min(COVER_MAX_ALPHA, (this.toFloat() - curH) / (targetH - curH))
+                    }
+                    a
+                }
+                val coverColor = (cover.background as ColorDrawable).color
+                activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
+            }
+
             sticker_container.layoutParams = params
         }
-        anim.addListener(object : SimpleAnimatorListener() {
-            override fun onAnimationEnd(animation: Animator?) {
-                if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
-                    updateUpOrDown(false)
-                    cover.alpha = COVER_MAX_ALPHA
-                    val coverColor = (cover.background as ColorDrawable).color
-                    activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
-                } else {
-                    updateUpOrDown(true)
-                    cover.alpha = 0f
-                    activity?.window?.statusBarColor = Color.TRANSPARENT
-                }
+        anim.doOnEnd {
+            if (targetH == input_layout.height - bar_fl.height - bottom_layout.height) {
+                chat_control.updateUp(false)
+            } else {
+                chat_control.updateUp(true)
             }
-        })
+        }
         anim.start()
     }
 
@@ -1474,7 +1500,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun isReady(): Boolean {
-            return true
+            return audioRecorder.statusSuccess
         }
 
         override fun onRecordEnd() {

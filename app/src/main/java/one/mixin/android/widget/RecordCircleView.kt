@@ -6,6 +6,7 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
+import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
 import android.support.v4.content.ContextCompat
@@ -33,6 +34,7 @@ class RecordCircleView : View {
     }
 
     private val rect = RectF()
+    private var sendClickBound = Rect()
     var scale = 0f
         set(value) {
             field = value
@@ -129,7 +131,7 @@ class RecordCircleView : View {
             val y = event.y.toInt()
             if (event.action == MotionEvent.ACTION_DOWN) {
                 pressedEnd = lockBackgroundDrawable.bounds.contains(x, y)
-                pressedSend = sendDrawable.bounds.contains(x, y)
+                pressedSend = sendClickBound.contains(x, y)
                 if (pressedEnd || pressedSend) {
                     return true
                 }
@@ -142,7 +144,7 @@ class RecordCircleView : View {
                 return true
             } else if (pressedSend) {
                 if (event.action == MotionEvent.ACTION_UP) {
-                    if (sendDrawable.bounds.contains(x, y)) {
+                    if (sendClickBound.contains(x, y)) {
                         callback.onSend()
                     }
                 }
@@ -202,6 +204,7 @@ class RecordCircleView : View {
             audioDrawable
         }
         drawable.setBounds(cx - drawable.intrinsicWidth / 2, cy - drawable.intrinsicHeight / 2, cx + drawable.intrinsicWidth / 2, cy + drawable.intrinsicHeight / 2)
+        sendClickBound.set(cx - AndroidUtilities.dp(42f), cy - AndroidUtilities.dp(42f), cx + AndroidUtilities.dp(42f), cy + AndroidUtilities.dp(42f))
         drawable.alpha = (255 * alpha).toInt()
         drawable.draw(canvas)
 

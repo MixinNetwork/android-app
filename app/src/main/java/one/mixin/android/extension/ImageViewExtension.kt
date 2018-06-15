@@ -59,6 +59,16 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
         }).into(this)
 }
 
+fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
+    Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(CropTransformation(0, layoutParams.height, CropTransformation.CropType.TOP))
+        .dontAnimate()
+        .signature(StringSignature("$uri$mark")).apply {
+            if (holder != null) {
+                this.placeholder(holder.toDrawable())
+            }
+        }).into(this)
+}
+
 fun ImageView.loadVideoMark(uri: String?, holder: String?, mark: Int) {
     Glide.with(this).load(uri).apply(RequestOptions().frame(0)
         .signature(StringSignature("$uri$mark"))

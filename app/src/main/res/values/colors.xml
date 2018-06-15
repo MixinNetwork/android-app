@@ -35,7 +35,7 @@
     <color name="color_gray">#D6D6D6</color>
     <color name="progress_gary">#F2F2F6</color>
     <color name="shadow">#33000000</color>
-    <color name="color_record_circle_bg">#EE2CC3FA</color>
+    <color name="color_record_circle_bg">#EE1987FF</color>
 
     <array name="name_colors">
         <item>#AA4848</item>

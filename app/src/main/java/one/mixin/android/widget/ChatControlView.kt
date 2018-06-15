@@ -16,21 +16,21 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.view.View
 import android.view.View.OnClickListener
-import android.view.View.OnFocusChangeListener
 import android.view.View.OnTouchListener
-import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import androidx.core.animation.addListener
+import androidx.core.animation.doOnEnd
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fadeOut
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
-import kotlin.math.abs
 
 class ChatControlView : FrameLayout {
 
@@ -44,15 +44,15 @@ class ChatControlView : FrameLayout {
         const val STICKER = 0
         const val KEYBOARD = 1
 
-        const val SEND_CLICK_DELAY = 300L
-        const val RECORD_DELAY = 100L
+        const val RECORD_DELAY = 200L
     }
 
     lateinit var callback: Callback
     lateinit var inputLayout: InputAwareLayout
     lateinit var stickerContainer: StickerLayout
+    lateinit var recordTipView: View
 
-    var sendStatus = AUDIO
+    private var sendStatus = AUDIO
         set(value) {
             if (value == field) return
 
@@ -68,14 +68,16 @@ class ChatControlView : FrameLayout {
         }
 
     private var lastSendStatus = AUDIO
-    var isUp = true
+    private var isUp = true
 
-    private val touchSlop: Int by lazy { ViewConfiguration.get(context).scaledTouchSlop }
     var isRecording = false
 
     var activity: Activity? = null
     lateinit var recordCircle: RecordCircleView
     lateinit var cover: View
+    private var upBeforeGrant = false
+    private var keyboardShown = false
+    private var stickerShown = false
 
     private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_send, null) }
     private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_record_mic_black, null) }
@@ -93,7 +95,6 @@ class ChatControlView : FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
 
         chat_et.addTextChangedListener(editTextWatcher)
-        chat_et.onFocusChangeListener = editOnFocusChangeListener
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
         chat_sticker_ib.setOnClickListener(stickerClickListener)
         chat_slide.callback = chatSlideCallback
@@ -104,8 +105,8 @@ class ChatControlView : FrameLayout {
         recordCircle.callback = recordCircleCallback
     }
 
-    fun setSendWithSticker() {
-        val editEmpty = chat_et.text.toString().isBlank()
+    fun setSend() {
+        val editEmpty = chat_et.text.toString().isBlank() && chat_et.lineCount <= 1
         sendStatus = if (!editEmpty) {
             if (chat_more_ib.visibility != View.GONE) {
                 chat_more_ib.visibility = View.GONE
@@ -115,8 +116,12 @@ class ChatControlView : FrameLayout {
             if (chat_more_ib.visibility != View.VISIBLE) {
                 chat_more_ib.visibility = View.VISIBLE
             }
-            if (stickerStatus == KEYBOARD) {
-                if (isUp) UP else DOWN
+            if (!keyboardShown) {
+                if (stickerShown) {
+                    if (isUp) UP else DOWN
+                } else {
+                    lastSendStatus
+                }
             } else {
                 lastSendStatus
             }
@@ -126,16 +131,21 @@ class ChatControlView : FrameLayout {
     fun reset() {
         stickerStatus = STICKER
         isUp = true
-        setSendWithSticker()
+        stickerShown = false
+        setSend()
         inputLayout.hideCurrentInput(chat_et)
     }
 
     fun cancelExternal() {
         removeCallbacks(recordRunnable)
-        chat_slide.onEnd()
         cleanUp()
         updateRecordCircleAndSendIcon()
         chat_slide.parent.requestDisallowInterceptTouchEvent(false)
+    }
+
+    fun updateUp(up: Boolean) {
+        isUp = up
+        setSend()
     }
 
     private fun checkSend() {
@@ -171,7 +181,6 @@ class ChatControlView : FrameLayout {
 
     private fun handleCancelOrEnd(cancel: Boolean) {
         if (cancel) callback.onRecordCancel() else callback.onRecordEnd()
-        chat_slide.onEnd()
         cleanUp()
         updateRecordCircleAndSendIcon()
     }
@@ -182,11 +191,19 @@ class ChatControlView : FrameLayout {
             recordCircle.setAmplitude(.0)
             ObjectAnimator.ofFloat(recordCircle, "scale", 1f).apply {
                 interpolator = DecelerateInterpolator()
+                duration = 200
+                addListener(onEnd = {
+                    recordCircle.visibility = View.VISIBLE
+                }, onCancel = {
+                    recordCircle.visibility = View.VISIBLE
+                })
             }.start()
-            chat_send_ib.animate().alpha(0f).start()
+            chat_send_ib.animate().setDuration(200).alpha(0f).start()
+            chat_slide.onStart()
         } else {
             ObjectAnimator.ofFloat(recordCircle, "scale", 0f).apply {
                 interpolator = AccelerateInterpolator()
+                duration = 200
                 addListener(onEnd = {
                     recordCircle.visibility = View.GONE
                     recordCircle.setSendButtonInvisible()
@@ -195,47 +212,75 @@ class ChatControlView : FrameLayout {
                     recordCircle.setSendButtonInvisible()
                 })
             }.start()
-            chat_send_ib.animate().alpha(1f).start()
+            chat_send_ib.animate().setDuration(200).alpha(1f).start()
+            chat_slide.onEnd()
         }
     }
 
     private fun audioOrVideo() = sendStatus == AUDIO || sendStatus == VIDEO
 
-    private val editOnFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
-        if (hasFocus) {
-            inputLayout.showSoftKey(chat_et)
-            stickerStatus = STICKER
+    fun toggleKeyboard(shown: Boolean) {
+        keyboardShown = shown
+        if (shown) {
             isUp = true
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT
+            if (stickerShown) {
+                stickerStatus = STICKER
+            }
         } else {
-            inputLayout.show(chat_et, stickerContainer)
-            stickerStatus = KEYBOARD
+            if (stickerShown) {
+                stickerStatus = KEYBOARD
+            }
         }
-        setSendWithSticker()
+        setSend()
+    }
+
+    private fun clickSend() {
+        when (sendStatus) {
+            SEND -> {
+                val t = chat_et.text.trim().toString()
+                callback.onSendClick(t)
+            }
+            AUDIO -> {
+                if (recordTipView.visibility == View.INVISIBLE) {
+                    recordTipView.fadeIn()
+                    postDelayed(hideRecordTipRunnable, 3000)
+                } else {
+                    removeCallbacks(hideRecordTipRunnable)
+                }
+                postDelayed(hideRecordTipRunnable, 3000)
+            }
+            VIDEO -> {
+                sendStatus = AUDIO
+                lastSendStatus = sendStatus
+            }
+            UP -> {
+                callback.onUp()
+            }
+            DOWN -> {
+                callback.onDown()
+            }
+        }
     }
 
     private val stickerClickListener = OnClickListener {
-        stickerStatus = if (inputLayout.currentInput == stickerContainer) {
+        if (stickerStatus == KEYBOARD) {
+            stickerShown = false
+            stickerStatus = STICKER
             inputLayout.showSoftKey(chat_et)
-            STICKER
         } else {
+            stickerShown = true
+            stickerStatus = KEYBOARD
             inputLayout.show(chat_et, stickerContainer)
-            chat_et.clearFocus()
             callback.onStickerClick()
-            KEYBOARD
         }
-        setSendWithSticker()
+        setSend()
     }
 
     private val editTextWatcher = object : TextWatcher {
         override fun afterTextChanged(s: Editable?) {
-            stickerStatus = if (inputLayout.currentInput == stickerContainer) {
-                KEYBOARD
-            } else {
-                STICKER
-            }
-            setSendWithSticker()
+            setSend()
         }
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -247,6 +292,8 @@ class ChatControlView : FrameLayout {
     private var originX = 0f
     private var startTime = 0L
     private var triggeredCancel = false
+    private var hasStartRecord = false
+    private var locked = false
     private var maxScrollX = context.dip(150f)
 
     private val sendOnTouchListener = OnTouchListener { _, event ->
@@ -263,30 +310,29 @@ class ChatControlView : FrameLayout {
                     maxScrollX = w
                 }
                 startTime = System.currentTimeMillis()
+                hasStartRecord = false
+                locked = false
                 if (audioOrVideo()) {
                     postDelayed(recordRunnable, RECORD_DELAY)
                 }
-                postDelayed(sendClickRunnable, SEND_CLICK_DELAY)
                 return@OnTouchListener true
             }
             ACTION_MOVE -> {
-                if (!audioOrVideo() || recordCircle.sendButtonVisible) return@OnTouchListener false
+                if (!audioOrVideo() || recordCircle.sendButtonVisible || !hasStartRecord) return@OnTouchListener false
 
                 val x = recordCircle.setLockTranslation(event.y)
                 if (x == 2) {
-                    recordCircle.animate().apply {
-                        recordCircle.lockAnimatedTranslation = recordCircle.startTranslation
+                    ObjectAnimator.ofFloat(recordCircle, "lockAnimatedTranslation",
+                        recordCircle.startTranslation).apply {
                         duration = 150
                         interpolator = DecelerateInterpolator()
+                        doOnEnd { locked = true }
                     }.start()
                     chat_slide.toCancel()
                     return@OnTouchListener false
                 }
 
                 val moveX = event.rawX
-                if (abs(moveX - startX) > touchSlop) {
-                    removeCallbacks(sendClickRunnable)
-                }
                 if (moveX != 0f) {
                     chat_slide.slideText(startX - moveX)
                     if (originX - moveX > maxScrollX) {
@@ -301,53 +347,59 @@ class ChatControlView : FrameLayout {
             }
             ACTION_UP, ACTION_CANCEL -> {
                 if (triggeredCancel) {
+                    cleanUp()
                     triggeredCancel = false
                     return@OnTouchListener false
                 }
-                if (!audioOrVideo() || recordCircle.sendButtonVisible) return@OnTouchListener false
 
-                cleanUp()
-                if (System.currentTimeMillis() - startTime >= SEND_CLICK_DELAY) {
-                    removeCallbacks(sendClickRunnable)
-                    if (event.action == ACTION_UP) callback.onRecordEnd() else callback.onRecordCancel()
-                    chat_slide.onEnd()
-                    updateRecordCircleAndSendIcon()
-                } else {
+                if (!hasStartRecord) {
                     removeCallbacks(recordRunnable)
+                    removeCallbacks(checkReadyRunnable)
+                    cleanUp()
+                    if (!post(sendClickRunnable)) {
+                        clickSend()
+                    }
+                } else if (hasStartRecord && !locked && System.currentTimeMillis() - startTime < 500) {
+                    removeCallbacks(recordRunnable)
+                    removeCallbacks(checkReadyRunnable)
+                    // delay check sendButtonVisible
+                    postDelayed({
+                        if (!recordCircle.sendButtonVisible) {
+                            handleCancelOrEnd(true)
+                        } else {
+                            recordCircle.sendButtonVisible = false
+                        }
+                    }, 200)
+                    return@OnTouchListener false
                 }
-                chat_slide.onEnd()
-                updateRecordCircleAndSendIcon()
+
+                if (isRecording && !recordCircle.sendButtonVisible) {
+                    handleCancelOrEnd(event.action == ACTION_CANCEL)
+                } else {
+                    cleanUp()
+                }
+
+                if (!callback.isReady()) {
+                    upBeforeGrant = true
+                }
             }
         }
         return@OnTouchListener true
     }
 
-    private val sendClickRunnable = Runnable {
-        removeCallbacks(recordRunnable)
-        when (sendStatus) {
-            SEND -> {
-                val t = chat_et.text.trim().toString()
-                callback.onSendClick(t)
-                sendStatus = lastSendStatus
-            }
-            AUDIO -> {
-            }
-            VIDEO -> {
-                sendStatus = AUDIO
-                lastSendStatus = sendStatus
-            }
-            UP -> {
-                callback.onUp()
-            }
-            DOWN -> {
-                callback.onDown()
-            }
+    private val sendClickRunnable = Runnable { clickSend() }
+
+    private val hideRecordTipRunnable = Runnable {
+        if (recordTipView.visibility == View.VISIBLE) {
+            recordTipView.fadeOut()
         }
     }
 
     private val recordRunnable: Runnable by lazy {
         Runnable {
-            removeCallbacks(sendClickRunnable)
+            hasStartRecord = true
+            removeCallbacks(hideRecordTipRunnable)
+            post(hideRecordTipRunnable)
 
             if (activity == null || !audioOrVideo()) return@Runnable
 
@@ -366,6 +418,7 @@ class ChatControlView : FrameLayout {
                 }
             }
             callback.onRecordStart(sendStatus == AUDIO)
+            upBeforeGrant = false
             post(checkReadyRunnable)
             chat_send_ib.parent.requestDisallowInterceptTouchEvent(true)
         }
@@ -374,13 +427,16 @@ class ChatControlView : FrameLayout {
     private val checkReadyRunnable: Runnable by lazy {
         Runnable {
             if (callback.isReady()) {
+                if (upBeforeGrant) {
+                    upBeforeGrant = false
+                    return@Runnable
+                }
                 isRecording = true
                 checkSend()
-                chat_slide.onStart()
                 updateRecordCircleAndSendIcon()
                 recordCircle.setLockTranslation(10000f)
             } else {
-                postDelayed(checkReadyRunnable, 100)
+                postDelayed(checkReadyRunnable, 50)
             }
         }
     }

@@ -10,10 +10,11 @@ import androidx.core.content.systemService
 import one.mixin.android.AppExecutors
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
+import one.mixin.android.extension.vibrate
 import one.mixin.android.util.DispatchQueue
 import java.io.File
 
-class OpusAudioRecorder(ctx: Context) {
+class OpusAudioRecorder(private val ctx: Context) {
     companion object {
         init {
             System.loadLibrary("mixin")
@@ -29,6 +30,7 @@ class OpusAudioRecorder(ctx: Context) {
     private var samplesCount = 0L
     private var recordTimeCount = 0L
     private var sendAfterDone = false
+    var statusSuccess = false
 
     private val recordQueue: DispatchQueue by lazy {
         DispatchQueue("recordQueue").apply {
@@ -125,13 +127,26 @@ class OpusAudioRecorder(ctx: Context) {
             audioRecord = AudioRecord(MediaRecorder.AudioSource.MIC, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO,
                 AudioFormat.ENCODING_PCM_16BIT, recordBufferSize * BUFFER_SIZE_FACTOR)
 
+            if (audioRecord == null || audioRecord!!.state != AudioRecord.STATE_INITIALIZED) {
+                return@Runnable
+            }
             samplesCount = 0
             recordTimeCount = 0
             audioRecord?.startRecording()
+
+            if (audioRecord != null && audioRecord!!.recordingState != AudioRecord.RECORDSTATE_RECORDING) {
+                audioRecord?.release()
+                audioRecord = null
+                return@Runnable
+            }
+            ctx.vibrate(longArrayOf(0, 10))
+            statusSuccess = true
+
         } catch (e: Exception) {
-            stopRecord()
             recordingAudioFile?.delete()
             try {
+                stopRecord()
+                statusSuccess = false
                 audioRecord?.release()
                 audioRecord = null
             } catch (ignore: Exception) {
@@ -146,8 +161,9 @@ class OpusAudioRecorder(ctx: Context) {
         recordQueue.postRunnable(recodeStartRunnable)
     }
 
-    fun stopRecording(send: Boolean) {
+    fun stopRecording(send: Boolean, vibrate: Boolean = true) {
         recordQueue.cancelRunnable(recodeStartRunnable)
+        if (vibrate) ctx.vibrate(longArrayOf(0, 10))
         recordQueue.postRunnable(Runnable {
             audioRecord?.let { audioRecord ->
                 try {
@@ -176,6 +192,7 @@ class OpusAudioRecorder(ctx: Context) {
             })
         }
 
+        statusSuccess = false
         try {
             audioRecord?.release()
             audioRecord = null
