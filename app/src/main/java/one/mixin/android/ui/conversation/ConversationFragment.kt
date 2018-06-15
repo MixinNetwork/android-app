@@ -25,6 +25,7 @@ import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
+import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
@@ -1109,7 +1110,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     ?: "", getString(R.string.title_participants, groupNumber))
                 action_bar.avatar_iv.setGroup(it.iconUrl)
                 if (it.status == ConversationStatus.QUIT.ordinal) {
-                    chat_control.visibility = GONE
+                    chat_control.visibility = INVISIBLE
                     bottom_cant_send.visibility = VISIBLE
                     chat_control.chat_et.hideKeyboard()
                 } else {
@@ -1188,7 +1189,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         else ' ', user.avatarUrl, user.identityNumber)
         user.let {
             if (it.relationship == UserRelationship.BLOCKING.name) {
-                chat_control.visibility = GONE
+                chat_control.visibility = INVISIBLE
                 bottom_unblock.visibility = VISIBLE
                 chat_control.chat_et.hideKeyboard()
             } else {
