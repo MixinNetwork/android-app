@@ -35,9 +35,9 @@ fun KeyPair.getPrivateKeyPem(): String {
     val pkInfo = PrivateKeyInfo.getInstance(private.encoded)
     val encodable = pkInfo.parsePrivateKey()
     val primitive2 = encodable.toASN1Primitive()
-    val privateKeyPKCS1 = primitive2.encoded
+    val privateKeyPKCS8 = primitive2.encoded
 
-    val pemObject2 = PemObject("RSA PRIVATE KEY", privateKeyPKCS1)
+    val pemObject2 = PemObject("RSA PRIVATE KEY", privateKeyPKCS8)
     val stringWriter2 = StringWriter()
     val pemWriter2 = PemWriter(stringWriter2)
     pemWriter2.writeObject(pemObject2)
