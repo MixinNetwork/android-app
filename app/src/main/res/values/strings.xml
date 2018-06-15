@@ -192,7 +192,7 @@
     <string name="title_participants">%d participants</string>
     <string name="save_success">Save success</string>
     <string name="save_failure">Save failure</string>
-    <string name="hold_to_record_audio">Hold to record audio, release to send.</string>
+    <string name="hold_to_record_audio">Hold to record, release to send</string>
     <!--contact-->
     <string name="contact_other_title">Info</string>
     <string name="contact_other_add">Add Contact</string>
