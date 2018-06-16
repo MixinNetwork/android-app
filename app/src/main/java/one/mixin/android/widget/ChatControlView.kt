@@ -45,6 +45,7 @@ class ChatControlView : FrameLayout {
         const val KEYBOARD = 1
 
         const val RECORD_DELAY = 200L
+        const val RECORD_TIP_MILLIS = 2000L
     }
 
     lateinit var callback: Callback
@@ -245,11 +246,11 @@ class ChatControlView : FrameLayout {
             AUDIO -> {
                 if (recordTipView.visibility == View.INVISIBLE) {
                     recordTipView.fadeIn()
-                    postDelayed(hideRecordTipRunnable, 3000)
+                    postDelayed(hideRecordTipRunnable, RECORD_TIP_MILLIS)
                 } else {
                     removeCallbacks(hideRecordTipRunnable)
                 }
-                postDelayed(hideRecordTipRunnable, 3000)
+                postDelayed(hideRecordTipRunnable, RECORD_TIP_MILLIS)
             }
             VIDEO -> {
                 sendStatus = AUDIO
