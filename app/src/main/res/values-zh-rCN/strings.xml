@@ -437,8 +437,7 @@
     <string name="extensions">小程序</string>
     <string name="camera">相机</string>
     <string name="document">文件</string>
-    <string name="gallery">照片</string>
-    <string name="video">视频</string>
+    <string name="gallery">照片 &amp; 视频</string>
     <string name="contact">联系人</string>
     <!--pay-->
     <string name="pay_paid">已支付完成</string>
@@ -475,4 +474,7 @@
     <string name="action_open">在浏览器中打开</string>
     <string name="action_refresh">刷新</string>
     <string name="slide_to_cancel">滑动取消</string>
+
+    <string name="gallery_all">全部</string>
+    <string name="gallery_empty_text">还没有图片或视频</string>
 </resources>

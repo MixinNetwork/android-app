@@ -19,6 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="3dp"
         android:singleLine="true"
+        android:textSize="12sp"
         android:text="@string/gallery"
         android:maxWidth="64dp"/>
 

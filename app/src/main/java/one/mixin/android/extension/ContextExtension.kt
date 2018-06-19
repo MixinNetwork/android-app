@@ -45,6 +45,9 @@ import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
+import one.mixin.android.widget.gallery.Gallery
+import one.mixin.android.widget.gallery.MimeType
+import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import org.jetbrains.anko.displayMetrics
 import java.io.File
 import java.util.concurrent.ExecutorService
@@ -232,7 +235,7 @@ val REQUEST_GALLERY = 0x02
 val REQUEST_GAMERA = 0x03
 val REQUEST_FILE = 0x04
 val REQUEST_AUDIO = 0x05
-val REQUEST_VIDEO = 0x06
+
 fun Fragment.openImage(output: Uri) {
     val cameraIntents = ArrayList<Intent>()
     val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -381,27 +384,10 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
 }
 
 fun Fragment.openGallery() {
-    val galleryIntent = Intent()
-    galleryIntent.type = "image/*"
-    galleryIntent.action = Intent.ACTION_PICK
-
-    val chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.select_picture))
-    try {
-        this.startActivityForResult(chooserIntent, REQUEST_GALLERY)
-    } catch (e: ActivityNotFoundException) {
-    }
-}
-
-fun Fragment.openVideo() {
-    val galleryIntent = Intent()
-    galleryIntent.type = "video/*"
-    galleryIntent.action = Intent.ACTION_PICK
-
-    val chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.select_video))
-    try {
-        this.startActivityForResult(chooserIntent, REQUEST_VIDEO)
-    } catch (e: ActivityNotFoundException) {
-    }
+    Gallery.from(this)
+        .choose(MimeType.ofAll())
+        .imageEngine(GlideEngine())
+        .forResult(REQUEST_GALLERY)
 }
 
 fun Context.openUrl(url: String) {
