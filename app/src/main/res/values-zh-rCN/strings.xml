@@ -281,6 +281,7 @@
     <string name="transactions_type">交易类型</string>
     <string name="transactions_asset_name">资产类型</string>
     <string name="asset_no_hidden">没有隐藏的资产</string>
+    <string name="wallet_block_confirmations">充值到账至少需要 %d 个区块确认</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>
@@ -448,7 +449,8 @@
     <!--withdrawal-->
     <string name="withdrawal">提现</string>
     <string name="withdrawal_tap_add_addr">点击添加地址</string>
-    <string name="withdrawal_fee">需要 %s 作为 %s 的提现手续费</string>
+    <string name="withdrawal_fee">需要 %s 作为 %s 的提现手续费。</string>
+    <string name="withdrawal_fee_with_reserve">需要 %s 作为 %s 的提现手续费。%s 最少需要保留 %s 个 %s。</string>
     <string name="withdrawal_asset">%s 提现</string>
     <string name="withdrawal_addr_book">%s 地址簿</string>
     <string name="withdrawal_addr_add">添加地址</string>
@@ -475,7 +477,10 @@
     <string name="action_open">在浏览器中打开</string>
     <string name="action_refresh">刷新</string>
     <string name="slide_to_cancel">滑动取消</string>
-
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
+    <!--sticker-->
+    <string name="sticker_manager">管理表情</string>
+    <string name="sticker_add">添加表情</string>
+    <string name="sticker_delete">删除表情</string>
 </resources>

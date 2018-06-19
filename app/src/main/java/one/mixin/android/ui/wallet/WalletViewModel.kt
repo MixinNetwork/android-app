@@ -4,6 +4,7 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.ViewModel
 import android.arch.paging.LivePagedListBuilder
 import android.arch.paging.PagedList
+import com.birbit.android.jobqueue.JobManager
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
@@ -11,6 +12,9 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AssetFee
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.crypto.aesEncrypt
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
@@ -27,7 +31,8 @@ class WalletViewModel @Inject
 internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
-    private val assetRepository: AssetRepository
+    private val assetRepository: AssetRepository,
+    private val jobManager: MixinJobManager
 ) : ViewModel() {
 
     fun redeem(code: String): Observable<MixinResponse<Account>> = accountRepository.redeem(code)
@@ -93,4 +98,9 @@ internal constructor(
     fun allSnapshots(): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(assetRepository.allSnapshots(), PagedList.Config.Builder()
             .setPageSize(10).build()).build()
+
+    fun refreshAndGetAddressById(id: String): LiveData<Address> {
+        jobManager.addJobInBackground(RefreshAddressJob(id))
+        return assetRepository.getAddressById(id)
+    }
 }

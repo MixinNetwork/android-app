@@ -3,7 +3,6 @@ package one.mixin.android.ui.conversation
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
-import android.graphics.Rect
 import android.os.Bundle
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
@@ -16,8 +15,14 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displaySize
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.adapter.AlbumAdapter
+import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_LIKE
+import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_NORMAL
+import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_RECENT
+import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.Sticker
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
@@ -29,15 +34,15 @@ class StickerFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerFragment"
         const val ARGS_ALBUM_ID = "args_album_id"
-        const val ARGS_RECENT = "args_recent"
+        const val ARGS_TYPE = "args_type"
         const val PADDING = 10
         const val COLUMN = 3
 
-        fun newInstance(id: String? = null, recent: Boolean = false): StickerFragment {
+        fun newInstance(id: String? = null, type: Int): StickerFragment {
             val f = StickerFragment()
             val b = Bundle()
             b.putString(ARGS_ALBUM_ID, id)
-            b.putBoolean(ARGS_RECENT, recent)
+            b.putInt(ARGS_TYPE, type)
             f.arguments = b
             return f
         }
@@ -54,47 +59,66 @@ class StickerFragment : BaseFragment() {
         arguments!!.getString(ARGS_ALBUM_ID)
     }
 
-    private val recent: Boolean by lazy {
-        arguments!!.getBoolean(ARGS_RECENT)
+    private val type: Int by lazy {
+        arguments!!.getInt(ARGS_TYPE)
     }
 
     private val stickers = mutableListOf<Sticker>()
     private val stickerAdapter: StickerAdapter by lazy {
-        StickerAdapter(stickers)
+        StickerAdapter(stickers, type == TYPE_LIKE)
     }
 
     private val padding: Int by lazy {
         context!!.dip(PADDING)
     }
 
-    private var callback: StickerAlbumFragment.AlbumAdapter.Callback? = null
+    private var callback: AlbumAdapter.Callback? = null
+    private var personalAlbumId: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_sticker, container, false)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        if (albumId != null) {
+        if (type == TYPE_NORMAL && albumId != null) {
             doAsync {
                 val list = stickerViewModel.getStickers(albumId!!)
                 uiThread { updateStickers(list) }
             }
         } else {
-            stickerViewModel.recentStickers().observe(this, Observer { r ->
-                r?.let { updateStickers(r) }
-            })
+            if (type == TYPE_RECENT) {
+                stickerViewModel.recentStickers().observe(this, Observer { r ->
+                    r?.let { updateStickers(r) }
+                })
+            } else {
+                doAsync {
+                    val personalAlbum = stickerViewModel.getPersonalAlbums()
+                    personalAlbum?.let {
+                        personalAlbumId = it.albumId
+                        val list = stickerViewModel.getStickers(it.albumId)
+                        uiThread { updateStickers(list) }
+                    }
+                }
+            }
         }
 
         sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
-        sticker_rv.addItemDecoration(GridSpacingItemDecoration(COLUMN, padding, true))
+        sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
         stickerAdapter.size = (context!!.displaySize().x - COLUMN * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
             override fun onItemClick(pos: Int, albumId: String, name: String) {
-                if (!recent) {
+                if (type != TYPE_RECENT) {
                     stickerViewModel.updateStickerUsedAt(albumId, name)
                 }
                 callback?.onStickerClick(albumId, name)
+            }
+
+            override fun onAddClick() {
+                personalAlbumId?.let {
+                    requireActivity().addFragment(this@StickerFragment,
+                        StickerManagementFragment.newInstance(it), StickerManagementFragment.TAG)
+                }
             }
         })
     }
@@ -107,30 +131,34 @@ class StickerFragment : BaseFragment() {
         stickerAdapter.notifyDataSetChanged()
     }
 
-    fun setCallback(callback: StickerAlbumFragment.AlbumAdapter.Callback) {
+    fun setCallback(callback: AlbumAdapter.Callback) {
         this.callback = callback
     }
 
-    private class StickerAdapter(private val stickers: List<Sticker>) : RecyclerView.Adapter<StickerViewHolder>() {
+    private class StickerAdapter(private val stickers: List<Sticker>, private val needAdd: Boolean) : RecyclerView.Adapter<StickerViewHolder>() {
         private var listener: StickerListener? = null
         var size: Int = 0
 
         override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
-            val s = stickers[position]
-            val ctx = holder.itemView.context
-
             val params = holder.itemView.layoutParams
             params.height = size
             holder.itemView.layoutParams = params
             val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
-            Glide.with(ctx).load(s.assetUrl).apply(
-                if (size <= 0) RequestOptions().dontAnimate().override(Target.SIZE_ORIGINAL)
-                else RequestOptions().dontAnimate().override(size, size))
-                .into(item)
-            item.setOnClickListener { listener?.onItemClick(position, s.albumId, s.name) }
+            if (position == 0 && needAdd) {
+                item.setImageResource(R.drawable.ic_add_stikcer)
+                item.setOnClickListener { listener?.onAddClick() }
+            } else {
+                val s = stickers[position]
+                val ctx = holder.itemView.context
+                Glide.with(ctx).load(s.assetUrl).apply(
+                    if (size <= 0) RequestOptions().dontAnimate().override(Target.SIZE_ORIGINAL)
+                    else RequestOptions().dontAnimate().override(size, size))
+                    .into(item)
+                item.setOnClickListener { listener?.onItemClick(position, s.albumId, s.name) }
+            }
         }
 
-        override fun getItemCount(): Int = stickers.size
+        override fun getItemCount(): Int = if (needAdd) stickers.size + 1 else stickers.size
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StickerViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false)
@@ -144,36 +172,8 @@ class StickerFragment : BaseFragment() {
 
     private class StickerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    inner class GridSpacingItemDecoration(
-        private val spanCount: Int,
-        private val spacing: Int,
-        private val includeEdge: Boolean
-    ) :
-        RecyclerView.ItemDecoration() {
-
-        override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State?) {
-            val position = parent.getChildAdapterPosition(view)
-            val column = position % spanCount
-
-            if (includeEdge) {
-                outRect.left = spacing - column * spacing / spanCount
-                outRect.right = (column + 1) * spacing / spanCount
-
-                if (position < spanCount) {
-                    outRect.top = spacing
-                }
-                outRect.bottom = spacing
-            } else {
-                outRect.left = column * spacing / spanCount
-                outRect.right = spacing - (column + 1) * spacing / spanCount
-                if (position >= spanCount) {
-                    outRect.top = spacing
-                }
-            }
-        }
-    }
-
     interface StickerListener {
         fun onItemClick(pos: Int, albumId: String, name: String)
+        fun onAddClick()
     }
 }

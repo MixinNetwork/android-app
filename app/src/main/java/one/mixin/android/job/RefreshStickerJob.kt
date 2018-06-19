@@ -3,7 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.vo.Sticker
 
-class RefreshStickerJob(private val albumId: String) : BaseJob(Params(PRIORITY_UI_HIGH)
+class RefreshStickerJob(private val albumId: String) : BaseJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
     .addTags(RefreshStickerJob.GROUP).persist().requireNetwork()) {
 
     companion object {

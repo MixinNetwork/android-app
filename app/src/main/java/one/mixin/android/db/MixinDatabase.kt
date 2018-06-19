@@ -39,7 +39,7 @@ import one.mixin.android.vo.User
     (Hyperlink::class),
     (FloodMessage::class),
     (Address::class),
-    (ResendMessage::class)], version = 14)
+    (ResendMessage::class)], version = 15)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -179,13 +179,124 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_10_15: Migration = object : Migration(10, 15) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE assets ADD COLUMN chain_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE messages ADD COLUMN shared_user_id TEXT")
+                database.execSQL("ALTER TABLE assets ADD COLUMN change_usd TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN change_btc TEXT NOT NULL DEFAULT ''")
+                database.execSQL("CREATE TABLE resend_messages(message_id TEXT NOT NULL, user_id TEXT NOT NULL, " +
+                    "status INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(message_id, user_id))")
+                database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
+                database.execSQL("UPDATE messages SET media_mime_type = media_mine_type WHERE media_mine_type IS NOT NULL")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
+                database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
+                database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
+                database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
+                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("DROP TABLE stickers")
+                database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_11_15: Migration = object : Migration(11, 15) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE assets ADD COLUMN change_usd TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN change_btc TEXT NOT NULL DEFAULT ''")
+                database.execSQL("CREATE TABLE resend_messages(message_id TEXT NOT NULL, user_id TEXT NOT NULL, " +
+                    "status INTEGER NOT NULL, created_at TEXT NOT NULL, PRIMARY KEY(message_id, user_id))")
+                database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
+                database.execSQL("UPDATE messages SET media_mime_type = media_mine_type WHERE media_mine_type IS NOT NULL")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
+                database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
+                database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
+                database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
+                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("DROP TABLE stickers")
+                database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_12_15: Migration = object : Migration(12, 15) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE apps ADD COLUMN creator_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_mime_type TEXT")
+                database.execSQL("UPDATE messages SET media_mime_type = media_mine_type WHERE media_mine_type IS NOT NULL")
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
+                database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
+                database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
+                database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
+                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("DROP TABLE stickers")
+                database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_13_15: Migration = object : Migration(13, 15) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE messages ADD COLUMN media_waveform BLOB")
+                database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
+                database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
+                database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
+                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("DROP TABLE stickers")
+                database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
+        private val MIGRATION_14_15: Migration = object : Migration(14, 15) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
+                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("DROP TABLE stickers")
+                database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+            }
+        }
+
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context,
                         MixinDatabase::class.java, "mixin.db")
                         .addMigrations(MIGRATION_10_11, MIGRATION_11_12, MIGRATION_10_12, MIGRATION_12_13,
-                            MIGRATION_10_13, MIGRATION_11_13, MIGRATION_10_14, MIGRATION_11_14, MIGRATION_12_14, MIGRATION_13_14)
+                            MIGRATION_10_13, MIGRATION_11_13, MIGRATION_10_14, MIGRATION_11_14, MIGRATION_12_14, MIGRATION_13_14,
+                            MIGRATION_10_15, MIGRATION_11_15, MIGRATION_12_15, MIGRATION_13_15, MIGRATION_14_15)
                         .addCallback(CALLBACK)
                         .build()
                 }
