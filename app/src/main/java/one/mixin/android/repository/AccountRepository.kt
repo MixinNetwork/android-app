@@ -111,7 +111,9 @@ constructor(
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 
-    fun getStickerAlbums() = stickerAlbumDao.albums()
+    fun getSystemAlbums() = stickerAlbumDao.getSystemAlbums()
+
+    fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
 
     fun getStickers(id: String) = stickerDao.getStickersByAlbumId(id)
 

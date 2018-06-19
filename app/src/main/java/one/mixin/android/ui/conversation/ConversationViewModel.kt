@@ -361,7 +361,9 @@ internal constructor(
 
     fun transfer(transferRequest: TransferRequest) = assetRepository.transfer(transferRequest)
 
-    fun getStickerAlbums() = accountRepository.getStickerAlbums()
+    fun getSystemAlbums() = accountRepository.getSystemAlbums()
+
+    fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
 
     fun getStickers(id: String) = accountRepository.getStickers(id)
 
@@ -385,4 +387,10 @@ internal constructor(
     fun findAppById(id: String) = userRepository.findAppById(id)
 
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+
+    fun addSticker(url: String) {
+        doAsync {
+            accountRepository
+        }
+    }
 }

@@ -70,6 +70,7 @@ class AddressFragment : Fragment() {
             context?.toast(R.string.copy_success)
         }
         key_code.text = asset.publicKey
+        confirm_tv.text = getString(R.string.wallet_block_confirmations, asset.confirmations)
         if (context!!.isQRCodeFileExists(asset.publicKey)) {
             qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.publicKey).absolutePath))
         } else {

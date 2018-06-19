@@ -94,4 +94,6 @@ constructor(
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
 
     fun allSnapshots() = snapshotDao.allSnapshots()
+
+    fun getAddressById(id: String) = addressDao.getById(id)
 }

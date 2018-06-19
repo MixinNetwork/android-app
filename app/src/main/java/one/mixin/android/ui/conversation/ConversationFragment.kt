@@ -49,9 +49,9 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
-import one.mixin.android.extension.REQUEST_GAMERA
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.async
 import one.mixin.android.extension.createImageTemp
@@ -744,6 +744,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             ForwardActivity.show(context!!, list)
             closeTool()
         }
+        tool_view.add_sticker_iv.setOnClickListener {
+
+            closeTool()
+        }
         chat_control.chat_et.requestFocus()
 
         media_layout.round(dip(8))
@@ -1358,7 +1362,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     sendImageMessage(it)
                 }
             }
-        } else if (requestCode == REQUEST_GAMERA && resultCode == Activity.RESULT_OK) {
+        } else if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
                 showPreview(imageUri) { sendImageMessage(it) }
             }

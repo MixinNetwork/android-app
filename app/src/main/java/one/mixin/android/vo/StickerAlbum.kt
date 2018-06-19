@@ -22,5 +22,14 @@ data class StickerAlbum(
     val createdAt: String,
     @SerializedName("update_at")
     @ColumnInfo(name = "update_at")
-    val updateAt: String
+    val updateAt: String,
+    @SerializedName("user_id")
+    @ColumnInfo(name = "user_id")
+    val userId: String,
+    @ColumnInfo(name = "category")
+    val category: String,
+    @ColumnInfo(name = "description")
+    val description: String
 )
+
+enum class StickerAlbumCategory { SYSTEM, PERSONAL }

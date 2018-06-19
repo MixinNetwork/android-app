@@ -287,6 +287,7 @@
     <string name="transactions_type">Transaction Type</string>
     <string name="transactions_asset_name">Asset Name</string>
     <string name="asset_no_hidden">No hidden assets</string>
+    <string name="wallet_block_confirmations">Deposit will arrive after at least %d block confirmations.</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
@@ -454,6 +455,7 @@
     <string name="withdrawal">Withdrawal</string>
     <string name="withdrawal_tap_add_addr">Tap to add address</string>
     <string name="withdrawal_fee">A transaction fee of %s is required for withdrawing %s</string>
+    <string name="withdrawal_fee_with_reserve">A transaction fee of %s is required for withdrawing %s. %s has a minimum %s %s reserve requirement.</string>
     <string name="withdrawal_asset">%s Withdrawal</string>
     <string name="withdrawal_addr_book">%s Address Book</string>
     <string name="withdrawal_addr_add">Add Address</string>
@@ -481,8 +483,11 @@
     <string name="action_open">Open in browser</string>
     <string name="action_refresh">Refresh</string>
     <string name="slide_to_cancel">Slide to Cancel</string>
-
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>
+    <!--sticker-->
+    <string name="sticker_manager">Manager Sticker</string>
+    <string name="sticker_add">Add Sticker</string>
+    <string name="sticker_delete">Delete Sticker</string>
 </resources>
 

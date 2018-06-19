@@ -6,11 +6,11 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.api.request.PinToken
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
-import one.mixin.android.api.request.PinToken
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import retrofit2.Call
@@ -65,4 +65,13 @@ interface AccountService {
 
     @GET("stickers/albums/{id}")
     fun getStickers(@Path("id") id: String): Call<MixinResponse<List<Sticker>>>
+
+    @GET("stickers/{id}")
+    fun getStickerById(@Path("id") id: String): Observable<MixinResponse<Sticker>>
+
+    @POST("stickers/add")
+    fun addSticker(@Body data: String): Observable<MixinResponse<Sticker>>
+
+    @POST("stickers/remove")
+    fun removeSticker(@Body ids: List<String>): Call<MixinResponse<Sticker>>
 }
