@@ -475,6 +475,20 @@ class DecryptMessage : Injector() {
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
             conversationDao.insert(conversation)
+            conversationApi.getConversation(data.conversationId).execute()
+            val call = conversationApi.getConversation(data.conversationId).execute()
+            val response = call.body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { conversationData ->
+                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
+                        ConversationStatus.SUCCESS.ordinal
+                    } else {
+                        ConversationStatus.QUIT.ordinal
+                    }
+                    conversationDao.updateConversation(conversationData.conversationId, conversationData.creatorId, conversationData.category, conversationData.name,
+                        conversationData.announcement, conversationData.createdAt, status)
+                }
+            }
         }
         if (jobManager.findJobById(data.conversationId) == null) {
             if (conversation.status == ConversationStatus.START.ordinal) {

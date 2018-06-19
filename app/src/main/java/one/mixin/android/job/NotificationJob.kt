@@ -57,7 +57,7 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
             return
         }
         val conversation = conversationDao.getConversationItem(message.conversationId) ?: return
-        if (conversation.isMute()) {
+        if (conversation.isMute() || conversation.category == null) {
             return
         }
         val mainIntent = MainActivity.getSingleIntent(context)
@@ -250,5 +250,9 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
             }
         }
         return u
+    }
+
+    private fun syncContactUser(conversationId: String): User? {
+        return userDao.findContactByConversationId(conversationId)
     }
 }
