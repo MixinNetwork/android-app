@@ -23,9 +23,10 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        listen(messageItem.messageId)
         val isMe = meId == messageItem.userId
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }

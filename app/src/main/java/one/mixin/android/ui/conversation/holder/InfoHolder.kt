@@ -23,10 +23,11 @@ class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView
         onItemListener: ConversationAdapter.OnItemListener,
         group: String?
     ) {
+        listen(messageItem.messageId)
         val id = meId
 
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }

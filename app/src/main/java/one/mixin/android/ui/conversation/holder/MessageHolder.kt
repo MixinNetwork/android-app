@@ -71,9 +71,10 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        listen(messageItem.messageId)
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -152,12 +153,6 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
         }, {
             itemView.chat_flag.visibility = View.GONE
         })
-
-        itemView.setOnClickListener {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-            }
-        }
 
         chatLayout(isMe, isLast)
     }

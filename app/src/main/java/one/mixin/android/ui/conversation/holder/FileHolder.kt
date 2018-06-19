@@ -33,8 +33,9 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        listen(messageItem.messageId)
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }

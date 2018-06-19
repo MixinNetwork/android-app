@@ -198,7 +198,8 @@ class SignalProtocol(ctx: Context) {
             message.id,
             message.category,
             data,
-            MessageStatus.SENT.name)
+            MessageStatus.SENT.name,
+            quote_message_id = message.quoteMessageId)
         return createParamBlazeMessage(blazeParam)
     }
 
@@ -220,7 +221,8 @@ class SignalProtocol(ctx: Context) {
             message.id,
             message.category,
             data,
-            MessageStatus.SENT.name)
+            MessageStatus.SENT.name,
+            quote_message_id = message.quoteMessageId)
         return createParamBlazeMessage(blazeParam)
     }
 

@@ -3,16 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="58dp">
 
     <View
         android:id="@+id/reply_start_view"
-        android:layout_width="8dp"
+        android:layout_width="6dp"
         android:layout_height="0dp"
-        android:background="#19BEF1"
+        android:background="@color/colorDarkBlue"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/reply_name_tv"
@@ -22,29 +22,31 @@
         android:layout_marginStart="8dp"
         android:ellipsize="end"
         android:lines="1"
-        android:textColor="#19BEF1"
+        android:textColor="@color/text_black"
         android:textSize="16sp"
+        app:layout_constraintBottom_toTopOf="@id/reply_view_tv"
         app:layout_constraintEnd_toStartOf="@id/reply_iv"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toEndOf="@id/reply_start_view" />
+        app:layout_constraintStart_toEndOf="@id/reply_start_view"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"/>
 
     <TextView
         android:id="@+id/reply_view_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="8dp"
         android:drawablePadding="3dp"
-        android:drawableStart="@drawable/ic_status_camera"
         android:ellipsize="end"
-        android:maxLines="3"
-        android:textColor="#A5A5A5"
+        android:singleLine="true"
+        android:gravity="start"
+        android:textColor="@color/text_black"
+        android:layout_marginTop="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/reply_iv"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintEnd_toStartOf="@id/reply_view_iv"
         app:layout_constraintStart_toEndOf="@id/reply_start_view"
-        app:layout_constraintTop_toBottomOf="@id/reply_name_tv" />
+        app:layout_constraintTop_toBottomOf="@id/reply_name_tv"
+        app:layout_goneMarginEnd="20dp"/>
 
     <ImageView
         android:id="@+id/reply_close_iv"
@@ -56,20 +58,30 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/reply_view_iv"
-        android:layout_width="0dp"
+        android:layout_width="48dp"
         android:layout_height="0dp"
         android:layout_marginEnd="8dp"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toStartOf="@id/reply_close_iv"
-        app:layout_constraintHeight_max="72dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintWidth_max="72dp"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
+
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/reply_avatar"
+        android:layout_width="48dp"
+        android:layout_height="0dp"
+        android:layout_marginEnd="8dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toStartOf="@id/reply_close_iv"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="ContentDescription"/>
 
 </android.support.constraint.ConstraintLayout>

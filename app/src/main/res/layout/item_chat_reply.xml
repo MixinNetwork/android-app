@@ -7,7 +7,7 @@
 
     <LinearLayout
         android:id="@+id/chat_layout"
-        android:layout_width="300dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:layout_marginStart="4dp"
@@ -18,67 +18,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <android.support.constraint.ConstraintLayout
-            android:id="@+id/reply_layout"
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/chat_name"
+            android:layout_marginStart="4dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="#11000000"
-            android:orientation="horizontal">
-
-            <View
-                android:id="@+id/start_view"
-                android:layout_width="8dp"
-                android:layout_height="0dp"
-                android:layout_alignParentStart="true"
-                android:background="@drawable/bg_reply"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <ImageView
-                android:id="@+id/reply_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="0dp"
-                android:src="@drawable/image_holder"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constrainedWidth="true"
-                tools:ignore="ContentDescription" />
-
-            <TextView
-                android:id="@+id/reply_name_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:lines="1"
-                android:textColor="#19BEF1"
-                android:textSize="18sp"
-                app:layout_constraintEnd_toStartOf="@id/reply_iv"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintStart_toEndOf="@id/start_view"
-                tools:text="Alejandro Dean" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="16dp"
-                android:layout_marginStart="8dp"
-                android:ellipsize="end"
-                android:maxLines="3"
-                android:textColor="#A5A5A5"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/reply_iv"
-                app:layout_constraintHorizontal_bias="0.0"
-                app:layout_constraintStart_toEndOf="@id/start_view"
-                app:layout_constraintTop_toBottomOf="@id/reply_name_tv"
-                tools:text="Hello pver how are you ?Hello pver how are you ?Hello pver how are you ?Hello pver how are you ?Hello pver how are you ?" />
-        </android.support.constraint.ConstraintLayout>
+            android:ellipsize="end"
+            android:gravity="start|center_vertical"
+            android:lines="1"
+            android:textColor="#19BEF1"
+            android:maxWidth="280dp"
+            android:textSize="14sp"
+            android:visibility="gone"
+            android:layout_marginBottom="1.5dp"/>
 
         <one.mixin.android.widget.MessageLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="4dp"
             android:layout_marginStart="4dp"
@@ -91,11 +46,87 @@
                 android:layout_gravity="start"
                 android:textColor="@color/text_black"
                 android:textSize="14sp"
-                tools:text="一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十一二三四五六七" />
+                app:max_width="280dp"/>
 
-            <include layout="@layout/date_wrapper" />
+            <include layout="@layout/date_wrapper"/>
 
+            <android.support.constraint.ConstraintLayout
+                android:id="@+id/reply_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#F4F4F4"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="3dp"
+                android:minWidth="180dp"
+                android:orientation="horizontal">
+
+                <View
+                    android:id="@+id/start_view"
+                    android:layout_width="6dp"
+                    android:layout_height="0dp"
+                    android:layout_alignParentStart="true"
+                    android:background="@drawable/bg_reply"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"/>
+
+                <ImageView
+                    android:id="@+id/reply_iv"
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:src="@drawable/image_holder"
+                    android:layout_marginStart="16dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintDimensionRatio="1:1"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription"/>
+
+                <one.mixin.android.widget.AvatarView
+                    android:id="@+id/reply_avatar"
+                    android:layout_width="36dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_height="36dp"
+                    android:src="@drawable/image_holder"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:ignore="ContentDescription"/>
+
+                <TextView
+                    android:id="@+id/reply_name_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:lines="1"
+                    android:textColor="@color/text_black"
+                    android:textSize="16sp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintEnd_toStartOf="@id/reply_iv"
+                    app:layout_constraintHorizontal_bias="0"
+                    app:layout_constraintStart_toEndOf="@id/start_view"
+                    app:layout_constraintTop_toTopOf="parent"
+                    tools:text="Alejandro Dean"/>
+
+                <TextView
+                    android:id="@+id/reply_content_tv"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:ellipsize="end"
+                    android:drawablePadding="3dp"
+                    android:singleLine="true"
+                    android:layout_marginEnd="16dp"
+                    android:textColor="@color/text_gray"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.0"
+                    app:layout_constraintStart_toStartOf="@id/reply_name_tv"
+                    app:layout_constraintTop_toBottomOf="@id/reply_name_tv"/>
+            </android.support.constraint.ConstraintLayout>
         </one.mixin.android.widget.MessageLayout>
-
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>

@@ -31,6 +31,8 @@ class MessageBuilder(
     private var stickerId: String? = null
     private var sharedUserId: String? = null
     private var mediaWaveform: ByteArray? = null
+    private var quoteMessageId: String? = null
+    private var quoteContent: String? = null
 
     fun setContent(content: String?): MessageBuilder {
         this.content = content
@@ -137,9 +139,19 @@ class MessageBuilder(
         return this
     }
 
+    fun setQuoteMessageId(quoteMessageId: String?): MessageBuilder {
+        this.quoteMessageId = quoteMessageId
+        return this
+    }
+
+    fun setQuoteContent(quoteContent: String?): MessageBuilder {
+        this.quoteContent = quoteContent
+        return this
+    }
+
     fun build(): Message =
         Message(id, conversationId, userId, category, content, mediaUrl,
             mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, mediaKey, mediaDigest, mediaStatus, status, createdAt,
-            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform)
+            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent)
 }

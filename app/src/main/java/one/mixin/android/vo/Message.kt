@@ -134,12 +134,14 @@ class Message(
     @SerializedName("media_mine_type")
     @ColumnInfo(name = "media_mine_type")
     val mediaMineType: String? = null,
+
     @SerializedName("quote_message_id")
     @ColumnInfo(name = "quote_message_id")
-    val quote_message_id: String? = null,
+    val quoteMessageId: String? = null,
+
     @SerializedName("quote_content")
     @ColumnInfo(name = "quote_content")
-    val quote_content: String? = null
+    val quoteContent: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -199,6 +201,28 @@ fun createMessage(
     .setAction(action)
     .setParticipantId(participantId)
     .setSnapshotId(snapshotId)
+    .build()
+
+fun createReplyMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String,
+    createdAt: String,
+    status: MessageStatus,
+    quoteMessageId: String?,
+    quoteContent: String?,
+    action: String? = null,
+    participantId: String? = null,
+    snapshotId: String? = null
+) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    .setContent(content)
+    .setAction(action)
+    .setParticipantId(participantId)
+    .setSnapshotId(snapshotId)
+    .setQuoteMessageId(quoteMessageId)
+    .setQuoteContent(quoteContent)
     .build()
 
 fun createAttachmentMessage(

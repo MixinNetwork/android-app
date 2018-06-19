@@ -28,6 +28,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        listen(messageItem.messageId)
         this.onItemListener = onItemListener
         val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
@@ -45,7 +46,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }

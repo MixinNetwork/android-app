@@ -25,7 +25,7 @@ open class SendMessageJob(
     private val alreadyExistMessage: Boolean = false,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).addTags(message.id).groupBy("send_message_group")
-        .requireWebSocketConnected().persist(), message.id) {
+    .requireWebSocketConnected().persist(), message.id) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -83,7 +83,7 @@ open class SendMessageJob(
             content = Base64.encodeBytes(message.content!!.toByteArray())
         }
         val blazeParam = BlazeMessageParam(message.conversationId, null,
-            message.id, message.category, content, SENT.name)
+            message.id, message.category, content, SENT.name, quote_message_id = message.quoteMessageId)
         deliver(createParamBlazeMessage(blazeParam))
     }
 
