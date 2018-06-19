@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
@@ -61,6 +62,7 @@ class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsList
                 }
             }
         })
+        jobManager.addJobInBackground(RefreshSnapshotsJob())
     }
 
     override fun onItemClick(snapshot: SnapshotItem) {
