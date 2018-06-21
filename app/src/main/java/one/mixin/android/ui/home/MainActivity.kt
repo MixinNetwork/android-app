@@ -331,19 +331,28 @@ class MainActivity : BlazeBaseActivity() {
         private const val TRANSFER = "transfer"
 
         fun showGroup(context: Context, code: String) {
-            Intent(context, MainActivity::class.java).apply { putExtra(CODE, code) }.run {
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(CODE, code)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
                 context.startActivity(this)
             }
         }
 
         fun showUser(context: Context, user: User) {
-            Intent(context, MainActivity::class.java).apply { putExtra(ARGS_USER, user) }.run {
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(ARGS_USER, user)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
                 context.startActivity(this)
             }
         }
 
         fun showTransfer(context: Context, userId: String) {
-            Intent(context, MainActivity::class.java).apply { putExtra(TRANSFER, userId) }.run {
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(TRANSFER, userId)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
                 context.startActivity(this)
             }
         }
@@ -355,23 +364,31 @@ class MainActivity : BlazeBaseActivity() {
                 putExtra(ARGS_ASSET, asset)
                 putExtra(TransferBottomSheetDialogFragment.ARGS_TRACE, trace)
                 putExtra(TransferBottomSheetDialogFragment.ARGS_MEMO, memo)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }.run {
                 context.startActivity(this)
             }
         }
 
         fun showScan(context: Context, text: String) {
-            Intent(context, MainActivity::class.java).apply { putExtra(SCAN, text) }.run { context.startActivity(this) }
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(SCAN, text)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run { context.startActivity(this) }
         }
 
         fun show(context: Context) {
-            Intent(context, MainActivity::class.java).run {
+            Intent(context, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
                 context.startActivity(this)
             }
         }
 
         fun getSingleIntent(context: Context): Intent {
-            return Intent(context, MainActivity::class.java)
+            return Intent(context, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }
         }
     }
 }

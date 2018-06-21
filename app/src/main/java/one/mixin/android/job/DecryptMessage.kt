@@ -58,6 +58,7 @@ import one.mixin.android.websocket.invalidData
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
+import java.io.IOException
 import java.util.UUID
 
 class DecryptMessage : Injector() {
@@ -475,6 +476,7 @@ class DecryptMessage : Injector() {
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
             conversationDao.insert(conversation)
+            refreshConversation(data.conversationId)
         }
         if (jobManager.findJobById(data.conversationId) == null) {
             if (conversation.status == ConversationStatus.START.ordinal) {
@@ -487,6 +489,25 @@ class DecryptMessage : Injector() {
         val user = userDao.findUser(userId)
         if (user == null) {
             jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+        }
+    }
+
+    private fun refreshConversation(conversationId: String) {
+        try {
+            val call = conversationApi.getConversation(conversationId).execute()
+            val response = call.body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { conversationData ->
+                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
+                        ConversationStatus.SUCCESS.ordinal
+                    } else {
+                        ConversationStatus.QUIT.ordinal
+                    }
+                    conversationDao.updateConversation(conversationData.conversationId, conversationData.creatorId, conversationData.category, conversationData.name,
+                        conversationData.announcement, conversationData.createdAt, status)
+                }
+            }
+        } catch (e: IOException) {
         }
     }
 

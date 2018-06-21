@@ -477,9 +477,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         cid
     }
 
-    private val recipient: User? by lazy {
-        arguments!!.getParcelable<User?>(RECIPIENT)
-    }
+    private var recipient: User? = null
 
     private val isGroup: Boolean by lazy {
         recipient == null
@@ -503,6 +501,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var isFirstMessage = false
     private var isFirstLoad = true
     private var isBottom = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        recipient = arguments!!.getParcelable<User?>(RECIPIENT)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -1155,6 +1158,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(this, Observer {
             it?.let {
+                recipient = it
                 renderUserInfo(it)
             }
         })
