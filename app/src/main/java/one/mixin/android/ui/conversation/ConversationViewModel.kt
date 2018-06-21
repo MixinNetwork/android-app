@@ -101,7 +101,7 @@ internal constructor(
     fun getMessagesMinimal(id: String) = conversationRepository.getMessagesMinimal(id)
 
     fun indexUnread(conversationId: String, userId: String) =
-        conversationRepository.indexUnread(conversationId, userId)
+        conversationRepository.indexUnread(conversationId)
             .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
     fun searchConversationById(id: String) =

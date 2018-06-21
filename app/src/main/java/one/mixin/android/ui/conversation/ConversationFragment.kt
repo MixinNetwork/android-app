@@ -794,7 +794,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun bindData() {
-        chatViewModel.indexUnread(conversationId, sender.userId)
+        chatViewModel.indexUnread(conversationId)
             .autoDisposable(scopeProvider).subscribe({ unreadCount ->
                 chatViewModel.getMessages(conversationId).observe(this, Observer {
                     Flowable.just(it).subscribeOn(Schedulers.io()).map {

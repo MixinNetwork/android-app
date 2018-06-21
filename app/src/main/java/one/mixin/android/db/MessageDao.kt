@@ -45,12 +45,8 @@ interface MessageDao : BaseDao<Message> {
         "ORDER BY m.created_at DESC")
     fun getMessagesMinimal(conversationId: String): List<String>
 
-    @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
-        "AND (created_at > (SELECT created_at FROM messages m WHERE m.conversation_id = :conversationId " +
-        "AND m.status = 'READ' AND m.user_id != :userId ORDER BY m.created_at DESC LIMIT 1) OR " +
-        "(SELECT created_at FROM messages m WHERE m.conversation_id = :conversationId " +
-        "AND m.status = 'READ' AND m.user_id != :userId ORDER BY m.created_at DESC LIMIT 1) is NULL)")
-    fun indexUnread(conversationId: String, userId: String): Maybe<Int>
+    @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
+    fun indexUnread(conversationId: String): Maybe<Int>
 
     @Query("SELECT * FROM messages WHERE conversation_id = :conversationId")
     fun getMessageList(conversationId: String): List<Message>

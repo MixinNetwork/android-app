@@ -75,7 +75,7 @@ internal constructor(
 
     fun getMessagesMinimal(conversationId: String) = messageDao.getMessagesMinimal(conversationId)
 
-    fun indexUnread(conversationId: String, userId: String) = messageDao.indexUnread(conversationId, userId)
+    fun indexUnread(conversationId: String, userId: String) = messageDao.indexUnread(conversationId)
 
     fun getMediaMessages(conversationId: String): List<MessageItem> =
         messageDao.getMediaMessages(conversationId)
