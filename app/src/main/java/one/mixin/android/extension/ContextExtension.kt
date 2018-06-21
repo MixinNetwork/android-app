@@ -49,6 +49,7 @@ import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import org.jetbrains.anko.displayMetrics
+import timber.log.Timber
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
@@ -339,46 +340,31 @@ private val maxVideoSize by lazy {
 }
 
 fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
-    var cursor: Cursor? = null
-
     try {
-        cursor = contentResolver.query(uri, null, null, null, null)
-
-        if (cursor != null && cursor.moveToFirst()) {
-
-            val fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-
-            val path = try {
-                cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA))
-            } catch (e: IllegalStateException) {
-                uri.getFilePath()
-            } ?: throw IllegalStateException("Can't get video path")
-            val m = MediaMetadataRetriever().apply {
-                setDataSource(path)
-            }
-
-            val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
-            val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
-            val mediaWith = image.width
-            val mediaHeight = image.height
-            val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
-            val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
-
-            val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
-            val resultWidth = (Math.round((mediaWith * scale / 2).toDouble()) * 2).toInt()
-            val resultHeight = (Math.round((mediaHeight * scale / 2).toDouble()) * 2).toInt()
-
-            return if (scale > 0) {
-                VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                    fileName, 0, false)
-            } else {
-                val bitrate = MediaController.getBitrate(path, scale)
-                VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                    fileName, bitrate)
-            }
+        val path = uri.getFilePath() ?: return null
+        val m = MediaMetadataRetriever().apply {
+            setDataSource(path)
         }
-    } finally {
-        cursor?.close()
+        val fileName = File(path).name
+        val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
+        val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
+        val mediaWith = image.width
+        val mediaHeight = image.height
+        val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+        val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
+        val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
+        val resultWidth = (Math.round((mediaWith * scale / 2).toDouble()) * 2).toInt()
+        val resultHeight = (Math.round((mediaHeight * scale / 2).toDouble()) * 2).toInt()
+        return if (scale > 0) {
+            VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
+                fileName, 0, false)
+        } else {
+            val bitrate = MediaController.getBitrate(path, scale)
+            VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
+                fileName, bitrate)
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
     }
     return null
 }
