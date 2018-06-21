@@ -6,7 +6,6 @@ import android.arch.persistence.room.Query
 import android.arch.persistence.room.RoomWarnings
 import android.arch.persistence.room.Transaction
 import io.reactivex.Flowable
-import io.reactivex.Maybe
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
@@ -46,7 +45,7 @@ interface MessageDao : BaseDao<Message> {
     fun getMessagesMinimal(conversationId: String): List<String>
 
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
-    fun indexUnread(conversationId: String): Maybe<Int>
+    fun indexUnread(conversationId: String): Int?
 
     @Query("SELECT * FROM messages WHERE conversation_id = :conversationId")
     fun getMessageList(conversationId: String): List<Message>

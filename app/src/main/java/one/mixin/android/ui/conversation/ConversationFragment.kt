@@ -37,7 +37,6 @@ import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
@@ -133,6 +132,7 @@ import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHid
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.dip
+import org.jetbrains.anko.support.v4.onUiThread
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
@@ -794,115 +794,118 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun bindData() {
-        chatViewModel.indexUnread(conversationId)
-            .autoDisposable(scopeProvider).subscribe({ unreadCount ->
-                chatViewModel.getMessages(conversationId).observe(this, Observer {
-                    Flowable.just(it).subscribeOn(Schedulers.io()).map {
-                        if (it.size > 0 && !isGroup &&
-                            recipient?.relationship == UserRelationship.STRANGER.name &&
-                            it.find { it != null && it.userId == sender.userId } == null) {
-                            if (unreadCount == 0) {
-                                DataPackage(it, -1, false, true)
-                            } else {
-                                DataPackage(it, unreadCount, false, true)
-                            }
-                        } else if (isFirstLoad) {
-                            var index = -1
-                            if (it.isNotEmpty() && !messageId.isNullOrEmpty()) {
-                                for (i in 0 until it.size) {
-                                    if (it[i]?.messageId == messageId) {
-                                        index = i
-                                        break
-                                    }
+        doAsync {
+            chatViewModel.indexUnread(conversationId)?.let { unreadCount ->
+                chatViewModel.getMessages(conversationId).observe(this@ConversationFragment, Observer {
+                    doAsync {
+                        it?.let {
+                            val dataPackage = if (it.size > 0 && !isGroup &&
+                                recipient?.relationship == UserRelationship.STRANGER.name &&
+                                it.find { it != null && it.userId == sender.userId } == null) {
+                                if (unreadCount == 0) {
+                                    DataPackage(it, -1, false, true)
+                                } else {
+                                    DataPackage(it, unreadCount, false, true)
                                 }
-                                if (index == -1) {
-                                    chatViewModel.getMessagesMinimal(conversationId).let { ids ->
-                                        for (i in 0 until ids.size) {
-                                            if (ids[i] == messageId) {
-                                                index = i
-                                                break
+                            } else if (isFirstLoad) {
+                                var index = -1
+                                if (it.isNotEmpty() && !messageId.isNullOrEmpty()) {
+                                    for (i in 0 until it.size) {
+                                        if (it[i]?.messageId == messageId) {
+                                            index = i
+                                            break
+                                        }
+                                    }
+                                    if (index == -1) {
+                                        chatViewModel.getMessagesMinimal(conversationId).let { ids ->
+                                            for (i in 0 until ids.size) {
+                                                if (ids[i] == messageId) {
+                                                    index = i
+                                                    break
+                                                }
                                             }
                                         }
                                     }
-                                }
-                                DataPackage(it, index, false)
-                            } else if (it.isNotEmpty()) {
-                                if (unreadCount == 0) {
-                                    DataPackage(it, -1, false)
+                                    DataPackage(it, index, false)
+                                } else if (it.isNotEmpty()) {
+                                    if (unreadCount == 0) {
+                                        DataPackage(it, -1, false)
+                                    } else {
+                                        DataPackage(it, unreadCount - 1, true)
+                                    }
                                 } else {
-                                    DataPackage(it, unreadCount - 1, true)
+                                    DataPackage(it, -1, false)
                                 }
                             } else {
                                 DataPackage(it, -1, false)
                             }
-                        } else {
-                            DataPackage(it, -1, false)
-                        }
-                    }.observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider).subscribe({
-                        if (it.data.size > 0) {
-                            isFirstMessage = false
-                        }
-                        val data = it.data
-                        val index = it.index
-                        when {
-                            it.isStranger -> {
-                                chatAdapter.hasBottomView = true
-                                chatAdapter.submitList(data)
-                                chatAdapter.unreadIndex = index
-                            }
-                            isFirstLoad -> {
-                                isFirstLoad = false
-                                if (it.hasUnread && index >= 0) {
-                                    chatAdapter.unreadIndex = index
+                            onUiThread {
+                                if (dataPackage.data.size > 0) {
+                                    isFirstMessage = false
                                 }
-                                chatAdapter.hasBottomView = false
-                                chatAdapter.submitList(data)
-                                if (index > 0) {
-                                    chatAdapter.loadAround(index)
-                                    scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4)
-                                } else {
-                                    scrollTo(0)
-                                }
-                            }
-                            else -> {
-                                if (data.size > chatAdapter.itemCount) {
-                                    chatAdapter.unreadIndex = null
-                                    if (isBottom) {
-                                        notNullElse(data[0], {
-                                            when (chatAdapter.getItemType(it)) {
-                                                MESSAGE_TYPE -> {
-                                                    if (it.content != null && it.content.length > 500) {
-                                                        scrollTo(0)
-                                                    } else {
-                                                        scrollTo(0, 0, when {
-                                                            it.content == null -> FAST_SPEED
-                                                            it.content.length > 30 -> FAST_SPEED
-                                                            it.content.length > 15 -> MEDIUM_SPEED
-                                                            else -> SLOW_SPEED
-                                                        })
-                                                    }
-                                                }
-                                                FILE_TYPE, BILL_TYPE, LINK_TYPE -> scrollTo(0, 0, MEDIUM_SPEED)
-                                                else -> {
-                                                    scrollTo(0)
-                                                }
-                                            }
-                                        }, {
+                                val data = dataPackage.data
+                                val index = dataPackage.index
+                                when {
+                                    dataPackage.isStranger -> {
+                                        chatAdapter.hasBottomView = true
+                                        chatAdapter.submitList(data)
+                                        chatAdapter.unreadIndex = index
+                                    }
+                                    isFirstLoad -> {
+                                        isFirstLoad = false
+                                        if (dataPackage.hasUnread && index >= 0) {
+                                            chatAdapter.unreadIndex = index
+                                        }
+                                        chatAdapter.hasBottomView = false
+                                        chatAdapter.submitList(data)
+                                        if (index > 0) {
+                                            chatAdapter.loadAround(index)
+                                            scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4)
+                                        } else {
                                             scrollTo(0)
-                                        })
-                                    } else {
-                                        scrollY(context!!.dpToPx(30f))
+                                        }
+                                    }
+                                    else -> {
+                                        if (data.size > chatAdapter.itemCount) {
+                                            chatAdapter.unreadIndex = null
+                                            if (isBottom) {
+                                                notNullElse(data[0], {
+                                                    when (chatAdapter.getItemType(it)) {
+                                                        MESSAGE_TYPE -> {
+                                                            if (it.content != null && it.content.length > 500) {
+                                                                scrollTo(0)
+                                                            } else {
+                                                                scrollTo(0, 0, when {
+                                                                    it.content == null -> FAST_SPEED
+                                                                    it.content.length > 30 -> FAST_SPEED
+                                                                    it.content.length > 15 -> MEDIUM_SPEED
+                                                                    else -> SLOW_SPEED
+                                                                })
+                                                            }
+                                                        }
+                                                        FILE_TYPE, BILL_TYPE, LINK_TYPE -> scrollTo(0, 0, MEDIUM_SPEED)
+                                                        else -> {
+                                                            scrollTo(0)
+                                                        }
+                                                    }
+                                                }, {
+                                                    scrollTo(0)
+                                                })
+                                            } else {
+                                                scrollY(context!!.dpToPx(30f))
+                                            }
+                                        }
+                                        chatAdapter.hasBottomView = false
+                                        chatAdapter.submitList(data)
                                     }
                                 }
-                                chatAdapter.hasBottomView = false
-                                chatAdapter.submitList(data)
                             }
                         }
-                    }, {
-                        Timber.e(it)
-                    })
+                    }
+
                 })
-            }, {})
+            }
+        }
 
         if (isBot) {
             app_rv.visibility = GONE
