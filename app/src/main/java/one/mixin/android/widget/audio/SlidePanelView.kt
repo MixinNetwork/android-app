@@ -74,9 +74,9 @@ class SlidePanelView : RelativeLayout {
         if (preX - x > 0) {
             slide_ll.translationX = 0f
         } else {
-            slide_ll.translationX -= x
+            slide_ll.translationX -= x * 1.5f
         }
-        val alpha = abs(slide_ll.translationX / slide_ll.width)
+        val alpha = abs(slide_ll.translationX * 1.5f / slide_ll.width)
         slide_ll.alpha = 1 - alpha
     }
 
