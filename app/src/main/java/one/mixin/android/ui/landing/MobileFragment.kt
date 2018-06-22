@@ -138,15 +138,17 @@ class MobileFragment : BaseFragment() {
         AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setMessage(getString(R.string.landing_invitation_dialog_content,
                 mCountry.dialCode + " " + mobile_et.text.toString()))
-            .setNegativeButton(R.string.change, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
+            .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 requestSend()
                 dialog.dismiss()
-            })
+            }
             .show()
     }
 
     private fun requestSend(gRecaptchaResponse: String? = null) {
+        if (!isAdded) return
+
         mobile_fab.show()
         mobile_cover.visibility = VISIBLE
         val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
