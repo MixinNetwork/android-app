@@ -795,14 +795,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun bindData() {
         doAsync {
-            chatViewModel.indexUnread(conversationId)?.let { unreadCount ->
+            chatViewModel.indexUnread(conversationId).let { unreadCount ->
                 chatViewModel.getMessages(conversationId).observe(this@ConversationFragment, Observer {
                     doAsync {
                         it?.let {
                             val dataPackage = if (it.size > 0 && !isGroup &&
                                 recipient?.relationship == UserRelationship.STRANGER.name &&
                                 it.find { it != null && it.userId == sender.userId } == null) {
-                                if (unreadCount == 0) {
+                                if (unreadCount == null || unreadCount == 0) {
                                     DataPackage(it, -1, false, true)
                                 } else {
                                     DataPackage(it, unreadCount, false, true)
@@ -828,7 +828,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                     }
                                     DataPackage(it, index, false)
                                 } else if (it.isNotEmpty()) {
-                                    if (unreadCount == 0) {
+                                    if (unreadCount == null || unreadCount == 0) {
                                         DataPackage(it, -1, false)
                                     } else {
                                         DataPackage(it, unreadCount - 1, true)
