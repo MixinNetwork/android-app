@@ -9,6 +9,7 @@ import android.app.NotificationManager
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
+import android.arch.paging.PagedList
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Intent
@@ -104,7 +105,6 @@ import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
-import one.mixin.android.util.DataPackage
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -796,6 +796,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun bindData() {
         doAsync {
             chatViewModel.indexUnread(conversationId).let { unreadCount ->
+                if (!isAdded) {
+                    return@doAsync
+                }
                 chatViewModel.getMessages(conversationId).observe(this@ConversationFragment, Observer {
                     doAsync {
                         it?.let {
@@ -838,6 +841,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 }
                             } else {
                                 DataPackage(it, -1, false)
+                            }
+                            if (!isAdded) {
+                                return@doAsync
                             }
                             onUiThread {
                                 if (dataPackage.data.size > 0) {
@@ -1527,4 +1533,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             updateSticker()
         }
     }
+
+    private class DataPackage constructor(
+        val data: PagedList<MessageItem>,
+        val index: Int,
+        val hasUnread: Boolean,
+        val isStranger: Boolean = false
+    )
 }
