@@ -92,7 +92,7 @@ internal constructor(
 
     fun getMessages(id: String): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(conversationRepository.getMessages(id), PagedList.Config.Builder()
-            .setPageSize(100)
+            .setPageSize(60)
             .setEnablePlaceholders(true)
             .build())
             .build()
