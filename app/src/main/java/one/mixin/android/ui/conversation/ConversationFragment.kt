@@ -1013,7 +1013,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onCancel() {
-        chat_control.cancelExternal()
+        chat_control?.cancelExternal()
     }
 
     override fun sendAudio(file: File, duration: Long, waveForm: ByteArray) {

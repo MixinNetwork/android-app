@@ -64,7 +64,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private lateinit var menu: AlertDialog
+    private var menu: AlertDialog? = null
     var callback: Callback? = null
 
     private val conversationId: String by lazy {
@@ -90,7 +90,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.left_iv.setOnClickListener { dialog?.dismiss() }
         contentView.right_iv.setOnClickListener {
             (dialog as BottomSheet).fakeDismiss()
-            menu.show()
+            menu?.show()
         }
 
         contentView.join_tv.setOnClickListener {
@@ -110,10 +110,10 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        contentView.detail_tv.setAutoLinkOnClickListener({ _, url ->
+        contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
             openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
             dialog?.dismiss()
-        })
+        }
 
         bottomViewModel.getConversationById(conversationId).observe(this, Observer { c ->
             if (c == null) return@Observer
@@ -126,7 +126,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             contentView.name.text = c.name
             contentView.detail_tv.text = c.announcement
-            initMenu()
             initParticipant()
         })
 
@@ -142,6 +141,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
             uiThread {
                 if (!isAdded) return@uiThread
+
+                initMenu()
 
                 val size = resources.getDimensionPixelSize(R.dimen.bottom_group_avatar_size)
                 val margin = dip(7.5f)
@@ -204,7 +205,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             choices.add(getString(R.string.group_info_delete_group))
         }
         menu = AlertDialog.Builder(context!!)
-            .setItems(choices.toTypedArray(), { _, which ->
+            .setItems(choices.toTypedArray()) { _, which ->
                 when (choices[which]) {
                     getString(R.string.participants) -> {
                         dialog?.dismiss()
@@ -238,8 +239,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         callback?.onDelete()
                     }
                 }
-            }).create()
-        menu.setOnDismissListener {
+            }.create()
+        menu?.setOnDismissListener {
             if (!keepDialog) {
                 dialog?.dismiss()
             }
@@ -265,25 +266,25 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         var whichItem = 0
         val alert = AlertDialog.Builder(context!!)
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.cancel, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
-            })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
+            }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     bottomViewModel.mute(conversationId, duration.toLong())
                     context?.toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
                 }
                 dialog.dismiss()
-            })
-            .setSingleChoiceItems(choices, 0, { _, which ->
+            }
+            .setSingleChoiceItems(choices, 0) { _, which ->
                 whichItem = which
                 when (which) {
                     0 -> duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
                     1 -> duration = UserBottomSheetDialogFragment.MUTE_1_WEEK
                     2 -> duration = UserBottomSheetDialogFragment.MUTE_1_YEAR
                 }
-            })
+            }
             .show()
         alert.setOnDismissListener { dialog?.dismiss() }
     }
@@ -307,11 +308,11 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val nameDialog = android.support.v7.app.AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setTitle(R.string.profile_modify_name)
             .setView(frameLayout)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 bottomViewModel.updateGroup(conversationId, editText.text.toString(), null)
                 dialog.dismiss()
-            })
+            }
             .show()
         nameDialog.setOnDismissListener { dialog?.dismiss() }
         nameDialog.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
