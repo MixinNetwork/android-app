@@ -343,7 +343,7 @@ private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
     return null
 }
 
-fun String.decodeBase64(): ByteArray? {
+fun String.decodeBase64(): ByteArray {
     return Base64.decode(this, 0)
 }
 
@@ -359,11 +359,17 @@ fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String
     return Base64.encodeToString(data, Base64.NO_WRAP)
 }
 
-fun ByteArray.encodeBitmap(): Bitmap = BitmapFactory.decodeByteArray(this, 0, this.size)
+fun ByteArray.encodeBitmap(): Bitmap? {
+    return if (this.isEmpty()) {
+        null
+    } else {
+        BitmapFactory.decodeByteArray(this, 0, this.size)
+    }
+}
 
 fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
 
-fun String.toDrawable() = this.decodeBase64()?.encodeBitmap()?.toDrawable()
+fun String.toDrawable() = this.decodeBase64().encodeBitmap()?.toDrawable()
 
 fun String.getFileNameNoEx(): String {
     val dot = this.lastIndexOf('.')
@@ -632,4 +638,5 @@ fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
     bitmap.setPixels(pix, 0, w, 0, 0, w, h)
 
     return bitmap
+}
 }

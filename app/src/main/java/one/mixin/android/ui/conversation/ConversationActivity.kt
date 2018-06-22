@@ -41,7 +41,7 @@ class ConversationActivity : BlazeBaseActivity() {
     lateinit var userRepository: UserRepository
 
     private fun showConversation(intent: Intent) {
-        val bundle = intent.extras
+        val bundle = intent.extras ?: return
         if (bundle.getString(CONVERSATION_ID) == null) {
             val userId = bundle.getString(RECIPIENT_ID)
             Observable.just(QrCodeType.user).map {
