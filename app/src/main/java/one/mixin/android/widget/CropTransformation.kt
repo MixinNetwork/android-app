@@ -15,8 +15,13 @@ class CropTransformation constructor(private var width: Int, private var height:
         BOTTOM
     }
 
-    override fun transform(context: Context, pool: BitmapPool,
-        toTransform: Bitmap, outWidth: Int, outHeight: Int): Bitmap {
+    override fun transform(
+        context: Context,
+        pool: BitmapPool,
+        toTransform: Bitmap,
+        outWidth: Int,
+        outHeight: Int
+    ): Bitmap {
 
         width = if (width == 0) toTransform.width else width
         height = if (height == 0) toTransform.height else height

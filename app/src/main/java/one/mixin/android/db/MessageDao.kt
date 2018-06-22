@@ -70,7 +70,7 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
         "u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, m.category AS type, " +
-        "u1.avatar_url AS botAvatarUrl, u1.full_name AS botFullName, u1.user_id AS botUserId,"+
+        "u1.avatar_url AS botAvatarUrl, u1.full_name AS botFullName, u1.user_id AS botUserId," +
         "m.content AS content, m.created_at AS createdAt, m.name AS mediaName, " +
         "c.icon_url AS conversationAvatarUrl, c.name AS conversationName, c.category AS conversationCategory " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id " +

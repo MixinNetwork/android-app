@@ -639,4 +639,3 @@ fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
 
     return bitmap
 }
-}

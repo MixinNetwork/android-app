@@ -141,7 +141,6 @@ class OpusAudioRecorder(private val ctx: Context) {
             }
             ctx.vibrate(longArrayOf(0, 10))
             statusSuccess = true
-
         } catch (e: Exception) {
             recordingAudioFile?.delete()
             try {

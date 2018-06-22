@@ -61,7 +61,7 @@ class ConversationAdapter(
             notifyDataSetChanged()
         }
 
-    fun loadAround(position:Int){
+    fun loadAround(position: Int) {
         currentList?.loadAround(position)
     }
 
