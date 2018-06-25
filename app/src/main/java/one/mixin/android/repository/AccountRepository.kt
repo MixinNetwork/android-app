@@ -17,7 +17,6 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.rsaDecrypt
 import one.mixin.android.db.AppDao
@@ -27,6 +26,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import retrofit2.Call
@@ -106,7 +106,7 @@ constructor(
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
     fun verifyPin(code: String) = getPinToken().map { pinToken ->
-        accountService.verifyPin(PinRequest(aesEncrypt(pinToken, code)!!)).execute().body()!!
+        accountService.verifyPin(PinRequest(encryptPin(pinToken, code)!!)).execute().body()!!
     }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)

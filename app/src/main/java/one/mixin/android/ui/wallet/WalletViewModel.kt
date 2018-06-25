@@ -11,10 +11,10 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AssetFee
 import one.mixin.android.api.request.PinRequest
-import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
@@ -49,8 +49,8 @@ internal constructor(
 
     fun updatePin(pin: String, oldPin: String?): Observable<MixinResponse<Account>> =
         accountRepository.getPinToken().map { pinToken ->
-            val old = aesEncrypt(pinToken, oldPin)
-            val fresh = aesEncrypt(pinToken, pin)!!
+            val old = encryptPin(pinToken, oldPin)
+            val fresh = encryptPin(pinToken, pin)!!
             accountRepository.updatePin(PinRequest(fresh, old)).execute().body()!!
         }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 

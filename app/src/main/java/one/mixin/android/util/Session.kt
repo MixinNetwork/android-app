@@ -9,6 +9,7 @@ import io.jsonwebtoken.SignatureAlgorithm
 import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
+import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
@@ -112,4 +113,12 @@ class Session {
                 .compact()
         }
     }
+}
+
+fun encryptPin(key: String, code: String?): String? {
+    val pinCode = code ?: return null
+    val iterator = Session.getPinIterator()
+    val based = aesEncrypt(key, iterator, pinCode)
+    Session.storePinIterator(iterator + 1)
+    return based
 }

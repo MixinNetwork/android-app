@@ -16,7 +16,6 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentResponse
-import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
@@ -27,6 +26,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Snapshot
@@ -68,7 +68,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun transfer(assetId: String, userId: String, amount: String, code: String, trace: String?, memo: String?) =
         accountRepository.getPinToken().map { pinToken ->
-            assetRepository.transfer(TransferRequest(assetId, userId, amount, aesEncrypt(pinToken, code), trace, memo))
+            assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptPin(pinToken, code), trace, memo))
                 .execute().body()!!
         }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
@@ -82,7 +82,7 @@ class BottomSheetViewModel @Inject internal constructor(
         Observable<MixinResponse<Snapshot>> =
         accountRepository.getPinToken().map { pinToken ->
             assetRepository.withdrawal(
-                WithdrawalRequest(addressId, amount, aesEncrypt(pinToken, code)!!, traceId, memo))
+                WithdrawalRequest(addressId, amount, encryptPin(pinToken, code)!!, traceId, memo))
                 .execute().body()!!
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
@@ -94,7 +94,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun syncAddr(assetId: String, publicKey: String, label: String, code: String): Observable<MixinResponse<Address>> =
         accountRepository.getPinToken().map { pinToken ->
-            assetRepository.syncAddr(AddressRequest(assetId, publicKey, label, aesEncrypt(pinToken, code)!!))
+            assetRepository.syncAddr(AddressRequest(assetId, publicKey, label, encryptPin(pinToken, code)!!))
                 .execute().body()!!
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
@@ -102,7 +102,7 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun deleteAddr(id: String, code: String): Observable<MixinResponse<Unit>> =
         accountRepository.getPinToken().map { pinToken ->
-            assetRepository.deleteAddr(id, aesEncrypt(pinToken, code)!!).execute().body()!!
+            assetRepository.deleteAddr(id, encryptPin(pinToken, code)!!).execute().body()!!
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
