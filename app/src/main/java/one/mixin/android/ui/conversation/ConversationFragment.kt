@@ -143,6 +143,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     OpusAudioRecorder.Callback {
 
     companion object {
+        const val TAG = "ConversationFragment"
+
         const val CONVERSATION_ID = "conversation_id"
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
@@ -736,7 +738,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             closeTool()
         }
         tool_view.add_sticker_iv.setOnClickListener {
-
+            val messageItem = chatAdapter.selectSet.valueAt(0)
+            messageItem?.let {
+                val url = if (messageItem.type.endsWith("STICKER")){
+                    it.assetUrl
+                } else {
+                    it.mediaUrl
+                }
+                url?.let { requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it), StickerAddFragment.TAG) }
+            }
             closeTool()
         }
         chat_control.chat_et.requestFocus()

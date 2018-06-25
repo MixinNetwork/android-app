@@ -91,7 +91,7 @@ class ProfileFragment : BaseFragment() {
             name_rl.setOnClickListener { showDialog(false) }
             phone_rl.setOnClickListener {
                 alert(getString(R.string.profile_modify_number)) {
-                    positiveButton(R.string.profile_phone, { dialog ->
+                    positiveButton(R.string.profile_phone) { dialog ->
                         dialog.dismiss()
                         activity?.supportFragmentManager?.inTransaction {
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
@@ -99,7 +99,7 @@ class ProfileFragment : BaseFragment() {
                                 .add(R.id.container, VerifyFragment.newInstance())
                                 .addToBackStack(null)
                         }
-                    })
+                    }
                     noButton { dialog -> dialog.dismiss() }
                 }.show()
             }
@@ -192,15 +192,15 @@ class ProfileFragment : BaseFragment() {
         dialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setTitle(if (isRedeem) R.string.wallet_get_free_redeem else R.string.profile_modify_name)
             .setView(frameLayout)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(if (isRedeem) R.string.wallet_redeem else R.string.confirm, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(if (isRedeem) R.string.wallet_redeem else R.string.confirm) { dialog, _ ->
                 if (isRedeem) {
                     redeem(editText.text.toString())
                 } else {
                     update(editText.text.toString(), false)
                     dialog.dismiss()
                 }
-            })
+            }
             .show()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)

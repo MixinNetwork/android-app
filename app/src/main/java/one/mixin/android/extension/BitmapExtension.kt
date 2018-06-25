@@ -131,3 +131,23 @@ fun Bitmap.decodeQR(): String? {
 
     return results[0].text
 }
+
+fun Bitmap.maxSizeScale(maxWidth: Int, maxHeight: Int): Bitmap {
+    if (maxHeight > 0 && maxWidth > 0) {
+        val width = this.width
+        val height = this.height
+        val ratioBitmap = width.toFloat() / height.toFloat()
+        val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
+
+        var finalWidth = maxWidth
+        var finalHeight = maxHeight
+        if (ratioMax > ratioBitmap) {
+            finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
+        } else {
+            finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
+        }
+        return Bitmap.createScaledBitmap(this, finalWidth, finalHeight, true)
+    } else {
+        return this
+    }
+}

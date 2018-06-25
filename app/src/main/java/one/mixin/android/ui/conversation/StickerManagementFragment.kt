@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation
 
 import android.Manifest
 import android.app.Activity
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
@@ -27,6 +28,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displaySize
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
@@ -36,9 +38,7 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.Sticker
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
-import org.jetbrains.anko.uiThread
 import javax.inject.Inject
 
 class StickerManagementFragment : BaseFragment() {
@@ -72,13 +72,18 @@ class StickerManagementFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        title_view.left_ib.setOnClickListener { requireActivity().onBackPressed() }
         title_view.right_tv.textColor = Color.BLACK
         title_view.right_animator.setOnClickListener {
-            if (stickerAdapter.editing) {
-                title_view.right_tv.text = getString(R.string.done)
-                //TODO
-            } else {
+            if (title_view.right_tv.text == getString(R.string.done)) {
                 title_view.right_tv.text = getString(R.string.conversation_delete)
+                if (stickerAdapter.checkedList.isNotEmpty()) {
+                    stickerViewModel.removeStickers(stickerAdapter.checkedList)
+                }
+            } else {
+                title_view.right_tv.text = getString(R.string.done)
+                stickerAdapter.editing = !stickerAdapter.editing
+                stickerAdapter.notifyDataSetChanged()
             }
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.notifyDataSetChanged()
@@ -102,20 +107,37 @@ class StickerManagementFragment : BaseFragment() {
                         Bugsnag.notify(it)
                     })
             }
+
+            override fun onDelete() {
+                title_view.right_tv.text = getString(R.string.done)
+            }
         })
 
-        doAsync {
-            val list = stickerViewModel.getStickers(albumId)
-            uiThread { updateStickers(list) }
+        stickerViewModel.observeStickers(albumId).observe(this, Observer {
+            it?.let { updateStickers(it) }
+        })
+    }
+
+    override fun onBackPressed(): Boolean {
+        if (stickerAdapter.editing) {
+            stickerAdapter.editing = !stickerAdapter.editing
+            stickerAdapter.checkedList.clear()
+            stickerAdapter.notifyDataSetChanged()
+            title_view.right_tv.text = getString(R.string.conversation_delete)
+
+            return true
         }
+        return super.onBackPressed()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
-                requireActivity().addFragment(this@StickerManagementFragment,
-                    StickerAddFragment.newInstance(it), StickerAddFragment.TAG)
+                it.getFilePath()?.let {
+                    requireActivity().addFragment(this@StickerManagementFragment,
+                        StickerAddFragment.newInstance(it), StickerAddFragment.TAG)
+                }
             }
         }
     }
@@ -135,7 +157,7 @@ class StickerManagementFragment : BaseFragment() {
         val checkedList = arrayListOf<String>()
 
         override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
-            val s = if (stickers.isNotEmpty()) {
+            val s = if (stickers.isNotEmpty() && position != stickers.size) {
                 stickers[position]
             } else {
                 null
@@ -151,13 +173,15 @@ class StickerManagementFragment : BaseFragment() {
             val cb = v.getChildAt(2) as CheckBox
             if (editing) {
                 cb.visibility = VISIBLE
-                if (position == itemCount && v.visibility == VISIBLE) {
+                if (position == stickers.size && v.visibility == VISIBLE) {
                     v.visibility = GONE
                 }
             } else {
                 cb.visibility = GONE
-                if (position == itemCount && v.visibility == GONE) {
+                if (position == stickers.size && v.visibility == GONE) {
                     v.visibility = VISIBLE
+                } else {
+                    if (v.visibility == GONE) v.visibility = VISIBLE
                 }
             }
             if (s != null && checkedList.contains(s.stickerId)) {
@@ -167,7 +191,7 @@ class StickerManagementFragment : BaseFragment() {
                 cb.isChecked = false
                 cover.visibility = GONE
             }
-            if (position == itemCount) {
+            if (position == stickers.size) {
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
             } else {
@@ -176,14 +200,25 @@ class StickerManagementFragment : BaseFragment() {
                         if (size <= 0) RequestOptions().dontAnimate().override(Target.SIZE_ORIGINAL)
                         else RequestOptions().dontAnimate().override(size, size))
                         .into(imageView)
-                    imageView.setOnClickListener {
-                        if (!editing) {
-                            if (cb.isChecked) {
-                                checkedList.remove(s.stickerId)
-                            } else {
-                                checkedList.add(s.stickerId)
-                            }
+                    cb.setOnCheckedChangeListener { _, checked ->
+                        if (checked) {
+                            checkedList.add(s.stickerId)
+                            cover.visibility = VISIBLE
+                        } else {
+                            checkedList.remove(s.stickerId)
+                            cover.visibility = GONE
                         }
+                    }
+                    imageView.setOnClickListener {
+                        if (editing) {
+                            cb.isChecked = !cb.isChecked
+                        }
+                    }
+                    imageView.setOnLongClickListener {
+                        editing = !editing
+                        notifyDataSetChanged()
+                        listener?.onDelete()
+                        return@setOnLongClickListener true
                     }
                 }
             }
@@ -205,5 +240,6 @@ class StickerManagementFragment : BaseFragment() {
 
     interface StickerListener {
         fun onAddClick()
+        fun onDelete()
     }
 }

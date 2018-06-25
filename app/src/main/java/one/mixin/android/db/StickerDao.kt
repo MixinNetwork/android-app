@@ -9,6 +9,9 @@ import one.mixin.android.vo.Sticker
 interface StickerDao : BaseDao<Sticker> {
 
     @Query("SELECT * FROM stickers WHERE album_id = :id")
+    fun observeStickersByAlbumId(id: String): LiveData<List<Sticker>>
+
+    @Query("SELECT * FROM stickers WHERE album_id = :id")
     fun getStickersByAlbumId(id: String): List<Sticker>
 
     @Query("SELECT * FROM stickers WHERE last_use_at > 0 ORDER BY last_use_at DESC LIMIT 20")

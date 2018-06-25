@@ -52,7 +52,7 @@ class StickerAlbumFragment : BaseFragment() {
                 albums.addAll(r)
                 albumAdapter.notifyDataSetChanged()
                 context?.let { c ->
-                    for (i in 0..albums.size) {
+                    for (i in 0 until albumAdapter.count) {
                         val tabView = albumAdapter.getTabView(i, c) as FrameLayout
                         album_tl.getTabAt(i)?.customView = tabView
                         if (album_tl.selectedTabPosition == i) {

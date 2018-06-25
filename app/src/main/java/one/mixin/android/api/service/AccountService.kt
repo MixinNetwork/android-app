@@ -8,6 +8,7 @@ import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.PinToken
 import one.mixin.android.api.request.SessionRequest
+import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
@@ -70,7 +71,7 @@ interface AccountService {
     fun getStickerById(@Path("id") id: String): Observable<MixinResponse<Sticker>>
 
     @POST("stickers/add")
-    fun addSticker(@Body data: String): Observable<MixinResponse<Sticker>>
+    fun addSticker(@Body request: StickerAddRequest): Observable<MixinResponse<Sticker>>
 
     @POST("stickers/remove")
     fun removeSticker(@Body ids: List<String>): Call<MixinResponse<Sticker>>
