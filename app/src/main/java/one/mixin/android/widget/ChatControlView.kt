@@ -295,7 +295,7 @@ class ChatControlView : FrameLayout {
     private var triggeredCancel = false
     private var hasStartRecord = false
     private var locked = false
-    private var maxScrollX = context.dip(150f)
+    private var maxScrollX = context.dip(100f)
 
     private val sendOnTouchListener = OnTouchListener { _, event ->
         when (event.action) {

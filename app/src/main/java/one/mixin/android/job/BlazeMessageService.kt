@@ -155,8 +155,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black_24dp, getString(R.string.exit), exitPendingIntent)
 
-        val intent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getSingleIntent(this), 0)
         builder.setContentIntent(pendingIntent)
 
         supportsOreo({
