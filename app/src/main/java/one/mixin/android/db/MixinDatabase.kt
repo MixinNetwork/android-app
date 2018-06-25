@@ -204,6 +204,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
+                database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
             }
         }
 
@@ -230,6 +232,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
+                database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
             }
         }
 
@@ -252,6 +256,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
+                database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
             }
         }
 
@@ -271,6 +277,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
+                database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
             }
         }
 
@@ -286,6 +294,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE assets ADD COLUMN confirmations INTEGER NOT NULL DEFAULT 0")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN reserve TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
+                database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
             }
         }
 

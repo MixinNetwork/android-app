@@ -119,7 +119,7 @@ class Message(
 
     @Deprecated(
         "Replace with mediaMimeType",
-        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Messages.mediaMimeType"),
+        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Message.mediaMimeType"),
         DeprecationLevel.ERROR
     )
     @SerializedName("media_mine_type")
