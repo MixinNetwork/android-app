@@ -20,9 +20,10 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
+                android:layout_marginTop="@dimen/default_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="@dimen/default_margin"
                 android:text="@string/setting_privacy_title"
                 android:textColor="@color/text_gray"
                 android:textSize="12sp"/>
@@ -120,7 +121,6 @@
             android:layout_height=".5dp"
             android:background="@color/divider"/>
 
-
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -129,14 +129,19 @@
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginTop="@dimen/default_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="8dp"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="@dimen/default_margin"
                 android:text="@string/setting_privacy_tip"
                 android:textColor="@color/text_gray"
                 android:textSize="12sp"/>
     </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider"/>
 
     <RelativeLayout
             android:id="@+id/about_rl"

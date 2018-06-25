@@ -2,6 +2,7 @@ package one.mixin.android.di
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import one.mixin.android.di.module.CommonModule
 import one.mixin.android.di.module.CaptureActivityModule
 import one.mixin.android.di.module.ContactActivityModule
 import one.mixin.android.di.module.ConversationActivityModule
@@ -30,28 +31,28 @@ import one.mixin.android.ui.wallet.WalletActivity
 
 @Module
 abstract class ActivityModule {
-    @ContributesAndroidInjector(modules = [(MainActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (MainActivityModule::class)])
     internal abstract fun contributeMain(): MainActivity
 
-    @ContributesAndroidInjector(modules = [(ConversationActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (ConversationActivityModule::class)])
     internal abstract fun contributeConversation(): ConversationActivity
 
     @ContributesAndroidInjector(modules = [(LandingActivityModule::class)])
     internal abstract fun contributeLanding(): LandingActivity
 
-    @ContributesAndroidInjector(modules = [(GroupActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (GroupActivityModule::class)])
     internal abstract fun contributeGroup(): GroupActivity
 
     @ContributesAndroidInjector(modules = [(SetupNameActivityModule::class)])
     internal abstract fun contributeSetupName(): SetupNameActivity
 
-    @ContributesAndroidInjector(modules = [(ContactActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (ContactActivityModule::class)])
     internal abstract fun contributeContacts(): ContactsActivity
 
     @ContributesAndroidInjector(modules = [(WalletActivityModule::class)])
     internal abstract fun contributeWallet(): WalletActivity
 
-    @ContributesAndroidInjector(modules = [(SettingActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (SettingActivityModule::class)])
     internal abstract fun contributeSetting(): SettingActivity
 
     @ContributesAndroidInjector(modules = [(ForwardActivityModule::class)])
@@ -63,9 +64,9 @@ abstract class ActivityModule {
     @ContributesAndroidInjector(modules = [(CaptureActivityModule::class)])
     internal abstract fun contributeCapture(): CaptureActivity
 
-    @ContributesAndroidInjector(modules = [(ConversationActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (ConversationActivityModule::class)])
     internal abstract fun contributeDragMedia(): DragMediaActivity
 
-    @ContributesAndroidInjector(modules = [(UrlInterpreterActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (UrlInterpreterActivityModule::class)])
     internal abstract fun contributeUrlInterpreter(): UrlInterpreterActivity
 }
