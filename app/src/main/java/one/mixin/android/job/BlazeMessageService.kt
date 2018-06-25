@@ -158,14 +158,14 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getSingleIntent(this), 0)
         builder.setContentIntent(pendingIntent)
 
-        supportsOreo({
+        supportsOreo {
             val channel = NotificationChannel(CHANNEL_NODE,
                 MixinApplication.get().getString(R.string.notification_node), NotificationManager.IMPORTANCE_LOW)
             channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             channel.setSound(null, null)
             channel.setShowBadge(false)
             notificationManager.createNotificationChannel(channel)
-        })
+        }
         startForeground(FOREGROUND_ID, builder.build())
     }
 

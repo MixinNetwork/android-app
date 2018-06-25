@@ -52,7 +52,7 @@ class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsList
 
                 doAsync {
                     for (s in it) {
-                        s?.counterUserId?.let {
+                        s?.opponentId?.let {
                             val u = walletViewModel.getUserById(it)
                             if (u == null) {
                                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(it)))
