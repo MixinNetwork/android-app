@@ -42,8 +42,8 @@ class SquareImageView : ImageView {
     }
 
     override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
         path.addRect(rect, Path.Direction.CCW)
         canvas.drawPath(path, paint)
-        super.onDraw(canvas)
     }
 }

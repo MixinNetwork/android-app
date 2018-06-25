@@ -11,6 +11,7 @@ import android.net.Uri
 import android.support.annotation.WorkerThread
 import android.support.v4.util.ArraySet
 import androidx.core.net.toUri
+import com.bumptech.glide.Glide
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -18,6 +19,7 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.bitmap2String
@@ -35,11 +37,14 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.maxSizeScale
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendMessageJob
@@ -49,6 +54,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
@@ -62,6 +68,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
@@ -78,6 +85,7 @@ import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.FileInputStream
 import java.util.UUID
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ConversationViewModel
@@ -365,7 +373,7 @@ internal constructor(
 
     fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
 
-    fun getStickers(id: String) = accountRepository.getStickers(id)
+    fun observeStickers(id: String) = accountRepository.observeStickers(id)
 
     fun recentStickers() = accountRepository.recentUsedStickers()
 
@@ -388,9 +396,11 @@ internal constructor(
 
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 
-    fun addSticker(url: String) {
-        doAsync {
-            accountRepository
-        }
+    fun addSticker(stickerAddRequest: StickerAddRequest) = accountRepository.addSticker(stickerAddRequest)
+
+    fun addStickerLocal(sticker: Sticker) = accountRepository.addStickerLocal(sticker)
+
+    fun removeStickers(ids: List<String>) {
+        jobManager.addJobInBackground(RemoveStickersJob(ids))
     }
 }

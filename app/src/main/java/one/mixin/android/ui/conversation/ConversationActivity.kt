@@ -49,9 +49,9 @@ class ConversationActivity : BlazeBaseActivity() {
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider)
                 .subscribe({
                     bundle.putParcelable(RECIPIENT, it)
-                    replaceFragment(ConversationFragment.newInstance(bundle), R.id.container)
+                    replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
                 }, {
-                    replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container)
+                    replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container, ConversationFragment.TAG)
                 })
         } else {
             Observable.just(bundle.getString(CONVERSATION_ID)).map {
@@ -59,9 +59,9 @@ class ConversationActivity : BlazeBaseActivity() {
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider)
                 .subscribe({
                     bundle.putParcelable(RECIPIENT, it)
-                    replaceFragment(ConversationFragment.newInstance(bundle), R.id.container)
+                    replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
                 }, {
-                    replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container)
+                    replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container, ConversationFragment.TAG)
                 })
         }
     }

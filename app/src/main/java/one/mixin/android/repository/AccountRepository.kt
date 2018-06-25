@@ -9,6 +9,7 @@ import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
@@ -28,6 +29,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import retrofit2.Call
 import javax.inject.Inject
@@ -115,6 +117,8 @@ constructor(
 
     fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
 
+    fun observeStickers(id: String) = stickerDao.observeStickersByAlbumId(id)
+
     fun getStickers(id: String) = stickerDao.getStickersByAlbumId(id)
 
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
@@ -139,4 +143,8 @@ constructor(
             Observable.just(pinToken).subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
         }
     }
+
+    fun addSticker(request: StickerAddRequest) = accountService.addSticker(request)
+
+    fun addStickerLocal(sticker: Sticker) = stickerDao.insert(sticker)
 }

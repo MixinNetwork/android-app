@@ -81,10 +81,9 @@ class StickerFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (type == TYPE_NORMAL && albumId != null) {
-            doAsync {
-                val list = stickerViewModel.getStickers(albumId!!)
-                uiThread { updateStickers(list) }
-            }
+            stickerViewModel.observeStickers(albumId!!).observe(this, Observer {
+                it?.let { updateStickers(it) }
+            })
         } else {
             if (type == TYPE_RECENT) {
                 stickerViewModel.recentStickers().observe(this, Observer { r ->
@@ -93,10 +92,13 @@ class StickerFragment : BaseFragment() {
             } else {
                 doAsync {
                     val personalAlbum = stickerViewModel.getPersonalAlbums()
-                    personalAlbum?.let {
-                        personalAlbumId = it.albumId
-                        val list = stickerViewModel.getStickers(it.albumId)
-                        uiThread { updateStickers(list) }
+                    personalAlbum?.let { r ->
+                        personalAlbumId = r.albumId
+                        uiThread {
+                            stickerViewModel.observeStickers(r.albumId).observe(this@StickerFragment, Observer {
+                                it?.let { updateStickers(it) }
+                            })
+                        }
                     }
                 }
             }
@@ -116,6 +118,9 @@ class StickerFragment : BaseFragment() {
 
             override fun onAddClick() {
                 personalAlbumId?.let {
+                    requireFragmentManager().findFragmentByTag(ConversationFragment.TAG)?.let {
+                        (it as ConversationFragment).onBackPressed()
+                    }
                     requireActivity().addFragment(this@StickerFragment,
                         StickerManagementFragment.newInstance(it), StickerManagementFragment.TAG)
                 }
@@ -148,7 +153,7 @@ class StickerFragment : BaseFragment() {
                 item.setImageResource(R.drawable.ic_add_stikcer)
                 item.setOnClickListener { listener?.onAddClick() }
             } else {
-                val s = stickers[position]
+                val s = stickers[if (needAdd) position - 1 else position]
                 val ctx = holder.itemView.context
                 Glide.with(ctx).load(s.assetUrl).apply(
                     if (size <= 0) RequestOptions().dontAnimate().override(Target.SIZE_ORIGINAL)
