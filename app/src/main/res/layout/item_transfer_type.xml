@@ -20,7 +20,7 @@
             android:layout_marginStart="@dimen/activity_horizontal_margin"/>
 
     <TextView
-            android:id="@+id/asset_name"
+            android:id="@+id/name"
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

@@ -262,12 +262,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     R.id.menu_transfer -> {
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
-                                activity?.supportFragmentManager?.inTransaction {
-                                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                                        R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                        .add(R.id.container, TransferFragment.newInstance(it.userId), TransferFragment.TAG)
-                                        .addToBackStack(null)
-                                }
+                                TransferFragment.newInstance(it.userId).show(requireFragmentManager(), TransferFragment.TAG)
                             }
                         } else {
                             activity?.supportFragmentManager?.inTransaction {

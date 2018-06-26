@@ -26,6 +26,8 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
+import androidx.core.view.children
+import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullElse
@@ -51,6 +53,8 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
     private val backDrawable = ColorDrawable(-0x1000000)
 
     private var bottomSheetListener: BottomSheetListener? = null
+
+    var fullScreen = false
 
     private inner class ContainerView(context: Context) : FrameLayout(context) {
 
@@ -114,7 +118,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         container.background = backDrawable
         container.fitsSystemWindows = true
         container.setOnApplyWindowInsetsListener { v, insets ->
-            if (lastInsets == null && customView != null) {
+            if (lastInsets == null && customView != null && !fullScreen) {
                 val params = customView!!.layoutParams as FrameLayout.LayoutParams
                 params.topMargin = insets.systemWindowInsetTop
                 customView!!.layoutParams = params
