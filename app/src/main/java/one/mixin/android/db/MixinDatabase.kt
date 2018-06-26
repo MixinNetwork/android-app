@@ -206,6 +206,9 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
                 database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_created_at'")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_conversation_id'")
+                database.execSQL("CREATE INDEX IF NOT EXISTS 'index_messages_conversation_id_created_at' ON messages ('conversation_id', 'created_at')")
             }
         }
 
@@ -234,6 +237,9 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
                 database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_created_at'")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_conversation_id'")
+                database.execSQL("CREATE INDEX IF NOT EXISTS 'index_messages_conversation_id_created_at' ON messages ('conversation_id', 'created_at')")
             }
         }
 
@@ -258,6 +264,9 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
                 database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_created_at'")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_conversation_id'")
+                database.execSQL("CREATE INDEX IF NOT EXISTS 'index_messages_conversation_id_created_at' ON messages ('conversation_id', 'created_at')")
             }
         }
 
@@ -279,6 +288,9 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
                 database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_created_at'")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_conversation_id'")
+                database.execSQL("CREATE INDEX IF NOT EXISTS 'index_messages_conversation_id_created_at' ON messages ('conversation_id', 'created_at')")
             }
         }
 
@@ -296,6 +308,9 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN fee TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN opponent_id TEXT")
                 database.execSQL("UPDATE snapshots SET opponent_id = counter_user_id WHERE counter_user_id IS NOT NULL")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_created_at'")
+                database.execSQL("DROP INDEX IF EXISTS 'index_messages_conversation_id'")
+                database.execSQL("CREATE INDEX IF NOT EXISTS 'index_messages_conversation_id_created_at' ON messages ('conversation_id', 'created_at')")
             }
         }
 
