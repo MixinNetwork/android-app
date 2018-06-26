@@ -171,6 +171,10 @@
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
+        <activity
+            android:name=".widget.gallery.ui.GalleryActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="${applicationId}.provider"

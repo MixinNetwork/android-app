@@ -443,8 +443,7 @@
     <string name="extensions">Extensions</string>
     <string name="camera">Camera</string>
     <string name="document">File</string>
-    <string name="gallery">Photo</string>
-    <string name="video">Video</string>
+    <string name="gallery">Gallery</string>
     <string name="contact">Contact</string>
     <!--pay-->
     <string name="pay_paid">Already paid</string>
@@ -482,5 +481,8 @@
     <string name="action_open">Open in browser</string>
     <string name="action_refresh">Refresh</string>
     <string name="slide_to_cancel">Slide to Cancel</string>
+
+    <string name="gallery_all">All Media</string>
+    <string name="gallery_empty_text">No media yet</string>
 </resources>
 

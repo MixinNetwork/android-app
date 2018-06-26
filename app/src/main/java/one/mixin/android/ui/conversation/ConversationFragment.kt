@@ -52,7 +52,6 @@ import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.REQUEST_GAMERA
-import one.mixin.android.extension.REQUEST_VIDEO
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.async
 import one.mixin.android.extension.createImageTemp
@@ -71,7 +70,6 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.openVideo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.replaceFragment
@@ -82,7 +80,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
-import one.mixin.android.ui.camera.CameraActivity.Companion.REQUEST_CODE
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -128,6 +125,7 @@ import one.mixin.android.widget.SmoothScrollLinearLayoutManager
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager.Companion.FAST_SPEED
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager.Companion.MEDIUM_SPEED
 import one.mixin.android.widget.SmoothScrollLinearLayoutManager.Companion.SLOW_SPEED
+import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
 import org.jetbrains.anko.doAsync
@@ -238,21 +236,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             .subscribe({ granted ->
                                 if (granted) {
                                     openGallery()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            }, {
-                                Bugsnag.notify(it)
-                            })
-                        hideMediaLayout()
-                    }
-                    R.id.menu_video -> {
-                        RxPermissions(activity!!)
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_EXTERNAL_STORAGE)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    openVideo()
                                 } else {
                                     context?.openPermissionSetting()
                                 }
@@ -651,7 +634,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onDestroy() {
         MixinApplication.conversationId = null
         super.onDestroy()
-        previewVideoDialogFragment?.release()
         AudioPlayer.release()
     }
 
@@ -1369,13 +1351,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            data?.let {
-                showPreview(it.data) { sendImageMessage(it) }
-            }
-        } else if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
+        if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
-                showPreview(it) { sendImageMessage(it) }
+                if (data.hasExtra(IS_VIDEO)) {
+                    sendVideoMessage(it)
+                } else {
+                    sendImageMessage(it)
+                }
             }
         } else if (requestCode == REQUEST_GAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
@@ -1396,9 +1378,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         dialog.dismiss()
                     }.show()
             }
-        } else if (requestCode == REQUEST_VIDEO && resultCode == Activity.RESULT_OK) {
-            val uri = data?.data ?: return
-            showVideoPreview(uri) { sendVideoMessage(it) }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
@@ -1480,15 +1459,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             previewDialogFragment = PreviewDialogFragment.newInstance()
         }
         previewDialogFragment?.show(fragmentManager, uri, action)
-    }
-
-    private var previewVideoDialogFragment: PreviewDialogFragment? = null
-
-    private fun showVideoPreview(uri: Uri, action: (Uri) -> Unit) {
-        if (previewVideoDialogFragment == null) {
-            previewVideoDialogFragment = PreviewDialogFragment.newInstance(true)
-        }
-        previewVideoDialogFragment?.show(fragmentManager, uri, action)
     }
 
     private val chatControlCallback = object : ChatControlView.Callback {

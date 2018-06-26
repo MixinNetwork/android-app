@@ -34,4 +34,8 @@
     <dimen name="chat_control_height">52dp</dimen>
     <dimen name="chat_menu_height">87dp</dimen>
     <dimen name="chat_app_height">103dp</dimen>
+    <dimen name="media_grid_size">48dp</dimen>
+    <dimen name="media_grid_spacing">4dp</dimen>
+
+    <dimen name="album_item_height">72dp</dimen>
 </resources>
