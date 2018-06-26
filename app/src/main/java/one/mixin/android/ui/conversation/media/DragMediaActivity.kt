@@ -81,6 +81,7 @@ import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
+import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -391,7 +392,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val imageView = PhotoView(container.context)
             imageView.layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            if (messageItem.mediaMimeType.equals("image/gif", true)) {
+            if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
                 imageView.loadGif(messageItem.mediaUrl, object : RequestListener<GifDrawable?> {
                     override fun onResourceReady(
                         resource: GifDrawable?,

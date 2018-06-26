@@ -10,6 +10,7 @@ import android.support.v7.widget.AppCompatEditText
 import android.util.AttributeSet
 import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputConnection
+import one.mixin.android.widget.gallery.MimeType
 
 class ContentEditText : AppCompatEditText {
 
@@ -21,7 +22,7 @@ class ContentEditText : AppCompatEditText {
 
     var listener: OnCommitContentListener? = null
 
-    private val mimeTypes = arrayOf("image/png", "image/gif", "image/jpeg", "image/webp")
+    private val mimeTypes = arrayOf(MimeType.PNG.toString(), MimeType.GIF.toString(), MimeType.JPEG.toString(), MimeType.WEBP.toString())
     override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection {
         val ic = super.onCreateInputConnection(editorInfo)
         if (listener == null) {
