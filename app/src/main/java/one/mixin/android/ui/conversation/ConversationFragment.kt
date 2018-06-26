@@ -62,9 +62,11 @@ import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openCamera
@@ -315,10 +317,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             tool_view.copy_iv.visibility = View.GONE
                         }
+                        tool_view.add_sticker_iv.visibility = VISIBLE
                     }
                     else -> {
                         tool_view.forward_iv.visibility = View.VISIBLE
                         tool_view.copy_iv.visibility = View.GONE
+                        tool_view.add_sticker_iv.visibility = GONE
                     }
                 }
                 if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
@@ -749,12 +753,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         tool_view.add_sticker_iv.setOnClickListener {
             val messageItem = chatAdapter.selectSet.valueAt(0)
             messageItem?.let {
-                val url = if (messageItem.type.endsWith("STICKER")){
+                val isSticker = messageItem.type.endsWith("STICKER")
+                val url = if (isSticker) {
                     it.assetUrl
                 } else {
                     it.mediaUrl
                 }
-                url?.let { requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it), StickerAddFragment.TAG) }
+                url?.let {
+                    val uri = url.toUri()
+                    val mimeType = getMimeType(uri)
+                    if (isSticker || mimeType?.isImageSupport() == true) {
+                        requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it), StickerAddFragment.TAG)
+                    } else {
+                        requireContext().toast(R.string.sticker_add_invalid_format)
+                    }
+                }
             }
             closeTool()
         }

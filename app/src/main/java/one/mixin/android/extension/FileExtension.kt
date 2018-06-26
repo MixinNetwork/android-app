@@ -71,7 +71,11 @@ fun getMimeType(uri: Uri): String? {
     if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
         type = MixinApplication.get().contentResolver.getType(uri)
     } else {
-        val extension = MimeTypeMap.getFileExtensionFromUrl(uri.getFilePath(MixinApplication.get())!!)
+        val extension = try {
+            MimeTypeMap.getFileExtensionFromUrl(uri.getFilePath())
+        } catch (e: Exception) {
+            null
+        }
         if (extension != null) {
             type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         }

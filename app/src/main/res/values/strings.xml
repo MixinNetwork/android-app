@@ -490,6 +490,7 @@
     <string name="sticker_add">Add Sticker</string>
     <string name="sticker_delete">Delete Sticker</string>
     <string name="sticker_add_failed">Add sticker failed</string>
-    <string name="sticker_add_invalid">Invalid sticker size</string>
+    <string name="sticker_add_invalid_size">Invalid sticker size</string>
+    <string name="sticker_add_invalid_format">Invalid sticker format</string>
 </resources>
 
