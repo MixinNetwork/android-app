@@ -2,10 +2,8 @@ package one.mixin.android.extension
 
 import android.Manifest
 import android.content.ContentResolver
-import android.content.ContentUris
 import android.content.Context
 import android.content.pm.PackageManager
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
@@ -14,8 +12,8 @@ import android.graphics.drawable.Drawable
 import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Environment
-import android.provider.DocumentsContract
 import android.provider.MediaStore
+import android.provider.MediaStore.Images.ImageColumns
 import android.support.media.ExifInterface
 import android.support.v4.content.ContextCompat
 import android.support.v4.os.EnvironmentCompat
@@ -236,80 +234,32 @@ fun File.processing(to: File) {
 fun String.getFilePath(): String? = Uri.parse(this).getFilePath()
 
 fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
-    if (DocumentsContract.isDocumentUri(context, this)) {
-        if (isExternalStorageDocument(this)) {
-            val docId = DocumentsContract.getDocumentId(this)
-            val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            val type = split[0]
-            if ("primary".equals(type, ignoreCase = true)) {
-                return Environment.getExternalStorageDirectory().toString() + "/" + split[1]
+    val scheme = this.scheme
+    var data: String? = null
+    if (scheme == null)
+        data = this.toString()
+    else if (ContentResolver.SCHEME_FILE == scheme) {
+        data = this.path
+    } else if (ContentResolver.SCHEME_CONTENT == scheme) {
+        val cursor = context.contentResolver.query(this, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
+        if (null != cursor) {
+            if (cursor.moveToFirst()) {
+                val index = cursor.getColumnIndex(ImageColumns.DATA)
+                if (index > -1) {
+                    data = cursor.getString(index)
+                    if (data == null) {
+                        return getImageUrlWithAuthority(context)
+                    }
+                } else if (index == -1) {
+                    return getImageUrlWithAuthority(context)
+                }
             }
-        } else if (isDownloadsDocument(this)) {
-            val id = DocumentsContract.getDocumentId(this)
-            val contentUri = ContentUris.withAppendedId(
-                Uri.parse("content://downloads/public_downloads"), java.lang.Long.valueOf(id))
-            return getDataColumn(context, contentUri, null, null)
-        } else if (isMediaDocument(this)) {
-            val docId = DocumentsContract.getDocumentId(this)
-            val split = docId.split(":".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            val type = split[0]
-
-            var contentUri: Uri? = null
-            if ("image" == type) {
-                contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            } else if ("video" == type) {
-                contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI
-            } else if ("audio" == type) {
-                contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
-            }
-
-            val selection = "_id=?"
-            val selectionArgs = arrayOf(split[1])
-
-            return getDataColumn(context, contentUri, selection, selectionArgs)
+            cursor.close()
+        } else {
+            return getImageUrlWithAuthority(context)
         }
-    } else if ("content".equals(this.scheme, ignoreCase = true)) {
-        return getDataColumn(context, this, null, null)
-    } else if ("file".equals(this.scheme, ignoreCase = true)) {
-        return this.path
     }
-
-    return null
-}
-
-private fun getDataColumn(
-    context: Context,
-    uri: Uri?,
-    selection: String?,
-    selectionArgs: Array<String>?
-): String? {
-
-    var cursor: Cursor? = null
-    val column = "_data"
-    val projection = arrayOf(column)
-
-    try {
-        cursor = context.contentResolver.query(uri!!, projection, selection, selectionArgs, null)
-        if (cursor != null && cursor.moveToFirst()) {
-            val columnIndex = cursor.getColumnIndexOrThrow(column)
-            return cursor.getString(columnIndex)
-        }
-    } finally {
-        cursor?.close()
-    }
-    return null
-}
-
-private fun isExternalStorageDocument(uri: Uri): Boolean {
-    return "com.android.externalstorage.documents" == uri.authority
-}
-
-private fun isDownloadsDocument(uri: Uri): Boolean {
-    return "com.android.providers.downloads.documents" == uri.authority
-}
-
-private fun isMediaDocument(uri: Uri): Boolean {
-    return "com.android.providers.media.documents" == uri.authority
+    return data
 }
 
 fun Uri.getImageUrlWithAuthority(context: Context): String? {
