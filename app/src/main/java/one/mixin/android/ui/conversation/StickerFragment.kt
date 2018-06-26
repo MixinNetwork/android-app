@@ -10,13 +10,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
+import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displaySize
+import one.mixin.android.extension.loadSticker
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_LIKE
@@ -148,17 +147,22 @@ class StickerFragment : BaseFragment() {
             val params = holder.itemView.layoutParams
             params.height = size
             holder.itemView.layoutParams = params
+            val ctx = holder.itemView.context
             val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
             if (position == 0 && needAdd) {
+                item.updateLayoutParams<ViewGroup.LayoutParams> {
+                    width = size - ctx.dip(50)
+                    height = size - ctx.dip(50)
+                }
                 item.setImageResource(R.drawable.ic_add_stikcer)
                 item.setOnClickListener { listener?.onAddClick() }
             } else {
                 val s = stickers[if (needAdd) position - 1 else position]
-                val ctx = holder.itemView.context
-                Glide.with(ctx).load(s.assetUrl).apply(
-                    if (size <= 0) RequestOptions().dontAnimate().override(Target.SIZE_ORIGINAL)
-                    else RequestOptions().dontAnimate().override(size, size))
-                    .into(item)
+                item.loadSticker(s.assetUrl, s.assetType)
+                item.updateLayoutParams<ViewGroup.LayoutParams> {
+                    width = size
+                    height = size
+                }
                 item.setOnClickListener { listener?.onItemClick(position, s.albumId, s.name) }
             }
         }

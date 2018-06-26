@@ -7,11 +7,11 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.util.AttributeSet
-import android.widget.ImageView
+import android.widget.FrameLayout
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 
-class SquareImageView : ImageView {
+class SquareLayout : FrameLayout {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -41,8 +41,8 @@ class SquareImageView : ImageView {
         }
     }
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
+    override fun dispatchDraw(canvas: Canvas) {
+        super.dispatchDraw(canvas)
         path.addRect(rect, Path.Direction.CCW)
         canvas.drawPath(path, paint)
     }
