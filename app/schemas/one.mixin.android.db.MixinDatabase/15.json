@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 15,
-    "identityHash": "43fc173fe18a62282623800a8721de86",
+    "identityHash": "162796aa44e7891bbe8a8ed10b23228e",
     "entities": [
       {
         "tableName": "users",
@@ -407,20 +407,13 @@
         },
         "indices": [
           {
-            "name": "index_messages_conversation_id",
+            "name": "index_messages_conversation_id_created_at",
             "unique": false,
             "columnNames": [
-              "conversation_id"
-            ],
-            "createSql": "CREATE  INDEX `index_messages_conversation_id` ON `${TABLE_NAME}` (`conversation_id`)"
-          },
-          {
-            "name": "index_messages_created_at",
-            "unique": false,
-            "columnNames": [
+              "conversation_id",
               "created_at"
             ],
-            "createSql": "CREATE  INDEX `index_messages_created_at` ON `${TABLE_NAME}` (`created_at`)"
+            "createSql": "CREATE  INDEX `index_messages_conversation_id_created_at` ON `${TABLE_NAME}` (`conversation_id`, `created_at`)"
           },
           {
             "name": "index_messages_user_id",
@@ -1154,7 +1147,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"43fc173fe18a62282623800a8721de86\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"162796aa44e7891bbe8a8ed10b23228e\")"
     ]
   }
 }
