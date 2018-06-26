@@ -9,6 +9,8 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toFile
+import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import com.bumptech.glide.Glide
 import io.reactivex.schedulers.Schedulers
@@ -17,6 +19,8 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.extension.getMimeType
+import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.maxSizeScale
 import one.mixin.android.extension.toBytes
@@ -69,38 +73,64 @@ class StickerAddFragment : BaseFragment() {
                 }
             }
             dialog?.show()
+            addSticker()
+        }
+        sticker_iv.loadImage(url)
+    }
 
-            doAsync {
-                try {
+    private fun addSticker() {
+        doAsync {
+            try {
+                val f = url.toUri().toFile()
+                if (f.length() < 1000 || f.length() > 500 * 1000) {
+                    dialog?.dismiss()
+                    uiThread { requireContext().toast(R.string.sticker_add_invalid) }
+                    return@doAsync
+                }
+                val uri = url.toUri()
+                val mimeType = getMimeType(uri)
+                if (mimeType?.isImageSupport() != true) {
+                    dialog?.dismiss()
+                    uiThread { requireContext().toast(R.string.sticker_add_invalid) }
+                    return@doAsync
+                }
+                val stickerAddRequest = if (mimeType == "image/gif") {
+                    val byteArray = Glide.with(MixinApplication.appContext)
+                        .`as`(ByteArray::class.java)
+                        .load(url)
+                        .submit()
+                        .get(10, TimeUnit.SECONDS)
+                    StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
+                } else {
                     var bitmap = Glide.with(MixinApplication.appContext)
                         .asBitmap()
                         .load(url)
                         .submit()
                         .get(10, TimeUnit.SECONDS)
                     if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
+                        dialog?.dismiss()
                         uiThread { requireContext().toast(R.string.sticker_add_invalid) }
                         return@doAsync
                     }
                     bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
-                    val stickerAddRequest = StickerAddRequest(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP))
-                    stickerViewModel.addSticker(stickerAddRequest)
-                        .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({
-                            dialog?.dismiss()
-                            if (it != null && it.isSuccess) {
-                                stickerViewModel.addStickerLocal(it.data as Sticker)
-                                uiThread { requireFragmentManager().popBackStackImmediate() }
-                            }
-                        }, {
-                            ErrorHandler.handleError(it)
-                            dialog?.dismiss()
-                            uiThread { requireContext().toast(R.string.sticker_add_failed) }
-                        })
-                } catch (e: Exception) {
-                    dialog?.dismiss()
-                    uiThread { requireContext().toast(R.string.sticker_add_failed) }
+                    StickerAddRequest(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP))
                 }
+                stickerViewModel.addSticker(stickerAddRequest)
+                    .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({
+                        dialog?.dismiss()
+                        if (it != null && it.isSuccess) {
+                            stickerViewModel.addStickerLocal(it.data as Sticker)
+                            uiThread { requireFragmentManager().popBackStackImmediate() }
+                        }
+                    }, {
+                        ErrorHandler.handleError(it)
+                        dialog?.dismiss()
+                        uiThread { requireContext().toast(R.string.sticker_add_failed) }
+                    })
+            } catch (e: Exception) {
+                dialog?.dismiss()
+                uiThread { requireContext().toast(R.string.sticker_add_failed) }
             }
         }
-        sticker_iv.loadImage(url)
     }
 }
