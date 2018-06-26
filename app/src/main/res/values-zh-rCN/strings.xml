@@ -484,5 +484,6 @@
     <string name="sticker_add">添加表情</string>
     <string name="sticker_delete">删除表情</string>
     <string name="sticker_add_failed">添加表情失败</string>
-    <string name="sticker_add_invalid">表情大小不合适</string>
+    <string name="sticker_add_invalid_size">表情大小不合适</string>
+    <string name="sticker_add_invalid_format">表情格式不支持</string>
 </resources>

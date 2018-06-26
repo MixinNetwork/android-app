@@ -9,6 +9,7 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import com.bumptech.glide.Glide
@@ -44,6 +45,8 @@ class StickerAddFragment : BaseFragment() {
 
         const val MIN_SIZE = 64
         const val MAX_SIZE = 512
+        const val MIN_FILE_SIZE = 1024
+        const val MAX_FILE_SIZE = 1024 * 1024
 
         fun newInstance(url: String) = StickerAddFragment().apply {
             arguments = bundleOf(ARGS_URL to url)
@@ -83,20 +86,20 @@ class StickerAddFragment : BaseFragment() {
     private fun addSticker() {
         doAsync {
             try {
-                val f = File(url.toUri().getFilePath(requireContext()))
-                if (f.length() < 1000 || f.length() > 500 * 1000) {
-                    dialog?.dismiss()
-                    uiThread { requireContext().toast(R.string.sticker_add_invalid) }
-                    return@doAsync
-                }
                 val uri = url.toUri()
                 val mimeType = getMimeType(uri)
                 if (mimeType?.isImageSupport() != true) {
                     dialog?.dismiss()
-                    uiThread { requireContext().toast(R.string.sticker_add_invalid) }
+                    uiThread { requireContext().toast(R.string.sticker_add_invalid_format) }
                     return@doAsync
                 }
                 val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
+                    val f = uri.toFile()
+                    if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
+                        dialog?.dismiss()
+                        uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
+                        return@doAsync
+                    }
                     val byteArray = Glide.with(MixinApplication.appContext)
                         .`as`(ByteArray::class.java)
                         .load(url)
@@ -111,7 +114,7 @@ class StickerAddFragment : BaseFragment() {
                         .get(10, TimeUnit.SECONDS)
                     if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
                         dialog?.dismiss()
-                        uiThread { requireContext().toast(R.string.sticker_add_invalid) }
+                        uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
                         return@doAsync
                     }
                     bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
