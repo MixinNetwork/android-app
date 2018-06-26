@@ -82,8 +82,6 @@ class StickerManagementFragment : BaseFragment() {
                 }
             } else {
                 title_view.right_tv.text = getString(R.string.done)
-                stickerAdapter.editing = !stickerAdapter.editing
-                stickerAdapter.notifyDataSetChanged()
             }
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.notifyDataSetChanged()
