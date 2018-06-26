@@ -29,7 +29,7 @@ import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.openGallery
+import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.StickerFragment.Companion.ARGS_ALBUM_ID
@@ -97,7 +97,7 @@ class StickerManagementFragment : BaseFragment() {
                         Manifest.permission.READ_EXTERNAL_STORAGE)
                     .subscribe({ granted ->
                         if (granted) {
-                            openGallery()
+                            openGalleryFromSticker()
                         } else {
                             context?.openPermissionSetting()
                         }

@@ -378,7 +378,15 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
 
 fun Fragment.openGallery() {
     Gallery.from(this)
-        .choose(MimeType.ofAll())
+        .choose(MimeType.ofMedia())
+        .imageEngine(GlideEngine())
+        .forResult(REQUEST_GALLERY)
+}
+
+fun Fragment.openGalleryFromSticker() {
+    Gallery.from(this)
+        .choose(MimeType.ofImage())
+        .preview(false)
         .imageEngine(GlideEngine())
         .forResult(REQUEST_GALLERY)
 }

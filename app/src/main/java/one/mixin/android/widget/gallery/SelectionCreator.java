@@ -142,6 +142,11 @@ public final class SelectionCreator {
         return this;
     }
 
+    public SelectionCreator preview(boolean preview) {
+        mSelectionSpec.preview = preview;
+        return this;
+    }
+
     @NonNull
     public SelectionCreator setOnSelectedListener(@Nullable OnSelectedListener listener) {
         mSelectionSpec.onSelectedListener = listener;

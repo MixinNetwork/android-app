@@ -29,49 +29,50 @@ import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat
 
 class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener, MediaSelectionFragment.SelectionProvider, AlbumMediaAdapter.CheckStateListener, AlbumMediaAdapter.OnMediaClickListener, AlbumMediaAdapter.OnPhotoCapture {
     private val mAlbumCollection = AlbumCollection()
-    private var mMediaStoreCompat: MediaStoreCompat? = null
     private val mSelectedCollection = SelectedItemCollection(this)
-    private var mSpec: SelectionSpec? = null
 
-    private var mAlbumsSpinner: AlbumsSpinner? = null
-    private var mAlbumsAdapter: AlbumsAdapter? = null
+    private lateinit var mMediaStoreCompat: MediaStoreCompat
+    private lateinit var mSpec: SelectionSpec
+
+    private lateinit var mAlbumsSpinner: AlbumsSpinner
+    private lateinit var mAlbumsAdapter: AlbumsAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         mSpec = SelectionSpec.getInstance()
         super.onCreate(savedInstanceState)
-        if (!mSpec!!.hasInited) {
+        if (!mSpec.hasInited) {
             setResult(Activity.RESULT_CANCELED)
             finish()
             return
         }
         setContentView(R.layout.activity_gallery)
 
-        if (mSpec!!.needOrientationRestriction()) {
-            requestedOrientation = mSpec!!.orientation
+        if (mSpec.needOrientationRestriction()) {
+            requestedOrientation = mSpec.orientation
         }
 
-        if (mSpec!!.capture) {
+        if (mSpec.capture) {
             mMediaStoreCompat = MediaStoreCompat(this)
-            if (mSpec!!.captureStrategy == null)
+            if (mSpec.captureStrategy == null)
                 throw RuntimeException("Don't forget to set CaptureStrategy.")
-            mMediaStoreCompat!!.setCaptureStrategy(mSpec!!.captureStrategy)
+            mMediaStoreCompat.setCaptureStrategy(mSpec.captureStrategy)
         }
 
         setSupportActionBar(toolbar)
-        val actionBar = supportActionBar
-        actionBar!!.setDisplayShowTitleEnabled(false)
+        val actionBar = supportActionBar!!
+        actionBar.setDisplayShowTitleEnabled(false)
         actionBar.setDisplayHomeAsUpEnabled(true)
-        val navigationIcon = toolbar.navigationIcon
-        navigationIcon!!.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN)
+        val navigationIcon = toolbar.navigationIcon!!
+        navigationIcon.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN)
 
         mSelectedCollection.onCreate(savedInstanceState)
 
         mAlbumsAdapter = AlbumsAdapter(this, null, false)
         mAlbumsSpinner = AlbumsSpinner(this)
-        mAlbumsSpinner!!.setOnItemSelectedListener(this)
-        mAlbumsSpinner!!.setSelectedTextView(selected_album)
-        mAlbumsSpinner!!.setPopupAnchorView(toolbar)
-        mAlbumsSpinner!!.setAdapter(mAlbumsAdapter)
+        mAlbumsSpinner.setOnItemSelectedListener(this)
+        mAlbumsSpinner.setSelectedTextView(selected_album)
+        mAlbumsSpinner.setPopupAnchorView(toolbar)
+        mAlbumsSpinner.setAdapter(mAlbumsAdapter)
         mAlbumCollection.onCreate(this, this)
         mAlbumCollection.onRestoreInstanceState(savedInstanceState)
         mAlbumCollection.loadAlbums()
@@ -86,7 +87,7 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
     override fun onDestroy() {
         super.onDestroy()
         mAlbumCollection.onDestroy()
-        mSpec!!.onSelectedListener = null
+        mSpec.onSelectedListener = null
         previewVideoDialogFragment?.release()
     }
 
@@ -105,8 +106,8 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
 
     override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
         mAlbumCollection.setStateCurrentSelection(position)
-        mAlbumsAdapter!!.cursor.moveToPosition(position)
-        val album = Album.valueOf(mAlbumsAdapter!!.cursor)
+        mAlbumsAdapter.cursor.moveToPosition(position)
+        val album = Album.valueOf(mAlbumsAdapter.cursor)
         if (album.isAll && SelectionSpec.getInstance().capture) {
             album.addCaptureCount()
         }
@@ -117,11 +118,11 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
     }
 
     override fun onAlbumLoad(cursor: Cursor) {
-        mAlbumsAdapter!!.swapCursor(cursor)
+        mAlbumsAdapter.swapCursor(cursor)
         val handler = Handler(Looper.getMainLooper())
         handler.post {
             cursor.moveToPosition(mAlbumCollection.currentSelection)
-            mAlbumsSpinner!!.setSelection(this@GalleryActivity,
+            mAlbumsSpinner.setSelection(this@GalleryActivity,
                 mAlbumCollection.currentSelection)
             val album = Album.valueOf(cursor)
             if (album.isAll && SelectionSpec.getInstance().capture) {
@@ -132,7 +133,7 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
     }
 
     override fun onAlbumReset() {
-        mAlbumsAdapter!!.swapCursor(null)
+        mAlbumsAdapter.swapCursor(null)
     }
 
     private fun onAlbumSelected(album: Album) {
@@ -151,8 +152,8 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
     }
 
     override fun onUpdate() {
-        if (mSpec!!.onSelectedListener != null) {
-            mSpec!!.onSelectedListener.onSelected(
+        if (mSpec.onSelectedListener != null) {
+            mSpec.onSelectedListener.onSelected(
                 mSelectedCollection.asListOfUri(), mSelectedCollection.asListOfString())
         }
     }
@@ -176,7 +177,12 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
     }
 
     override fun onMediaClick(album: Album, item: Item, adapterPosition: Int) {
-        if (item.isVideo) {
+        if (!mSpec.preview) {
+            val result = Intent()
+            result.data = item.uri
+            setResult(Activity.RESULT_OK, result)
+            finish()
+        } else if (item.isVideo) {
             showVideoPreview(item.uri) {
                 val result = Intent()
                 result.data = item.uri
@@ -205,7 +211,7 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
 
     override fun capture() {
         if (mMediaStoreCompat != null) {
-            mMediaStoreCompat!!.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE)
+            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE)
         }
     }
 

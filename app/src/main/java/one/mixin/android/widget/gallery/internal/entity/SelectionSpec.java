@@ -30,6 +30,7 @@ public final class SelectionSpec {
     public OnSelectedListener onSelectedListener;
     public boolean originalable;
     public int originalMaxSize;
+    public boolean preview = true;
 
     private SelectionSpec() {
     }
