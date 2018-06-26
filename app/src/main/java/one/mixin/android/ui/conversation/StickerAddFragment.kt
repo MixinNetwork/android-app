@@ -9,7 +9,6 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import com.bumptech.glide.Glide
@@ -19,6 +18,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.loadImage
@@ -33,6 +33,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.indeterminateProgressDialog
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
+import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -82,7 +83,7 @@ class StickerAddFragment : BaseFragment() {
     private fun addSticker() {
         doAsync {
             try {
-                val f = url.toUri().toFile()
+                val f = File(url.toUri().getFilePath(requireContext()))
                 if (f.length() < 1000 || f.length() > 500 * 1000) {
                     dialog?.dismiss()
                     uiThread { requireContext().toast(R.string.sticker_add_invalid) }
