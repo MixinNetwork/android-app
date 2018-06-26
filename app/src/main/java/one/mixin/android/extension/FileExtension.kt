@@ -277,8 +277,12 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
     return null
 }
 
-private fun getDataColumn(context: Context, uri: Uri?, selection: String?,
-    selectionArgs: Array<String>?): String? {
+private fun getDataColumn(
+    context: Context,
+    uri: Uri?,
+    selection: String?,
+    selectionArgs: Array<String>?
+): String? {
 
     var cursor: Cursor? = null
     val column = "_data"

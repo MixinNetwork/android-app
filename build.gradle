@@ -40,7 +40,7 @@ buildscript {
         ext.fabVersion = '1.6'
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
-        ext.ktlintVersion = '0.23.1'
+        ext.ktlintVersion = '0.24.0'
         ext.exoplayerVersion = '2.8.1'
 
         ext.junitVersion = '4.12'
