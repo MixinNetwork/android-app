@@ -80,6 +80,10 @@ public enum MimeType {
         return EnumSet.of(type, rest);
     }
 
+    public static Set<MimeType> ofMedia() {
+        return EnumSet.of(JPEG, PNG, GIF, BMP, MPEG, MP4, QUICKTIME, THREEGPP, THREEGPP2, MKV, WEBM, TS, AVI);
+    }
+
     public static Set<MimeType> ofImage() {
         return EnumSet.of(JPEG, PNG, GIF, BMP, WEBP);
     }
