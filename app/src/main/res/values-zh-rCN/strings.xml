@@ -437,7 +437,7 @@
     <string name="extensions">小程序</string>
     <string name="camera">相机</string>
     <string name="document">文件</string>
-    <string name="gallery">照片 &amp; 视频</string>
+    <string name="gallery">相册</string>
     <string name="contact">联系人</string>
     <!--pay-->
     <string name="pay_paid">已支付完成</string>

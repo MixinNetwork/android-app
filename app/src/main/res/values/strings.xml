@@ -443,7 +443,7 @@
     <string name="extensions">Extensions</string>
     <string name="camera">Camera</string>
     <string name="document">File</string>
-    <string name="gallery">Photo &amp; Video</string>
+    <string name="gallery">Gallery</string>
     <string name="contact">Contact</string>
     <!--pay-->
     <string name="pay_paid">Already paid</string>
