@@ -28,7 +28,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displaySize
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
@@ -132,10 +131,8 @@ class StickerManagementFragment : BaseFragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
-                it.getFilePath()?.let {
-                    requireActivity().addFragment(this@StickerManagementFragment,
-                        StickerAddFragment.newInstance(it), StickerAddFragment.TAG)
-                }
+                requireActivity().addFragment(this@StickerManagementFragment,
+                    StickerAddFragment.newInstance(it.toString()), StickerAddFragment.TAG)
             }
         }
     }
@@ -160,7 +157,7 @@ class StickerManagementFragment : BaseFragment() {
             } else {
                 null
             }
-            val v= holder.itemView
+            val v = holder.itemView
             val ctx = v.context
 
             val params = v.layoutParams
