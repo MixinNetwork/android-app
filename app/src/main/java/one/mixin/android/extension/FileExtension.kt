@@ -20,6 +20,7 @@ import android.support.v4.os.EnvironmentCompat
 import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
+import androidx.core.net.toUri
 import one.mixin.android.MixinApplication
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -97,6 +98,10 @@ fun getImageSize(file: File): Size {
         }
     }
     return Size(width, height)
+}
+
+fun String.fileExists(): Boolean {
+    return File(this.toUri().getFilePath(MixinApplication.appContext)).exists()
 }
 
 private fun getOrientationFromExif(imagePath: String): Int {
@@ -182,26 +187,26 @@ fun File.createNoMediaDir() {
 fun File.createImageTemp(prefix: String? = null, type: String? = null): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return if (prefix != null) {
-        createTempFile("${prefix}_IMAGE_$time", type ?: ".jpg")
+        newTempFile("${prefix}_IMAGE_$time", type ?: ".jpg")
     } else {
-        createTempFile("IMAGE_$time", type ?: ".jpg")
+        newTempFile("IMAGE_$time", type ?: ".jpg")
     }
 }
 
 fun File.createGifTemp(): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("IMAGE_$time", ".gif")
+    return newTempFile("IMAGE_$time", ".gif")
 }
 
 fun File.createWebpTemp(): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("IMAGE_$time", ".webp")
+    return newTempFile("IMAGE_$time", ".webp")
 }
 
 fun File.createDocumentTemp(type: String?): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("FILE_$time", if (type == null) {
-        null
+    return newTempFile("FILE_$time", if (type == null) {
+        ""
     } else {
         ".$type"
     })
@@ -209,17 +214,17 @@ fun File.createDocumentTemp(type: String?): File {
 
 fun File.createVideoTemp(type: String): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("VIDEO_$time", ".$type")
+    return newTempFile("VIDEO_$time", ".$type")
 }
 
 fun File.createAudioTemp(type: String): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("Audio_$time", ".$type")
+    return newTempFile("Audio_$time", ".$type")
 }
 
-fun File.createTempFile(name: String, type: String): File {
+private fun File.newTempFile(name: String, type: String): File {
     createNoMediaDir()
-    return createTempFile(name, type, absoluteFile)
+    return createTempFile(name, type, this)
 }
 
 fun File.processing(to: File) {

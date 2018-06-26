@@ -131,6 +131,7 @@ import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardSho
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.dip
 import org.jetbrains.anko.support.v4.onUiThread
+import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
@@ -1031,6 +1032,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             createConversation {
                 chatViewModel.sendFordMessage(conversationId, sender, it, isPlainMessage())
                     .autoDisposable(scopeProvider).subscribe({
+                        if (it == 0) {
+                            toast(R.string.error_file_exists)
+                        }
                     }, {
                         Timber.e(id)
                     })

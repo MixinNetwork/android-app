@@ -26,12 +26,12 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
 import one.mixin.android.extension.getMimeType
-import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
@@ -247,6 +247,9 @@ internal constructor(
                 when {
                     message.category.endsWith("_IMAGE") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                        if (message.mediaUrl?.fileExists() != true) {
+                            return@let 0
+                        }
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createMediaMessage(UUID.randomUUID().toString(),
                             conversationId, sender.userId, category, null, message.mediaUrl, message.mediaMimeType!!, message.mediaSize!!,
                             message.mediaWidth, message.mediaHeight, message.thumbImage, null, null, nowInUtc(),
@@ -255,6 +258,9 @@ internal constructor(
                     }
                     message.category.endsWith("_VIDEO") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+                        if (message.mediaUrl?.fileExists() != true) {
+                            return@let 0
+                        }
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createVideoMessage(UUID.randomUUID().toString(),
                             conversationId, sender.userId, category, null, message.name, message.mediaUrl,
                             message.mediaDuration?.toLong(), message.mediaWidth, message.mediaHeight, message.thumbImage,
@@ -264,13 +270,22 @@ internal constructor(
                     }
                     message.category.endsWith("_DATA") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-                        val uri: Uri = if (message.userId != Session.getAccountId()) {
-                            MixinApplication.appContext.getUriForFile(File(message.mediaUrl))
+                        val uri = if (message.userId == Session.getAccountId()) {
+                            if (message.mediaUrl?.fileExists() != true) {
+                                return@let 0
+                            }
+                            message.mediaUrl
                         } else {
-                            Uri.parse(message.mediaUrl)
+                            val file = File(message.mediaUrl).apply {
+                                if (!this.exists()) {
+                                    return@let 0
+                                }
+                            }
+                            file.toUri().toString()
                         }
+
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-                            category, null, message.name, uri.toString(), message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null,
+                            category, null, message.name, uri, message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null,
                             null, MediaStatus.PENDING, MessageStatus.SENDING)))
                     }
                     message.category.endsWith("_STICKER") -> {
@@ -278,11 +293,15 @@ internal constructor(
                     }
                     message.category.endsWith("_AUDIO") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+                        if (message.mediaUrl?.fileExists() != true) {
+                            return@let 0
+                        }
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
                             null, category, message.mediaSize!!, message.mediaUrl, message.mediaDuration!!, nowInUtc(), message.mediaWaveform!!, null,
                             null, MediaStatus.PENDING, MessageStatus.SENDING)))
                     }
                 }
+                return@let 1
             }
         }.observeOn(AndroidSchedulers.mainThread())!!
 
