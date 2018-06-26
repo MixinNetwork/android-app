@@ -17,10 +17,8 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
+import androidx.core.view.updateLayoutParams
 import com.bugsnag.android.Bugsnag
-import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.Target
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -28,6 +26,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displaySize
+import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
@@ -43,7 +42,7 @@ import javax.inject.Inject
 class StickerManagementFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerManagementFragment"
-        const val COLUMN = 4
+        const val COLUMN = 3
 
         fun newInstance(id: String) = StickerManagementFragment().apply {
             arguments = bundleOf(ARGS_ALBUM_ID to id)
@@ -162,6 +161,7 @@ class StickerManagementFragment : BaseFragment() {
 
             val params = v.layoutParams
             params.height = size
+            params.width = size
             v.layoutParams = params
             val imageView = (v as ViewGroup).getChildAt(0) as ImageView
             val cover = v.getChildAt(1)
@@ -189,12 +189,17 @@ class StickerManagementFragment : BaseFragment() {
             if (position == stickers.size) {
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
+                imageView.updateLayoutParams<ViewGroup.LayoutParams> {
+                    width = size - ctx.dip(50)
+                    height = size - ctx.dip(50)
+                }
             } else {
+                imageView.updateLayoutParams<ViewGroup.LayoutParams> {
+                    width = size
+                    height = size
+                }
                 if (s != null) {
-                    Glide.with(ctx).load(s.assetUrl).apply(
-                        if (size <= 0) RequestOptions().dontAnimate().override(Target.SIZE_ORIGINAL)
-                        else RequestOptions().dontAnimate().override(size, size))
-                        .into(imageView)
+                    imageView.loadSticker(s.assetUrl, s.assetType)
                     cb.setOnCheckedChangeListener { _, checked ->
                         if (checked) {
                             checkedList.add(s.stickerId)

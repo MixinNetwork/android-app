@@ -9,9 +9,10 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.net.toFile
+import android.widget.ImageView
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
+import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.Glide
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
@@ -19,6 +20,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.isImageSupport
@@ -55,6 +57,9 @@ class StickerAddFragment : BaseFragment() {
 
     private val url: String by lazy { arguments!!.getString(ARGS_URL) }
     private var dialog: Dialog? = null
+    private val dp100 by lazy {
+        requireContext().dpToPx(100f)
+    }
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -80,7 +85,33 @@ class StickerAddFragment : BaseFragment() {
             dialog?.show()
             addSticker()
         }
-        sticker_iv.loadImage(url)
+        doAsync {
+            val w = try {
+                val bitmap = Glide.with(MixinApplication.appContext)
+                    .asBitmap()
+                    .load(url)
+                    .submit()
+                    .get(10, TimeUnit.SECONDS)
+                if (bitmap.width < dp100) {
+                    dp100
+                } else {
+                    0
+                }
+            } catch (e: Exception) {
+                0
+            }
+            uiThread {
+                if (w == dp100) {
+                    sticker_iv.updateLayoutParams<ViewGroup.LayoutParams> {
+                        width = w
+                        height = w
+                    }
+                } else {
+                    sticker_iv.scaleType = ImageView.ScaleType.CENTER_INSIDE
+                }
+                sticker_iv.loadImage(url)
+            }
+        }
     }
 
     private fun addSticker() {
@@ -94,7 +125,7 @@ class StickerAddFragment : BaseFragment() {
                     return@doAsync
                 }
                 val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
-                    val f = uri.toFile()
+                    val f = File(uri.getFilePath(requireContext()))
                     if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
                         dialog?.dismiss()
                         uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
