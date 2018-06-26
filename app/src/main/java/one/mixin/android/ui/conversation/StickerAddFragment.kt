@@ -28,6 +28,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Sticker
+import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.indeterminateProgressDialog
 import org.jetbrains.anko.textColor
@@ -94,7 +95,7 @@ class StickerAddFragment : BaseFragment() {
                     uiThread { requireContext().toast(R.string.sticker_add_invalid) }
                     return@doAsync
                 }
-                val stickerAddRequest = if (mimeType == "image/gif") {
+                val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
                     val byteArray = Glide.with(MixinApplication.appContext)
                         .`as`(ByteArray::class.java)
                         .load(url)

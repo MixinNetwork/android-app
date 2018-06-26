@@ -11,7 +11,6 @@ import android.net.Uri
 import android.support.annotation.WorkerThread
 import android.support.v4.util.ArraySet
 import androidx.core.net.toUri
-import com.bumptech.glide.Glide
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -37,10 +36,8 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.maxSizeScale
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
@@ -54,7 +51,6 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
@@ -81,11 +77,11 @@ import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.FileInputStream
 import java.util.UUID
-import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 class ConversationViewModel
@@ -208,7 +204,7 @@ internal constructor(
             MixinApplication.get().toast(R.string.error_format)
             return null
         }
-        if (mimeType == "image/gif") {
+        if (mimeType == MimeType.GIF.toString()) {
             return Flowable.just(uri).map {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp()
                 gifFile.copyFromInputStream(FileInputStream(uri.getFilePath(MixinApplication.get())))
@@ -240,7 +236,7 @@ internal constructor(
 
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, imageUrl,
-                    "image/jpeg", length, size.width, size.height, thumbnail, null, null,
+                    MimeType.JPEG.toString(), length, size.width, size.height, thumbnail, null, null,
                     nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
