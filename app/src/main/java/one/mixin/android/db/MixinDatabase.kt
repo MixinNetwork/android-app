@@ -21,6 +21,7 @@ import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
+import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
 
 @Database(entities = [
@@ -39,7 +40,8 @@ import one.mixin.android.vo.User
     (Hyperlink::class),
     (FloodMessage::class),
     (Address::class),
-    (ResendMessage::class)], version = 15)
+    (ResendMessage::class),
+    (StickerRelationship::class)], version = 15)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -57,6 +59,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun floodMessageDao(): FloodMessageDao
     abstract fun addressDao(): AddressDao
     abstract fun resendMessageDao(): ResendMessageDao
+    abstract fun stickerRelationshipDao(): StickerRelationshipDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -194,10 +197,12 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
                 database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
-                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
-                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, asset_url TEXT NOT NULL," +
+                    " asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT ''," +
+                    " last_use_at TEXT)")
                 database.execSQL("DROP TABLE stickers")
                 database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("CREATE TABLE sticker_relationships(sticker_id TEXT NOT NULL, album_id TEXT NOT NULL, PRIMARY KEY(sticker_id, album_id))")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
@@ -225,10 +230,12 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
                 database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
-                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
-                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, asset_url TEXT NOT NULL," +
+                    " asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT ''," +
+                    " last_use_at TEXT)")
                 database.execSQL("DROP TABLE stickers")
                 database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("CREATE TABLE sticker_relationships(sticker_id TEXT NOT NULL, album_id TEXT NOT NULL, PRIMARY KEY(sticker_id, album_id))")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
@@ -252,10 +259,12 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
                 database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
-                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
-                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, asset_url TEXT NOT NULL," +
+                    " asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT ''," +
+                    " last_use_at TEXT)")
                 database.execSQL("DROP TABLE stickers")
                 database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("CREATE TABLE sticker_relationships(sticker_id TEXT NOT NULL, album_id TEXT NOT NULL, PRIMARY KEY(sticker_id, album_id))")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
@@ -276,10 +285,12 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_message_id TEXT")
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
                 database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
-                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
-                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, asset_url TEXT NOT NULL," +
+                    " asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT ''," +
+                    " last_use_at TEXT)")
                 database.execSQL("DROP TABLE stickers")
                 database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("CREATE TABLE sticker_relationships(sticker_id TEXT NOT NULL, album_id TEXT NOT NULL, PRIMARY KEY(sticker_id, album_id))")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")
@@ -296,10 +307,12 @@ abstract class MixinDatabase : RoomDatabase() {
 
         private val MIGRATION_14_15: Migration = object : Migration(14, 15) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, album_id TEXT NOT NULL, name TEXT NOT NULL, asset_url " +
-                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, last_use_at TEXT)")
+                database.execSQL("CREATE TABLE new_stickers(sticker_id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, asset_url TEXT NOT NULL," +
+                    " asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT ''," +
+                    " last_use_at TEXT)")
                 database.execSQL("DROP TABLE stickers")
                 database.execSQL("ALTER TABLE new_stickers RENAME TO stickers")
+                database.execSQL("CREATE TABLE sticker_relationships(sticker_id TEXT NOT NULL, album_id TEXT NOT NULL, PRIMARY KEY(sticker_id, album_id))")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN category TEXT NOT NULL DEFAULT ''")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN description TEXT NOT NULL DEFAULT ''")

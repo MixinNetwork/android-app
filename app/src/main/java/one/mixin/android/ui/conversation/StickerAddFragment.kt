@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation
 import android.app.Dialog
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Base64
@@ -44,17 +45,22 @@ class StickerAddFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerAddFragment"
         const val ARGS_URL = "args_url"
+        const val ARGS_STICKER_ID = "args_sticker_id"
 
         const val MIN_SIZE = 64
         const val MAX_SIZE = 512
         const val MIN_FILE_SIZE = 1024
         const val MAX_FILE_SIZE = 1024 * 1024
 
-        fun newInstance(url: String) = StickerAddFragment().apply {
-            arguments = bundleOf(ARGS_URL to url)
+        fun newInstance(url: String, stickerId: String? = null) = StickerAddFragment().apply {
+            arguments = bundleOf(
+                ARGS_URL to url,
+                ARGS_STICKER_ID to stickerId
+            )
         }
     }
 
+    private val stickerId: String? by lazy { arguments!!.getString(ARGS_STICKER_ID) }
     private val url: String by lazy { arguments!!.getString(ARGS_URL) }
     private var dialog: Dialog? = null
     private val dp100 by lazy {
@@ -87,11 +93,12 @@ class StickerAddFragment : BaseFragment() {
         }
         doAsync {
             val w = try {
-                val bitmap = Glide.with(MixinApplication.appContext)
-                    .asBitmap()
+                val byteArray = Glide.with(MixinApplication.appContext)
+                    .`as`(ByteArray::class.java)
                     .load(url)
                     .submit()
                     .get(10, TimeUnit.SECONDS)
+                val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size, BitmapFactory.Options())
                 if (bitmap.width < dp100) {
                     dp100
                 } else {
@@ -116,57 +123,67 @@ class StickerAddFragment : BaseFragment() {
 
     private fun addSticker() {
         doAsync {
-            try {
-                val uri = url.toUri()
-                val mimeType = getMimeType(uri)
-                if (mimeType?.isImageSupport() != true) {
-                    dialog?.dismiss()
-                    uiThread { requireContext().toast(R.string.sticker_add_invalid_format) }
-                    return@doAsync
-                }
-                val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
-                    val f = File(uri.getFilePath(requireContext()))
-                    if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
+            val request = (if (stickerId != null) {
+                StickerAddRequest(stickerId = stickerId)
+            } else {
+                try {
+                    val uri = url.toUri()
+                    val mimeType = getMimeType(uri)
+                    if (mimeType?.isImageSupport() != true) {
                         dialog?.dismiss()
-                        uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
+                        uiThread { requireContext().toast(R.string.sticker_add_invalid_format) }
                         return@doAsync
                     }
-                    val byteArray = Glide.with(MixinApplication.appContext)
-                        .`as`(ByteArray::class.java)
-                        .load(url)
-                        .submit()
-                        .get(10, TimeUnit.SECONDS)
-                    StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
-                } else {
-                    var bitmap = Glide.with(MixinApplication.appContext)
-                        .asBitmap()
-                        .load(url)
-                        .submit()
-                        .get(10, TimeUnit.SECONDS)
-                    if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
-                        dialog?.dismiss()
-                        uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
-                        return@doAsync
-                    }
-                    bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
-                    StickerAddRequest(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP))
-                }
-                stickerViewModel.addSticker(stickerAddRequest)
-                    .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({
-                        dialog?.dismiss()
-                        if (it != null && it.isSuccess) {
-                            stickerViewModel.addStickerLocal(it.data as Sticker)
-                            uiThread { requireFragmentManager().popBackStackImmediate() }
+                    val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
+                        val f = File(uri.getFilePath(requireContext()))
+                        if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
+                            dialog?.dismiss()
+                            uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
+                            return@doAsync
                         }
-                    }, {
-                        ErrorHandler.handleError(it)
-                        dialog?.dismiss()
-                        uiThread { requireContext().toast(R.string.sticker_add_failed) }
-                    })
-            } catch (e: Exception) {
-                dialog?.dismiss()
-                uiThread { requireContext().toast(R.string.sticker_add_failed) }
-            }
+                        val byteArray = Glide.with(MixinApplication.appContext)
+                            .`as`(ByteArray::class.java)
+                            .load(url)
+                            .submit()
+                            .get(10, TimeUnit.SECONDS)
+                        StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
+                    } else {
+                        var bitmap = Glide.with(MixinApplication.appContext)
+                            .asBitmap()
+                            .load(url)
+                            .submit()
+                            .get(10, TimeUnit.SECONDS)
+                        if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
+                            dialog?.dismiss()
+                            uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
+                            return@doAsync
+                        }
+                        bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
+                        StickerAddRequest(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP))
+                    }
+                    stickerAddRequest
+                } catch (e: Exception) {
+                    dialog?.dismiss()
+                    uiThread { requireContext().toast(R.string.sticker_add_failed) }
+                    null
+                }
+            }) ?: return@doAsync
+
+            stickerViewModel.addSticker(request)
+                .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
+                    dialog?.dismiss()
+                    if (r != null && r.isSuccess) {
+                        val personalAlbum = stickerViewModel.getPersonalAlbums()
+                        personalAlbum?.let {
+                            stickerViewModel.addStickerLocal(r.data as Sticker, it.albumId)
+                        }
+                        uiThread { requireFragmentManager().popBackStackImmediate() }
+                    }
+                }, {
+                    ErrorHandler.handleError(it)
+                    dialog?.dismiss()
+                    uiThread { requireContext().toast(R.string.sticker_add_failed) }
+                })
         }
     }
 }

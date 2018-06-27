@@ -1,9 +1,10 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.db.insertWithCreatedAt
 import one.mixin.android.vo.Sticker
 
-class RefreshStickerJob(private val albumId: String) : BaseJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
+class RefreshStickerJob(private val stickerId: String) : BaseJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
     .addTags(RefreshStickerJob.GROUP).persist().requireNetwork()) {
 
     companion object {
@@ -12,16 +13,14 @@ class RefreshStickerJob(private val albumId: String) : BaseJob(Params(PRIORITY_S
     }
 
     override fun onRun() {
-        val response = accountService.getStickers(albumId).execute().body()
+        val response = accountService.getStickerById(stickerId).execute().body()
         if (response != null && response.isSuccess && response.data != null) {
-            val stickers = response.data as List<Sticker>
-            for (s in stickers) {
-                val sticker = stickerDao.getStickerByUnique(s.albumId, s.name)
-                if (sticker != null) {
-                    s.lastUseAt = sticker.lastUseAt
-                }
-                stickerDao.insert(s)
+            val s = response.data as Sticker
+            val sticker = stickerDao.getStickerByUnique(s.stickerId)
+            if (sticker != null) {
+                s.lastUseAt = sticker.lastUseAt
             }
+            stickerDao.insertWithCreatedAt(s)
         }
     }
 }

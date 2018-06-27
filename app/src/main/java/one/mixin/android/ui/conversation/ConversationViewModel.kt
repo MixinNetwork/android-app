@@ -158,7 +158,7 @@ internal constructor(
         val category = if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferStickerData).toByteArray())
         val message = createStickerMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
-            encoded, transferStickerData.albumId, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
+            encoded, transferStickerData.albumId, transferStickerData.stickerId, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -293,7 +293,7 @@ internal constructor(
                             null, MediaStatus.PENDING, MessageStatus.SENDING)))
                     }
                     message.category.endsWith("_STICKER") -> {
-                        sendStickerMessage(conversationId, sender, TransferStickerData(message.albumId!!, message.name!!), isPlain)
+                        sendStickerMessage(conversationId, sender, TransferStickerData(name = message.name, stickerId = message.stickerId!!), isPlain)
                     }
                     message.category.endsWith("_AUDIO") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
@@ -392,10 +392,10 @@ internal constructor(
 
     fun recentStickers() = accountRepository.recentUsedStickers()
 
-    fun updateStickerUsedAt(albumId: String, name: String) {
+    fun updateStickerUsedAt(stickerId: String) {
         doAsync {
             val cur = System.currentTimeMillis()
-            accountRepository.updateUsedAt(albumId, name, cur.toString())
+            accountRepository.updateUsedAt(stickerId, cur.toString())
         }
     }
 
@@ -413,7 +413,7 @@ internal constructor(
 
     fun addSticker(stickerAddRequest: StickerAddRequest) = accountRepository.addSticker(stickerAddRequest)
 
-    fun addStickerLocal(sticker: Sticker) = accountRepository.addStickerLocal(sticker)
+    fun addStickerLocal(sticker: Sticker, albumId: String) = accountRepository.addStickerLocal(sticker, albumId)
 
     fun removeStickers(ids: List<String>) {
         jobManager.addJobInBackground(RemoveStickersJob(ids))

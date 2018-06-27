@@ -23,13 +23,16 @@ import one.mixin.android.crypto.rsaDecrypt
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
+import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.db.insertWithCreatedAt
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
 import retrofit2.Call
 import javax.inject.Inject
@@ -46,7 +49,8 @@ constructor(
     private val appDao: AppDao,
     private val authService: AuthorizationService,
     private val stickerDao: StickerDao,
-    private val stickerAlbumDao: StickerAlbumDao
+    private val stickerAlbumDao: StickerAlbumDao,
+    private val stickerRelationshipDao: StickerRelationshipDao
 ) {
 
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -117,13 +121,11 @@ constructor(
 
     fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
 
-    fun observeStickers(id: String) = stickerDao.observeStickersByAlbumId(id)
-
-    fun getStickers(id: String) = stickerDao.getStickersByAlbumId(id)
+    fun observeStickers(id: String) = stickerRelationshipDao.observeStickersByAlbumId(id)
 
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
 
-    fun updateUsedAt(albumId: String, name: String, at: String) = stickerDao.updateUsedAt(albumId, name, at)
+    fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
 
     fun getPinToken(): Observable<String> {
         val pinToken = Session.getPinToken()
@@ -146,5 +148,8 @@ constructor(
 
     fun addSticker(request: StickerAddRequest) = accountService.addSticker(request)
 
-    fun addStickerLocal(sticker: Sticker) = stickerDao.insert(sticker)
+    fun addStickerLocal(sticker: Sticker, albumId: String) {
+        stickerDao.insertWithCreatedAt(sticker)
+        stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
+    }
 }

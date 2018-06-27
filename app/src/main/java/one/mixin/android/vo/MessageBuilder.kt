@@ -28,6 +28,7 @@ class MessageBuilder(
     private var hyperlink: String? = null
     private var name: String? = null
     private var albumId: String? = null
+    private var stickerId: String? = null
     private var sharedUserId: String? = null
     private var mediaWaveform: ByteArray? = null
 
@@ -116,8 +117,13 @@ class MessageBuilder(
         return this
     }
 
-    fun setAlbumId(albumId: String): MessageBuilder {
+    fun setAlbumId(albumId: String?): MessageBuilder {
         this.albumId = albumId
+        return this
+    }
+
+    fun setStickerId(stickerId: String): MessageBuilder {
+        this.stickerId = stickerId
         return this
     }
 
@@ -135,5 +141,5 @@ class MessageBuilder(
         Message(id, conversationId, userId, category, content, mediaUrl,
             mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, mediaKey, mediaDigest, mediaStatus, status, createdAt,
-            action, participantId, snapshotId, hyperlink, name, albumId, sharedUserId, mediaWaveform)
+            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform)
 }

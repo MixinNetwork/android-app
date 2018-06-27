@@ -44,7 +44,13 @@ data class MessageItem(
     val assetUrl: String?,
     val assetHeight: Int?,
     val assetWidth: Int?,
+    @Deprecated(
+        "Deprecated at database version 15",
+        ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.MessageItem.stickerId"),
+        DeprecationLevel.ERROR
+    )
     val albumId: String?,
+    val stickerId: String?,
     val assetName: String?,
     val appId: String?,
     val siteName: String? = null,
@@ -62,7 +68,7 @@ data class MessageItem(
 
 fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
     type, null, createdAt
-    ?: nowInUtc(), MessageStatus.READ.name, null,
+    ?: nowInUtc(), MessageStatus.READ.name, null, null,
     null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null, null, null)

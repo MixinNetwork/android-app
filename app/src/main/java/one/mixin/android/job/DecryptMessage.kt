@@ -243,12 +243,12 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_STICKER") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
-                val sticker = stickerDao.getStickerByUnique(mediaData.albumId, mediaData.name)
+                val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
                 if (sticker == null) {
-                    jobManager.addJobInBackground(RefreshStickerJob(mediaData.albumId))
+                    jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                 }
                 val message = createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
-                    mediaData.albumId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
+                    mediaData.albumId, mediaData.stickerId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
             }
@@ -429,8 +429,7 @@ class DecryptMessage : Injector() {
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
             val stickerData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
-            messageDao.updateStickerMessage(stickerData.albumId, stickerData.name,
-                MessageStatus.DELIVERED.name, messageId)
+            messageDao.updateStickerMessage(stickerData.stickerId, MessageStatus.DELIVERED.name, messageId)
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
             val contactData = GsonHelper.customGson.fromJson(String(decoded), TransferContactData::class.java)
