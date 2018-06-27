@@ -108,11 +108,11 @@ class StickerFragment : BaseFragment() {
         stickerAdapter.size = (context!!.displaySize().x - COLUMN * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
-            override fun onItemClick(pos: Int, albumId: String, name: String) {
+            override fun onItemClick(pos: Int, stickerId: String) {
                 if (type != TYPE_RECENT) {
-                    stickerViewModel.updateStickerUsedAt(albumId, name)
+                    stickerViewModel.updateStickerUsedAt(stickerId)
                 }
-                callback?.onStickerClick(albumId, name)
+                callback?.onStickerClick(stickerId)
             }
 
             override fun onAddClick() {
@@ -163,7 +163,7 @@ class StickerFragment : BaseFragment() {
                     width = size
                     height = size
                 }
-                item.setOnClickListener { listener?.onItemClick(position, s.albumId, s.name) }
+                item.setOnClickListener { listener?.onItemClick(position, s.stickerId) }
             }
         }
 
@@ -182,7 +182,7 @@ class StickerFragment : BaseFragment() {
     private class StickerViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     interface StickerListener {
-        fun onItemClick(pos: Int, albumId: String, name: String)
+        fun onItemClick(pos: Int, stickerId: String)
         fun onAddClick()
     }
 }

@@ -28,8 +28,8 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
             else -> StickerFragment.newInstance(albums[position - 2].albumId, TYPE_NORMAL)
         }
         stickerFragment.setCallback(object : Callback {
-            override fun onStickerClick(albumId: String, name: String) {
-                callback?.onStickerClick(albumId, name)
+            override fun onStickerClick(stickerId: String) {
+                callback?.onStickerClick(stickerId)
             }
         })
         return stickerFragment
@@ -48,6 +48,6 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
     }
 
     interface Callback {
-        fun onStickerClick(albumId: String, name: String)
+        fun onStickerClick(stickerId: String)
     }
 }

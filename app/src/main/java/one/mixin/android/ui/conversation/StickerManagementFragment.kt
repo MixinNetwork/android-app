@@ -73,7 +73,7 @@ class StickerManagementFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { requireActivity().onBackPressed() }
         title_view.right_tv.textColor = Color.BLACK
         title_view.right_animator.setOnClickListener {
-            if (title_view.right_tv.text == getString(R.string.done)) {
+            if (stickerAdapter.editing) {
                 title_view.right_tv.text = getString(R.string.conversation_delete)
                 if (stickerAdapter.checkedList.isNotEmpty()) {
                     stickerViewModel.removeStickers(stickerAdapter.checkedList)

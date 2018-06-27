@@ -106,9 +106,18 @@ class Message(
     @ColumnInfo(name = "name")
     val name: String? = null,
 
+    @Deprecated(
+        "Deprecated at database version 15",
+        ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.Message.sticker_id"),
+        DeprecationLevel.ERROR
+    )
     @SerializedName("album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String? = null,
+
+    @SerializedName("sticker_id")
+    @ColumnInfo(name = "sticker_id")
+    val stickerId: String? = null,
 
     @SerializedName("shared_user_id")
     @ColumnInfo(name = "shared_user_id")
@@ -288,12 +297,14 @@ fun createStickerMessage(
     userId: String,
     category: String,
     content: String?,
-    albumId: String,
-    stickerName: String,
+    albumId: String?,
+    stickerId: String,
+    stickerName: String?,
     status: MessageStatus,
     createdAt: String
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
+    .setStickerId(stickerId)
     .setAlbumId(albumId)
     .setName(stickerName)
     .build()

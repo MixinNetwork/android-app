@@ -22,18 +22,19 @@ import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.SentSenderKeyDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
+import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.di.AppComponent
 import one.mixin.android.di.Injectable
@@ -118,6 +119,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Inject
     @Transient
     lateinit var stickerAlbumDao: StickerAlbumDao
+    @Inject
+    @Transient
+    lateinit var stickerRelationshipDao: StickerRelationshipDao
     @Inject
     @Transient
     lateinit var addressDao: AddressDao

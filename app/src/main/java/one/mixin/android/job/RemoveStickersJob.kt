@@ -14,11 +14,8 @@ class RemoveStickersJob(private val stickerIds: List<String>)
         if (stickerIds.isEmpty()) return
 
         for (i in stickerIds) {
-            stickerDao.deleteByStickerId(i)
+            stickerRelationshipDao.deleteByStickerId(i)
         }
-        val response = accountService.removeSticker(stickerIds).execute().body()
-        if (response != null && response.isSuccess) {
-
-        }
+        accountService.removeSticker(stickerIds).execute()
     }
 }

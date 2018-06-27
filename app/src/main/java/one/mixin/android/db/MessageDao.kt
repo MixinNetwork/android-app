@@ -22,7 +22,7 @@ interface MessageDao : BaseDao<Message> {
         "m.thumb_image AS thumbImage, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, " +
         "u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId, " +
         "s.snapshot_id AS snapshotId, s.type AS snapshotType, s.amount AS snapshotAmount, a.symbol AS assetSymbol, a.asset_id AS assetId, " +
-        "a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.album_id AS albumId, " +
+        "a.icon_url AS assetIcon, st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId, " +
         "st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription, " +
         "h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber, " +
         "su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId " +
@@ -31,7 +31,7 @@ interface MessageDao : BaseDao<Message> {
         "LEFT JOIN users u1 ON m.participant_id = u1.user_id " +
         "LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id " +
         "LEFT JOIN assets a ON s.asset_id = a.asset_id " +
-        "LEFT JOIN stickers st ON st.name = m.name AND st.album_id = m.album_id " +
+        "LEFT JOIN stickers st ON st.sticker_id = m.sticker_id " +
         "LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink " +
         "LEFT JOIN users su ON m.shared_user_id = su.user_id " +
         "WHERE m.conversation_id = :conversationId " +
@@ -114,8 +114,8 @@ interface MessageDao : BaseDao<Message> {
         status: String
     )
 
-    @Query("UPDATE messages SET album_id = :albumId, name =:name, status = :status WHERE id = :messageId")
-    fun updateStickerMessage(albumId: String, name: String, status: String, messageId: String)
+    @Query("UPDATE messages SET sticker_id = :stickerId, status = :status WHERE id = :messageId")
+    fun updateStickerMessage(stickerId: String, status: String, messageId: String)
 
     @Query("UPDATE messages SET shared_user_id = :sharedUserId, status = :status WHERE id = :messageId")
     fun updateContactMessage(sharedUserId: String, status: String, messageId: String)

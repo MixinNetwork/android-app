@@ -104,7 +104,7 @@ class StickerAlbumFragment : BaseFragment() {
     }
 
     interface Callback {
-        fun onStickerClick(albumId: String, name: String)
+        fun onStickerClick(stickerId: String)
 
         fun onMove(dis: Float)
 

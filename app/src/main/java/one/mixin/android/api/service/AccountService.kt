@@ -65,10 +65,10 @@ interface AccountService {
     fun getStickerAlbums(): Call<MixinResponse<List<StickerAlbum>>>
 
     @GET("stickers/albums/{id}")
-    fun getStickers(@Path("id") id: String): Call<MixinResponse<List<Sticker>>>
+    fun getStickersByAlbumId(@Path("id") id: String): Call<MixinResponse<List<Sticker>>>
 
     @GET("stickers/{id}")
-    fun getStickerById(@Path("id") id: String): Observable<MixinResponse<Sticker>>
+    fun getStickerById(@Path("id") id: String): Call<MixinResponse<Sticker>>
 
     @POST("stickers/add")
     fun addSticker(@Body request: StickerAddRequest): Observable<MixinResponse<Sticker>>

@@ -752,18 +752,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         tool_view.add_sticker_iv.setOnClickListener {
             val messageItem = chatAdapter.selectSet.valueAt(0)
-            messageItem?.let {
+            messageItem?.let { m->
                 val isSticker = messageItem.type.endsWith("STICKER")
                 val url = if (isSticker) {
-                    it.assetUrl
+                    m.assetUrl
                 } else {
-                    it.mediaUrl
+                    m.mediaUrl
                 }
                 url?.let {
                     val uri = url.toUri()
                     val mimeType = getMimeType(uri)
                     if (isSticker || mimeType?.isImageSupport() == true) {
-                        requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it), StickerAddFragment.TAG)
+                        requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it, m.stickerId),
+                            StickerAddFragment.TAG)
                     } else {
                         requireContext().toast(R.string.sticker_add_invalid_format)
                     }
@@ -1073,10 +1074,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendStickerMessage(albumId: String, name: String) {
+    private fun sendStickerMessage(stickerId: String) {
         createConversation {
             chatViewModel.sendStickerMessage(conversationId, sender,
-                TransferStickerData(albumId, name), isPlainMessage())
+                TransferStickerData(stickerId), isPlainMessage())
             markRead()
             scrollTo(0)
         }
@@ -1264,8 +1265,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 stickerAnim(curH, targetH)
             }
 
-            override fun onStickerClick(albumId: String, name: String) {
-                sendStickerMessage(albumId, name)
+            override fun onStickerClick(stickerId: String) {
+                sendStickerMessage(stickerId)
                 if (sticker_container.height != input_layout.keyboardHeight) {
                     stickerAnim(sticker_container.height, input_layout.keyboardHeight)
                 }
