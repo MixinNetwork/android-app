@@ -152,7 +152,7 @@
     <string name="contact_empty">Phone Contacts</string>
     <string name="contact_empty_tip">Mixin needs access your contacts to help you connect with other people on Mixin.</string>
     <string name="contact_item_title">CONTACTS</string>
-    <string name="contact_sq_scan_title">Scan QR Code</string>
+    <string name="contact_sq_scan_title">Extract QR Code</string>
     <string name="contact_my_qr_title">My QR Code</string>
     <string name="contact_my_qr_tip">Scan the QR code to add me on Mixin</string>
     <string name="contact_receive_money">Receive Money</string>
