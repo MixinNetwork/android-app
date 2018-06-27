@@ -3,7 +3,7 @@ buildscript {
 
     ext {
         ext.lifecycleVersion = '1.1.1'
-        ext.pagingVersion = '1.0.0'
+        ext.pagingVersion = '1.0.1'
         ext.roomVersion = '1.1.1'
         ext.constraintLayoutVersion = '1.1.2'
         ext.supportLibVersion = '27.1.1'
@@ -14,7 +14,7 @@ buildscript {
         ext.webpdecoderVesion = '0.0.7.4.6.1'
         ext.timberVersion = '4.7.0'
         ext.okhttpVersion = '3.10.0'
-        ext.rxJavaVersion = '2.1.15'
+        ext.rxJavaVersion = '2.1.16'
         ext.rxAndroidVersion = '2.0.2'
         ext.retrofitVersion = '2.4.0'
         ext.stethoVersion = '1.5.0'
@@ -41,7 +41,7 @@ buildscript {
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.24.0'
-        ext.exoplayerVersion = '2.8.1'
+        ext.exoplayerVersion = '2.8.2'
 
         ext.junitVersion = '4.12'
         ext.leakcanaryVerison = '1.5.1'
