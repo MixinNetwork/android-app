@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.insertWithCreatedAt
 import one.mixin.android.vo.Sticker
 
-class RefreshStickerJob(private val stickerId: String) : BaseJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
+class RefreshStickerJob(private val stickerId: String) : BaseJob(Params(PRIORITY_UI_HIGH)
     .addTags(RefreshStickerJob.GROUP).persist().requireNetwork()) {
 
     companion object {

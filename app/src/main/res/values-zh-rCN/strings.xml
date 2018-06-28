@@ -486,4 +486,5 @@
     <string name="sticker_add_failed">添加表情失败</string>
     <string name="sticker_add_invalid_size">表情大小不合适</string>
     <string name="sticker_add_invalid_format">表情格式不支持</string>
+    <string name="sticker_add_invalid_ratio">表情比例不合适</string>
 </resources>

@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation
 import android.app.Dialog
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.os.Bundle
@@ -35,6 +36,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.indeterminateProgressDialog
+import org.jetbrains.anko.support.v4.onUiThread
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import java.io.File
@@ -146,6 +148,9 @@ class StickerAddFragment : BaseFragment() {
                             .load(url)
                             .submit()
                             .get(10, TimeUnit.SECONDS)
+                        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size, BitmapFactory.Options())
+                        if (!checkRatio(bitmap)) return@doAsync
+
                         StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
                     } else {
                         var bitmap = Glide.with(MixinApplication.appContext)
@@ -158,6 +163,8 @@ class StickerAddFragment : BaseFragment() {
                             uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
                             return@doAsync
                         }
+                        if (!checkRatio(bitmap)) return@doAsync
+
                         bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
                         StickerAddRequest(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP))
                     }
@@ -185,5 +192,15 @@ class StickerAddFragment : BaseFragment() {
                     uiThread { requireContext().toast(R.string.sticker_add_failed) }
                 })
         }
+    }
+
+    private fun checkRatio(bitmap: Bitmap): Boolean {
+        val ratio = bitmap.width / bitmap.height.toFloat()
+        if (ratio < 9 / 16f || ratio > 16f / 9) {
+            dialog?.dismiss()
+            onUiThread { requireContext().toast(R.string.sticker_add_invalid_ratio) }
+            return false
+        }
+        return true
     }
 }
