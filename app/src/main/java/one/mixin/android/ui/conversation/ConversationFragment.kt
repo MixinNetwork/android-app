@@ -536,11 +536,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             Timber.e(it)
         })
         if (isGroup) {
-            if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                    ?.getBoolean(conversationId, false) == true) {
-                showGroupNotification = true
-                showAlert()
-            }
             if (disposable == null || disposable?.isDisposed == true) {
                 disposable = RxBus.listen(GroupEvent::class.java)
                     .observeOn(AndroidSchedulers.mainThread())
@@ -779,119 +774,128 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun bindData() {
         doAsync {
             chatViewModel.indexUnread(conversationId).let { unreadCount ->
-                if (!isAdded) {
-                    return@doAsync
-                }
-                chatViewModel.getMessages(conversationId).observe(this@ConversationFragment, Observer {
-                    doAsync {
-                        it?.let {
-                            val dataPackage = if (it.size > 0 && !isGroup &&
-                                recipient?.relationship == UserRelationship.STRANGER.name &&
-                                it.find { it != null && it.userId == sender.userId } == null) {
-                                if (unreadCount == null || unreadCount == 0) {
-                                    DataPackage(it, -1, false, true)
-                                } else {
-                                    DataPackage(it, unreadCount, false, true)
-                                }
-                            } else if (isFirstLoad) {
-                                var index = -1
-                                if (it.isNotEmpty() && !messageId.isNullOrEmpty()) {
-                                    for (i in 0 until it.size) {
-                                        if (it[i]?.messageId == messageId) {
-                                            index = i
-                                            break
-                                        }
+                uiThread {
+                    if (!isAdded) {
+                        return@uiThread
+                    }
+                    chatViewModel.getMessages(conversationId).observe(this@ConversationFragment, Observer {
+                        doAsync {
+                            it?.let {
+                                val dataPackage = if (it.size > 0 && !isGroup &&
+                                    recipient?.relationship == UserRelationship.STRANGER.name &&
+                                    it.find { it != null && it.userId == sender.userId } == null) {
+                                    if (unreadCount == null || unreadCount == 0) {
+                                        DataPackage(it, -1, false, true)
+                                    } else {
+                                        DataPackage(it, unreadCount, false, true)
                                     }
-                                    if (index == -1) {
-                                        chatViewModel.getMessagesMinimal(conversationId).let { ids ->
-                                            for (i in 0 until ids.size) {
-                                                if (ids[i] == messageId) {
-                                                    index = i
-                                                    break
+                                } else if (isFirstLoad) {
+                                    var index = -1
+                                    if (it.isNotEmpty() && !messageId.isNullOrEmpty()) {
+                                        for (i in 0 until it.size) {
+                                            if (it[i]?.messageId == messageId) {
+                                                index = i
+                                                break
+                                            }
+                                        }
+                                        if (index == -1) {
+                                            chatViewModel.getMessagesMinimal(conversationId).let { ids ->
+                                                for (i in 0 until ids.size) {
+                                                    if (ids[i] == messageId) {
+                                                        index = i
+                                                        break
+                                                    }
                                                 }
                                             }
                                         }
-                                    }
-                                    DataPackage(it, index, false)
-                                } else if (it.isNotEmpty()) {
-                                    if (unreadCount == null || unreadCount == 0) {
-                                        DataPackage(it, -1, false)
+                                        DataPackage(it, index, false)
+                                    } else if (it.isNotEmpty()) {
+                                        if (unreadCount == null || unreadCount == 0) {
+                                            DataPackage(it, -1, false)
+                                        } else {
+                                            DataPackage(it, unreadCount - 1, true)
+                                        }
                                     } else {
-                                        DataPackage(it, unreadCount - 1, true)
+                                        DataPackage(it, -1, false)
                                     }
                                 } else {
                                     DataPackage(it, -1, false)
                                 }
-                            } else {
-                                DataPackage(it, -1, false)
-                            }
-                            if (!isAdded) {
-                                return@doAsync
-                            }
-                            onUiThread {
-                                if (dataPackage.data.size > 0) {
-                                    isFirstMessage = false
+                                if (!isAdded) {
+                                    return@doAsync
                                 }
-                                val data = dataPackage.data
-                                val index = dataPackage.index
-                                when {
-                                    dataPackage.isStranger -> {
-                                        chatAdapter.hasBottomView = true
-                                        chatAdapter.submitList(data)
-                                        chatAdapter.unreadIndex = index
+                                onUiThread {
+                                    if (dataPackage.data.size > 0) {
+                                        isFirstMessage = false
                                     }
-                                    isFirstLoad -> {
-                                        isFirstLoad = false
-                                        if (dataPackage.hasUnread && index >= 0) {
+                                    val data = dataPackage.data
+                                    val index = dataPackage.index
+                                    when {
+                                        dataPackage.isStranger -> {
+                                            chatAdapter.hasBottomView = true
+                                            chatAdapter.submitList(data)
                                             chatAdapter.unreadIndex = index
                                         }
-                                        chatAdapter.hasBottomView = false
-                                        chatAdapter.submitList(data)
-                                        if (index > 0) {
-                                            chatAdapter.loadAround(index)
-                                            scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4)
-                                        } else {
-                                            scrollTo(0)
-                                        }
-                                    }
-                                    else -> {
-                                        if (data.size > chatAdapter.itemCount) {
-                                            chatAdapter.unreadIndex = null
-                                            if (isBottom) {
-                                                notNullElse(data[0], {
-                                                    when (chatAdapter.getItemType(it)) {
-                                                        MESSAGE_TYPE -> {
-                                                            if (it.content != null && it.content.length > 500) {
-                                                                scrollTo(0)
-                                                            } else {
-                                                                scrollTo(0, 0, when {
-                                                                    it.content == null -> FAST_SPEED
-                                                                    it.content.length > 30 -> FAST_SPEED
-                                                                    it.content.length > 15 -> MEDIUM_SPEED
-                                                                    else -> SLOW_SPEED
-                                                                })
-                                                            }
-                                                        }
-                                                        FILE_TYPE, BILL_TYPE, LINK_TYPE -> scrollTo(0, 0, MEDIUM_SPEED)
-                                                        else -> {
-                                                            scrollTo(0)
-                                                        }
-                                                    }
-                                                }, {
-                                                    scrollTo(0)
-                                                })
+                                        isFirstLoad -> {
+                                            isFirstLoad = false
+                                            if (dataPackage.hasUnread && index >= 0) {
+                                                chatAdapter.unreadIndex = index
+                                            }
+                                            chatAdapter.hasBottomView = false
+                                            chatAdapter.submitList(data)
+                                            val action = {
+                                                if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                                                        ?.getBoolean(conversationId, false) == true) {
+                                                    showGroupNotification = true
+                                                    showAlert(0)
+                                                }
+                                            }
+                                            if (index > 0) {
+                                                chatAdapter.loadAround(index)
+                                                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = action)
                                             } else {
-                                                scrollY(context!!.dpToPx(30f))
+                                                scrollTo(0, action = action)
                                             }
                                         }
-                                        chatAdapter.hasBottomView = false
-                                        chatAdapter.submitList(data)
+                                        else -> {
+                                            if (data.size > chatAdapter.itemCount) {
+                                                chatAdapter.unreadIndex = null
+                                                if (isBottom) {
+                                                    notNullElse(data[0], {
+                                                        when (chatAdapter.getItemType(it)) {
+                                                            MESSAGE_TYPE -> {
+                                                                if (it.content != null && it.content.length > 500) {
+                                                                    scrollTo(0)
+                                                                } else {
+                                                                    scrollTo(0, 0, when {
+                                                                        it.content == null -> FAST_SPEED
+                                                                        it.content.length > 30 -> FAST_SPEED
+                                                                        it.content.length > 15 -> MEDIUM_SPEED
+                                                                        else -> SLOW_SPEED
+                                                                    })
+                                                                }
+                                                            }
+                                                            FILE_TYPE, BILL_TYPE, LINK_TYPE -> scrollTo(0, 0, MEDIUM_SPEED)
+                                                            else -> {
+                                                                scrollTo(0)
+                                                            }
+                                                        }
+                                                    }, {
+                                                        scrollTo(0)
+                                                    })
+                                                } else {
+                                                    scrollY(context!!.dpToPx(30f))
+                                                }
+                                            }
+                                            chatAdapter.hasBottomView = false
+                                            chatAdapter.submitList(data)
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                })
+                    })
+                }
             }
         }
 
@@ -1320,7 +1324,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun scrollTo(position: Int, offset: Int = -1, type: Float? = null) {
+    private fun scrollTo(position: Int, offset: Int = -1, type: Float? = null, action: (() -> Unit)? = null) {
         context?.mainThreadDelayed({
             chat_rv?.let {
                 chat_rv.post {
@@ -1335,6 +1339,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } else {
                             (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
                         }
+                        action?.let { it() }
                     }
                 }
             }
@@ -1418,7 +1423,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun showAlert() {
+    private fun showAlert(duration: Long = 100) {
         if (isGroup) {
             if (showGroupNotification) {
                 group_flag.visibility = VISIBLE
@@ -1430,9 +1435,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 down_flag.visibility = GONE
             }
-            bg_quick_flag.translationY(0f, 100)
+            if (bg_quick_flag.translationY != 0f) {
+                bg_quick_flag.translationY(0f, duration)
+            }
         } else {
-            bg_quick_flag.translationY(0f, 100)
+            if (bg_quick_flag.translationY != 0f) {
+                bg_quick_flag.translationY(0f, duration)
+            }
         }
     }
 
