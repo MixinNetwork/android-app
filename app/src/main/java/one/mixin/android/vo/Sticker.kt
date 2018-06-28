@@ -28,7 +28,7 @@ data class Sticker(
     val assetHeight: Int,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
-    var createdAt: String = "",
+    var createdAt: String,
     @ColumnInfo(name = "last_use_at")
     var lastUseAt: String?
 )
