@@ -9,6 +9,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.graphics.PorterDuff
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.SystemClock
@@ -166,12 +167,15 @@ class CaptureFragment : BaseFragment() {
         }
         op.setMaxDuration(MAX_DURATION)
         op.setCameraOpCallback(object : CameraOpView.CameraOpCallback {
+            val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+            var oldStreamVolume = 0
             override fun onClick() {
                 mCaptureManager.capture()
                 mode = Mode.CAPTURE
             }
 
             private var videoFile: File? = null
+
             override fun onProgressStart() {
                 close.fadeOut()
                 flash.fadeOut()
@@ -180,6 +184,8 @@ class CaptureFragment : BaseFragment() {
                 chronometer.base = SystemClock.elapsedRealtime()
                 chronometer.start()
                 videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
+                oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
+                audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
                 mCaptureManager.record(videoFile, MAX_DURATION)
                 mode = Mode.RECORD
             }
@@ -206,6 +212,7 @@ class CaptureFragment : BaseFragment() {
                         }
                     }
                 }
+                requireContext().mainThreadDelayed({ audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0) }, 300)
             }
         })
         pseudo_view.translationY = -dip(300).toFloat()

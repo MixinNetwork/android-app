@@ -161,7 +161,15 @@ fun Context.displaySize(): Point {
     val displaySize = Point()
     val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val display = manager.defaultDisplay
-    display?.getSize(displaySize)
+    display.getSize(displaySize)
+    return displaySize
+}
+
+fun Context.realSize(): Point {
+    val displaySize = Point()
+    val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val display = manager.defaultDisplay
+    display.getRealSize(displaySize)
     return displaySize
 }
 

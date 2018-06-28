@@ -3,6 +3,7 @@ package one.mixin.android.ui.qr
 import android.Manifest
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,12 +16,12 @@ import one.mixin.android.R
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getPublicMoviesPath
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -150,17 +151,15 @@ class EditFragment : BaseFragment() {
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
         override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
             val ratio = width / height.toFloat()
-            val lp = preview_video_texture.layoutParams
-            val screenWidth = context!!.displaySize().x
-            val screenHeight = context!!.displaySize().y
-            if (screenWidth / ratio > screenHeight) {
-                lp.height = screenHeight
-                lp.width = (screenHeight * ratio).toInt()
+            val screenWidth = requireContext().realSize().x
+            val screenHeight = requireContext().realSize().y
+            val matrix = Matrix()
+            if (screenWidth / ratio < screenHeight) {
+                matrix.postScale(screenHeight * ratio / screenWidth, 1f, screenWidth / 2f, screenHeight / 2f)
             } else {
-                lp.width = screenWidth
-                lp.height = (screenWidth / ratio).toInt()
+                matrix.postScale(1f, screenWidth / ratio / screenHeight, screenWidth / 2f, screenHeight / 2f)
             }
-            preview_video_texture.layoutParams = lp
+            preview_video_texture.setTransform(matrix)
         }
     }
 
