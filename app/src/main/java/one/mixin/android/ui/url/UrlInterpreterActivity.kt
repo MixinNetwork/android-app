@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.support.v4.app.FragmentManager
 import one.mixin.android.Constants.MIXIN_TRANSFER_PREFIX
 import one.mixin.android.R
-import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
@@ -56,12 +55,7 @@ class UrlInterpreterActivity : BaseActivity() {
                 bottomSheet.show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
             TRANSFER -> {
-                supportFragmentManager.inTransaction {
-                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                        R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                        .add(R.id.container, TransferFragment.newInstance(uri.lastPathSegment), TransferFragment.TAG)
-                        .addToBackStack(null)
-                }
+                TransferFragment.newInstance(uri.lastPathSegment).show(supportFragmentManager, TransferFragment.TAG)
             }
             else -> {
             }
@@ -119,12 +113,7 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
             if (segments.size >= 1) {
                 val data = segments[0]
                 if (data.isUUID()) {
-                    supportFragmentManager.inTransaction {
-                        setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                            R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                            .add(R.id.container, TransferFragment.newInstance(data), TransferFragment.TAG)
-                            .addToBackStack(null)
-                    }
+                    TransferFragment.newInstance(data).show(supportFragmentManager, TransferFragment.TAG)
                 }
             }
         }

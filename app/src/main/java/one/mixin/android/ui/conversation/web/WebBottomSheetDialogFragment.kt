@@ -9,7 +9,9 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
+import android.view.ContextMenu
 import android.view.LayoutInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
@@ -18,12 +20,15 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
+import kotlinx.coroutines.experimental.timeunit.TimeUnit
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.R
+import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
@@ -32,12 +37,16 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DragWebView
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.toast
+import org.jetbrains.anko.uiThread
+import timber.log.Timber
 import java.net.URISyntaxException
 
 class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -46,6 +55,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "WebBottomSheetDialogFragment"
 
         private const val FILE_CHOOSER = 0x01
+
+        private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
 
         private const val URL = "url"
         private const val CONVERSATION_ID = "conversation_id"
@@ -72,7 +83,59 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_web, null)
+        registerForContextMenu(contentView.chat_web_view)
         (dialog as BottomSheet).setCustomView(contentView)
+    }
+
+    override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
+        super.onCreateContextMenu(menu, v, menuInfo)
+        contentView.chat_web_view.hitTestResult?.let {
+            when (it.type) {
+                WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
+                    menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.contact_sq_scan_title)
+                    menu.getItem(0).setOnMenuItemClickListener {
+                        onContextItemSelected(it)
+                        return@setOnMenuItemClickListener true
+                    }
+                }
+                else -> Timber.d("App does not yet handle target type: ${it.type}")
+            }
+        }
+    }
+
+    override fun onContextItemSelected(item: MenuItem): Boolean {
+        contentView.chat_web_view.hitTestResult?.let {
+            val url = it.extra
+            if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
+                doAsync {
+                    try {
+                        val bitmap = Glide.with(requireContext())
+                            .asBitmap()
+                            .load(url)
+                            .submit()
+                            .get(10, TimeUnit.SECONDS)
+                        val result = bitmap.decodeQR()
+                        uiThread {
+                            if (isDetached) {
+                                return@uiThread
+                            }
+                            if (result != null) {
+                                openUrl(result, requireFragmentManager()) {
+                                    QrScanBottomSheetDialogFragment.newInstance(result)
+                                        .show(requireFragmentManager(), QrScanBottomSheetDialogFragment.TAG)
+                                }
+                            } else {
+                                toast(R.string.can_not_recognize)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        toast(R.string.can_not_recognize)
+                    }
+                }
+                return true
+            }
+        }
+        return super.onContextItemSelected(item)
     }
 
     private val miniHeight by lazy {

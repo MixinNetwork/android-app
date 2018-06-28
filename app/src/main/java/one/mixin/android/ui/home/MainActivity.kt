@@ -24,7 +24,6 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
@@ -170,12 +169,7 @@ class MainActivity : BlazeBaseActivity() {
             UserBottomSheetDialogFragment.newInstance(user).show(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
-            supportFragmentManager?.inTransaction {
-                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                    R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                    .add(R.id.home_container, TransferFragment.newInstance(userId), TransferFragment.TAG)
-                    .addToBackStack(null)
-            }
+            TransferFragment.newInstance(userId).show(supportFragmentManager, TransferFragment.TAG)
         } else if (intent.extras != null && intent.extras.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()

@@ -5,10 +5,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+    <View
+        android:id="@+id/ph"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/white"/>
+
     <one.mixin.android.widget.TitleView
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/ph"
             app:leftIcon="@drawable/ic_close_black_24dp"
             app:titleText="@string/transfer"/>
 
