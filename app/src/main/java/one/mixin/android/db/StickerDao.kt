@@ -19,4 +19,7 @@ interface StickerDao : BaseDao<Sticker> {
 
     @Query("DELETE FROM stickers WHERE sticker_id = :stickerId")
     fun deleteByStickerId(stickerId: String)
+
+    @Query("SELECT s.* FROM sticker_relationships sr, stickers s WHERE sr.sticker_id = s.sticker_id AND sr.album_id = :id AND s.name = :name")
+    fun getStickerByAlbumIdAndName(id: String, name: String): Sticker?
 }

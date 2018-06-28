@@ -157,9 +157,11 @@ internal constructor(
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferStickerData).toByteArray())
-        val message = createStickerMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
-            encoded, transferStickerData.albumId, transferStickerData.stickerId, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
-        jobManager.addJobInBackground(SendMessageJob(message))
+        transferStickerData.stickerId?.let {
+            val message = createStickerMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
+                encoded, transferStickerData.albumId, it, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
+            jobManager.addJobInBackground(SendMessageJob(message))
+        }
     }
 
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean) {
