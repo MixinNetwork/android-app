@@ -31,7 +31,20 @@ public class AlbumLoader extends CursorLoader {
                     + " OR "
                     + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?)"
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0"
-                    + ") GROUP BY (bucket_id";
+                    + ") AND (" + MediaStore.Images.Media.MIME_TYPE +"='image/jpeg'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/png'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/gif'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/jpg'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/mpeg'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/quicktime'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/3gpp'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/3gpp2'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/x-matroska'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/webm'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='ideo/mp2ts'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/avi')"
+                    + " GROUP BY (bucket_id";
+
     private static final String[] SELECTION_ARGS = {
             String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
             String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
@@ -40,6 +53,15 @@ public class AlbumLoader extends CursorLoader {
             MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0"
                     + ") GROUP BY (bucket_id";
+
+    private static final String SELECTION_FOR_SINGLE_IMAGE_TYPE =
+            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
+                    + " AND " + MediaStore.MediaColumns.SIZE + ">0"
+                    + ") AND (" + MediaStore.Images.Media.MIME_TYPE +"='image/jpeg'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/png'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/gif'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/jpg')"
+                    + " GROUP BY (bucket_id";
 
     private static String[] getSelectionArgsForSingleMediaType(int mediaType) {
         return new String[]{String.valueOf(mediaType)};
@@ -55,7 +77,7 @@ public class AlbumLoader extends CursorLoader {
         String selection;
         String[] selectionArgs;
         if (SelectionSpec.getInstance().onlyShowImages()) {
-            selection = SELECTION_FOR_SINGLE_MEDIA_TYPE;
+            selection = SELECTION_FOR_SINGLE_IMAGE_TYPE;
             selectionArgs = getSelectionArgsForSingleMediaType(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE);
         } else if (SelectionSpec.getInstance().onlyShowVideos()) {
             selection = SELECTION_FOR_SINGLE_MEDIA_TYPE;

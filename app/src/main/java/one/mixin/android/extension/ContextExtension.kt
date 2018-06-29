@@ -386,6 +386,7 @@ fun Fragment.openGallery() {
 fun Fragment.openGalleryFromSticker() {
     Gallery.from(this)
         .choose(MimeType.ofImage())
+        .showSingleMediaType(true)
         .preview(false)
         .imageEngine(GlideEngine())
         .forResult(REQUEST_GALLERY)
