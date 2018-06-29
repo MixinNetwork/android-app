@@ -54,7 +54,7 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
@@ -162,11 +162,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         val bottomSheet = builder.create()
         view.save.setOnClickListener {
             RxPermissions(this)
-                .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {
-                            val outFile = this@DragMediaActivity.getImagePath().createImageTemp()
+                            val outFile = this@DragMediaActivity.getPublicPictyresPath().createImageTemp()
                             findViewPagerChildByTag {
                                 val imageView = it.getChildAt(0) as ImageView
                                 (imageView.drawable as BitmapDrawable).bitmap.save(outFile)
@@ -176,6 +176,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                                 } catch (e: FileNotFoundException) {
                                     e.printStackTrace()
                                 }
+
                                 sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
 
                                 uiThread { toast(R.string.save_success) }
