@@ -125,11 +125,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                         .show(requireFragmentManager(), QrScanBottomSheetDialogFragment.TAG)
                                 }
                             } else {
-                                toast(R.string.can_not_recognize)
+                                if (isAdded) toast(R.string.can_not_recognize)
                             }
                         }
                     } catch (e: Exception) {
-                        toast(R.string.can_not_recognize)
+                        if (isAdded) toast(R.string.can_not_recognize)
                     }
                 }
                 return true
@@ -262,6 +262,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             uploadMessage?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
             uploadMessage = null
         }
+    }
+
+    override fun onDestroyView() {
+        unregisterForContextMenu(contentView.chat_web_view)
+        super.onDestroyView()
     }
 
     private fun showBottomSheet() {
