@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 15,
-    "identityHash": "c03494904a4ce7d0e6daaae180383fe1",
+    "identityHash": "b2187be3d58934469f2210dfadc7c3a2",
     "entities": [
       {
         "tableName": "users",
@@ -777,13 +777,19 @@
       },
       {
         "tableName": "stickers",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sticker_id` TEXT NOT NULL, `name` TEXT NOT NULL, `asset_url` TEXT NOT NULL, `asset_type` TEXT NOT NULL, `asset_width` INTEGER NOT NULL, `asset_height` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `last_use_at` TEXT, PRIMARY KEY(`sticker_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sticker_id` TEXT NOT NULL, `album_id` TEXT, `name` TEXT NOT NULL, `asset_url` TEXT NOT NULL, `asset_type` TEXT NOT NULL, `asset_width` INTEGER NOT NULL, `asset_height` INTEGER NOT NULL, `created_at` TEXT NOT NULL, `last_use_at` TEXT, PRIMARY KEY(`sticker_id`))",
         "fields": [
           {
             "fieldPath": "stickerId",
             "columnName": "sticker_id",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "albumId",
+            "columnName": "album_id",
+            "affinity": "TEXT",
+            "notNull": false
           },
           {
             "fieldPath": "name",
@@ -1180,7 +1186,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"c03494904a4ce7d0e6daaae180383fe1\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"b2187be3d58934469f2210dfadc7c3a2\")"
     ]
   }
 }

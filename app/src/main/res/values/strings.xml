@@ -495,5 +495,6 @@
     <string name="sticker_add_invalid_size">Invalid sticker size</string>
     <string name="sticker_add_invalid_format">Invalid sticker format</string>
     <string name="sticker_add_invalid_ratio">Invalid sticker ratio</string>
+    <string name="sticker_add_success">Add success</string>
 </resources>
 

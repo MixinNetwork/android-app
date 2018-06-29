@@ -38,6 +38,7 @@ import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
@@ -48,6 +49,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
@@ -104,6 +106,7 @@ import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -113,6 +116,7 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canNotForward
@@ -743,21 +747,37 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         tool_view.add_sticker_iv.setOnClickListener {
             val messageItem = chatAdapter.selectSet.valueAt(0)
-            messageItem?.let { m->
+            messageItem?.let { m ->
                 val isSticker = messageItem.type.endsWith("STICKER")
-                val url = if (isSticker) {
-                    m.assetUrl
+                if (isSticker && m.stickerId != null) {
+                    doAsync {
+                        val request = StickerAddRequest(stickerId = m.stickerId)
+                        chatViewModel.addSticker(request)
+                            .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
+                                if (r != null && r.isSuccess) {
+                                    val personalAlbum = chatViewModel.getPersonalAlbums()
+                                    if (personalAlbum == null) {  //not add any personal sticker yet
+                                        chatViewModel.refreshStickerAlbums()
+                                    } else {
+                                        chatViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
+                                    }
+                                    uiThread { requireContext().toast(R.string.sticker_add_success) }
+                                }
+                            }, {
+                                ErrorHandler.handleError(it)
+                                uiThread { requireContext().toast(R.string.sticker_add_failed) }
+                            })
+                    }
                 } else {
-                    m.mediaUrl
-                }
-                url?.let {
-                    val uri = url.toUri()
-                    val mimeType = getMimeType(uri)
-                    if (isSticker || mimeType?.isImageSupport() == true) {
-                        requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it, m.stickerId),
-                            StickerAddFragment.TAG)
-                    } else {
-                        requireContext().toast(R.string.sticker_add_invalid_format)
+                    val url = m.mediaUrl
+                    url?.let {
+                        val uri = url.toUri()
+                        val mimeType = getMimeType(uri)
+                        if (mimeType?.isImageSupport() == true) {
+                            requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it, m.stickerId), StickerAddFragment.TAG)
+                        } else {
+                            requireContext().toast(R.string.sticker_add_invalid_format)
+                        }
                     }
                 }
             }

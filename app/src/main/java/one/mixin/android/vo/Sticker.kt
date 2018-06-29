@@ -11,6 +11,9 @@ data class Sticker(
     @SerializedName("sticker_id")
     @ColumnInfo(name = "sticker_id")
     val stickerId: String,
+    @SerializedName("album_id")
+    @ColumnInfo(name = "album_id")
+    val albumId: String?,
     @SerializedName("name")
     @ColumnInfo(name = "name")
     val name: String,

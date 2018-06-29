@@ -105,8 +105,9 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
                 database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
                 database.execSQL("DROP TABLE IF EXISTS stickers")
-                database.execSQL("CREATE TABLE IF NOT EXISTS stickers(sticker_id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, asset_url TEXT NOT NULL, " +
-                    "asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT '', last_use_at TEXT)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS stickers(sticker_id TEXT PRIMARY KEY NOT NULL, album_id TEXT, name TEXT NOT NULL, asset_url " +
+                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT '', " +
+                    "last_use_at TEXT)")
                 database.execSQL("CREATE TABLE IF NOT EXISTS sticker_relationships(album_id TEXT NOT NULL, sticker_id TEXT NOT NULL, PRIMARY KEY(album_id, " +
                     "sticker_id))")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
@@ -131,8 +132,9 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN quote_content TEXT")
                 database.execSQL("CREATE INDEX index_messages_user_id ON messages(user_id)")
                 database.execSQL("DROP TABLE IF EXISTS stickers")
-                database.execSQL("CREATE TABLE IF NOT EXISTS stickers(sticker_id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, asset_url TEXT NOT NULL, " +
-                    "asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT '', last_use_at TEXT)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS stickers(sticker_id TEXT PRIMARY KEY NOT NULL, album_id TEXT, name TEXT NOT NULL, asset_url " +
+                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT '', " +
+                    "last_use_at TEXT)")
                 database.execSQL("CREATE TABLE IF NOT EXISTS sticker_relationships(album_id TEXT NOT NULL, sticker_id TEXT NOT NULL, PRIMARY KEY(album_id, " +
                     "sticker_id))")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
@@ -153,8 +155,9 @@ abstract class MixinDatabase : RoomDatabase() {
         private val MIGRATION_14_15: Migration = object : Migration(14, 15) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP TABLE IF EXISTS stickers")
-                database.execSQL("CREATE TABLE IF NOT EXISTS stickers(sticker_id TEXT PRIMARY KEY NOT NULL, name TEXT NOT NULL, asset_url TEXT NOT NULL, " +
-                    "asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT '', last_use_at TEXT)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS stickers(sticker_id TEXT PRIMARY KEY NOT NULL, album_id TEXT, name TEXT NOT NULL, asset_url " +
+                    "TEXT NOT NULL, asset_type TEXT NOT NULL, asset_width INTEGER NOT NULL, asset_height INTEGER NOT NULL, created_at TEXT NOT NULL DEFAULT '', " +
+                    "last_use_at TEXT)")
                 database.execSQL("CREATE TABLE IF NOT EXISTS sticker_relationships(album_id TEXT NOT NULL, sticker_id TEXT NOT NULL, PRIMARY KEY(album_id, " +
                     "sticker_id))")
                 database.execSQL("ALTER TABLE sticker_albums ADD COLUMN user_id TEXT NOT NULL DEFAULT ''")
