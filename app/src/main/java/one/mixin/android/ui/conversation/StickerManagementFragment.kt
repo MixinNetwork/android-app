@@ -179,7 +179,7 @@ class StickerManagementFragment : BaseFragment() {
                 }
             } else {
                 cb.visibility = GONE
-                if (position == stickers.size && v.visibility == GONE && size <= 99) {
+                if (position == stickers.size && v.visibility == GONE) {
                     v.visibility = VISIBLE
                 } else {
                     if (v.visibility == GONE) v.visibility = VISIBLE
