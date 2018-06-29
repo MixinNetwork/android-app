@@ -41,6 +41,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
@@ -392,6 +393,8 @@ internal constructor(
 
     fun observeStickers(id: String) = accountRepository.observeStickers(id)
 
+    fun observePersonalStickers() = accountRepository.observePersonalStickers()
+
     fun recentStickers() = accountRepository.recentUsedStickers()
 
     fun updateStickerUsedAt(stickerId: String) {
@@ -419,5 +422,9 @@ internal constructor(
 
     fun removeStickers(ids: List<String>) {
         jobManager.addJobInBackground(RemoveStickersJob(ids))
+    }
+
+    fun refreshStickerAlbums() {
+        jobManager.addJobInBackground(RefreshStickerAlbumJob())
     }
 }

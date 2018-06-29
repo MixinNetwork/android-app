@@ -70,9 +70,9 @@ interface AccountService {
     @GET("stickers/{id}")
     fun getStickerById(@Path("id") id: String): Call<MixinResponse<Sticker>>
 
-    @POST("stickers/add")
+    @POST("stickers/favorite/add")
     fun addSticker(@Body request: StickerAddRequest): Observable<MixinResponse<Sticker>>
 
-    @POST("stickers/remove")
+    @POST("stickers/favorite/remove")
     fun removeSticker(@Body ids: List<String>): Call<MixinResponse<Sticker>>
 }

@@ -26,7 +26,6 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
-import one.mixin.android.db.insertWithCreatedAt
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
@@ -123,6 +122,8 @@ constructor(
 
     fun observeStickers(id: String) = stickerRelationshipDao.observeStickersByAlbumId(id)
 
+    fun observePersonalStickers() = stickerRelationshipDao.observePersonalStickers()
+
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
 
     fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
@@ -149,7 +150,7 @@ constructor(
     fun addSticker(request: StickerAddRequest) = accountService.addSticker(request)
 
     fun addStickerLocal(sticker: Sticker, albumId: String) {
-        stickerDao.insertWithCreatedAt(sticker)
+        stickerDao.insertUpdate(sticker)
         stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
     }
 }

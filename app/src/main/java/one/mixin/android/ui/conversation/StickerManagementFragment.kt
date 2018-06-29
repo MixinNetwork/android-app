@@ -44,7 +44,7 @@ class StickerManagementFragment : BaseFragment() {
         const val TAG = "StickerManagementFragment"
         const val COLUMN = 3
 
-        fun newInstance(id: String) = StickerManagementFragment().apply {
+        fun newInstance(id: String?) = StickerManagementFragment().apply {
             arguments = bundleOf(ARGS_ALBUM_ID to id)
         }
     }
@@ -58,7 +58,7 @@ class StickerManagementFragment : BaseFragment() {
 
     private val padding: Int by lazy { context!!.dip(PADDING) }
 
-    private val albumId: String by lazy { arguments!!.getString(ARGS_ALBUM_ID) }
+    private val albumId: String? by lazy { arguments!!.getString(ARGS_ALBUM_ID) }
 
     private val stickers = mutableListOf<Sticker>()
     private val stickerAdapter: StickerAdapter by lazy {
@@ -109,9 +109,15 @@ class StickerManagementFragment : BaseFragment() {
             }
         })
 
-        stickerViewModel.observeStickers(albumId).observe(this, Observer {
-            it?.let { updateStickers(it) }
-        })
+        if (albumId == null) {  //not add any personal sticker yet
+            stickerViewModel.observePersonalStickers().observe(this, Observer {
+                it?.let { updateStickers(it) }
+            })
+        } else {
+            stickerViewModel.observeStickers(albumId!!).observe(this, Observer {
+                it?.let { updateStickers(it) }
+            })
+        }
     }
 
     override fun onBackPressed(): Boolean {
@@ -173,7 +179,7 @@ class StickerManagementFragment : BaseFragment() {
                 }
             } else {
                 cb.visibility = GONE
-                if (position == stickers.size && v.visibility == GONE) {
+                if (position == stickers.size && v.visibility == GONE && size <= 99) {
                     v.visibility = VISIBLE
                 } else {
                     if (v.visibility == GONE) v.visibility = VISIBLE
