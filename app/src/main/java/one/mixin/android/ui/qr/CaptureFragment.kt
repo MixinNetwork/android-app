@@ -9,8 +9,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.graphics.PorterDuff
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
@@ -37,7 +39,11 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getImageCachePath
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
@@ -47,7 +53,6 @@ import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.rotate
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.extension.xYuv2Simple
 import one.mixin.android.ui.common.BaseFragment
@@ -62,7 +67,9 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.support.v4.dip
+import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.yesButton
+import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 
@@ -75,6 +82,9 @@ class CaptureFragment : BaseFragment() {
         const val RESULT_CODE = 0x0000c0df
 
         val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "ASSETS:READ", "APPS:READ", "APPS:WRITE", "CONTACTS:READ")
+
+        private const val MAX_DURATION = 15
+        private const val MIN_DURATION = 1
 
         fun newInstance(forAddress: Boolean = false) = CaptureFragment().withArgs {
             putBoolean(ARGS_FOR_ADDRESS, forAddress)
@@ -155,21 +165,54 @@ class CaptureFragment : BaseFragment() {
             anim(switch_camera)
             zxing_barcode_scanner.switchCamera()
         }
+        op.setMaxDuration(MAX_DURATION)
         op.setCameraOpCallback(object : CameraOpView.CameraOpCallback {
+            val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+            var oldStreamVolume = 0
             override fun onClick() {
                 mCaptureManager.capture()
                 mode = Mode.CAPTURE
             }
 
+            private var videoFile: File? = null
+
             override fun onProgressStart() {
-                context!!.vibrate(longArrayOf(0, 30))
-                mCaptureManager.record()
+                close.fadeOut()
+                flash.fadeOut()
+                switch_camera.fadeOut()
+                chronometer_layout.fadeIn()
+                chronometer.base = SystemClock.elapsedRealtime()
+                chronometer.start()
+                videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
+                oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
+                audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
+                mCaptureManager.record(videoFile, MAX_DURATION)
                 mode = Mode.RECORD
             }
 
-            override fun onProgressStop() {
-                mCaptureManager.pause()
-                mode = Mode.SCAN
+            override fun onProgressStop(time: Float) {
+                close.fadeIn()
+                flash.fadeIn()
+                switch_camera.fadeIn()
+                chronometer_layout.fadeOut()
+                chronometer.stop()
+                if (time < MIN_DURATION) {
+                    mCaptureManager.stopRecord()
+                    mCaptureManager.resume()
+                    mode = Mode.SCAN
+                    toast(R.string.error_duration_short)
+                } else {
+                    videoFile?.let {
+                        mCaptureManager.stopRecord()
+                        mCaptureManager.pause()
+                        mode = Mode.SCAN
+                        activity?.supportFragmentManager?.inTransaction {
+                            add(R.id.container, EditFragment.newInstance(it.absolutePath, true), EditFragment.TAG)
+                                .addToBackStack(null)
+                        }
+                    }
+                }
+                requireContext().mainThreadDelayed({ audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0) }, 300)
             }
         })
         pseudo_view.translationY = -dip(300).toFloat()

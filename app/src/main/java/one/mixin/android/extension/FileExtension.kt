@@ -145,6 +145,14 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audio")
 }
 
+fun Context.getPublicMoviesPath(): File {
+    return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
+}
+
+fun Context.getPublicPictyresPath(): File {
+    return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+}
+
 fun Context.getImageCachePath(): File {
     val root = getBestAvailableCacheRoot()
     return File("$root${File.separator}Images")

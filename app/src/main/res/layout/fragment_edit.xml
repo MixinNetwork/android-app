@@ -9,7 +9,15 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="centerCrop"
+        android:visibility="gone"
         tools:ignore="ContentDescription" />
+
+    <TextureView
+        android:id="@+id/preview_video_texture"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:layout_gravity="center" />
 
     <ImageView
         android:id="@+id/close_iv"
