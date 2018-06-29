@@ -31,7 +31,7 @@ public class AlbumLoader extends CursorLoader {
                     + " OR "
                     + MediaStore.Files.FileColumns.MEDIA_TYPE + "=?)"
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0"
-                    + ") AND (" + MediaStore.Images.Media.MIME_TYPE +"='image/jpeg'"
+                    + ") AND (" + MediaStore.Images.Media.MIME_TYPE + "='image/jpeg'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/png'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/gif'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/jpg'"
@@ -57,7 +57,7 @@ public class AlbumLoader extends CursorLoader {
     private static final String SELECTION_FOR_SINGLE_IMAGE_TYPE =
             MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0"
-                    + ") AND (" + MediaStore.Images.Media.MIME_TYPE +"='image/jpeg'"
+                    + ") AND (" + MediaStore.Images.Media.MIME_TYPE + "='image/jpeg'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/png'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/gif'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/jpg')"
