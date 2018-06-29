@@ -2,8 +2,10 @@ package one.mixin.android.ui.qr
 
 import android.Manifest
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Matrix
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -31,6 +33,7 @@ import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.ctx
 import org.jetbrains.anko.uiThread
 import java.io.File
 
@@ -116,12 +119,13 @@ class EditFragment : BaseFragment() {
                     if (granted) {
                         doAsync {
                             val outFile = if (isVideo) {
-                                context!!.getPublicMoviesPath().createVideoTemp("mp4")
+                                ctx.getPublicMoviesPath().createVideoTemp("mp4")
                             } else {
-                                context!!.getPublicPictyresPath().createImageTemp()
+                                ctx.getPublicPictyresPath().createImageTemp()
                             }
                             File(path).copy(outFile)
-                            uiThread { context?.toast(R.string.save_success) }
+                            ctx.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+                            uiThread { ctx.toast(R.string.save_success) }
                         }
                     } else {
                         context?.openPermissionSetting()

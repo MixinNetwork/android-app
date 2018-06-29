@@ -1,5 +1,6 @@
 package one.mixin.android.ui.forward
 
+import android.Manifest
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
@@ -9,10 +10,13 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import com.bugsnag.android.Bugsnag
+import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.ConversationViewModel
@@ -21,6 +25,7 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_SHARE
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import org.jetbrains.anko.bundleOf
@@ -75,12 +80,44 @@ class ForwardFragment : BaseFragment() {
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onConversationItemClick(item: ConversationItem) {
                 sharePreOperation()
-                ConversationActivity.show(context!!, item.conversationId, null, messages = messages)
+                if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+                    RxPermissions(requireActivity())
+                        .request(
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                        .subscribe({ granted ->
+                            if (granted) {
+                                ConversationActivity.show(context!!, item.conversationId, null, messages = messages)
+                            } else {
+                                requireContext().openPermissionSetting()
+                            }
+                        }, {
+                            Bugsnag.notify(it)
+                        })
+                } else {
+                    ConversationActivity.show(context!!, item.conversationId, null, messages = messages)
+                }
             }
 
             override fun onUserItemClick(user: User) {
                 sharePreOperation()
-                ConversationActivity.show(ctx, null, user.userId, messages = messages)
+                if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+                    RxPermissions(requireActivity())
+                        .request(
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                        .subscribe({ granted ->
+                            if (granted) {
+                                ConversationActivity.show(ctx, null, user.userId, messages = messages)
+                            } else {
+                                requireContext().openPermissionSetting()
+                            }
+                        }, {
+                            Bugsnag.notify(it)
+                        })
+                } else {
+                    ConversationActivity.show(ctx, null, user.userId, messages = messages)
+                }
             }
         })
 
