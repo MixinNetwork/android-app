@@ -1,7 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
-import one.mixin.android.db.insertWithCreatedAt
+import one.mixin.android.db.insertUpdate
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
@@ -25,7 +25,7 @@ class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
                 if (r != null && r.isSuccess && r.data != null) {
                     val stickers = r.data as List<Sticker>
                     for (s in stickers) {
-                        stickerDao.insertWithCreatedAt(s)
+                        stickerDao.insertUpdate(s)
                         stickerRelationshipDao.insert(StickerRelationship(a.albumId, s.stickerId))
                     }
                 }

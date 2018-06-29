@@ -31,7 +31,11 @@ fun UserDao.updateRelationship(user: User, relationship: String) {
 }
 
 @Transaction
-fun StickerDao.insertWithCreatedAt(s: Sticker) {
+fun StickerDao.insertUpdate(s: Sticker) {
+    val sticker = getStickerByUnique(s.stickerId)
+    if (sticker != null) {
+        s.lastUseAt = sticker.lastUseAt
+    }
     if (s.createdAt == "") {
         s.createdAt = System.currentTimeMillis().toString()
     }

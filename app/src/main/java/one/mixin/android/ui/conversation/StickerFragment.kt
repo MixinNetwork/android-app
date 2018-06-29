@@ -90,11 +90,15 @@ class StickerFragment : BaseFragment() {
                 })
             } else {
                 doAsync {
-                    val personalAlbum = stickerViewModel.getPersonalAlbums()
-                    personalAlbum?.let { r ->
-                        personalAlbumId = r.albumId
-                        uiThread {
-                            stickerViewModel.observeStickers(r.albumId).observe(this@StickerFragment, Observer {
+                    personalAlbumId = stickerViewModel.getPersonalAlbums()?.albumId
+
+                    uiThread {
+                        if (personalAlbumId == null) {  //not add any personal sticker yet
+                            stickerViewModel.observePersonalStickers().observe(this@StickerFragment, Observer {
+                                it?.let { updateStickers(it) }
+                            })
+                        } else {
+                            stickerViewModel.observeStickers(personalAlbumId!!).observe(this@StickerFragment, Observer {
                                 it?.let { updateStickers(it) }
                             })
                         }
@@ -116,13 +120,11 @@ class StickerFragment : BaseFragment() {
             }
 
             override fun onAddClick() {
-                personalAlbumId?.let {
-                    requireFragmentManager().findFragmentByTag(ConversationFragment.TAG)?.let {
-                        (it as ConversationFragment).onBackPressed()
-                    }
-                    requireActivity().addFragment(this@StickerFragment,
-                        StickerManagementFragment.newInstance(it), StickerManagementFragment.TAG)
+                requireFragmentManager().findFragmentByTag(ConversationFragment.TAG)?.let {
+                    (it as ConversationFragment).onBackPressed()
                 }
+                requireActivity().addFragment(this@StickerFragment,
+                    StickerManagementFragment.newInstance(personalAlbumId), StickerManagementFragment.TAG)
             }
         })
     }
