@@ -100,6 +100,9 @@ open class ErrorHandler {
                     INSUFFICIENT_TRANSACTION_FEE -> {
                         toast(R.string.error_insufficient_transaction_fee)
                     }
+                    TOO_MANY_STICKERS -> {
+                        toast(R.string.error_too_many_stickers)
+                    }
                     BLOCKCHAIN_ERROR -> {
                         toast(R.string.error_blockchain)
                     }
@@ -161,6 +164,7 @@ open class ErrorHandler {
         private const val TOO_SMALL = 20120
         private const val USED_PHONE = 20122
         private const val INSUFFICIENT_TRANSACTION_FEE = 20124
+        private const val TOO_MANY_STICKERS = 20126
         private const val BLOCKCHAIN_ERROR = 30100
         private const val INVALID_ADDRESS = 30102
     }

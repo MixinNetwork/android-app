@@ -92,6 +92,7 @@
     <string name="error_old_version">请更新 Mixin 至最新版。</string>
     <string name="error_file_chooser">文件选择错误</string>
     <string name="error_duration_short">时间太短</string>
+    <string name="error_too_many_stickers">贴纸数已达上限</string>
     <!--home-->
     <string name="title_home">联系人</string>
     <string name="title_dashboard">Chats</string>
@@ -480,11 +481,11 @@
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
     <!--sticker-->
-    <string name="sticker_manager">管理表情</string>
-    <string name="sticker_add">添加表情</string>
-    <string name="sticker_delete">删除表情</string>
-    <string name="sticker_add_failed">添加表情失败</string>
-    <string name="sticker_add_invalid_size">表情大小不合适</string>
-    <string name="sticker_add_invalid_format">表情格式不支持</string>
-    <string name="sticker_add_invalid_ratio">表情比例不合适</string>
+    <string name="sticker_manager">管理贴纸</string>
+    <string name="sticker_add">添加贴纸</string>
+    <string name="sticker_delete">删除贴纸</string>
+    <string name="sticker_add_failed">添加贴纸失败</string>
+    <string name="sticker_add_invalid_size">贴纸大小不合适</string>
+    <string name="sticker_add_invalid_format">贴纸格式不支持</string>
+    <string name="sticker_add_invalid_ratio">贴纸比例不合适</string>
 </resources>
