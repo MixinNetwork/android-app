@@ -174,16 +174,14 @@ class StickerManagementFragment : BaseFragment() {
             val cb = v.getChildAt(2) as CheckBox
             if (editing) {
                 cb.visibility = VISIBLE
-                if (position == stickers.size && v.visibility == VISIBLE) {
+                if (position == stickers.size) {
                     v.visibility = GONE
+                } else {
+                    v.visibility = VISIBLE
                 }
             } else {
                 cb.visibility = GONE
-                if (position == stickers.size && v.visibility == GONE) {
-                    v.visibility = VISIBLE
-                } else {
-                    if (v.visibility == GONE) v.visibility = VISIBLE
-                }
+                v.visibility = VISIBLE
             }
             if (s != null && checkedList.contains(s.stickerId)) {
                 cb.isChecked = true
@@ -206,19 +204,11 @@ class StickerManagementFragment : BaseFragment() {
                 }
                 if (s != null) {
                     imageView.loadSticker(s.assetUrl, s.assetType)
-                    cb.setOnCheckedChangeListener { _, checked ->
-                        if (checked) {
-                            checkedList.add(s.stickerId)
-                            cover.visibility = VISIBLE
-                        } else {
-                            checkedList.remove(s.stickerId)
-                            cover.visibility = GONE
-                        }
+                    cb.setOnClickListener {
+                        handleChecked(cb, cover, s.stickerId)
                     }
                     imageView.setOnClickListener {
-                        if (editing) {
-                            cb.isChecked = !cb.isChecked
-                        }
+                        handleChecked(cb, cover, s.stickerId)
                     }
                     imageView.setOnLongClickListener {
                         editing = !editing
@@ -226,6 +216,19 @@ class StickerManagementFragment : BaseFragment() {
                         listener?.onDelete()
                         return@setOnLongClickListener true
                     }
+                }
+            }
+        }
+
+        private fun handleChecked(cb: CheckBox, cover: View, stickerId: String) {
+            if (editing) {
+                cb.isChecked = !cb.isChecked
+                if (cb.isChecked) {
+                    checkedList.add(stickerId)
+                    cover.visibility = VISIBLE
+                } else {
+                    checkedList.remove(stickerId)
+                    cover.visibility = GONE
                 }
             }
         }
