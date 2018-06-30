@@ -109,7 +109,7 @@ class StickerManagementFragment : BaseFragment() {
             }
         })
 
-        if (albumId == null) {  //not add any personal sticker yet
+        if (albumId == null) { // not add any personal sticker yet
             stickerViewModel.observePersonalStickers().observe(this, Observer {
                 it?.let { updateStickers(it) }
             })

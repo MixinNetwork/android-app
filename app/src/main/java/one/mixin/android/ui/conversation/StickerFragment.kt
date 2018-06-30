@@ -93,7 +93,7 @@ class StickerFragment : BaseFragment() {
                     personalAlbumId = stickerViewModel.getPersonalAlbums()?.albumId
 
                     uiThread {
-                        if (personalAlbumId == null) {  //not add any personal sticker yet
+                        if (personalAlbumId == null) { // not add any personal sticker yet
                             stickerViewModel.observePersonalStickers().observe(this@StickerFragment, Observer {
                                 it?.let { updateStickers(it) }
                             })

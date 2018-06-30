@@ -189,7 +189,7 @@ class StickerAddFragment : BaseFragment() {
                     dialog?.dismiss()
                     if (r != null && r.isSuccess) {
                         val personalAlbum = stickerViewModel.getPersonalAlbums()
-                        if (personalAlbum == null) {  //not add any personal sticker yet
+                        if (personalAlbum == null) { // not add any personal sticker yet
                             stickerViewModel.refreshStickerAlbums()
                         } else {
                             stickerViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)

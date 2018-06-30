@@ -757,7 +757,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
                                 if (r != null && r.isSuccess) {
                                     val personalAlbum = chatViewModel.getPersonalAlbums()
-                                    if (personalAlbum == null) {  //not add any personal sticker yet
+                                    if (personalAlbum == null) { // not add any personal sticker yet
                                         chatViewModel.refreshStickerAlbums()
                                     } else {
                                         chatViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)

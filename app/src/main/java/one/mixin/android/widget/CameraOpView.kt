@@ -29,7 +29,7 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
     private var circleColor = context.getColor(R.color.colorDarkBlue)
     private var ringStrokeWidth = dip(5).toFloat()
     private var progressStrokeWidth = dip(5f).toFloat()
-    private var circleWidth = -10f  // initial value less than 0 for delay
+    private var circleWidth = -10f // initial value less than 0 for delay
     private var maxCircleWidth = 0f
     private var circleInterval = 3f
     private var progressStartAngle = -90f

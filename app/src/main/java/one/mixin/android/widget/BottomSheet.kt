@@ -26,8 +26,6 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
-import androidx.core.view.children
-import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullElse

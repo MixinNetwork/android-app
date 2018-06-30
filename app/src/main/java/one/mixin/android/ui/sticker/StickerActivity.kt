@@ -9,7 +9,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.conversation.StickerAddFragment
 import one.mixin.android.ui.conversation.StickerManagementFragment
 
-class StickerActivity: BaseActivity() {
+class StickerActivity : BaseActivity() {
 
     companion object {
         const val TAG = "StickerActivity"
