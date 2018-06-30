@@ -4,7 +4,6 @@ import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.ViewModel
 import android.arch.paging.LivePagedListBuilder
 import android.arch.paging.PagedList
-import com.birbit.android.jobqueue.JobManager
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.functions.BiFunction
@@ -12,7 +11,6 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AssetFee
 import one.mixin.android.api.request.PinRequest
-import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.repository.AccountRepository
@@ -99,8 +97,11 @@ internal constructor(
         LivePagedListBuilder(assetRepository.allSnapshots(), PagedList.Config.Builder()
             .setPageSize(10).build()).build()
 
-    fun refreshAndGetAddressById(id: String): LiveData<Address> {
-        jobManager.addJobInBackground(RefreshAddressJob(id))
+    fun observeAddressById(id: String): LiveData<Address> {
         return assetRepository.getAddressById(id)
+    }
+
+    fun refreshAddressById(id: String) {
+        jobManager.addJobInBackground(RefreshAddressJob(id))
     }
 }
