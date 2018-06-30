@@ -82,7 +82,7 @@ internal class AppModule {
         builder.pingInterval(15, TimeUnit.SECONDS)
         builder.retryOnConnectionFailure(false)
 
-        builder.addInterceptor({ chain ->
+        builder.addInterceptor { chain ->
             val request = chain.request().newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
@@ -112,7 +112,7 @@ internal class AppModule {
             } else {
                 throw NetworkException()
             }
-        })
+        }
         return builder.build()
     }
 
