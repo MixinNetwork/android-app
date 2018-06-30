@@ -2,8 +2,8 @@ package one.mixin.android.di
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import one.mixin.android.di.module.CommonModule
 import one.mixin.android.di.module.CaptureActivityModule
+import one.mixin.android.di.module.CommonModule
 import one.mixin.android.di.module.ContactActivityModule
 import one.mixin.android.di.module.ConversationActivityModule
 import one.mixin.android.di.module.ForwardActivityModule
@@ -26,6 +26,7 @@ import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.SetupNameActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.WalletActivity
 
@@ -69,4 +70,7 @@ abstract class ActivityModule {
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (UrlInterpreterActivityModule::class)])
     internal abstract fun contributeUrlInterpreter(): UrlInterpreterActivity
+
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (ConversationActivityModule::class)])
+    internal abstract fun contributeSticker(): StickerActivity
 }

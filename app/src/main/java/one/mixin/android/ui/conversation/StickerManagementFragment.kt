@@ -137,7 +137,7 @@ class StickerManagementFragment : BaseFragment() {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
             data?.data?.let {
                 requireActivity().addFragment(this@StickerManagementFragment,
-                    StickerAddFragment.newInstance(it.toString()), StickerAddFragment.TAG)
+                    StickerAddFragment.newInstance(it.toString(), true), StickerAddFragment.TAG)
             }
         }
     }

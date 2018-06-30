@@ -119,6 +119,12 @@
         </activity-alias>
 
         <activity
+            android:name=".ui.sticker.StickerActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
+        <activity
             android:name=".ui.group.InviteActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"

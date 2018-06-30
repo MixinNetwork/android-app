@@ -101,6 +101,7 @@ import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
@@ -774,7 +775,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         val uri = url.toUri()
                         val mimeType = getMimeType(uri)
                         if (mimeType?.isImageSupport() == true) {
-                            requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it, m.stickerId), StickerAddFragment.TAG)
+                            StickerActivity.show(requireContext(), url = it, showAdd = true)
                         } else {
                             requireContext().toast(R.string.sticker_add_invalid_format)
                         }

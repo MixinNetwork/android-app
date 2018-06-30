@@ -47,23 +47,23 @@ class StickerAddFragment : BaseFragment() {
     companion object {
         const val TAG = "StickerAddFragment"
         const val ARGS_URL = "args_url"
-        const val ARGS_STICKER_ID = "args_sticker_id"
+        const val ARGS_FROM_MANAGEMENT = "args_from_management"
 
         const val MIN_SIZE = 64
         const val MAX_SIZE = 512
         const val MIN_FILE_SIZE = 1024
         const val MAX_FILE_SIZE = 1024 * 1024
 
-        fun newInstance(url: String, stickerId: String? = null) = StickerAddFragment().apply {
+        fun newInstance(url: String, fromManagement: Boolean = false) = StickerAddFragment().apply {
             arguments = bundleOf(
                 ARGS_URL to url,
-                ARGS_STICKER_ID to stickerId
+                ARGS_FROM_MANAGEMENT to fromManagement
             )
         }
     }
 
-    private val stickerId: String? by lazy { arguments!!.getString(ARGS_STICKER_ID) }
     private val url: String by lazy { arguments!!.getString(ARGS_URL) }
+    private val fromManagement: Boolean by lazy { arguments!!.getBoolean(ARGS_FROM_MANAGEMENT) }
     private var dialog: Dialog? = null
     private val dp100 by lazy {
         requireContext().dpToPx(100f)
@@ -125,68 +125,64 @@ class StickerAddFragment : BaseFragment() {
 
     private fun addSticker() {
         doAsync {
-            val request = (if (stickerId != null) {
-                StickerAddRequest(stickerId = stickerId)
-            } else {
-                try {
-                    val uri = url.toUri()
-                    val mimeType = getMimeType(uri)
-                    if (mimeType?.isImageSupport() != true) {
+            val request = try {
+                val uri = url.toUri()
+                val mimeType = getMimeType(uri)
+                if (mimeType?.isImageSupport() != true) {
+                    dialog?.dismiss()
+                    uiThread {
+                        requireContext().toast(R.string.sticker_add_invalid_format)
+                        handleBack()
+                    }
+                    return@doAsync
+                }
+                val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
+                    val f = File(uri.getFilePath(requireContext()))
+                    if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
                         dialog?.dismiss()
                         uiThread {
-                            requireContext().toast(R.string.sticker_add_invalid_format)
-                            requireFragmentManager().popBackStackImmediate()
+                            requireContext().toast(R.string.sticker_add_invalid_size)
+                            handleBack()
                         }
                         return@doAsync
                     }
-                    val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
-                        val f = File(uri.getFilePath(requireContext()))
-                        if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
-                            dialog?.dismiss()
-                            uiThread {
-                                requireContext().toast(R.string.sticker_add_invalid_size)
-                                requireFragmentManager().popBackStackImmediate()
-                            }
-                            return@doAsync
-                        }
-                        val byteArray = Glide.with(MixinApplication.appContext)
-                            .`as`(ByteArray::class.java)
-                            .load(url)
-                            .submit()
-                            .get(10, TimeUnit.SECONDS)
-                        val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size, BitmapFactory.Options())
-                        if (!checkRatio(bitmap)) return@doAsync
+                    val byteArray = Glide.with(MixinApplication.appContext)
+                        .`as`(ByteArray::class.java)
+                        .load(url)
+                        .submit()
+                        .get(10, TimeUnit.SECONDS)
+                    val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size, BitmapFactory.Options())
+                    if (!checkRatio(bitmap)) return@doAsync
 
-                        StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
-                    } else {
-                        var bitmap = Glide.with(MixinApplication.appContext)
-                            .asBitmap()
-                            .load(url)
-                            .submit()
-                            .get(10, TimeUnit.SECONDS)
-                        if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
-                            dialog?.dismiss()
-                            uiThread {
-                                requireContext().toast(R.string.sticker_add_invalid_size)
-                                requireFragmentManager().popBackStackImmediate()
-                            }
-                            return@doAsync
+                    StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
+                } else {
+                    var bitmap = Glide.with(MixinApplication.appContext)
+                        .asBitmap()
+                        .load(url)
+                        .submit()
+                        .get(10, TimeUnit.SECONDS)
+                    if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
+                        dialog?.dismiss()
+                        uiThread {
+                            requireContext().toast(R.string.sticker_add_invalid_size)
+                            handleBack()
                         }
-                        if (!checkRatio(bitmap)) return@doAsync
+                        return@doAsync
+                    }
+                    if (!checkRatio(bitmap)) return@doAsync
 
-                        bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
-                        StickerAddRequest(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP))
-                    }
-                    stickerAddRequest
-                } catch (e: Exception) {
-                    dialog?.dismiss()
-                    uiThread {
-                        requireContext().toast(R.string.sticker_add_failed)
-                        requireFragmentManager().popBackStackImmediate()
-                    }
-                    null
+                    bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
+                    StickerAddRequest(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP))
                 }
-            }) ?: return@doAsync
+                stickerAddRequest
+            } catch (e: Exception) {
+                dialog?.dismiss()
+                uiThread {
+                    requireContext().toast(R.string.sticker_add_failed)
+                    handleBack()
+                }
+                null
+            } ?: return@doAsync
 
             stickerViewModel.addSticker(request)
                 .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
@@ -199,7 +195,7 @@ class StickerAddFragment : BaseFragment() {
                             stickerViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
                         }
 
-                        uiThread { requireFragmentManager().popBackStackImmediate() }
+                        uiThread { handleBack() }
                     }
                 }, {
                     ErrorHandler.handleError(it)
@@ -215,10 +211,18 @@ class StickerAddFragment : BaseFragment() {
             dialog?.dismiss()
             onUiThread {
                 requireContext().toast(R.string.sticker_add_invalid_ratio)
-                requireFragmentManager().popBackStackImmediate()
+                handleBack()
             }
             return false
         }
         return true
+    }
+
+    private fun handleBack() {
+        if (fromManagement) {
+            requireFragmentManager().popBackStackImmediate()
+        } else {
+            requireActivity().finish()
+        }
     }
 }

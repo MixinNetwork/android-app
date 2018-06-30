@@ -13,7 +13,6 @@ import android.widget.ImageView
 import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.ui.common.BaseFragment
@@ -22,6 +21,7 @@ import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_LIK
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_NORMAL
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_RECENT
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.vo.Sticker
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
@@ -120,11 +120,7 @@ class StickerFragment : BaseFragment() {
             }
 
             override fun onAddClick() {
-                requireFragmentManager().findFragmentByTag(ConversationFragment.TAG)?.let {
-                    (it as ConversationFragment).onBackPressed()
-                }
-                requireActivity().addFragment(this@StickerFragment,
-                    StickerManagementFragment.newInstance(personalAlbumId), StickerManagementFragment.TAG)
+                StickerActivity.show(requireContext(), personalAlbumId)
             }
         })
     }
