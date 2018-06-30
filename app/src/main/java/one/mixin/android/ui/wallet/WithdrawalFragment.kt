@@ -174,16 +174,16 @@ class WithdrawalFragment : BaseFragment() {
     private fun observeAddr() {
         currAddr?.let {
             walletViewModel.refreshAndGetAddressById(it.addressId).observe(this, Observer {
-                it?.let { addr ->
-                    currAddr = addr
-                    refreshFee(addr)
+                it?.let {
+                    currAddr = it
+                    refreshFee(it)
                 }
             })
         }
     }
 
     private fun refreshFee(addr: Address) {
-        val bold = addr.fee + " " + asset.symbol
+        val bold = addr.fee + " " + asset.chainSymbol
         val str = try {
             val reserveDouble = addr.reserve.toDouble()
             if (reserveDouble > 0) {
