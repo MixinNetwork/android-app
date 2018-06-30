@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.core.util.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
+import com.google.gson.JsonSyntaxException
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
@@ -243,12 +244,27 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_STICKER") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
-                val sticker = stickerDao.getStickerByUnique(mediaData.albumId, mediaData.name)
-                if (sticker == null) {
-                    jobManager.addJobInBackground(RefreshStickerJob(mediaData.albumId))
+                val message = if (mediaData.stickerId == null) {
+                    // message from old version(database version under 15), reject this message
+                    if (mediaData.albumId != null && mediaData.name != null) {
+                        val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId, mediaData.name)
+                        if (sticker != null) {
+                            createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
+                                mediaData.albumId, sticker.stickerId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
+                        } else {
+                            return
+                        }
+                    } else {
+                        return
+                    }
+                } else {
+                    val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
+                    if (sticker == null) {
+                        jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
+                    }
+                    createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
+                        mediaData.albumId, mediaData.stickerId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
                 }
-                val message = createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
-                    mediaData.albumId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
             }
@@ -428,9 +444,12 @@ class DecryptMessage : Injector() {
             }
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
-            val stickerData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
-            messageDao.updateStickerMessage(stickerData.albumId, stickerData.name,
-                MessageStatus.DELIVERED.name, messageId)
+            val stickerData = try {
+                GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
+            } catch (e: JsonSyntaxException) {
+                return
+            }
+            stickerData.stickerId?.let { messageDao.updateStickerMessage(it, MessageStatus.DELIVERED.name, messageId) }
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
             val contactData = GsonHelper.customGson.fromJson(String(decoded), TransferContactData::class.java)

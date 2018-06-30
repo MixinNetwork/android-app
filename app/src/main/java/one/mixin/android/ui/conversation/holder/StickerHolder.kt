@@ -67,6 +67,11 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
             itemView.chat_time.layoutParams.width = dp160
             itemView.chat_sticker.layoutParams.height = dp160 * messageItem.assetHeight / messageItem.assetWidth
             itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
+        } else if (messageItem.assetWidth < dp100) {
+            itemView.chat_sticker.layoutParams.width = dp100
+            itemView.chat_time.layoutParams.width = dp100
+            itemView.chat_sticker.layoutParams.height = dp100 * messageItem.assetHeight / messageItem.assetWidth
+            itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
         } else {
             itemView.chat_sticker.layoutParams.width = messageItem.assetWidth
             itemView.chat_time.layoutParams.width = messageItem.assetWidth

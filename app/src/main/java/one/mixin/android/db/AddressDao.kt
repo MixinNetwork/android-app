@@ -16,4 +16,7 @@ interface AddressDao : BaseDao<Address> {
 
     @Query("DELETE FROM addresses")
     fun deleteAll()
+
+    @Query("SELECT * FROM addresses WHERE address_id = :id")
+    fun getById(id: String): LiveData<Address>
 }

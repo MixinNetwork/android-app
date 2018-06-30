@@ -239,12 +239,11 @@ inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> Unit) {
     fragmentTransaction.commit()
 }
 
-val REQUEST_IMAGE = 0x01
-val REQUEST_GALLERY = 0x02
-val REQUEST_GAMERA = 0x03
-val REQUEST_FILE = 0x04
-val REQUEST_AUDIO = 0x05
-
+const val REQUEST_IMAGE = 0x01
+const val REQUEST_GALLERY = 0x02
+const val REQUEST_CAMERA = 0x03
+const val REQUEST_FILE = 0x04
+const val REQUEST_AUDIO = 0x05
 fun Fragment.openImage(output: Uri) {
     val cameraIntents = ArrayList<Intent>()
     val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -283,7 +282,7 @@ fun Fragment.openCamera(output: Uri) {
     }
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     if (intent.resolveActivity(context!!.packageManager) != null) {
-        startActivityForResult(intent, REQUEST_GAMERA)
+        startActivityForResult(intent, REQUEST_CAMERA)
     } else {
         context?.toast(R.string.error_no_camera)
     }
@@ -379,7 +378,16 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
 
 fun Fragment.openGallery() {
     Gallery.from(this)
-        .choose(MimeType.ofAll())
+        .choose(MimeType.ofMedia())
+        .imageEngine(GlideEngine())
+        .forResult(REQUEST_GALLERY)
+}
+
+fun Fragment.openGalleryFromSticker() {
+    Gallery.from(this)
+        .choose(MimeType.ofImage())
+        .showSingleMediaType(true)
+        .preview(false)
         .imageEngine(GlideEngine())
         .forResult(REQUEST_GALLERY)
 }

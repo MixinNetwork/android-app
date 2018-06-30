@@ -28,5 +28,9 @@ data class Address(
     val label: String,
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")
-    val updatedAt: String
+    val updatedAt: String,
+    @ColumnInfo(name = "reserve")
+    val reserve: String,
+    @ColumnInfo(name = "fee")
+    val fee: String
 ) : Parcelable

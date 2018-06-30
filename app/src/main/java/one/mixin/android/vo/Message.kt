@@ -10,7 +10,7 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 @Entity(tableName = "messages",
-    indices = [Index(value = arrayOf("conversation_id")), Index(value = arrayOf("created_at")), Index(value = arrayOf("user_id"))],
+    indices = [Index(value = arrayOf("conversation_id","created_at")), Index(value = arrayOf("user_id"))],
     foreignKeys = [(ForeignKey(entity = Conversation::class,
         onDelete = CASCADE,
         parentColumns = arrayOf("conversation_id"),
@@ -106,9 +106,18 @@ class Message(
     @ColumnInfo(name = "name")
     val name: String? = null,
 
+    @Deprecated(
+        "Deprecated at database version 15",
+        ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.Message.sticker_id"),
+        DeprecationLevel.ERROR
+    )
     @SerializedName("album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String? = null,
+
+    @SerializedName("sticker_id")
+    @ColumnInfo(name = "sticker_id")
+    val stickerId: String? = null,
 
     @SerializedName("shared_user_id")
     @ColumnInfo(name = "shared_user_id")
@@ -119,7 +128,7 @@ class Message(
 
     @Deprecated(
         "Replace with mediaMimeType",
-        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Messages.mediaMimeType"),
+        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Message.mediaMimeType"),
         DeprecationLevel.ERROR
     )
     @SerializedName("media_mine_type")
@@ -288,12 +297,14 @@ fun createStickerMessage(
     userId: String,
     category: String,
     content: String?,
-    albumId: String,
-    stickerName: String,
+    albumId: String?,
+    stickerId: String,
+    stickerName: String?,
     status: MessageStatus,
     createdAt: String
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
+    .setStickerId(stickerId)
     .setAlbumId(albumId)
     .setName(stickerName)
     .build()

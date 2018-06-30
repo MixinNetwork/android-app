@@ -13,9 +13,9 @@ import android.text.TextWatcher
 import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
 import androidx.core.content.edit
-import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_withdrawal.*
 import kotlinx.android.synthetic.main.layout_withdrawal_addr_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -30,24 +30,18 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AddressAdapter
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.support.v4.dip
 import org.jetbrains.anko.textColor
-import org.jetbrains.anko.uiThread
 import javax.inject.Inject
 
 class WithdrawalFragment : BaseFragment() {
 
     companion object {
         const val TAG = "WithdrawalFragment"
-        const val POS_PB = 0
-        const val POS_TEXT = 1
-        const val POS_RETRY = 2
 
         const val POS_ADD = 0
         const val POS_RV = 1
@@ -115,16 +109,18 @@ class WithdrawalFragment : BaseFragment() {
         }
         title_view.right_animator.isEnabled = false
         title_view.right_animator.setOnClickListener {
-            val amount = amount_et.text.toString()
-            val withdrawalItem = WithdrawalBottomSheetDialogFragment.WithdrawalItem(currAddr!!.publicKey,
-                amount.toDot(), memo_et.text.toString(), currAddr!!.addressId, currAddr!!.label)
-            val bottom = WithdrawalBottomSheetDialogFragment.newInstance(withdrawalItem, asset)
-            bottom.setCallback(object : WithdrawalBottomSheetDialogFragment.Callback {
-                override fun onSuccess() {
-                    fragmentManager?.popBackStackImmediate()
-                }
-            })
-            bottom.show(fragmentManager, WithdrawalBottomSheetDialogFragment.TAG)
+            currAddr?.let {
+                val amount = amount_et.text.toString()
+                val withdrawalItem = WithdrawalBottomSheetDialogFragment.WithdrawalItem(it.publicKey,
+                    amount.toDot(), memo_et.text.toString(), it.addressId, it.label)
+                val bottom = WithdrawalBottomSheetDialogFragment.newInstance(withdrawalItem, asset)
+                bottom.setCallback(object : WithdrawalBottomSheetDialogFragment.Callback {
+                    override fun onSuccess() {
+                        fragmentManager?.popBackStackImmediate()
+                    }
+                })
+                bottom.show(fragmentManager, WithdrawalBottomSheetDialogFragment.TAG)
+            }
             addrBottomSheet.dismiss()
         }
         balance_tv.text = "${getString(R.string.balance)} \n${asset.balance} ${asset.symbol}"
@@ -134,6 +130,7 @@ class WithdrawalFragment : BaseFragment() {
             if (it == null || it.isEmpty()) {
                 addrView.addr_va.displayedChild = POS_ADD
                 addr_tv.text = ""
+                fee_tv.visibility = GONE
             } else {
                 addrView.addr_va.displayedChild = POS_RV
                 val defaultAddrId = defaultSharedPreferences.getString(asset.assetId, null)
@@ -145,6 +142,7 @@ class WithdrawalFragment : BaseFragment() {
                     it[0]
                 }
                 currAddr = addr
+                observeAddr()
                 setAddrTv(addr)
             }
             adapter.addresses = it?.toMutableList()
@@ -165,8 +163,6 @@ class WithdrawalFragment : BaseFragment() {
                 addrBottomSheet.show()
             }
         }
-        fee_retry_tv.setOnClickListener { getFee() }
-        getFee()
     }
 
     @SuppressLint("SetTextI18n")
@@ -175,41 +171,35 @@ class WithdrawalFragment : BaseFragment() {
         defaultSharedPreferences.edit { putString(addr.assetId, addr.addressId) }
     }
 
-    private fun getFee() {
-        fee_va.displayedChild = POS_PB
-        walletViewModel.getFeeAndRefreshAddresses(asset.assetId).autoDisposable(scopeProvider).subscribe({ r ->
-            if (r.isSuccess) {
-                fee_va?.displayedChild = POS_TEXT
-                feeSuccess = true
-                r.data?.let {
-                    doAsync {
-                        val a = walletViewModel.checkAsset(it.assetId)
-                        if (a == null) {
-                            fee_va?.displayedChild = POS_RETRY
-                            ErrorHandler.handleMixinError(r.errorCode)
-                            return@doAsync
-                        } else {
-                            val bold = it.amount + " " + a.symbol
-                            val str = getString(R.string.withdrawal_fee, bold, asset.symbol)
-                            val ssb = SpannableStringBuilder(str)
-                            val start = str.indexOf(bold)
-                            ssb.setSpan(StyleSpan(Typeface.BOLD), start,
-                                start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-                            uiThread {
-                                fee_tv?.text = ssb
-                            }
-                        }
-                    }
+    private fun observeAddr() {
+        currAddr?.let {
+            walletViewModel.refreshAndGetAddressById(it.addressId).observe(this, Observer {
+                it?.let { addr ->
+                    currAddr = addr
+                    refreshFee(addr)
                 }
+            })
+        }
+    }
+
+    private fun refreshFee(addr: Address) {
+        val bold = addr.fee + " " + asset.symbol
+        val str = try {
+            val reserveDouble = addr.reserve.toDouble()
+            if (reserveDouble > 0) {
+                getString(R.string.withdrawal_fee_with_reserve, bold, asset.symbol, asset.name, addr.reserve, asset.symbol)
             } else {
-                fee_va?.displayedChild = POS_RETRY
-                ErrorHandler.handleMixinError(r.errorCode)
+                getString(R.string.withdrawal_fee, bold, asset.name)
             }
-        }, {
-            fee_va?.displayedChild = POS_RETRY
-            ErrorHandler.handleError(it)
-        })
+        } catch (e: NumberFormatException) {
+            getString(R.string.withdrawal_fee, bold, asset.name)
+        }
+        val ssb = SpannableStringBuilder(str)
+        val start = str.indexOf(bold)
+        ssb.setSpan(StyleSpan(Typeface.BOLD), start,
+            start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        fee_tv?.visibility = View.VISIBLE
+        fee_tv?.text = ssb
     }
 
     private fun canNext(s: Editable) = s.isNotEmpty() && addr_tv.text.isNotEmpty() && feeSuccess

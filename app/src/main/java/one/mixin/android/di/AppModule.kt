@@ -244,6 +244,10 @@ internal class AppModule {
 
     @Singleton
     @Provides
+    fun providesStickerRelationshipDao(db: MixinDatabase) = db.stickerRelationshipDao()
+
+    @Singleton
+    @Provides
     fun provideContentResolver(app: Application) = app.contentResolver as ContentResolver
 
     @Provides

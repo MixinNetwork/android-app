@@ -18,6 +18,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.dip
 import kotlin.math.min
 
@@ -43,7 +44,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        val isGif = messageItem.mediaMimeType.equals("image/gif", true)
+        val isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)

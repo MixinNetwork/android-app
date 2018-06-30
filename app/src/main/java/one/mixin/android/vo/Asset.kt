@@ -45,5 +45,7 @@ data class Asset(
     val changeBtc: String,
     @SerializedName("hidden")
     @ColumnInfo(name = "hidden")
-    var hidden: Boolean?
+    var hidden: Boolean?,
+    @ColumnInfo(name = "confirmations")
+    val confirmations: Int
 ) : Parcelable

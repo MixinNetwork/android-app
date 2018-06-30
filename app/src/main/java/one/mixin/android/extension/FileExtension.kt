@@ -22,6 +22,7 @@ import android.util.Size
 import android.webkit.MimeTypeMap
 import androidx.core.net.toUri
 import one.mixin.android.MixinApplication
+import one.mixin.android.widget.gallery.MimeType
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -71,7 +72,11 @@ fun getMimeType(uri: Uri): String? {
     if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
         type = MixinApplication.get().contentResolver.getType(uri)
     } else {
-        val extension = MimeTypeMap.getFileExtensionFromUrl(uri.getFilePath(MixinApplication.get())!!)
+        val extension = try {
+            MimeTypeMap.getFileExtensionFromUrl(uri.getFilePath())
+        } catch (e: Exception) {
+            null
+        }
         if (extension != null) {
             type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         }
@@ -80,10 +85,9 @@ fun getMimeType(uri: Uri): String? {
 }
 
 fun String.isImageSupport(): Boolean {
-    return this.equals("image/gif", true) ||
-        this.equals("image/jpeg", true) ||
-        this.equals("image/png", true) ||
-        this.equals("image/jpg", true)
+    return this.equals(MimeType.GIF.toString(), true) ||
+        this.equals(MimeType.JPEG.toString(), true) ||
+        this.equals(MimeType.PNG.toString(), true)
 }
 
 fun getImageSize(file: File): Size {
@@ -362,7 +366,7 @@ fun String.decodeBase64(): ByteArray {
 
 fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String? {
     val stream = ByteArrayOutputStream()
-    if (mimeType == "image/png") {
+    if (mimeType == MimeType.PNG.toString()) {
         this.compress(Bitmap.CompressFormat.PNG, bitmapQuality, stream)
     } else {
         this.compress(Bitmap.CompressFormat.JPEG, bitmapQuality, stream)

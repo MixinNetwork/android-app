@@ -38,6 +38,7 @@ import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
@@ -48,10 +49,11 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
-import one.mixin.android.extension.REQUEST_GAMERA
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.async
 import one.mixin.android.extension.createImageTemp
@@ -62,9 +64,11 @@ import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openCamera
@@ -102,6 +106,7 @@ import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -111,6 +116,7 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canNotForward
@@ -143,6 +149,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     OpusAudioRecorder.Callback {
 
     companion object {
+        const val TAG = "ConversationFragment"
+
         const val CONVERSATION_ID = "conversation_id"
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
@@ -309,10 +317,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             tool_view.copy_iv.visibility = View.GONE
                         }
+                        tool_view.add_sticker_iv.visibility = VISIBLE
                     }
                     else -> {
                         tool_view.forward_iv.visibility = View.VISIBLE
                         tool_view.copy_iv.visibility = View.GONE
+                        tool_view.add_sticker_iv.visibility = GONE
                     }
                 }
                 if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
@@ -735,6 +745,44 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             ForwardActivity.show(context!!, list)
             closeTool()
         }
+        tool_view.add_sticker_iv.setOnClickListener {
+            val messageItem = chatAdapter.selectSet.valueAt(0)
+            messageItem?.let { m ->
+                val isSticker = messageItem.type.endsWith("STICKER")
+                if (isSticker && m.stickerId != null) {
+                    doAsync {
+                        val request = StickerAddRequest(stickerId = m.stickerId)
+                        chatViewModel.addSticker(request)
+                            .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
+                                if (r != null && r.isSuccess) {
+                                    val personalAlbum = chatViewModel.getPersonalAlbums()
+                                    if (personalAlbum == null) {  //not add any personal sticker yet
+                                        chatViewModel.refreshStickerAlbums()
+                                    } else {
+                                        chatViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
+                                    }
+                                    uiThread { requireContext().toast(R.string.sticker_add_success) }
+                                }
+                            }, {
+                                ErrorHandler.handleError(it)
+                                uiThread { requireContext().toast(R.string.sticker_add_failed) }
+                            })
+                    }
+                } else {
+                    val url = m.mediaUrl
+                    url?.let {
+                        val uri = url.toUri()
+                        val mimeType = getMimeType(uri)
+                        if (mimeType?.isImageSupport() == true) {
+                            requireActivity().addFragment(this@ConversationFragment, StickerAddFragment.newInstance(it, m.stickerId), StickerAddFragment.TAG)
+                        } else {
+                            requireContext().toast(R.string.sticker_add_invalid_format)
+                        }
+                    }
+                }
+            }
+            closeTool()
+        }
         chat_control.chat_et.requestFocus()
 
         media_layout.round(dip(8))
@@ -1049,10 +1097,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendStickerMessage(albumId: String, name: String) {
+    private fun sendStickerMessage(stickerId: String) {
         createConversation {
             chatViewModel.sendStickerMessage(conversationId, sender,
-                TransferStickerData(albumId, name), isPlainMessage())
+                TransferStickerData(stickerId), isPlainMessage())
             markRead()
             scrollTo(0)
         }
@@ -1240,8 +1288,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 stickerAnim(curH, targetH)
             }
 
-            override fun onStickerClick(albumId: String, name: String) {
-                sendStickerMessage(albumId, name)
+            override fun onStickerClick(stickerId: String) {
+                sendStickerMessage(stickerId)
                 if (sticker_container.height != input_layout.keyboardHeight) {
                     stickerAnim(sticker_container.height, input_layout.keyboardHeight)
                 }
@@ -1362,7 +1410,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     sendImageMessage(it)
                 }
             }
-        } else if (requestCode == REQUEST_GAMERA && resultCode == Activity.RESULT_OK) {
+        } else if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
             imageUri?.let { imageUri ->
                 showPreview(imageUri) { sendImageMessage(it) }
             }

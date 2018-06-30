@@ -30,6 +30,7 @@ import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import org.whispersystems.libsignal.util.guava.Optional
 import java.io.File
@@ -136,13 +137,13 @@ class AttachmentDownloadJob(private val message: Message)
                         FileInputStream(destination)
                     }
                     val imageFile = when {
-                        message.mediaMimeType.equals("image/png", true) -> {
+                        message.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
                             MixinApplication.get().getImagePath().createImageTemp("REC", ".png")
                         }
-                        message.mediaMimeType.equals("image/gif", true) -> {
+                        message.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
                             MixinApplication.get().getImagePath().createGifTemp()
                         }
-                        message.mediaMimeType.equals("image/webp", true) -> {
+                        message.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
                             MixinApplication.get().getImagePath().createWebpTemp()
                         }
                         else -> {

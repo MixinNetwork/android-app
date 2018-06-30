@@ -18,6 +18,7 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.bitmap2String
@@ -40,6 +41,8 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendMessageJob
@@ -62,6 +65,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
@@ -74,6 +78,7 @@ import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import java.io.File
 import java.io.FileInputStream
@@ -153,9 +158,11 @@ internal constructor(
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferStickerData).toByteArray())
-        val message = createStickerMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
-            encoded, transferStickerData.albumId, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
-        jobManager.addJobInBackground(SendMessageJob(message))
+        transferStickerData.stickerId?.let {
+            val message = createStickerMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
+                encoded, transferStickerData.albumId, it, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
+            jobManager.addJobInBackground(SendMessageJob(message))
+        }
     }
 
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean) {
@@ -200,7 +207,7 @@ internal constructor(
             MixinApplication.get().toast(R.string.error_format)
             return null
         }
-        if (mimeType == "image/gif") {
+        if (mimeType == MimeType.GIF.toString()) {
             return Flowable.just(uri).map {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp()
                 gifFile.copyFromInputStream(FileInputStream(uri.getFilePath(MixinApplication.get())))
@@ -232,7 +239,7 @@ internal constructor(
 
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, imageUrl,
-                    "image/jpeg", length, size.width, size.height, thumbnail, null, null,
+                    MimeType.JPEG.toString(), length, size.width, size.height, thumbnail, null, null,
                     nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
@@ -289,7 +296,7 @@ internal constructor(
                             null, MediaStatus.PENDING, MessageStatus.SENDING)))
                     }
                     message.category.endsWith("_STICKER") -> {
-                        sendStickerMessage(conversationId, sender, TransferStickerData(message.albumId!!, message.name!!), isPlain)
+                        sendStickerMessage(conversationId, sender, TransferStickerData(name = message.name, stickerId = message.stickerId!!), isPlain)
                     }
                     message.category.endsWith("_AUDIO") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
@@ -380,16 +387,20 @@ internal constructor(
 
     fun transfer(transferRequest: TransferRequest) = assetRepository.transfer(transferRequest)
 
-    fun getStickerAlbums() = accountRepository.getStickerAlbums()
+    fun getSystemAlbums() = accountRepository.getSystemAlbums()
 
-    fun getStickers(id: String) = accountRepository.getStickers(id)
+    fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
+
+    fun observeStickers(id: String) = accountRepository.observeStickers(id)
+
+    fun observePersonalStickers() = accountRepository.observePersonalStickers()
 
     fun recentStickers() = accountRepository.recentUsedStickers()
 
-    fun updateStickerUsedAt(albumId: String, name: String) {
+    fun updateStickerUsedAt(stickerId: String) {
         doAsync {
             val cur = System.currentTimeMillis()
-            accountRepository.updateUsedAt(albumId, name, cur.toString())
+            accountRepository.updateUsedAt(stickerId, cur.toString())
         }
     }
 
@@ -404,4 +415,16 @@ internal constructor(
     fun findAppById(id: String) = userRepository.findAppById(id)
 
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+
+    fun addSticker(stickerAddRequest: StickerAddRequest) = accountRepository.addSticker(stickerAddRequest)
+
+    fun addStickerLocal(sticker: Sticker, albumId: String) = accountRepository.addStickerLocal(sticker, albumId)
+
+    fun removeStickers(ids: List<String>) {
+        jobManager.addJobInBackground(RemoveStickersJob(ids))
+    }
+
+    fun refreshStickerAlbums() {
+        jobManager.addJobInBackground(RefreshStickerAlbumJob())
+    }
 }

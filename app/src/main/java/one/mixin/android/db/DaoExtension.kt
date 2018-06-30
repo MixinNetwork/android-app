@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import android.arch.persistence.room.Transaction
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 
 @Transaction
@@ -27,6 +28,18 @@ fun UserDao.updateRelationship(user: User, relationship: String) {
         user.relationship = relationship
         update(user)
     }
+}
+
+@Transaction
+fun StickerDao.insertUpdate(s: Sticker) {
+    val sticker = getStickerByUnique(s.stickerId)
+    if (sticker != null) {
+        s.lastUseAt = sticker.lastUseAt
+    }
+    if (s.createdAt == "") {
+        s.createdAt = System.currentTimeMillis().toString()
+    }
+    insert(s)
 }
 
 @Transaction
