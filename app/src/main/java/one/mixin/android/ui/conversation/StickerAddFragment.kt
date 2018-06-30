@@ -133,14 +133,20 @@ class StickerAddFragment : BaseFragment() {
                     val mimeType = getMimeType(uri)
                     if (mimeType?.isImageSupport() != true) {
                         dialog?.dismiss()
-                        uiThread { requireContext().toast(R.string.sticker_add_invalid_format) }
+                        uiThread {
+                            requireContext().toast(R.string.sticker_add_invalid_format)
+                            requireFragmentManager().popBackStackImmediate()
+                        }
                         return@doAsync
                     }
                     val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
                         val f = File(uri.getFilePath(requireContext()))
                         if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
                             dialog?.dismiss()
-                            uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
+                            uiThread {
+                                requireContext().toast(R.string.sticker_add_invalid_size)
+                                requireFragmentManager().popBackStackImmediate()
+                            }
                             return@doAsync
                         }
                         val byteArray = Glide.with(MixinApplication.appContext)
@@ -160,7 +166,10 @@ class StickerAddFragment : BaseFragment() {
                             .get(10, TimeUnit.SECONDS)
                         if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
                             dialog?.dismiss()
-                            uiThread { requireContext().toast(R.string.sticker_add_invalid_size) }
+                            uiThread {
+                                requireContext().toast(R.string.sticker_add_invalid_size)
+                                requireFragmentManager().popBackStackImmediate()
+                            }
                             return@doAsync
                         }
                         if (!checkRatio(bitmap)) return@doAsync
@@ -171,7 +180,10 @@ class StickerAddFragment : BaseFragment() {
                     stickerAddRequest
                 } catch (e: Exception) {
                     dialog?.dismiss()
-                    uiThread { requireContext().toast(R.string.sticker_add_failed) }
+                    uiThread {
+                        requireContext().toast(R.string.sticker_add_failed)
+                        requireFragmentManager().popBackStackImmediate()
+                    }
                     null
                 }
             }) ?: return@doAsync
@@ -201,7 +213,10 @@ class StickerAddFragment : BaseFragment() {
         val ratio = bitmap.width / bitmap.height.toFloat()
         if (ratio < 9 / 16f || ratio > 16f / 9) {
             dialog?.dismiss()
-            onUiThread { requireContext().toast(R.string.sticker_add_invalid_ratio) }
+            onUiThread {
+                requireContext().toast(R.string.sticker_add_invalid_ratio)
+                requireFragmentManager().popBackStackImmediate()
+            }
             return false
         }
         return true

@@ -155,6 +155,7 @@ class WithdrawalFragment : BaseFragment() {
                 adapter.setAddrListener(object : AddressAdapter.SimpleAddressListener() {
                     override fun onAddrClick(addr: Address) {
                         currAddr = addr
+                        walletViewModel.refreshAddressById(addr.addressId)
                         setAddrTv(addr)
                         adapter.notifyDataSetChanged()
                         addrBottomSheet.dismiss()
@@ -173,10 +174,10 @@ class WithdrawalFragment : BaseFragment() {
 
     private fun observeAddr() {
         currAddr?.let {
-            walletViewModel.refreshAndGetAddressById(it.addressId).observe(this, Observer {
-                it?.let {
-                    currAddr = it
-                    refreshFee(it)
+            walletViewModel.observeAddressById(it.addressId).observe(this, Observer {
+                it?.let { addr ->
+                    currAddr = addr
+                    refreshFee(addr)
                 }
             })
         }
