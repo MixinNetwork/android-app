@@ -343,6 +343,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     } else {
                         tool_view.copy_iv.visibility = View.GONE
                     }
+                    if (messageItem.type == MessageCategory.SIGNAL_STICKER.name ||
+                        messageItem.type == MessageCategory.PLAIN_STICKER.name) {
+                        tool_view.add_sticker_iv.visibility = VISIBLE
+                    } else {
+                        tool_view.add_sticker_iv.visibility = GONE
+                    }
                     if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
                         tool_view.forward_iv.visibility = View.GONE
                     } else {
