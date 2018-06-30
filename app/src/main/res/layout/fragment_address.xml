@@ -91,24 +91,23 @@
             android:layout_marginTop="8dp"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="12dp"
             android:gravity="center"
             android:background="@drawable/bg_code"
-            android:paddingBottom="3dp"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:paddingTop="3dp"
+            android:paddingBottom="6dp"
+            android:paddingTop="6dp"
             android:ellipsize="middle"
             android:singleLine="true"
             android:textColor="@color/text_black"
-            android:textSize="11sp" />
+            android:textSize="12sp" />
 
-        <TextView
+    </RelativeLayout>
+
+    <TextView
             android:id="@+id/confirm_tv"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/key_code"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="24dp"
+            android:layout_gravity="center"
             android:layout_marginTop="8dp"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
@@ -121,6 +120,5 @@
             android:ellipsize="middle"
             android:singleLine="true"
             android:textColor="@color/text_black"
-            android:textSize="11sp" />
-    </RelativeLayout>
+            android:textSize="12sp" />
 </LinearLayout>

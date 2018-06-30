@@ -65,7 +65,7 @@ class AddressFragment : Fragment() {
             name.text = user.fullName
             user_id.text = context?.getString(R.string.contact_mixin_id, user.identityNumber)
         }
-        address_layout.setOnClickListener {
+        key_code.setOnClickListener {
             context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.publicKey)
             context?.toast(R.string.copy_success)
         }
