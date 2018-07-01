@@ -4,7 +4,6 @@ import android.util.Log
 import androidx.core.util.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
-import com.google.gson.JsonSyntaxException
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
@@ -245,7 +244,6 @@ class DecryptMessage : Injector() {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
                 val message = if (mediaData.stickerId == null) {
-                    // message from old version(database version under 15), reject this message
                     if (mediaData.albumId != null && mediaData.name != null) {
                         val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId, mediaData.name)
                         if (sticker != null) {
@@ -444,10 +442,12 @@ class DecryptMessage : Injector() {
             }
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
-            val stickerData = try {
-                GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
-            } catch (e: JsonSyntaxException) {
-                return
+            val stickerData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
+            if (stickerData.stickerId != null) {
+                val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
+                if (sticker == null) {
+                    jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
+                }
             }
             stickerData.stickerId?.let { messageDao.updateStickerMessage(it, MessageStatus.DELIVERED.name, messageId) }
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
