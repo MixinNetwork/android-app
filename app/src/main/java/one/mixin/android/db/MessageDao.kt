@@ -31,7 +31,7 @@ interface MessageDao : BaseDao<Message> {
         "LEFT JOIN users u1 ON m.participant_id = u1.user_id " +
         "LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id " +
         "LEFT JOIN assets a ON s.asset_id = a.asset_id " +
-        "LEFT JOIN stickers st ON st.sticker_id = m.sticker_id OR (st.album_id = m.album_id AND st.name = m.name)" +
+        "LEFT JOIN stickers st ON st.sticker_id = m.sticker_id " +
         "LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink " +
         "LEFT JOIN users su ON m.shared_user_id = su.user_id " +
         "WHERE m.conversation_id = :conversationId " +

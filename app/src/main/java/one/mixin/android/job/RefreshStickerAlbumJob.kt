@@ -2,6 +2,8 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
@@ -29,6 +31,11 @@ class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
                         stickerRelationshipDao.insert(StickerRelationship(a.albumId, s.stickerId))
                     }
                 }
+            }
+            val sp = applicationContext.defaultSharedPreferences
+            if (!sp.getBoolean("UpgradeMessageSticker", false)) {
+                stickerRelationshipDao.updateMessageStickerId()
+                sp.putBoolean("UpgradeMessageSticker", true)
             }
         }
     }

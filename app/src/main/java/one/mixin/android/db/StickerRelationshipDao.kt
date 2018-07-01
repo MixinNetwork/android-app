@@ -20,4 +20,12 @@ interface StickerRelationshipDao : BaseDao<StickerRelationship> {
 
     @Query("DELETE FROM sticker_relationships WHERE sticker_id = :stickerId")
     fun deleteByStickerId(stickerId: String)
+
+    @Query("UPDATE messages SET sticker_id = (" +
+        "                SELECT s.sticker_id FROM stickers s " +
+        "                    INNER JOIN sticker_relationships sa ON sa.sticker_id = s.sticker_id " +
+        "                    INNER JOIN sticker_albums a ON a.album_id = sa.album_id " +
+        "                    WHERE a.album_id = messages.album_id AND s.name = messages.name " +
+        "            ) WHERE category IN ('SIGNAL_STICKER','PLAIN_STICKER') AND sticker_id IS NULL")
+    fun updateMessageStickerId()
 }
