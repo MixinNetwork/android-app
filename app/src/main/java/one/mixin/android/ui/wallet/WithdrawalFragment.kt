@@ -64,7 +64,6 @@ class WithdrawalFragment : BaseFragment() {
         arguments!!.getParcelable(ARGS_ASSET) as AssetItem
     }
 
-    private var feeSuccess = false
     private var currAddr: Address? = null
     private val adapter: AddressAdapter by lazy { AddressAdapter() }
 
@@ -203,7 +202,7 @@ class WithdrawalFragment : BaseFragment() {
         fee_tv?.text = ssb
     }
 
-    private fun canNext(s: Editable) = s.isNotEmpty() && addr_tv.text.isNotEmpty() && feeSuccess
+    private fun canNext(s: Editable) = s.isNotEmpty() && addr_tv.text.isNotEmpty()
 
     private val mWatcher: TextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
