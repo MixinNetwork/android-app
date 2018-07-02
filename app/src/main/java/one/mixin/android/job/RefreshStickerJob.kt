@@ -19,7 +19,7 @@ class RefreshStickerJob(private val stickerId: String) : BaseJob(Params(PRIORITY
             val s = response.data as Sticker
             stickerDao.insertUpdate(s)
             try {
-                Glide.with(applicationContext).load(s.assetUrl).downloadOnly(s.assetWidth, s.assetHeight)
+                Glide.with(applicationContext).load(s.assetUrl).submit(s.assetWidth, s.assetHeight)
             } catch (e: Exception) {
             }
         }
