@@ -175,7 +175,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             bottom.show(fragmentManager, TransferBottomSheetDialogFragment.TAG)
             bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
-                    this@TransferFragment.activity?.onBackPressed()
+                    dialog?.dismiss()
                 }
             })
         }

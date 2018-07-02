@@ -21,6 +21,7 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -57,7 +58,7 @@ class StickerAddFragment : BaseFragment() {
         const val MIN_SIZE = 64
         const val MAX_SIZE = 512
         const val MIN_FILE_SIZE = 1024
-        const val MAX_FILE_SIZE = 1024 * 1024
+        const val MAX_FILE_SIZE = 800 * 1024
 
         fun newInstance(url: String, fromManagement: Boolean = false) = StickerAddFragment().apply {
             arguments = bundleOf(
@@ -73,6 +74,7 @@ class StickerAddFragment : BaseFragment() {
     private val dp100 by lazy {
         requireContext().dpToPx(100f)
     }
+    private var disposable: Disposable? = null
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -126,6 +128,11 @@ class StickerAddFragment : BaseFragment() {
                 sticker_iv.loadImage(url)
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        disposable?.dispose()
     }
 
     private fun addSticker() {
@@ -189,7 +196,7 @@ class StickerAddFragment : BaseFragment() {
                 null
             } ?: return@doAsync
 
-            stickerViewModel.addSticker(request)
+            disposable = stickerViewModel.addSticker(request)
                 .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
                     if (r != null && r.isSuccess) {
                         val personalAlbum = stickerViewModel.getPersonalAlbums()
@@ -222,7 +229,7 @@ class StickerAddFragment : BaseFragment() {
 
     private fun checkRatio(bitmap: Bitmap): Boolean {
         val ratio = bitmap.width / bitmap.height.toFloat()
-        if (ratio < 9 / 16f || ratio > 16f / 9) {
+        if (ratio < 9 / 16f || ratio > 16 / 9f) {
             dialog?.dismiss()
             onUiThread {
                 requireContext().toast(R.string.sticker_add_invalid_ratio)

@@ -244,14 +244,10 @@ class DecryptMessage : Injector() {
                 val decoded = Base64.decode(plainText)
                 val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
                 val message = if (mediaData.stickerId == null) {
-                    if (mediaData.albumId != null && mediaData.name != null) {
-                        val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId, mediaData.name)
-                        if (sticker != null) {
-                            createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
-                                mediaData.albumId, sticker.stickerId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
-                        } else {
-                            return
-                        }
+                    val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
+                    if (sticker != null) {
+                        createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
+                            mediaData.albumId, sticker.stickerId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
                     } else {
                         return
                     }
