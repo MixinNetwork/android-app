@@ -14,6 +14,7 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.view.updateLayoutParams
+import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
@@ -82,6 +83,15 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             (dialog as BottomSheet).fakeDismiss()
             menu.show()
         }
+        contentView.avatar.setOnClickListener {
+            user.avatarUrl?.let {url ->
+                doAsync {
+                    val bitmap = Glide.with(this@UserBottomSheetDialogFragment).asBitmap().load(url).submit().get()
+                    uiThread { AvatarActivity.show(requireActivity(), url, contentView.avatar, bitmap) }
+                }
+            }
+            dialog?.dismiss()
+        }
 
         bottomViewModel.findUserById(user.userId).observe(this, Observer { u ->
             if (u == null) return@Observer
@@ -106,10 +116,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        contentView.detail_tv.setAutoLinkOnClickListener({ _, url ->
+        contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
             openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
             dialog?.dismiss()
-        })
+        }
 
         bottomViewModel.refreshUser(user.userId)
     }
@@ -131,7 +141,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         menu = AlertDialog.Builder(context!!)
-            .setItems(choices.toTypedArray(), { _, which ->
+            .setItems(choices.toTypedArray()) { _, which ->
                 when (choices[which]) {
                     getString(R.string.contact_other_share) -> {
                         ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
@@ -155,7 +165,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         updateRelationship(UserRelationship.STRANGER.name)
                     }
                 }
-            }).create()
+            }.create()
         menu.setOnDismissListener {
             if (!keepDialog) {
                 dialog?.dismiss()
@@ -275,12 +285,12 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val nameDialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setTitle(R.string.profile_modify_name)
             .setView(frameLayout)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 bottomViewModel.updateRelationship(RelationshipRequest(user.userId,
                     RelationshipAction.UPDATE.name, editText.text.toString()))
                 dialog.dismiss()
-            })
+            }
             .show()
         nameDialog.setOnDismissListener { dialog?.dismiss() }
         nameDialog.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
@@ -296,25 +306,25 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         var whichItem = 0
         val alert = AlertDialog.Builder(context!!)
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.cancel, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
-            })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
+            }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     bottomViewModel.mute(it.userId, user.userId, duration.toLong())
                     context?.toast(getString(R.string.contact_mute_title) + " ${user.fullName} " + choices[whichItem])
                 }
                 dialog.dismiss()
-            })
-            .setSingleChoiceItems(choices, 0, { _, which ->
+            }
+            .setSingleChoiceItems(choices, 0) { _, which ->
                 whichItem = which
                 when (which) {
                     0 -> duration = MUTE_8_HOURS
                     1 -> duration = MUTE_1_WEEK
                     2 -> duration = MUTE_1_YEAR
                 }
-            })
+            }
             .show()
         alert.setOnDismissListener { dialog?.dismiss() }
     }
