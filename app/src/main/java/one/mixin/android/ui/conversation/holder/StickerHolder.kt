@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.item_chat_sticker.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
+import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
@@ -19,7 +20,9 @@ import org.jetbrains.anko.textColorResource
 class StickerHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
     init {
+        val radius = itemView.context.dpToPx(4f).toFloat()
         itemView.chat_time.textColorResource = R.color.color_chat_date
+        itemView.chat_sticker.round(radius)
     }
 
     private val dp160 by lazy {
