@@ -1,14 +1,14 @@
 package one.mixin.android.job
 
-import android.util.ArrayMap
 import com.birbit.android.jobqueue.Job
 import com.birbit.android.jobqueue.JobManager
 import com.birbit.android.jobqueue.config.Configuration
+import java.util.concurrent.ConcurrentHashMap
 
 class MixinJobManager(configuration: Configuration) : JobManager(configuration) {
 
-    private val map: ArrayMap<String, MixinJob> by lazy {
-        ArrayMap<String, MixinJob>()
+    private val map: ConcurrentHashMap<String, MixinJob> by lazy {
+        ConcurrentHashMap<String, MixinJob>()
     }
 
     fun saveJob(job: Job) {
