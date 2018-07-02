@@ -28,7 +28,7 @@ import one.mixin.android.Constants.MY_QR
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.openPermissionSetting
@@ -142,7 +142,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     .subscribe({ granted ->
                         if (granted) {
                             doAsync {
-                                val outFile = ctx.getImagePath().createImageTemp()
+                                val outFile = ctx.getPublicPictyresPath().createImageTemp(noMedia = false)
                                 val b = Bitmap.createBitmap(contentView.bottom_ll.width, contentView.bottom_ll.height, Bitmap.Config.ARGB_8888)
                                 val c = Canvas(b)
                                 contentView.bottom_ll.draw(c)

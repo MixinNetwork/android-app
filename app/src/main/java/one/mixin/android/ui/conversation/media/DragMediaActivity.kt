@@ -13,7 +13,6 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPager
@@ -26,6 +25,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
+import androidx.core.net.toUri
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import com.bumptech.glide.load.DataSource
@@ -46,6 +46,8 @@ import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayHeight
@@ -62,7 +64,6 @@ import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.save
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.repository.ConversationRepository
@@ -86,7 +87,7 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.io.File
-import java.io.FileNotFoundException
+import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -167,19 +168,16 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {
-                            val outFile = this@DragMediaActivity.getPublicPictyresPath().createImageTemp()
-                            findViewPagerChildByTag {
-                                val imageView = it.getChildAt(0) as ImageView
-                                (imageView.drawable as BitmapDrawable).bitmap.save(outFile)
-                                try {
-                                    MediaStore.Images.Media.insertImage(contentResolver,
-                                        outFile.absolutePath, outFile.name, null)
-                                } catch (e: FileNotFoundException) {
-                                    e.printStackTrace()
+                            pagerAdapter.list?.let {
+                                val item = it[view_pager.currentItem]
+                                val file = File(item.mediaUrl?.toUri()?.getFilePath())
+                                val outFile = if (item.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
+                                    this@DragMediaActivity.getPublicPictyresPath().createGifTemp(false)
+                                } else {
+                                    this@DragMediaActivity.getPublicPictyresPath().createImageTemp(noMedia = false)
                                 }
-
+                                outFile.copyFromInputStream(FileInputStream(file))
                                 sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-
                                 uiThread { toast(R.string.save_success) }
                             }
                         }
@@ -195,19 +193,23 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             findViewPagerChildByTag {
                 val imageView = it.getChildAt(0) as ImageView
                 doAsync {
-                    val url = (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
-                    uiThread {
-                        if (isDestroyed) {
-                            return@uiThread
-                        }
-                        if (url != null) {
-                            openUrl(url, supportFragmentManager) {
-                                QrScanBottomSheetDialogFragment.newInstance(url)
-                                    .show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                    if (imageView.drawable is BitmapDrawable) {
+                        val url = (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
+                        uiThread {
+                            if (isDestroyed) {
+                                return@uiThread
                             }
-                        } else {
-                            toast(R.string.can_not_recognize)
+                            if (url != null) {
+                                openUrl(url, supportFragmentManager) {
+                                    QrScanBottomSheetDialogFragment.newInstance(url)
+                                        .show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                                }
+                            } else {
+                                toast(R.string.can_not_recognize)
+                            }
                         }
+                    } else {
+                        toast(R.string.can_not_recognize)
                     }
                 }
             }

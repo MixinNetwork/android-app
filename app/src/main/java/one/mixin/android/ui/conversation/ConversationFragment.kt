@@ -892,18 +892,29 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                 chatAdapter.unreadIndex = index
                                             }
                                             chatAdapter.hasBottomView = false
-                                            chatAdapter.submitList(data)
-                                            val action = {
-                                                if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                                                        ?.getBoolean(conversationId, false) == true) {
-                                                    showGroupNotification = true
-                                                    showAlert(0)
-                                                }
-                                            }
                                             if (index > 0) {
+                                                val action = {
+                                                    if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                                                            ?.getBoolean(conversationId, false) == true) {
+                                                        showGroupNotification = true
+                                                        showAlert(0)
+                                                    }
+                                                    chat_rv.visibility = View.VISIBLE
+                                                }
+                                                chat_rv.visibility = View.INVISIBLE
+                                                chatAdapter.submitList(data)
                                                 chatAdapter.loadAround(index)
-                                                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = action)
+                                                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = action,
+                                                    delay = max(((index / 60 + 1) * 30).toLong(), 120))
                                             } else {
+                                                val action = {
+                                                    if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                                                            ?.getBoolean(conversationId, false) == true) {
+                                                        showGroupNotification = true
+                                                        showAlert(0)
+                                                    }
+                                                }
+                                                chatAdapter.submitList(data)
                                                 scrollTo(0, action = action)
                                             }
                                         }
@@ -1374,7 +1385,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun scrollTo(position: Int, offset: Int = -1, type: Float? = null, action: (() -> Unit)? = null) {
+    private fun scrollTo(position: Int, offset: Int = -1, type: Float? = null, action: (() -> Unit)? = null, delay: Long = 30) {
         context?.mainThreadDelayed({
             chat_rv?.let {
                 chat_rv.post {
@@ -1393,7 +1404,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
             }
-        }, 30)
+        }, delay)
     }
 
     private fun scrollY(offset: Int) {

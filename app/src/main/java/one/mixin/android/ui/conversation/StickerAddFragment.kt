@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Base64
 import android.view.LayoutInflater
@@ -16,6 +17,10 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -186,7 +191,6 @@ class StickerAddFragment : BaseFragment() {
 
             stickerViewModel.addSticker(request)
                 .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
-                    dialog?.dismiss()
                     if (r != null && r.isSuccess) {
                         val personalAlbum = stickerViewModel.getPersonalAlbums()
                         if (personalAlbum == null) { // not add any personal sticker yet
@@ -194,8 +198,19 @@ class StickerAddFragment : BaseFragment() {
                         } else {
                             stickerViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
                         }
+                        Glide.with(requireContext()).load(r.data?.assetUrl).listener(object : RequestListener<Drawable> {
+                            override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                                dialog?.dismiss()
+                                uiThread { handleBack() }
+                                return true
+                            }
 
-                        uiThread { handleBack() }
+                            override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                                dialog?.dismiss()
+                                uiThread { handleBack() }
+                                return true
+                            }
+                        }).submit(r.data!!.assetWidth, r.data!!.assetHeight)
                     }
                 }, {
                     ErrorHandler.handleError(it)
@@ -219,10 +234,12 @@ class StickerAddFragment : BaseFragment() {
     }
 
     private fun handleBack() {
-        if (fromManagement) {
-            requireFragmentManager().popBackStackImmediate()
-        } else {
-            requireActivity().finish()
+        if (isAdded) {
+            if (fromManagement) {
+                requireFragmentManager().popBackStackImmediate()
+            } else {
+                requireActivity().finish()
+            }
         }
     }
 }
