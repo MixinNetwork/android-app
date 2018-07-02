@@ -74,12 +74,12 @@ class StickerManagementFragment : BaseFragment() {
         title_view.right_tv.textColor = Color.BLACK
         title_view.right_animator.setOnClickListener {
             if (stickerAdapter.editing) {
-                title_view.right_tv.text = getString(R.string.conversation_delete)
+                title_view.right_tv.text = getString(R.string.select)
                 if (stickerAdapter.checkedList.isNotEmpty()) {
                     stickerViewModel.removeStickers(stickerAdapter.checkedList)
                 }
             } else {
-                title_view.right_tv.text = getString(R.string.done)
+                title_view.right_tv.text = getString(R.string.conversation_delete)
             }
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.notifyDataSetChanged()
@@ -105,7 +105,7 @@ class StickerManagementFragment : BaseFragment() {
             }
 
             override fun onDelete() {
-                title_view.right_tv.text = getString(R.string.done)
+                title_view.right_tv.text = getString(R.string.conversation_delete)
             }
         })
 
@@ -125,7 +125,7 @@ class StickerManagementFragment : BaseFragment() {
             stickerAdapter.editing = !stickerAdapter.editing
             stickerAdapter.checkedList.clear()
             stickerAdapter.notifyDataSetChanged()
-            title_view.right_tv.text = getString(R.string.conversation_delete)
+            title_view.right_tv.text = getString(R.string.select)
 
             return true
         }
@@ -204,9 +204,6 @@ class StickerManagementFragment : BaseFragment() {
                 }
                 if (s != null) {
                     imageView.loadSticker(s.assetUrl, s.assetType)
-                    cb.setOnClickListener {
-                        handleChecked(cb, cover, s.stickerId)
-                    }
                     imageView.setOnClickListener {
                         handleChecked(cb, cover, s.stickerId)
                     }
