@@ -150,11 +150,11 @@ fun Context.getAudioPath(): File {
 }
 
 fun Context.getPublicMoviesPath(): File {
-    return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES)
+    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "Mixin")
 }
 
 fun Context.getPublicPictyresPath(): File {
-    return Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
+    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mixin")
 }
 
 fun Context.getImageCachePath(): File {
@@ -187,55 +187,57 @@ fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
 }
 
 fun File.createNoMediaDir() {
-    if (!this.exists()) {
-        this.mkdirs()
-    }
     val no = File(this, ".nomedia")
     if (!no.exists()) {
         no.createNewFile()
     }
 }
 
-fun File.createImageTemp(prefix: String? = null, type: String? = null): File {
+fun File.createImageTemp(prefix: String? = null, type: String? = null, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return if (prefix != null) {
-        newTempFile("${prefix}_IMAGE_$time", type ?: ".jpg")
+        newTempFile("${prefix}_IMAGE_$time", type ?: ".jpg", noMedia)
     } else {
-        newTempFile("IMAGE_$time", type ?: ".jpg")
+        newTempFile("IMAGE_$time", type ?: ".jpg", noMedia)
     }
 }
 
-fun File.createGifTemp(): File {
+fun File.createGifTemp(noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("IMAGE_$time", ".gif")
+    return newTempFile("IMAGE_$time", ".gif", noMedia)
 }
 
-fun File.createWebpTemp(): File {
+fun File.createWebpTemp(noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("IMAGE_$time", ".webp")
+    return newTempFile("IMAGE_$time", ".webp", noMedia)
 }
 
-fun File.createDocumentTemp(type: String?): File {
+fun File.createDocumentTemp(type: String?, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return newTempFile("FILE_$time", if (type == null) {
         ""
     } else {
         ".$type"
-    })
+    }, noMedia)
 }
 
-fun File.createVideoTemp(type: String): File {
+fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("VIDEO_$time", ".$type")
+    return newTempFile("VIDEO_$time", ".$type", noMedia)
 }
 
-fun File.createAudioTemp(type: String): File {
+fun File.createAudioTemp(type: String, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return newTempFile("Audio_$time", ".$type")
+    return newTempFile("Audio_$time", ".$type", noMedia)
 }
 
-private fun File.newTempFile(name: String, type: String): File {
-    createNoMediaDir()
+private fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
+    if (!this.exists()) {
+        this.mkdirs()
+    }
+    if (noMedia) {
+        createNoMediaDir()
+    }
     return createTempFile(name, type, this)
 }
 

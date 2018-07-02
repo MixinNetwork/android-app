@@ -119,9 +119,9 @@ class EditFragment : BaseFragment() {
                     if (granted) {
                         doAsync {
                             val outFile = if (isVideo) {
-                                ctx.getPublicMoviesPath().createVideoTemp("mp4")
+                                ctx.getPublicMoviesPath().createVideoTemp("mp4", false)
                             } else {
-                                ctx.getPublicPictyresPath().createImageTemp()
+                                ctx.getPublicPictyresPath().createImageTemp(noMedia = false)
                             }
                             File(path).copy(outFile)
                             ctx.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
