@@ -104,11 +104,11 @@ class TransactionFragment : BaseFragment() {
             }
             snapshot.type == SnapshotType.transfer.name -> {
                 if (isPositive) {
-                    sender_tv.text = snapshot.counterFullName
+                    sender_tv.text = snapshot.opponentFullName
                     receiver_tv.text = Session.getAccount()!!.full_name
                 } else {
                     sender_tv.text = Session.getAccount()!!.full_name
-                    receiver_tv.text = snapshot.counterFullName
+                    receiver_tv.text = snapshot.opponentFullName
                 }
             }
             else -> {
