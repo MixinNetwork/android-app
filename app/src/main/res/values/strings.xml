@@ -493,9 +493,8 @@
     <string name="sticker_add">Add Sticker</string>
     <string name="sticker_delete">Delete Sticker</string>
     <string name="sticker_add_failed">Add sticker failed</string>
-    <string name="sticker_add_invalid_size">Requires stickers file size larger than 1KB and less than 800KB.</string>
+    <string name="sticker_add_invalid_size">Requires stickers file size larger than 1KB and less than 800KB, width and height between 64px and 512px.</string>
     <string name="sticker_add_invalid_format">Invalid sticker format</string>
-    <string name="sticker_add_invalid_ratio">Requires stickers aspect ratio between 3:1 and 9:16.</string>
     <string name="sticker_add_success">Add success</string>
 </resources>
 
