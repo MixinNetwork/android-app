@@ -1,6 +1,7 @@
 package one.mixin.android.widget.gallery.internal.entity;
 
 import android.content.pm.ActivityInfo;
+import android.provider.MediaStore;
 import java.util.List;
 import java.util.Set;
 import one.mixin.android.widget.gallery.MimeType;
@@ -75,11 +76,25 @@ public final class SelectionSpec {
     }
 
     public boolean onlyShowImages() {
-        return showSingleMediaType && MimeType.ofImage().containsAll(mimeTypeSet);
+        return showSingleMediaType && (MimeType.ofImage().containsAll(mimeTypeSet) || MimeType.ofSticker().containsAll(mimeTypeSet));
     }
 
     public boolean onlyShowVideos() {
         return showSingleMediaType && MimeType.ofVideo().containsAll(mimeTypeSet);
+    }
+
+    public String getMimeTypeWhere() {
+        StringBuilder where = new StringBuilder();
+        int i = 0;
+        for (MimeType item : mimeTypeSet) {
+            if (i == mimeTypeSet.size() - 1) {
+                where.append(String.format("%s = '%s' ", MediaStore.Images.Media.MIME_TYPE, item.toString()));
+            } else {
+                where.append(String.format("%s = '%s' OR ", MediaStore.Images.Media.MIME_TYPE, item.toString()));
+            }
+            i++;
+        }
+        return where.toString();
     }
 
     private static final class InstanceHolder {

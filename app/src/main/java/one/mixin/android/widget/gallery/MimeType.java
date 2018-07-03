@@ -88,6 +88,10 @@ public enum MimeType {
         return EnumSet.of(JPEG, PNG, GIF, BMP);
     }
 
+    public static Set<MimeType> ofSticker() {
+        return EnumSet.of(JPEG, PNG, GIF, BMP, WEBP);
+    }
+
     public static Set<MimeType> ofVideo() {
         return EnumSet.of(MPEG, MP4, QUICKTIME, THREEGPP, THREEGPP2, MKV, WEBM, TS, AVI);
     }

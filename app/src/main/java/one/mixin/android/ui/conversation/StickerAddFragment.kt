@@ -30,9 +30,10 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
-import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.maxSizeScale
+import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
@@ -41,6 +42,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.indeterminateProgressDialog
+import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import java.io.File
@@ -138,7 +140,7 @@ class StickerAddFragment : BaseFragment() {
             val request = try {
                 val uri = url.toUri()
                 val mimeType = getMimeType(uri)
-                if (mimeType?.isImageSupport() != true) {
+                if (mimeType?.isStickerSupport() != true) {
                     dialog?.dismiss()
                     uiThread {
                         requireContext().toast(R.string.sticker_add_invalid_format)
@@ -156,11 +158,20 @@ class StickerAddFragment : BaseFragment() {
                         }
                         return@doAsync
                     }
-                    val byteArray = Glide.with(MixinApplication.appContext)
-                        .`as`(ByteArray::class.java)
-                        .load(url)
-                        .submit()
-                        .get(10, TimeUnit.SECONDS)
+
+                    val byteArray = if (mimeType == MimeType.GIF.toString()) {
+                        Glide.with(MixinApplication.appContext)
+                            .`as`(ByteArray::class.java)
+                            .load(url)
+                            .submit()
+                            .get(10, TimeUnit.SECONDS)
+                    } else {
+                        Glide.with(MixinApplication.appContext)
+                            .asFile()
+                            .load(url)
+                            .submit()
+                            .get(10, TimeUnit.SECONDS).toByteArray()
+                    }
 
                     StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
                 } else {
@@ -213,6 +224,12 @@ class StickerAddFragment : BaseFragment() {
                                 return true
                             }
                         }).submit(r.data!!.assetWidth, r.data!!.assetHeight)
+                    } else {
+                        dialog?.dismiss()
+                        uiThread {
+                            toast(R.string.error_image)
+                            handleBack()
+                        }
                     }
                 }, {
                     ErrorHandler.handleError(it)
