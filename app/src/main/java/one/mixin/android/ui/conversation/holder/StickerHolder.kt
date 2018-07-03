@@ -70,21 +70,17 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
                 if (dp48 * messageItem.assetHeight / messageItem.assetWidth > dp160) {
                     itemView.chat_sticker.layoutParams.width = dp160 * messageItem.assetWidth / messageItem.assetHeight
                     itemView.chat_sticker.layoutParams.height = dp160
-                    itemView.chat_time.layoutParams.width = dp160 * messageItem.assetWidth / messageItem.assetHeight
                 } else {
                     itemView.chat_sticker.layoutParams.width = dp48
                     itemView.chat_sticker.layoutParams.height = dp48 * messageItem.assetHeight / messageItem.assetWidth
-                    itemView.chat_time.layoutParams.width = dp48
                 }
             } else {
                 if (dp48 * messageItem.assetWidth / messageItem.assetHeight > dp160) {
                     itemView.chat_sticker.layoutParams.height = dp160 * messageItem.assetHeight / messageItem.assetWidth
                     itemView.chat_sticker.layoutParams.width = dp160
-                    itemView.chat_time.layoutParams.width = dp160
                 } else {
                     itemView.chat_sticker.layoutParams.height = dp48
                     itemView.chat_sticker.layoutParams.width = dp48 * messageItem.assetWidth / messageItem.assetHeight
-                    itemView.chat_time.layoutParams.width = dp48 * messageItem.assetWidth / messageItem.assetHeight
                 }
             }
             itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
@@ -92,17 +88,14 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
             if (messageItem.assetWidth > messageItem.assetHeight) {
                 itemView.chat_sticker.layoutParams.width = dp160
                 itemView.chat_sticker.layoutParams.height = dp160 * messageItem.assetHeight / messageItem.assetWidth
-                itemView.chat_time.layoutParams.width = dp160
             } else {
                 itemView.chat_sticker.layoutParams.height = dp160
                 itemView.chat_sticker.layoutParams.width = dp160 * messageItem.assetWidth / messageItem.assetHeight
-                itemView.chat_time.layoutParams.width = dp160 * messageItem.assetWidth / messageItem.assetHeight
             }
             itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
         } else {
             itemView.chat_sticker.layoutParams.width = messageItem.assetWidth * 2
             itemView.chat_sticker.layoutParams.height = messageItem.assetHeight * 2
-            itemView.chat_time.layoutParams.width = messageItem.assetWidth * 2
             itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
         }
 
