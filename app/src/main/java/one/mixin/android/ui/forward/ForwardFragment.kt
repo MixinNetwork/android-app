@@ -1,6 +1,7 @@
 package one.mixin.android.ui.forward
 
 import android.Manifest
+import android.app.AlertDialog
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
@@ -79,45 +80,15 @@ class ForwardFragment : BaseFragment() {
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onConversationItemClick(item: ConversationItem) {
-                sharePreOperation()
-                if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
-                    RxPermissions(requireActivity())
-                        .request(
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                ConversationActivity.show(context!!, item.conversationId, null, messages = messages)
-                            } else {
-                                requireContext().openPermissionSetting()
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
+                alert(if (item.isGroup()) {
+                    item.groupName
                 } else {
-                    ConversationActivity.show(context!!, item.conversationId, null, messages = messages)
-                }
+                    item.name
+                }, item.conversationId, null)
             }
 
             override fun onUserItemClick(user: User) {
-                sharePreOperation()
-                if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
-                    RxPermissions(requireActivity())
-                        .request(
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                ConversationActivity.show(ctx, null, user.userId, messages = messages)
-                            } else {
-                                requireContext().openPermissionSetting()
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
-                } else {
-                    ConversationActivity.show(ctx, null, user.userId, messages = messages)
-                }
+                alert(user.fullName, null, user.userId)
             }
         })
 
@@ -146,6 +117,35 @@ class ForwardFragment : BaseFragment() {
             }
         })
         search_et.addTextChangedListener(mWatcher)
+    }
+
+    private fun alert(name: String?, conversationId: String?, userId: String?) {
+        AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+            .setTitle(getString(R.string.send_msg, name))
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+                    RxPermissions(requireActivity())
+                        .request(
+                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                        .subscribe({ granted ->
+                            if (granted) {
+                                sharePreOperation()
+                                ConversationActivity.show(ctx, conversationId, userId, messages = messages)
+                            } else {
+                                requireContext().openPermissionSetting()
+                            }
+                        }, {
+                            Bugsnag.notify(it)
+                        })
+                } else {
+                    sharePreOperation()
+                    ConversationActivity.show(ctx, conversationId, userId, messages = messages)
+                }
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun sharePreOperation() {

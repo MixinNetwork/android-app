@@ -475,6 +475,7 @@
     <string name="select_video">选取视频</string>
     <string name="send">发送</string>
     <string name="send_file">将 \"%1$s\" 发送给 %2$s?</string>
+    <string name="send_msg">发送给 %s?</string>
     <string name="send_file_group">将 \"%1$s\" 发送给 \"%2$s\"?</string>
     <string name="action_open">在浏览器中打开</string>
     <string name="action_refresh">刷新</string>
