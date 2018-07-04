@@ -11,9 +11,7 @@ import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.vo.MessageSource
 import javax.inject.Inject
 
 class SettingFragment : BaseFragment() {
@@ -54,25 +52,6 @@ class SettingFragment : BaseFragment() {
         conversation_rl.setOnClickListener {
             activity?.addFragment(this@SettingFragment,
                 SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
-        }
-        loadConversationSource()
-    }
-
-    private fun loadConversationSource() {
-        context!!.defaultSharedPreferences.getInt(SettingConversationFragment.CONVERSATION_KEY,
-            MessageSource.EVERYBODY.ordinal).apply {
-            if (this == MessageSource.EVERYBODY.ordinal) {
-                conversation_source_tv.setText(R.string.setting_everybody)
-            } else {
-                conversation_source_tv.setText(R.string.setting_my_contacts)
-            }
-        }
-    }
-
-    override fun onHiddenChanged(hidden: Boolean) {
-        super.onHiddenChanged(hidden)
-        if (!hidden) {
-            loadConversationSource()
         }
     }
 }

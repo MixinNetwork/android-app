@@ -126,7 +126,7 @@ class GroupInfoFragment : BaseFragment() {
                     }
                 }
                 AlertDialog.Builder(context!!)
-                    .setItems(choices.toTypedArray(), { _, which ->
+                    .setItems(choices.toTypedArray()) { _, which ->
                         when (which) {
                             0 -> {
                                 openChat(user)
@@ -143,7 +143,7 @@ class GroupInfoFragment : BaseFragment() {
                                 groupViewModel.makeAdmin(conversationId, user)
                             }
                         }
-                    }).show()
+                    }.show()
             }
 
             override fun onLongClick(name: View, user: User): Boolean {
@@ -296,8 +296,8 @@ class GroupInfoFragment : BaseFragment() {
     private fun showConfirmDialog(message: String, type: Int, user: User? = null) {
         AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setMessage(message)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 showPb()
                 when (type) {
                     TYPE_REMOVE -> {
@@ -312,7 +312,7 @@ class GroupInfoFragment : BaseFragment() {
                     }
                 }
                 dialog.dismiss()
-            }).show()
+            }.show()
     }
 
     private fun showPb() {

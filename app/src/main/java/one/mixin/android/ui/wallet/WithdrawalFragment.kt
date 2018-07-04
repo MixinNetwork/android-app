@@ -66,6 +66,7 @@ class WithdrawalFragment : BaseFragment() {
 
     private var currAddr: Address? = null
     private val adapter: AddressAdapter by lazy { AddressAdapter() }
+    private var firstIn = true
 
     private val addrView: View by lazy {
         val view = View.inflate(context, R.layout.layout_withdrawal_addr_bottom, null)
@@ -141,7 +142,11 @@ class WithdrawalFragment : BaseFragment() {
                     it[0]
                 }
                 currAddr = addr
-                observeAddr()
+                if (firstIn) {
+                    firstIn = false
+                    walletViewModel.refreshAddressById(addr.addressId)
+                }
+                refreshFeeUI(addr)
                 setAddrTv(addr)
             }
             adapter.addresses = it?.toMutableList()
@@ -171,18 +176,7 @@ class WithdrawalFragment : BaseFragment() {
         defaultSharedPreferences.edit { putString(addr.assetId, addr.addressId) }
     }
 
-    private fun observeAddr() {
-        currAddr?.let {
-            walletViewModel.observeAddressById(it.addressId).observe(this, Observer {
-                it?.let { addr ->
-                    currAddr = addr
-                    refreshFee(addr)
-                }
-            })
-        }
-    }
-
-    private fun refreshFee(addr: Address) {
+    private fun refreshFeeUI(addr: Address) {
         val bold = addr.fee + " " + asset.chainSymbol
         val str = try {
             val reserveDouble = addr.reserve.toDouble()
