@@ -146,4 +146,10 @@ internal constructor(
     fun findParticipantByIds(conversationId: String, userId: String) = participantDao.findParticipantByIds(conversationId, userId)
 
     fun getParticipantsCount(conversationId: String) = participantDao.getParticipantsCount(conversationId)
+
+    fun getStorageUsage(conversationId: String) = conversationDao.getStorageUsage(conversationId)
+
+    fun getConversationStorageUsage() = conversationDao.getConversationStorageUsage()
+
+    fun getMediaByConversationIdAndCategory(conversationId: String, category: String) = messageDao.getMediaByConversationIdAndCategory(conversationId, category)
 }

@@ -17,6 +17,7 @@ import one.mixin.android.ui.qr.CaptureViewModel
 import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.ui.setting.SettingBlockedViewModel
 import one.mixin.android.ui.setting.SettingConversationViewModel
+import one.mixin.android.ui.setting.SettingStorageViewModel
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.wallet.PinCheckViewModel
 import one.mixin.android.ui.wallet.WalletViewModel
@@ -68,6 +69,11 @@ internal abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(SettingBlockedViewModel::class)
     internal abstract fun bindSettingBlockedViewModel(settingBlockedViewModel: SettingBlockedViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(SettingStorageViewModel::class)
+    internal abstract fun bindSettingStorageViewModel(settingStorageViewModel: SettingStorageViewModel): ViewModel
 
     @Binds
     @IntoMap

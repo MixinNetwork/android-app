@@ -117,6 +117,50 @@
                 android:textColor="@color/text_gray"
                 android:textSize="12sp"/>
     </FrameLayout>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider"/>
+
+    <RelativeLayout
+        android:id="@+id/storage_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/storage_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_storage"
+            tools:ignore="RelativeOverlap"/>
+
+        <ImageView
+            android:id="@+id/storage_iv"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_chevron_right_gray_24dp"
+            tools:ignore="ContentDescription"/>
+
+    </RelativeLayout>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@color/bg_gray"/>
 
     <View
         android:layout_width="match_parent"
