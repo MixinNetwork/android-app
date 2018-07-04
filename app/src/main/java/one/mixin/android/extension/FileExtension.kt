@@ -27,6 +27,7 @@ import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -87,6 +88,13 @@ fun getMimeType(uri: Uri): String? {
 fun String.isImageSupport(): Boolean {
     return this.equals(MimeType.GIF.toString(), true) ||
         this.equals(MimeType.JPEG.toString(), true) ||
+        this.equals(MimeType.PNG.toString(), true)
+}
+
+fun String.isStickerSupport(): Boolean {
+    return this.equals(MimeType.GIF.toString(), true) ||
+        this.equals(MimeType.JPEG.toString(), true) ||
+        this.equals(MimeType.WEBP.toString(), true) ||
         this.equals(MimeType.PNG.toString(), true)
 }
 
@@ -657,4 +665,23 @@ fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
     bitmap.setPixels(pix, 0, w, 0, 0, w, h)
 
     return bitmap
+}
+
+fun File.toByteArray(): ByteArray? {
+    var byteArray: ByteArray? = null
+    try {
+        val inputStream = FileInputStream(this)
+        val bos = ByteArrayOutputStream()
+        val b = ByteArray(1024 * 8)
+
+        while (inputStream.read(b) != -1) {
+            bos.write(b, 0, b.size)
+        }
+
+        byteArray = bos.toByteArray()
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+
+    return byteArray
 }

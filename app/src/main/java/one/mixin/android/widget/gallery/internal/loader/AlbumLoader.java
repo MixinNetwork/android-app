@@ -49,18 +49,11 @@ public class AlbumLoader extends CursorLoader {
             String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
             String.valueOf(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
     };
+
     private static final String SELECTION_FOR_SINGLE_MEDIA_TYPE =
             MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
                     + " AND " + MediaStore.MediaColumns.SIZE + ">0"
-                    + ") GROUP BY (bucket_id";
-
-    private static final String SELECTION_FOR_SINGLE_IMAGE_TYPE =
-            MediaStore.Files.FileColumns.MEDIA_TYPE + "=?"
-                    + " AND " + MediaStore.MediaColumns.SIZE + ">0"
-                    + ") AND (" + MediaStore.Images.Media.MIME_TYPE + "='image/jpeg'"
-                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/png'"
-                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/gif'"
-                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/jpg')"
+                    + ") AND ( %s )"
                     + " GROUP BY (bucket_id";
 
     private static String[] getSelectionArgsForSingleMediaType(int mediaType) {
@@ -77,10 +70,10 @@ public class AlbumLoader extends CursorLoader {
         String selection;
         String[] selectionArgs;
         if (SelectionSpec.getInstance().onlyShowImages()) {
-            selection = SELECTION_FOR_SINGLE_IMAGE_TYPE;
+            selection = String.format(SELECTION_FOR_SINGLE_MEDIA_TYPE, SelectionSpec.getInstance().getMimeTypeWhere());
             selectionArgs = getSelectionArgsForSingleMediaType(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE);
         } else if (SelectionSpec.getInstance().onlyShowVideos()) {
-            selection = SELECTION_FOR_SINGLE_MEDIA_TYPE;
+            selection = String.format(SELECTION_FOR_SINGLE_MEDIA_TYPE, SelectionSpec.getInstance().getMimeTypeWhere());
             selectionArgs = getSelectionArgsForSingleMediaType(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO);
         } else {
             selection = SELECTION;
