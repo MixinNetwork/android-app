@@ -24,7 +24,8 @@ open class Account(
     val created_at: String,
     val receive_message_source: String,
     @SerializedName("has_pin")
-    val hasPin: Boolean
+    val hasPin: Boolean,
+    val accept_conversation_source: String
 )
 
 fun Account.toUser(): User =

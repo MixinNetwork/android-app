@@ -93,26 +93,6 @@
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:text="@string/setting_conversation"
                 tools:ignore="RelativeOverlap"/>
-
-        <ImageView
-                android:id="@+id/conversation_iv"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_chevron_right_gray_24dp"
-                tools:ignore="ContentDescription"/>
-
-        <TextView
-                android:id="@+id/conversation_source_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_toStartOf="@id/conversation_iv"
-                android:text="@string/setting_my_contacts"
-                android:textColor="@color/text_gray"/>
     </RelativeLayout>
 
     <View

@@ -214,13 +214,19 @@ class StickerAddFragment : BaseFragment() {
                         Glide.with(requireContext()).load(r.data?.assetUrl).listener(object : RequestListener<Drawable> {
                             override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
                                 dialog?.dismiss()
-                                uiThread { handleBack() }
+                                uiThread {
+                                    requireContext().toast(R.string.sticker_add_success)
+                                    handleBack()
+                                }
                                 return true
                             }
 
                             override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
                                 dialog?.dismiss()
-                                uiThread { handleBack() }
+                                uiThread {
+                                    requireContext().toast(R.string.sticker_add_success)
+                                    handleBack()
+                                }
                                 return true
                             }
                         }).submit(r.data!!.assetWidth, r.data!!.assetHeight)

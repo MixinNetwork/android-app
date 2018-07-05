@@ -20,8 +20,9 @@ import javax.inject.Inject
 
 class SettingConversationFragment : BaseFragment() {
     companion object {
-        val TAG = "SettingConversationFragment"
-        val CONVERSATION_KEY = "conversation_key"
+        const val TAG = "SettingConversationFragment"
+        const val CONVERSATION_KEY = "conversation_key"
+        const val CONVERSATION_GROUP_KEY = "conversation_group_key"
         fun newInstance() = SettingConversationFragment()
     }
 
@@ -44,6 +45,12 @@ class SettingConversationFragment : BaseFragment() {
                     render(it)
                 }
             })
+        settingConversationViewModel.initGroupPreferences(context!!)
+            .observe(this@SettingConversationFragment, Observer {
+                it?.let {
+                    renderGroup(it)
+                }
+            })
     }
 
     override fun onDestroyView() {
@@ -58,7 +65,6 @@ class SettingConversationFragment : BaseFragment() {
             my_contacts_iv.visibility = View.GONE
             everybody_pb.visibility = View.GONE
             my_contacts_pb.visibility = View.GONE
-            everybody_iv.setOnClickListener { }
             my_contacts_rl.setOnClickListener {
                 everybody_iv.visibility = View.GONE
                 my_contacts_pb.visibility = View.VISIBLE
@@ -114,7 +120,71 @@ class SettingConversationFragment : BaseFragment() {
                         ErrorHandler.handleError(it)
                     })
             }
-            my_contacts_rl.setOnClickListener { }
+        }
+    }
+
+
+    private fun renderGroup(prefer: Int) {
+        if (prefer == MessageSource.EVERYBODY.ordinal) {
+            everybody_group_iv.visibility = View.VISIBLE
+            my_contacts_group_iv.visibility = View.GONE
+            everybody_group_pb.visibility = View.GONE
+            my_contacts_group_pb.visibility = View.GONE
+            my_contacts_group_rl.setOnClickListener {
+                everybody_group_iv.visibility = View.GONE
+                my_contacts_group_pb.visibility = View.VISIBLE
+                disposable?.let {
+                    if (!it.isDisposed) {
+                        it.dispose()
+                    }
+                }
+                disposable = settingConversationViewModel
+                    .savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.CONTACTS.name))
+                    .autoDisposable(scopeProvider)
+                    .subscribe({
+                        if (it.isSuccess) {
+                            settingConversationViewModel.groupPreferences.setContacts()
+                        } else {
+                            settingConversationViewModel.groupPreferences.setEveryBody()
+                            ErrorHandler.handleMixinError(it.errorCode)
+                        }
+                        my_contacts_group_pb?.visibility = View.GONE
+                    }, {
+                        my_contacts_group_pb?.visibility = View.GONE
+                        settingConversationViewModel.groupPreferences.setEveryBody()
+                        ErrorHandler.handleError(it)
+                    })
+            }
+        } else {
+            everybody_group_iv.visibility = View.GONE
+            my_contacts_group_iv.visibility = View.VISIBLE
+            everybody_group_pb.visibility = View.GONE
+            my_contacts_group_pb.visibility = View.GONE
+            everybody_group_rl.setOnClickListener {
+                everybody_group_pb.visibility = View.VISIBLE
+                my_contacts_group_iv.visibility = View.GONE
+                disposable?.let {
+                    if (!it.isDisposed) {
+                        it.dispose()
+                    }
+                }
+                disposable = settingConversationViewModel
+                    .savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.EVERYBODY.name))
+                    .autoDisposable(scopeProvider)
+                    .subscribe({
+                        if (it.isSuccess) {
+                            settingConversationViewModel.groupPreferences.setEveryBody()
+                        } else {
+                            settingConversationViewModel.groupPreferences.setContacts()
+                            ErrorHandler.handleMixinError(it.errorCode)
+                        }
+                        everybody_pb?.visibility = View.GONE
+                    }, {
+                        everybody_pb?.visibility = View.GONE
+                        settingConversationViewModel.groupPreferences.setContacts()
+                        ErrorHandler.handleError(it)
+                    })
+            }
         }
     }
 }
