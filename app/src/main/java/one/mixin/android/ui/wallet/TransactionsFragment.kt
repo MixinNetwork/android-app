@@ -77,7 +77,11 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
         header.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         updateHeader(header, asset)
         header.deposit_tv.setOnClickListener {
-            activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
+            if (asset.accountName == null) {
+                activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
+            } else {
+                activity?.addFragment(this@TransactionsFragment, DepositFragment.newInstance(asset), DepositFragment.TAG)
+            }
         }
 
         adapter = TransactionsAdapter(snapshots, asset)

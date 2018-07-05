@@ -80,6 +80,10 @@ class AddressAddFragment : BaseFragment() {
                 }
             })
         }
+        if (asset.accountName != null) {
+            label_et.hint = getString(R.string.account_name)
+            addr_et.hint = getString(R.string.account_memo)
+        }
         label_et.addTextChangedListener(mWatcher)
         addr_et.addTextChangedListener(mWatcher)
         qr_iv.setOnClickListener {

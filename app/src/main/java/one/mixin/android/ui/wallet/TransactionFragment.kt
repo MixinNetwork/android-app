@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -94,6 +95,10 @@ class TransactionFragment : BaseFragment() {
         transaction_id_tv.text = snapshot.snapshotId
         transaction_type_tv.text = getSnapshotType(snapshot.type)
         asset_name_tv.text = asset.name
+        if (asset.accountName != null) {
+            account_name_ll.visibility = VISIBLE
+            asset_name_tv.text = asset.accountName
+        }
         memo_tv.text = snapshot.memo
         date_tv.text = snapshot.createdAt.fullDate()
         when {

@@ -488,6 +488,7 @@
     <string name="slide_to_cancel">滑动取消</string>
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
+    <string name="deposit_tip">注意：账号名和备注同时使用才能充值 EOS 到 Mixin，充值到账至少需要 %@ 个区块确认。</string>
     <!--sticker-->
     <string name="sticker_manager">管理贴纸</string>
     <string name="sticker_add">添加贴纸</string>

@@ -47,5 +47,11 @@ data class Asset(
     @ColumnInfo(name = "hidden")
     var hidden: Boolean?,
     @ColumnInfo(name = "confirmations")
-    val confirmations: Int
+    val confirmations: Int,
+    @SerializedName("account_name")
+    @ColumnInfo(name = "account_name")
+    val accountName: String?,
+    @SerializedName("account_memo")
+    @ColumnInfo(name = "account_memo")
+    val accountMemo: String?
 ) : Parcelable

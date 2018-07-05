@@ -125,6 +125,9 @@ class WithdrawalFragment : BaseFragment() {
         }
         balance_tv.text = "${getString(R.string.balance)} \n${asset.balance} ${asset.symbol}"
         addrBottomSheet.setCustomViewHeight(dip(300f))
+        if (asset.accountName != null) {
+            memo_rl.visibility = GONE
+        }
 
         walletViewModel.addresses(asset.assetId).observe(this, Observer {
             if (it == null || it.isEmpty()) {

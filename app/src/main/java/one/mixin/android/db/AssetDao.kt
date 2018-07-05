@@ -13,7 +13,8 @@ interface AssetDao : BaseDao<Asset> {
         const val PREFIX_ASSET_ITEM = "SELECT a1.asset_id AS assetId, a1.symbol, a1.name, a1.icon_url AS iconUrl, " +
             "a1.balance, a1.public_key AS publicKey, a1.price_btc AS priceBtc, a1.price_usd AS priceUsd, " +
             "a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, a1.hidden, " +
-            "a1.confirmations, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol " +
+            "a1.confirmations, a2.icon_url AS chainIconUrl, a2.symbol as chainSymbol, " +
+            "a1.account_name AS accountName, a1.account_memo AS accountMemo " +
             "FROM assets a1 " +
             "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id "
         const val POSTFIX = " ORDER BY balance * price_usd DESC, price_usd DESC, cast(balance AS REAL) DESC, name DESC"

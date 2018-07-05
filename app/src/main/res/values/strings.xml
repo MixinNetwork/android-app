@@ -282,7 +282,7 @@
     <string name="wallet_verifying">Verifying…</string>
     <string name="wallet_change_password_success">Change Wallet PIN successfully</string>
     <string name="wallet_set_password_success">Set Wallet PIN successfully</string>
-    <string name="wallet_transactions_hash">%s……%s</string>
+    <string name="wallet_transactions_hash">%s…%s</string>
     <string name="wallet_all_transactions">All Transactions</string>
     <string name="pin_check_title">Enter your Wallet PIN</string>
     <string name="pin_check_tip">You\'ll be asked for it periodically to help you remember it.</string>
@@ -495,6 +495,10 @@
     <string name="slide_to_cancel">Slide to Cancel</string>
     <string name="gallery_all">All Media</string>
     <string name="gallery_empty_text">No media yet</string>
+    <string name="account_name">Account Name</string>
+    <string name="account_memo">Account Memo</string>
+    <string name="transaction_item_deposit">%s(%s)</string>
+    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your EOS to Mixin, deposit will arrive after at least %@ block confirmations.</string>
     <!--sticker-->
     <string name="sticker_manager">Manager Sticker</string>
     <string name="sticker_add">Add Sticker</string>

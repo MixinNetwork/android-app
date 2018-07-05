@@ -41,7 +41,7 @@ import one.mixin.android.vo.User
     (FloodMessage::class),
     (Address::class),
     (ResendMessage::class),
-    (StickerRelationship::class)], version = 15)
+    (StickerRelationship::class)], version = 16)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -175,12 +175,20 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_15_16: Migration = object : Migration(15, 16) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE assets ADD COLUMN account_name TEXT")
+                database.execSQL("ALTER TABLE assets ADD COLUMN account_memo TEXT")
+            }
+        }
+
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context,
                         MixinDatabase::class.java, "mixin.db")
-                        .addMigrations(MIGRATION_12_13, MIGRATION_12_14, MIGRATION_13_14, MIGRATION_12_15, MIGRATION_13_15, MIGRATION_14_15)
+                        .addMigrations(MIGRATION_12_13, MIGRATION_12_14, MIGRATION_13_14, MIGRATION_12_15, MIGRATION_13_15, MIGRATION_14_15,
+                            MIGRATION_15_16)
                         .addCallback(CALLBACK)
                         .build()
                 }

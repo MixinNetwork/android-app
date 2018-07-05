@@ -22,7 +22,9 @@ data class AssetItem(
     var hidden: Boolean?,
     val confirmations: Int,
     val chainIconUrl: String?,
-    val chainSymbol: String?
+    val chainSymbol: String?,
+    val accountName: String?,
+    val accountMemo: String?
 ) : Parcelable {
     fun usd(): BigDecimal {
         return BigDecimal(balance) * BigDecimal(priceUsd)
@@ -32,5 +34,6 @@ data class AssetItem(
         return BigDecimal(balance) * BigDecimal(priceBtc)
     }
 
-    fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden, confirmations)
+    fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden, confirmations,
+        accountName, accountMemo)
 }
