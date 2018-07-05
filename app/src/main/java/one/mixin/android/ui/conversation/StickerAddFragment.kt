@@ -35,6 +35,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.maxSizeScale
 import one.mixin.android.extension.toByteArray
 import one.mixin.android.extension.toBytes
+import one.mixin.android.extension.toPNGBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
@@ -190,7 +191,8 @@ class StickerAddFragment : BaseFragment() {
                     }
 
                     bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
-                    StickerAddRequest(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP))
+                    StickerAddRequest(Base64.encodeToString(
+                        if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(), Base64.NO_WRAP))
                 }
                 stickerAddRequest
             } catch (e: Exception) {

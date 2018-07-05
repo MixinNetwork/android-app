@@ -30,6 +30,14 @@ fun Bitmap.toBytes(): ByteArray {
     return data
 }
 
+fun Bitmap.toPNGBytes(): ByteArray {
+    val stream = ByteArrayOutputStream()
+    compress(Bitmap.CompressFormat.PNG, 100, stream)
+    val data = stream.toByteArray()
+    stream.closeSilently()
+    return data
+}
+
 fun Bitmap.saveQRCode(ctx: Context, name: String) {
     val bos = ByteArrayOutputStream()
     compress(Bitmap.CompressFormat.PNG, 100, bos)
