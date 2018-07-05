@@ -36,6 +36,7 @@ public class AlbumLoader extends CursorLoader {
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/gif'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='image/jpg'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/mpeg'"
+                    + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/mp4'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/quicktime'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/3gpp'"
                     + " OR " + MediaStore.Images.Media.MIME_TYPE + "='video/3gpp2'"
