@@ -70,7 +70,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val conversationId: String by lazy {
         arguments!!.getString(ARGS_CONVERSATION_ID)
     }
-    private var code: String? = null
+    private val code: String? by lazy { arguments!!.getString(CODE) }
     private lateinit var conversation: Conversation
     private var me: Participant? = null
     private var keepDialog: Boolean = false
@@ -85,8 +85,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        code = arguments!!.getString(CODE)
-
         contentView.left_iv.setOnClickListener { dialog?.dismiss() }
         contentView.right_iv.setOnClickListener {
             (dialog as BottomSheet).fakeDismiss()
@@ -94,17 +92,19 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         contentView.join_tv.setOnClickListener {
+            if (code == null) return@setOnClickListener
+            
             contentView.join_va.displayedChild = POS_PB
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
                 if (it.isSuccess) {
                     dialog?.dismiss()
-                    ConversationActivity.show(context!!, conversationId)
+                    ConversationActivity.show(requireContext(), conversationId)
                 } else {
-                    contentView.join_va.displayedChild = POS_TV
+                    contentView.join_va?.displayedChild = POS_TV
                     ErrorHandler.handleMixinError(it.errorCode)
                 }
             }, {
-                contentView.join_va.displayedChild = POS_TV
+                contentView.join_va?.displayedChild = POS_TV
                 ErrorHandler.handleError(it)
             })
         }
@@ -154,7 +154,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 for (i in 0 until if (participants.size >= DEFAULT_COUNT) DEFAULT_COUNT - 1 else participants.size) {
                     val u = participants[i]
-                    val avatarView = AvatarView(context!!, null)
+                    val avatarView = AvatarView(requireContext(), null)
                     contentView.avatar_container_ll.addView(avatarView, params)
                     avatarView.setTextSize(14f)
                     avatarView.setInfo(if (u.fullName != null && u.fullName.isNotEmpty())
@@ -171,7 +171,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 contentView.avatar_container_ll.setOnClickListener {
                     dialog?.dismiss()
-                    GroupActivity.show(context!!, GroupActivity.INFO, conversationId)
+                    GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
                 }
 
                 contentView.join_va.visibility = if ((me == null) && !TextUtils.isEmpty(code)) VISIBLE else GONE
@@ -204,12 +204,12 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             choices.add(getString(R.string.group_info_delete_group))
         }
-        menu = AlertDialog.Builder(context!!)
+        menu = AlertDialog.Builder(requireContext())
             .setItems(choices.toTypedArray()) { _, which ->
                 when (choices[which]) {
                     getString(R.string.participants) -> {
                         dialog?.dismiss()
-                        GroupActivity.show(context!!, GroupActivity.INFO, conversationId)
+                        GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
                     }
                     getString(R.string.group_info_add) -> {
                         activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
@@ -264,7 +264,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             getString(R.string.contact_mute_1week), getString(R.string.contact_mute_1year))
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        val alert = AlertDialog.Builder(context!!)
+        val alert = AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.contact_mute_title))
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
@@ -294,7 +294,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (context == null) {
             return
         }
-        val editText = EditText(context!!)
+        val editText = EditText(requireContext())
         editText.hint = getString(R.string.profile_modify_name_hint)
         editText.setText(name)
         if (name != null) {
@@ -303,9 +303,9 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val frameLayout = FrameLayout(context)
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
+        params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
         editText.layoutParams = params
-        val nameDialog = android.support.v7.app.AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+        val nameDialog = android.support.v7.app.AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(R.string.profile_modify_name)
             .setView(frameLayout)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
