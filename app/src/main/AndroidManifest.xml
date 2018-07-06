@@ -183,6 +183,10 @@
             android:name=".widget.gallery.ui.GalleryActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
 
+        <activity android:name=".ui.common.AvatarActivity"
+            android:theme="@style/AppTheme.Avatar"
+            android:windowSoftInputMode="stateAlwaysHidden"/>
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="${applicationId}.provider"

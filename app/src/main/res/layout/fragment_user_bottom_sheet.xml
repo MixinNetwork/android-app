@@ -37,6 +37,7 @@
                 android:layout_centerHorizontal="true"
                 android:layout_marginTop="30dp"
                 android:layout_marginBottom="16dp"
+                android:transitionName="@string/avatar_transition_name"
                 tools:ignore="ContentDescription"/>
     </RelativeLayout>
 

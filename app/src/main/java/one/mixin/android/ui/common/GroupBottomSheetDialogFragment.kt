@@ -15,6 +15,7 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import com.bumptech.glide.Glide
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
@@ -91,6 +92,15 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.right_iv.setOnClickListener {
             (dialog as BottomSheet).fakeDismiss()
             menu?.show()
+        }
+        contentView.avatar.setOnClickListener {
+            conversation.iconUrl?.let {url ->
+                doAsync {
+                    val bitmap = Glide.with(this@GroupBottomSheetDialogFragment).asBitmap().load(url).submit().get()
+                    uiThread { AvatarActivity.show(requireActivity(), url, contentView.avatar, bitmap) }
+                }
+            }
+            dialog?.dismiss()
         }
 
         contentView.join_tv.setOnClickListener {
