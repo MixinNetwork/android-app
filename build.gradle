@@ -24,7 +24,7 @@ buildscript {
         ext.anko_version = '0.10.4'
         ext.coroutines_version = '0.23.3'
         ext.firebaseVersion = '15.0.2'
-        ext.jwtVersion = '0.9.0'
+        ext.jwtVersion = '0.9.1'
         ext.zxingVersion = '3.3.3'
         ext.zxingEmbeddedVersion = '3.6.7'
         ext.rxpermissionsVersion = '0.9.4@aar'
@@ -50,7 +50,6 @@ buildscript {
         ext.mockitoCoreVersion = '2.7.19'
         ext.testSupVersion = '1.0.1'
 
-        ext.fasterxmlVersion = '2.9.5'
         ext.gsonVersion = '2.8.5'
         ext.autodisposeVersion = '0.8.0'
         ext.bugsnagVersion = '4.4.0'
