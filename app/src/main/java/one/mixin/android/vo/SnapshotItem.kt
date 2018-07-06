@@ -39,7 +39,7 @@ data class SnapshotItem(
     @SerializedName("counter_user_id")
     @ColumnInfo(name = "counter_user_id")
     val counterUserId: String?,
-    val counterFullName: String?,
+    val opponentFullName: String?,
     @SerializedName("transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String?,
@@ -54,5 +54,5 @@ data class SnapshotItem(
     val memo: String?,
     @SerializedName("asset_symbol")
     @ColumnInfo(name = "asset_symbol")
-    val assetSymbol: String
+    val assetSymbol: String?
 ) : Parcelable

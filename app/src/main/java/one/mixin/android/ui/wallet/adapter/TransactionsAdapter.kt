@@ -72,9 +72,9 @@ class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetIte
                     }
                 }
                 snapshot.type == SnapshotType.transfer.name -> itemView.name.text = if (isPositive) {
-                    itemView.context.getString(R.string.transfer_from, snapshot.counterFullName)
+                    itemView.context.getString(R.string.transfer_from, snapshot.opponentFullName)
                 } else {
-                    itemView.context.getString(R.string.transfer_to, snapshot.counterFullName)
+                    itemView.context.getString(R.string.transfer_to, snapshot.opponentFullName)
                 }
                 else -> itemView.name.text = snapshot.receiver!!.formatPublicKey()
             }
