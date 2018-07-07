@@ -122,6 +122,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canNotForward
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckParamBlazeMessage
@@ -318,7 +319,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } catch (e: ArrayIndexOutOfBoundsException) {
                             tool_view.copy_iv.visibility = View.GONE
                         }
-                        tool_view.add_sticker_iv.visibility = VISIBLE
+                        if (chatAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
+                            tool_view.add_sticker_iv.visibility = VISIBLE
+                        } else {
+                            tool_view.add_sticker_iv.visibility = GONE
+                        }
                     }
                     else -> {
                         tool_view.forward_iv.visibility = View.VISIBLE
@@ -343,14 +348,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     } else {
                         tool_view.copy_iv.visibility = View.GONE
                     }
-                    if (messageItem.type == MessageCategory.SIGNAL_STICKER.name ||
-                        messageItem.type == MessageCategory.PLAIN_STICKER.name ||
-                        messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
-                        messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
+
+                    if (messageItem.supportSticker()) {
                         tool_view.add_sticker_iv.visibility = VISIBLE
                     } else {
                         tool_view.add_sticker_iv.visibility = GONE
                     }
+
                     if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
                         tool_view.forward_iv.visibility = View.GONE
                     } else {

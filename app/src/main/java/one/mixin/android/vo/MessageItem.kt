@@ -85,3 +85,8 @@ fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name ||
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
     this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
     (this.mediaStatus != MediaStatus.DONE.name && this.isMedia())
+
+fun MessageItem.supportSticker(): Boolean = this.type == MessageCategory.SIGNAL_STICKER.name ||
+    this.type == MessageCategory.PLAIN_STICKER.name ||
+    this.type == MessageCategory.SIGNAL_IMAGE.name ||
+    this.type == MessageCategory.PLAIN_IMAGE.name
