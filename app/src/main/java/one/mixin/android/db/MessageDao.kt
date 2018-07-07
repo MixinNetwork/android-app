@@ -7,6 +7,7 @@ import android.arch.persistence.room.RoomWarnings
 import android.arch.persistence.room.Transaction
 import io.reactivex.Flowable
 import one.mixin.android.util.Session
+import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.SearchMessageItem
@@ -150,4 +151,8 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND " +
         "status = 'FAILED' ORDER BY created_at DESC LIMIT 1000")
     fun findFailedMessages(conversationId: String, userId: String): List<String>?
+
+    @Query("SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId AND category=:category")
+    fun getMediaByConversationIdAndCategory(conversationId: String, category: String): List<MediaMessageMinimal>?
+
 }

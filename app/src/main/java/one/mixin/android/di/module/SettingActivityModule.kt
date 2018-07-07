@@ -7,6 +7,7 @@ import one.mixin.android.ui.setting.NotificationsFragment
 import one.mixin.android.ui.setting.SettingBlockedFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.ui.setting.SettingFragment
+import one.mixin.android.ui.setting.SettingStorageFragment
 
 @Module
 abstract class SettingActivityModule {
@@ -18,6 +19,9 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeBlockedFragment(): SettingBlockedFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeSettingStorageFragment(): SettingStorageFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeSettingConversationFragment(): SettingConversationFragment
