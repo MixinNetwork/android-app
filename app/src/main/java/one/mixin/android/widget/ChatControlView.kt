@@ -107,7 +107,7 @@ class ChatControlView : FrameLayout {
     }
 
     fun setSend() {
-        val editEmpty = chat_et.text.toString().isBlank() && chat_et.lineCount <= 1
+        val editEmpty = chat_et.text.toString().trim().isEmpty()
         sendStatus = if (!editEmpty) {
             if (chat_more_ib.visibility != View.GONE) {
                 chat_more_ib.visibility = View.GONE
