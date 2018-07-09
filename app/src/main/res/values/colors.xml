@@ -37,6 +37,17 @@
     <color name="shadow">#33000000</color>
     <color name="color_record_circle_bg">#EE1987FF</color>
 
+    <!-- Light UI colors -->
+    <color name="lt_yellow">#fce18a</color>
+    <color name="lt_orange">#ff726d</color>
+    <color name="lt_purple">#b48def</color>
+    <color name="lt_pink">#f4306d</color>
+    <!-- Dark UI colors -->
+    <color name="dk_cyan">#3aaab8</color>
+    <color name="dk_green">#38ba9e</color>
+    <color name="dk_red">#bb3d72</color>
+    <color name="dk_blue">#006ded</color>
+
     <array name="name_colors">
         <item>#AA4848</item>
         <item>#B0665E</item>

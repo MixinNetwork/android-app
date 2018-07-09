@@ -1,74 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
 
-    <one.mixin.android.widget.TitleView
-        android:id="@+id/title_view"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:titleText="@string/app_name" />
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <LinearLayout
+        <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            app:titleText="@string/app_name"/>
 
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="wrap_content"
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_logo"
-                tools:ignore="ContentDescription" />
+                android:orientation="vertical">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height=".5dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="40dp"
-                android:background="@color/divider" />
+                <ImageView
+                    android:id="@+id/imageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:src="@drawable/ic_logo"
+                    tools:ignore="ContentDescription"/>
 
-            <TextView
-                android:id="@+id/twitter"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_button_height"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:gravity="center_vertical"
-                android:text="@string/about_follow_twitter"
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height=".5dp"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="40dp"
+                    android:background="@color/divider"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height=".5dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:background="@color/divider" />
+                <TextView
+                    android:id="@+id/twitter"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:gravity="center_vertical"
+                    android:text="@string/about_follow_twitter"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp"/>
 
-            <TextView
-                android:id="@+id/facebook"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_button_height"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:gravity="center_vertical"
-                android:text="@string/about_follow_facebook"
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp" />
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height=".5dp"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:background="@color/divider"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height=".5dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:background="@color/divider" />
+                <TextView
+                    android:id="@+id/facebook"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:gravity="center_vertical"
+                    android:text="@string/about_follow_facebook"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="16sp"/>
 
-            <TextView
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height=".5dp"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:background="@color/divider"/>
+
+                <TextView
                     android:id="@+id/terms"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/bottom_button_height"
@@ -76,15 +80,15 @@
                     android:gravity="center_vertical"
                     android:text="@string/landing_terms_service"
                     android:textColor="@color/colorBlue"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"/>
 
-            <View
+                <View
                     android:layout_width="match_parent"
                     android:layout_height=".5dp"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:background="@color/divider" />
+                    android:background="@color/divider"/>
 
-            <TextView
+                <TextView
                     android:id="@+id/privacy"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/bottom_button_height"
@@ -92,13 +96,19 @@
                     android:gravity="center_vertical"
                     android:text="@string/landing_privacy_policy"
                     android:textColor="@color/colorBlue"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"/>
 
-            <View
+                <View
                     android:layout_width="match_parent"
                     android:layout_height=".5dp"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:background="@color/divider" />
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+                    android:background="@color/divider"/>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <nl.dionsegijn.konfetti.KonfettiView
+        android:id="@+id/konfetti_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</FrameLayout>
