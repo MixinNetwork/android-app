@@ -1376,6 +1376,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun showMediaLayout() {
         if (!mediaVisibility) {
             shadow.fadeIn()
+            media_layout.visibility = VISIBLE
             media_layout.translationY(16f)
             chat_control.chat_et.hideKeyboard()
             hideStickerContainer()
@@ -1386,7 +1387,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun hideMediaLayout() {
         if (mediaVisibility) {
             shadow.fadeOut()
-            media_layout.translationY(dip(350).toFloat())
+            media_layout.translationY(dip(350).toFloat()) {
+                media_layout.visibility = GONE
+            }
             mediaVisibility = false
         }
     }
