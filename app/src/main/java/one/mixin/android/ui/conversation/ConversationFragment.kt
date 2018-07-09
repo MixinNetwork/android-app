@@ -18,12 +18,14 @@ import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.provider.Settings
 import android.support.v13.view.inputmethod.InputContentInfoCompat
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
@@ -55,7 +57,6 @@ import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.async
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
@@ -705,6 +706,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         bg_quick_flag.setOnClickListener {
+            if (chat_rv.scrollState == RecyclerView.SCROLL_STATE_SETTLING) {
+                chat_rv.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
+                    SystemClock.uptimeMillis(), MotionEvent.ACTION_CANCEL, 0f, 0f, 0))
+            }
             scrollTo(0)
         }
         chatViewModel.searchConversationById(conversationId)
