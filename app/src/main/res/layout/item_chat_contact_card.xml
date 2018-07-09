@@ -45,9 +45,7 @@
                     android:layout_marginStart="4dp"
                     android:layout_marginTop="4dp"
                     android:layout_centerVertical="true"
-                    android:src="@drawable/default_avatar"
-                    app:border_color="@color/white"
-                    app:border_width="2dp"/>
+                    android:src="@drawable/default_avatar"/>
 
             <TextView
                     android:id="@+id/name_tv"
