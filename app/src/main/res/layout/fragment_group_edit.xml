@@ -11,8 +11,6 @@
             android:layout_height="wrap_content"
             app:rightText="@string/save"
             app:titleText="@string/group_edit_title"/>
-    <View android:layout_width="match_parent" android:layout_height="0.5dp"
-          android:background="@color/divider"/>
 
     <EditText
             android:id="@+id/desc_et"
