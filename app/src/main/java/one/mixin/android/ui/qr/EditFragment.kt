@@ -18,7 +18,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
-import one.mixin.android.extension.getPublicMoviesPath
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.navigationBarHeight
@@ -119,7 +118,7 @@ class EditFragment : BaseFragment() {
                     if (granted) {
                         doAsync {
                             val outFile = if (isVideo) {
-                                ctx.getPublicMoviesPath().createVideoTemp("mp4", false)
+                                ctx.getPublicPictyresPath().createVideoTemp("mp4", false)
                             } else {
                                 ctx.getPublicPictyresPath().createImageTemp(noMedia = false)
                             }

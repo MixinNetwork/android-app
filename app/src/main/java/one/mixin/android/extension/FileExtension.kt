@@ -157,10 +157,6 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audio")
 }
 
-fun Context.getPublicMoviesPath(): File {
-    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), "Mixin")
-}
-
 fun Context.getPublicPictyresPath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mixin")
 }
