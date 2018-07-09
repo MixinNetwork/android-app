@@ -136,6 +136,7 @@
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:orientation="vertical"
+                android:visibility="gone"
                 android:translationY="350dp"
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
                 app:layout_constraintEnd_toEndOf="parent"
