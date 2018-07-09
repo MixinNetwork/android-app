@@ -41,8 +41,6 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
             android:src="@drawable/default_avatar"
-            app:border_color="@color/white"
-            app:border_width="2dp"
             app:layout_constraintStart_toStartOf="@id/card_view"
             app:layout_constraintTop_toTopOf="@id/card_view" />
 
