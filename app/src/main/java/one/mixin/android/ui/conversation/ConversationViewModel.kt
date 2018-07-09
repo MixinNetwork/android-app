@@ -103,8 +103,6 @@ internal constructor(
             .build()
     }
 
-    fun getMessagesMinimal(id: String) = conversationRepository.getMessagesMinimal(id)
-
     fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId)
 
@@ -427,4 +425,7 @@ internal constructor(
     fun refreshStickerAlbums() {
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
     }
+
+    fun findMessageIndexSync(conversationId: String, messageId: String) =
+        conversationRepository.findMessageIndex(conversationId, messageId)
 }

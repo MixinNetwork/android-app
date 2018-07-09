@@ -62,7 +62,11 @@ internal constructor(
 
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
-    fun saveDraft(conversationId: String, draft: String) = conversationDao.saveDraft(conversationId, draft)
+    fun saveDraft(conversationId: String, draft: String) {
+        appExecutors.diskIO().execute {
+            conversationDao.saveDraft(conversationId, draft)
+        }
+    }
 
     fun getConversation(conversationId: String) = conversationDao.getConversation(conversationId)
 
@@ -72,8 +76,6 @@ internal constructor(
 
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem> =
         messageDao.getMessages(conversationId)
-
-    fun getMessagesMinimal(conversationId: String) = messageDao.getMessagesMinimal(conversationId)
 
     fun indexUnread(conversationId: String) = messageDao.indexUnread(conversationId)
 
@@ -152,4 +154,6 @@ internal constructor(
     fun getConversationStorageUsage() = conversationDao.getConversationStorageUsage()
 
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String) = messageDao.getMediaByConversationIdAndCategory(conversationId, category)
+
+    fun findMessageIndex(conversationId: String, messageId: String) = messageDao.findMessageIndex(conversationId, messageId)
 }

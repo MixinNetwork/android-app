@@ -221,7 +221,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onMenuClick(id: Int) {
                 when (id) {
                     R.id.menu_camera -> {
-                        RxPermissions(activity!!)
+                        RxPermissions(requireActivity())
                             .request(
                                 Manifest.permission.CAMERA,
                                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -241,7 +241,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         hideMediaLayout()
                     }
                     R.id.menu_gallery -> {
-                        RxPermissions(activity!!)
+                        RxPermissions(requireActivity())
                             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
                                 Manifest.permission.READ_EXTERNAL_STORAGE)
                             .subscribe({ granted ->
@@ -256,7 +256,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         hideMediaLayout()
                     }
                     R.id.menu_document -> {
-                        RxPermissions(activity!!)
+                        RxPermissions(requireActivity())
                             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
                                 Manifest.permission.READ_EXTERNAL_STORAGE)
                             .subscribe({ granted ->
@@ -379,14 +379,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onImageClick(messageItem: MessageItem, view: View) {
-                DragMediaActivity.show(activity!!, view, messageItem)
+                DragMediaActivity.show(requireActivity(), view, messageItem)
             }
 
             @TargetApi(Build.VERSION_CODES.O)
             override fun onFileClick(messageItem: MessageItem) {
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals("application/vnd.android.package-archive", true)) {
-                    if (context!!.packageManager.canRequestPackageInstalls()) {
+                    if (requireContext().packageManager.canRequestPackageInstalls()) {
                         openMedia(messageItem)
                     } else {
                         startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
@@ -534,7 +534,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private val notificationManager: NotificationManager by lazy {
-        context!!.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
+        requireContext().getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
     }
 
     private var showGroupNotification = false
@@ -638,9 +638,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onStop() {
         val draftText = chat_control.chat_et.text
         if (draftText != null) {
-            context!!.async {
-                chatViewModel.saveDraft(conversationId, draftText.toString())
-            }
+            chatViewModel.saveDraft(conversationId, draftText.toString())
         }
         super.onStop()
     }
@@ -675,7 +673,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         })
         chat_control.chat_more_ib.setOnClickListener { toggleMediaLayout() }
-        chat_rv.layoutManager = SmoothScrollLinearLayoutManager(context!!, LinearLayoutManager.VERTICAL, true)
+        chat_rv.layoutManager = SmoothScrollLinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
 
         chat_rv.itemAnimator = null
@@ -755,7 +753,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     else -> ForwardMessage(ForwardCategory.TEXT.name)
                 }
             }
-            ForwardActivity.show(context!!, list)
+            ForwardActivity.show(requireContext(), list)
             closeTool()
         }
         tool_view.add_sticker_iv.setOnClickListener {
@@ -766,7 +764,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     doAsync {
                         val request = StickerAddRequest(stickerId = m.stickerId)
                         chatViewModel.addSticker(request)
-                            .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
+                            .subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
+                            .autoDisposable(scopeProvider)
+                            .subscribe({ r ->
                                 if (r != null && r.isSuccess) {
                                     val personalAlbum = chatViewModel.getPersonalAlbums()
                                     if (personalAlbum == null) { // not add any personal sticker yet
@@ -846,24 +846,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                         DataPackage(it, unreadCount, false, true)
                                     }
                                 } else if (isFirstLoad) {
-                                    var index = -1
+                                    var index: Int
                                     if (it.isNotEmpty() && !messageId.isNullOrEmpty()) {
-                                        for (i in 0 until it.size) {
-                                            if (it[i]?.messageId == messageId) {
-                                                index = i
-                                                break
-                                            }
-                                        }
-                                        if (index == -1) {
-                                            chatViewModel.getMessagesMinimal(conversationId).let { ids ->
-                                                for (i in 0 until ids.size) {
-                                                    if (ids[i] == messageId) {
-                                                        index = i
-                                                        break
-                                                    }
-                                                }
-                                            }
-                                        }
+                                        index = chatViewModel.findMessageIndexSync(conversationId, messageId!!)
                                         DataPackage(it, index, false)
                                     } else if (it.isNotEmpty()) {
                                         if (unreadCount == null || unreadCount == 0) {
@@ -910,8 +895,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                 chat_rv.visibility = View.INVISIBLE
                                                 chatAdapter.submitList(data)
                                                 chatAdapter.loadAround(index)
-                                                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = action,
-                                                    delay = max(((index / 60 + 1) * 30).toLong(), 120))
+                                                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = action)
                                             } else {
                                                 val action = {
                                                     if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
@@ -951,7 +935,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                         scrollTo(0)
                                                     })
                                                 } else {
-                                                    scrollY(context!!.dpToPx(30f))
+                                                    scrollY(requireContext().dpToPx(30f))
                                                 }
                                             }
                                             chatAdapter.hasBottomView = false
@@ -1166,7 +1150,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         group_flag.setOnClickListener {
             showGroupNotification = false
-            context!!.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+            requireContext().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
                 .putBoolean(conversationId, false)
             hideAlert()
             showGroupBottomSheet(true)
@@ -1444,11 +1428,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
             context?.getAttachment(uri)?.let {
-                AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                     .setMessage(if (isGroup) {
-                        context!!.getString(R.string.send_file_group, it.filename, groupName)
+                        requireContext().getString(R.string.send_file_group, it.filename, groupName)
                     } else {
-                        context!!.getString(R.string.send_file, it.filename, recipient?.fullName)
+                        requireContext().getString(R.string.send_file, it.filename, recipient?.fullName)
                     })
                     .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                     .setPositiveButton(R.string.send) { dialog, _ ->
@@ -1470,7 +1454,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             try {
                 messageItem.mediaUrl?.let {
                     intent.setDataAndType(Uri.parse(it), messageItem.mediaMimeType)
-                    context!!.startActivity(intent)
+                    requireActivity().startActivity(intent)
                 }
             } catch (e: ActivityNotFoundException) {
                 context?.toast(R.string.error_unable_to_open_media)
@@ -1482,9 +1466,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     if (!file.exists()) {
                         context?.toast(R.string.error_file_exists)
                     } else {
-                        val uri = context!!.getUriForFile(file)
+                        val uri = requireContext().getUriForFile(file)
                         intent.setDataAndType(uri, messageItem.mediaMimeType)
-                        context!!.startActivity(intent)
+                        requireContext().startActivity(intent)
                     }
                 }
             } catch (e: ActivityNotFoundException) {
@@ -1524,13 +1508,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             if (isBottom) {
                 if (showGroupNotification) {
-                    bg_quick_flag.translationY(context!!.dpToPx(60f).toFloat(), 100)
+                    bg_quick_flag.translationY(requireContext().dpToPx(60f).toFloat(), 100)
                 } else if (isBottom) {
-                    bg_quick_flag.translationY(context!!.dpToPx(130f).toFloat(), 100)
+                    bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
                 }
             }
         } else {
-            bg_quick_flag.translationY(context!!.dpToPx(130f).toFloat(), 100)
+            bg_quick_flag.translationY(requireContext().dpToPx(130f).toFloat(), 100)
         }
     }
 

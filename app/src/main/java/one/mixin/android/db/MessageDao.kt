@@ -39,11 +39,9 @@ interface MessageDao : BaseDao<Message> {
         "ORDER BY m.created_at DESC")
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @Query("SELECT m.id AS messageId " +
-        "FROM messages m " +
-        "WHERE m.conversation_id = :conversationId " +
-        "ORDER BY m.created_at DESC")
-    fun getMessagesMinimal(conversationId: String): List<String>
+    @Query("SELECT count(*) FROM messages WHERE conversation_id = :conversationId " +
+        "AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)")
+    fun findMessageIndex(conversationId: String, messageId: String): Int
 
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
     fun indexUnread(conversationId: String): Int?
