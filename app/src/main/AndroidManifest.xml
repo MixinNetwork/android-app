@@ -199,6 +199,8 @@
 
         <service android:name=".job.UploadContactsService" />
 
+        <service android:name=".SendService" android:exported="false" />
+
         <service android:name=".fcm.FcmService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />

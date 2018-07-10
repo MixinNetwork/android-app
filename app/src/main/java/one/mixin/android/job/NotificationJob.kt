@@ -5,11 +5,13 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.support.v4.app.NotificationCompat
+import android.support.v4.app.RemoteInput
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -19,8 +21,10 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.SendService
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.supportsNougat
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.Message
@@ -37,6 +41,9 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         private const val serialVersionUID = 1L
         const val CHANNEL_GROUP = "channel_group"
         const val CHANNEL_MESSAGE = "channel_message"
+        const val KEY_REPLY = "key_reply"
+        const val CONVERSATION_ID = "conversation_id"
+        const val IS_PLAIN = "is_plain"
     }
 
     override fun onRun() {
@@ -84,6 +91,23 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         notificationBuilder.setContentIntent(
             PendingIntent.getActivities(context, message.id.hashCode(),
                 arrayOf(mainIntent, conversationIntent), PendingIntent.FLAG_UPDATE_CURRENT))
+        supportsNougat {
+            val remoteInput = RemoteInput.Builder(KEY_REPLY)
+                .setLabel(context.getString(R.string.notification_reply))
+                .build()
+            val sendIntent = Intent(context, SendService::class.java)
+            sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
+            sendIntent.putExtra(IS_PLAIN, user.isBot())
+            val pendingIntent = PendingIntent.getService(
+                context, 0, sendIntent, PendingIntent.FLAG_ONE_SHOT)
+            val action = NotificationCompat.Action.Builder(R.mipmap.ic_launcher,
+                context.getString(R.string.notification_reply), pendingIntent)
+                .addRemoteInput(remoteInput)
+                .build()
+            notificationBuilder.addAction(action)
+        }
+
+
         when (message.category) {
             MessageCategory.SIGNAL_TEXT.name, MessageCategory.PLAIN_TEXT.name -> {
                 if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {

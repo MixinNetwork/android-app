@@ -425,6 +425,7 @@
     <string name="notification_group">群组通知</string>
     <string name="notification_message">消息通知</string>
     <string name="notification_node">消息节点</string>
+    <string name="notification_reply">回复</string>
     <!--auth-->
     <string name="auth_request">需要访问你的</string>
     <string name="auth_public_profile">个人资料(必须)</string>
@@ -495,4 +496,5 @@
     <string name="setting_storage">储存空间</string>
     <string name="setting_storage_clear">清除 %1$d 条消息 (%2$s)?</string>
     <string name="setting_storage_bn_clear">清理</string>
+
 </resources>
