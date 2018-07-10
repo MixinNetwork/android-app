@@ -19,6 +19,11 @@ import android.support.v4.view.ViewPager
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
+import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+import android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.WindowManager
@@ -145,6 +150,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 }
             }
         view_pager.addOnPageChangeListener(pageListener)
+        window.decorView.systemUiVisibility = SYSTEM_UI_FLAG_FULLSCREEN or
+            SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
+            SYSTEM_UI_FLAG_LAYOUT_STABLE or
+            SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+            SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
     }
 
     override fun onPause() {
@@ -547,10 +557,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         finishAfterTransition()
     }
 
-    override fun finishAfterTransition() = if (view_pager.currentItem == index) {
-        super.finishAfterTransition()
-    } else {
-        finish()
+    override fun finishAfterTransition() {
+        window.decorView.systemUiVisibility = SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        if (view_pager.currentItem == index) {
+            super.finishAfterTransition()
+        } else {
+            finish()
+        }
     }
 
     override fun finish() {

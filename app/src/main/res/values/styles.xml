@@ -39,9 +39,7 @@
         <item name="android:navigationBarColor">@android:color/black</item>
     </style>
 
-    <style name="AppTheme.Photo" parent="AppTheme">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <style name="AppTheme.Photo" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowTranslucentStatus">true</item>
