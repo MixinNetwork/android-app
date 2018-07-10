@@ -2,13 +2,14 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.support.annotation.DrawableRes
-import android.support.constraint.ConstraintLayout
 import android.support.v4.widget.TextViewCompat
 import android.support.v7.content.res.AppCompatResources
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
+import android.view.Gravity
 import android.view.View
+import android.widget.FrameLayout
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_reply.view.*
@@ -27,39 +28,35 @@ import org.jetbrains.anko.dip
 
 class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     private val dp8 = itemView.context.dpToPx(8f)
-    private val dp3 = itemView.context.dpToPx(3f)
+    private val dp6 = itemView.context.dpToPx(6f)
     private val dp1 = itemView.context.dpToPx(1f)
 
-    init {
-        itemView.reply_iv.round(dp3)
-    }
-
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
+        val lp = (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams)
         if (isMe) {
-            lp.horizontalBias = 1f
+            lp.gravity = Gravity.END
             if (isLast) {
                 lp.bottomMargin = dp8
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_image_me_last)
+                itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_me_last)
             } else {
                 lp.bottomMargin = dp1
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_image_me)
+                itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_me)
             }
         } else {
-            lp.horizontalBias = 0f
+            lp.gravity = Gravity.START
             if (isLast) {
                 lp.bottomMargin = dp8
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_image_other_last)
+                itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_other_last)
             } else {
                 lp.bottomMargin = dp1
-                itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_image_other)
+                itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_other)
             }
         }
     }
 
     init {
-        val radius = itemView.context.dpToPx(4f).toFloat()
-        itemView.reply_layout.round(radius)
+        itemView.reply_layout.round(dp6)
+        itemView.reply_iv.round(dp6)
     }
 
     private var onItemListener: ConversationAdapter.OnItemListener? = null
@@ -174,7 +171,10 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
 
         val quoteMessage = Gson().fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         itemView.reply_name_tv.text = quoteMessage.userFullName
-
+        itemView.reply_name_tv.setTextColor(colors[quoteMessage.userIdentityNumber.toLong().rem(colors.size).toInt()])
+        itemView.reply_layout.setBackgroundColor(colors[quoteMessage.userIdentityNumber.toLong().rem(colors.size).toInt()])
+        itemView.reply_layout.background.alpha = 0x11
+        itemView.start_view.setBackgroundColor(colors[quoteMessage.userIdentityNumber.toLong().rem(colors.size).toInt()])
         when {
             quoteMessage.type.endsWith("_TEXT") -> {
                 itemView.reply_content_tv.text = quoteMessage.content

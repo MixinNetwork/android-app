@@ -7,13 +7,14 @@ import android.view.ViewGroup
 import android.widget.TextView
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import org.jetbrains.anko.dip
+import one.mixin.android.extension.maxItemWidth
 import kotlin.math.max
 
 class MessageLayout : ViewGroup {
     private val offset: Int
     private var lastLineWidth: Float = 0.toFloat()
     private var maxWidth: Int = 0
+    private var contentPadding: Int = 0
 
     constructor(context: Context) : this(context, null)
 
@@ -23,7 +24,8 @@ class MessageLayout : ViewGroup {
         offset = context.dpToPx(8f)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.MessageLayout, defStyleAttr, 0)
         ta?.let {
-            maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, context.dip(300))
+            maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, context.maxItemWidth())
+            contentPadding = ta.getDimensionPixelSize(R.styleable.MessageLayout_content_padding, 0)
             ta.recycle()
         }
     }
@@ -50,17 +52,17 @@ class MessageLayout : ViewGroup {
         var layoutWidth: Int
 
         if (lastLineWidth + offset + secondView.measuredWidth <= firstView.measuredWidth) {
-            layoutWidth = firstView.measuredWidth
-            layoutHeight = firstView.measuredHeight
+            layoutWidth = firstView.measuredWidth + contentPadding * 2
+            layoutHeight = firstView.measuredHeight + contentPadding * 2
         } else if (lastLineWidth == firstView.measuredWidth.toFloat() && lastLineWidth + offset + secondView.measuredWidth < maxWidth - paddingWidth) {
             layoutWidth = (lastLineWidth + offset + secondView.measuredWidth).toInt()
-            layoutHeight = firstView.measuredHeight
+            layoutHeight = firstView.measuredHeight + contentPadding * 2
         } else if (third != null && lastLineWidth + offset + secondView.measuredWidth <= third.measuredWidth) {
-            layoutWidth = third.measuredWidth
-            layoutHeight = firstView.measuredHeight
+            layoutWidth = third.measuredWidth + contentPadding * 2
+            layoutHeight = firstView.measuredHeight + contentPadding * 2
         } else {
-            layoutWidth = firstView.measuredWidth
-            layoutHeight = firstView.measuredHeight + secondView.measuredHeight
+            layoutWidth = firstView.measuredWidth + contentPadding * 2
+            layoutHeight = firstView.measuredHeight + secondView.measuredHeight + contentPadding * 2
         }
         if (third != null) {
             val lp = third.layoutParams as MarginLayoutParams
@@ -99,12 +101,12 @@ class MessageLayout : ViewGroup {
             val lp = thirdView.layoutParams as MarginLayoutParams
             thirdView.layout(paddingStart, paddingTop + lp.topMargin, thirdView.measuredWidth + paddingStart,
                 thirdView.measuredHeight + paddingTop + lp.bottomMargin)
-            firstView.layout(paddingStart, paddingTop + thirdView.measuredHeight + lp.topMargin + lp.bottomMargin,
-                firstView.measuredWidth + paddingStart,
-                firstView.measuredHeight + paddingTop + thirdView.measuredHeight + lp.topMargin + lp.bottomMargin)
+            firstView.layout(paddingStart + contentPadding, paddingTop + thirdView.measuredHeight + lp.topMargin + lp.bottomMargin + contentPadding,
+                firstView.measuredWidth + paddingStart + contentPadding,
+                firstView.measuredHeight + paddingTop + thirdView.measuredHeight + lp.topMargin + lp.bottomMargin + contentPadding)
         }
-        val top = measuredHeight - paddingBottom - secondView.measuredHeight
-        val left = measuredWidth - paddingEnd - secondView.measuredWidth
+        val top = measuredHeight - paddingBottom - secondView.measuredHeight - contentPadding
+        val left = measuredWidth - paddingEnd - secondView.measuredWidth - contentPadding
         secondView.layout(left, top, left + secondView.measuredWidth, top + secondView.measuredHeight)
     }
 
