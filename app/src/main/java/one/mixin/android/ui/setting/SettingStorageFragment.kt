@@ -4,6 +4,9 @@ import android.app.Dialog
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
+import android.content.DialogInterface
+import android.content.res.ColorStateList
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.support.v7.widget.RecyclerView
@@ -100,7 +103,7 @@ class SettingStorageFragment : BaseFragment() {
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton(R.string.confirm) { dialog, _ ->
+            .setPositiveButton(R.string.setting_storage_bn_clear) { dialog, _ ->
                 var sum = 0L
                 var size = 0L
                 selectSet.forEach { sum += it.count;size += it.mediaSize }
@@ -108,6 +111,13 @@ class SettingStorageFragment : BaseFragment() {
                 confirmDialog.show()
                 dialog.dismiss()
             }.create().apply {
+                setOnShowListener {
+                    val states = arrayOf(
+                        intArrayOf(android.R.attr.state_enabled),
+                        intArrayOf(-android.R.attr.state_enabled))
+                    val colors = intArrayOf(Color.RED, Color.GRAY)
+                    getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ColorStateList(states, colors))
+                }
                 this.window.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
             }
     }
@@ -120,7 +130,11 @@ class SettingStorageFragment : BaseFragment() {
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
                 clear()
                 dialog.dismiss()
-            }.create()
+            }.create().apply {
+                setOnShowListener {
+                    getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.RED)
+                }
+            }
     }
 
     private fun clear() {
@@ -154,6 +168,7 @@ class SettingStorageFragment : BaseFragment() {
                 } else {
                     selectSet.remove(storageUsage)
                 }
+                menuDialog.getButton(DialogInterface.BUTTON_POSITIVE).isEnabled = selectSet.size > 0
             }
         })
     }

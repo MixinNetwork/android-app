@@ -79,12 +79,24 @@ fun View.translationX(value: Float, duration: Long) {
     ViewCompat.animate(this).setDuration(duration).translationX(value).start()
 }
 
-fun View.translationY(value: Float) {
-    this.translationY(value, ANIMATION_DURATION_SHORTEST)
+fun View.translationY(value: Float, endAction: (() -> Unit)? = null) {
+    this.translationY(value, ANIMATION_DURATION_SHORTEST, endAction)
 }
 
-fun View.translationY(value: Float, duration: Long) {
-    ViewCompat.animate(this).setDuration(duration).translationY(value).start()
+fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = null) {
+    ViewCompat.animate(this).setDuration(duration).translationY(value)
+        .setListener(object : ViewPropertyAnimatorListener {
+            override fun onAnimationEnd(view: View?) {
+                endAction?.let { it() }
+            }
+
+            override fun onAnimationCancel(view: View?) {
+                endAction?.let { it() }
+            }
+
+            override fun onAnimationStart(view: View?) {}
+        })
+        .start()
 }
 
 fun View.animateWidth(form: Int, to: Int) {
