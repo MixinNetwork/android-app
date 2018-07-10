@@ -39,23 +39,13 @@
                 android:text="@string/profile_photo"
                 tools:ignore="RelativeOverlap"/>
 
-        <ImageView
-                android:id="@+id/photo_iv"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_chevron_right_gray_24dp"
-                tools:ignore="ContentDescription"/>
-
         <ViewAnimator
                 android:id="@+id/photo_animator"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_toStartOf="@id/photo_iv"
+                android:layout_alignParentEnd="true"
                 android:inAnimation="@anim/fade_in"
                 android:outAnimation="@anim/fade_out"
                 tools:ignore="RelativeOverlap">
@@ -96,16 +86,6 @@
                 android:text="@string/name"
                 tools:ignore="RelativeOverlap"/>
 
-        <ImageView
-                android:id="@+id/name_iv"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_chevron_right_gray_24dp"
-                tools:ignore="ContentDescription"/>
-
         <ViewAnimator
                 android:id="@+id/name_animator"
                 android:layout_width="wrap_content"
@@ -113,7 +93,7 @@
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_toStartOf="@id/name_iv"
+                android:layout_alignParentEnd="true"
                 android:layout_toEndOf="@id/name_tv"
                 android:inAnimation="@anim/fade_in"
                 android:outAnimation="@anim/fade_out"
@@ -167,21 +147,11 @@
                 style="@style/NormalTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toStartOf="@id/phone_iv"
+                android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:textColor="@color/text_gray"
                 tools:ignore="RelativeOverlap"/>
-
-        <ImageView
-                android:id="@+id/phone_iv"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_chevron_right_gray_24dp"
-                tools:ignore="ContentDescription"/>
     </RelativeLayout>
 
     <RelativeLayout

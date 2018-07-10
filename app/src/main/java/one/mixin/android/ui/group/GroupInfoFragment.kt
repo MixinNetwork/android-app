@@ -206,11 +206,6 @@ class GroupInfoFragment : BaseFragment() {
         })
 
         groupViewModel.getGroupParticipantsLiveData(conversationId).observe(this, Observer { u ->
-            adapter.users?.let {
-                if (it.size != users.size) {
-                    return@Observer
-                }
-            }
             u?.let {
                 var role: String? = null
                 self?.let {
@@ -237,7 +232,14 @@ class GroupInfoFragment : BaseFragment() {
                     }
                     adapter.participantsMap = participantsMap
 
-                    uiThread { adapter.users = u }
+                    uiThread {
+                        val s = search_et.text.toString()
+                        if (s.isNotBlank()) {
+                            filter(s)
+                        } else {
+                            adapter.users = u
+                        }
+                    }
                 }
             }
         })
@@ -269,17 +271,21 @@ class GroupInfoFragment : BaseFragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                val us = arrayListOf<User>()
-                users.forEach {
-                    if (it.fullName?.contains(s, true) == true) {
-                        us.add(it)
-                    }
-                }
-                adapter.users = us
+                filter(s.toString())
             }
         })
 
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
+    }
+
+    private fun filter(s: String) {
+        val us = arrayListOf<User>()
+        users.forEach {
+            if (it.fullName?.contains(s, true) == true) {
+                us.add(it)
+            }
+        }
+        adapter.users = us
     }
 
     private fun openChat(user: User) {

@@ -25,8 +25,8 @@
                 android:layout_height="wrap_content"
                 android:layout_above="@+id/contact_header_id_tv"
                 android:layout_marginBottom="4dp"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_toEndOf="@+id/contact_header_avatar"
-                android:layout_toStartOf="@id/right1"
                 android:ellipsize="end"
                 android:singleLine="true"
                 android:textColor="@android:color/black"
@@ -38,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:layout_toEndOf="@+id/contact_header_avatar"
-                android:layout_toStartOf="@id/right1"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:maxLines="1"
                 android:text="@string/contact_mixin_id"
                 android:textColor="@color/text_gray"
@@ -51,21 +51,11 @@
                 android:layout_below="@+id/contact_header_id_tv"
                 android:layout_marginTop="4dp"
                 android:layout_toEndOf="@+id/contact_header_avatar"
-                android:layout_toStartOf="@id/right1"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:maxLines="1"
                 android:text="@string/contact_mobile"
                 android:textColor="@color/text_gray"
                 android:textSize="11sp"/>
-
-        <ImageView
-                android:id="@+id/right1"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:src="@drawable/ic_chevron_right_gray_24dp"
-                tools:ignore="ContentDescription"/>
     </RelativeLayout>
 
     <View

@@ -26,7 +26,7 @@ buildscript {
         ext.firebaseVersion = '15.0.2'
         ext.jwtVersion = '0.9.1'
         ext.zxingVersion = '3.3.3'
-        ext.zxingEmbeddedVersion = '3.6.7'
+        ext.zxingEmbeddedVersion = '3.6.8'
         ext.rxpermissionsVersion = '0.9.4@aar'
         ext.ucropVersion = '2.2.1'
         ext.countryPickerVersion = '1.0.8'

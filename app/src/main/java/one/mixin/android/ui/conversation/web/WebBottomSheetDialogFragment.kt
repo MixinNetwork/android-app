@@ -265,6 +265,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     override fun onDestroyView() {
+        contentView.chat_web_view.stopLoading()
+        contentView.chat_web_view.webViewClient = null
+        contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
         super.onDestroyView()
     }
