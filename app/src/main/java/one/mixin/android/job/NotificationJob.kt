@@ -96,12 +96,13 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                 .build()
             val sendIntent = Intent(context, SendService::class.java)
             sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
-            sendIntent.putExtra(IS_PLAIN, user.isBot())
+            sendIntent.putExtra(IS_PLAIN, user.isBot() || message.isRepresentativeMessage(conversation))
             val pendingIntent = PendingIntent.getService(
-                context, 0, sendIntent, PendingIntent.FLAG_ONE_SHOT)
+                context, message.conversationId.hashCode(), sendIntent, PendingIntent.FLAG_UPDATE_CURRENT)
             val action = NotificationCompat.Action.Builder(R.mipmap.ic_launcher,
                 context.getString(R.string.notification_reply), pendingIntent)
                 .addRemoteInput(remoteInput)
+                .setAllowGeneratedReplies(true)
                 .build()
             notificationBuilder.addAction(action)
         }
