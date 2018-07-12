@@ -10,8 +10,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
-        android:layout_marginStart="8dp"
-        android:padding="8dp"
+        android:layout_marginStart="14dp"
+        android:padding="2dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/ic_back"
         tools:ignore="ContentDescription" />
 
@@ -28,7 +29,10 @@
             android:id="@+id/right_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:padding="8dp"
+            android:layout_gravity="center_vertical"
+            android:padding="2dp"
+            android:layout_marginEnd="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
             tools:ignore="ContentDescription" />
 
         <TextView

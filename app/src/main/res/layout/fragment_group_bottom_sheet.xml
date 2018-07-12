@@ -1,95 +1,108 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:background="@drawable/bg_upper_round"
-              android:orientation="vertical">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:orientation="vertical">
 
-    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-        <ImageView
-                android:id="@+id/left_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:padding="8dp"
-                android:src="@drawable/ic_close_black_24dp"
-                tools:ignore="ContentDescription"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <ImageView
-                android:id="@+id/right_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_marginEnd="8dp"
-                android:layout_marginTop="8dp"
-                android:padding="8dp"
-                android:src="@drawable/ic_more"
-                tools:ignore="ContentDescription"/>
+            android:id="@+id/left_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_marginStart="14dp"
+            android:layout_marginTop="14dp"
+            android:padding="2dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_close_black_24dp"
+            tools:ignore="ContentDescription"/>
+
+        <ImageView
+            android:id="@+id/right_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="14dp"
+            android:layout_marginTop="14dp"
+            android:padding="2dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_more"
+            tools:ignore="ContentDescription"/>
 
         <one.mixin.android.widget.AvatarView
-                android:id="@+id/avatar"
-                android:layout_width="@dimen/bottom_avatar_size"
-                android:layout_height="@dimen/bottom_avatar_size"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="30dp"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                tools:ignore="ContentDescription"/>
+            android:id="@+id/avatar"
+            android:layout_width="@dimen/bottom_avatar_size"
+            android:layout_height="@dimen/bottom_avatar_size"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            tools:ignore="ContentDescription"/>
     </RelativeLayout>
 
     <TextView
-            android:id="@+id/name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxLength="30"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textSize="18sp"
-            android:textColor="@android:color/black"/>
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLength="30"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textSize="18sp"
+        android:textColor="@android:color/black"/>
 
     <one.mixin.android.widget.linktext.AutoLinkTextView
-            android:layout_width="match_parent"
-            android:id="@+id/detail_tv"
-            android:textColor="@color/text_black"
-            android:gravity="center_horizontal"
-            android:layout_marginStart="32dp"
-            android:layout_marginEnd="32dp"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
-            android:textIsSelectable="true"
-            android:layout_height="wrap_content"/>
+        android:id="@+id/detail_tv"
+        android:layout_width="match_parent"
+        android:textColor="@color/text_black"
+        android:gravity="center_horizontal"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:textIsSelectable="true"
+        android:layout_height="wrap_content"/>
 
     <LinearLayout
-            android:id="@+id/avatar_container_ll" android:orientation="horizontal"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_marginTop="30dp" android:layout_marginBottom="30dp"
-            android:layout_gravity="center_horizontal"/>
+        android:id="@+id/avatar_container_ll"
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:layout_marginBottom="30dp"
+        android:layout_gravity="center_horizontal"/>
 
-    <View android:layout_width="match_parent" android:layout_height=".5dp"
-          android:background="@color/bg_gray"/>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/bg_gray"/>
 
     <ViewAnimator
-            android:id="@+id/join_va"
-            android:layout_width="match_parent" android:layout_height="@dimen/bottom_button_height">
+        android:id="@+id/join_va"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height">
+
         <TextView
-                android:id="@+id/join_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@android:color/white"
-                android:gravity="center"
-                android:text="@string/group_join"
-                android:textColor="@color/colorBlue"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/join_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:gravity="center"
+            android:text="@string/group_join"
+            android:textColor="@color/colorBlue"
+            tools:ignore="RelativeOverlap"/>
+
         <ProgressBar
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:theme="@style/AppTheme.BlueProgress"/>
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.BlueProgress"/>
     </ViewAnimator>
 </LinearLayout>
