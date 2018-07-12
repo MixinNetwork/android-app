@@ -13,4 +13,5 @@ data class ConversationStorageUsage(
     val ownerId: String,
     val ownerIdentityNumber: String,
     val ownerIsVerified: Boolean,
-    val mediaSize: Long)
+    val mediaSize: Long
+)

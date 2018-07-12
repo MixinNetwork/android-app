@@ -92,7 +92,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             menu?.show()
         }
         contentView.avatar.setOnClickListener {
-            conversation.iconUrl?.let {url ->
+            conversation.iconUrl?.let { url ->
                 doAsync {
                     val bitmap = Glide.with(this@GroupBottomSheetDialogFragment).asBitmap().load(url).submit().get()
                     uiThread { AvatarActivity.show(requireActivity(), url, contentView.avatar, bitmap) }
@@ -103,7 +103,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         contentView.join_tv.setOnClickListener {
             if (code == null) return@setOnClickListener
-            
+
             contentView.join_va.displayedChild = POS_PB
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
                 if (it.isSuccess) {

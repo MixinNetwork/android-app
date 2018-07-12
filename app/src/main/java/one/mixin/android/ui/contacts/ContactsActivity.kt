@@ -3,7 +3,6 @@ package one.mixin.android.ui.contacts
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BlazeBaseActivity

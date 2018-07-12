@@ -2,7 +2,7 @@ package one.mixin.android.di
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import one.mixin.android.SendService
+import one.mixin.android.job.SendService
 import one.mixin.android.fcm.FcmInstanceIDService
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MyJobService

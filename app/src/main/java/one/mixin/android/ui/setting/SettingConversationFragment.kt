@@ -123,7 +123,6 @@ class SettingConversationFragment : BaseFragment() {
         }
     }
 
-
     private fun renderGroup(prefer: Int) {
         if (prefer == MessageSource.EVERYBODY.ordinal) {
             everybody_group_iv.visibility = View.VISIBLE

@@ -1,17 +1,15 @@
-package one.mixin.android
+package one.mixin.android.job
 
 import android.app.IntentService
 import android.app.NotificationManager
-import android.content.Context
 import android.content.Intent
 import android.support.v4.app.RemoteInput
+import androidx.core.content.systemService
 import dagger.android.AndroidInjection
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.NotificationJob.Companion.CONVERSATION_ID
 import one.mixin.android.job.NotificationJob.Companion.IS_PLAIN
 import one.mixin.android.job.NotificationJob.Companion.KEY_REPLY
-import one.mixin.android.job.SendMessageJob
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -39,7 +37,7 @@ class SendService : IntentService("SendService") {
             } else {
                 MessageCategory.SIGNAL_TEXT.name
             }
-            val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            val manager = systemService<NotificationManager>()
             manager.cancel(conversationId.hashCode())
             val message = createMessage(UUID.randomUUID().toString(), conversationId,
                 Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING)

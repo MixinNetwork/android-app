@@ -21,7 +21,6 @@ import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.SendService
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.supportsNougat
@@ -106,7 +105,6 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                 .build()
             notificationBuilder.addAction(action)
         }
-
 
         when (message.category) {
             MessageCategory.SIGNAL_TEXT.name, MessageCategory.PLAIN_TEXT.name -> {

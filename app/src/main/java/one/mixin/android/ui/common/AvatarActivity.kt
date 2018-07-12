@@ -53,16 +53,25 @@ class AvatarActivity : AppCompatActivity() {
         window.sharedElementEnterTransition = avatarTransform
 
         avatar.loadImage(url, object : RequestListener<Drawable?> {
-            override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable?>?,
-                dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable?>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
                 avatar.doOnPreDraw {
                     startPostponedEnterTransition()
                 }
                 return false
             }
 
-            override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable?>?,
-                isFirstResource: Boolean): Boolean {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable?>?,
+                isFirstResource: Boolean
+            ): Boolean {
                 return false
             }
         })

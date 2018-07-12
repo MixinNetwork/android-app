@@ -223,7 +223,13 @@ class StickerAddFragment : BaseFragment() {
                                 return true
                             }
 
-                            override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                            override fun onResourceReady(
+                                resource: Drawable?,
+                                model: Any?,
+                                target: Target<Drawable>?,
+                                dataSource: DataSource?,
+                                isFirstResource: Boolean
+                            ): Boolean {
                                 dialog?.dismiss()
                                 uiThread {
                                     requireContext().toast(R.string.sticker_add_success)

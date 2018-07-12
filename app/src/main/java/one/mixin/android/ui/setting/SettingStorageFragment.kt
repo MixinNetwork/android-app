@@ -69,7 +69,6 @@ class SettingStorageFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         settingStorageViewModel.getConversationStorageUsage().observe(this, Observer {
             adapter.setData(it)
-
         })
     }
 
@@ -106,7 +105,7 @@ class SettingStorageFragment : BaseFragment() {
             .setPositiveButton(R.string.setting_storage_bn_clear) { dialog, _ ->
                 var sum = 0L
                 var size = 0L
-                selectSet.forEach { sum += it.count;size += it.mediaSize }
+                selectSet.forEach { sum += it.count; size += it.mediaSize }
                 confirmDialog.setMessage(getString(R.string.setting_storage_clear, sum, size.fileSize()))
                 confirmDialog.show()
                 dialog.dismiss()

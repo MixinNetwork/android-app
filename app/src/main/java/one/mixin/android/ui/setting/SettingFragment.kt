@@ -11,9 +11,7 @@ import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.vo.MessageSource
 import javax.inject.Inject
 
 class SettingFragment : BaseFragment() {

@@ -199,7 +199,7 @@
 
         <service android:name=".job.UploadContactsService" />
 
-        <service android:name=".SendService" android:exported="false" />
+        <service android:name=".job.SendService" android:exported="false" />
 
         <service android:name=".fcm.FcmService">
             <intent-filter>
