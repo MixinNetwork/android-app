@@ -23,7 +23,9 @@ data class BlazeMessageData(
     @SerializedName("source")
     val source: String,
     @SerializedName("representative_id")
-    val representativeId: String?
+    val representativeId: String?,
+    @SerializedName("quote_message_id")
+    val quoteMessageId: String?
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 5L

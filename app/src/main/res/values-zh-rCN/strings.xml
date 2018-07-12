@@ -446,6 +446,9 @@
     <string name="document">文件</string>
     <string name="gallery">相册</string>
     <string name="contact">联系人</string>
+    <string name="sticker">贴纸</string>
+    <string name="video">视频</string>
+    <string name="audio">语音</string>
     <!--pay-->
     <string name="pay_paid">已支付完成</string>
 

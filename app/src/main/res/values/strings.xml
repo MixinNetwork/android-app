@@ -452,6 +452,9 @@
     <string name="document">File</string>
     <string name="gallery">Gallery</string>
     <string name="contact">Contact</string>
+    <string name="sticker">Sticker</string>
+    <string name="video">Video</string>
+    <string name="audio">Audio</string>
     <!--pay-->
     <string name="pay_paid">Already paid</string>
 

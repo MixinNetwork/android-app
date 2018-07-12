@@ -11,6 +11,7 @@ import android.net.Uri
 import android.support.annotation.WorkerThread
 import android.support.v4.util.ArraySet
 import androidx.core.net.toUri
+import com.google.gson.Gson
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -65,6 +66,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAttachmentMessage
@@ -73,6 +75,7 @@ import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.websocket.BlazeMessage
@@ -128,6 +131,13 @@ internal constructor(
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
         val message = createMessage(UUID.randomUUID().toString(), conversationId,
             sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING)
+        jobManager.addJobInBackground(SendMessageJob(message))
+    }
+
+    fun sendReplyMessage(conversationId: String, sender: User, content: String, replyMessage: MessageItem, isPlain: Boolean) {
+        val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        val message = createReplyMessage(UUID.randomUUID().toString(), conversationId,
+            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING, replyMessage.messageId, Gson().toJson(QuoteMessageItem(replyMessage)))
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -428,4 +438,9 @@ internal constructor(
 
     fun findMessageIndexSync(conversationId: String, messageId: String) =
         conversationRepository.findMessageIndex(conversationId, messageId)
+
+    fun findMessageIndex(conversationId: String, messageId: String) =
+        Observable.just(1).map {
+            conversationRepository.findMessageIndex(conversationId, messageId)
+        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
 }

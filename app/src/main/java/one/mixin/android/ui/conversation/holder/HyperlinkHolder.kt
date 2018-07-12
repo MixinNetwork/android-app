@@ -71,9 +71,10 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        listen(messageItem.messageId)
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }

@@ -40,10 +40,11 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        listen(messageItem.messageId)
         val isMe = meId == messageItem.userId
         chatLayout(isMe, false)
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }

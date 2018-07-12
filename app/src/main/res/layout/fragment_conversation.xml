@@ -56,12 +56,6 @@
                 app:stackFromEnd="true"
                 tools:listitem="@layout/item_chat_message"/>
 
-            <one.mixin.android.widget.ReplyView
-                android:id="@+id/reply_view"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/chat_control"/>
 
             <LinearLayout
                 android:id="@+id/bg_quick_flag"
@@ -118,6 +112,13 @@
                     tools:ignore="ContentDescription"/>
 
             </LinearLayout>
+
+            <one.mixin.android.widget.ReplyView
+                android:id="@+id/reply_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@id/chat_control"/>
 
             <View
                 android:id="@+id/shadow"

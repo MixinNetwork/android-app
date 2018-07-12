@@ -9,6 +9,7 @@ class CardHolder constructor(containerView: View) : BaseViewHolder(containerView
     }
 
     fun bind(messageItem: MessageItem) {
+        listen(messageItem.messageId)
         itemView.name_tv.text = messageItem.content
     }
 }

@@ -35,6 +35,7 @@ import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
@@ -181,11 +182,23 @@ class DecryptMessage : Injector() {
         when {
             data.category.endsWith("_TEXT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
-                val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
-                    plain, data.createdAt, MessageStatus.DELIVERED)
-                message.content?.findLastUrl()?.let {
-                    jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId))
+                val message = if (data.quoteMessageId == null) {
+                    createMessage(data.messageId, data.conversationId, data.userId, data.category,
+                        plain, data.createdAt, MessageStatus.DELIVERED)
+                        .apply {
+                            this.content?.findLastUrl()?.let { jobManager.addJobInBackground(ParseHyperlinkJob(it, data.messageId)) }
+                        }
+                } else {
+                    val quoteMsg = messageDao.findMessageItemById(data.conversationId, data.quoteMessageId)
+                    if (quoteMsg != null) {
+                        createReplyMessage(data.messageId, data.conversationId, data.userId, data.category,
+                            plain, data.createdAt, MessageStatus.DELIVERED, data.quoteMessageId, Gson().toJson(quoteMsg))
+                    } else {
+                        createReplyMessage(data.messageId, data.conversationId, data.userId, data.category,
+                            plain, data.createdAt, MessageStatus.DELIVERED, data.quoteMessageId)
+                    }
                 }
+
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
             }
@@ -451,6 +464,11 @@ class DecryptMessage : Injector() {
             val contactData = GsonHelper.customGson.fromJson(String(decoded), TransferContactData::class.java)
             messageDao.updateContactMessage(contactData.userId, MessageStatus.DELIVERED.name, messageId)
             syncUser(contactData.userId)
+        }
+        if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
+            messageDao.findMessageItemById(data.conversationId, messageId).let {
+                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, Gson().toJson(it))
+            }
         }
     }
 

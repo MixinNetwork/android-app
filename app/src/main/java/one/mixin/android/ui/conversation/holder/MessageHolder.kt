@@ -10,7 +10,6 @@ import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_message.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -23,9 +22,6 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-        (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).also {
-            it.matchConstraintMaxWidth = itemView.context.maxItemWidth()
-        }
 
         itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
@@ -71,9 +67,10 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
+        listen(messageItem.messageId)
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -152,12 +149,6 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
         }, {
             itemView.chat_flag.visibility = View.GONE
         })
-
-        itemView.setOnClickListener {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-            }
-        }
 
         chatLayout(isMe, isLast)
     }

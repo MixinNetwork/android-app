@@ -61,5 +61,15 @@
         android:layout_margin="14dp"
         android:padding="2dp"
         android:src="@drawable/ic_sticker_add"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
+
+    <ImageView
+        android:id="@+id/reply_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@id/add_sticker_iv"
+        android:padding="16dp"
+        android:src="@drawable/ic_reply"
+        tools:ignore="ContentDescription"/>
 </RelativeLayout>

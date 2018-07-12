@@ -71,6 +71,7 @@
     </declare-styleable>
     <declare-styleable name="MessageLayout">
         <attr name="max_width" format="dimension" />
+        <attr name="content_padding" format="dimension" />
     </declare-styleable>
     <declare-styleable name="AudioRecordView">
         <attr name="blink_color" format="color"/>

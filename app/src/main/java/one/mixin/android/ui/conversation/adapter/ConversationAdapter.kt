@@ -136,7 +136,8 @@ class ConversationAdapter(
                     (holder as WaitingHolder).bind(it, isLast(position), isFirst(position), onItemListener)
                 }
                 REPLY_TYPE -> {
-                    (holder as ReplyHolder).bind(it, isLast(position))
+                    (holder as ReplyHolder).bind(it, keyword, isLast(position),
+                        isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 STRANGER_TYPE -> {
                     (holder as StrangerHolder).bind(onItemListener)
@@ -356,7 +357,9 @@ class ConversationAdapter(
                 item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
                 item.status == MessageStatus.FAILED.name -> WAITING_TYPE
                 item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
-                    if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
+                    if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
+                        REPLY_TYPE
+                    } else if (!item.siteName.isNullOrBlank() || !item.siteDescription.isNullOrBlank()) {
                         LINK_TYPE
                     } else {
                         MESSAGE_TYPE
@@ -453,6 +456,8 @@ class ConversationAdapter(
         open fun onContactCardClick(userId: String) {}
 
         open fun onTransferClick(userId: String) {}
+
+        open fun onMessageClick(messageId: String?) {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {

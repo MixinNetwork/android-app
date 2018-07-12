@@ -1,12 +1,18 @@
 package one.mixin.android.ui.conversation.holder
 
+import android.animation.ArgbEvaluator
+import android.animation.ValueAnimator
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.support.v7.content.res.AppCompatResources
 import android.support.v7.widget.RecyclerView
 import android.view.View
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageStatus
@@ -16,6 +22,7 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
         val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
         val HIGHLIGHTED = Color.parseColor("#CCEF8C")
         val LINK_COLOR = Color.parseColor("#5FA7E4")
+        val SELECT_COLOR = Color.parseColor("#660D94FC")
     }
 
     protected val dp10 by lazy {
@@ -35,6 +42,41 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
 
     val meId by lazy {
         Session.getAccountId()
+    }
+
+    private var disposable: Disposable? = null
+    private var messageId: String? = null
+
+    protected fun listen(bindId: String) {
+        if (disposable == null) {
+            disposable = RxBus.listen(BlinkEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    if (it.messageId == this.messageId) {
+                        blink()
+                    }
+                }
+        }
+        this.messageId = bindId
+    }
+
+    private fun blink() {
+        if (!blinkAnim.isRunning) {
+            blinkAnim.start()
+        }
+    }
+
+    private val argbEvaluator: ArgbEvaluator by lazy {
+        ArgbEvaluator()
+    }
+    private val blinkAnim by lazy {
+        ValueAnimator.ofFloat(0f, 1f, 0f)
+            .setDuration(1200).apply {
+                this.addUpdateListener { valueAnimator ->
+                    itemView.setBackgroundColor(
+                        argbEvaluator.evaluate(valueAnimator.animatedValue as Float, Color.TRANSPARENT, SELECT_COLOR) as Int)
+                }
+            }
     }
 
     protected fun setStatusIcon(

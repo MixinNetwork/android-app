@@ -34,6 +34,7 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
@@ -52,6 +53,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
+import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
@@ -122,6 +124,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canNotForward
+import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
@@ -325,9 +328,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         } else {
                             tool_view.add_sticker_iv.visibility = GONE
                         }
+                        if (chatAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
+                            tool_view.reply_iv.visibility = View.GONE
+                        } else {
+                            tool_view.reply_iv.visibility = View.VISIBLE
+                        }
                     }
                     else -> {
                         tool_view.forward_iv.visibility = View.VISIBLE
+                        tool_view.reply_iv.visibility = View.GONE
                         tool_view.copy_iv.visibility = View.GONE
                         tool_view.add_sticker_iv.visibility = GONE
                     }
@@ -360,6 +369,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         tool_view.forward_iv.visibility = View.GONE
                     } else {
                         tool_view.forward_iv.visibility = View.VISIBLE
+                    }
+                    if (chatAdapter.selectSet.find { it.canNotReply() } != null) {
+                        tool_view.reply_iv.visibility = View.GONE
+                    } else {
+                        tool_view.reply_iv.visibility = View.VISIBLE
                     }
                     chatAdapter.notifyDataSetChanged()
                     tool_view.fadeIn()
@@ -450,6 +464,25 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }, {
                     Timber.e(it)
                 })
+            }
+
+            override fun onMessageClick(messageId: String?) {
+                messageId?.let {
+                    chatViewModel.findMessageIndex(conversationId, it).autoDisposable(scopeProvider).subscribe({
+                        if (it == 0) {
+                            toast(R.string.error_not_found)
+                        } else {
+                            chatAdapter.loadAround(it + 1)
+                            scrollTo(it + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                                requireContext().mainThreadDelayed({
+                                    RxBus.publish(BlinkEvent(messageId))
+                                }, 60)
+                            })
+                        }
+                    }, {
+
+                    })
+                }
             }
         }
     }
@@ -602,6 +635,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chat_control.cancelExternal()
                 true
             }
+            reply_view.visibility == VISIBLE -> {
+                reply_view.fadeOut()
+                true
+            }
             else -> false
         }
     }
@@ -616,6 +653,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (chat_control.isRecording) {
             audioRecorder.stopRecording(false)
             chat_control.cancelExternal()
+        }
+        if (reply_view.visibility == VISIBLE) {
+            reply_view.fadeOut()
         }
     }
 
@@ -799,10 +839,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
             }
-            closeTool()
         }
+
         chat_control.chat_et.requestFocus()
 
+        tool_view.reply_iv.setOnClickListener {
+            chatAdapter.selectSet.valueAt(0)?.let {
+                reply_view.bind(it)
+            }
+            if (!reply_view.isVisible) {
+                reply_view.fadeIn()
+            }
+            closeTool()
+        }
         media_layout.round(dip(8))
         menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
         menu_rv.adapter = menuAdapter
@@ -1136,6 +1185,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    private fun sendReplyMessage(message: String) {
+        if (message.isNotBlank() && reply_view.messageItem != null) {
+            chat_control.chat_et.setText("")
+            createConversation {
+                chatViewModel.sendReplyMessage(conversationId, sender, message, reply_view.messageItem!!, isPlainMessage())
+                reply_view.fadeOut()
+                reply_view.messageItem = null
+                markRead()
+                scrollTo(0)
+            }
+        }
+    }
+
     private var groupName: String? = null
         set(value) {
             field = value
@@ -1368,6 +1430,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.chat_et.hideKeyboard()
             hideStickerContainer()
             mediaVisibility = true
+            if (reply_view.visibility == VISIBLE) {
+                reply_view.fadeOut()
+            }
         }
     }
 
@@ -1378,6 +1443,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 media_layout.visibility = GONE
             }
             mediaVisibility = false
+            if (reply_view.visibility == VISIBLE) {
+                reply_view.fadeOut()
+            }
         }
     }
 
@@ -1543,7 +1611,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     toggleMediaLayout()
                 }
             } else {
-                sendMessage(text)
+                if (reply_view.isVisible && reply_view.messageItem != null) {
+                    sendReplyMessage(text)
+                } else {
+                    sendMessage(text)
+                }
             }
         }
 

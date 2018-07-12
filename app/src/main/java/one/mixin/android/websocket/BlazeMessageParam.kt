@@ -15,7 +15,8 @@ data class BlazeMessageParam(
     val status: String?,
     val recipients: ArrayList<String>? = null,
     val keys: SignalKeyRequest? = null,
-    val messages: ArrayList<BlazeSignalKeyMessage>? = null
+    val messages: ArrayList<BlazeSignalKeyMessage>? = null,
+    val quote_message_id: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
