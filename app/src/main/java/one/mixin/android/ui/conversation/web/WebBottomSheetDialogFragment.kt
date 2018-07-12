@@ -122,7 +122,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             if (result != null) {
                                 openUrl(result, requireFragmentManager()) {
                                     QrScanBottomSheetDialogFragment.newInstance(result)
-                                        .show(requireFragmentManager(), QrScanBottomSheetDialogFragment.TAG)
+                                        .showNow(requireFragmentManager(), QrScanBottomSheetDialogFragment.TAG)
                                 }
                             } else {
                                 if (isAdded) toast(R.string.can_not_recognize)
@@ -293,7 +293,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
-        val fragmentManager: FragmentManager
+        private val fragmentManager: FragmentManager
     ) : WebViewClient() {
 
         override fun onPageFinished(view: WebView?, url: String?) {

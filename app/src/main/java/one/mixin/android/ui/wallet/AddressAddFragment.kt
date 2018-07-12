@@ -73,7 +73,7 @@ class AddressAddFragment : BaseFragment() {
         title_view.right_animator.setOnClickListener {
             val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(asset.assetId,
                 label_et.text.toString(), addr_et.text.toString(), type = type)
-            bottomSheet.show(fragmentManager, PinAddrBottomSheetDialogFragment.TAG)
+            bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.setCallback(object : PinAddrBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     fragmentManager?.popBackStackImmediate()

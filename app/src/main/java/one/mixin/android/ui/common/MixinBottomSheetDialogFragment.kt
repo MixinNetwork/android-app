@@ -3,7 +3,7 @@ package one.mixin.android.ui.common
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
+import android.support.v4.app.MixinDialogFragment
 import android.view.View
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import one.mixin.android.R
@@ -12,7 +12,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 
-abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
+abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectable {
 
     protected lateinit var contentView: View
     protected val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }

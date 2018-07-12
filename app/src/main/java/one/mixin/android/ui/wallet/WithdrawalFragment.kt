@@ -119,7 +119,7 @@ class WithdrawalFragment : BaseFragment() {
                         fragmentManager?.popBackStackImmediate()
                     }
                 })
-                bottom.show(fragmentManager, WithdrawalBottomSheetDialogFragment.TAG)
+                bottom.showNow(requireFragmentManager(), WithdrawalBottomSheetDialogFragment.TAG)
             }
             addrBottomSheet.dismiss()
         }

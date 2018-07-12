@@ -132,7 +132,7 @@ class GroupInfoFragment : BaseFragment() {
                                 openChat(user)
                             }
                             1 -> {
-                                UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                                UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                             }
                             2 -> {
                                 showConfirmDialog(getString(R.string.group_info_remove_tip,
@@ -186,7 +186,7 @@ class GroupInfoFragment : BaseFragment() {
                         }
                         R.id.view -> {
                             UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                                .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                         }
                         R.id.remove -> {
                             showConfirmDialog(getString(R.string.group_info_remove_tip,

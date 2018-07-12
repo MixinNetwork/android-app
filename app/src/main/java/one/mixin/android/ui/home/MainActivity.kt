@@ -148,12 +148,12 @@ class MainActivity : BlazeBaseActivity() {
             val scan = intent.getStringExtra(SCAN)
             bottomSheet?.dismiss()
             bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
-            bottomSheet?.show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+            bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(CODE)) {
             val code = intent.getStringExtra(CODE)
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(code)
-            bottomSheet?.show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(ARGS_AMOUNT)) {
             val user = intent.getParcelableExtra<User>(ARGS_USER)
             val amount = intent.getStringExtra(ARGS_AMOUNT)
@@ -162,14 +162,14 @@ class MainActivity : BlazeBaseActivity() {
             val memo = intent.getStringExtra(ARGS_MEMO)
             bottomSheet?.dismiss()
             bottomSheet = TransferBottomSheetDialogFragment.newInstance(user, amount, asset, trace, memo)
-            bottomSheet?.show(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
+            bottomSheet?.showNow(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(ARGS_USER)) {
             val user = intent.getParcelableExtra<User>(ARGS_USER)
             bottomSheet?.dismiss()
-            UserBottomSheetDialogFragment.newInstance(user).show(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+            UserBottomSheetDialogFragment.newInstance(user).showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
-            TransferFragment.newInstance(userId).show(supportFragmentManager, TransferFragment.TAG)
+            TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
         } else if (intent.extras != null && intent.extras.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()
