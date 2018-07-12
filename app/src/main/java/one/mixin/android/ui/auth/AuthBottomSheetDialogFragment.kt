@@ -89,7 +89,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     CaptureFragment.SCOPES[4] ->
                         scopes.add(Scope(s, ctx.getString(R.string.auth_apps_write_description)))
                     CaptureFragment.SCOPES[5] ->
-                        scopes.add(Scope(s, ctx.getString(R.string.auth_apps_read_description)))
+                        scopes.add(Scope(s, ctx.getString(R.string.auth_permission_contacts_read_description)))
                 }
             }
             return scopes
