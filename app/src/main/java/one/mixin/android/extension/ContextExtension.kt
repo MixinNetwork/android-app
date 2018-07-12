@@ -460,5 +460,11 @@ inline fun supportsOreo(code: () -> Unit) {
     }
 }
 
+inline fun supportsNougat(code: () -> Unit) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+        code()
+    }
+}
+
 inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
     this.apply { arguments = Bundle().apply(argsBuilder) }

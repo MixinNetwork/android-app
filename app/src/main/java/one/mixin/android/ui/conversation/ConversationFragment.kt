@@ -1037,10 +1037,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun isPlainMessage(): Boolean {
         return if (isGroup) {
             false
-        } else if (isBot) {
-            true
         } else {
-            if (recipient != null) recipient!!.isBot() else false
+            this.isBot
         }
     }
 
