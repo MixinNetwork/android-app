@@ -194,8 +194,8 @@ class DecryptMessage : Injector() {
                         createReplyMessage(data.messageId, data.conversationId, data.userId, data.category,
                             plain, data.createdAt, MessageStatus.DELIVERED, data.quoteMessageId, Gson().toJson(quoteMsg))
                     } else {
-                        createMessage(data.messageId, data.conversationId, data.userId, data.category,
-                            plain, data.createdAt, MessageStatus.DELIVERED)
+                        createReplyMessage(data.messageId, data.conversationId, data.userId, data.category,
+                            plain, data.createdAt, MessageStatus.DELIVERED, data.quoteMessageId)
                     }
                 }
 
@@ -465,9 +465,9 @@ class DecryptMessage : Injector() {
             messageDao.updateContactMessage(contactData.userId, MessageStatus.DELIVERED.name, messageId)
             syncUser(contactData.userId)
         }
-        if (messageDao.countMessageByQuoteId(messageId) > 0) {
+        if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId).let {
-                messageDao.updateQuoteContentByQuoteId(messageId, Gson().toJson(it))
+                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, Gson().toJson(it))
             }
         }
     }

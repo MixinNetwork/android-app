@@ -212,7 +212,7 @@ fun createReplyMessage(
     createdAt: String,
     status: MessageStatus,
     quoteMessageId: String?,
-    quoteContent: String?,
+    quoteContent: String? = null,
     action: String? = null,
     participantId: String? = null,
     snapshotId: String? = null
