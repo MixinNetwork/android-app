@@ -465,6 +465,11 @@ class DecryptMessage : Injector() {
             messageDao.updateContactMessage(contactData.userId, MessageStatus.DELIVERED.name, messageId)
             syncUser(contactData.userId)
         }
+        if (messageDao.countMessageByQuoteId(messageId) > 0) {
+            messageDao.findMessageItemById(data.conversationId, messageId).let {
+                messageDao.updateQuoteContentByQuoteId(messageId, Gson().toJson(it))
+            }
+        }
     }
 
     private fun requestResendKey(conversationId: String, userId: String, messageId: String) {

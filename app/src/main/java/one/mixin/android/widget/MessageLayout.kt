@@ -55,7 +55,7 @@ class MessageLayout : ViewGroup {
             layoutWidth = firstView.measuredWidth + contentPadding * 2
             layoutHeight = firstView.measuredHeight + contentPadding * 2
         } else if (lastLineWidth == firstView.measuredWidth.toFloat() && lastLineWidth + offset + secondView.measuredWidth < maxWidth - paddingWidth) {
-            layoutWidth = (lastLineWidth + offset + secondView.measuredWidth).toInt()
+            layoutWidth = (lastLineWidth + offset + secondView.measuredWidth).toInt() + contentPadding * 2
             layoutHeight = firstView.measuredHeight + contentPadding * 2
         } else if (third != null && lastLineWidth + offset + secondView.measuredWidth <= third.measuredWidth) {
             layoutWidth = third.measuredWidth + contentPadding * 2

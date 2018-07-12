@@ -28,6 +28,8 @@
         <FrameLayout
             android:id="@+id/chat_msg_layout"
             android:layout_width="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:layout_height="wrap_content">
 
             <one.mixin.android.widget.MessageLayout
@@ -50,11 +52,12 @@
                     android:id="@+id/reply_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:minWidth="100dp"
                     android:orientation="horizontal">
 
                     <View
                         android:id="@+id/start_view"
-                        android:layout_width="4dp"
+                        android:layout_width="3dp"
                         android:layout_height="0dp"
                         android:layout_alignParentStart="true"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -66,10 +69,8 @@
                         android:layout_width="0dp"
                         android:layout_height="0dp"
                         android:src="@drawable/image_holder"
-                        android:layout_marginStart="16dp"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintDimensionRatio="1:1"
-                        app:layout_constraintStart_toEndOf="@id/reply_content_tv"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         tools:ignore="ContentDescription"/>
@@ -80,23 +81,22 @@
                         android:layout_height="30dp"
                         android:src="@drawable/image_holder"
                         android:gravity="center"
+                        android:layout_marginEnd="8dp"
                         android:visibility="gone"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginStart="16dp"
-                        app:layout_constraintStart_toEndOf="@id/reply_content_tv"
                         tools:ignore="ContentDescription"/>
 
                     <TextView
                         android:id="@+id/reply_name_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="4dp"
+                        android:layout_marginTop="3dp"
+                        android:layout_marginEnd="16dp"
                         android:singleLine="true"
                         android:textColor="@color/text_black"
-                        android:layout_marginTop="3dp"
-                        android:layout_marginEnd="3dp"
                         app:layout_constraintEnd_toStartOf="@id/reply_iv"
                         app:layout_constraintHorizontal_bias="0"
                         app:layout_constraintStart_toEndOf="@id/start_view"
@@ -105,16 +105,18 @@
 
                     <TextView
                         android:id="@+id/reply_content_tv"
+                        android:ellipsize="end"
+                        android:drawablePadding="3dp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="3dp"
-                        android:layout_marginEnd="3dp"
-                        android:ellipsize="end"
-                        android:drawablePadding="3dp"
+                        android:layout_marginEnd="16dp"
                         android:singleLine="true"
                         android:textColor="@color/text_gray"
+                        android:fontFamily="@font/sf_pro_light"
+                        android:textSize="12sp"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        app:layout_constraintEnd_toEndOf="@id/reply_iv"
+                        app:layout_constraintEnd_toStartOf="@id/reply_iv"
                         app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintStart_toStartOf="@id/reply_name_tv"
                         app:layout_constraintTop_toBottomOf="@id/reply_name_tv"

@@ -7,7 +7,7 @@
 
     <View
         android:id="@+id/reply_start_view"
-        android:layout_width="6dp"
+        android:layout_width="3.5dp"
         android:layout_height="0dp"
         android:background="@color/colorDarkBlue"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -40,7 +40,7 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:gravity="start"
-        android:textColor="@color/text_black"
+        android:textColor="@color/text_gray"
         android:layout_marginTop="3dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/reply_view_iv"

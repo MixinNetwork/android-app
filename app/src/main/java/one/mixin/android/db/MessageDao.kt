@@ -84,6 +84,12 @@ interface MessageDao : BaseDao<Message> {
         "WHERE (m.conversation_id = :conversationId AND m.id = :messageId)")
     fun findMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
+    @Query("SELECT count(id) FROM messages WHERE quote_message_id =:messageId")
+    fun countMessageByQuoteId(messageId: String):Int
+
+    @Query("UPDATE messages SET quote_content =:content WHERE quote_message_id =:messageId")
+    fun updateQuoteContentByQuoteId(messageId: String, content: String)
+
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
         "u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, m.category AS type, " +
