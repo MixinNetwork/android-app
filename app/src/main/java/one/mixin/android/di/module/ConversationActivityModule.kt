@@ -25,9 +25,6 @@ abstract class ConversationActivityModule {
     internal abstract fun contributeGroupInfoFragment(): GroupInfoFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment
-
-    @ContributesAndroidInjector
     internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment
 
     @ContributesAndroidInjector

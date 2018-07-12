@@ -9,8 +9,5 @@ import one.mixin.android.ui.group.GroupEditFragment
 abstract class UrlInterpreterActivityModule {
 
     @ContributesAndroidInjector
-    internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment
-
-    @ContributesAndroidInjector
     internal abstract fun contributeGroupEditFragment(): GroupEditFragment
 }

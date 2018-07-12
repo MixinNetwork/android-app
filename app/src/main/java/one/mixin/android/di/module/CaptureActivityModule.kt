@@ -16,8 +16,5 @@ abstract class CaptureActivityModule {
     internal abstract fun contributeEditFragment(): EditFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment
-
-    @ContributesAndroidInjector
     internal abstract fun contributeQrBottomSheetDialogFragment(): QrScanBottomSheetDialogFragment
 }

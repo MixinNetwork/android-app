@@ -18,9 +18,6 @@ abstract class MainActivityModule {
     internal abstract fun contributeSearchFragment(): SearchFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment
-
-    @ContributesAndroidInjector
     internal abstract fun contributeGroupEditFragment(): GroupEditFragment
 
     @ContributesAndroidInjector

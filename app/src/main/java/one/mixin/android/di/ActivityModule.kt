@@ -62,7 +62,7 @@ abstract class ActivityModule {
     @ContributesAndroidInjector(modules = [(InviteActivityModule::class)])
     internal abstract fun contributeInvite(): InviteActivity
 
-    @ContributesAndroidInjector(modules = [(CaptureActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (CaptureActivityModule::class)])
     internal abstract fun contributeCapture(): CaptureActivity
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (ConversationActivityModule::class)])
