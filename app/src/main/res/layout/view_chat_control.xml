@@ -17,22 +17,24 @@
         <ImageButton
             android:id="@+id/chat_bot_ib"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="@null"
-            android:paddingStart="12dp"
-            android:paddingEnd="6dp"
+            android:padding="2dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
             app:srcCompat="@drawable/ic_chat_bot"
             tools:ignore="ContentDescription"/>
 
         <ImageButton
             android:id="@+id/chat_sticker_ib"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="@null"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="2dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
             app:srcCompat="@drawable/ic_chat_sticker"
             tools:ignore="ContentDescription"/>
 
@@ -58,18 +60,19 @@
         <ImageButton
             android:id="@+id/chat_more_ib"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="@null"
-            android:paddingStart="12dp"
-            android:paddingEnd="6dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="2dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="4dp"
             app:srcCompat="@drawable/ic_chat_ext"
             tools:ignore="ContentDescription"/>
 
         <ImageButton
             android:id="@+id/chat_send_ib"
             android:layout_width="wrap_content"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_height="wrap_content"
             android:background="@null"
             android:layout_gravity="center_vertical"
             android:paddingStart="12dp"
