@@ -2,7 +2,6 @@ package one.mixin.android.di.module
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationFragment
@@ -23,9 +22,6 @@ abstract class ConversationActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeGroupInfoFragment(): GroupInfoFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment

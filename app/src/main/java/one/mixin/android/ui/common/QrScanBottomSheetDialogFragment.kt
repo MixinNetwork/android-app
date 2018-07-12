@@ -60,7 +60,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.open_fl.visibility = VISIBLE
             contentView.open.setOnClickListener {
                 WebBottomSheetDialogFragment.newInstance(text, conversationId)
-                    .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
+                    .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
                 dialog.dismiss()
             }
         } else {

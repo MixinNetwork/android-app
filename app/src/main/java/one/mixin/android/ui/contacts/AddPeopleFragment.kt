@@ -83,7 +83,7 @@ class AddPeopleFragment : BaseFragment() {
                                 ProfileFragment.newInstance(), ProfileFragment.TAG)
                         } else {
                             contactsViewModel.insertUser(user = data)
-                            UserBottomSheetDialogFragment.newInstance(data).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(data).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                         }
                     }
                 } else if (r.errorCode == ErrorHandler.NOT_FOUND) {

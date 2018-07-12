@@ -103,7 +103,7 @@ class AddressManagementFragment : BaseFragment() {
 
     private fun showBottomSheet(addr: Address): MixinBottomSheetDialogFragment {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(addressId = addr.addressId, type = DELETE)
-        bottomSheet.show(fragmentManager, PinAddrBottomSheetDialogFragment.TAG)
+        bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
         bottomSheet.setCallback(object : PinAddrBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 deleteSuccess = true

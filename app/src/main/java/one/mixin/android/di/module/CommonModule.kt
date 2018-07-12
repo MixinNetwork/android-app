@@ -2,6 +2,7 @@ package one.mixin.android.di.module
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
@@ -28,4 +29,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeTransferFragment(): TransferFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment
 }

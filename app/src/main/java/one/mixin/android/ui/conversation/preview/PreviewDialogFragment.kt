@@ -3,8 +3,8 @@ package one.mixin.android.ui.conversation.preview
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
 import android.support.v4.app.FragmentManager
+import android.support.v4.app.MixinDialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -25,7 +25,7 @@ import one.mixin.android.widget.VideoTimelineView
 import org.jetbrains.anko.bundleOf
 import java.util.concurrent.TimeUnit
 
-class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
+class PreviewDialogFragment : MixinDialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
 
     companion object {
         const val IS_VIDEO: String = "IS_VIDEO"
@@ -132,8 +132,8 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelineView.VideoTimelineV
 
     private var uri: Uri? = null
     private var action: ((Uri) -> Unit)? = null
-    fun show(fragmentManager: FragmentManager?, uri: Uri, action: (Uri) -> Unit) {
-        super.show(fragmentManager, if (isVideo) {
+    fun show(fragmentManager: FragmentManager, uri: Uri, action: (Uri) -> Unit) {
+        super.showNow(fragmentManager, if (isVideo) {
             "PreviewVideoDialogFragment"
         } else {
             "PreviewDialogFragment"

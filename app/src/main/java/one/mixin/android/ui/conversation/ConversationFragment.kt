@@ -215,7 +215,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 hideMediaLayout()
                 WebBottomSheetDialogFragment
                     .newInstance(url, conversationId, name)
-                    .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
+                    .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
             }
         })
     }
@@ -277,7 +277,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     R.id.menu_transfer -> {
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
-                                TransferFragment.newInstance(it.userId).show(requireFragmentManager(), TransferFragment.TAG)
+                                TransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
                             }
                         } else {
                             activity?.supportFragmentManager?.inTransaction {
@@ -415,7 +415,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onUserClick(userId: String) {
                 chatViewModel.getUserById(userId).autoDisposable(scopeProvider).subscribe({
                     it?.let {
-                        UserBottomSheetDialogFragment.newInstance(it, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                        UserBottomSheetDialogFragment.newInstance(it, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }
                 }, {
                     Timber.e(it)
@@ -459,7 +459,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 chatViewModel.getUserById(userId).autoDisposable(scopeProvider).subscribe({
                     it?.let {
-                        UserBottomSheetDialogFragment.newInstance(it, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                        UserBottomSheetDialogFragment.newInstance(it, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }
                 }, {
                     Timber.e(it)
@@ -1250,7 +1250,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun showGroupBottomSheet(expand: Boolean) {
         hideIfShowBottomSheet()
         val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(conversationId = conversationId, expand = expand)
-        bottomSheetDialogFragment.show(fragmentManager, GroupBottomSheetDialogFragment.TAG)
+        bottomSheetDialogFragment.showNow(requireFragmentManager(), GroupBottomSheetDialogFragment.TAG)
         bottomSheetDialogFragment.callback = object : GroupBottomSheetDialogFragment.Callback {
             override fun onDelete() {
                 activity?.finish()
@@ -1278,7 +1278,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
         action_bar.avatar_iv.setOnClickListener {
             hideIfShowBottomSheet()
-            UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+            UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
         }
         bottom_unblock.setOnClickListener {
             recipient?.let { user ->
@@ -1595,7 +1595,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (previewDialogFragment == null) {
             previewDialogFragment = PreviewDialogFragment.newInstance()
         }
-        previewDialogFragment?.show(fragmentManager, uri, action)
+        previewDialogFragment?.show(requireFragmentManager(), uri, action)
     }
 
     private val chatControlCallback = object : ChatControlView.Callback {

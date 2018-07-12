@@ -52,10 +52,10 @@ class UrlInterpreterActivity : BaseActivity() {
         when (sURIMatcher.match(uri)) {
             CODE, PAY, USER -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
-                bottomSheet.show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+                bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
             TRANSFER -> {
-                TransferFragment.newInstance(uri.lastPathSegment).show(supportFragmentManager, TransferFragment.TAG)
+                TransferFragment.newInstance(uri.lastPathSegment).showNow(supportFragmentManager, TransferFragment.TAG)
             }
             else -> {
             }
@@ -113,7 +113,7 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
             if (segments.size >= 1) {
                 val data = segments[0]
                 if (data.isUUID()) {
-                    TransferFragment.newInstance(data).show(supportFragmentManager, TransferFragment.TAG)
+                    TransferFragment.newInstance(data).showNow(supportFragmentManager, TransferFragment.TAG)
                 }
             }
         }
@@ -131,4 +131,4 @@ fun openWebBottomSheet(url: String, conversationId: String?, supportFragmentMana
 }
 
 fun openUrlWithExtraWeb(url: String, conversationId: String?, supportFragmentManager: FragmentManager) =
-    openUrl(url, supportFragmentManager, { openWebBottomSheet(url, conversationId, supportFragmentManager) })
+    openUrl(url, supportFragmentManager) { openWebBottomSheet(url, conversationId, supportFragmentManager) }

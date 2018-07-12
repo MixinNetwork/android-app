@@ -215,7 +215,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                             if (url != null) {
                                 openUrl(url, supportFragmentManager) {
                                     QrScanBottomSheetDialogFragment.newInstance(url)
-                                        .show(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                                        .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
                                 }
                             } else {
                                 toast(R.string.can_not_recognize)

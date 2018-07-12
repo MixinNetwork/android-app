@@ -160,7 +160,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 contentView.title_view.avatar_iv.setInfo(if (!u.fullName.isNullOrEmpty()) u.fullName!![0] else ' ',
                     u.avatarUrl, u.identityNumber)
                 contentView.title_view.avatar_iv.setOnClickListener {
-                    UserBottomSheetDialogFragment.newInstance(u).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                    UserBottomSheetDialogFragment.newInstance(u).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                 }
             }
         })
@@ -172,7 +172,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             val bottom = TransferBottomSheetDialogFragment
                 .newInstance(user!!, contentView.transfer_amount.text.toString().toDot(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
                     contentView.transfer_memo.text.toString())
-            bottom.show(fragmentManager, TransferBottomSheetDialogFragment.TAG)
+            bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
             bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     dialog?.dismiss()

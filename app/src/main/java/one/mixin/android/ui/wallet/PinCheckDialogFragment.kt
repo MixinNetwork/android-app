@@ -5,7 +5,7 @@ import android.app.Dialog
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v7.app.AppCompatDialogFragment
+import android.support.v7.app.MixinAppCompatDialogFragment
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.View
@@ -25,7 +25,7 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import javax.inject.Inject
 
-class PinCheckDialogFragment : AppCompatDialogFragment(), Injectable {
+class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
 
     companion object {
         const val TAG = "PinCheckDialogFragment"

@@ -201,7 +201,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             dialog?.dismiss()
                             WebBottomSheetDialogFragment
                                 .newInstance(app.homeUri, conversationId, app.name)
-                                .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
+                                .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
                         }
                         bottomViewModel.findUserById(app.creatorId).observe(this@UserBottomSheetDialogFragment, Observer { u ->
                             if (u != null) {
@@ -212,7 +212,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                         if (app.creatorId == Session.getAccountId()) {
                                             activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
                                         } else {
-                                            UserBottomSheetDialogFragment.newInstance(u).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                                            UserBottomSheetDialogFragment.newInstance(u).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                                         }
                                         dialog?.dismiss()
                                     }

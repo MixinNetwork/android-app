@@ -8,8 +8,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.support.annotation.StringRes
+import android.support.design.MixinBottomSheetDialogFragment
 import android.support.design.widget.BottomSheetBehavior
-import android.support.design.widget.BottomSheetDialogFragment
 import android.support.design.widget.CoordinatorLayout
 import android.support.v7.widget.LinearLayoutManager
 import android.view.Gravity
@@ -48,7 +48,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import javax.inject.Inject
 
-class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
+class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectable {
 
     companion object {
         const val TAG = "LinkBottomSheetDialogFragment"
@@ -122,7 +122,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                     notNullElse(it, {
                         dialog?.dismiss()
                         UserBottomSheetDialogFragment.newInstance(it)
-                            .show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                            .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }, {
                         context?.toast(R.string.error_user_not_found)
                         dialog?.dismiss()
@@ -149,7 +149,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         authOrPay = true
                         TransferBottomSheetDialogFragment
                             .newInstance(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
-                            .show(fragmentManager, TransferBottomSheetDialogFragment.TAG)
+                            .showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
                     }
                     dismiss()
                 } else {
@@ -183,7 +183,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                         } else {
                             dialog?.dismiss()
                             GroupBottomSheetDialogFragment.newInstance(response.conversationId, code)
-                                .show(fragmentManager, GroupBottomSheetDialogFragment.TAG)
+                                .showNow(requireFragmentManager(), GroupBottomSheetDialogFragment.TAG)
                         }
                     }
                     result.first == QrCodeType.user.name -> {
@@ -195,7 +195,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                             return@subscribe
                         }
                         dismiss()
-                        UserBottomSheetDialogFragment.newInstance(user).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                        UserBottomSheetDialogFragment.newInstance(user).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }
                     result.first == QrCodeType.authorization.name -> {
                         val authorization = result.second as AuthorizationResponse
@@ -206,7 +206,7 @@ class LinkBottomSheetDialogFragment : BottomSheetDialogFragment(), Injectable {
                                     val scopes = AuthBottomSheetDialogFragment
                                         .handleAuthorization(it, authorization, assets)
                                     AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
-                                        .show(fragmentManager, AuthBottomSheetDialogFragment.TAG)
+                                        .showNow(requireFragmentManager(), AuthBottomSheetDialogFragment.TAG)
                                     authOrPay = true
                                     dismiss()
                                 }
