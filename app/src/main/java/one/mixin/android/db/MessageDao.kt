@@ -85,7 +85,7 @@ interface MessageDao : BaseDao<Message> {
     fun findMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
-    fun countMessageByQuoteId(conversationId: String, messageId: String):Int
+    fun countMessageByQuoteId(conversationId: String, messageId: String): Int
 
     @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
     fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
@@ -171,9 +171,14 @@ interface MessageDao : BaseDao<Message> {
         "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus," +
         "m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.media_url AS mediaUrl " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
-        "AND u.user_id != :userId AND m.status == 'DELIVERED' " +
+        "AND u.user_id != :userId AND m.status = 'DELIVERED' " +
         "ORDER BY m.created_at ASC")
     fun findUnreadMessages(conversationId: String, userId: String = Session.getAccountId()!!): Flowable<List<MessageItem>>
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId " +
+        "AND user_id != :userId AND status = 'DELIVERED' ORDER BY created_at ASC")
+    fun findUnreadMessagesSync(conversationId: String, userId: String = Session.getAccountId()!!): List<String>?
 
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND " +
         "status = 'FAILED' ORDER BY created_at DESC LIMIT 1000")
