@@ -637,6 +637,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             reply_view.visibility == VISIBLE -> {
                 reply_view.fadeOut()
+                chat_control.showOtherInput()
                 true
             }
             else -> false
@@ -656,6 +657,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         if (reply_view.visibility == VISIBLE) {
             reply_view.fadeOut()
+            chat_control.showOtherInput()
         }
     }
 
@@ -774,6 +776,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         reply_view.reply_close_iv.setOnClickListener {
             reply_view.fadeOut()
+            chat_control.showOtherInput()
         }
         tool_view.copy_iv.setOnClickListener {
             try {
@@ -849,6 +852,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             if (!reply_view.isVisible) {
                 reply_view.fadeIn()
+                chat_control.hideOtherInput()
+                hideStickerContainer()
+                if (chat_control.isRecording) {
+                    audioRecorder.stopRecording(false)
+                    chat_control.cancelExternal()
+                }
+
             }
             closeTool()
         }
@@ -1007,7 +1017,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (isBot) {
             app_rv.visibility = GONE
             extensions.visibility = GONE
-            chat_control.chat_bot_ib.visibility = VISIBLE
+            chat_control.showBot()
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 if (it != null && it.isNotEmpty()) {
                     this.app = it[0]
@@ -1022,7 +1032,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             })
         } else {
-            chat_control.chat_bot_ib.visibility = GONE
+            chat_control.hideBot()
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 appAdapter.appList = it
                 if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
@@ -1191,6 +1201,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             createConversation {
                 chatViewModel.sendReplyMessage(conversationId, sender, message, reply_view.messageItem!!, isPlainMessage())
                 reply_view.fadeOut()
+                chat_control.showOtherInput()
                 reply_view.messageItem = null
                 markRead()
                 scrollTo(0)
@@ -1432,6 +1443,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             mediaVisibility = true
             if (reply_view.visibility == VISIBLE) {
                 reply_view.fadeOut()
+                chat_control.showOtherInput()
             }
         }
     }
@@ -1445,6 +1457,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             mediaVisibility = false
             if (reply_view.visibility == VISIBLE) {
                 reply_view.fadeOut()
+                chat_control.showOtherInput()
             }
         }
     }
