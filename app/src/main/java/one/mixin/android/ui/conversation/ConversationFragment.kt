@@ -83,6 +83,7 @@ import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.round
 import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
 import one.mixin.android.job.RefreshConversationJob
@@ -472,12 +473,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (it == 0) {
                             toast(R.string.error_not_found)
                         } else {
-                            chatAdapter.loadAround(it + 1)
-                            scrollTo(it + 1, chat_rv.measuredHeight * 3 / 4, action = {
-                                requireContext().mainThreadDelayed({
-                                    RxBus.publish(BlinkEvent(messageId))
-                                }, 60)
-                            })
+                            if (it == chatAdapter.itemCount - 1) {
+                                chatAdapter.loadAround(it)
+                                scrollTo(it, 0, action = {
+                                    requireContext().mainThreadDelayed({
+                                        RxBus.publish(BlinkEvent(messageId))
+                                    }, 60)
+                                })
+                            } else {
+                                chatAdapter.loadAround(it + 1)
+                                scrollTo(it + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                                    requireContext().mainThreadDelayed({
+                                        RxBus.publish(BlinkEvent(messageId))
+                                    }, 60)
+                                })
+                            }
                         }
                     }, {
                     })
@@ -859,6 +869,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     audioRecorder.stopRecording(false)
                     chat_control.cancelExternal()
                 }
+                chat_control.chat_et.showKeyboard()
             }
             closeTool()
         }
@@ -959,7 +970,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                 chat_rv.visibility = View.INVISIBLE
                                                 chatAdapter.submitList(data)
                                                 chatAdapter.loadAround(index)
-                                                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = action)
+                                                if (index == chatAdapter.itemCount - 1) {
+                                                    scrollTo(index, 0, action = action)
+                                                } else {
+                                                    scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = action)
+                                                }
                                             } else {
                                                 val action = {
                                                     if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
@@ -1619,7 +1634,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             if (text.isBlank()) {
                 if (sticker_container.isShowing) {
                     updateSticker()
-                } else {
+                } else if (!reply_view.isVisible) {
                     toggleMediaLayout()
                 }
             } else {
