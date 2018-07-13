@@ -443,8 +443,7 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.isGroup()) {
                 itemView.avatar_iv.setGroup(conversationItem.iconUrl())
             } else {
-                itemView.avatar_iv.setInfo(if (conversationItem.getConversationName().isNotEmpty())
-                    conversationItem.getConversationName()[0] else ' ',
+                itemView.avatar_iv.setInfo(conversationItem.getConversationName(),
                     conversationItem.iconUrl(), conversationItem.ownerIdentityNumber)
             }
             itemView.setOnClickListener { onItemClickListener?.click(position, conversationItem) }

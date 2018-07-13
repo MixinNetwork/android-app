@@ -37,9 +37,9 @@ class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
         itemView.search_time_tv.timeAgo(message.createdAt)
         if (message.conversationCategory == ConversationCategory.CONTACT.name) {
             if (message.botUserId != null && message.botUserId != message.userId && message.botFullName != null) {
-                itemView.search_avatar_iv.setInfo(if (message.botFullName.isNotEmpty()) message.botFullName[0] else ' ', message.botAvatarUrl, message.botUserId)
+                itemView.search_avatar_iv.setInfo(message.botFullName, message.botAvatarUrl, message.botUserId)
             } else if (message.userFullName != null) {
-                itemView.search_avatar_iv.setInfo(if (message.userFullName.isNotEmpty()) message.userFullName[0] else ' ', message.userAvatarUrl, message.userId)
+                itemView.search_avatar_iv.setInfo(message.userFullName, message.userAvatarUrl, message.userId)
             }
         } else {
             itemView.search_avatar_iv.setGroup(message.conversationAvatarUrl)

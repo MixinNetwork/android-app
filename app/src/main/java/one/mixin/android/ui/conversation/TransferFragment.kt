@@ -157,8 +157,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 user = u
 
                 contentView.title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, u.fullName))
-                contentView.title_view.avatar_iv.setInfo(if (!u.fullName.isNullOrEmpty()) u.fullName!![0] else ' ',
-                    u.avatarUrl, u.identityNumber)
+                contentView.title_view.avatar_iv.setInfo(u.fullName, u.avatarUrl, u.identityNumber)
                 contentView.title_view.avatar_iv.setOnClickListener {
                     UserBottomSheetDialogFragment.newInstance(u).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                 }

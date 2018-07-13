@@ -108,8 +108,7 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(item: User, listener: ForwardListener?) {
             itemView.normal.text = item.fullName
-            itemView.avatar.setInfo(if (item.fullName != null && item.fullName.isNotEmpty())
-                item.fullName[0] else ' ', item.avatarUrl, item.identityNumber)
+            itemView.avatar.setInfo(item.fullName, item.avatarUrl, item.identityNumber)
             itemView.setOnClickListener {
                 listener?.onUserItemClick(item)
             }
@@ -125,8 +124,7 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
                 itemView.avatar_conversation.setGroup(item.iconUrl())
             } else {
                 itemView.name.text = item.name
-                itemView.avatar_conversation.setInfo(if (item.getConversationName().isNotEmpty())
-                    item.getConversationName()[0] else ' ', item.iconUrl(), item.ownerIdentityNumber)
+                itemView.avatar_conversation.setInfo(item.getConversationName(), item.iconUrl(), item.ownerIdentityNumber)
             }
             itemView.c_bot_iv.visibility = if (item.isBot()) VISIBLE else GONE
             itemView.setOnClickListener {

@@ -87,8 +87,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.title_view.setSubTitle(getString(R.string.wallet_bottom_transfer_to, user.fullName), user.identityNumber)
         contentView.title_view.avatar_iv.visibility = VISIBLE
         contentView.title_view.avatar_iv.setTextSize(16f)
-        contentView.title_view.avatar_iv.setInfo(if (user.fullName!!.isNotEmpty()) user.fullName!![0]
-        else ' ', user.avatarUrl, user.identityNumber)
+        contentView.title_view.avatar_iv.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         if (!TextUtils.isEmpty(memo)) {
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = memo
