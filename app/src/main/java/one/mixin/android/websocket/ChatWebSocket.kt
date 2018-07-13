@@ -32,7 +32,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import org.jetbrains.anko.runOnUiThread
-import timber.log.Timber
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit

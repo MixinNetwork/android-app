@@ -480,7 +480,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             })
                         }
                     }, {
-
                     })
                 }
             }

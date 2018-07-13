@@ -174,7 +174,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun bind(self: User?, listener: ContactListener?) {
             val account = Session.getAccount()
             if (self != null) {
-                itemView.contact_header_avatar.setInfo(self.fullName , self.avatarUrl, self.identityNumber)
+                itemView.contact_header_avatar.setInfo(self.fullName, self.avatarUrl, self.identityNumber)
                 itemView.contact_header_name_tv.text = self.fullName
                 itemView.contact_header_id_tv.text =
                     itemView.context.getString(R.string.contact_mixin_id, self.identityNumber)

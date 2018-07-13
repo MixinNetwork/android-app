@@ -63,13 +63,15 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
 
     private var onItemListener: ConversationAdapter.OnItemListener? = null
 
-    fun bind(messageItem: MessageItem,
+    fun bind(
+        messageItem: MessageItem,
         keyword: String?,
         isLast: Boolean,
         isFirst: Boolean = false,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener) {
+        onItemListener: ConversationAdapter.OnItemListener
+    ) {
         listen(messageItem.messageId)
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {

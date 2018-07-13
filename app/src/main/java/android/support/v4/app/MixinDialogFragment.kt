@@ -1,6 +1,6 @@
 package android.support.v4.app
 
-open class MixinDialogFragment: DialogFragment() {
+open class MixinDialogFragment : DialogFragment() {
 
     override fun showNow(manager: FragmentManager, tag: String) {
         mDismissed = false

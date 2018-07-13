@@ -49,7 +49,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             messageItem.type.endsWith("_IMAGE") -> {
                 reply_view_tv.setText(R.string.photo)
                 setIcon(R.drawable.ic_status_pic)
-                reply_view_iv.loadImageCenterCrop(messageItem.mediaUrl,R.drawable.image_holder)
+                reply_view_iv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as ConstraintLayout.LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE
                 reply_avatar.visibility = View.GONE
@@ -57,7 +57,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             messageItem.type.endsWith("_VIDEO") -> {
                 reply_view_tv.setText(R.string.video)
                 setIcon(R.drawable.ic_status_video)
-                reply_view_iv.loadImageCenterCrop(messageItem.mediaUrl,R.drawable.image_holder)
+                reply_view_iv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as ConstraintLayout.LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE
                 reply_avatar.visibility = View.GONE
@@ -65,7 +65,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             messageItem.type.endsWith("_STICKER") -> {
                 reply_view_tv.setText(R.string.sticker)
                 setIcon(R.drawable.ic_status_stiker)
-                reply_view_iv.loadImageCenterCrop(messageItem.assetUrl,R.drawable.image_holder)
+                reply_view_iv.loadImageCenterCrop(messageItem.assetUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as ConstraintLayout.LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE
                 reply_avatar.visibility = View.GONE
