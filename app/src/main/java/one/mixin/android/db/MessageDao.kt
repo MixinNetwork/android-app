@@ -81,7 +81,7 @@ interface MessageDao : BaseDao<Message> {
         "INNER JOIN users u ON m.user_id = u.user_id " +
         "LEFT JOIN stickers st ON st.sticker_id = m.sticker_id " +
         "LEFT JOIN users su ON m.shared_user_id = su.user_id " +
-        "WHERE (m.conversation_id = :conversationId AND m.id = :messageId)")
+        "WHERE (m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED')")
     fun findMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")

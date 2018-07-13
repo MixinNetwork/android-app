@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.maxItemWidth
+import org.jetbrains.anko.dip
 import kotlin.math.max
 
 class MessageLayout : ViewGroup {
@@ -24,7 +24,7 @@ class MessageLayout : ViewGroup {
         offset = context.dpToPx(8f)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.MessageLayout, defStyleAttr, 0)
         ta?.let {
-            maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, context.maxItemWidth())
+            maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, dip(300))
             contentPadding = ta.getDimensionPixelSize(R.styleable.MessageLayout_content_padding, 0)
             ta.recycle()
         }
@@ -41,8 +41,7 @@ class MessageLayout : ViewGroup {
         val paddingWidth = paddingStart + paddingEnd
         val paddingHeight = paddingTop + paddingBottom
 
-        measureChildren(MeasureSpec.makeMeasureSpec(maxWidth - paddingWidth, MeasureSpec.AT_MOST),
-            heightMeasureSpec)
+        measureChildren(MeasureSpec.makeMeasureSpec(maxWidth - contentPadding * 2 - paddingWidth, MeasureSpec.AT_MOST), heightMeasureSpec)
         val firstView = getChildAt(0) as TextView
         val secondView = getChildAt(1)
         val third = getThird()
