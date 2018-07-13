@@ -31,6 +31,27 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
     companion object {
         const val POS_TEXT = 0
         const val POS_AVATAR = 1
+
+        fun checkEmoji(s: String?): String {
+            if (s == null) return ""
+            if (s.length == 1) return s
+
+            val builder = StringBuilder()
+            var step = 0
+            for (i in 0 until s.length) {
+                val c = s[i]
+                if (!Character.isLetterOrDigit(c) && !Character.isSpaceChar(c) && !Character.isWhitespace(c)) {
+                    builder.append(c)
+                    step++
+                    if (step > 1) {
+                        break
+                    }
+                } else {
+                    break
+                }
+            }
+            return if (builder.isEmpty()) s[0].toString() else builder.toString()
+        }
     }
 
     fun setGroup(url: String?) {
@@ -46,8 +67,8 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
         avatar_simple.loadCircleImage(url, placeHolder)
     }
 
-    fun setInfo(text: Char, url: String?, id: String) {
-        avatar_tv.text = text.toString()
+    fun setInfo(name: String?, url: String?, id: String) {
+        avatar_tv.text = checkEmoji(name)
         try {
             avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(id.toInt()))
         } catch (e: NumberFormatException) {

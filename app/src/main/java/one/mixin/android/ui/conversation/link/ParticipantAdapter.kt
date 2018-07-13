@@ -24,8 +24,7 @@ class ParticipantAdapter(val list: ArrayList<User>) : RecyclerView.Adapter<Parti
 
     class ParticipantHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
         fun bind(user: User) {
-            itemView.avatar_av.setInfo(if (user.fullName != null && user.fullName.isNotEmpty())
-                user.fullName[0] else ' ', user.avatarUrl, user.identityNumber)
+            itemView.avatar_av.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             itemView.name.text = user.fullName
         }
     }

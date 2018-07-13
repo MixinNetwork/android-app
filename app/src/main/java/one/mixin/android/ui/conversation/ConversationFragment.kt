@@ -1303,8 +1303,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
         action_bar.avatar_iv.visibility = VISIBLE
         action_bar.avatar_iv.setTextSize(16f)
-        action_bar.avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0]
-        else ' ', user.avatarUrl, user.identityNumber)
+        action_bar.avatar_iv.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         user.let {
             if (it.relationship == UserRelationship.BLOCKING.name) {
                 chat_control.visibility = INVISIBLE

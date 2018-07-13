@@ -126,9 +126,7 @@ class ProfileFragment : BaseFragment() {
                 user = self
                 name_desc_tv.text = self.fullName
                 phone_desc_tv.text = self.phone
-                profile_avatar.setInfo(if (self.fullName != null &&
-                    self.fullName.isNotEmpty()) self.fullName[0] else ' ',
-                    self.avatarUrl, self.identityNumber)
+                profile_avatar.setInfo(self.fullName, self.avatarUrl, self.identityNumber)
             }
         })
     }

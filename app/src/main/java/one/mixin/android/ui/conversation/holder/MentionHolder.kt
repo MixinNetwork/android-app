@@ -13,8 +13,7 @@ class MentionHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
 
     fun bind(user: User, keyword: String?, listener: MentionAdapter.OnUserClickListener) {
         val userName = user.fullName
-        itemView.avatar_av.setInfo(if (!userName.isNullOrEmpty()) userName!![0] else ' ',
-            user.avatarUrl, user.identityNumber)
+        itemView.avatar_av.setInfo(userName, user.avatarUrl, user.identityNumber)
         itemView.name.text = userName
         itemView.setOnClickListener { listener.onUserClick(keyword, userName!!) }
     }

@@ -59,8 +59,7 @@ class AddressFragment : Fragment() {
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         title.title_tv.text = asset.symbol
         user?.let { user ->
-            val info = if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0] else ' '
-            avatar.setInfo(info, user.avatarUrl, user.identityNumber)
+            avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             qr_avatar.setUrl(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             name.text = user.fullName
             user_id.text = context?.getString(R.string.contact_mixin_id, user.identityNumber)

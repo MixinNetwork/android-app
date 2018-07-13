@@ -128,8 +128,7 @@ class GroupInfoAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             self: User?,
             participantsMap: ArrayMap<String, Participant>?
         ) {
-            itemView.avatar.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0] else ' ',
-                user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             itemView.normal.text = user.fullName
             itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
             itemView.verify_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
