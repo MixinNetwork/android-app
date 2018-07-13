@@ -35,6 +35,7 @@ import org.jetbrains.anko.dip
 class ChatControlView : FrameLayout {
 
     companion object {
+        const val REPLY = -1
         const val SEND = 0
         const val AUDIO = 1
         const val VIDEO = 2
@@ -107,6 +108,9 @@ class ChatControlView : FrameLayout {
     }
 
     fun setSend() {
+        if (sendStatus == REPLY) {
+            return
+        }
         val editEmpty = chat_et.text.toString().trim().isEmpty()
         sendStatus = if (!editEmpty) {
             if (chat_more_ib.visibility != View.GONE) {
@@ -151,6 +155,7 @@ class ChatControlView : FrameLayout {
 
     private fun checkSend() {
         val d = when (sendStatus) {
+            REPLY -> sendDrawable
             SEND -> sendDrawable
             AUDIO -> if (isRecording) audioActiveDrawable else audioDrawable
             VIDEO -> videoDrawable
@@ -172,11 +177,13 @@ class ChatControlView : FrameLayout {
         chat_sticker_ib.setImageDrawable(d)
     }
 
-    private fun cleanUp() {
+    private fun cleanUp(locked: Boolean = false) {
         startX = 0f
         originX = 0f
         isUp = true
-        isRecording = false
+        if (!locked) {
+            isRecording = false
+        }
         checkSend()
     }
 
@@ -239,7 +246,7 @@ class ChatControlView : FrameLayout {
 
     private fun clickSend() {
         when (sendStatus) {
-            SEND -> {
+            SEND, REPLY -> {
                 val t = chat_et.text.trim().toString()
                 callback.onSendClick(t)
             }
@@ -377,7 +384,7 @@ class ChatControlView : FrameLayout {
                 if (isRecording && !recordCircle.sendButtonVisible) {
                     handleCancelOrEnd(event.action == ACTION_CANCEL)
                 } else {
-                    cleanUp()
+                    cleanUp(true)
                 }
 
                 if (!callback.isReady()) {
@@ -460,6 +467,36 @@ class ChatControlView : FrameLayout {
         override fun onCancel() {
             handleCancelOrEnd(true)
         }
+    }
+
+    fun hideOtherInput() {
+        if (!botHide) {
+            chat_bot_ib.visibility = View.GONE
+        }
+        chat_sticker_ib.visibility = View.GONE
+        chat_more_ib.visibility = View.GONE
+        sendStatus = REPLY
+    }
+
+    fun showOtherInput() {
+        if (!botHide) {
+            chat_bot_ib.visibility = View.VISIBLE
+        }
+        chat_sticker_ib.visibility = View.VISIBLE
+        chat_more_ib.visibility = View.VISIBLE
+        sendStatus = lastSendStatus
+    }
+
+    private var botHide = false
+
+    fun hideBot() {
+        botHide = true
+        chat_bot_ib.visibility = View.GONE
+    }
+
+    fun showBot() {
+        botHide = false
+        chat_bot_ib.visibility = View.VISIBLE
     }
 
     interface Callback {
