@@ -809,26 +809,28 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             messageItem?.let { m ->
                 val isSticker = messageItem.type.endsWith("STICKER")
                 if (isSticker && m.stickerId != null) {
-                    doAsync {
-                        val request = StickerAddRequest(stickerId = m.stickerId)
-                        chatViewModel.addSticker(request)
-                            .subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-                            .autoDisposable(scopeProvider)
-                            .subscribe({ r ->
-                                if (r != null && r.isSuccess) {
-                                    val personalAlbum = chatViewModel.getPersonalAlbums()
-                                    if (personalAlbum == null) { // not add any personal sticker yet
-                                        chatViewModel.refreshStickerAlbums()
-                                    } else {
-                                        chatViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
-                                    }
-                                    uiThread { requireContext().toast(R.string.sticker_add_success) }
+                    val request = StickerAddRequest(stickerId = m.stickerId)
+                    chatViewModel.addSticker(request)
+                        .subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
+                        .map { r ->
+                            if (r.isSuccess) {
+                                val personalAlbum = chatViewModel.getPersonalAlbums()
+                                if (personalAlbum == null) { // not add any personal sticker yet
+                                    chatViewModel.refreshStickerAlbums()
+                                } else {
+                                    chatViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
                                 }
-                            }, {
-                                ErrorHandler.handleError(it)
-                                uiThread { requireContext().toast(R.string.sticker_add_failed) }
-                            })
-                    }
+                            }
+                        }
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDisposable(scopeProvider)
+                        .subscribe({
+                            closeTool()
+                            requireContext().toast(R.string.sticker_add_success)
+                        }, {
+                            ErrorHandler.handleError(it)
+                            requireContext().toast(R.string.sticker_add_failed)
+                        })
                 } else {
                     val url = m.mediaUrl
                     url?.let {
@@ -858,7 +860,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     audioRecorder.stopRecording(false)
                     chat_control.cancelExternal()
                 }
-
             }
             closeTool()
         }
