@@ -38,14 +38,15 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
         const val POS_TEXT = 0
         const val POS_AVATAR = 1
 
-        fun checkEmoji(s: String?): String {
-            if (s == null) return ""
-            if (s.length == 1) return s
+        fun checkEmoji(fullName: String?): String {
+            if (fullName.isNullOrEmpty()) return ""
+            val name = fullName!!
+            if (name.length == 1) return name
 
             val builder = StringBuilder()
             var step = 0
-            for (i in 0 until s.length) {
-                val c = s[i]
+            for (i in 0 until name.length) {
+                val c = name[i]
                 if (!Character.isLetterOrDigit(c) && !Character.isSpaceChar(c) && !Character.isWhitespace(c)) {
                     builder.append(c)
                     step++
@@ -56,7 +57,7 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
                     break
                 }
             }
-            return if (builder.isEmpty()) s[0].toString() else builder.toString()
+            return if (builder.isEmpty()) name[0].toString() else builder.toString()
         }
     }
 
