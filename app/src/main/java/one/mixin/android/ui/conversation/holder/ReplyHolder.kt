@@ -38,19 +38,15 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
         if (isMe) {
             lp.gravity = Gravity.END
             if (isLast) {
-                lp.bottomMargin = dp8
                 itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_me_last)
             } else {
-                lp.bottomMargin = dp1
                 itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_me)
             }
         } else {
             lp.gravity = Gravity.START
             if (isLast) {
-                lp.bottomMargin = dp8
                 itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_other_last)
             } else {
-                lp.bottomMargin = dp1
                 itemView.chat_msg_layout.setBackgroundResource(R.drawable.chat_bubble_reply_other)
             }
         }
@@ -240,7 +236,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
             }
             quoteMessage.type.endsWith("_CONTACT") -> {
-                itemView.reply_content_tv.setText(R.string.contact_less_title)
+                itemView.reply_content_tv.text = quoteMessage.sharedUserIdentityNumber
                 setIcon(R.drawable.ic_status_contact)
                 itemView.reply_avatar.setInfo(quoteMessage.sharedUserFullName, quoteMessage.sharedUserAvatarUrl, quoteMessage.sharedUserIdentityNumber
                     ?: "0")

@@ -12,18 +12,24 @@ import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.loadImage
+import org.jetbrains.anko.sp
 
 class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context, attrs) {
     init {
         LayoutInflater.from(context).inflate(R.layout.view_avatar, this, true)
         val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
         if (ta != null) {
+            if (ta.hasValue(R.styleable.CircleImageView_border_text_size)) {
+                avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, ta.getDimension(R.styleable.CircleImageView_border_text_size,
+                    sp(20f).toFloat()))
+            }
             if (ta.hasValue(R.styleable.CircleImageView_border_width)) {
                 avatar_simple.borderWidth = ta.getDimensionPixelSize(R.styleable.CircleImageView_border_width, 0)
                 avatar_simple.borderColor = ta.getColor(R.styleable.CircleImageView_border_color,
                     ContextCompat.getColor(context, android.R.color.white))
                 avatar_tv.setBorderInfo(avatar_simple.borderWidth.toFloat(), avatar_simple.borderColor)
             }
+
             ta.recycle()
         }
     }
