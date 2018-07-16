@@ -22,6 +22,7 @@
     <color name="colorRed">#FF001F</color>
     <color name="dotRed">#FF001F</color>
     <color name="colorGreen">#00C500</color>
+    <color name="stateGreen">#55CD96</color>
     <color name="touch_highlight">#400099cc</color>
     <color name="button_blue">#0D94FC</color>
     <color name="button_blue_highlighted">#2CC3FA</color>
