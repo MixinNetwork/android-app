@@ -16,11 +16,12 @@ import java.util.concurrent.TimeUnit
 
 class AudioPlayer private constructor() {
     companion object {
+        @Synchronized
         fun get(): AudioPlayer {
             if (instance == null) {
                 instance = AudioPlayer()
             }
-            return instance!!
+            return instance as AudioPlayer
         }
 
         private var instance: AudioPlayer? = null

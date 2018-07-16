@@ -202,10 +202,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         ConversationAdapter(keyword, onItemListener, isGroup)
     }
 
-    private val audioRecorder: OpusAudioRecorder by lazy {
-        OpusAudioRecorder(requireContext()).apply { callback = this@ConversationFragment }
-    }
-
     private val appAdapter: AppAdapter by lazy {
         AppAdapter(if (isGroup) {
             AppCap.GROUP.name
@@ -619,7 +615,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         AudioPlayer.pause()
-        audioRecorder.stopRecording(false, false)
+        OpusAudioRecorder.get().stopRecording(false, false)
         if (chat_control.isRecording) {
             chat_control.cancelExternal()
         }
@@ -640,7 +636,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 true
             }
             chat_control.isRecording -> {
-                audioRecorder.stopRecording(false)
+                OpusAudioRecorder.get().stopRecording(false)
                 chat_control.cancelExternal()
                 true
             }
@@ -661,7 +657,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideMediaLayout()
         }
         if (chat_control.isRecording) {
-            audioRecorder.stopRecording(false)
+            OpusAudioRecorder.get().stopRecording(false)
             chat_control.cancelExternal()
         }
         if (reply_view.visibility == VISIBLE) {
@@ -866,7 +862,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chat_control.hideOtherInput()
                 hideStickerContainer()
                 if (chat_control.isRecording) {
-                    audioRecorder.stopRecording(false)
+                    OpusAudioRecorder.get().stopRecording(false)
                     chat_control.cancelExternal()
                 }
                 chat_control.chat_et.showKeyboard()
@@ -910,7 +906,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         return@uiThread
                     }
                     chatViewModel.getMessages(conversationId).observe(this@ConversationFragment, Observer {
-                        doAsync {
+                        doAsync innerAsync@{
                             it?.let {
                                 val dataPackage = if (it.size > 0 && !isGroup &&
                                     recipient?.relationship == UserRelationship.STRANGER.name &&
@@ -921,7 +917,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                         DataPackage(it, unreadCount, false, true)
                                     }
                                 } else if (isFirstLoad) {
-                                    var index: Int
+                                    val index: Int
                                     if (it.isNotEmpty() && !messageId.isNullOrEmpty()) {
                                         index = chatViewModel.findMessageIndexSync(conversationId, messageId!!)
                                         DataPackage(it, index, false)
@@ -938,7 +934,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                     DataPackage(it, -1, false)
                                 }
                                 if (!isAdded) {
-                                    return@doAsync
+                                    return@innerAsync
                                 }
                                 onUiThread {
                                     if (dataPackage.data.size > 0) {
@@ -1415,10 +1411,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     max(0f, min(this.toFloat() / targetH - 1f, COVER_MAX_ALPHA))
                 } else {
                     var a = (this.toFloat() - curH) / (targetH - curH)
-                    if (java.lang.Float.isNaN(a)) {
-                        a = 0f
+                    a = if (java.lang.Float.isNaN(a)) {
+                        0f
                     } else {
-                        a = min(COVER_MAX_ALPHA, (this.toFloat() - curH) / (targetH - curH))
+                        min(COVER_MAX_ALPHA, (this.toFloat() - curH) / (targetH - curH))
                     }
                     a
                 }
@@ -1648,19 +1644,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onRecordStart(audio: Boolean) {
             AudioPlayer.get().pause()
-            audioRecorder.startRecording()
+            OpusAudioRecorder.get().startRecording(this@ConversationFragment)
         }
 
         override fun isReady(): Boolean {
-            return audioRecorder.statusSuccess
+            return OpusAudioRecorder.get().statusSuccess
         }
 
         override fun onRecordEnd() {
-            audioRecorder.stopRecording(true)
+            OpusAudioRecorder.get().stopRecording(true)
         }
 
         override fun onRecordCancel() {
-            audioRecorder.stopRecording(false)
+            OpusAudioRecorder.get().stopRecording(false)
         }
 
         override fun onUp() {
