@@ -27,7 +27,7 @@ interface ConversationService {
     fun requestAttachment(): Observable<MixinResponse<AttachmentResponse>>
 
     @GET("attachments/{id}")
-    fun getAttachment(@Path("id") id: String): Observable<MixinResponse<AttachmentResponse>>
+    fun getAttachment(@Path("id") id: String): Call<MixinResponse<AttachmentResponse>>
 
     @POST("conversations/{id}/participants/{action}")
     fun participants(
