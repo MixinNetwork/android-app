@@ -131,6 +131,8 @@ class WithdrawalFragment : BaseFragment() {
                 addrView.addr_va.displayedChild = POS_ADD
                 addr_tv.text = ""
                 fee_tv.visibility = GONE
+                title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
+                title_view.right_animator.isEnabled = false
             } else {
                 addrView.addr_va.displayedChild = POS_RV
                 val defaultAddrId = defaultSharedPreferences.getString(asset.assetId, null)
@@ -174,6 +176,10 @@ class WithdrawalFragment : BaseFragment() {
     private fun setAddrTv(addr: Address) {
         addr_tv.text = addr.label + " (" + addr.publicKey.formatPublicKey() + ")"
         defaultSharedPreferences.edit { putString(addr.assetId, addr.addressId) }
+        if (canNext(amount_et.text)) {
+            title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
+            title_view.right_animator.isEnabled = true
+        }
     }
 
     private fun refreshFeeUI(addr: Address) {
