@@ -11,6 +11,7 @@ import android.graphics.Point
 import android.graphics.PorterDuff
 import android.media.AudioManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.support.v4.content.ContextCompat
@@ -184,8 +185,10 @@ class CaptureFragment : BaseFragment() {
                 chronometer.base = SystemClock.elapsedRealtime()
                 chronometer.start()
                 videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
-                oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
-                audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
+                if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
+                    oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
+                    audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
+                }
                 mCaptureManager.record(videoFile, MAX_DURATION)
                 mode = Mode.RECORD
             }
@@ -212,7 +215,9 @@ class CaptureFragment : BaseFragment() {
                         }
                     }
                 }
-                requireContext().mainThreadDelayed({ audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0) }, 300)
+                if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
+                    requireContext().mainThreadDelayed({ audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0) }, 300)
+                }
             }
         })
         pseudo_view.translationY = -dip(300).toFloat()

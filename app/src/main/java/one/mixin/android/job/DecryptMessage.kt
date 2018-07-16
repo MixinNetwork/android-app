@@ -466,7 +466,7 @@ class DecryptMessage : Injector() {
             syncUser(contactData.userId)
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
-            messageDao.findMessageItemById(data.conversationId, messageId).let {
+            messageDao.findMessageItemById(data.conversationId, messageId)?.let {
                 messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, Gson().toJson(it))
             }
         }

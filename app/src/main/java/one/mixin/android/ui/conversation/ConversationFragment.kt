@@ -227,10 +227,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 when (id) {
                     R.id.menu_camera -> {
                         RxPermissions(requireActivity())
-                            .request(
-                                Manifest.permission.CAMERA,
-                                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .request(Manifest.permission.CAMERA)
                             .subscribe({ granted ->
                                 if (granted) {
                                     imageUri = createImageUri()
@@ -247,8 +244,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     R.id.menu_gallery -> {
                         RxPermissions(requireActivity())
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
                             .subscribe({ granted ->
                                 if (granted) {
                                     openGallery()
@@ -262,8 +258,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     R.id.menu_document -> {
                         RxPermissions(requireActivity())
-                            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                                Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
                             .subscribe({ granted ->
                                 if (granted) {
                                     selectDocument()
@@ -912,7 +907,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     chatViewModel.getMessages(conversationId).observe(this@ConversationFragment, Observer {
                         doAsync {
                             it?.let {
-                                val dataPackage = if (it.size > 0 && !isGroup &&
+                                val dataPackage = if (!isGroup &&
                                     recipient?.relationship == UserRelationship.STRANGER.name &&
                                     it.find { it != null && it.userId == sender.userId } == null) {
                                     if (unreadCount == null || unreadCount == 0) {

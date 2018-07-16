@@ -20,6 +20,7 @@ import android.support.v4.view.ViewPager
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
+import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
 import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
 import android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
 import android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
@@ -152,10 +153,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         view_pager.addOnPageChangeListener(pageListener)
         window.decorView.systemUiVisibility =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                SYSTEM_UI_FLAG_FULLSCREEN or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                     SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
             } else {
-                SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+                SYSTEM_UI_FLAG_FULLSCREEN or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                     SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
     }
