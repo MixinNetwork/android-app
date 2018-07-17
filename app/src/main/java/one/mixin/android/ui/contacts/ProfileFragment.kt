@@ -73,7 +73,7 @@ class ProfileFragment : BaseFragment() {
     }
     private var user: User? = null
     private val imageUri: Uri by lazy {
-        Uri.fromFile(context?.getImagePath()?.createImageTemp())
+        Uri.fromFile(requireContext().getImagePath().createImageTemp())
     }
     private var dialog: Dialog? = null
 

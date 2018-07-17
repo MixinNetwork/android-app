@@ -1,5 +1,6 @@
 package one.mixin.android.media
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -8,19 +9,34 @@ import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.systemService
 import one.mixin.android.AppExecutors
+import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.vibrate
 import one.mixin.android.util.DispatchQueue
 import java.io.File
 
-class OpusAudioRecorder(private val ctx: Context) {
+class OpusAudioRecorder private constructor(private val ctx: Context) {
     companion object {
         init {
             System.loadLibrary("mixin")
         }
+
         private const val SAMPLE_RATE = 16000
         private const val BUFFER_SIZE_FACTOR = 2
+
+        private const val MAX_RECORD_DURATION = 60000
+
+        @SuppressLint("StaticFieldLeak")
+        private var INSTANCE: OpusAudioRecorder? = null
+
+        @Synchronized
+        fun get(): OpusAudioRecorder {
+            if (INSTANCE == null) {
+                INSTANCE = OpusAudioRecorder(MixinApplication.appContext)
+            }
+            return INSTANCE as OpusAudioRecorder
+        }
     }
 
     private var audioRecord: AudioRecord? = null
@@ -30,6 +46,8 @@ class OpusAudioRecorder(private val ctx: Context) {
     private var samplesCount = 0L
     private var recordTimeCount = 0L
     private var sendAfterDone = false
+    private var callStop = false
+
     var statusSuccess = false
 
     private val recordQueue: DispatchQueue by lazy {
@@ -43,7 +61,7 @@ class OpusAudioRecorder(private val ctx: Context) {
         }
     }
 
-    var callback: Callback? = null
+    private var callback: Callback? = null
 
     init {
         recordBufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
@@ -63,11 +81,11 @@ class OpusAudioRecorder(private val ctx: Context) {
     }
 
     private val recordRunnable: Runnable by lazy {
-        Runnable {
+        Runnable recordRunnable@{
             audioRecord?.let { audioRecord ->
                 val shortArray = ShortArray(recordBufferSize)
                 val len = audioRecord.read(shortArray, 0, shortArray.size)
-                if (len > 0) {
+                if (len > 0 && !callStop) {
                     var sum = 0
                     try {
                         val newSamplesCount = samplesCount + len / 2
@@ -100,9 +118,15 @@ class OpusAudioRecorder(private val ctx: Context) {
                     } catch (e: Exception) {
                     }
 
-                    fileEncodingQueue.postRunnable(Runnable {
+                    fileEncodingQueue.postRunnable(Runnable encodingRunnable@{
+                        if (callStop) return@encodingRunnable
+
                         writeFrame(shortArray, len)
                         recordTimeCount += len / 16
+
+                        if (recordTimeCount >= MAX_RECORD_DURATION) {
+                            stopRecordingInternal(true)
+                        }
                     })
                     recordQueue.postRunnable(recordRunnable)
                 } else {
@@ -130,6 +154,7 @@ class OpusAudioRecorder(private val ctx: Context) {
             if (audioRecord == null || audioRecord!!.state != AudioRecord.STATE_INITIALIZED) {
                 return@Runnable
             }
+            callStop = false
             samplesCount = 0
             recordTimeCount = 0
             audioRecord?.startRecording()
@@ -156,7 +181,8 @@ class OpusAudioRecorder(private val ctx: Context) {
         recordQueue.postRunnable(recordRunnable)
     }
 
-    fun startRecording() {
+    fun startRecording(callback: Callback) {
+        this.callback = callback
         recordQueue.postRunnable(recodeStartRunnable)
     }
 
@@ -177,6 +203,7 @@ class OpusAudioRecorder(private val ctx: Context) {
     }
 
     private fun stopRecordingInternal(send: Boolean) {
+        callStop = true
         if (send) {
             fileEncodingQueue.postRunnable(Runnable {
                 stopRecord()
@@ -186,6 +213,7 @@ class OpusAudioRecorder(private val ctx: Context) {
                     if (recordingAudioFile != null) {
                         callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
                     }
+                    callback = null
                     recordingAudioFile = null
                 }
             })
