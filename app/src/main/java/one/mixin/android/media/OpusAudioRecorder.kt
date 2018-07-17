@@ -5,7 +5,6 @@ import android.content.Context
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
-import android.os.PowerManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.systemService
@@ -48,7 +47,6 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
     private var recordTimeCount = 0L
     private var sendAfterDone = false
     private var callStop = false
-    private val wakeLock = ctx.systemService<PowerManager>().newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "AudioWakeLock")
 
     var statusSuccess = false
 
@@ -168,9 +166,6 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             }
             ctx.vibrate(longArrayOf(0, 10))
             statusSuccess = true
-            if (!wakeLock.isHeld) {
-                wakeLock.acquire(100000)
-            }
         } catch (e: Exception) {
             recordingAudioFile?.delete()
             try {
@@ -209,10 +204,6 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
 
     private fun stopRecordingInternal(send: Boolean) {
         callStop = true
-        if (wakeLock.isHeld) {
-            wakeLock.setReferenceCounted(false)
-            wakeLock.release()
-        }
         if (send) {
             fileEncodingQueue.postRunnable(Runnable {
                 stopRecord()
