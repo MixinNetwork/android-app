@@ -14,8 +14,14 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.util.BigDecimalCache
+import one.mixin.android.util.BigDecimalCache.Companion.FORMAT_TYPE_0
+import one.mixin.android.util.BigDecimalCache.Companion.FORMAT_TYPE_2
+import one.mixin.android.util.BigDecimalCache.Companion.FORMAT_TYPE_8
 import one.mixin.android.vo.AssetItem
+import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColorResource
+import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 
 class AssetAdapter(var assets: List<AssetItem>) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -40,19 +46,37 @@ class AssetAdapter(var assets: List<AssetItem>) : RecyclerView.Adapter<RecyclerV
         if (holder is AssetHolder) {
             val asset = assets[getPos(position)]
             val ctx = holder.itemView.context
-            holder.itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
-            holder.itemView.balance_as.text = ctx.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
+            holder.itemView.balance.text = BigDecimalCache.SINGLETON.get(asset.balance + "_" + FORMAT_TYPE_8) + " " + asset.symbol
+            formatAsync(asset.balance, FORMAT_TYPE_8) {
+                holder.itemView.balance.text = it + " " + asset.symbol
+                BigDecimalCache.SINGLETON.put(asset.balance + "_" + FORMAT_TYPE_8, it)
+            }
+            holder.itemView.balance_as.text = ctx.getString(R.string.wallet_unit_usd,
+                "≈ ${BigDecimalCache.SINGLETON.get(asset.usd().toPlainString() + "_" + FORMAT_TYPE_2)}")
+            formatAsync(asset.usd().toPlainString(), FORMAT_TYPE_2) {
+                holder.itemView.balance_as.text = ctx.getString(R.string.wallet_unit_usd, "≈ $it")
+                BigDecimalCache.SINGLETON.put(asset.usd().toPlainString() + "_" + FORMAT_TYPE_2, it)
+            }
             if (asset.priceUsd == "0") {
                 holder.itemView.price_tv.text = "N/A"
                 holder.itemView.change_tv.visibility = GONE
             } else {
                 holder.itemView.change_tv.visibility = VISIBLE
-                holder.itemView.price_tv.text = "$${asset.priceUsd.numberFormat()}"
+                holder.itemView.price_tv.text = "$${BigDecimalCache.SINGLETON.get(asset.priceUsd + "_" + FORMAT_TYPE_0)}"
+                formatAsync(asset.priceUsd, FORMAT_TYPE_0) {
+                    holder.itemView.price_tv.text = "$$it"
+                    BigDecimalCache.SINGLETON.put(asset.priceUsd + "_" + FORMAT_TYPE_0, it)
+                }
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO
-                    val t = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                    holder.itemView.change_tv.text = if (isPositive) "+$t" else t
+                    val s = BigDecimalCache.SINGLETON.get(asset.changeUsd + "_" + FORMAT_TYPE_2)
+                    val t = if (isPositive) "+$s%" else "$s%"
+                    holder.itemView.change_tv.text = t
+                    formatAsync((changeUsd * BigDecimal(100)).toPlainString(), FORMAT_TYPE_2) {
+                        holder.itemView.change_tv.text = if (isPositive) "+$it%" else "$it%"
+                        BigDecimalCache.SINGLETON.put(asset.changeUsd + "_" + FORMAT_TYPE_2, it)
+                    }
                     holder.itemView.change_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
                 }
             }
@@ -69,6 +93,18 @@ class AssetAdapter(var assets: List<AssetItem>) : RecyclerView.Adapter<RecyclerV
             HeadHolder(headerView!!)
         } else {
             AssetHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_wallet_asset, parent, false))
+        }
+    }
+
+    private fun formatAsync(needFormat: String, formatType: Int, uiOperation: (String) -> Unit) {
+        doAsync {
+            val formatted = when (formatType) {
+                FORMAT_TYPE_2 -> needFormat.numberFormat2()
+                FORMAT_TYPE_8 -> needFormat.numberFormat8()
+                else -> needFormat.numberFormat()
+            }
+
+            uiThread { uiOperation(formatted) }
         }
     }
 

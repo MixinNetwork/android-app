@@ -31,7 +31,6 @@ import one.mixin.android.widget.PieItemView
 import one.mixin.android.widget.PieView
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import java.math.BigDecimal
-import java.util.Collections
 import javax.inject.Inject
 
 class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
@@ -92,10 +91,10 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
                 if (totalUSD.compareTo(BigDecimal.ZERO) == 0) return@Observer
 
                 val list = r.filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }
-                    .map { PieView.PieItem(it.symbol, (it.usd() / totalUSD).toFloat()) }
+                    .map { PieView.PieItem(it.symbol, (it.usd() / totalUSD).toFloat()) }.toMutableList()
                 if (list.isNotEmpty()) {
                     header.pie_item_container.removeAllViews()
-                    Collections.sort(list, { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() })
+                    list.sortWith(Comparator { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() })
                     context?.mainThreadDelayed({
                         header.pie_view.setPieItem(list, !animated)
                         animated = true
