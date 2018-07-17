@@ -32,7 +32,7 @@ class PorterShapeImageView : PorterImageView {
     }
 
     fun setShape(@DrawableRes shape: Int) {
-        var drawable = map[shape].let {
+        val drawable = map[shape].let {
             if (it == null) {
                 val d = context.getDrawable(shape)
                 map[shape] = d

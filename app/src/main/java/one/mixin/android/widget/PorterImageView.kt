@@ -9,8 +9,9 @@ import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
 import android.support.v7.widget.AppCompatImageView
 import android.util.AttributeSet
-import android.util.Log
+import android.view.View
 import android.widget.ImageView
+import timber.log.Timber
 
 abstract class PorterImageView : AppCompatImageView {
 
@@ -87,6 +88,20 @@ abstract class PorterImageView : AppCompatImageView {
         }
     }
 
+    override fun onWindowVisibilityChanged(visibility: Int) {
+        super.onWindowVisibilityChanged(visibility)
+        if (visibility == View.VISIBLE) {
+            if (maskBitmap == null || drawableBitmap == null) {
+                createMaskCanvas()
+            }
+        } else {
+            drawableBitmap?.recycle()
+            maskBitmap?.recycle()
+            drawableBitmap = null
+            maskBitmap = null
+        }
+    }
+
     protected abstract fun paintMaskCanvas(maskCanvas: Canvas, maskPaint: Paint, width: Int, height: Int)
 
     override fun onDraw(canvas: Canvas) {
@@ -127,7 +142,7 @@ abstract class PorterImageView : AppCompatImageView {
                 }
             } catch (e: Exception) {
                 val log = "Exception occured while drawing $id"
-                Log.e(TAG, log, e)
+                Timber.e(e, log)
             } finally {
                 canvas.restoreToCount(saveCount)
             }

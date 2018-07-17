@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
-import io.reactivex.disposables.Disposable
 import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -10,6 +9,8 @@ import okhttp3.Request
 import okio.Okio
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.response.AttachmentResponse
 import one.mixin.android.crypto.attachment.AttachmentCipherInputStream
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.copyFromInputStream
@@ -42,7 +43,6 @@ class AttachmentDownloadJob(private val message: Message)
     .groupBy("attachment_download").requireNetwork().persist(), message.id) {
 
     private val TAG = AttachmentDownloadJob::class.java.simpleName
-    private var disposable: Disposable? = null
 
     companion object {
         const val GROUP = "AttachmentDownloadJob"
@@ -50,6 +50,7 @@ class AttachmentDownloadJob(private val message: Message)
     }
 
     private var call: Call? = null
+    private var attachmentCall: retrofit2.Call<MixinResponse<AttachmentResponse>>? = null
 
     override fun cancel() {
         isCancel = true
@@ -58,9 +59,9 @@ class AttachmentDownloadJob(private val message: Message)
                 it.cancel()
             }
         }
-        disposable?.let {
-            if (!it.isDisposed) {
-                it.dispose()
+        attachmentCall?.let {
+            if (!it.isCanceled) {
+                it.cancel()
             }
         }
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
@@ -72,19 +73,16 @@ class AttachmentDownloadJob(private val message: Message)
             return
         }
         jobManager.saveJob(this)
-        disposable = conversationApi.getAttachment(message.content!!).map {
-            if (it.isSuccess || !isCancel) {
-                decryptAttachment(it.data!!.view_url!!)
-            } else {
-                false
-            }
-        }.subscribe({
+        attachmentCall = conversationApi.getAttachment(message.content!!)
+        val body = attachmentCall!!.execute().body()
+        if (body != null && (body.isSuccess || !isCancel)) {
+            decryptAttachment(body.data!!.view_url!!)
             removeJob()
-        }, {
-            Log.e(TAG, "get attachment url failed", it)
+        } else {
+            removeJob()
+            Log.e(TAG, "get attachment url failed")
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
-            removeJob()
-        })
+        }
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {
@@ -104,7 +102,7 @@ class AttachmentDownloadJob(private val message: Message)
         val client = OkHttpClient.Builder()
             .connectTimeout(30, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
-            .addNetworkInterceptor({ chain: Interceptor.Chain ->
+            .addNetworkInterceptor { chain: Interceptor.Chain ->
                 val originalResponse = chain.proceed(chain.request())
                 originalResponse.newBuilder().body(ProgressResponseBody(originalResponse.body(),
                     ProgressListener { bytesRead, contentLength, done ->
@@ -113,7 +111,7 @@ class AttachmentDownloadJob(private val message: Message)
                                 bytesRead.toFloat() / contentLength.toFloat()))
                         }
                     })).build()
-            })
+            }
             .build()
 
         val request = Request.Builder()
