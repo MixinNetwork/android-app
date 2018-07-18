@@ -579,11 +579,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         input_layout.addOnKeyboardShownListener(this)
         input_layout.addOnKeyboardHiddenListener(this)
         chatViewModel.findUnreadMessages(conversationId).flatMap { it ->
+            chatViewModel.makeMessageReadByConversationId(conversationId, sender.userId)
+            notificationManager.cancel(conversationId.hashCode())
             Flowable.fromIterable(it)
         }.autoDisposable(scopeProvider).subscribe({
-            chatViewModel.makeMessageReadByConversationId(it.conversationId, sender.userId)
             chatViewModel.sendAckMessage(createAckParamBlazeMessage(it.messageId, MessageStatus.READ))
-            notificationManager.cancel(it.conversationId.hashCode())
         }, {
             Timber.e(it)
         })

@@ -25,8 +25,6 @@ class SendService : IntentService("SendService") {
     @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
-    lateinit var conversationDao: ConversationDao
-    @Inject
     lateinit var messageDao: MessageDao
 
     override fun onCreate() {
@@ -54,7 +52,7 @@ class SendService : IntentService("SendService") {
                     jobManager.addJobInBackground(SendAckMessageJob(createAckParamBlazeMessage(mId, MessageStatus.READ)))
                 }
             }
-            conversationDao.makeMessageReadByConversationId(conversationId, Session.getAccountId()!!)
+            messageDao.makeMessageReadByConversationId(conversationId, Session.getAccountId()!!)
         }
     }
 }

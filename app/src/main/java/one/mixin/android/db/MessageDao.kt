@@ -50,9 +50,6 @@ interface MessageDao : BaseDao<Message> {
         "ORDER BY m.created_at DESC")
     fun getMessagesMinimal(conversationId: String): List<String>
 
-    @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
-    fun indexUnread(conversationId: String): Int?
-
     @Query("SELECT * FROM messages WHERE conversation_id = :conversationId")
     fun getMessageList(conversationId: String): List<Message>
 
@@ -81,7 +78,7 @@ interface MessageDao : BaseDao<Message> {
         "INNER JOIN users u ON m.user_id = u.user_id " +
         "LEFT JOIN stickers st ON st.sticker_id = m.sticker_id " +
         "LEFT JOIN users su ON m.shared_user_id = su.user_id " +
-        "WHERE (m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED')")
+        "WHERE m.conversation_id = :conversationId AND m.id = :messageId AND m.status != 'FAILED'")
     fun findMessageItemById(conversationId: String, messageId: String): QuoteMessageItem?
 
     @Query("SELECT count(id) FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :messageId AND quote_content IS NULL")
@@ -120,6 +117,9 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("UPDATE messages SET hyperlink = :hyperlink WHERE id = :id")
     fun updateHyperlink(hyperlink: String, id: String)
+
+    @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId AND status = 'DELIVERED'")
+    fun makeMessageReadByConversationId(conversationId: String, userId: String)
 
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
