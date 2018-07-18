@@ -36,9 +36,9 @@ import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import com.bugsnag.android.Bugsnag
+import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
-import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -129,8 +129,9 @@ import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
+import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.TransferStickerData
-import one.mixin.android.websocket.createAckParamBlazeMessage
+import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
@@ -578,12 +579,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         super.onResume()
         input_layout.addOnKeyboardShownListener(this)
         input_layout.addOnKeyboardHiddenListener(this)
-        chatViewModel.findUnreadMessages(conversationId).flatMap { it ->
+        chatViewModel.findUnreadMessages(conversationId).map { it ->
             chatViewModel.makeMessageReadByConversationId(conversationId, sender.userId)
             notificationManager.cancel(conversationId.hashCode())
-            Flowable.fromIterable(it)
+            it.map { BlazeAckMessage(it.messageId, MessageStatus.READ.name) }
         }.autoDisposable(scopeProvider).subscribe({
-            chatViewModel.sendAckMessage(createAckParamBlazeMessage(it.messageId, MessageStatus.READ))
+            it.chunked(100).forEach {
+                chatViewModel.sendAckMessage(createAckListParamBlazeMessage(it))
+            }
         }, {
             Timber.e(it)
         })
