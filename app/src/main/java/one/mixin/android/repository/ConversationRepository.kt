@@ -77,7 +77,7 @@ internal constructor(
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem> =
         messageDao.getMessages(conversationId)
 
-    fun indexUnread(conversationId: String) = messageDao.indexUnread(conversationId)
+    fun indexUnread(conversationId: String) = conversationDao.indexUnread(conversationId)
 
     fun getMediaMessages(conversationId: String): List<MessageItem> =
         messageDao.getMediaMessages(conversationId)
@@ -86,7 +86,7 @@ internal constructor(
 
     fun makeMessageReadByConversationId(conversationId: String, accountId: String) {
         appExecutors.diskIO().execute {
-            conversationDao.makeMessageReadByConversationId(conversationId, accountId)
+            messageDao.makeMessageReadByConversationId(conversationId, accountId)
         }
     }
 
