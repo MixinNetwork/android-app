@@ -1,167 +1,165 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?android:attr/selectableItemBackground">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:background="?android:attr/selectableItemBackground"
+                tools:layout_editor_absoluteY="81dp">
+
+    <Space
+            android:id="@+id/center"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
 
     <one.mixin.android.widget.AvatarView
-        android:id="@+id/avatar_iv"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginBottom="12dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/name_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:maxWidth="220dp"
-        android:singleLine="true"
-        android:textColor="@color/text_black"
-        android:textSize="16sp"
-        app:layout_constraintEnd_toStartOf="@id/verified_iv"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintStart_toEndOf="@id/avatar_iv"
-        app:layout_constraintTop_toTopOf="@id/avatar_iv" />
-
-    <ImageView
-        android:id="@+id/verified_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_marginStart="8dp"
-        android:src="@drawable/ic_user_verified"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/name_tv"
-        app:layout_constraintEnd_toStartOf="@id/bot_iv"
-        app:layout_constraintStart_toEndOf="@id/name_tv"
-        app:layout_constraintTop_toTopOf="@id/name_tv"
-        tools:ignore="ContentDescription" />
-
-    <ImageView
-        android:id="@+id/bot_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_marginStart="8dp"
-        android:src="@drawable/ic_bot"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/name_tv"
-        app:layout_constraintStart_toEndOf="@id/verified_iv"
-        app:layout_constraintEnd_toStartOf="@id/mute_iv"
-        app:layout_constraintTop_toTopOf="@id/name_tv"
-        android:contentDescription="@null"/>
-
-    <ImageView
-        android:id="@+id/mute_iv"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
-        android:layout_marginStart="8dp"
-        android:src="@drawable/ic_mute"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="@id/name_tv"
-        app:layout_constraintEnd_toStartOf="@id/time_tv"
-        app:layout_constraintStart_toEndOf="@id/bot_iv"
-        app:layout_constraintTop_toTopOf="@id/name_tv"
-        tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/time_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="12dp"
-        android:fontFamily="@font/sf_pro_light"
-        android:textColor="@color/text_gray"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/avatar_iv" />
+            android:id="@+id/avatar_iv"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_margin="@dimen/margin12"/>
 
     <LinearLayout
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toBottomOf="@id/avatar_iv"
-        app:layout_constraintEnd_toEndOf="@id/time_tv"
-        app:layout_constraintStart_toEndOf="@id/avatar_iv">
-
-        <TextView
-            android:id="@+id/group_name_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="3dp"
-            android:ellipsize="middle"
-            android:fontFamily="@font/sf_pro_light"
-            android:maxWidth="120dp"
-            android:singleLine="true"
-            android:textColor="@color/text_gray"
-            android:textSize="13sp"
-            android:visibility="gone" />
-
-        <ImageView
-            android:id="@+id/msg_flag"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginEnd="3dp"
-            android:contentDescription="@null"
-            android:visibility="gone" />
+            android:layout_toEndOf="@id/avatar_iv"
+            android:layout_above="@id/center">
 
         <TextView
-            android:id="@+id/msg_tv"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:drawablePadding="3dp"
-            android:ellipsize="end"
-            android:fontFamily="@font/sf_pro_light"
-            android:maxLines="1"
-            android:textColor="@color/text_gray"
-            android:textSize="13sp" />
+                android:id="@+id/name_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginBottom="2dp"
+                android:maxWidth="220dp"
+                android:singleLine="true"
+                android:textColor="@color/text_black"
+                android:textSize="16sp"/>
 
         <ImageView
-            android:id="@+id/msg_pin"
-            android:layout_width="23dp"
-            android:layout_height="23dp"
-            android:layout_marginStart="8dp"
-            android:src="@drawable/ic_pin_status"
-            android:visibility="gone"
-            android:contentDescription="@null"/>
+                android:id="@+id/verified_iv"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginStart="8dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_user_verified"
+                android:visibility="gone"
+                tools:ignore="ContentDescription"/>
 
-        <TextView
-            android:id="@+id/unread_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:background="@drawable/bg_unread"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:visibility="gone" />
+        <ImageView
+                android:id="@+id/bot_iv"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_bot"
+                android:visibility="gone"
+                android:contentDescription="@null"/>
+
+        <ImageView
+                android:id="@+id/mute_iv"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginStart="8dp"
+                android:src="@drawable/ic_mute"
+                android:visibility="gone"
+                tools:ignore="ContentDescription"/>
     </LinearLayout>
 
-    <ProgressBar
-        android:id="@+id/pb"
-        style="?android:attr/progressBarStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.BlueAccent"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="@id/time_tv"
-        app:layout_constraintTop_toBottomOf="@id/time_tv" />
+    <TextView
+            android:id="@+id/time_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/margin12"
+            android:layout_above="@id/center"
+            android:layout_marginStart="8dp"
+            android:layout_marginBottom="6dp"
+            android:fontFamily="@font/sf_pro_light"
+            android:textColor="@color/text_gray"
+            android:textSize="12sp"/>
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/avatar_iv"
+            android:layout_below="@id/center"
+            android:layout_marginEnd="@dimen/margin12"
+            android:layout_marginTop="2dp"
+            android:orientation="horizontal">
+
+        <TextView
+                android:id="@+id/group_name_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="3dp"
+                android:layout_gravity="center_vertical"
+                android:ellipsize="middle"
+                android:fontFamily="@font/sf_pro_light"
+                android:maxWidth="120dp"
+                android:singleLine="true"
+                android:textColor="@color/text_gray"
+                android:textSize="13sp"
+                android:visibility="gone"/>
+
+        <ImageView
+                android:id="@+id/msg_flag"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginEnd="3dp"
+                android:layout_gravity="center_vertical"
+                android:contentDescription="@null"
+                android:visibility="gone"/>
+
+        <TextView
+                android:id="@+id/msg_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:drawablePadding="3dp"
+                android:layout_gravity="center_vertical"
+                android:ellipsize="end"
+                android:fontFamily="@font/sf_pro_light"
+                android:maxLines="1"
+                android:textColor="@color/text_gray"
+                android:textSize="13sp"/>
+
+        <ImageView
+                android:id="@+id/msg_pin"
+                android:layout_width="23dp"
+                android:layout_height="23dp"
+                android:layout_marginStart="8dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_pin_status"
+                android:visibility="gone"
+                android:contentDescription="@null"/>
+
+        <TextView
+                android:id="@+id/unread_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_gravity="center_vertical"
+                android:background="@drawable/bg_unread"
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:visibility="gone"/>
+
+        <ProgressBar
+                android:id="@+id/pb"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:theme="@style/AppTheme.BlueAccent"
+                android:visibility="gone"/>
+    </LinearLayout>
 
     <View
-        android:layout_width="0dp"
-        android:layout_height="0.5dp"
-        android:background="@color/divider"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/name_tv" />
-
-</android.support.constraint.ConstraintLayout>
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginStart="72dp"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentEnd="true"
+            android:background="@color/divider"/>
+</RelativeLayout>
