@@ -26,7 +26,7 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
-        return BottomSheet.Builder(requireContext(), true).create()
+        return BottomSheet.Builder(requireActivity(), true).create()
     }
 
     override fun onDetach() {

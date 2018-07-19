@@ -40,6 +40,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.widget.BadgeCircleImageView.Companion.END_BOTTOM
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.ctx
 import org.jetbrains.anko.uiThread
 import java.io.FileNotFoundException
 
@@ -130,42 +131,40 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showBottom() {
-        context?.let { ctx ->
-            val builder = BottomSheet.Builder(ctx)
-            val view = View.inflate(ctx, R.layout.view_qr_bottom, null)
-            builder.setCustomView(view)
-            val bottomSheet = builder.create()
-            view.save.setOnClickListener {
-                RxPermissions(activity!!)
-                    .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .subscribe({ granted ->
-                        if (granted) {
-                            doAsync {
-                                val outFile = ctx.getPublicPictyresPath().createImageTemp(noMedia = false)
-                                val b = Bitmap.createBitmap(contentView.bottom_ll.width, contentView.bottom_ll.height, Bitmap.Config.ARGB_8888)
-                                val c = Canvas(b)
-                                contentView.bottom_ll.draw(c)
-                                b.save(outFile)
-                                try {
-                                    MediaStore.Images.Media.insertImage(ctx.contentResolver,
-                                        outFile.absolutePath, outFile.name, null)
-                                } catch (e: FileNotFoundException) {
-                                    e.printStackTrace()
-                                }
-                                ctx.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-
-                                uiThread { context?.toast(R.string.save_success) }
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = View.inflate(ctx, R.layout.view_qr_bottom, null)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.save.setOnClickListener {
+            RxPermissions(activity!!)
+                .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        doAsync {
+                            val outFile = ctx.getPublicPictyresPath().createImageTemp(noMedia = false)
+                            val b = Bitmap.createBitmap(contentView.bottom_ll.width, contentView.bottom_ll.height, Bitmap.Config.ARGB_8888)
+                            val c = Canvas(b)
+                            contentView.bottom_ll.draw(c)
+                            b.save(outFile)
+                            try {
+                                MediaStore.Images.Media.insertImage(ctx.contentResolver,
+                                    outFile.absolutePath, outFile.name, null)
+                            } catch (e: FileNotFoundException) {
+                                e.printStackTrace()
                             }
-                        } else {
-                            ctx.openPermissionSetting()
+                            ctx.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+
+                            uiThread { context?.toast(R.string.save_success) }
                         }
-                    }, {
-                        context?.toast(R.string.save_failure)
-                    })
-                bottomSheet.dismiss()
-            }
-            view.cancel.setOnClickListener { bottomSheet.dismiss() }
-            bottomSheet.show()
+                    } else {
+                        ctx.openPermissionSetting()
+                    }
+                }, {
+                    context?.toast(R.string.save_failure)
+                })
+            bottomSheet.dismiss()
         }
+        view.cancel.setOnClickListener { bottomSheet.dismiss() }
+        bottomSheet.show()
     }
 }
