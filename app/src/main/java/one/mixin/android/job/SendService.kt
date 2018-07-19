@@ -6,8 +6,8 @@ import android.content.Intent
 import android.support.v4.app.RemoteInput
 import androidx.core.content.systemService
 import dagger.android.AndroidInjection
-import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MessageDao
+import one.mixin.android.extension.async
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.NotificationJob.Companion.CONVERSATION_ID
 import one.mixin.android.job.NotificationJob.Companion.IS_PLAIN
@@ -16,7 +16,8 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMessage
-import one.mixin.android.websocket.createAckParamBlazeMessage
+import one.mixin.android.websocket.BlazeAckMessage
+import one.mixin.android.websocket.createAckListParamBlazeMessage
 import java.util.UUID
 import javax.inject.Inject
 
@@ -48,11 +49,15 @@ class SendService : IntentService("SendService") {
                 Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING)
             jobManager.addJobInBackground(SendMessageJob(message))
             messageDao.findUnreadMessagesSync(conversationId)?.let {
-                for (mId in it) {
-                    jobManager.addJobInBackground(SendAckMessageJob(createAckParamBlazeMessage(mId, MessageStatus.READ)))
+                messageDao.makeMessageReadByConversationId(conversationId, Session.getAccountId()!!)
+                it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
+                    async {
+                        it.chunked(100).forEach {
+                            jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                        }
+                    }
                 }
             }
-            messageDao.makeMessageReadByConversationId(conversationId, Session.getAccountId()!!)
         }
     }
 }
