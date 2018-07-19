@@ -118,8 +118,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET hyperlink = :hyperlink WHERE id = :id")
     fun updateHyperlink(hyperlink: String, id: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId AND status = 'DELIVERED'")
-    fun makeMessageReadByConversationId(conversationId: String, userId: String)
+    @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
+        "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId)")
+    fun makeMessageReadByConversationId(conversationId: String, userId: String, messageId: String)
 
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +

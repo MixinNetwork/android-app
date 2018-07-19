@@ -84,9 +84,9 @@ internal constructor(
 
     fun getConversationIdIfExistsSync(recipientId: String) = conversationDao.getConversationIdIfExistsSync(recipientId)
 
-    fun makeMessageReadByConversationId(conversationId: String, accountId: String) {
+    fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
         appExecutors.diskIO().execute {
-            messageDao.makeMessageReadByConversationId(conversationId, accountId)
+            messageDao.makeMessageReadByConversationId(conversationId, accountId, messageId)
         }
     }
 
