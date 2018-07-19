@@ -36,7 +36,6 @@ import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import com.bugsnag.android.Bugsnag
-import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -580,12 +579,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         input_layout.addOnKeyboardShownListener(this)
         input_layout.addOnKeyboardHiddenListener(this)
         chatViewModel.findUnreadMessages(conversationId).map { it ->
-            chatViewModel.makeMessageReadByConversationId(conversationId, sender.userId)
+            if (it.isNotEmpty()) {
+                chatViewModel.makeMessageReadByConversationId(conversationId, sender.userId, it.last().messageId)
+            }
             notificationManager.cancel(conversationId.hashCode())
             it.map { BlazeAckMessage(it.messageId, MessageStatus.READ.name) }
         }.autoDisposable(scopeProvider).subscribe({
-            it.chunked(100).forEach {
-                chatViewModel.sendAckMessage(createAckListParamBlazeMessage(it))
+            if (it.isNotEmpty()) {
+                it.chunked(100).forEach {
+                    chatViewModel.sendAckMessage(createAckListParamBlazeMessage(it))
+                }
             }
         }, {
             Timber.e(it)
@@ -677,7 +680,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun markRead() {
-        chatViewModel.makeMessageReadByConversationId(conversationId, sender.userId)
         chatAdapter.markread()
     }
 

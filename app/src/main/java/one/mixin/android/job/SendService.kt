@@ -49,7 +49,7 @@ class SendService : IntentService("SendService") {
                 Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING)
             jobManager.addJobInBackground(SendMessageJob(message))
             messageDao.findUnreadMessagesSync(conversationId)?.let {
-                messageDao.makeMessageReadByConversationId(conversationId, Session.getAccountId()!!)
+                messageDao.makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
                 it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
                     async {
                         it.chunked(100).forEach {

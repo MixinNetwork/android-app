@@ -5,6 +5,7 @@
               android:orientation="vertical">
 
     <TextView
+            android:textColor="@color/colorGray"
             android:id="@+id/hide"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -21,6 +22,7 @@
             android:background="@color/divider" />
 
     <TextView
+        android:textColor="@color/colorGray"
         android:id="@+id/password"
         android:layout_width="match_parent"
         android:layout_height="50dp"
@@ -37,6 +39,7 @@
             android:background="@color/divider" />
 
     <TextView
+            android:textColor="@color/colorGray"
             android:id="@+id/transactions_tv"
             android:layout_width="match_parent"
             android:layout_height="50dp"
@@ -53,6 +56,7 @@
         android:background="@color/divider" />
 
     <TextView
+        android:textColor="@color/colorGray"
         android:id="@+id/cancel"
         android:layout_width="match_parent"
         android:layout_height="50dp"

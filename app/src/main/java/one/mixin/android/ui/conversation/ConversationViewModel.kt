@@ -367,8 +367,8 @@ internal constructor(
         }
     }
 
-    fun makeMessageReadByConversationId(conversationId: String, accountId: String) {
-        conversationRepository.makeMessageReadByConversationId(conversationId, accountId)
+    fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
+        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
     }
 
     fun findUnreadMessages(conversationId: String) =
