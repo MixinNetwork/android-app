@@ -1,6 +1,5 @@
 package one.mixin.android.repository
 
-import one.mixin.android.AppExecutors
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
@@ -32,13 +31,11 @@ constructor(
     fun simpleAssetsWithBalance() = assetDao.simpleAssetsWithBalance()
 
     fun upsert(asset: Asset) {
-        AppExecutors().diskIO().execute {
-            val a = assetDao.simpleAsset(asset.assetId)
-            if (a != null) {
-                asset.hidden = a.hidden
-            }
-            assetDao.insert(asset)
+        val a = assetDao.simpleAsset(asset.assetId)
+        if (a != null) {
+            asset.hidden = a.hidden
         }
+        assetDao.insert(asset)
     }
 
     fun asset(id: String) = assetService.asset(id)
