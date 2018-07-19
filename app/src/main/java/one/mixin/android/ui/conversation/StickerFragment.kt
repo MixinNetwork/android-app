@@ -109,7 +109,7 @@ class StickerFragment : BaseFragment() {
 
         sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        stickerAdapter.size = (context!!.displaySize().x - COLUMN * padding) / COLUMN
+        stickerAdapter.size = (context!!.displaySize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
             override fun onItemClick(pos: Int, stickerId: String) {
@@ -143,6 +143,7 @@ class StickerFragment : BaseFragment() {
 
         override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
             val params = holder.itemView.layoutParams
+            params.width = size
             params.height = size
             holder.itemView.layoutParams = params
             val ctx = holder.itemView.context

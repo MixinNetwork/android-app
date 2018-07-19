@@ -86,7 +86,7 @@ class StickerManagementFragment : BaseFragment() {
         }
         sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        stickerAdapter.size = (requireContext().displaySize().x - COLUMN * padding) / COLUMN
+        stickerAdapter.size = (requireContext().displaySize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
             override fun onAddClick() {
