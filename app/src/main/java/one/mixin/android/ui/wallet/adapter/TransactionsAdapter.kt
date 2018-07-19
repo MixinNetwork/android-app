@@ -63,17 +63,13 @@ class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetIte
             itemView.date.text = snapshot.createdAt.date()
             when {
                 snapshot.type == SnapshotType.deposit.name -> {
-                    if (asset.accountName != null) {
-                        itemView.name.text = itemView.context.getString(R.string.transaction_item_deposit, asset.accountName, asset.accountMemo)
-                    } else {
-                        snapshot.transactionHash?.let {
-                            if (it.length > 10) {
-                                val start = it.substring(0, 6)
-                                val end = it.substring(it.length - 4, it.length)
-                                itemView.name.text = itemView.context.getString(R.string.wallet_transactions_hash, start, end)
-                            } else {
-                                itemView.name.text = it
-                            }
+                    snapshot.transactionHash?.let {
+                        if (it.length > 10) {
+                            val start = it.substring(0, 6)
+                            val end = it.substring(it.length - 4, it.length)
+                            itemView.name.text = itemView.context.getString(R.string.wallet_transactions_hash, start, end)
+                        } else {
+                            itemView.name.text = it
                         }
                     }
                 }

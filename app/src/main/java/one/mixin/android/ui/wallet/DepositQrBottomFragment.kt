@@ -33,7 +33,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         const val ARGS_TYPE = "args_type"
 
         const val TYPE_NAME = 0
-        const val TYPE_MEMO = 1
+        const val TYPE_TAG = 1
 
         fun newInstance(asset: AssetItem, type: Int = TYPE_NAME) = DepositQrBottomFragment().apply {
             arguments = bundleOf(
@@ -59,7 +59,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         if (type == TYPE_NAME) {
             contentView.title.setSubTitle(getString(R.string.account_name), asset.accountName!!)
         } else {
-            contentView.title.setSubTitle(getString(R.string.account_memo), asset.accountMemo!!)
+            contentView.title.setSubTitle(getString(R.string.account_memo), asset.accountTag!!)
         }
         contentView.badge_view.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.badge_view.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
@@ -67,7 +67,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         val name = if (type == TYPE_NAME) {
             "${BuildConfig.VERSION_CODE}-${asset.accountName}"
         } else {
-            "${BuildConfig.VERSION_CODE}-${asset.accountMemo}"
+            "${BuildConfig.VERSION_CODE}-${asset.accountTag}"
         }
         if (requireContext().isQRCodeFileExists(name)) {
             contentView.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
@@ -77,7 +77,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                     val code = if (type == TYPE_NAME) {
                         asset.accountName
                     } else {
-                        asset.accountMemo
+                        asset.accountTag
                     }
                     val b = code!!.generateQRCode(contentView.qr.width)
                     if (b != null) {

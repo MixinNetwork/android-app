@@ -27,7 +27,7 @@ data class Asset(
     val balance: String,
     @SerializedName("public_key")
     @ColumnInfo(name = "public_key")
-    val publicKey: String,
+    val publicKey: String?,
     @SerializedName("price_btc")
     @ColumnInfo(name = "price_btc")
     val priceBtc: String,
@@ -51,7 +51,7 @@ data class Asset(
     @SerializedName("account_name")
     @ColumnInfo(name = "account_name")
     val accountName: String?,
-    @SerializedName("account_memo")
-    @ColumnInfo(name = "account_memo")
-    val accountMemo: String?
+    @SerializedName("account_tag")
+    @ColumnInfo(name = "account_tag")
+    val accountTag: String?
 ) : Parcelable

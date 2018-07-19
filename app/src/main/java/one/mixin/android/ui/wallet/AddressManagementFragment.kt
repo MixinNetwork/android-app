@@ -50,7 +50,7 @@ class AddressManagementFragment : BaseFragment() {
         arguments!!.getParcelable(TransactionsFragment.ARGS_ASSET) as AssetItem
     }
 
-    private val adapter: AddressAdapter by lazy { AddressAdapter(true, true) }
+    private val adapter: AddressAdapter by lazy { AddressAdapter(asset, true, true) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
             inflater.inflate(R.layout.fragment_address_management, container, false)

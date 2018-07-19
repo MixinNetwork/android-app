@@ -498,7 +498,7 @@
     <string name="account_name">Account Name</string>
     <string name="account_memo">Account Memo</string>
     <string name="transaction_item_deposit">%s(%s)</string>
-    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your EOS to Mixin, deposit will arrive after at least %@ block confirmations.</string>
+    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your %s to Mixin, deposit will arrive after at least %d block confirmations.</string>
     <!--sticker-->
     <string name="sticker_manager">Manager Sticker</string>
     <string name="sticker_add">Add Sticker</string>

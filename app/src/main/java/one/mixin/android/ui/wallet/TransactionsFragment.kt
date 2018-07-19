@@ -30,6 +30,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsListener {
@@ -77,10 +78,12 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
         header.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         updateHeader(header, asset)
         header.deposit_tv.setOnClickListener {
-            if (asset.accountName == null) {
+            if (asset.publicKey.isNullOrEmpty() && !asset.accountName.isNullOrEmpty() && !asset.accountTag.isNullOrEmpty()) {
+                activity?.addFragment(this@TransactionsFragment, DepositFragment.newInstance(asset), DepositFragment.TAG)
+            } else if (!asset.publicKey.isNullOrEmpty() && asset.accountName.isNullOrEmpty() && asset.accountTag.isNullOrEmpty()) {
                 activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
             } else {
-                activity?.addFragment(this@TransactionsFragment, DepositFragment.newInstance(asset), DepositFragment.TAG)
+                toast(R.string.error_bad_data)
             }
         }
 
@@ -123,7 +126,20 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
     private fun updateHeader(header: View, asset: AssetItem) {
         header.balance.text = asset.balance.numberFormat() + " " + asset.symbol
         header.balance_as.text = getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
-        header.deposit_animator.displayedChild = if (asset.publicKey.isEmpty()) POS_PB else POS_TEXT
+        header.deposit_animator.displayedChild = if (showPB(asset)) POS_PB else POS_TEXT
+    }
+
+    private fun showPB(asset: AssetItem): Boolean {
+        if (asset.publicKey.isNullOrEmpty()) {
+            if (asset.accountName.isNullOrEmpty() || asset.accountTag.isNullOrEmpty()) {
+                return true
+            }
+        } else {
+            if (!asset.accountName.isNullOrEmpty() || !asset.accountTag.isNullOrEmpty()) {
+                return true
+            }
+        }
+        return false
     }
 
     @SuppressLint("InflateParams")

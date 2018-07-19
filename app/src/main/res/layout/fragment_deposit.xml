@@ -124,9 +124,12 @@
 
             <TextView
                 android:id="@+id/account_memo_tv"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/account_memo_iv"
                 android:textColor="@android:color/black"
+                android:singleLine="true"
+                android:ellipsize="middle"
                 android:layout_centerVertical="true"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"/>
@@ -145,7 +148,7 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/confirm_tv"
+        android:id="@+id/tip_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -158,8 +161,6 @@
         android:paddingEnd="8dp"
         android:paddingStart="8dp"
         android:paddingTop="3dp"
-        android:ellipsize="middle"
-        android:singleLine="true"
         android:text="@string/deposit_tip"
         android:textColor="@color/text_gray"
         android:textSize="12sp"/>

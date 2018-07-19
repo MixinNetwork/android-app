@@ -80,6 +80,8 @@ class CaptureFragment : BaseFragment() {
 
         const val ARGS_FOR_ADDRESS = "args_for_address"
         const val ARGS_ADDRESS_RESULT = "args_address_result"
+        const val ARGS_FOR_ACCOUNT_NAME = "args_for_account_name"
+        const val ARGS_ACCOUNT_NAME_RESULT = "args_account_name_result"
         const val RESULT_CODE = 0x0000c0df
 
         val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "ASSETS:READ", "APPS:READ", "APPS:WRITE", "CONTACTS:READ")
@@ -87,8 +89,9 @@ class CaptureFragment : BaseFragment() {
         private const val MAX_DURATION = 15
         private const val MIN_DURATION = 1
 
-        fun newInstance(forAddress: Boolean = false) = CaptureFragment().withArgs {
+        fun newInstance(forAddress: Boolean = false, forAccountName: Boolean = false) = CaptureFragment().withArgs {
             putBoolean(ARGS_FOR_ADDRESS, forAddress)
+            putBoolean(ARGS_FOR_ACCOUNT_NAME, forAccountName)
         }
     }
 
@@ -112,6 +115,7 @@ class CaptureFragment : BaseFragment() {
     private val sprintConfig = fromOrigamiTensionAndFriction(80.0, 4.0)
 
     private val forAddress: Boolean by lazy { arguments!!.getBoolean(ARGS_FOR_ADDRESS) }
+    private val forAccountName: Boolean by lazy { arguments!!.getBoolean(ARGS_FOR_ACCOUNT_NAME) }
 
     private var mode = Mode.SCAN
     private var flashOpen = false
@@ -403,9 +407,9 @@ class CaptureFragment : BaseFragment() {
 
     private val captureCallback = object : CaptureManagerCallback {
         override fun onScanResult(barcodeResult: BarcodeResult) {
-            if (forAddress) {
+            if (forAddress || forAccountName) {
                 val result = Intent().apply {
-                    putExtra(ARGS_ADDRESS_RESULT, barcodeResult.text)
+                    putExtra(if (forAddress) ARGS_ADDRESS_RESULT else ARGS_ACCOUNT_NAME_RESULT, barcodeResult.text)
                 }
                 activity?.setResult(RESULT_CODE, result)
                 activity?.finish()

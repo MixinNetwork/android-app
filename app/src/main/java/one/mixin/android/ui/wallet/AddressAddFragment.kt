@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -71,8 +72,13 @@ class AddressAddFragment : BaseFragment() {
         title_view.title_tv.text = getString(if (type == ADD) R.string.withdrawal_addr_new
             else R.string.withdrawal_addr_modify, asset.symbol)
         title_view.right_animator.setOnClickListener {
-            val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(asset.assetId,
-                label_et.text.toString(), addr_et.text.toString(), type = type)
+            val bottomSheet = if (noPublickKey()) {
+                PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, type = type,
+                    accountName = label_et.text.toString(), accountTag = addr_et.text.toString())
+            } else {
+                PinAddrBottomSheetDialogFragment.newInstance(asset.assetId,
+                    label_et.text.toString(), addr_et.text.toString(), type = type)
+            }
             bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.setCallback(object : PinAddrBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
@@ -80,46 +86,57 @@ class AddressAddFragment : BaseFragment() {
                 }
             })
         }
-        if (asset.accountName != null) {
+        if (!asset.accountName.isNullOrEmpty()) {
             label_et.hint = getString(R.string.account_name)
             addr_et.hint = getString(R.string.account_memo)
         }
         label_et.addTextChangedListener(mWatcher)
         addr_et.addTextChangedListener(mWatcher)
-        qr_iv.setOnClickListener {
-            RxPermissions(activity!!)
-                .request(Manifest.permission.CAMERA)
-                .subscribe { granted ->
-                    if (granted) {
-                        val intentIntegrator = IntentIntegrator(activity)
-                        intentIntegrator.captureActivity = CaptureActivity::class.java
-                        intentIntegrator.setBeepEnabled(false)
-                        val intent = intentIntegrator.createScanIntent()
-                            .putExtra(CaptureFragment.ARGS_FOR_ADDRESS, true)
-                        startActivityForResult(intent, REQUEST_CODE)
-                        activity?.overridePendingTransition(R.anim.slide_in_bottom, 0)
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }
-        }
+        qr_iv.setOnClickListener { handleClick(true) }
+        label_iv.setOnClickListener { handleClick(false) }
 
         address?.let {
-            label_et.setText(it.label)
-            addr_et.setText(it.publicKey)
+            label_et.setText(if (noPublickKey()) it.accountName else it.label)
+            addr_et.setText(if (noPublickKey()) it.accountTag else it.publicKey)
             title_view.title_tv.text = getString(R.string.withdrawal_addr_modify, asset.symbol)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == IntentIntegrator.REQUEST_CODE && resultCode == CaptureFragment.RESULT_CODE) {
-            val addr = data?.getStringExtra(CaptureFragment.ARGS_ADDRESS_RESULT) ?: return
-            if (isIcapAddress(addr)) {
-                addr_et.setText(decodeICAP(addr))
-            } else {
-                addr_et.setText(addr)
+            val addr = data?.getStringExtra(CaptureFragment.ARGS_ADDRESS_RESULT)
+            if (addr != null) {
+                if (isIcapAddress(addr)) {
+                    addr_et.setText(decodeICAP(addr))
+                } else {
+                    addr_et.setText(addr)
+                }
+                return
             }
+            val label = data?.getStringExtra(CaptureFragment.ARGS_ACCOUNT_NAME_RESULT) ?: return
+            label_et.setText(label)
         }
+    }
+
+    private fun noPublickKey() = !asset.accountName.isNullOrEmpty()
+
+    @SuppressLint("CheckResult")
+    private fun handleClick(isAddr: Boolean) {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.CAMERA)
+            .subscribe { granted ->
+                if (granted) {
+                    val intentIntegrator = IntentIntegrator(activity)
+                    intentIntegrator.captureActivity = CaptureActivity::class.java
+                    intentIntegrator.setBeepEnabled(false)
+                    val intent = intentIntegrator.createScanIntent()
+                        .putExtra(if (isAddr) CaptureFragment.ARGS_FOR_ADDRESS else CaptureFragment.ARGS_FOR_ACCOUNT_NAME, true)
+                    startActivityForResult(intent, REQUEST_CODE)
+                    activity?.overridePendingTransition(R.anim.slide_in_bottom, 0)
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }
     }
 
     private val mWatcher: TextWatcher = object : TextWatcher {

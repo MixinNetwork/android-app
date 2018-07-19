@@ -129,7 +129,7 @@ inline fun Long.toLeByteArray(): ByteArray {
 }
 
 fun String.formatPublicKey(): String {
-    require(length > 10)
+    if (this.length <= 10) return this
     return substring(0, 6) + "..." + substring(length - 4, length)
 }
 

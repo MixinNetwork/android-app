@@ -65,7 +65,7 @@ class WithdrawalFragment : BaseFragment() {
     }
 
     private var currAddr: Address? = null
-    private val adapter: AddressAdapter by lazy { AddressAdapter() }
+    private val adapter: AddressAdapter by lazy { AddressAdapter(asset) }
     private var firstIn = true
 
     private val addrView: View by lazy {
@@ -111,8 +111,8 @@ class WithdrawalFragment : BaseFragment() {
         title_view.right_animator.setOnClickListener {
             currAddr?.let {
                 val amount = amount_et.text.toString()
-                val withdrawalItem = WithdrawalBottomSheetDialogFragment.WithdrawalItem(it.publicKey,
-                    amount.toDot(), memo_et.text.toString(), it.addressId, it.label)
+                val withdrawalItem = WithdrawalBottomSheetDialogFragment.WithdrawalItem(if (noPublicKey(it)) it.accountTag!! else it.publicKey!!,
+                    amount.toDot(), memo_et.text.toString(), it.addressId, if (noPublicKey(it)) it.accountName!! else it.label!!)
                 val bottom = WithdrawalBottomSheetDialogFragment.newInstance(withdrawalItem, asset)
                 bottom.setCallback(object : WithdrawalBottomSheetDialogFragment.Callback {
                     override fun onSuccess() {
@@ -125,7 +125,7 @@ class WithdrawalFragment : BaseFragment() {
         }
         balance_tv.text = "${getString(R.string.balance)} \n${asset.balance} ${asset.symbol}"
         addrBottomSheet.setCustomViewHeight(dip(300f))
-        if (asset.accountName != null) {
+        if (!asset.accountName.isNullOrEmpty()) {
             memo_rl.visibility = GONE
         }
 
@@ -177,13 +177,16 @@ class WithdrawalFragment : BaseFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun setAddrTv(addr: Address) {
-        addr_tv.text = addr.label + " (" + addr.publicKey.formatPublicKey() + ")"
+        addr_tv.text = if (noPublicKey(addr)) addr.accountName + " (" + addr.accountTag!!.formatPublicKey() + ")"
+        else addr.label + " (" + if (addr.publicKey.isNullOrEmpty()) "" else addr.publicKey!!.formatPublicKey() + ")"
         defaultSharedPreferences.edit { putString(addr.assetId, addr.addressId) }
         if (canNext(amount_et.text)) {
             title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
             title_view.right_animator.isEnabled = true
         }
     }
+
+    private fun noPublicKey(addr: Address) = !addr.accountName.isNullOrEmpty()
 
     private fun refreshFeeUI(addr: Address) {
         val bold = addr.fee + " " + asset.chainSymbol

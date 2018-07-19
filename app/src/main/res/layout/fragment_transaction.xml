@@ -96,29 +96,6 @@
                       android:background="@color/bg_gray"/>
             </LinearLayout>
 
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                          android:id="@+id/account_name_ll" android:orientation="vertical">
-
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                          android:layout_marginStart="@dimen/activity_horizontal_margin"
-                          android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                          android:layout_marginTop="@dimen/activity_vertical_margin"
-                          android:layout_marginBottom="4dp"
-                          android:text="@string/transactions_asset_name" android:textColor="@color/text_gray"
-                          android:textSize="12sp"/>
-
-                <TextView android:id="@+id/asset_name_tv"
-                          android:layout_width="match_parent" android:layout_height="wrap_content"
-                          android:layout_marginStart="@dimen/activity_horizontal_margin"
-                          android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                          android:layout_marginBottom="@dimen/activity_vertical_margin"
-                          android:textIsSelectable="true"
-                          android:textColor="@android:color/black"/>
-
-                <View android:layout_width="match_parent" android:layout_height=".5dp"
-                      android:background="@color/bg_gray"/>
-            </LinearLayout>
-
             <LinearLayout android:id="@+id/sender_ll"
                           android:layout_width="match_parent"
                           android:layout_height="wrap_content"
@@ -176,29 +153,6 @@
 
                 <View android:layout_width="match_parent" android:layout_height=".5dp"
                       android:background="@color/bg_gray"/>
-            </LinearLayout>
-
-            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:layout_marginBottom="4dp"
-                    android:text="@string/account_name" android:textColor="@color/text_gray"
-                    android:textSize="12sp"/>
-
-                <TextView android:id="@+id/account_name_tv"
-                    android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:layout_marginBottom="@dimen/activity_vertical_margin"
-                    android:textIsSelectable="true"
-                    android:textColor="@android:color/black"/>
-
-                <View android:layout_width="match_parent" android:layout_height=".5dp"
-                    android:background="@color/bg_gray"/>
             </LinearLayout>
 
             <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"

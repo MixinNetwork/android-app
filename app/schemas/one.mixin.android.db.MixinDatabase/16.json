@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 16,
-    "identityHash": "76270e0bcdffd31043f8e212d5f84572",
+    "identityHash": "45a7cf0fd94f05a9fb4ecf40d2287f63",
     "entities": [
       {
         "tableName": "users",
@@ -393,13 +393,13 @@
             "notNull": false
           },
           {
-            "fieldPath": "quote_message_id",
+            "fieldPath": "quoteMessageId",
             "columnName": "quote_message_id",
             "affinity": "TEXT",
             "notNull": false
           },
           {
-            "fieldPath": "quote_content",
+            "fieldPath": "quoteContent",
             "columnName": "quote_content",
             "affinity": "TEXT",
             "notNull": false
@@ -540,7 +540,7 @@
       },
       {
         "tableName": "assets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `public_key` TEXT NOT NULL, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `hidden` INTEGER, `confirmations` INTEGER NOT NULL, `account_name` TEXT, `account_memo` TEXT, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `public_key` TEXT, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `hidden` INTEGER, `confirmations` INTEGER NOT NULL, `account_name` TEXT, `account_tag` TEXT, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -576,7 +576,7 @@
             "fieldPath": "publicKey",
             "columnName": "public_key",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "priceBtc",
@@ -627,8 +627,8 @@
             "notNull": false
           },
           {
-            "fieldPath": "accountMemo",
-            "columnName": "account_memo",
+            "fieldPath": "accountTag",
+            "columnName": "account_tag",
             "affinity": "TEXT",
             "notNull": false
           }
@@ -1069,7 +1069,7 @@
       },
       {
         "tableName": "addresses",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `public_key` TEXT NOT NULL, `label` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `reserve` TEXT NOT NULL, `fee` TEXT NOT NULL, PRIMARY KEY(`address_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `type` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `public_key` TEXT, `label` TEXT, `updated_at` TEXT NOT NULL, `reserve` TEXT NOT NULL, `fee` TEXT NOT NULL, `account_name` TEXT, `account_tag` TEXT, PRIMARY KEY(`address_id`))",
         "fields": [
           {
             "fieldPath": "addressId",
@@ -1093,13 +1093,13 @@
             "fieldPath": "publicKey",
             "columnName": "public_key",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "label",
             "columnName": "label",
             "affinity": "TEXT",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "updatedAt",
@@ -1118,6 +1118,18 @@
             "columnName": "fee",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "accountName",
+            "columnName": "account_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "accountTag",
+            "columnName": "account_tag",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -1198,7 +1210,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"76270e0bcdffd31043f8e212d5f84572\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"45a7cf0fd94f05a9fb4ecf40d2287f63\")"
     ]
   }
 }
