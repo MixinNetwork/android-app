@@ -70,23 +70,25 @@ class AddressFragment : Fragment() {
         }
         key_code.text = asset.publicKey
         confirm_tv.text = getString(R.string.wallet_block_confirmations, asset.confirmations)
-        if (context!!.isQRCodeFileExists(asset.publicKey)) {
-            qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.publicKey).absolutePath))
-        } else {
-            qr.post {
-                Observable.create<Bitmap> { e ->
-                    val b = asset.publicKey.generateQRCode(qr.width)
-                    if (b != null) {
-                        b.saveQRCode(context!!, asset.publicKey)
-                        e.onNext(b)
-                    }
-                }.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDisposable(scopeProvider)
-                    .subscribe({ r ->
-                        qr.setImageBitmap(r)
-                    }, { _ ->
-                    })
+        if (asset.publicKey != null) {
+            if (context!!.isQRCodeFileExists(asset.publicKey!!)) {
+                qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.publicKey!!).absolutePath))
+            } else {
+                qr.post {
+                    Observable.create<Bitmap> { e ->
+                        val b = asset.publicKey!!.generateQRCode(qr.width)
+                        if (b != null) {
+                            b.saveQRCode(context!!, asset.publicKey!!)
+                            e.onNext(b)
+                        }
+                    }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDisposable(scopeProvider)
+                        .subscribe({ r ->
+                            qr.setImageBitmap(r)
+                        }, { _ ->
+                        })
+                }
             }
         }
     }

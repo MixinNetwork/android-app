@@ -140,12 +140,9 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
                 header.pie_view.setPieItem(listOf(), !animated)
             }
         })
-        jobManager.addJobInBackground(RefreshAssetsJob())
-    }
 
-    override fun onResume() {
-        super.onResume()
         checkPin()
+        jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
     private fun checkPin() {

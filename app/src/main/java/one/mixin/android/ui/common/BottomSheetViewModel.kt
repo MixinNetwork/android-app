@@ -92,9 +92,9 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    fun syncAddr(assetId: String, publicKey: String, label: String, code: String): Observable<MixinResponse<Address>> =
+    fun syncAddr(assetId: String, publicKey: String?, label: String?, code: String, accountName: String?, accountTag: String?): Observable<MixinResponse<Address>> =
         accountRepository.getPinToken().map { pinToken ->
-            assetRepository.syncAddr(AddressRequest(assetId, publicKey, label, encryptPin(pinToken, code)!!))
+            assetRepository.syncAddr(AddressRequest(assetId, publicKey, label, encryptPin(pinToken, code)!!, accountName, accountTag))
                 .execute().body()!!
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 

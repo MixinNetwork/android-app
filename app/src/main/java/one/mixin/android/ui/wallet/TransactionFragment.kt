@@ -93,11 +93,15 @@ class TransactionFragment : BaseFragment() {
         value_as_tv.text = getString(R.string.wallet_unit_usd, "≈ $amount")
         transaction_id_tv.text = snapshot.snapshotId
         transaction_type_tv.text = getSnapshotType(snapshot.type)
-        asset_name_tv.text = asset.name
         memo_tv.text = snapshot.memo
         date_tv.text = snapshot.createdAt.fullDate()
         when {
             snapshot.type == SnapshotType.deposit.name -> {
+                if (!asset.accountName.isNullOrEmpty()) {
+                    sender_title.text = getString(R.string.account_name)
+                } else {
+                    sender_title.text = getString(R.string.sender)
+                }
                 sender_tv.text = snapshot.sender
                 receiver_title.text = getString(R.string.transaction_hash)
                 receiver_tv.text = snapshot.transactionHash
@@ -112,6 +116,11 @@ class TransactionFragment : BaseFragment() {
                 }
             }
             else -> {
+                if (!asset.accountName.isNullOrEmpty()) {
+                    receiver_title.text = getString(R.string.account_name)
+                } else {
+                    receiver_title.text = getString(R.string.receiver)
+                }
                 sender_title.text = getString(R.string.transaction_hash)
                 sender_tv.text = snapshot.transactionHash
                 receiver_tv.text = snapshot.receiver

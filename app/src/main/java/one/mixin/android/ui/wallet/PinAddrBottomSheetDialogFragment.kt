@@ -26,22 +26,28 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         const val ARGS_ASSET_ID = "args_asset_id"
         const val ARGS_LABEL = "args_label"
         const val ARGS_PUBLIC_KEY = "args_public_key"
-        const val ARGS_TYPE = "args_type"
         const val ARGS_ADDRESS_ID = "args_address_id"
+        const val ARGS_TYPE = "args_type"
+        const val ARGS_ACCOUNT_NAME = "args_account_name"
+        const val ARGS_ACCOUNT_TAG = "args_account_tag"
 
         fun newInstance(
             assetId: String? = null,
             label: String? = null,
             publicKey: String? = null,
             addressId: String? = null,
-            type: Int = ADD
+            type: Int = ADD,
+            accountName: String? = null,
+            accountTag: String? = null
         ) = PinAddrBottomSheetDialogFragment().apply {
             val b = bundleOf(
                 ARGS_ASSET_ID to assetId,
                 ARGS_LABEL to label,
                 ARGS_PUBLIC_KEY to publicKey,
                 ARGS_ADDRESS_ID to addressId,
-                ARGS_TYPE to type
+                ARGS_TYPE to type,
+                ARGS_ACCOUNT_NAME to accountName,
+                ARGS_ACCOUNT_TAG to accountTag
             )
             arguments = b
         }
@@ -52,6 +58,8 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
     private val publicKey: String? by lazy { arguments!!.getString(ARGS_PUBLIC_KEY) }
     private val addressId: String? by lazy { arguments!!.getString(ARGS_ADDRESS_ID) }
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
+    private val accountName: String? by lazy { arguments!!.getString(ARGS_ACCOUNT_NAME) }
+    private val accountTag: String? by lazy { arguments!!.getString(ARGS_ACCOUNT_TAG) }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -67,7 +75,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
                 contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PB
                 val observable = if (type == ADD || type == MODIFY) {
-                    bottomViewModel.syncAddr(assetId!!, publicKey!!, label!!, contentView.pin.code())
+                    bottomViewModel.syncAddr(assetId!!, publicKey, label, contentView.pin.code(), accountName, accountTag)
                 } else {
                     bottomViewModel.deleteAddr(addressId!!, contentView.pin.code())
                 }
