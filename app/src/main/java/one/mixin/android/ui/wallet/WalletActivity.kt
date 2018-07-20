@@ -6,11 +6,18 @@ import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
+import javax.inject.Inject
 
 class WalletActivity : BlazeBaseActivity() {
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
@@ -31,6 +38,7 @@ class WalletActivity : BlazeBaseActivity() {
                 replaceFragment(fragment, R.id.container, WalletPasswordFragment.TAG)
             }
         })
+        jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
     override fun finish() {

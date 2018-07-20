@@ -19,8 +19,6 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
@@ -40,8 +38,6 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         fun newInstance(): WalletFragment = WalletFragment()
     }
 
-    @Inject
-    lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val walletViewModel: WalletViewModel by lazy {
@@ -142,7 +138,6 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         })
 
         checkPin()
-        jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
     private fun checkPin() {
