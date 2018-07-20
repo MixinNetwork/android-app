@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.content.ClipData
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.view.LayoutInflater
@@ -9,7 +10,9 @@ import androidx.core.os.bundleOf
 import kotlinx.android.synthetic.main.fragment_deposit.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
@@ -44,6 +47,14 @@ class DepositFragment : Fragment() {
         }
         account_memo_iv.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset, TYPE_TAG).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
+        }
+        account_name_tv.setOnClickListener {
+            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.accountName)
+            context?.toast(R.string.copy_success)
+        }
+        account_memo_tv.setOnClickListener {
+            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.accountTag)
+            context?.toast(R.string.copy_success)
         }
     }
 }
