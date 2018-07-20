@@ -324,6 +324,7 @@
     <string name="group_removing">Removing…</string>
     <string name="group_creating">Creating…</string>
     <string name="state_connecting">Connecting</string>
+    <string name="state_syncing">Syncing messages</string>
     <string name="group_info_exit_tip">Exit \"%s\" group?</string>
     <string name="group_cant_send">You can\'t send messages to this group because you\'re no longer a participant.</string>
     <string name="group_info_delete_tip">Delete \"%s\" group?</string>
