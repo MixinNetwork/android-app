@@ -44,7 +44,7 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
     private val walletViewModel: WalletViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
-    private var assets: List<AssetItem> = listOf()
+    private var assets: List<AssetItem>? = null
     private val assetsAdapter: AssetAdapter by lazy { AssetAdapter(assets, coins_rv) }
     private lateinit var header: View
 
@@ -73,7 +73,7 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         walletViewModel.assetItems().observe(this, android.arch.lifecycle.Observer { r: List<AssetItem>? ->
             r?.let {
                 assets = r
-                assetsAdapter.setAssetList(assets.filter { it.hidden != true })
+                assetsAdapter.setAssetList(r.filter { it.hidden != true })
 
                 var totalBTC = BigDecimal(0)
                 var totalUSD = BigDecimal(0)
