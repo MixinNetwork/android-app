@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
@@ -68,7 +69,7 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         coins_rv.setHasFixedSize(true)
         coins_rv.addItemDecoration(SpaceItemDecoration(1))
 
-        walletViewModel.assetItems().observe(this, android.arch.lifecycle.Observer { r: List<AssetItem>? ->
+        walletViewModel.assetItems().observe(this, Observer { r: List<AssetItem>? ->
             r?.let {
                 assets = r
                 assetsAdapter.assets = assets.filter { it.hidden != true }
