@@ -273,8 +273,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showBottomSheet() {
-        val builder = BottomSheet.Builder(context!!)
-        val view = LayoutInflater.from(context).inflate(R.layout.view_web_bottom, null, false)
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = LayoutInflater.from(requireActivity()).inflate(R.layout.view_web_bottom, null, false)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.refresh.setOnClickListener {

@@ -156,8 +156,8 @@ class ConversationListFragment : LinkFragment() {
 
     @SuppressLint("InflateParams")
     fun showBottomSheet(conversationId: String, hasPin: Boolean) {
-        val builder = BottomSheet.Builder(context!!)
-        val view = LayoutInflater.from(context).inflate(R.layout.view_conversation_bottom, null, false)
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = LayoutInflater.from(requireActivity()).inflate(R.layout.view_conversation_bottom, null, false)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.delete_tv.setOnClickListener {

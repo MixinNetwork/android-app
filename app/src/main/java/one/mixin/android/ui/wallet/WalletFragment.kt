@@ -170,32 +170,30 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
-        context?.let {
-            val builder = BottomSheet.Builder(it)
-            val view = LayoutInflater.from(it).inflate(R.layout.view_wallet_bottom, null, false)
-            builder.setCustomView(view)
-            val bottomSheet = builder.create()
-            view.hide.setOnClickListener {
-                activity?.addFragment(this@WalletFragment, HiddenAssetsFragment.newInstance(), HiddenAssetsFragment.TAG)
-                bottomSheet.dismiss()
-            }
-            view.password.setOnClickListener {
-                activity?.supportFragmentManager?.inTransaction {
-                    setCustomAnimations(R.anim.slide_in_bottom,
-                        R.anim.slide_out_bottom, R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                        .add(R.id.container, OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
-                        .addToBackStack(null)
-                }
-                bottomSheet.dismiss()
-            }
-            view.transactions_tv.setOnClickListener {
-                activity?.addFragment(this@WalletFragment, AllTransactionsFragment.newInstance(), AllTransactionsFragment.TAG)
-                bottomSheet.dismiss()
-            }
-            view.cancel.setOnClickListener { bottomSheet.dismiss() }
-
-            bottomSheet.show()
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = LayoutInflater.from(requireActivity()).inflate(R.layout.view_wallet_bottom, null, false)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.hide.setOnClickListener {
+            activity?.addFragment(this@WalletFragment, HiddenAssetsFragment.newInstance(), HiddenAssetsFragment.TAG)
+            bottomSheet.dismiss()
         }
+        view.password.setOnClickListener {
+            activity?.supportFragmentManager?.inTransaction {
+                setCustomAnimations(R.anim.slide_in_bottom,
+                    R.anim.slide_out_bottom, R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                    .add(R.id.container, OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
+                    .addToBackStack(null)
+            }
+            bottomSheet.dismiss()
+        }
+        view.transactions_tv.setOnClickListener {
+            activity?.addFragment(this@WalletFragment, AllTransactionsFragment.newInstance(), AllTransactionsFragment.TAG)
+            bottomSheet.dismiss()
+        }
+        view.cancel.setOnClickListener { bottomSheet.dismiss() }
+
+        bottomSheet.show()
     }
 
     override fun onAsset(asset: AssetItem) {

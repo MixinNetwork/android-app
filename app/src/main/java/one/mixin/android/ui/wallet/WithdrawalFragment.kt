@@ -88,7 +88,7 @@ class WithdrawalFragment : BaseFragment() {
     }
 
     private val addrBottomSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(context!!)
+        val builder = BottomSheet.Builder(requireActivity())
         val bottomSheet = builder.create()
         builder.setCustomView(addrView)
         addrView.addr_book_title.left_ib.setOnClickListener { bottomSheet.dismiss() }

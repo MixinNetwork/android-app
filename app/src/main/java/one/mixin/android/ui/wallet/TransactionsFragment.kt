@@ -124,29 +124,27 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
-        context?.let {
-            val builder = BottomSheet.Builder(it)
-            val view = LayoutInflater.from(it).inflate(R.layout.view_wallet_transactions_bottom, null, false)
-            builder.setCustomView(view)
-            val bottomSheet = builder.create()
-            view.withdrawal.setOnClickListener {
-                bottomSheet.dismiss()
-                activity?.addFragment(this@TransactionsFragment,
-                    WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
-            }
-            view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show
-            else R.string.wallet_transactions_hide)
-            view.hide.setOnClickListener {
-                doAsync {
-                    walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
-                }
-                bottomSheet.dismiss()
-                activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
-            }
-            view.cancel.setOnClickListener { bottomSheet.dismiss() }
-
-            bottomSheet.show()
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = LayoutInflater.from(requireActivity()).inflate(R.layout.view_wallet_transactions_bottom, null, false)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.withdrawal.setOnClickListener {
+            bottomSheet.dismiss()
+            activity?.addFragment(this@TransactionsFragment,
+                WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
         }
+        view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show
+        else R.string.wallet_transactions_hide)
+        view.hide.setOnClickListener {
+            doAsync {
+                walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
+            }
+            bottomSheet.dismiss()
+            activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
+        }
+        view.cancel.setOnClickListener { bottomSheet.dismiss() }
+
+        bottomSheet.show()
     }
 
     override fun onItemClick(snapshot: SnapshotItem) {
