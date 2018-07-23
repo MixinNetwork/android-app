@@ -49,6 +49,7 @@
     <string name="open">打开</string>
     <string name="rebate">退款</string>
     <string name="select">选择</string>
+    <string name="changing">正在修改…</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

@@ -108,10 +108,10 @@ internal abstract class ViewModelModule {
     internal abstract fun bindPinViewModel(pinCheckViewModel: PinCheckViewModel): ViewModel
 
     @Binds
-    internal abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
-
-    @Binds
     @IntoMap
     @ViewModelKey(AddressViewModel::class)
-    internal abstract fun bindAddViewModel(addressViewModel: AddressViewModel): ViewModel
+    internal abstract fun bindAddressViewModel(addressViewModel: AddressViewModel): ViewModel
+
+    @Binds
+    internal abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
 }
