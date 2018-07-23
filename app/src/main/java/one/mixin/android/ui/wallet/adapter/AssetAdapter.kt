@@ -43,7 +43,7 @@ class AssetAdapter(var assets: List<AssetItem>) : RecyclerView.Adapter<RecyclerV
             holder.itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
             holder.itemView.balance_as.text = ctx.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
             if (asset.priceUsd == "0") {
-                holder.itemView.price_tv.setText(R.string.asset_no_hidden)
+                holder.itemView.price_tv.setText(R.string.asset_none)
                 holder.itemView.change_tv.visibility = GONE
             } else {
                 holder.itemView.change_tv.visibility = VISIBLE
