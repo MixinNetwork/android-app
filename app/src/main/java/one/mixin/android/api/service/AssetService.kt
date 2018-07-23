@@ -39,7 +39,7 @@ interface AssetService {
     fun withdrawals(@Body request: WithdrawalRequest): Call<MixinResponse<Snapshot>>
 
     @GET("assets/{id}/addresses")
-    fun addresses(@Path("id") id: String): Observable<MixinResponse<List<Address>>>
+    fun addresses(@Path("id") id: String): Call<MixinResponse<List<Address>>>
 
     @GET("snapshots")
     fun allSnapshots(): Call<MixinResponse<List<Snapshot>>>

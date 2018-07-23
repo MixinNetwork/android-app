@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet.adapter
+package one.mixin.android.ui.address.adapter
 
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater

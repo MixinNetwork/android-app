@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation
+package one.mixin.android.ui.sticker
 
 import android.Manifest
 import android.app.Activity
@@ -30,6 +30,7 @@ import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.StickerFragment.Companion.ARGS_ALBUM_ID
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration

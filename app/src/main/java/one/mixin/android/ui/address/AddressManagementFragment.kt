@@ -14,6 +14,8 @@ import kotlinx.android.synthetic.main.fragment_address_management.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.ui.address.adapter.AddressAdapter
+import one.mixin.android.ui.address.adapter.AddressItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
@@ -22,8 +24,6 @@ import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DE
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.MODIFY
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.ui.wallet.adapter.AddressAdapter
-import one.mixin.android.ui.wallet.adapter.AddressItemCallback
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
