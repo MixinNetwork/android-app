@@ -142,8 +142,7 @@ class WithdrawalFragment : BaseFragment() {
                     it[0]
                 }
                 currAddr = addr
-                refreshFeeUI(addr)
-                setAddrTv(addr)
+                refreshUI(addr)
             }
             adapter.addresses = it?.toMutableList()
         })
@@ -155,7 +154,7 @@ class WithdrawalFragment : BaseFragment() {
                 adapter.setAddrListener(object : AddressAdapter.SimpleAddressListener() {
                     override fun onAddrClick(addr: Address) {
                         currAddr = addr
-                        setAddrTv(addr)
+                        refreshUI(addr)
                         adapter.notifyDataSetChanged()
                         addrBottomSheet.dismiss()
                     }
@@ -166,20 +165,9 @@ class WithdrawalFragment : BaseFragment() {
         walletViewModel.refreshAddressesByAssetId(asset.assetId)
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun setAddrTv(addr: Address) {
-        addr_tv.text = if (noPublicKey(addr)) addr.accountName + " (" + addr.accountTag!!.formatPublicKey() + ")"
-        else addr.label + " (" + if (addr.publicKey.isNullOrEmpty()) "" else addr.publicKey!!.formatPublicKey() + ")"
-        defaultSharedPreferences.edit { putString(addr.assetId, addr.addressId) }
-        if (canNext(amount_et.text)) {
-            title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
-            title_view.right_animator.isEnabled = true
-        }
-    }
-
     private fun noPublicKey(addr: Address) = !addr.accountName.isNullOrEmpty()
 
-    private fun refreshFeeUI(addr: Address) {
+    private fun refreshUI(addr: Address) {
         val bold = addr.fee + " " + asset.chainSymbol
         val str = try {
             val reserveDouble = addr.reserve.toDouble()
@@ -197,6 +185,14 @@ class WithdrawalFragment : BaseFragment() {
             start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         fee_tv?.visibility = View.VISIBLE
         fee_tv?.text = ssb
+
+        addr_tv.text = if (noPublicKey(addr)) addr.accountName + " (" + addr.accountTag!!.formatPublicKey() + ")"
+        else addr.label + " (" + if (addr.publicKey.isNullOrEmpty()) "" else addr.publicKey!!.formatPublicKey() + ")"
+        defaultSharedPreferences.edit { putString(addr.assetId, addr.addressId) }
+        if (canNext(amount_et.text)) {
+            title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
+            title_view.right_animator.isEnabled = true
+        }
     }
 
     private fun canNext(s: Editable) = s.isNotEmpty() && addr_tv.text.isNotEmpty()
