@@ -33,7 +33,7 @@ class HiddenAssetsFragment : BaseFragment(), AssetAdapter.AssetsListener {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
     private var assets: List<AssetItem> = listOf()
-    private val assetsAdapter: AssetAdapter by lazy { AssetAdapter(assets, assets_rv) }
+    private val assetsAdapter: AssetAdapter = AssetAdapter(assets)
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_hidden_assets, container, false)
@@ -48,7 +48,7 @@ class HiddenAssetsFragment : BaseFragment(), AssetAdapter.AssetsListener {
             if (it != null && it.isNotEmpty()) {
                 assets_va.displayedChild = POS_ASSET
                 assets = it
-                assetsAdapter.setAssetList(it)
+                assetsAdapter.assets = it
                 assetsAdapter.notifyDataSetChanged()
             } else {
                 assets_va.displayedChild = POS_EMPTY
