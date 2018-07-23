@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet
+package one.mixin.android.ui.address
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -20,8 +20,10 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureFragment
+import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ADD
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ARGS_TYPE
+import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
@@ -35,12 +37,14 @@ class AddressAddFragment : BaseFragment() {
         const val TAG = "AddressAddFragment"
 
         const val ARGS_ADDRESS = "args_address"
+        const val ARGS_FROM_MANAGEMENT = "args_from_management"
 
-        fun newInstance(asset: AssetItem, address: Address? = null, type: Int = ADD) = AddressAddFragment().apply {
+        fun newInstance(asset: AssetItem, address: Address? = null, type: Int = ADD, fromManagement: Boolean) = AddressAddFragment().apply {
             val b = Bundle().apply {
                 putParcelable(ARGS_ASSET, asset)
                 address?.let { putParcelable(ARGS_ADDRESS, it) }
                 putInt(ARGS_TYPE, type)
+                putBoolean(ARGS_FROM_MANAGEMENT, fromManagement)
             }
             arguments = b
         }
@@ -49,10 +53,10 @@ class AddressAddFragment : BaseFragment() {
     private val asset: AssetItem by lazy {
         arguments!!.getParcelable<AssetItem>(TransactionsFragment.ARGS_ASSET)
     }
-
     private val address: Address? by lazy {
         arguments!!.getParcelable<Address?>(ARGS_ADDRESS)
     }
+    private val fromManagement by lazy { arguments!!.getBoolean(ARGS_FROM_MANAGEMENT) }
 
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
 
@@ -82,7 +86,11 @@ class AddressAddFragment : BaseFragment() {
             bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.setCallback(object : PinAddrBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
-                    fragmentManager?.popBackStackImmediate()
+                    if (fromManagement) {
+                        fragmentManager?.popBackStackImmediate()
+                    } else {
+                        activity?.onBackPressed()
+                    }
                 }
             })
         }

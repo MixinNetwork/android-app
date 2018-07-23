@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet
+package one.mixin.android.ui.address
 
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
@@ -17,8 +17,10 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
+import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.MODIFY
+import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AddressAdapter
 import one.mixin.android.ui.wallet.adapter.AddressItemCallback
@@ -41,8 +43,8 @@ class AddressManagementFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
+    private val addressViewModel: AddressViewModel by lazy {
+        ViewModelProviders.of(this, viewModelFactory).get(AddressViewModel::class.java)
     }
 
     private var deleteSuccess = false
@@ -60,9 +62,9 @@ class AddressManagementFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener {
             activity?.addFragment(this@AddressManagementFragment,
-                AddressAddFragment.newInstance(asset), AddressAddFragment.TAG)
+                AddressAddFragment.newInstance(asset, fromManagement = true), AddressAddFragment.TAG)
         }
-        walletViewModel.addresses(asset.assetId).observe(this, Observer {
+        addressViewModel.addresses(asset.assetId).observe(this, Observer {
             adapter.addresses = it?.toMutableList()
         })
         addr_rv.addItemDecoration(SpaceItemDecoration())
@@ -93,7 +95,7 @@ class AddressManagementFragment : BaseFragment() {
 
             override fun onAddrClick(addr: Address) {
                 activity?.addFragment(this@AddressManagementFragment,
-                        AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
+                    AddressAddFragment.newInstance(asset, addr, MODIFY, true), AddressAddFragment.TAG)
             }
         }
         ItemTouchHelper(AddressItemCallback(addrListener)).apply { attachToRecyclerView(addr_rv) }
