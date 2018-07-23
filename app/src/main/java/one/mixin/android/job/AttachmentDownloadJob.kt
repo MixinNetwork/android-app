@@ -49,7 +49,9 @@ class AttachmentDownloadJob(private val message: Message)
         private const val serialVersionUID = 1L
     }
 
+    @Transient
     private var call: Call? = null
+    @Transient
     private var attachmentCall: retrofit2.Call<MixinResponse<AttachmentResponse>>? = null
 
     override fun cancel() {

@@ -169,7 +169,9 @@ class CaptureFragment : BaseFragment() {
         switch_camera.setOnClickListener {
             anim(switch_camera)
             zxing_barcode_scanner.switchCamera()
+            checkFlash()
         }
+        checkFlash()
         op.setMaxDuration(MAX_DURATION)
         op.setCameraOpCallback(object : CameraOpView.CameraOpCallback {
             val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
@@ -232,6 +234,14 @@ class CaptureFragment : BaseFragment() {
         zxing_barcode_surface.framingRectSize = Size(p.x, p.y)
         pb.indeterminateDrawable.setColorFilter(ContextCompat.getColor(context!!, android.R.color.white),
             PorterDuff.Mode.SRC_IN)
+    }
+
+    private fun checkFlash() {
+        if (zxing_barcode_scanner.isFacingBack) {
+            flash.visibility = VISIBLE
+        } else {
+            flash.visibility = GONE
+        }
     }
 
     private fun anim(view: View) {

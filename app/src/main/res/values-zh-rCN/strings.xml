@@ -283,6 +283,7 @@
     <string name="transactions_type">交易类型</string>
     <string name="transactions_asset_name">资产类型</string>
     <string name="asset_no_hidden">没有隐藏的资产</string>
+    <string name="asset_none">暂无价格</string>
     <string name="wallet_block_confirmations">充值到账至少需要 %d 个区块确认</string>
     <!--group-->
     <string name="group_add">添加成员</string>

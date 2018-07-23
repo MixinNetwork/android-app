@@ -5,7 +5,6 @@ import android.arch.lifecycle.Observer
 import android.os.Bundle
 import kotlinx.android.synthetic.main.view_link_state.*
 import one.mixin.android.R
-import one.mixin.android.R.id.state_layout
 import one.mixin.android.db.MessageDao
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.animateHeight
@@ -21,7 +20,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     @Inject
     lateinit var messageDao: MessageDao
 
-    lateinit var floodMessageCount: LiveData<Int>
+    private lateinit var floodMessageCount: LiveData<Int>
 
     private var barShown = false
 
@@ -38,7 +37,6 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
             state_layout.animateHeight(context!!.dpToPx(26f), 0)
             floodMessageCount.observe(this, this)
             barShown = false
-            setSyncing()
         } else {
             floodMessageCount.removeObserver(this)
             barShown = false
@@ -50,6 +48,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     override fun onChanged(t: Int?) {
         notNullElse(t, {
             if (it > 500) {
+                setSyncing()
                 showBar()
             } else {
                 hiddenBar()

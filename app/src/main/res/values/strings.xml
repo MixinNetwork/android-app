@@ -290,6 +290,7 @@
     <string name="transactions_type">Transaction Type</string>
     <string name="transactions_asset_name">Asset Name</string>
     <string name="asset_no_hidden">No hidden assets</string>
+    <string name="asset_none">N/A</string>
     <string name="wallet_block_confirmations">Deposit will arrive after at least %d block confirmations.</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
