@@ -45,7 +45,7 @@ class SettingBlockedFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         blocked_rv.adapter = adapter
-        blocked_rv.addItemDecoration(SpaceItemDecoration(1))
+        blocked_rv.addItemDecoration(SpaceItemDecoration(0))
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
     }
 

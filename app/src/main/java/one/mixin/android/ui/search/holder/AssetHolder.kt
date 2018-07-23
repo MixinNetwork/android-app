@@ -34,7 +34,7 @@ class AssetHolder constructor(containerView: View) : RecyclerView.ViewHolder(con
         itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
         itemView.balance_as.text = itemView.context.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().toString().numberFormat2()}")
         if (asset.priceUsd == "0") {
-            itemView.price_tv.text = "N/A"
+            itemView.price_tv.setText(R.string.asset_none)
             itemView.change_tv.visibility = View.GONE
         } else {
             itemView.change_tv.visibility = View.VISIBLE

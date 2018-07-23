@@ -90,7 +90,7 @@ class AssetAdapter(private var assets: List<AssetItem>?, private val rv: Recycle
             holder.itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
             holder.itemView.balance_as.text = ctx.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
             if (asset.priceUsd == "0") {
-                holder.itemView.price_tv.text = "N/A"
+                holder.itemView.price_tv.setText(R.string.asset_no_hidden)
                 holder.itemView.change_tv.visibility = GONE
             } else {
                 holder.itemView.change_tv.visibility = VISIBLE

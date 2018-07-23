@@ -25,7 +25,9 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         private const val serialVersionUID = 1L
     }
 
+    @Transient
     private var disposable: Disposable? = null
+
     override fun cancel() {
         isCancel = true
         inputStream?.close()

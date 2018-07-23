@@ -27,7 +27,8 @@ class SpaceItemDecoration(val position: Int = 0) : RecyclerView.ItemDecoration()
 
         for (i in 0 until itemCount) {
             val child = parent.getChildAt(i)
-            if (child != null && parent.getChildAdapterPosition(child) >= position) {
+            if (child != null && parent.getChildAdapterPosition(child) >= position
+                && parent.getChildAdapterPosition(child) < parent.adapter.itemCount - 1) {
                 val lp = child.layoutParams as RecyclerView.LayoutParams
                 val top = child.bottom + lp.bottomMargin
                 val bottom = top + parent.context.dpToPx(.5f)
