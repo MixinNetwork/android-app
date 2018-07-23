@@ -126,15 +126,7 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
     private fun updateHeader(header: View, asset: AssetItem) {
         header.balance.text = asset.balance.numberFormat() + " " + asset.symbol
         header.balance_as.text = getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
-        if (showPB(asset)) {
-            if (header.deposit_animator.displayedChild != POS_PB) {
-                header.deposit_animator.displayedChild = POS_PB
-            }
-        } else {
-            if (header.deposit_animator.displayedChild != POS_TEXT) {
-                header.deposit_animator.displayedChild = POS_TEXT
-            }
-        }
+        header.deposit_animator.displayedChild = if (showPB(asset)) POS_PB else POS_TEXT
     }
 
     private fun showPB(asset: AssetItem): Boolean {
