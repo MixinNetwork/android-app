@@ -209,7 +209,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                 if (checkEqual()) return
 
                 val dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message),
-                    title = getString(R.string.group_creating))
+                    title = if (change) getString(R.string.changing) else getString(R.string.group_creating))
                 dialog.setCancelable(false)
                 dialog.show()
 

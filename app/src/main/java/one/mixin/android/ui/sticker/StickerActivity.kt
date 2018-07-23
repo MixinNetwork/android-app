@@ -6,8 +6,6 @@ import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.conversation.StickerAddFragment
-import one.mixin.android.ui.conversation.StickerManagementFragment
 
 class StickerActivity : BaseActivity() {
 

@@ -6,6 +6,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.disposables.Disposable
@@ -66,6 +67,8 @@ class SettingConversationFragment : BaseFragment() {
             everybody_pb.visibility = View.GONE
             my_contacts_pb.visibility = View.GONE
             my_contacts_rl.setOnClickListener {
+                if (my_contacts_iv.visibility == VISIBLE) return@setOnClickListener
+
                 everybody_iv.visibility = View.GONE
                 my_contacts_pb.visibility = View.VISIBLE
                 disposable?.let {
@@ -96,6 +99,8 @@ class SettingConversationFragment : BaseFragment() {
             everybody_pb.visibility = View.GONE
             my_contacts_pb.visibility = View.GONE
             everybody_rl.setOnClickListener {
+                if (everybody_iv.visibility == VISIBLE) return@setOnClickListener
+
                 everybody_pb.visibility = View.VISIBLE
                 my_contacts_iv.visibility = View.GONE
                 disposable?.let {
@@ -130,6 +135,8 @@ class SettingConversationFragment : BaseFragment() {
             everybody_group_pb.visibility = View.GONE
             my_contacts_group_pb.visibility = View.GONE
             my_contacts_group_rl.setOnClickListener {
+                if (my_contacts_group_iv.visibility == VISIBLE) return@setOnClickListener
+
                 everybody_group_iv.visibility = View.GONE
                 my_contacts_group_pb.visibility = View.VISIBLE
                 disposable?.let {
@@ -160,6 +167,8 @@ class SettingConversationFragment : BaseFragment() {
             everybody_group_pb.visibility = View.GONE
             my_contacts_group_pb.visibility = View.GONE
             everybody_group_rl.setOnClickListener {
+                if (everybody_group_iv.visibility == VISIBLE) return@setOnClickListener
+
                 everybody_group_pb.visibility = View.VISIBLE
                 my_contacts_group_iv.visibility = View.GONE
                 disposable?.let {

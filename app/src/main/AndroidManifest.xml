@@ -145,6 +145,12 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
         <activity
+                android:name=".ui.address.AddressActivity"
+                android:screenOrientation="portrait"
+                android:theme="@style/AppTheme.NoActionBar"
+                android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
+        <activity
             android:name=".ui.conversation.media.DragMediaActivity"
             android:theme="@style/AppTheme.Photo"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden">

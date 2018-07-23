@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation
+package one.mixin.android.ui.sticker
 
 import android.app.Dialog
 import android.arch.lifecycle.ViewModelProvider
@@ -38,6 +38,7 @@ import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toPNGBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType

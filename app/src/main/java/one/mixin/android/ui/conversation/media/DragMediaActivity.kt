@@ -655,7 +655,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun play(pos: Int) = load(pos, { start() })
+    private fun play(pos: Int) = load(pos) { start() }
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
         override fun onRenderedFirstFrame() {

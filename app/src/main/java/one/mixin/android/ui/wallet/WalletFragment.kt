@@ -21,6 +21,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
@@ -149,6 +150,7 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         val account = Session.getAccount()
         if (account != null && account.hasPin && last == 0L) {
             interval = Constants.INTERVAL_24_HOURS
+            defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, Constants.INTERVAL_24_HOURS)
         }
         if (cur - last > interval) {
             val pinCheckDialog = PinCheckDialogFragment.newInstance()

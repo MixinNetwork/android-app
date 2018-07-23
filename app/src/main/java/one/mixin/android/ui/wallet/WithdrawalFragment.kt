@@ -20,16 +20,16 @@ import kotlinx.android.synthetic.main.fragment_withdrawal.*
 import kotlinx.android.synthetic.main.layout_withdrawal_addr_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toDot
+import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.ui.wallet.adapter.AddressAdapter
+import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
@@ -66,23 +66,18 @@ class WithdrawalFragment : BaseFragment() {
 
     private var currAddr: Address? = null
     private val adapter: AddressAdapter by lazy { AddressAdapter(asset) }
-    private var firstIn = true
 
     private val addrView: View by lazy {
         val view = View.inflate(context, R.layout.layout_withdrawal_addr_bottom, null)
         view.addr_book_title.left_ib.setOnClickListener { addrBottomSheet.dismiss() }
         view.addr_book_title.right_animator.setOnClickListener {
-            activity?.addFragment(this@WithdrawalFragment,
-                AddressManagementFragment.newInstance(asset), AddressManagementFragment.TAG)
-            addrBottomSheet.dismiss()
+            AddressActivity.show(requireContext(), false, asset)
         }
         view.addr_book_title.title_tv.text = getString(R.string.withdrawal_addr_book, asset.symbol)
         view.addr_rv.addItemDecoration(SpaceItemDecoration())
         view.addr_rv.adapter = adapter
         view.addr_add_tv.setOnClickListener {
-            activity?.addFragment(this@WithdrawalFragment,
-                AddressAddFragment.newInstance(asset), AddressAddFragment.TAG)
-            addrBottomSheet.dismiss()
+            AddressActivity.show(requireContext(), true, asset)
         }
         view
     }
@@ -147,10 +142,6 @@ class WithdrawalFragment : BaseFragment() {
                     it[0]
                 }
                 currAddr = addr
-                if (firstIn) {
-                    firstIn = false
-                    walletViewModel.refreshAddressById(addr.addressId)
-                }
                 refreshFeeUI(addr)
                 setAddrTv(addr)
             }
@@ -164,7 +155,6 @@ class WithdrawalFragment : BaseFragment() {
                 adapter.setAddrListener(object : AddressAdapter.SimpleAddressListener() {
                     override fun onAddrClick(addr: Address) {
                         currAddr = addr
-                        walletViewModel.refreshAddressById(addr.addressId)
                         setAddrTv(addr)
                         adapter.notifyDataSetChanged()
                         addrBottomSheet.dismiss()
@@ -173,6 +163,7 @@ class WithdrawalFragment : BaseFragment() {
                 addrBottomSheet.show()
             }
         }
+        walletViewModel.refreshAddressesByAssetId(asset.assetId)
     }
 
     @SuppressLint("SetTextI18n")
@@ -197,7 +188,7 @@ class WithdrawalFragment : BaseFragment() {
             } else {
                 getString(R.string.withdrawal_fee, bold, asset.name)
             }
-        } catch (e: NumberFormatException) {
+        } catch (t: Throwable) {
             getString(R.string.withdrawal_fee, bold, asset.name)
         }
         val ssb = SpannableStringBuilder(str)

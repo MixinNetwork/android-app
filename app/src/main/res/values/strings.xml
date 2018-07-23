@@ -52,6 +52,7 @@
     <string name="open">Open</string>
     <string name="rebate">Rebate</string>
     <string name="select">Select</string>
+    <string name="changing">Changing…</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

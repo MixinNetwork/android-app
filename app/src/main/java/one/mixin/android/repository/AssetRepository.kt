@@ -84,8 +84,6 @@ constructor(
 
     fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
 
-    fun refreshAddresses(assetId: String) = assetService.addresses(assetId)
-
     fun insertAddresses(addresses: List<Address>) = addressDao.insertList(addresses)
 
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()

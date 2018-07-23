@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModelProvider
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
+import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.contacts.ContactViewModel
 import one.mixin.android.ui.conversation.ConversationViewModel
@@ -38,7 +39,7 @@ internal abstract class ViewModelModule {
     @Binds
     @IntoMap
     @ViewModelKey(WalletViewModel::class)
-    internal abstract fun bindWalletViewModel(settingsViewModel: WalletViewModel): ViewModel
+    internal abstract fun bindWalletViewModel(walletViewModel: WalletViewModel): ViewModel
 
     @Binds
     @IntoMap
@@ -53,7 +54,7 @@ internal abstract class ViewModelModule {
     @Binds
     @IntoMap
     @ViewModelKey(SearchViewModel::class)
-    internal abstract fun bindSearchViewModel(settingsViewModel: SearchViewModel): ViewModel
+    internal abstract fun bindSearchViewModel(searchViewModel: SearchViewModel): ViewModel
 
     @Binds
     @IntoMap
@@ -105,6 +106,11 @@ internal abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(PinCheckViewModel::class)
     internal abstract fun bindPinViewModel(pinCheckViewModel: PinCheckViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(AddressViewModel::class)
+    internal abstract fun bindAddressViewModel(addressViewModel: AddressViewModel): ViewModel
 
     @Binds
     internal abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory

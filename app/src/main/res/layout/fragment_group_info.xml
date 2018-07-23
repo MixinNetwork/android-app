@@ -19,7 +19,7 @@
             android:background="@android:color/white"
             android:drawablePadding="8dp"
             android:drawableStart="@drawable/ic_search"
-            android:maxLines="1"
+            android:singleLine="true"
             android:hint="@string/search"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
