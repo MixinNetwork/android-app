@@ -578,21 +578,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         super.onResume()
         input_layout.addOnKeyboardShownListener(this)
         input_layout.addOnKeyboardHiddenListener(this)
-        chatViewModel.findUnreadMessages(conversationId).map { it ->
-            if (it.isNotEmpty()) {
-                chatViewModel.makeMessageReadByConversationId(conversationId, sender.userId, it.last().messageId)
-            }
-            notificationManager.cancel(conversationId.hashCode())
-            it.map { BlazeAckMessage(it.messageId, MessageStatus.READ.name) }
-        }.autoDisposable(scopeProvider).subscribe({
-            if (it.isNotEmpty()) {
-                it.chunked(100).forEach {
-                    chatViewModel.sendAckMessage(createAckListParamBlazeMessage(it))
-                }
-            }
-        }, {
-            Timber.e(it)
-        })
         if (isGroup) {
             if (disposable == null || disposable?.isDisposed == true) {
                 disposable = RxBus.listen(GroupEvent::class.java)
@@ -950,6 +935,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                         }
                                         isFirstLoad -> {
                                             isFirstLoad = false
+                                            startMark()
                                             if (dataPackage.hasUnread && index >= 0) {
                                                 chatAdapter.unreadIndex = index
                                             }
@@ -1055,6 +1041,24 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             })
         }
+    }
+
+    private fun startMark() {
+        chatViewModel.findUnreadMessages(conversationId).map { it ->
+            if (it.isNotEmpty()) {
+                chatViewModel.makeMessageReadByConversationId(conversationId, sender.userId, it.last().messageId)
+            }
+            notificationManager.cancel(conversationId.hashCode())
+            it.map { BlazeAckMessage(it.messageId, MessageStatus.READ.name) }
+        }.autoDisposable(scopeProvider).subscribe({
+            if (it.isNotEmpty()) {
+                it.chunked(100).forEach {
+                    chatViewModel.sendAckMessage(createAckListParamBlazeMessage(it))
+                }
+            }
+        }, {
+            Timber.e(it)
+        })
     }
 
     private fun sendForwardMessages(messages: List<ForwardMessage>) {
