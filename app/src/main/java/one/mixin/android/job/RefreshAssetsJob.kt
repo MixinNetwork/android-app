@@ -4,7 +4,7 @@ import com.birbit.android.jobqueue.Params
 import one.mixin.android.vo.Asset
 
 class RefreshAssetsJob(private val assetId: String? = null) : BaseJob(Params(PRIORITY_UI_HIGH)
-    .addTags(RefreshAssetsJob.GROUP).requireNetwork()) {
+    .addTags(RefreshAssetsJob.GROUP).persist().requireNetwork()) {
 
     companion object {
         private const val serialVersionUID = 1L
