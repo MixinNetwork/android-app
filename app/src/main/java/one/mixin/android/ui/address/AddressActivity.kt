@@ -9,7 +9,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 
-class AddressActivity: BaseActivity() {
+class AddressActivity : BaseActivity() {
 
     companion object {
         const val TAG = "AddressActivity"

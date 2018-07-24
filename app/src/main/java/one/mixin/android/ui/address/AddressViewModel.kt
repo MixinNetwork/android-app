@@ -5,7 +5,7 @@ import one.mixin.android.repository.AssetRepository
 import javax.inject.Inject
 
 class AddressViewModel @Inject
-internal constructor(private val assetRepository: AssetRepository): ViewModel() {
+internal constructor(private val assetRepository: AssetRepository) : ViewModel() {
 
     fun addresses(id: String) = assetRepository.addresses(id)
 }
