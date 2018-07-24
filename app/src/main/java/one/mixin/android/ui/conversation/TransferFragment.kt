@@ -36,7 +36,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.vo.AssetItem
@@ -158,9 +157,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
                 contentView.title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, u.fullName))
                 contentView.title_view.avatar_iv.setInfo(u.fullName, u.avatarUrl, u.identityNumber)
-                contentView.title_view.avatar_iv.setOnClickListener {
-                    UserBottomSheetDialogFragment.newInstance(u).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
-                }
             }
         })
 
