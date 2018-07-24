@@ -23,6 +23,7 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
 import one.mixin.android.util.Session
@@ -34,7 +35,7 @@ import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import java.math.BigDecimal
 import javax.inject.Inject
 
-class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
+class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     companion object {
         const val TAG = "WalletFragment"
@@ -46,8 +47,8 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
     private val walletViewModel: WalletViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
-    private var assets: List<AssetItem>? = null
-    private val assetsAdapter: AssetAdapter by lazy { AssetAdapter(assets, coins_rv) }
+    private var assets: List<AssetItem> = listOf()
+    private val assetsAdapter by lazy { AssetAdapter(coins_rv) }
     private lateinit var header: View
 
     private var animated = false
@@ -65,8 +66,8 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         title_view.left_ib.setOnClickListener { showBottom() }
 
         header = LayoutInflater.from(context!!).inflate(R.layout.view_wallet_fragment_header, coins_rv, false)
-        assetsAdapter.setHeader(header)
-        assetsAdapter.setAssetListener(this)
+        assetsAdapter.headerView = header
+        assetsAdapter.onItemListener = this
         coins_rv.adapter = assetsAdapter
         (coins_rv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
         coins_rv.setHasFixedSize(true)
@@ -192,7 +193,7 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         bottomSheet.show()
     }
 
-    override fun onAsset(asset: AssetItem) {
-        activity?.addFragment(this@WalletFragment, TransactionsFragment.newInstance(asset), TransactionsFragment.TAG)
+    override fun <T> onNormalItemClick(item: T) {
+        activity?.addFragment(this@WalletFragment, TransactionsFragment.newInstance(item as AssetItem), TransactionsFragment.TAG)
     }
 }
