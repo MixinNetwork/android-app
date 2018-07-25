@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v7.widget.SimpleItemAnimator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
@@ -45,8 +46,8 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
     private val walletViewModel: WalletViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
-    private var assets: List<AssetItem> = listOf()
-    private val assetsAdapter: AssetAdapter = AssetAdapter(assets)
+    private var assets: List<AssetItem>? = null
+    private val assetsAdapter: AssetAdapter by lazy { AssetAdapter(assets, coins_rv) }
     private lateinit var header: View
 
     private var animated = false
@@ -67,14 +68,14 @@ class WalletFragment : BaseFragment(), AssetAdapter.AssetsListener {
         assetsAdapter.setHeader(header)
         assetsAdapter.setAssetListener(this)
         coins_rv.adapter = assetsAdapter
+        (coins_rv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
         coins_rv.setHasFixedSize(true)
         coins_rv.addItemDecoration(SpaceItemDecoration(1))
 
         walletViewModel.assetItems().observe(this, Observer { r: List<AssetItem>? ->
             r?.let {
                 assets = r
-                assetsAdapter.assets = assets.filter { it.hidden != true }
-                assetsAdapter.notifyDataSetChanged()
+                assetsAdapter.setAssetList(r.filter { it.hidden != true })
 
                 var totalBTC = BigDecimal(0)
                 var totalUSD = BigDecimal(0)
