@@ -16,6 +16,7 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
+import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.BillHolder
 import one.mixin.android.ui.conversation.holder.CardHolder
 import one.mixin.android.ui.conversation.holder.ContactCardHolder
@@ -389,6 +390,16 @@ class ConversationAdapter(
                 TransparentHolder(item)
             }
         }
+
+    override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
+        getItem(holder.layoutPosition)?.let {
+            (holder as BaseViewHolder).listen(it.messageId)
+        }
+    }
+
+    override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
+        (holder as BaseViewHolder).stopListen()
+    }
 
     fun getItemType(messageItem: MessageItem?): Int =
         notNullElse(messageItem, { item ->

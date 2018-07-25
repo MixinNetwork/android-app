@@ -40,7 +40,6 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
-        listen(messageItem.messageId)
         val isMe = meId == messageItem.userId
         chatLayout(isMe, false)
         if (hasSelect && isSelect) {

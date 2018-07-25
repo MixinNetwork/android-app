@@ -4,12 +4,14 @@ import android.app.Activity
 import android.app.Application
 import android.app.Service
 import android.content.Context
+import android.os.Bundle
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import com.bugsnag.android.Bugsnag
 import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.squareup.leakcanary.LeakCanary
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.HasServiceInjector
@@ -55,12 +57,37 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
 
     override fun onCreate() {
         super.onCreate()
+        if (LeakCanary.isInAnalyzerProcess(this)) {
+            return
+        }
+        installLeakCanary()
         init()
         FirebaseApp.initializeApp(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
         MixinApplication.appContext = applicationContext
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
+    }
+
+    private fun installLeakCanary() {
+        val refWatcher = LeakCanary.refWatcher(this).watchActivities(false).buildAndInstall()
+        registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
+            override fun onActivityPaused(p0: Activity?) {}
+
+            override fun onActivityResumed(p0: Activity?) {}
+
+            override fun onActivityStarted(p0: Activity?) {}
+
+            override fun onActivitySaveInstanceState(p0: Activity?, p1: Bundle?) {}
+
+            override fun onActivityStopped(p0: Activity?) {}
+
+            override fun onActivityCreated(p0: Activity?, p1: Bundle?) {}
+
+            override fun onActivityDestroyed(activity: Activity) {
+                refWatcher.watch(activity)
+            }
+        })
     }
 
     private fun init() {

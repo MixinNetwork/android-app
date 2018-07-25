@@ -67,7 +67,6 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
-        listen(messageItem.messageId)
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)

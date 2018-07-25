@@ -47,7 +47,7 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
     private var disposable: Disposable? = null
     private var messageId: String? = null
 
-    protected fun listen(bindId: String) {
+    fun listen(bindId: String) {
         if (disposable == null) {
             disposable = RxBus.listen(BlinkEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -58,6 +58,11 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
                 }
         }
         this.messageId = bindId
+    }
+
+    fun stopListen() {
+        disposable?.dispose()
+        disposable = null
     }
 
     private fun blink() {
