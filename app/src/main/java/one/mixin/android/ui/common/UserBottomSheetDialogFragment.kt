@@ -109,12 +109,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             updateRelationship(UserRelationship.FRIEND.name)
         }
         contentView.send_fl.setOnClickListener {
-            // TODO [optimize] have conversation with same user
-            activity?.let {
-                if (it is ConversationActivity) {
-                    it.finish()
-                }
-            }
             context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             dialog?.dismiss()
         }
