@@ -24,6 +24,7 @@ import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.vo.AssetItem
@@ -33,7 +34,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
-class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsListener {
+class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     companion object {
         const val TAG = "TransactionsFragment"
@@ -87,16 +88,16 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
             }
         }
 
-        adapter = TransactionsAdapter(snapshots, asset)
-        adapter.setListener(this)
-        adapter.header = header
+        adapter = TransactionsAdapter(asset).apply { data = snapshots }
+        adapter.onItemListener = this
+        adapter.headerView = header
         recycler_view.addItemDecoration(SpaceItemDecoration(1))
         recycler_view.adapter = adapter
 
         walletViewModel.snapshotsFromDb(asset.assetId).observe(this, Observer {
             it?.let {
                 snapshots = it
-                adapter.snapshots = snapshots
+                adapter.data = snapshots
                 adapter.notifyDataSetChanged()
 
                 doAsync {
@@ -175,8 +176,8 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
         bottomSheet.show()
     }
 
-    override fun onItemClick(snapshot: SnapshotItem) {
-        val fragment = TransactionFragment.newInstance(snapshot, asset)
+    override fun <T> onNormalItemClick(item: T) {
+        val fragment = TransactionFragment.newInstance(item as SnapshotItem, asset)
         activity?.addFragment(this@TransactionsFragment, fragment, TransactionFragment.TAG)
     }
 }

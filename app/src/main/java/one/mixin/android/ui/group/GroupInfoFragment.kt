@@ -96,7 +96,7 @@ class GroupInfoFragment : BaseFragment() {
         group_info_rv.adapter = adapter
         group_info_rv.addItemDecoration(SpaceItemDecoration(2))
         header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
-        adapter.setHeader(header)
+        adapter.headerView = header
         adapter.setGroupInfoListener(object : GroupInfoAdapter.GroupInfoListener {
             override fun onAdd() {
                 modifyMember(true)
@@ -237,7 +237,7 @@ class GroupInfoFragment : BaseFragment() {
                         if (s.isNotBlank()) {
                             filter(s)
                         } else {
-                            adapter.users = u
+                            adapter.data = u
                         }
                     }
                 }
@@ -285,7 +285,7 @@ class GroupInfoFragment : BaseFragment() {
                 us.add(it)
             }
         }
-        adapter.users = us
+        adapter.data = us
     }
 
     private fun openChat(user: User) {
@@ -332,7 +332,7 @@ class GroupInfoFragment : BaseFragment() {
 
     private fun modifyMember(isAdd: Boolean) {
         val list = arrayListOf<User>()
-        adapter.users.let {
+        adapter.data.let {
             list += it!!
         }
         activity?.addFragment(this@GroupInfoFragment,

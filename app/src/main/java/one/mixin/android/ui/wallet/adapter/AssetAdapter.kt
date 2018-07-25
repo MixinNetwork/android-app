@@ -1,10 +1,10 @@
 package one.mixin.android.ui.wallet.adapter
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.support.v7.util.DiffUtil
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -12,80 +12,54 @@ import kotlinx.android.synthetic.main.item_wallet_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
+import one.mixin.android.ui.common.headrecyclerview.HeaderListUpdateCallback
 import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColorResource
 import java.math.BigDecimal
 
-class AssetAdapter(private var assets: List<AssetItem>?, private val rv: RecyclerView) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    companion object {
-        const val TYPE_HEADER = 0
-        const val TYPE_NORMAL = 1
-    }
-
-    private var headerView: View? = null
-    private var assetsListener: AssetsListener? = null
+class AssetAdapter(private val rv: RecyclerView) : HeaderAdapter<AssetItem>() {
 
     fun setAssetList(newAssets: List<AssetItem>) {
-        if (assets == null) {
-            assets = newAssets
+        if (data == null) {
+            data = newAssets
             notifyItemRangeInserted(0, newAssets.size)
         } else {
             val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
                 override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                    if (headerView != null) {
-                        if (oldItemPosition == 0 && newItemPosition == 0) {
-                            return true
-                        } else if (oldItemPosition == 0 || newItemPosition == 0) {
-                            return false
-                        }
-                    }
-
-                    val old = assets!![getPos(oldItemPosition)]
-                    val new = newAssets[getPos(newItemPosition)]
+                    val old = data!![oldItemPosition]
+                    val new = newAssets[newItemPosition]
                     return old.assetId == new.assetId
                 }
 
-                override fun getOldListSize() = assets!!.size
+                override fun getOldListSize() = data!!.size
 
                 override fun getNewListSize() = newAssets.size
 
                 override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
-                    if (headerView != null) {
-                        if (oldItemPosition == 0 && newItemPosition == 0) {
-                            return true
-                        } else if (oldItemPosition == 0 || newItemPosition == 0) {
-                            return false
-                        }
-                    }
-
-                    val old = assets!![getPos(oldItemPosition)]
-                    val new = newAssets[getPos(newItemPosition)]
+                    val old = data!![oldItemPosition]
+                    val new = newAssets[newItemPosition]
                     return old == new
                 }
             })
-            assets = newAssets
+            data = newAssets
             val recyclerViewState = rv.layoutManager.onSaveInstanceState()
-            diffResult.dispatchUpdatesTo(this)
+            if (headerView != null) {
+                diffResult.dispatchUpdatesTo(HeaderListUpdateCallback(this))
+            } else {
+                diffResult.dispatchUpdatesTo(this)
+            }
             rv.layoutManager.onRestoreInstanceState(recyclerViewState)
-        }
-    }
-
-    override fun getItemViewType(position: Int): Int {
-        return if (position == TYPE_HEADER && headerView != null) {
-            TYPE_HEADER
-        } else {
-            TYPE_NORMAL
         }
     }
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is AssetHolder) {
-            val asset = assets!![getPos(position)]
+        if (holder is NormalHolder) {
+            val asset = data!![getPos(position)]
             val ctx = holder.itemView.context
             holder.itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
             holder.itemView.balance_as.text = ctx.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
@@ -105,40 +79,10 @@ class AssetAdapter(private var assets: List<AssetItem>?, private val rv: Recycle
             }
             holder.itemView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            holder.itemView.setOnClickListener { assetsListener?.onAsset(asset) }
+            holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(assets, { if (headerView != null) it.size + 1 else it.size }, 0)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_HEADER) {
-            HeadHolder(headerView!!)
-        } else {
-            AssetHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_wallet_asset, parent, false))
-        }
-    }
-
-    private fun getPos(position: Int): Int {
-        return if (headerView != null) {
-            position - 1
-        } else {
-            position
-        }
-    }
-
-    fun setHeader(header: View) {
-        headerView = header
-    }
-
-    fun setAssetListener(listener: AssetsListener) {
-        assetsListener = listener
-    }
-
-    class AssetHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-    class HeadHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-
-    interface AssetsListener {
-        fun onAsset(asset: AssetItem)
-    }
+    override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
+        NormalHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_asset, parent, false))
 }

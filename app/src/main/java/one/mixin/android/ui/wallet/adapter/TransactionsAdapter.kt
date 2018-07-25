@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.adapter
 
+import android.content.Context
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -9,56 +10,27 @@ import one.mixin.android.R
 import one.mixin.android.extension.date
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.textColorResource
 
-class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetItem)
-    : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-    companion object {
-        const val TYPE_HEADER = 0
-        const val TYPE_NORMAL = 1
-    }
-
-    var header: View? = null
-    private var transactionsListener: TransactionsListener? = null
-
-    override fun getItemCount(): Int = if (header != null) snapshots.size + 1 else snapshots.size
-
-    override fun getItemViewType(position: Int): Int {
-        return if (position == TYPE_HEADER && header != null) {
-            TYPE_HEADER
-        } else {
-            TYPE_NORMAL
-        }
-    }
+class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>() {
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is NormalHolder) {
-            val snapshot = snapshots[getPos(position)]
-            holder.bind(snapshot, asset, transactionsListener)
+        if (holder is TransactionsHolder) {
+            val snapshot = data!![getPos(position)]
+            holder.bind(snapshot, asset, onItemListener)
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        if (viewType == TYPE_HEADER) {
-            return HeadHolder(header!!)
-        }
-        return NormalHolder(LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_wallet_transactions, parent, false))
-    }
+    override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
+        TransactionsHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_transactions, parent, false))
 
-    private fun getPos(position: Int): Int {
-        return if (header != null) {
-            position - 1
-        } else {
-            position
-        }
-    }
 
-    class NormalHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(snapshot: SnapshotItem, asset: AssetItem, listener: TransactionsListener?) {
+    class TransactionsHolder(itemView: View) : HeaderAdapter.NormalHolder(itemView) {
+        fun bind(snapshot: SnapshotItem, asset: AssetItem, listener: OnItemListener?) {
             val isPositive = snapshot.amount.toFloat() > 0
             itemView.date.text = snapshot.createdAt.date()
             when {
@@ -84,17 +56,7 @@ class TransactionsAdapter(var snapshots: List<SnapshotItem>, var asset: AssetIte
             else "${snapshot.amount.numberFormat()} ${asset.symbol}"
             itemView.value.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
 
-            itemView.setOnClickListener { listener?.onItemClick(snapshot) }
+            itemView.setOnClickListener { listener?.onNormalItemClick(snapshot) }
         }
-    }
-
-    class HeadHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
-
-    fun setListener(listener: TransactionsListener) {
-        this.transactionsListener = listener
-    }
-
-    interface TransactionsListener {
-        fun onItemClick(snapshot: SnapshotItem)
     }
 }
