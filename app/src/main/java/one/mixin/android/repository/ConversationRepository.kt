@@ -156,4 +156,6 @@ internal constructor(
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String) = messageDao.getMediaByConversationIdAndCategory(conversationId, category)
 
     fun findMessageIndex(conversationId: String, messageId: String) = messageDao.findMessageIndex(conversationId, messageId)
+
+    fun findUnreadMessagesSync(conversationId: String) = messageDao.findUnreadMessagesSync(conversationId)
 }

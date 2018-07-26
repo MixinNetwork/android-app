@@ -1,11 +1,13 @@
 package one.mixin.android.ui.forward
 
-import android.Manifest
-import android.app.AlertDialog
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -55,7 +57,9 @@ class ForwardFragment : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
-    private val adapter = ForwardAdapter()
+    private val adapter by lazy {
+        ForwardAdapter(isShare)
+    }
     var conversations: List<ConversationItem>? = null
     var friends: List<User>? = null
 
@@ -70,6 +74,36 @@ class ForwardFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_forward, container, false)
 
+    private fun setForwardText() {
+        if (adapter.selectItem.size > 0) {
+            forward_group.visibility = View.VISIBLE
+        } else {
+            forward_group.visibility = View.GONE
+        }
+        val str = StringBuffer()
+        for (i in adapter.selectItem.size - 1 downTo 0) {
+            adapter.selectItem[i].let {
+                if (it is ConversationItem) {
+                    if (it.isGroup()) {
+                        str.append(it.groupName)
+                    } else {
+                        str.append(it.name)
+                    }
+                    if (i != 0) {
+                        str.append("、")
+                    }
+                } else if (it is User) {
+                    str.append(it.fullName)
+                    if (i != 0) {
+                        str.append("、")
+                    }
+                } else {
+                }
+            }
+        }
+        forward_tv.text = str
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (isShare) {
@@ -78,17 +112,48 @@ class ForwardFragment : BaseFragment() {
         title_view.setOnClickListener { activity?.onBackPressed() }
         forward_rv.adapter = adapter
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        forward_bn.setOnClickListener {
+            if (adapter.selectItem.size == 1) {
+                adapter.selectItem[0].let {
+                    if (it is User) {
+                        sendSingleMessage(null, it.userId)
+                    } else if (it is ConversationItem) {
+                        sendSingleMessage(it.conversationId, null)
+                    }
+                }
+            } else {
+                sendMessages()
+            }
+        }
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onConversationItemClick(item: ConversationItem) {
-                alert(if (item.isGroup()) {
-                    item.groupName
+                if (isShare) {
+                    if (adapter.selectItem.contains(item)) {
+                        adapter.selectItem.remove(item)
+                    } else {
+                        adapter.selectItem.add(item)
+                    }
+                    setForwardText()
                 } else {
-                    item.name
-                }, item.conversationId, null)
+                    alert(if (item.isGroup()) {
+                        item.groupName
+                    } else {
+                        item.name
+                    }, item.conversationId, null)
+                }
             }
 
             override fun onUserItemClick(user: User) {
-                alert(user.fullName, null, user.userId)
+                if (isShare) {
+                    if (adapter.selectItem.contains(user)) {
+                        adapter.selectItem.remove(user)
+                    } else {
+                        adapter.selectItem.add(user)
+                    }
+                    setForwardText()
+                } else {
+                    alert(user.fullName, null, user.userId)
+                }
             }
         })
 
@@ -127,8 +192,8 @@ class ForwardFragment : BaseFragment() {
                 if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
                     RxPermissions(requireActivity())
                         .request(
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
+                            WRITE_EXTERNAL_STORAGE,
+                            READ_EXTERNAL_STORAGE)
                         .subscribe({ granted ->
                             if (granted) {
                                 sharePreOperation()
@@ -146,6 +211,52 @@ class ForwardFragment : BaseFragment() {
                 dialog.dismiss()
             }
             .show()
+    }
+
+    @SuppressLint("CheckResult")
+    private fun sendMessages() {
+        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+            RxPermissions(requireActivity())
+                .request(
+                    WRITE_EXTERNAL_STORAGE,
+                    READ_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        chatViewModel.sendForwardMessages(adapter.selectItem, messages)
+                        requireActivity().finish()
+                    } else {
+                        requireContext().openPermissionSetting()
+                    }
+                }, {
+                    Bugsnag.notify(it)
+                })
+        } else {
+            chatViewModel.sendForwardMessages(adapter.selectItem, messages)
+            requireActivity().finish()
+        }
+    }
+
+    @SuppressLint("CheckResult")
+    private fun sendSingleMessage(conversationId: String?, userId: String?) {
+        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+            RxPermissions(requireActivity())
+                .request(
+                    WRITE_EXTERNAL_STORAGE,
+                    READ_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        sharePreOperation()
+                        ConversationActivity.show(ctx, conversationId, userId, messages = messages)
+                    } else {
+                        requireContext().openPermissionSetting()
+                    }
+                }, {
+                    Bugsnag.notify(it)
+                })
+        } else {
+            sharePreOperation()
+            ConversationActivity.show(ctx, conversationId, userId, messages = messages)
+        }
     }
 
     private fun sharePreOperation() {

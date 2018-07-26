@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -9,7 +10,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/forward" />
+        app:titleText="@string/forward"/>
 
     <EditText
         android:id="@+id/search_et"
@@ -26,22 +27,77 @@
         android:paddingStart="@dimen/margin_start"
         android:textColor="@android:color/black"
         android:textColorHint="@color/text_gray"
-        android:textSize="14sp" />
+        android:textSize="14sp"/>
 
     <View
         android:id="@+id/line"
         android:layout_width="match_parent"
         android:layout_height=".5dp"
-        android:background="@color/divider" />
+        android:background="@color/divider"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/forward_rv"
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layoutManager="LinearLayoutManager" />
+        android:background="@color/bg_gray"
+        android:layout_weight="1"
+        android:layout_height="0dp">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/bg_gray"/>
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/forward_rv"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            app:layoutManager="LinearLayoutManager"
+            app:layout_constraintBottom_toTopOf="@id/forward_tv"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_chainStyle="spread_inside"/>
+
+        <TextView
+            android:id="@+id/forward_tv"
+            android:background="@color/colorDarkBlue"
+            android:layout_alignParentBottom="true"
+            android:paddingStart="16dp"
+            android:paddingEnd="64dp"
+            android:textColor="@color/white"
+            android:singleLine="true"
+            android:paddingTop="12dp"
+            android:paddingBottom="12dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/forward_rv"
+            app:layout_constraintVertical_bias="1.0"/>
+
+        <android.support.design.widget.FloatingActionButton
+            android:id="@+id/forward_bn"
+            android:padding="12dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/bg_round_check"
+            android:src="@drawable/ic_send_white"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:layout_marginBottom="12dp"
+            app:backgroundTint="@color/colorBlue"
+            app:elevation="6dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:pressedTranslationZ="1dp"
+            app:rippleColor="#a6a6a6"/>
+
+        <android.support.constraint.Group
+            android:id="@+id/forward_group"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="forward_tv,forward_bn"
+            tools:ignore="MissingConstraints"/>
+    </android.support.constraint.ConstraintLayout>
+
 </LinearLayout>
