@@ -1,6 +1,5 @@
 package one.mixin.android.ui.url
 
-import android.content.UriMatcher
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
@@ -16,16 +15,10 @@ import one.mixin.android.util.Session
 
 class UrlInterpreterActivity : BaseActivity() {
     companion object {
-        private const val CODE = 100
-        private const val PAY = 101
-        private const val USER = 102
-        private const val TRANSFER = 103
-        private val sURIMatcher = UriMatcher(UriMatcher.NO_MATCH).apply {
-            addURI("codes", "*", CODE)
-            addURI("pay", null, PAY)
-            addURI("users", null, USER)
-            addURI("transfer", null, TRANSFER)
-        }
+        private const val CODE = "codes"
+        private const val PAY = "pay"
+        private const val USER = "users"
+        private const val TRANSFER = "transfer"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,15 +42,13 @@ class UrlInterpreterActivity : BaseActivity() {
     }
 
     private fun interpretIntent(uri: Uri) {
-        when (sURIMatcher.match(uri)) {
+        when (uri.host) {
             CODE, PAY, USER -> {
                 val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
             TRANSFER -> {
                 TransferFragment.newInstance(uri.lastPathSegment).showNow(supportFragmentManager, TransferFragment.TAG)
-            }
-            else -> {
             }
         }
     }
