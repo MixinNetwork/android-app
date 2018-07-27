@@ -494,6 +494,7 @@ internal constructor(
                     conversationId = getConversationIdIfExistsSync(item.userId)
                     if (conversationId == null) {
                         conversationId = generateConversationId(Session.getAccountId()!!, item.userId)
+                        initConversation(conversationId, item, Session.getAccount()!!.toUser())
                     }
                     sendForwardMessages(conversationId, messages, item.isBot())
                 } else if (item is ConversationItem) {
@@ -501,10 +502,12 @@ internal constructor(
                     sendForwardMessages(item.conversationId, messages, item.isBot())
                 }
                 findUnreadMessagesSync(conversationId!!)?.let {
-                    makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
-                    it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
-                        it.chunked(100).forEach {
-                            jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                    if (it.isNotEmpty()) {
+                        makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
+                        it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
+                            it.chunked(100).forEach {
+                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                            }
                         }
                     }
                 }
