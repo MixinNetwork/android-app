@@ -25,6 +25,7 @@ import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.InfoHolder
 import one.mixin.android.ui.conversation.holder.MessageHolder
 import one.mixin.android.ui.conversation.holder.ReplyHolder
+import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
 import one.mixin.android.ui.conversation.holder.StrangerHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
@@ -42,7 +43,8 @@ import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 class ConversationAdapter(
     private val keyword: String?,
     private val onItemListener: OnItemListener,
-    private val isGroup: Boolean
+    private val isGroup: Boolean,
+    private val isSecret: Boolean = true
 ) :
     PagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback),
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
@@ -163,6 +165,9 @@ class ConversationAdapter(
                     (holder as ContactCardHolder).bind(it, isFirst(position), isLast(position),
                         selectSet.size > 0, isSelect(position), onItemListener)
                 }
+                SECRET_TYPE -> {
+                    (holder as SecretHolder).bind()
+                }
                 else -> {
                 }
             }
@@ -252,23 +257,53 @@ class ConversationAdapter(
     }
 
     override fun getItemCount(): Int {
-        return super.getItemCount() + if (hasBottomView) {
+        return super.getItemCount() + if (hasBottomView && isSecret) {
+            2
+        } else if (hasBottomView || isSecret) {
             1
         } else {
             0
         }
     }
 
+    fun getRealItemCount(): Int {
+        return super.getItemCount()
+    }
+
     override fun getItem(position: Int): MessageItem? {
-        return if (hasBottomView) {
-            if (position > 0) {
-                super.getItem(position - 1)
-            } else {
-                if (itemCount > 1) {
-                    create(MessageCategory.STRANGER.name, getItem(1)?.createdAt)
+        return if (isSecret && hasBottomView) {
+            when {
+                position == 0 -> create(MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
+                    super.getItem(0)?.createdAt
                 } else {
-                    create(MessageCategory.STRANGER.name)
-                }
+                    null
+                })
+                position < super.getItemCount() -> super.getItem(position - 1)
+                else -> create(MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
+                    super.getItem(super.getItemCount() - 1)?.createdAt
+                } else {
+                    null
+                })
+            }
+        } else if (isSecret) {
+            if (position < super.getItemCount()) {
+                super.getItem(position)
+            } else {
+                create(MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
+                    super.getItem(super.getItemCount() - 1)?.createdAt
+                } else {
+                    null
+                })
+            }
+        } else if (hasBottomView) {
+            if (position == 0) {
+                create(MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
+                    super.getItem(0)?.createdAt
+                } else {
+                    null
+                })
+            } else {
+                super.getItem(position - 1)
             }
         } else {
             super.getItem(position)
@@ -345,6 +380,10 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_video, parent, false)
                 VideoHolder(item)
             }
+            SECRET_TYPE -> {
+                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_secret, parent, false)
+                SecretHolder(item)
+            }
             else -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_transparent, parent, false)
                 TransparentHolder(item)
@@ -355,6 +394,7 @@ class ConversationAdapter(
         notNullElse(messageItem, { item ->
             when {
                 item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
+                item.type == MessageCategory.SECRET.name -> SECRET_TYPE
                 item.status == MessageStatus.FAILED.name -> WAITING_TYPE
                 item.type == MessageCategory.SIGNAL_TEXT.name || item.type == MessageCategory.PLAIN_TEXT.name -> {
                     if (!item.quoteId.isNullOrEmpty() && !item.quoteContent.isNullOrEmpty()) {
@@ -403,9 +443,10 @@ class ConversationAdapter(
         const val WAITING_TYPE = 11
         const val LINK_TYPE = 12
         const val STRANGER_TYPE = 13
-        const val CONTACT_CARD_TYPE = 14
-        const val VIDEO_TYPE = 15
-        const val AUDIO_TYPE = 16
+        const val SECRET_TYPE = 14
+        const val CONTACT_CARD_TYPE = 15
+        const val VIDEO_TYPE = 16
+        const val AUDIO_TYPE = 17
 
         private var lastId: String? = null
 

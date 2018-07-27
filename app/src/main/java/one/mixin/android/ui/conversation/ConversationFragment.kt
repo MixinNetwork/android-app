@@ -199,7 +199,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
     private val chatAdapter: ConversationAdapter by lazy {
-        ConversationAdapter(keyword, onItemListener, isGroup)
+        ConversationAdapter(keyword, onItemListener, isGroup, !isPlainMessage())
     }
 
     private val appAdapter: AppAdapter by lazy {
@@ -552,7 +552,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        chat_rv.visibility = INVISIBLE
         chat_rv.adapter = chatAdapter
     }
 
@@ -929,6 +929,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                     val index = dataPackage.index
                                     when {
                                         dataPackage.isStranger -> {
+                                            chat_rv.visibility = View.VISIBLE
                                             chatAdapter.hasBottomView = true
                                             chatAdapter.submitList(data)
                                             chatAdapter.unreadIndex = index
@@ -965,12 +966,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                         showAlert(0)
                                                     }
                                                 }
+                                                chat_rv.visibility = View.VISIBLE
                                                 chatAdapter.submitList(data)
                                                 scrollTo(0, action = action)
                                             }
                                         }
                                         else -> {
-                                            if (data.size > chatAdapter.itemCount) {
+                                            chat_rv.visibility = View.VISIBLE
+                                            if (data.size > chatAdapter.getRealItemCount()) {
                                                 chatAdapter.unreadIndex = null
                                                 if (isBottom) {
                                                     notNullElse(data[0], {
