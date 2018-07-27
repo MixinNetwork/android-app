@@ -1,5 +1,6 @@
 package one.mixin.android.ui.search
 
+import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
@@ -48,20 +49,33 @@ class SearchFragment : Fragment(), Injectable {
     fun setQueryText(text: String) {
         if (isAdded && text != keyword) {
             keyword = text
-            if (text.isEmpty()) {
-                searchViewModel.contactList.observe(this, Observer {
-                    searchAdapter.setData(null, it, null, null)
-                })
-            } else {
-                doAsync {
-                    val assetList = searchViewModel.fuzzySearchAsset(text)
-                    val userList = searchViewModel.fuzzySearchUser(text)
-                    val groupList = searchViewModel.fuzzySearchGroup(text)
-                    val messageList = searchViewModel.fuzzySearchMessage(text)
+            bindData()
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        bindData()
+    }
+
+    private fun bindData() {
+        if (keyword.isNullOrEmpty()) {
+            searchViewModel.contactList.observe(this, Observer {
+                searchAdapter.setData(null, it, null, null)
+            })
+        } else {
+            doAsync {
+                keyword?.let { keyword ->
+                    val assetList = searchViewModel.fuzzySearchAsset(keyword)
+                    val userList = searchViewModel.fuzzySearchUser(keyword)
+                    val groupList = searchViewModel.fuzzySearchGroup(keyword)
+                    val messageList = searchViewModel.fuzzySearchMessage(keyword)
                     context?.runOnUiThread {
-                        searchAdapter.setData(assetList, userList, groupList, messageList)
-                        if (assetList.isNotEmpty() || userList.isNotEmpty() || groupList.isNotEmpty() || messageList.isNotEmpty()) {
-                            search_rv.scrollToPosition(0)
+                        if (isAdded) {
+                            searchAdapter.setData(assetList, userList, groupList, messageList)
+                            if (assetList.isNotEmpty() || userList.isNotEmpty() || groupList.isNotEmpty() || messageList.isNotEmpty()) {
+                                search_rv.scrollToPosition(0)
+                            }
                         }
                     }
                 }
@@ -81,9 +95,7 @@ class SearchFragment : Fragment(), Injectable {
         search_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         search_rv.addItemDecoration(StickyRecyclerHeadersDecoration(searchAdapter))
         search_rv.adapter = searchAdapter
-        searchViewModel.contactList.observe(this, Observer {
-            searchAdapter.setData(null, it, null, null)
-        })
+
         searchAdapter.onItemClickListener = object : OnSearchClickListener {
             override fun onAsset(assetItem: AssetItem) {
                 activity?.let { WalletActivity.show(it, assetItem) }
@@ -96,6 +108,7 @@ class SearchFragment : Fragment(), Injectable {
                 }
             }
 
+            @SuppressLint("CheckResult")
             override fun onMessageClick(message: SearchMessageItem) {
                 searchViewModel.findConversationById(message.conversationId).subscribe {
                     search_rv.hideKeyboard()
