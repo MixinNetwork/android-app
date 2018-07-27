@@ -266,6 +266,10 @@ class ConversationAdapter(
         }
     }
 
+    fun getRealItemCount(): Int {
+        return super.getItemCount()
+    }
+
     override fun getItem(position: Int): MessageItem? {
         return if (isSecret && hasBottomView) {
             when {

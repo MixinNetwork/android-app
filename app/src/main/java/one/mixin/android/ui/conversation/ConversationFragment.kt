@@ -987,7 +987,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                         }
                                         else -> {
                                             chat_rv.visibility = View.VISIBLE
-                                            if (data.size > chatAdapter.itemCount) {
+                                            if (data.size > chatAdapter.getRealItemCount()) {
                                                 chatAdapter.unreadIndex = null
                                                 if (isBottom) {
                                                     notNullElse(data[0], {
