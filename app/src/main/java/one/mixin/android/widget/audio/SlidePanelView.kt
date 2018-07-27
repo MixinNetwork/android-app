@@ -41,6 +41,7 @@ class SlidePanelView : RelativeLayout {
         }
         time_tv.setCompoundDrawables(blinkingDrawable, null, null, null)
         cancel_tv.setOnClickListener { callback?.onCancel() }
+        time_tv.text = 0L.formatMillis()
     }
 
     fun onStart() {

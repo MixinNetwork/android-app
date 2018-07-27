@@ -694,6 +694,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         MixinApplication.conversationId = null
         super.onDestroy()
         AudioPlayer.release()
+        OpusAudioRecorder.release()
     }
 
     @SuppressLint("CheckResult")

@@ -200,11 +200,6 @@ dependencies {
     implementation 'com.googlecode.mp4parser:isoparser:1.0.6'
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.shizhefei:LargeImageView:${largeImageViewVersion}"
-
-
-    debugImplementation "com.squareup.leakcanary:leakcanary-android:${leakCanaryVersion}"
-    releaseImplementation "com.squareup.leakcanary:leakcanary-android-no-op:${leakCanaryVersion}"
-    debugImplementation "com.squareup.leakcanary:leakcanary-support-fragment:${leakCanaryVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {
