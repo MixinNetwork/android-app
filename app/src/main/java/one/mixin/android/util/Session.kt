@@ -108,6 +108,7 @@ class Session {
                     put("uid", acct.userId)
                     put("sid", acct.session_id)
                     put("sig", content.sha256().toHex())
+                    put("scp", "FULL")
                 })
                 .signWith(SignatureAlgorithm.RS512, key)
                 .compact()
