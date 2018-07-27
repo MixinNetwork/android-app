@@ -43,7 +43,6 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
-        listen(messageItem.messageId)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {

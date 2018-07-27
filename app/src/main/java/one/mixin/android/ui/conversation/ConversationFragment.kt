@@ -34,6 +34,7 @@ import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import androidx.core.animation.doOnEnd
 import androidx.core.net.toUri
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -100,6 +101,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter.Companion.M
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.MenuAdapter
+import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -676,10 +678,23 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         super.onStop()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        chat_rv?.let { rv->
+            rv.children.forEach {
+                val vh = rv.getChildViewHolder(it)
+                if (vh != null && vh is BaseViewHolder) {
+                    vh.stopListen()
+                }
+            }
+        }
+    }
+
     override fun onDestroy() {
         MixinApplication.conversationId = null
         super.onDestroy()
         AudioPlayer.release()
+        OpusAudioRecorder.release()
     }
 
     @SuppressLint("CheckResult")

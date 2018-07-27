@@ -44,7 +44,6 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         isSelect: Boolean,
         onItemListener: ConversationAdapter.OnItemListener
     ) {
-        listen(messageItem.messageId)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
