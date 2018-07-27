@@ -1,7 +1,8 @@
 package one.mixin.android.ui.forward
 
-import android.Manifest
-import android.app.AlertDialog
+import android.Manifest.permission.READ_EXTERNAL_STORAGE
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
@@ -55,7 +56,9 @@ class ForwardFragment : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
-    private val adapter = ForwardAdapter()
+    private val adapter by lazy {
+        ForwardAdapter()
+    }
     var conversations: List<ConversationItem>? = null
     var friends: List<User>? = null
 
@@ -70,6 +73,36 @@ class ForwardFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_forward, container, false)
 
+    private fun setForwardText() {
+        if (adapter.selectItem.size > 0) {
+            forward_group.visibility = View.VISIBLE
+        } else {
+            forward_group.visibility = View.GONE
+        }
+        val str = StringBuffer()
+        for (i in adapter.selectItem.size - 1 downTo 0) {
+            adapter.selectItem[i].let {
+                if (it is ConversationItem) {
+                    if (it.isGroup()) {
+                        str.append(it.groupName)
+                    } else {
+                        str.append(it.name)
+                    }
+                    if (i != 0) {
+                        str.append("、")
+                    }
+                } else if (it is User) {
+                    str.append(it.fullName)
+                    if (i != 0) {
+                        str.append("、")
+                    }
+                } else {
+                }
+            }
+        }
+        forward_tv.text = str
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (isShare) {
@@ -78,17 +111,36 @@ class ForwardFragment : BaseFragment() {
         title_view.setOnClickListener { activity?.onBackPressed() }
         forward_rv.adapter = adapter
         forward_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        forward_bn.setOnClickListener {
+            if (adapter.selectItem.size == 1) {
+                adapter.selectItem[0].let {
+                    if (it is User) {
+                        sendSingleMessage(null, it.userId)
+                    } else if (it is ConversationItem) {
+                        sendSingleMessage(it.conversationId, null)
+                    }
+                }
+            } else {
+                sendMessages()
+            }
+        }
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onConversationItemClick(item: ConversationItem) {
-                alert(if (item.isGroup()) {
-                    item.groupName
+                if (adapter.selectItem.contains(item)) {
+                    adapter.selectItem.remove(item)
                 } else {
-                    item.name
-                }, item.conversationId, null)
+                    adapter.selectItem.add(item)
+                }
+                setForwardText()
             }
 
             override fun onUserItemClick(user: User) {
-                alert(user.fullName, null, user.userId)
+                if (adapter.selectItem.contains(user)) {
+                    adapter.selectItem.remove(user)
+                } else {
+                    adapter.selectItem.add(user)
+                }
+                setForwardText()
             }
         })
 
@@ -119,33 +171,50 @@ class ForwardFragment : BaseFragment() {
         search_et.addTextChangedListener(mWatcher)
     }
 
-    private fun alert(name: String?, conversationId: String?, userId: String?) {
-        AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
-            .setTitle(getString(R.string.send_msg, name))
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
-                    RxPermissions(requireActivity())
-                        .request(
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                sharePreOperation()
-                                ConversationActivity.show(ctx, conversationId, userId, messages = messages)
-                            } else {
-                                requireContext().openPermissionSetting()
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
-                } else {
-                    sharePreOperation()
-                    ConversationActivity.show(ctx, conversationId, userId, messages = messages)
-                }
-                dialog.dismiss()
-            }
-            .show()
+    @SuppressLint("CheckResult")
+    private fun sendMessages() {
+        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+            RxPermissions(requireActivity())
+                .request(
+                    WRITE_EXTERNAL_STORAGE,
+                    READ_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        chatViewModel.sendForwardMessages(adapter.selectItem, messages)
+                        requireActivity().finish()
+                    } else {
+                        requireContext().openPermissionSetting()
+                    }
+                }, {
+                    Bugsnag.notify(it)
+                })
+        } else {
+            chatViewModel.sendForwardMessages(adapter.selectItem, messages)
+            requireActivity().finish()
+        }
+    }
+
+    @SuppressLint("CheckResult")
+    private fun sendSingleMessage(conversationId: String?, userId: String?) {
+        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+            RxPermissions(requireActivity())
+                .request(
+                    WRITE_EXTERNAL_STORAGE,
+                    READ_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        sharePreOperation()
+                        ConversationActivity.show(ctx, conversationId, userId, messages = messages)
+                    } else {
+                        requireContext().openPermissionSetting()
+                    }
+                }, {
+                    Bugsnag.notify(it)
+                })
+        } else {
+            sharePreOperation()
+            ConversationActivity.show(ctx, conversationId, userId, messages = messages)
+        }
     }
 
     private fun sharePreOperation() {

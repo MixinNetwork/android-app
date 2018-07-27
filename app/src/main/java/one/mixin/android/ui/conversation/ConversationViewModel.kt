@@ -16,6 +16,7 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import one.mixin.android.AppExecutors
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
@@ -29,6 +30,7 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.fileExists
+import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
@@ -37,9 +39,9 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -60,7 +62,10 @@ import one.mixin.android.util.video.MediaController
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -78,11 +83,17 @@ import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
+import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.toUser
+import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
 import java.util.UUID
@@ -112,6 +123,8 @@ internal constructor(
     fun searchConversationById(id: String) =
         conversationRepository.searchConversationById(id)
             .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
+
+    fun getConversationIdIfExistsSync(recipientId: String) = conversationRepository.getConversationIdIfExistsSync(recipientId)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
@@ -443,4 +456,83 @@ internal constructor(
         Observable.just(1).map {
             conversationRepository.findMessageIndex(conversationId, messageId)
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
+
+    private fun findUnreadMessagesSync(conversationId: String) = conversationRepository.findUnreadMessagesSync(conversationId)
+
+    private fun sendForwardMessages(conversationId: String, messages: List<ForwardMessage>?, isPlainMessage: Boolean) {
+        messages?.let {
+            val sender = Session.getAccount()!!.toUser()
+            for (item in it) {
+                if (item.id != null) {
+                    sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe({}, {
+                        Timber.e("")
+                    })
+                } else {
+                    when (item.type) {
+                        ForwardCategory.CONTACT.name -> {
+                            sendContactMessage(item.sharedUserId!!, sender, item.sharedUserId, isPlainMessage)
+                        }
+                        ForwardCategory.IMAGE.name -> {
+                            sendImageMessage(conversationId, sender, Uri.parse(item.mediaUrl), isPlainMessage)
+                                ?.subscribe({
+                                }, {
+                                    Timber.e(it)
+                                })
+                        }
+                        ForwardCategory.DATA.name -> {
+                            MixinApplication.get().getAttachment(Uri.parse(item.mediaUrl))?.let {
+                                sendAttachmentMessage(conversationId, sender, it, isPlainMessage)
+                            }
+                        }
+                        ForwardCategory.VIDEO.name -> {
+                            sendVideoMessage(conversationId, sender,
+                                Uri.parse(item.mediaUrl), isPlainMessage)
+                                .subscribe({
+                                }, {
+                                    Timber.e(it)
+                                })
+                        }
+                        ForwardCategory.TEXT.name -> {
+                            item.content?.let {
+                                sendTextMessage(conversationId, sender, it, isPlainMessage)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
+        AppExecutors().diskIO().execute {
+            var conversationId: String? = null
+            for (item in selectItem) {
+                if (item is User) {
+                    conversationId = getConversationIdIfExistsSync(item.userId)
+                    if (conversationId == null) {
+                        conversationId = generateConversationId(Session.getAccountId()!!, item.userId)
+                        initConversation(conversationId, item, Session.getAccount()!!.toUser())
+                    }
+                    sendForwardMessages(conversationId, messages, item.isBot())
+                } else if (item is ConversationItem) {
+                    conversationId = item.conversationId
+                    sendForwardMessages(item.conversationId, messages, item.isBot())
+                }
+
+                MixinApplication.get().mainThread {
+                    MixinApplication.get().toast(R.string.forward_success)
+                }
+                findUnreadMessagesSync(conversationId!!)?.let {
+                    if (it.isNotEmpty()) {
+                        makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
+                        it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
+                            it.chunked(100).forEach {
+                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

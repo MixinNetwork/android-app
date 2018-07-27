@@ -33,6 +33,7 @@
     <string name="share_file">分享</string>
     <string name="done">完成</string>
     <string name="forward">转发</string>
+    <string name="forward_success">转发成功</string>
     <string name="save">保存</string>
     <string name="pb_dialog_message">请稍等…</string>
     <string name="other">其他</string>
