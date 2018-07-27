@@ -30,6 +30,7 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.fileExists
+import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
@@ -38,9 +39,9 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -91,6 +92,7 @@ import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -459,26 +461,41 @@ internal constructor(
 
     private fun sendForwardMessages(conversationId: String, messages: List<ForwardMessage>?, isPlainMessage: Boolean) {
         messages?.let {
+            val sender = Session.getAccount()!!.toUser()
             for (item in it) {
-                when (item.type) {
-                    ForwardCategory.IMAGE.name -> {
-                        sendImageMessage(conversationId, Session.getAccount()!!.toUser(), Uri.parse(item.mediaUrl), isPlainMessage)
-                            ?.subscribe({
-                            }, {
-                                Timber.e(it)
-                            })
-                    }
-                    ForwardCategory.VIDEO.name -> {
-                        sendVideoMessage(conversationId, Session.getAccount()!!.toUser(),
-                            Uri.parse(item.mediaUrl), isPlainMessage)
-                            .subscribe({
-                            }, {
-                                Timber.e(it)
-                            })
-                    }
-                    ForwardCategory.TEXT.name -> {
-                        item.content?.let {
-                            sendTextMessage(conversationId, Session.getAccount()!!.toUser(), it, isPlainMessage)
+                if (item.id != null) {
+                    sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe({}, {
+                        Timber.e("")
+                    })
+                } else {
+                    when (item.type) {
+                        ForwardCategory.CONTACT.name -> {
+                            sendContactMessage(item.sharedUserId!!, sender, item.sharedUserId, isPlainMessage)
+                        }
+                        ForwardCategory.IMAGE.name -> {
+                            sendImageMessage(conversationId, sender, Uri.parse(item.mediaUrl), isPlainMessage)
+                                ?.subscribe({
+                                }, {
+                                    Timber.e(it)
+                                })
+                        }
+                        ForwardCategory.DATA.name -> {
+                            MixinApplication.get().getAttachment(Uri.parse(item.mediaUrl))?.let {
+                                sendAttachmentMessage(conversationId, sender, it, isPlainMessage)
+                            }
+                        }
+                        ForwardCategory.VIDEO.name -> {
+                            sendVideoMessage(conversationId, sender,
+                                Uri.parse(item.mediaUrl), isPlainMessage)
+                                .subscribe({
+                                }, {
+                                    Timber.e(it)
+                                })
+                        }
+                        ForwardCategory.TEXT.name -> {
+                            item.content?.let {
+                                sendTextMessage(conversationId, sender, it, isPlainMessage)
+                            }
                         }
                     }
                 }
@@ -500,6 +517,10 @@ internal constructor(
                 } else if (item is ConversationItem) {
                     conversationId = item.conversationId
                     sendForwardMessages(item.conversationId, messages, item.isBot())
+                }
+
+                MixinApplication.get().mainThread {
+                    MixinApplication.get().toast(R.string.forward_success)
                 }
                 findUnreadMessagesSync(conversationId!!)?.let {
                     if (it.isNotEmpty()) {

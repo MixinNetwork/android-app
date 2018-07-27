@@ -34,6 +34,7 @@
     <string name="share_file">Share</string>
     <string name="done">Done</string>
     <string name="forward">Forward</string>
+    <string name="forward_success">Forward success</string>
     <string name="save">Save</string>
     <string name="pb_dialog_message">Please wait a bit…</string>
     <string name="asymp" translatable="false">≈ %f USD</string>

@@ -7,7 +7,6 @@ import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -58,7 +57,7 @@ class ForwardFragment : BaseFragment() {
     }
 
     private val adapter by lazy {
-        ForwardAdapter(isShare)
+        ForwardAdapter()
     }
     var conversations: List<ConversationItem>? = null
     var friends: List<User>? = null
@@ -127,33 +126,21 @@ class ForwardFragment : BaseFragment() {
         }
         adapter.setForwardListener(object : ForwardAdapter.ForwardListener {
             override fun onConversationItemClick(item: ConversationItem) {
-                if (isShare) {
-                    if (adapter.selectItem.contains(item)) {
-                        adapter.selectItem.remove(item)
-                    } else {
-                        adapter.selectItem.add(item)
-                    }
-                    setForwardText()
+                if (adapter.selectItem.contains(item)) {
+                    adapter.selectItem.remove(item)
                 } else {
-                    alert(if (item.isGroup()) {
-                        item.groupName
-                    } else {
-                        item.name
-                    }, item.conversationId, null)
+                    adapter.selectItem.add(item)
                 }
+                setForwardText()
             }
 
             override fun onUserItemClick(user: User) {
-                if (isShare) {
-                    if (adapter.selectItem.contains(user)) {
-                        adapter.selectItem.remove(user)
-                    } else {
-                        adapter.selectItem.add(user)
-                    }
-                    setForwardText()
+                if (adapter.selectItem.contains(user)) {
+                    adapter.selectItem.remove(user)
                 } else {
-                    alert(user.fullName, null, user.userId)
+                    adapter.selectItem.add(user)
                 }
+                setForwardText()
             }
         })
 
@@ -182,35 +169,6 @@ class ForwardFragment : BaseFragment() {
             }
         })
         search_et.addTextChangedListener(mWatcher)
-    }
-
-    private fun alert(name: String?, conversationId: String?, userId: String?) {
-        AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
-            .setTitle(getString(R.string.send_msg, name))
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
-                    RxPermissions(requireActivity())
-                        .request(
-                            WRITE_EXTERNAL_STORAGE,
-                            READ_EXTERNAL_STORAGE)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                sharePreOperation()
-                                ConversationActivity.show(ctx, conversationId, userId, messages = messages)
-                            } else {
-                                requireContext().openPermissionSetting()
-                            }
-                        }, {
-                            Bugsnag.notify(it)
-                        })
-                } else {
-                    sharePreOperation()
-                    ConversationActivity.show(ctx, conversationId, userId, messages = messages)
-                }
-                dialog.dismiss()
-            }
-            .show()
     }
 
     @SuppressLint("CheckResult")

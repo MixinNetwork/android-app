@@ -48,7 +48,7 @@ class ConversationCheckView : LinearLayout, Checkable {
         isChecked = !isChecked
     }
 
-    fun bind(item: ConversationItem, listener: ForwardAdapter.ForwardListener?, isShare: Boolean) {
+    fun bind(item: ConversationItem, listener: ForwardAdapter.ForwardListener?) {
         if (item.isGroup()) {
             normal.text = item.groupName
             avatar.setGroup(item.iconUrl())
@@ -58,20 +58,16 @@ class ConversationCheckView : LinearLayout, Checkable {
         }
         bot_iv.visibility = if (item.isBot()) View.VISIBLE else View.GONE
         setOnClickListener {
-            if (isShare) {
-                toggle()
-            }
+            toggle()
             listener?.onConversationItemClick(item)
         }
     }
 
-    fun bind(item: User, listener: ForwardAdapter.ForwardListener?, isShare: Boolean) {
+    fun bind(item: User, listener: ForwardAdapter.ForwardListener?) {
         normal.text = item.fullName
         avatar.setInfo(item.fullName, item.avatarUrl, item.identityNumber)
         setOnClickListener {
-            if (isShare) {
-                toggle()
-            }
+            toggle()
             listener?.onUserItemClick(item)
         }
         bot_iv.visibility = if (item.appId != null) View.VISIBLE else View.GONE

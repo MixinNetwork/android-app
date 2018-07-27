@@ -12,7 +12,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.ConversationCheckView
 
-class ForwardAdapter(private val isShare: Boolean) : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+class ForwardAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     StickyRecyclerHeadersAdapter<ForwardAdapter.HeaderViewHolder> {
 
     companion object {
@@ -80,13 +80,13 @@ class ForwardAdapter(private val isShare: Boolean) : RecyclerView.Adapter<Recycl
         }
         if (holder is ConversationViewHolder) {
             val conversationItem = conversations!![position]
-            holder.bind(conversationItem, listener, selectItem.contains(conversationItem), isShare)
+            holder.bind(conversationItem, listener, selectItem.contains(conversationItem))
         } else {
             holder as FriendViewHolder
             val pos = if (conversations != null && conversations!!.isNotEmpty())
                 position - conversations!!.size else position
             val user = friends!![pos]
-            holder.bind(user, listener, selectItem.contains(user), isShare)
+            holder.bind(user, listener, selectItem.contains(user))
         }
     }
 
@@ -105,23 +105,19 @@ class ForwardAdapter(private val isShare: Boolean) : RecyclerView.Adapter<Recycl
     }
 
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: User, listener: ForwardListener?, isCheck: Boolean, isShare: Boolean) {
+        fun bind(item: User, listener: ForwardListener?, isCheck: Boolean) {
             (itemView as ConversationCheckView).let {
-                if (isShare) {
-                    it.isChecked = isCheck
-                }
-                it.bind(item, listener, isShare)
+                it.isChecked = isCheck
+                it.bind(item, listener)
             }
         }
     }
 
     class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: ConversationItem, listener: ForwardListener?, isCheck: Boolean, isShare: Boolean) {
+        fun bind(item: ConversationItem, listener: ForwardListener?, isCheck: Boolean) {
             (itemView as ConversationCheckView).let {
-                if (isShare) {
-                    it.isChecked = isCheck
-                }
-                it.bind(item, listener, isShare)
+                it.isChecked = isCheck
+                it.bind(item, listener)
             }
         }
     }
