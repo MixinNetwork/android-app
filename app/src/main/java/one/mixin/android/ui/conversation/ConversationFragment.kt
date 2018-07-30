@@ -603,7 +603,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         AudioPlayer.pause()
-        OpusAudioRecorder.release()
+        OpusAudioRecorder.get().stopRecording(false, false)
         if (chat_control.isRecording) {
             chat_control.cancelExternal()
         }
@@ -694,7 +694,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         MixinApplication.conversationId = null
         super.onDestroy()
         AudioPlayer.release()
-        OpusAudioRecorder.release()
     }
 
     @SuppressLint("CheckResult")
