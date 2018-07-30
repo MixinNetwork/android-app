@@ -124,8 +124,10 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
         if (isMe) {
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            itemView.requestLayout()
         } else {
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            itemView.requestLayout()
         }
     }
 }

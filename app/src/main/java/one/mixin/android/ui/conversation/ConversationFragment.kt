@@ -680,7 +680,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onDestroyView() {
         super.onDestroyView()
-        chat_rv?.let { rv->
+        chat_rv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
                 if (vh != null && vh is BaseViewHolder) {
@@ -987,8 +987,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                         }
                                         else -> {
                                             chat_rv.visibility = View.VISIBLE
-                                            if (data.size > chatAdapter.getRealItemCount()) {
+                                            if (data.size != chatAdapter.getRealItemCount()) {
                                                 chatAdapter.unreadIndex = null
+                                            }
+                                            if (data.size > chatAdapter.getRealItemCount()) {
                                                 if (isBottom) {
                                                     notNullElse(data[0], {
                                                         when (chatAdapter.getItemType(it)) {
@@ -1118,7 +1120,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.initConversation(conversationId, recipient!!, sender)
                 isFirstMessage = false
 
-                uiThread { action() }
+                uiThread {
+                    if (isAdded) {
+                        action()
+                    }
+                }
             }
         } else {
             action()

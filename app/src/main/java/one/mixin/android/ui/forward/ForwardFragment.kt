@@ -182,6 +182,7 @@ class ForwardFragment : BaseFragment() {
                     if (granted) {
                         chatViewModel.sendForwardMessages(adapter.selectItem, messages)
                         requireActivity().finish()
+                        sharePreOperation()
                     } else {
                         requireContext().openPermissionSetting()
                     }
@@ -190,7 +191,7 @@ class ForwardFragment : BaseFragment() {
                 })
         } else {
             chatViewModel.sendForwardMessages(adapter.selectItem, messages)
-            requireActivity().finish()
+            sharePreOperation()
         }
     }
 
