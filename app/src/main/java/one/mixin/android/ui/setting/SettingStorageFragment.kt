@@ -68,6 +68,9 @@ class SettingStorageFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         settingStorageViewModel.getConversationStorageUsage().observe(this, Observer {
+            if (progress.visibility != View.GONE) {
+                progress.visibility = View.GONE
+            }
             adapter.setData(it)
         })
     }

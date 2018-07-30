@@ -913,7 +913,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                     if (unreadCount == null || unreadCount == 0) {
                                         DataPackage(it, -1, false, true)
                                     } else {
-                                        DataPackage(it, unreadCount, false, true)
+                                        DataPackage(it, unreadCount, true, true)
                                     }
                                 } else if (isFirstLoad) {
                                     val index: Int
@@ -941,20 +941,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                     }
                                     val data = dataPackage.data
                                     val index = dataPackage.index
+                                    chatAdapter.hasBottomView = dataPackage.isStranger
                                     when {
-                                        dataPackage.isStranger -> {
-                                            chat_rv.visibility = View.VISIBLE
-                                            chatAdapter.hasBottomView = true
-                                            chatAdapter.submitList(data)
-                                            chatAdapter.unreadIndex = index
-                                        }
                                         isFirstLoad -> {
                                             isFirstLoad = false
                                             startMark()
                                             if (dataPackage.hasUnread && index >= 0) {
                                                 chatAdapter.unreadIndex = index
                                             }
-                                            chatAdapter.hasBottomView = false
                                             if (index > 0) {
                                                 val action = {
                                                     if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
@@ -1018,7 +1012,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                     scrollY(requireContext().dpToPx(30f))
                                                 }
                                             }
-                                            chatAdapter.hasBottomView = false
                                             chatAdapter.submitList(data)
                                         }
                                     }
