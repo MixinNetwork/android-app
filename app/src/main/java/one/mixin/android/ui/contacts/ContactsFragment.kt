@@ -1,6 +1,7 @@
 package one.mixin.android.ui.contacts
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
@@ -24,6 +25,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshContactJob
+import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
@@ -153,12 +155,14 @@ class ContactsFragment : BaseFragment() {
             activity?.addFragment(this@ContactsFragment, AddPeopleFragment.newInstance(), AddPeopleFragment.TAG)
         }
 
+        @SuppressLint("CheckResult")
         override fun onEmptyRl() {
             RxPermissions(activity!!)
                 .request(Manifest.permission.READ_CONTACTS)
                 .subscribe { granted ->
                     if (granted) {
                         contactAdapter.removeFooter()
+                        jobManager.addJobInBackground(UploadContactsJob())
                         fetchContacts()
                         jobManager.addJobInBackground(RefreshContactJob())
                     } else {

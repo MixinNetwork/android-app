@@ -20,7 +20,7 @@ buildscript {
         ext.stethoVersion = '1.5.0'
         ext.loggerVersion = '2.2.0'
         ext.kotlin_version = '1.2.51'
-        ext.libphonenumberVersion = '8.9.5'
+        ext.libphonenumberVersion = '8.9.10'
         ext.anko_version = '0.10.5'
         ext.coroutines_version = '0.23.4'
         ext.firebaseVersion = '15.0.2'
