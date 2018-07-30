@@ -34,7 +34,7 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RotateSignedPreKeyJob
-import one.mixin.android.job.UploadContactsService
+import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
@@ -115,7 +115,7 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(RefreshAssetsJob())
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
         if (RxPermissions(this).isGranted(Manifest.permission.READ_CONTACTS)) {
-            UploadContactsService.startUploadContacts(this.applicationContext)
+            jobManager.addJobInBackground(UploadContactsJob())
         }
         rotateSignalPreKey()
 

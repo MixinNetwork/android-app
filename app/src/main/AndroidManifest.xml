@@ -203,8 +203,6 @@
                 android:resource="@xml/provider_paths" />
         </provider>
 
-        <service android:name=".job.UploadContactsService" />
-
         <service android:name=".job.SendService" android:exported="false" />
 
         <service android:name=".fcm.FcmService">
