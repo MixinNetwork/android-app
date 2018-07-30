@@ -211,6 +211,9 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
         recordingAudioFile = null
         statusSuccess = false
         try {
+            if (audioRecord?.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                audioRecord?.stop()
+            }
             audioRecord?.release()
             audioRecord = null
         } catch (ignored: Exception) {

@@ -122,7 +122,7 @@ class ChatControlView : FrameLayout {
                 chat_more_ib.visibility = View.VISIBLE
             }
             if (!keyboardShown) {
-                if (stickerShown) {
+                if (stickerShown && inputLayout.isInputOpen) {
                     if (isUp) UP else DOWN
                 } else {
                     lastSendStatus
@@ -237,7 +237,7 @@ class ChatControlView : FrameLayout {
                 stickerStatus = STICKER
             }
         } else {
-            if (stickerShown) {
+            if (stickerShown && inputLayout.isInputOpen) {
                 stickerStatus = KEYBOARD
             }
         }

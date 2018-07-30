@@ -603,7 +603,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         AudioPlayer.pause()
-        OpusAudioRecorder.get().stopRecording(false, false)
+        OpusAudioRecorder.release()
         if (chat_control.isRecording) {
             chat_control.cancelExternal()
         }

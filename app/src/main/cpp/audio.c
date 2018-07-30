@@ -3,6 +3,7 @@
 #include <opus.h>
 #include <opusenc.h>
 #include <stdlib.h>
+#include <string.h>
 #include "utils.h"
 
 OggOpusEnc *enc;
@@ -51,16 +52,14 @@ JNIEXPORT void Java_one_mixin_android_media_OpusAudioRecorder_stopRecord(JNIEnv 
 
 JNIEXPORT jbyteArray Java_one_mixin_android_media_OpusAudioRecorder_getWaveform2(JNIEnv *env, jclass clazz, jshortArray array, jint length) {
     jshort *sampleBuffer = (*env)->GetShortArrayElements(env, array, 0);
-
-    jbyteArray result = 0;
-    int32_t resultSamples = 100;
+    const int32_t resultSamples = 100;
     uint16_t *samples = malloc(100 * 2);
     uint64_t sampleIndex = 0;
     uint16_t peakSample = 0;
     int32_t sampleRate = (int32_t) max(1, length / resultSamples);
-    int index = 0;
+    int32_t index = 0;
 
-    for (int i = 0; i < length; i++) {
+    for (int32_t i = 0; i < length; i++) {
         uint16_t sample = (uint16_t) abs(sampleBuffer[i]);
         if (sample > peakSample) {
             peakSample = sample;
@@ -74,7 +73,7 @@ JNIEXPORT jbyteArray Java_one_mixin_android_media_OpusAudioRecorder_getWaveform2
     }
 
     int64_t sumSamples = 0;
-    for (int i = 0; i < resultSamples; i++) {
+    for (int32_t i = 0; i < resultSamples; i++) {
         sumSamples += samples[i];
     }
     uint16_t peak = (uint16_t) (sumSamples * 1.8f / resultSamples);
@@ -82,7 +81,7 @@ JNIEXPORT jbyteArray Java_one_mixin_android_media_OpusAudioRecorder_getWaveform2
         peak = 2500;
     }
 
-    for (int i = 0; i < resultSamples; i++) {
+    for (int32_t i = 0; i < resultSamples; i++) {
         uint16_t sample = (uint16_t) ((int64_t) samples[i]);
         if (sample > peak) {
             samples[i] = peak;
@@ -91,16 +90,18 @@ JNIEXPORT jbyteArray Java_one_mixin_android_media_OpusAudioRecorder_getWaveform2
 
     (*env)->ReleaseShortArrayElements(env, array, sampleBuffer, 0);
 
-    int bitstreamLength = (resultSamples * 5) / 8 + (((resultSamples * 5) % 8) == 0 ? 0 : 1);
-    result = (*env)->NewByteArray(env, bitstreamLength);
-    jbyte *bytes = (*env)->GetByteArrayElements(env, result, NULL);
-
-    for (int i = 0; i < resultSamples; i++) {
-        int32_t value = min(31, abs((int32_t) samples[i]) * 31 / peak);
-        set_bits(bytes, i * 5, value & 31);
+    uint32_t bitStreamLength = resultSamples * 5 / 8 + 1;
+    jbyteArray result = (*env)->NewByteArray(env, bitStreamLength);
+    if (result) {
+        uint8_t *bytes = malloc(bitStreamLength + 4);
+        memset(bytes, 0, bitStreamLength + 4);
+        for (int32_t i = 0; i < resultSamples; i++) {
+            int32_t value = min(31, abs((int32_t) samples[i]) * 31 / peak);
+            set_bits(bytes, i * 5, value & 31);
+        }
+        (*env)->SetByteArrayRegion(env, result, 0, bitStreamLength, (jbyte *) bytes);
     }
 
-    (*env)->ReleaseByteArrayElements(env, result, bytes, JNI_COMMIT);
     free(samples);
 
     return result;
