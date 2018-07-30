@@ -37,10 +37,6 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             }
             return INSTANCE as OpusAudioRecorder
         }
-
-        fun release() {
-            INSTANCE?.releaseInternal()
-        }
     }
 
     private var audioRecord: AudioRecord? = null
@@ -192,7 +188,9 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
 
     fun stopRecording(send: Boolean, vibrate: Boolean = true) {
         recordQueue.cancelRunnable(recodeStartRunnable)
-        if (vibrate) ctx.vibrate(longArrayOf(0, 10))
+        if (vibrate) {
+            ctx.vibrate(longArrayOf(0, 10))
+        }
         recordQueue.postRunnable(Runnable {
             audioRecord?.let { audioRecord ->
                 try {
@@ -204,17 +202,6 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                 stopRecordingInternal(send)
             }
         })
-    }
-
-    private fun releaseInternal() {
-        callback = null
-        recordingAudioFile = null
-        statusSuccess = false
-        try {
-            audioRecord?.release()
-            audioRecord = null
-        } catch (ignored: Exception) {
-        }
     }
 
     private fun stopRecordingInternal(send: Boolean) {
