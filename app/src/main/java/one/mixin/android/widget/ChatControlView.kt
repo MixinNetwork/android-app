@@ -484,6 +484,9 @@ class ChatControlView : FrameLayout {
         }
         chat_sticker_ib.visibility = View.VISIBLE
         chat_more_ib.visibility = View.VISIBLE
+        if (sendStatus == REPLY && chat_et.text.toString().trim().isNotEmpty()) {
+            return
+        }
         sendStatus = lastSendStatus
     }
 
