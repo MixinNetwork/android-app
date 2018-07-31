@@ -88,6 +88,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
+import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
+import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -603,7 +605,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         AudioPlayer.pause()
-        OpusAudioRecorder.get().stopRecording(false, false)
+        if (OpusAudioRecorder.state != STATE_NOT_INIT) {
+            OpusAudioRecorder.get().stop()
+        }
         if (chat_control.isRecording) {
             chat_control.cancelExternal()
         }
@@ -1669,7 +1673,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun isReady(): Boolean {
-            return OpusAudioRecorder.get().statusSuccess
+            return OpusAudioRecorder.state == STATE_RECORDING
         }
 
         override fun onRecordEnd() {
