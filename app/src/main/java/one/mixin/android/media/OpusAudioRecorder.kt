@@ -218,9 +218,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
 
     private fun stopRecordingInternal(send: Boolean) {
         callStop = true
-        fileEncodingQueue.postRunnable(Runnable {
-            stopRecord()
-        })
+        stopRecord()
         state = STATE_IDLE
         try {
             audioRecord?.release()
