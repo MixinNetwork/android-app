@@ -222,6 +222,8 @@ class ForwardFragment : BaseFragment() {
         if (isShare) {
             startActivity(Intent(context, MainActivity::class.java))
             activity?.finish()
+        } else {
+            activity?.finish()
         }
     }
 
