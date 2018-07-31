@@ -41,6 +41,9 @@ interface UserDao : BaseDao<User> {
         "identity_number like :identityNumber)")
     fun fuzzySearchUser(username: String, identityNumber: String, id: String = Session.getAccountId()!!): List<User>
 
+    @Query("SELECT * FROM users WHERE relationship = 'FRIEND'")
+    fun syncFindFriends(): List<User>
+
     @Query("UPDATE users SET relationship = :relationship WHERE user_id = :id")
     fun updateUserRelationship(id: String, relationship: String)
 
