@@ -25,7 +25,13 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
         private const val SAMPLE_RATE = 16000
         private const val BUFFER_SIZE_FACTOR = 2
 
+        const val STATE_NOT_INIT = 0
+        const val STATE_IDLE = 1
+        const val STATE_RECORDING = 2
+
         private const val MAX_RECORD_DURATION = 60000
+
+        var state: Int = STATE_NOT_INIT
 
         @SuppressLint("StaticFieldLeak")
         private var INSTANCE: OpusAudioRecorder? = null
@@ -34,6 +40,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
         fun get(): OpusAudioRecorder {
             if (INSTANCE == null) {
                 INSTANCE = OpusAudioRecorder(MixinApplication.appContext)
+                state = STATE_IDLE
             }
             return INSTANCE as OpusAudioRecorder
         }
@@ -47,8 +54,6 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
     private var recordTimeCount = 0L
     private var sendAfterDone = false
     private var callStop = false
-
-    var statusSuccess = false
 
     private val recordQueue: DispatchQueue by lazy {
         DispatchQueue("recordQueue").apply {
@@ -125,7 +130,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                         recordTimeCount += len / 16
 
                         if (recordTimeCount >= MAX_RECORD_DURATION) {
-                            stopRecordingInternal(true)
+                            stopRecording(true, false)
                         }
                     })
                     recordQueue.postRunnable(recordRunnable)
@@ -165,12 +170,12 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                 return@Runnable
             }
             ctx.vibrate(longArrayOf(0, 10))
-            statusSuccess = true
+            state = STATE_RECORDING
         } catch (e: Exception) {
             recordingAudioFile?.delete()
             try {
                 stopRecord()
-                statusSuccess = false
+                state = STATE_IDLE
                 audioRecord?.release()
                 audioRecord = null
             } catch (ignore: Exception) {
@@ -195,7 +200,9 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             audioRecord?.let { audioRecord ->
                 try {
                     sendAfterDone = send
-                    audioRecord.stop()
+                    if (audioRecord.recordingState == AudioRecord.RECORDSTATE_RECORDING) {
+                        audioRecord.stop()
+                    }
                 } catch (e: Exception) {
                     recordingAudioFile?.delete()
                 }
@@ -204,28 +211,37 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
         })
     }
 
+    fun stop() {
+        callback = null
+        stopRecording(false, false)
+    }
+
     private fun stopRecordingInternal(send: Boolean) {
         callStop = true
-        if (send) {
-            fileEncodingQueue.postRunnable(Runnable {
-                stopRecord()
-                AppExecutors().mainThread().execute {
-                    val duration = recordTimeCount
-                    val waveForm = getWaveform2(recordSamples, recordSamples.size)
-                    if (recordingAudioFile != null) {
-                        callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
-                    }
-                    callback = null
-                    recordingAudioFile = null
-                }
-            })
-        }
-
-        statusSuccess = false
+        fileEncodingQueue.postRunnable(Runnable {
+            stopRecord()
+        })
+        state = STATE_IDLE
         try {
             audioRecord?.release()
             audioRecord = null
         } catch (ignore: Exception) {
+        }
+
+        if (send) {
+            sendAudio()
+        }
+    }
+
+    private fun sendAudio() {
+        AppExecutors().mainThread().execute {
+            val duration = recordTimeCount
+            val waveForm = getWaveform2(recordSamples, recordSamples.size)
+            if (recordingAudioFile != null) {
+                callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
+            }
+            callback = null
+            recordingAudioFile = null
         }
     }
 
