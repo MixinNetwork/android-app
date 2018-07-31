@@ -25,13 +25,31 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
 class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     private val dp16 = itemView.context.dpToPx(16f)
     private val dp8 = itemView.context.dpToPx(8f)
     private val dp6 = itemView.context.dpToPx(6f)
-    private val dp1 = itemView.context.dpToPx(1f)
+
+    init {
+        itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        itemView.chat_tv.setUrlModeColor(LINK_COLOR)
+
+        itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
+            when (autoLinkMode) {
+                AutoLinkMode.MODE_URL -> {
+                    onItemListener?.onUrlClick(matchedText)
+                }
+                AutoLinkMode.MODE_MENTION -> {
+                    onItemListener?.onMentionClick(matchedText)
+                }
+                else -> {
+                }
+            }
+        }
+    }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
         val lp = (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams)

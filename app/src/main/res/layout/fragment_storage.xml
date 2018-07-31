@@ -13,10 +13,22 @@
         android:layout_height="wrap_content"
         app:titleText="@string/setting_storage"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/b_rv"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layoutManager="LinearLayoutManager"/>
+        android:layout_height="match_parent">
 
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/b_rv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:layoutManager="LinearLayoutManager"/>
+
+        <ProgressBar
+            android:id="@+id/progress"
+            style="?android:attr/progress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.BlueAccent"/>
+    </FrameLayout>
 </LinearLayout>

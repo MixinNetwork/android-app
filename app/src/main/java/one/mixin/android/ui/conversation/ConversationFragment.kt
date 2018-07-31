@@ -680,7 +680,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onDestroyView() {
         super.onDestroyView()
-        chat_rv?.let { rv->
+        chat_rv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
                 if (vh != null && vh is BaseViewHolder) {
@@ -913,7 +913,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                     if (unreadCount == null || unreadCount == 0) {
                                         DataPackage(it, -1, false, true)
                                     } else {
-                                        DataPackage(it, unreadCount, false, true)
+                                        DataPackage(it, unreadCount, true, true)
                                     }
                                 } else if (isFirstLoad) {
                                     val index: Int
@@ -941,20 +941,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                     }
                                     val data = dataPackage.data
                                     val index = dataPackage.index
+                                    chatAdapter.hasBottomView = dataPackage.isStranger
                                     when {
-                                        dataPackage.isStranger -> {
-                                            chat_rv.visibility = View.VISIBLE
-                                            chatAdapter.hasBottomView = true
-                                            chatAdapter.submitList(data)
-                                            chatAdapter.unreadIndex = index
-                                        }
                                         isFirstLoad -> {
                                             isFirstLoad = false
                                             startMark()
                                             if (dataPackage.hasUnread && index >= 0) {
                                                 chatAdapter.unreadIndex = index
                                             }
-                                            chatAdapter.hasBottomView = false
                                             if (index > 0) {
                                                 val action = {
                                                     if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
@@ -987,8 +981,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                         }
                                         else -> {
                                             chat_rv.visibility = View.VISIBLE
-                                            if (data.size > chatAdapter.getRealItemCount()) {
+                                            if (data.size != chatAdapter.getRealItemCount()) {
                                                 chatAdapter.unreadIndex = null
+                                            }
+                                            if (data.size > chatAdapter.getRealItemCount()) {
                                                 if (isBottom) {
                                                     notNullElse(data[0], {
                                                         when (chatAdapter.getItemType(it)) {
@@ -1016,7 +1012,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                     scrollY(requireContext().dpToPx(30f))
                                                 }
                                             }
-                                            chatAdapter.hasBottomView = false
                                             chatAdapter.submitList(data)
                                         }
                                     }
@@ -1118,7 +1113,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.initConversation(conversationId, recipient!!, sender)
                 isFirstMessage = false
 
-                uiThread { action() }
+                uiThread {
+                    if (isAdded) {
+                        action()
+                    }
+                }
             }
         } else {
             action()

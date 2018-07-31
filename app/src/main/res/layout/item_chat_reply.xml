@@ -39,7 +39,7 @@
                 app:content_padding="4dp"
                 app:max_width="260dp">
 
-                <TextView
+                <one.mixin.android.widget.linktext.AutoLinkTextView
                     android:id="@+id/chat_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

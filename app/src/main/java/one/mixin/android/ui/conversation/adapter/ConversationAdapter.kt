@@ -273,28 +273,28 @@ class ConversationAdapter(
 
     override fun getItem(position: Int): MessageItem? {
         return if (isSecret && hasBottomView) {
-            when {
-                position == 0 -> create(MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
+            when (position) {
+                0 -> create(MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
                     super.getItem(0)?.createdAt
                 } else {
                     null
                 })
-                position < super.getItemCount() -> super.getItem(position - 1)
-                else -> create(MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
+                itemCount - 1 -> create(MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
                     super.getItem(super.getItemCount() - 1)?.createdAt
                 } else {
                     null
                 })
+                else -> super.getItem(position - 1)
             }
         } else if (isSecret) {
-            if (position < super.getItemCount()) {
-                super.getItem(position)
-            } else {
+            if (position == itemCount - 1) {
                 create(MessageCategory.SECRET.name, if (super.getItemCount() > 0) {
                     super.getItem(super.getItemCount() - 1)?.createdAt
                 } else {
                     null
                 })
+            } else {
+                super.getItem(position)
             }
         } else if (hasBottomView) {
             if (position == 0) {
