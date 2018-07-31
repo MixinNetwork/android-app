@@ -90,51 +90,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
                 if (totalUSD.compareTo(BigDecimal.ZERO) == 0) return@Observer
 
-                val list = r.filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }
-                    .map { PieView.PieItem(it.symbol, (it.usd() / totalUSD).toFloat()) }.toMutableList()
-                if (list.isNotEmpty()) {
-                    header.pie_item_container.removeAllViews()
-                    list.sortWith(Comparator { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() })
-                    context?.mainThreadDelayed({
-                        header.pie_view.setPieItem(list, !animated)
-                        animated = true
-                    }, 400)
-
-                    when (list.size) {
-                        1 -> {
-                            val p = list[0]
-                            addItem(p, 0)
-                        }
-                        2 -> {
-                            for (i in 0 until 2) {
-                                val p = list[i]
-                                addItem(p, i)
-                            }
-                        }
-                        3 -> {
-                            for (i in 0 until 3) {
-                                val p = list[i]
-                                addItem(p, i)
-                            }
-                        }
-                        else -> {
-                            var pre = 0
-                            for (i in 0 until 2) {
-                                val p = list[i]
-                                addItem(p, i)
-                                pre += (p.percent * 100).toInt()
-                            }
-                            val other = (100 - pre) / 100f
-                            val item = PieItemView(context!!)
-                            item.setPieItem(PieView.PieItem(getString(R.string.other), other), 2)
-                            header.pie_item_container.addView(item)
-                        }
-                    }
-
-                    header.pie_item_container.visibility = VISIBLE
-                } else {
-                    header.pie_view.setPieItem(listOf(), !animated)
-                }
+                setPieView(r, totalUSD)
             }
             if (r != null && r.isEmpty()) {
                 header.pie_view.setPieItem(listOf(), !animated)
@@ -142,6 +98,56 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         })
 
         checkPin()
+    }
+
+    private fun setPieView(r: List<AssetItem>, totalUSD: BigDecimal) {
+        val list = r.filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }
+            .map { PieView.PieItem(it.symbol, (it.usd() / totalUSD).numberFormat2().toFloat()) }.toMutableList()
+        if (list.isNotEmpty()) {
+            header.pie_item_container.removeAllViews()
+            list.sortWith(Comparator { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() })
+            context?.mainThreadDelayed({
+                header.pie_view.setPieItem(list, !animated)
+                animated = true
+            }, 400)
+
+            when (list.size) {
+                1 -> {
+                    val p = list[0]
+                    addItem(PieView.PieItem(p.name, 1f), 0)
+                }
+                2 -> {
+                    addItem(list[0], 0)
+                    val p1 = list[1]
+                    val newP1 = PieView.PieItem(p1.name, 1 - p1.percent)
+                    addItem(newP1, 1)
+                }
+                3 -> {
+                    addItem(list[0], 0)
+                    addItem(list[1], 1)
+                    val p2 = list[2]
+                    val p2Percent = 1 - list[0].percent - list[1].percent
+                    val newP2 = PieView.PieItem(p2.name, p2Percent)
+                    addItem(newP2, 2)
+                }
+                else -> {
+                    var pre = 0
+                    for (i in 0 until 2) {
+                        val p = list[i]
+                        addItem(p, i)
+                        pre += (p.percent * 100).toInt()
+                    }
+                    val other = (100 - pre) / 100f
+                    val item = PieItemView(context!!)
+                    item.setPieItem(PieView.PieItem(getString(R.string.other), other), 2)
+                    header.pie_item_container.addView(item)
+                }
+            }
+
+            header.pie_item_container.visibility = VISIBLE
+        } else {
+            header.pie_view.setPieItem(listOf(), !animated)
+        }
     }
 
     private fun checkPin() {
