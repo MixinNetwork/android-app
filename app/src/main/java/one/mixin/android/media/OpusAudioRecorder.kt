@@ -218,28 +218,26 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
 
     private fun stopRecordingInternal(send: Boolean) {
         callStop = true
-        stopRecord()
+        fileEncodingQueue.postRunnable(Runnable {
+            stopRecord()
+
+            if (send) {
+                val duration = recordTimeCount
+                val waveForm = getWaveform2(recordSamples, recordSamples.size)
+                AppExecutors().mainThread().execute {
+                    if (recordingAudioFile != null) {
+                        callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
+                    }
+                    callback = null
+                    recordingAudioFile = null
+                }
+            }
+        })
         state = STATE_IDLE
         try {
             audioRecord?.release()
             audioRecord = null
         } catch (ignore: Exception) {
-        }
-
-        if (send) {
-            sendAudio()
-        }
-    }
-
-    private fun sendAudio() {
-        AppExecutors().mainThread().execute {
-            val duration = recordTimeCount
-            val waveForm = getWaveform2(recordSamples, recordSamples.size)
-            if (recordingAudioFile != null) {
-                callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
-            }
-            callback = null
-            recordingAudioFile = null
         }
     }
 
