@@ -130,6 +130,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         return true
     }
 
+    @Transient
     private var inputStream: InputStream? = null
 
     private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {

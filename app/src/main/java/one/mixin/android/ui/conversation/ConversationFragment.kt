@@ -936,10 +936,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 } else {
                                     DataPackage(it, -1, false)
                                 }
-                                if (!isAdded) {
-                                    return@innerAsync
-                                }
                                 onUiThread {
+                                    if (!isAdded) {
+                                        return@onUiThread
+                                    }
                                     if (dataPackage.data.size > 0) {
                                         isFirstMessage = false
                                     }
@@ -1501,17 +1501,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_rv?.let {
                 chat_rv.post {
                     chat_rv?.let {
-                        if (position == 0 && offset == 0) {
-                            chat_rv.run {
-                                setTag(R.id.speed_tag, type)
-                                smoothScrollToPosition(position)
+                        if (isAdded) {
+                            if (position == 0 && offset == 0) {
+                                chat_rv.run {
+                                    setTag(R.id.speed_tag, type)
+                                    smoothScrollToPosition(position)
+                                }
+                            } else if (offset == -1) {
+                                (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
+                            } else {
+                                (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
                             }
-                        } else if (offset == -1) {
-                            (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
-                        } else {
-                            (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
+                            action?.let { it() }
                         }
-                        action?.let { it() }
                     }
                 }
             }
