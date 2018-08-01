@@ -298,6 +298,9 @@
     <string name="asset_no_hidden">No hidden assets</string>
     <string name="asset_none">N/A</string>
     <string name="wallet_block_confirmations">Deposit will arrive after at least %d block confirmations.</string>
+    <string name="wallet_setting">Wallet Setting</string>
+    <string name="wallet_pay_with_biometrics">Pay with Biometrics</string>
+    <string name="wallet_pin_open_biometrics">Please enter Wallet PIN to open Biometrics</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>

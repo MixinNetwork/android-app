@@ -21,6 +21,7 @@ import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
@@ -223,6 +224,11 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                 val cur = System.currentTimeMillis()
                                 defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
                                 defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_INTERVAL, INTERVAL_10_MINS)
+
+                                val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+                                if (openBiometrics) {
+                                    BiometricUtil.savePin(requireContext(), pin.code(), this@WalletPasswordFragment)
+                                }
 
                                 activity?.let {
                                     if (it is ConversationActivity) {

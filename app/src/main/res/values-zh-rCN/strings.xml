@@ -290,6 +290,9 @@
     <string name="asset_no_hidden">没有隐藏的资产</string>
     <string name="asset_none">暂无价格</string>
     <string name="wallet_block_confirmations">充值到账至少需要 %d 个区块确认</string>
+    <string name="wallet_setting">钱包设置</string>
+    <string name="wallet_pay_with_biometrics">用生物识别支付</string>
+    <string name="wallet_pin_open_biometrics">请输入钱包密码来启用生物识别支付</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>

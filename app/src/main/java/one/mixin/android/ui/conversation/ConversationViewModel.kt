@@ -60,6 +60,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
+import one.mixin.android.util.encryptPin
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.vo.App
@@ -422,7 +423,11 @@ internal constructor(
 
     fun getXIN(): AssetItem? = assetRepository.getXIN()
 
-    fun transfer(transferRequest: TransferRequest) = assetRepository.transfer(transferRequest)
+    fun transfer(assetId: String, userId: String, amount: String, code: String, trace: String?, memo: String?) =
+        accountRepository.getPinToken().map { pinToken ->
+            assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptPin(pinToken, code), trace, memo))
+                .execute().body()!!
+        }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
     fun getSystemAlbums() = accountRepository.getSystemAlbums()
 

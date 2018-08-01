@@ -63,7 +63,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:layout_marginTop="16dp"
-                android:text="@string/withdrawal_addr_pin_add"
                 android:textColor="@color/text_gray"/>
 
         <one.mixin.android.widget.Keyboard

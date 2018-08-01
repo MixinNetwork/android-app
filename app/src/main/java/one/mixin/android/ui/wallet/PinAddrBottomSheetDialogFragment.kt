@@ -63,6 +63,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        // TODO not working
         contentView.tip_tv.setText(when (type) {
             ADD -> R.string.withdrawal_addr_pin_add
             DELETE -> R.string.withdrawal_addr_pin_delete
@@ -113,15 +114,5 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                 })
             }
         })
-    }
-
-    private var callback: Callback? = null
-
-    fun setCallback(callback: Callback) {
-        this.callback = callback
-    }
-
-    interface Callback {
-        fun onSuccess()
     }
 }

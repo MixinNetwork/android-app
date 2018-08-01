@@ -52,4 +52,10 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
     }
+
+    var callback: Callback? = null
+
+    interface Callback {
+        fun onSuccess()
+    }
 }

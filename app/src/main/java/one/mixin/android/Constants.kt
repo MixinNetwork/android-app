@@ -18,6 +18,7 @@ object Constants {
         const val PREF_PIN_ITERATOR = "pref_pin_iterator"
         const val PREF_CAMERA_TIP = "pref_camera_tip"
         const val PREF_LOGOUT_COMPLETE = "pref_logout_complete"
+        const val PREF_BIOMETRICS = "pref_biometrics"
     }
 
     const val SLEEP_MILLIS: Long = 1000
@@ -43,4 +44,8 @@ object Constants {
     const val ACK_THREAD = "ack_thread"
 
     const val SINGLE_DB = "single_db"
+
+    const val BIOMETRICS_ALIAS = "biometrics_alias"
+    const val BIOMETRICS_PIN = "biometrics_pin"
+    const val BIOMETRICS_IV = "biometrics_iv"
 }

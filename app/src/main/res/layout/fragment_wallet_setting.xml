@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              xmlns:app="http://schemas.android.com/apk/res-auto"
+              xmlns:tools="http://schemas.android.com/tools"
+              android:background="@color/divider"
+              android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:titleText="@string/wallet_setting"/>
+
+    <RelativeLayout
+            android:id="@+id/biometrics_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:layout_marginTop="@dimen/item_divider"
+            android:background="@android:color/white">
+
+        <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:text="@string/wallet_pay_with_biometrics"
+                tools:ignore="RelativeOverlap"/>
+
+        <android.support.v7.widget.SwitchCompat
+                android:id="@+id/biometrics_sc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                tools:ignore="RelativeOverlap"/>
+    </RelativeLayout>
+
+    <TextView
+            android:id="@+id/change_tv"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:layout_marginTop="@dimen/item_divider"
+            android:text="@string/wallet_password_change"
+            android:textColor="@color/colorBlue"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:background="@color/white"/>
+</LinearLayout>
