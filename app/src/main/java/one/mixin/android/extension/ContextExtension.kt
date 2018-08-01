@@ -146,17 +146,6 @@ fun Context.networkConnected(): Boolean {
     return network != null && network.isConnected
 }
 
-fun Context.inWifi(): Boolean {
-    val cm = systemService<ConnectivityManager>()
-    val network: NetworkInfo
-    try {
-        network = cm.activeNetworkInfo
-    } catch (t: Throwable) {
-        return false
-    }
-    return network != null && network.type == ConnectivityManager.TYPE_WIFI
-}
-
 fun Context.displaySize(): Point {
     val displaySize = Point()
     val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
