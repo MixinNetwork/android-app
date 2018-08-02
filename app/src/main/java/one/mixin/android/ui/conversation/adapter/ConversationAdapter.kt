@@ -40,6 +40,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
+import timber.log.Timber
 
 class ConversationAdapter(
     private val keyword: String?,
@@ -53,15 +54,12 @@ class ConversationAdapter(
     var unreadIndex: Int? = null
     var recipient: User? = null
 
-    var groupName: String? = null
-        set(value) {
-            field = value
-            notifyDataSetChanged()
-        }
     var hasBottomView = false
         set(value) {
-            field = value
-            notifyDataSetChanged()
+            if (field != value) {
+                field = value
+                notifyItemChanged(itemCount - 1)
+            }
         }
 
     fun loadAround(position: Int) {
@@ -81,14 +79,14 @@ class ConversationAdapter(
         }
     }
 
-    fun markread() {
+    fun markRead() {
         unreadIndex?.let {
             unreadIndex = null
             notifyItemChanged(it)
         }
     }
 
-    override fun getHeaderId(position: Int): Long = notNullElse(getItem(position), {
+    override fun getHeaderId(position: Int): Long = notNullElse(getItemList(position), {
         Math.abs(it.createdAt.hashForDate())
     }, 0)
 
@@ -97,13 +95,13 @@ class ConversationAdapter(
             .inflate(R.layout.item_chat_time, parent, false))
 
     override fun onBindHeaderViewHolder(holder: TimeHolder, position: Int) {
-        getItem(position)?.let {
+        getItemList(position)?.let {
             holder.bind(it.createdAt)
         }
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        getItem(position)?.let {
+        getItemList(position)?.let {
             when (getItemViewType(position)) {
                 MESSAGE_TYPE -> {
                     (holder as MessageHolder).bind(it, keyword, isLast(position),
@@ -122,7 +120,7 @@ class ConversationAdapter(
                         isLast(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 INFO_TYPE -> {
-                    (holder as InfoHolder).bind(it, selectSet.size > 0, isSelect(position), onItemListener, groupName)
+                    (holder as InfoHolder).bind(it, selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 CARD_TYPE -> {
                     (holder as CardHolder).bind(it)
@@ -179,7 +177,7 @@ class ConversationAdapter(
         return if (selectSet.isEmpty()) {
             false
         } else {
-            selectSet.find { it.messageId == getItem(position)?.messageId } != null
+            selectSet.find { it.messageId == getItemList(position)?.messageId } != null
         }
     }
 
@@ -188,7 +186,7 @@ class ConversationAdapter(
     }
 
     override fun isLast(position: Int): Boolean {
-        val currentItem = getItem(position)
+        val currentItem = getItemList(position)
         val previousItem = previous(position)
         return when {
             currentItem == null ->
@@ -209,7 +207,7 @@ class ConversationAdapter(
 
     private fun isFirst(position: Int): Boolean {
         return if (isGroup || recipient != null) {
-            val currentItem = getItem(position)
+            val currentItem = getItemList(position)
             if (!isGroup && (recipient?.isBot() == false || recipient?.userId == currentItem?.userId)) {
                 return false
             }
@@ -234,7 +232,7 @@ class ConversationAdapter(
 
     private fun previous(position: Int): MessageItem? {
         return if (position > 0) {
-            getItem(position - 1)
+            getItemList(position - 1)
         } else {
             null
         }
@@ -242,7 +240,7 @@ class ConversationAdapter(
 
     private fun next(position: Int): MessageItem? {
         return if (position < itemCount - 1) {
-            getItem(position + 1)
+            getItemList(position + 1)
         } else {
             null
         }
@@ -271,7 +269,7 @@ class ConversationAdapter(
         return super.getItemCount()
     }
 
-    override fun getItem(position: Int): MessageItem? {
+    fun getItemList(position: Int): MessageItem? {
         return if (isSecret && hasBottomView) {
             when (position) {
                 0 -> create(MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
@@ -392,7 +390,7 @@ class ConversationAdapter(
         }
 
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
-        getItem(holder.layoutPosition)?.let {
+        getItemList(holder.layoutPosition)?.let {
             (holder as BaseViewHolder).listen(it.messageId)
         }
     }
@@ -436,7 +434,7 @@ class ConversationAdapter(
             }
         }, NULL_TYPE)
 
-    override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
+    override fun getItemViewType(position: Int): Int = getItemType(getItemList(position))
 
     companion object {
         const val NULL_TYPE = -2
@@ -467,10 +465,11 @@ class ConversationAdapter(
             }
 
             override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
-                if (oldItem.messageId == lastId || newItem.messageId == lastId) {
-                    return false
+                return if (oldItem.messageId == lastId) {
+                    false
+                } else {
+                    oldItem == newItem
                 }
-                return oldItem == newItem
             }
         }
     }

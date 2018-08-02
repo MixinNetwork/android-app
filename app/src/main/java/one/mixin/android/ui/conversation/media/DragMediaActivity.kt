@@ -17,6 +17,7 @@ import android.os.Bundle
 import android.support.v4.view.PagerAdapter
 import android.support.v4.view.ViewCompat
 import android.support.v4.view.ViewPager
+import android.support.v7.view.ContextThemeWrapper
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
@@ -173,7 +174,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun showBottom() {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(this, R.layout.view_drag_bottom, null)
+        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.save.setOnClickListener {

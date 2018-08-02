@@ -9,8 +9,8 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
+import android.support.v7.view.ContextThemeWrapper
 import android.view.ContextMenu
-import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -274,7 +274,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun showBottomSheet() {
         val builder = BottomSheet.Builder(requireActivity())
-        val view = LayoutInflater.from(requireActivity()).inflate(R.layout.view_web_bottom, null, false)
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_web_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.refresh.setOnClickListener {
