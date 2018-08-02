@@ -32,8 +32,8 @@ class AddressAdapter(private val asset: AssetItem, private val showIcon: Boolean
         val addr = addresses!![position]
         holder.itemView.icon.visibility = if (showIcon) VISIBLE else GONE
         holder.itemView.background_rl.visibility = if (canSwipe) VISIBLE else GONE
-        holder.itemView.name_tv.text = if (noPublickKey()) addr.accountName else addr.label
-        holder.itemView.addr_tv.text = if (noPublickKey()) addr.accountTag else addr.publicKey
+        holder.itemView.name_tv.text = if (noPublicKey()) addr.accountName else addr.label
+        holder.itemView.addr_tv.text = if (noPublicKey()) addr.accountTag else addr.publicKey
         holder.itemView.setOnClickListener { addrListener?.onAddrClick(addr) }
         holder.itemView.setOnLongClickListener {
             addrListener?.onAddrLongClick(holder.itemView, addr)
@@ -43,7 +43,7 @@ class AddressAdapter(private val asset: AssetItem, private val showIcon: Boolean
 
     override fun getItemCount(): Int = notNullElse(addresses, { it.size }, 0)
 
-    private fun noPublickKey() = !asset.accountName.isNullOrEmpty()
+    private fun noPublicKey() = !asset.accountName.isNullOrEmpty()
 
     fun removeItem(pos: Int): Address? {
         val addr = addresses?.removeAt(pos)
