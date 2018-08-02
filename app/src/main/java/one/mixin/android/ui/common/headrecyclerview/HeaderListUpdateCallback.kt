@@ -8,7 +8,7 @@ class HeaderListUpdateCallback<T>(private val adapter: HeaderAdapter<T>, private
     }
 
     override fun onMoved(fromPosition: Int, toPosition: Int) {
-        adapter.notifyItemMoved(fromPosition + headerCount, toPosition)
+        adapter.notifyItemMoved(fromPosition + headerCount, toPosition + headerCount)
     }
 
     override fun onInserted(position: Int, count: Int) {
