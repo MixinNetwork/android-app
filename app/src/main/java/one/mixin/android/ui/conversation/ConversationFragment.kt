@@ -671,7 +671,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun markRead() {
-        chatAdapter.markread()
+        chatAdapter.markRead()
     }
 
     override fun onStop() {
@@ -966,7 +966,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                 chatAdapter.submitList(data)
                                                 chatAdapter.loadAround(index)
                                                 if (index == chatAdapter.itemCount - 1) {
-                                                    scrollTo(index, 0, action = action)
+                                                    scrollTo(index, -1, action = action)
                                                 } else {
                                                     scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = action)
                                                 }
@@ -994,7 +994,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                         when (chatAdapter.getItemType(it)) {
                                                             MESSAGE_TYPE -> {
                                                                 if (it.content != null && it.content.length > 500) {
-                                                                    scrollTo(0)
+                                                                    scrollTo(0, 0)
                                                                 } else {
                                                                     scrollTo(0, 0, when {
                                                                         it.content == null -> FAST_SPEED
@@ -1006,11 +1006,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                                             }
                                                             FILE_TYPE, BILL_TYPE, LINK_TYPE -> scrollTo(0, 0, MEDIUM_SPEED)
                                                             else -> {
-                                                                scrollTo(0)
+                                                                scrollTo(0, 0)
                                                             }
                                                         }
                                                     }, {
-                                                        scrollTo(0)
+                                                        scrollTo(0, 0)
                                                     })
                                                 } else {
                                                     scrollY(requireContext().dpToPx(30f))
@@ -1148,7 +1148,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         -1 -> context?.toast(R.string.error_image)
                         -2 -> context?.toast(R.string.error_format)
                     }
-                    scrollTo(0)
+                    scrollTo(0, 0)
                 }, {
                     context?.toast(R.string.error_image)
                 })
@@ -1198,7 +1198,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         createConversation {
             chatViewModel.sendAttachmentMessage(conversationId, sender, attachment, isPlainMessage())
             markRead()
-            scrollTo(0)
+            scrollTo(0, 0)
         }
     }
 
@@ -1207,7 +1207,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chatViewModel.sendStickerMessage(conversationId, sender,
                 TransferStickerData(stickerId), isPlainMessage())
             markRead()
-            scrollTo(0)
+            scrollTo(0, 0)
         }
     }
 
@@ -1215,7 +1215,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         createConversation {
             chatViewModel.sendContactMessage(conversationId, sender, userId, isPlainMessage())
             markRead()
-            scrollTo(0)
+            scrollTo(0, 0)
         }
     }
 
@@ -1225,7 +1225,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             createConversation {
                 chatViewModel.sendTextMessage(conversationId, sender, message, isPlainMessage())
                 markRead()
-                scrollTo(0)
+                scrollTo(0, 0)
             }
         }
     }
@@ -1239,16 +1239,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chat_control.showOtherInput()
                 reply_view.messageItem = null
                 markRead()
-                scrollTo(0)
+                scrollTo(0, 0)
             }
         }
     }
 
     private var groupName: String? = null
-        set(value) {
-            field = value
-            chatAdapter.groupName = value
-        }
     private var groupNumber: Int = 0
 
     @SuppressLint("SetTextI18n")
@@ -1497,25 +1493,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun scrollTo(position: Int, offset: Int = -1, type: Float? = null, action: (() -> Unit)? = null, delay: Long = 30) {
-        context?.mainThreadDelayed({
-            chat_rv?.let {
-                chat_rv.post {
-                    chat_rv?.let {
-                        if (isAdded) {
-                            if (position == 0 && offset == 0) {
-                                chat_rv.run {
-                                    setTag(R.id.speed_tag, type)
-                                    smoothScrollToPosition(position)
-                                }
-                            } else if (offset == -1) {
-                                (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
-                            } else {
-                                (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
-                            }
-                            action?.let { it() }
-                        }
-                    }
+        chat_rv.postDelayed({
+            if (isAdded) {
+                if (position == 0 && offset == 0) {
+                    chat_rv.smoothScrollToPosition(0)
+                } else if (offset == -1) {
+                    (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
+                } else {
+                    (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
                 }
+                action?.let { it() }
             }
         }, delay)
     }

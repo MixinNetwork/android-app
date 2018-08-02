@@ -65,7 +65,8 @@ data class MessageItem(
     val sharedUserAppId: String? = null,
     val mediaWaveform: ByteArray? = null,
     val quoteId: String? = null,
-    val quoteContent: String? = null
+    val quoteContent: String? = null,
+    val groupName: String? = null
 ) : Parcelable
 
 fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
@@ -95,4 +96,4 @@ fun MessageItem.supportSticker(): Boolean = this.type == MessageCategory.SIGNAL_
 
 fun MessageItem.canNotReply() =
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
-    this.type == MessageCategory.SYSTEM_CONVERSATION.name || (this.mediaStatus != MediaStatus.DONE.name && this.isMedia())
+        this.type == MessageCategory.SYSTEM_CONVERSATION.name || (this.mediaStatus != MediaStatus.DONE.name && this.isMedia())

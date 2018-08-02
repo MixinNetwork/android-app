@@ -20,8 +20,7 @@ class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView
         messageItem: MessageItem,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
-        group: String?
+        onItemListener: ConversationAdapter.OnItemListener
     ) {
         val id = meId
 
@@ -46,15 +45,13 @@ class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView
 
         when (messageItem.actionName) {
             SystemConversationAction.CREATE.name -> {
-                group?.let {
-                    itemView.chat_info.text =
-                        String.format(getText(R.string.chat_group_create),
-                            if (id == messageItem.userId) {
-                                getText(R.string.chat_you_start)
-                            } else {
-                                messageItem.userFullName
-                            }, group)
-                }
+                itemView.chat_info.text =
+                    String.format(getText(R.string.chat_group_create),
+                        if (id == messageItem.userId) {
+                            getText(R.string.chat_you_start)
+                        } else {
+                            messageItem.userFullName
+                        }, messageItem.groupName)
             }
             SystemConversationAction.ADD.name -> {
                 itemView.chat_info.text =
