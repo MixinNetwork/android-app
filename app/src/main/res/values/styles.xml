@@ -62,6 +62,10 @@
         <item name="android:windowFullscreen">false</item>
     </style>
 
+    <style name="Custom">
+        <item name="android:textColor">@color/text_default</item>
+    </style>
+
     <style name="DialogNoAnimation">
         <item name="android:windowEnterAnimation">@null</item>
         <item name="android:windowExitAnimation">@null</item>

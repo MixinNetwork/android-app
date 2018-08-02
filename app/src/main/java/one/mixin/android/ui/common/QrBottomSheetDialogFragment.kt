@@ -10,6 +10,7 @@ import android.graphics.Canvas
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.support.v7.view.ContextThemeWrapper
 import android.view.View
 import androidx.core.os.bundleOf
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -132,7 +133,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(ctx, R.layout.view_qr_bottom, null)
+        val view = View.inflate(ContextThemeWrapper(ctx, R.style.Custom), R.layout.view_qr_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.save.setOnClickListener {

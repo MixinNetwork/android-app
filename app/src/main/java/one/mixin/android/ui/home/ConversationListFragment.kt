@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.support.v4.widget.TextViewCompat
 import android.support.v7.content.res.AppCompatResources
 import android.support.v7.util.DiffUtil
+import android.support.v7.view.ContextThemeWrapper
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -157,7 +158,7 @@ class ConversationListFragment : LinkFragment() {
     @SuppressLint("InflateParams")
     fun showBottomSheet(conversationId: String, hasPin: Boolean) {
         val builder = BottomSheet.Builder(requireActivity())
-        val view = LayoutInflater.from(requireActivity()).inflate(R.layout.view_conversation_bottom, null, false)
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_conversation_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.delete_tv.setOnClickListener {

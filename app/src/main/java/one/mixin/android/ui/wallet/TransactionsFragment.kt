@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v7.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -154,7 +155,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     @SuppressLint("InflateParams")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
-        val view = LayoutInflater.from(requireActivity()).inflate(R.layout.view_wallet_transactions_bottom, null, false)
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_transactions_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.withdrawal.setOnClickListener {
