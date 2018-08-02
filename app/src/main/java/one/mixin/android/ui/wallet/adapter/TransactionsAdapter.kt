@@ -28,7 +28,6 @@ class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>() 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
         TransactionsHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_transactions, parent, false))
 
-
     class TransactionsHolder(itemView: View) : HeaderAdapter.NormalHolder(itemView) {
         fun bind(snapshot: SnapshotItem, asset: AssetItem, listener: OnItemListener?) {
             val isPositive = snapshot.amount.toFloat() > 0

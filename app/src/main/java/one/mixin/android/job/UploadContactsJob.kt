@@ -15,7 +15,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import java.util.Locale
 
-class UploadContactsJob: BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) {
+class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) {
 
     @SuppressLint("CheckResult")
     override fun onRun() {

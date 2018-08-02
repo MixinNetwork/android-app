@@ -61,6 +61,5 @@ internal constructor(
                 }
                 Pair(null, list)
             }
-
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
 }

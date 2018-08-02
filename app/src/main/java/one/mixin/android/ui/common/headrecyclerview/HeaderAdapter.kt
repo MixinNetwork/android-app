@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.extension.notNullElse
 
-abstract class HeaderAdapter<T>: RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+abstract class HeaderAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
         const val TYPE_HEADER = 0
         const val TYPE_NORMAL = 1

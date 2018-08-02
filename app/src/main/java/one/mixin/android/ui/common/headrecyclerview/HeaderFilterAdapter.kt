@@ -2,7 +2,7 @@ package one.mixin.android.ui.common.headrecyclerview
 
 import one.mixin.android.extension.notNullElse
 
-abstract class HeaderFilterAdapter<T>: HeaderAdapter<T>() {
+abstract class HeaderFilterAdapter<T> : HeaderAdapter<T>() {
 
     override fun getItemViewType(position: Int): Int {
         return if (position == TYPE_HEADER && headerView != null && !filtered()) {

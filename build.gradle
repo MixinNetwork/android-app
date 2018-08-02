@@ -19,7 +19,7 @@ buildscript {
         ext.retrofitVersion = '2.4.0'
         ext.stethoVersion = '1.5.0'
         ext.loggerVersion = '2.2.0'
-        ext.kotlin_version = '1.2.51'
+        ext.kotlin_version = '1.2.60'
         ext.libphonenumberVersion = '8.9.10'
         ext.anko_version = '0.10.5'
         ext.coroutines_version = '0.24.0'
