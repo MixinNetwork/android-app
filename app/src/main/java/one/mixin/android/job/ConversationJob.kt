@@ -7,6 +7,7 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantAction
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.db.insertConversation
 import one.mixin.android.event.ConversationEvent
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationBuilder
@@ -88,7 +89,7 @@ class ConversationJob(
                     .setIconUrl(cr.iconUrl)
                     .setCodeUrl(cr.codeUrl)
                     .build()
-                conversationDao.insert(conversation)
+                conversationDao.insertConversation(conversation)
 
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) { Participant(cr.conversationId, it.userId, it.role, cr.createdAt) }

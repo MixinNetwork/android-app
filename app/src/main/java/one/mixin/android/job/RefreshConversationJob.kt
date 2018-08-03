@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
+import one.mixin.android.db.insertConversation
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
@@ -53,7 +54,7 @@ class RefreshConversationJob(val conversationId: String)
                         applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
                             .putBoolean(data.conversationId, true)
                     }
-                    conversationDao.insert(c)
+                    conversationDao.insertConversation(c)
                 } else {
                     val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
                         ConversationStatus.SUCCESS.ordinal

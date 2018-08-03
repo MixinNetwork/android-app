@@ -23,6 +23,7 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.db.insertConversation
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
@@ -206,7 +207,7 @@ class MainActivity : BlazeBaseActivity() {
                                     ConversationStatus.SUCCESS.ordinal,
                                     null)
                                 conversation = c
-                                conversationDao.insert(c)
+                                conversationDao.insertConversation(c)
                             } else {
                                 conversationDao.updateConversation(data.conversationId, ownerId, data.category,
                                     data.name, data.announcement, data.createdAt, ConversationStatus.SUCCESS.ordinal)

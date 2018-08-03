@@ -109,11 +109,13 @@ internal constructor(
     private val accountRepository: AccountRepository
 ) : ViewModel() {
 
-    fun getMessages(id: String): LiveData<PagedList<MessageItem>> {
+    fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(conversationRepository.getMessages(id), PagedList.Config.Builder()
-            .setPageSize(60)
+            .setPrefetchDistance(15)
+            .setPageSize(30)
             .setEnablePlaceholders(true)
             .build())
+            .setInitialLoadKey(initialLoadKey)
             .build()
     }
 

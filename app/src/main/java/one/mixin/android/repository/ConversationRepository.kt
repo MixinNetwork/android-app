@@ -11,6 +11,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.insertConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationItemMinimal
@@ -38,7 +39,7 @@ internal constructor(
     fun insertConversation(conversation: Conversation, participants: List<Participant>) {
         appExecutors.diskIO().execute {
             appDatabase.runInTransaction {
-                conversationDao.insert(conversation)
+                conversationDao.insertConversation(conversation)
                 participantDao.insertList(participants)
             }
         }
@@ -46,7 +47,7 @@ internal constructor(
 
     fun syncInsertConversation(conversation: Conversation, participants: List<Participant>) {
         appDatabase.runInTransaction {
-            conversationDao.insert(conversation)
+            conversationDao.insertConversation(conversation)
             participantDao.insertList(participants)
         }
     }
