@@ -293,6 +293,7 @@
     <string name="wallet_setting">钱包设置</string>
     <string name="wallet_pay_with_biometrics">用生物识别支付</string>
     <string name="wallet_pin_open_biometrics">请输入钱包密码来启用生物识别支付</string>
+    <string name="wallet_pin_modify_biometrics">请输入钱包密码来修改支付密码使用间隔</string>
     <string name="wallet_pin_pay_interval_minutes">%d 分钟</string>
     <string name="wallet_pin_pay_interval_hours">%d 小时</string>
     <string name="wallet_pin_pay_interval">支付密码使用间隔</string>

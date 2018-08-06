@@ -301,6 +301,7 @@
     <string name="wallet_setting">Wallet Setting</string>
     <string name="wallet_pay_with_biometrics">Pay with Biometrics</string>
     <string name="wallet_pin_open_biometrics">Please enter Wallet PIN to open Biometrics</string>
+    <string name="wallet_pin_modify_biometrics">Please enter Wallet PIN to Modify Pay with PIN interval</string>
     <string name="wallet_pin_pay_interval_minutes">%d Minutes</string>
     <string name="wallet_pin_pay_interval_hours">%d Hours</string>
     <string name="wallet_pin_pay_interval">Pay with PIN interval</string>

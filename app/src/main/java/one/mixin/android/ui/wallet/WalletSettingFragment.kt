@@ -1,7 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -45,12 +43,6 @@ class WalletSettingFragment : BaseFragment() {
         val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
         biometrics_sc.isChecked = open
         time_tv.visibility = if (open) VISIBLE else GONE
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
-        }
     }
 
     private val biometricsClickListener = View.OnClickListener {

@@ -54,7 +54,7 @@ class BiometricTimeFragment : BaseFragment() {
         val footer = layoutInflater.inflate(R.layout.view_biometric_footer, lv, false)
         lv.addFooterView(footer)
         lv.setOnItemClickListener { _, _, i, _ ->
-            if (i >= VALUES.size) return@setOnItemClickListener
+            if (i >= VALUES.size || adapter.selectedPos == i) return@setOnItemClickListener
 
             val bottomSheet = PinBiometricsBottomSheetDialogFragment.newInstance(false)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {

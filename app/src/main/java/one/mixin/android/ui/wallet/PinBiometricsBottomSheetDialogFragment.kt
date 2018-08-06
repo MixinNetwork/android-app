@@ -29,8 +29,6 @@ class PinBiometricsBottomSheetDialogFragment: PinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        // TODO not working
-        contentView.tip_tv.text = getString(R.string.wallet_pin_open_biometrics)
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
                 if (index != contentView.pin.getCount()) return
@@ -71,4 +69,7 @@ class PinBiometricsBottomSheetDialogFragment: PinBottomSheetDialogFragment() {
             BiometricUtil.savePin(requireContext(), contentView.pin.code(), this@PinBiometricsBottomSheetDialogFragment)
         }
     }
+
+    override fun getTipTextRes(): Int =
+        if (fromWalletSetting) R.string.wallet_pin_open_biometrics else R.string.wallet_pin_modify_biometrics
 }

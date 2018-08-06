@@ -5,6 +5,7 @@
               xmlns:app="http://schemas.android.com/apk/res-auto"
               xmlns:tools="http://schemas.android.com/tools"
               android:animateLayoutChanges="true"
+              android:clickable="true"
               android:background="@color/divider"
               android:orientation="vertical">
 

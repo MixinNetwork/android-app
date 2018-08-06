@@ -26,6 +26,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertConversation
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.remove
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
@@ -53,7 +54,9 @@ import one.mixin.android.ui.landing.LoadingFragment
 import one.mixin.android.ui.landing.SetupNameActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.RootUtil
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
@@ -119,9 +122,19 @@ class MainActivity : BlazeBaseActivity() {
             jobManager.addJobInBackground(UploadContactsJob())
         }
         rotateSignalPreKey()
+        checkRoot()
 
         initView()
         handlerCode(intent)
+    }
+
+    private fun checkRoot() {
+        if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)) {
+            defaultSharedPreferences.remove(Constants.BIOMETRICS_IV)
+            defaultSharedPreferences.remove(Constants.BIOMETRICS_ALIAS)
+            defaultSharedPreferences.remove(Constants.Account.PREF_BIOMETRICS)
+            BiometricUtil.deleteKey()
+        }
     }
 
     private fun rotateSignalPreKey() {
