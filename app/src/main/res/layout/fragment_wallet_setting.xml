@@ -4,6 +4,7 @@
               android:layout_height="match_parent"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               xmlns:tools="http://schemas.android.com/tools"
+              android:animateLayoutChanges="true"
               android:background="@color/divider"
               android:orientation="vertical">
 
@@ -18,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:layout_marginTop="@dimen/item_divider"
+            android:foreground="?attr/selectableItemBackground"
             android:background="@android:color/white">
 
         <TextView
@@ -40,6 +42,19 @@
     </RelativeLayout>
 
     <TextView
+            style="@style/NormalTextStyle"
+            android:id="@+id/time_tv"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:layout_marginTop=".5dp"
+            android:text="@string/wallet_pin_pay_interval"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:foreground="?attr/selectableItemBackground"
+            android:background="@color/white"/>
+
+    <TextView
             android:id="@+id/change_tv"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
@@ -49,5 +64,6 @@
             android:gravity="center_vertical"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:foreground="?attr/selectableItemBackground"
             android:background="@color/white"/>
 </LinearLayout>

@@ -48,4 +48,7 @@ object Constants {
     const val BIOMETRICS_ALIAS = "biometrics_alias"
     const val BIOMETRICS_PIN = "biometrics_pin"
     const val BIOMETRICS_IV = "biometrics_iv"
+    const val BIOMETRIC_INTERVAL = "biometric_interval"
+    const val BIOMETRIC_INTERVAL_DEFAULT: Long = 1000 * 60 * 60 * 2
+    const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
 }

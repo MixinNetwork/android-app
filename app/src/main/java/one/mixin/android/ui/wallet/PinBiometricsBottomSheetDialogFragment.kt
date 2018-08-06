@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.core.os.bundleOf
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import one.mixin.android.R
@@ -17,8 +18,14 @@ import one.mixin.android.widget.PinView
 class PinBiometricsBottomSheetDialogFragment: PinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PinBiometricsBottomSheetDialogFragment"
-        fun newInstance() = PinBiometricsBottomSheetDialogFragment()
+        const val FROM_WALLET_SETTING = "from_wallet_setting"
+
+        fun newInstance(fromWalletSetting: Boolean) = PinBiometricsBottomSheetDialogFragment().apply {
+            arguments = bundleOf(FROM_WALLET_SETTING to fromWalletSetting)
+        }
     }
+
+    private val fromWalletSetting by lazy { arguments!!.getBoolean(FROM_WALLET_SETTING) }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -34,9 +41,13 @@ class PinBiometricsBottomSheetDialogFragment: PinBottomSheetDialogFragment() {
                     if (r.isSuccess) {
                         context?.updatePinCheck()
                         r.data?.let {
-                            val success = BiometricUtil.savePin(requireContext(), contentView.pin.code(),
-                                this@PinBiometricsBottomSheetDialogFragment)
-                            if (success) callback?.onSuccess() else dismiss()
+                            if (fromWalletSetting) {
+                                val success = BiometricUtil.savePin(requireContext(), contentView.pin.code(),
+                                    this@PinBiometricsBottomSheetDialogFragment)
+                                if (success) callback?.onSuccess() else dismiss()
+                            } else {
+                                callback?.onSuccess()
+                            }
                         }
                         dismiss()
                     } else {
@@ -56,7 +67,7 @@ class PinBiometricsBottomSheetDialogFragment: PinBottomSheetDialogFragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
+        if (fromWalletSetting && requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
             BiometricUtil.savePin(requireContext(), contentView.pin.code(), this@PinBiometricsBottomSheetDialogFragment)
         }
     }

@@ -3,6 +3,7 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.wallet.AllTransactionsFragment
+import one.mixin.android.ui.wallet.BiometricTimeFragment
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.ui.wallet.FeeFragment
 import one.mixin.android.ui.wallet.HiddenAssetsFragment
@@ -64,4 +65,7 @@ abstract class WalletActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributePinBiometricsBottomSheetDialogFragment(): PinBiometricsBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeBiometricTimeFragment(): BiometricTimeFragment
 }

@@ -182,8 +182,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
             contentView.transfer_amount.hideKeyboard()
 
-            val openBiometrics = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-            if (openBiometrics) {
+            if (BiometricUtil.shouldShowBiometric(requireContext())) {
                 showBiometricPrompt()
             } else {
                 showTransferBottom()

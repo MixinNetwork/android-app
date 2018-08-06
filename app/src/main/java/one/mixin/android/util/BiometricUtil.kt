@@ -60,6 +60,14 @@ object BiometricUtil {
         ks.deleteEntry(BIOMETRICS_ALIAS)
     }
 
+    fun shouldShowBiometric(ctx: Context): Boolean {
+        val openBiometrics = ctx.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+        val biometricPinCheck = ctx.defaultSharedPreferences.getLong(Constants.BIOMETRIC_PIN_CHECK, 0)
+        val biometricInterval = ctx.defaultSharedPreferences.getLong(Constants.BIOMETRIC_INTERVAL, Constants.BIOMETRIC_INTERVAL_DEFAULT)
+        val currTime = System.currentTimeMillis()
+        return openBiometrics && currTime - biometricPinCheck <= biometricInterval
+    }
+
     private fun getKey(): SecretKey? {
         val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
             load(null)
@@ -79,7 +87,7 @@ object BiometricUtil {
                         KeyProperties.ENCRYPTION_PADDING_PKCS7,
                         KeyProperties.ENCRYPTION_PADDING_NONE)
                     .setUserAuthenticationRequired(true)
-                    .setUserAuthenticationValidityDurationSeconds(15 * 60)
+                    .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
                     .build())
             key = keyGenerator.generateKey()
         }
