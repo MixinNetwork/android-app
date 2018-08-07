@@ -51,7 +51,7 @@ interface ConversationDao : BaseDao<Conversation> {
     fun getConversationById(conversationId: String): LiveData<Conversation>
 
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
-    fun indexUnread(conversationId: String): Int?
+    fun indexUnread(conversationId: String): Int
 
     @Transaction
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
@@ -80,6 +80,9 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query("UPDATE conversations SET last_read_message_id = :messageId WHERE conversation_id = :conversationId")
     fun updateLastReadMessageId(conversationId: String, messageId: String)
+
+    @Query("SELECT last_message_id  FROM conversations WHERE conversation_id = :conversationId")
+    fun getLastMessageIdByConversationId(conversationId: String): String?
 
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
     fun updateCodeUrl(conversationId: String, codeUrl: String)

@@ -11,6 +11,7 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.insertConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationItemMinimal
@@ -38,7 +39,7 @@ internal constructor(
     fun insertConversation(conversation: Conversation, participants: List<Participant>) {
         appExecutors.diskIO().execute {
             appDatabase.runInTransaction {
-                conversationDao.insert(conversation)
+                conversationDao.insertConversation(conversation)
                 participantDao.insertList(participants)
             }
         }
@@ -46,7 +47,7 @@ internal constructor(
 
     fun syncInsertConversation(conversation: Conversation, participants: List<Participant>) {
         appDatabase.runInTransaction {
-            conversationDao.insert(conversation)
+            conversationDao.insertConversation(conversation)
             participantDao.insertList(participants)
         }
     }
@@ -90,8 +91,8 @@ internal constructor(
         }
     }
 
-    fun updateLastReadMessageId(conversationId: String, messageId: String) {
-        conversationDao.updateLastReadMessageId(conversationId, messageId)
+    fun getUnreadMessage(conversationId: String, accountId: String, messageId: String): List<String> {
+        return messageDao.getUnreadMessage(conversationId, accountId, messageId)
     }
 
     fun updateCodeUrl(conversationId: String, codeUrl: String) {
@@ -158,4 +159,7 @@ internal constructor(
     fun findMessageIndex(conversationId: String, messageId: String) = messageDao.findMessageIndex(conversationId, messageId)
 
     fun findUnreadMessagesSync(conversationId: String) = messageDao.findUnreadMessagesSync(conversationId)
+
+    fun getLastMessageIdByConversationId(conversationId: String) =
+        conversationDao.getLastMessageIdByConversationId(conversationId)
 }

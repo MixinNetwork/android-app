@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <item name="speed_tag" type="id"/>
     <item name="menu_transfer" type="id"/>
     <item name="menu_camera" type="id"/>
     <item name="menu_gallery" type="id"/>

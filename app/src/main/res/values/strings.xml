@@ -54,6 +54,7 @@
     <string name="rebate">Rebate</string>
     <string name="select">Select</string>
     <string name="changing">Changing…</string>
+    <string name="secret_url" translatable="false">https://mixin.one/pages/1000007</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -172,7 +173,7 @@
     <string name="profile_modify_name">Modify Name</string>
     <string name="profile_modify_name_hint">Please input name</string>
     <string name="profile_modify_number">Do you want to change your phone number?</string>
-    <string name="info">Messages to this conversation are now secured with end-to-end encryption.</string>
+    <string name="info">Messages to this conversation are encrypted end-to-end, tap for more info.</string>
     <string name="verify_pin">Verify Wallet PIN</string>
     <string name="change_phone_success">Change phone number successfully!</string>
     <string name="edit_name">Edit Name</string>

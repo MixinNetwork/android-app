@@ -40,7 +40,8 @@
 
             <include
                 layout="@layout/view_link_state"
-                app:layout_constraintTop_toTopOf="parent"/>
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints"/>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/chat_rv"
@@ -53,7 +54,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/state_layout"
-                app:stackFromEnd="true"
                 tools:listitem="@layout/item_chat_message"/>
 
 
@@ -99,17 +99,37 @@
                         android:translationZ="1dp"/>
                 </FrameLayout>
 
-                <ImageView
-                    android:id="@+id/down_flag"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:layout_marginTop="8dp"
-                    android:background="@drawable/bg_quick_flag"
-                    android:padding="8dp"
-                    android:src="@drawable/ic_scroll_down"
-                    android:translationZ="1dp"
-                    android:visibility="visible"
-                    tools:ignore="ContentDescription"/>
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false">
+
+                    <ImageView
+                        android:id="@+id/down_flag"
+                        android:layout_width="42dp"
+                        android:layout_height="42dp"
+                        android:layout_marginTop="8dp"
+                        android:background="@drawable/bg_quick_flag"
+                        android:padding="8dp"
+                        android:src="@drawable/ic_scroll_down"
+                        android:translationZ="1dp"
+                        android:visibility="visible"
+                        tools:ignore="ContentDescription"/>
+
+                    <TextView
+                        android:id="@+id/down_unread"
+                        android:visibility="gone"
+                        android:layout_gravity="center_horizontal"
+                        android:textColor="@color/white"
+                        android:background="@drawable/bg_unread_small"
+                        android:textSize="12sp"
+                        android:fontFamily="monospace"
+                        android:layout_width="wrap_content"
+                        android:translationZ="1dp"
+                        android:layout_height="wrap_content"/>
+
+                </FrameLayout>
 
             </LinearLayout>
 
@@ -118,7 +138,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:visibility="gone"
-                app:layout_constraintBottom_toTopOf="@id/chat_control"/>
+                app:layout_constraintBottom_toTopOf="@id/chat_control"
+                tools:ignore="MissingConstraints"/>
 
             <View
                 android:id="@+id/shadow"

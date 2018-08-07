@@ -32,7 +32,15 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
         MixinApplication.appContext.dpToPx(12f)
     }
 
-    abstract fun chatLayout(isMe: Boolean, isLast: Boolean)
+    protected var isMe = false
+
+    protected open fun chatLayout(isMe: Boolean, isLast: Boolean) {
+        this.isMe = isMe
+    }
+
+    private fun chatLayout(isLast: Boolean) {
+        chatLayout(isMe, isLast)
+    }
 
     protected val botIcon: Drawable? by lazy {
         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_bot)?.also {
@@ -53,7 +61,11 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.messageId == this.messageId) {
-                        blink()
+                        if (it.type != null) {
+                            chatLayout(it.type)
+                        } else {
+                            blink()
+                        }
                     }
                 }
         }

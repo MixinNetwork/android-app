@@ -125,6 +125,10 @@ interface MessageDao : BaseDao<Message> {
         "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId)")
     fun makeMessageReadByConversationId(conversationId: String, userId: String, messageId: String)
 
+    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
+        "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId)")
+    fun getUnreadMessage(conversationId: String, userId: String, messageId: String): List<String>
+
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
         "thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, " +

@@ -109,11 +109,13 @@ internal constructor(
     private val accountRepository: AccountRepository
 ) : ViewModel() {
 
-    fun getMessages(id: String): LiveData<PagedList<MessageItem>> {
+    fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(conversationRepository.getMessages(id), PagedList.Config.Builder()
-            .setPageSize(60)
+            .setPrefetchDistance(60)
+            .setPageSize(20)
             .setEnablePlaceholders(true)
             .build())
+            .setInitialLoadKey(initialLoadKey)
             .build()
     }
 
@@ -380,12 +382,27 @@ internal constructor(
         }
     }
 
-    fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
+    private fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
         conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
     }
 
-    fun findUnreadMessages(conversationId: String) =
-        conversationRepository.findUnreadMessages(conversationId).subscribeOn(Schedulers.io())!!
+    fun makeMessageRead(conversationId: String, accountId: String) {
+        doAsync {
+            conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
+                conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
+                    if (this.isNotEmpty()) {
+                        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
+                    }
+                }.map {
+                    BlazeAckMessage(it, MessageStatus.READ.name)
+                }.let {
+                    it.chunked(100).forEach {
+                        jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                    }
+                }
+            }
+        }
+    }
 
     fun getFriends() = userRepository.findFriends()
 

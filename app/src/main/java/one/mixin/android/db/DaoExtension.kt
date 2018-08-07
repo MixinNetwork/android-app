@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import android.arch.persistence.room.Transaction
+import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 
@@ -16,6 +17,17 @@ fun UserDao.insertUpdate(user: User, appDao: AppDao) {
     } else {
         user.muteUntil = u.muteUntil
         update(user)
+    }
+}
+
+@Transaction
+fun ConversationDao.insertConversation(conversation: Conversation, action: (() -> Unit)? = null, haveAction: ((Conversation) -> Unit)? = null) {
+    val c = findConversationById(conversation.conversationId)
+    if (c == null) {
+        insert(conversation)
+        action?.let { it() }
+    } else {
+        haveAction?.let { it(c) }
     }
 }
 

@@ -164,7 +164,7 @@
     <string name="profile_invitation_tip">你总共邀请了 %d 个人</string>
     <string name="profile_modify_name">修改姓名</string>
     <string name="profile_modify_name_hint">请输入你的名字</string>
-    <string name="info">此对话中的消息使用端对端加密。</string>
+    <string name="info">此对话中的消息使用端对端加密。点击了解更多。</string>
     <string name="error_user_not_found">找不到这个用户</string>
     <string name="verify_pin">验证钱包密码</string>
     <string name="profile_modify_number">你想要修改手机号码么？</string>
