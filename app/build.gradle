@@ -11,7 +11,7 @@ apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "28.0.1"
+    buildToolsVersion "28.0.2"
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 23
