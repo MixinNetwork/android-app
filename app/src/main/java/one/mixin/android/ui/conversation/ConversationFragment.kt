@@ -728,6 +728,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         }
+        chat_rv.removeOnLayoutChangeListener(layoutChangeListener)
     }
 
     override fun onDestroy() {
@@ -977,7 +978,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (it.size > 0) {
                     isFirstMessage = false
                 }
-                if (!isBottom && it.size > chatAdapter.getRealItemCount()) {
+                if (!isFirstLoad && !isBottom && it.size > chatAdapter.getRealItemCount()) {
                     unreadTipCount += (it.size - chatAdapter.getRealItemCount())
                 }
                 chatAdapter.hasBottomView = !isGroup &&

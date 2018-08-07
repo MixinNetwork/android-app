@@ -54,6 +54,7 @@
     <string name="rebate">Rebate</string>
     <string name="select">Select</string>
     <string name="changing">Changing…</string>
+    <string name="secret_url" translatable="false">https://mixin.one/pages/1000007</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

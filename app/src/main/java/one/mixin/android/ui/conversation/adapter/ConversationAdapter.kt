@@ -161,7 +161,7 @@ class ConversationAdapter(
                         selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 SECRET_TYPE -> {
-                    (holder as SecretHolder).bind()
+                    (holder as SecretHolder).bind(onItemListener)
                 }
                 else -> {
                 }
