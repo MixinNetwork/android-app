@@ -247,8 +247,9 @@ class ChatControlView : FrameLayout {
     private fun clickSend() {
         when (sendStatus) {
             SEND, REPLY -> {
-                val t = chat_et.text.trim().toString()
-                callback.onSendClick(t)
+                chat_et.text?.let {
+                    callback.onSendClick(it.trim().toString())
+                }
             }
             AUDIO -> {
                 if (recordTipView.visibility == View.INVISIBLE) {

@@ -10,10 +10,10 @@ import android.graphics.RectF
 import android.graphics.Shader.TileMode
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.support.v7.widget.AppCompatImageView
 import android.util.AttributeSet
-import android.widget.ImageView
 
-class SquareImageView : ImageView {
+class SquareImageView : AppCompatImageView {
 
     private val mBitmapPaint: Paint = Paint()
     private val mMatrix: Matrix = Matrix()

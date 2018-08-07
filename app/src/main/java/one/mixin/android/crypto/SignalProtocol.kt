@@ -43,7 +43,7 @@ class SignalProtocol(ctx: Context) {
 
     companion object {
 
-        val TAG = SignalProtocol::class.java.simpleName!!
+        val TAG = SignalProtocol::class.java.simpleName
         const val DEFAULT_DEVICE_ID = 1
 
         fun initSignal(context: Context) {
@@ -119,15 +119,15 @@ class SignalProtocol(ctx: Context) {
         val sessionCipher = SessionCipher(signalProtocolStore, address)
         if (category == MessageCategory.SIGNAL_KEY.name) {
             if (dataType == PREKEY_TYPE) {
-                sessionCipher.decrypt(PreKeySignalMessage(cipherText), { plaintext ->
+                sessionCipher.decrypt(PreKeySignalMessage(cipherText)) { plaintext ->
                     processGroupSession(groupId, address, SenderKeyDistributionMessage(plaintext))
                     callback.handlePlaintext(plaintext)
-                })
+                }
             } else if (dataType == WHISPER_TYPE) {
-                sessionCipher.decrypt(SignalMessage(cipherText), { plaintext ->
+                sessionCipher.decrypt(SignalMessage(cipherText)) { plaintext ->
                     processGroupSession(groupId, address, SenderKeyDistributionMessage(plaintext))
                     callback.handlePlaintext(plaintext)
-                })
+                }
             }
         } else {
             when (dataType) {

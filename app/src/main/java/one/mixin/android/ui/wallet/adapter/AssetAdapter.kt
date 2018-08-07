@@ -46,13 +46,13 @@ class AssetAdapter(private val rv: RecyclerView) : HeaderAdapter<AssetItem>() {
                 }
             })
             data = newAssets
-            val recyclerViewState = rv.layoutManager.onSaveInstanceState()
+            val recyclerViewState = rv.layoutManager?.onSaveInstanceState()
             if (headerView != null) {
                 diffResult.dispatchUpdatesTo(HeaderListUpdateCallback(this))
             } else {
                 diffResult.dispatchUpdatesTo(this)
             }
-            rv.layoutManager.onRestoreInstanceState(recyclerViewState)
+            rv.layoutManager?.onRestoreInstanceState(recyclerViewState)
         }
     }
 

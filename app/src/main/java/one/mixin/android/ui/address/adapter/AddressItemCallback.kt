@@ -8,12 +8,7 @@ import kotlinx.android.synthetic.main.item_address.view.*
 class AddressItemCallback(private val listener: AddressAdapter.AddressListener? = null) :
     ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
-    override fun onMove(
-        recyclerView: RecyclerView?,
-        viewHolder: RecyclerView.ViewHolder?,
-        target: RecyclerView.ViewHolder?
-    ):
-        Boolean {
+    override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
         return false
     }
 
@@ -24,8 +19,8 @@ class AddressItemCallback(private val listener: AddressAdapter.AddressListener? 
     }
 
     override fun onChildDrawOver(
-        c: Canvas?,
-        recyclerView: RecyclerView?,
+        c: Canvas,
+        recyclerView: RecyclerView,
         viewHolder: RecyclerView.ViewHolder?,
         dX: Float,
         dY: Float,
@@ -38,16 +33,16 @@ class AddressItemCallback(private val listener: AddressAdapter.AddressListener? 
         }
     }
 
-    override fun clearView(recyclerView: RecyclerView?, viewHolder: RecyclerView.ViewHolder?) {
+    override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
         viewHolder?.let {
             ItemTouchHelper.Callback.getDefaultUIUtil().clearView(it.itemView.foreground_rl)
         }
     }
 
     override fun onChildDraw(
-        c: Canvas?,
-        recyclerView: RecyclerView?,
-        viewHolder: RecyclerView.ViewHolder?,
+        c: Canvas,
+        recyclerView: RecyclerView,
+        viewHolder: RecyclerView.ViewHolder,
         dX: Float,
         dY: Float,
         actionState: Int,

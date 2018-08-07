@@ -65,7 +65,7 @@ import java.util.UUID
 class DecryptMessage : Injector() {
 
     companion object {
-        val TAG = DecryptMessage::class.java.simpleName!!
+        val TAG = DecryptMessage::class.java.simpleName
         const val GROUP = "DecryptMessage"
     }
 

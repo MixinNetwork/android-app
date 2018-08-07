@@ -182,7 +182,7 @@ class ProfileFragment : BaseFragment() {
             editText.hint = getString(R.string.wallet_redeem)
             editText.inputType = InputType.TYPE_CLASS_NUMBER
         }
-        val frameLayout = FrameLayout(context)
+        val frameLayout = FrameLayout(requireContext())
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
         params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)

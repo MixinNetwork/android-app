@@ -499,7 +499,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         MentionAdapter(object : OnUserClickListener {
             override fun onUserClick(keyword: String?, userName: String) {
                 chat_control.chat_et.setText(chat_control.chat_et.text.toString().removeEnd(keyword).plus(" @$userName "))
-                chat_control.chat_et.setSelection(chat_control.chat_et.text.length)
+                chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
                 mentionAdapter.clear()
             }
         })

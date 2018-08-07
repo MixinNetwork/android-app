@@ -40,7 +40,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
-import timber.log.Timber
 
 class ConversationAdapter(
     private val keyword: String?,

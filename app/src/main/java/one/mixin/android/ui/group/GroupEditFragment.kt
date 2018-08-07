@@ -24,7 +24,7 @@ import javax.inject.Inject
 
 class GroupEditFragment : BaseFragment() {
     companion object {
-        val TAG = GroupEditFragment::class.java.simpleName!!
+        val TAG = GroupEditFragment::class.java.simpleName
         private const val ARGS_DESC = "args_desc"
 
         fun newInstance(conversationId: String, desc: String?): GroupEditFragment {

@@ -216,9 +216,9 @@ class ConversationListFragment : LinkFragment() {
                     }
                 })
                 conversations = newConversations
-                val recyclerViewState = rv.layoutManager.onSaveInstanceState()
+                val recyclerViewState = rv.layoutManager?.onSaveInstanceState()
                 diffResult.dispatchUpdatesTo(this)
-                rv.layoutManager.onRestoreInstanceState(recyclerViewState)
+                rv.layoutManager?.onRestoreInstanceState(recyclerViewState)
             }
         }
 
