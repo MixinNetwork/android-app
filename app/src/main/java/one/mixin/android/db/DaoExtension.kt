@@ -21,7 +21,7 @@ fun UserDao.insertUpdate(user: User, appDao: AppDao) {
 }
 
 @Transaction
-fun ConversationDao.insertConversation(conversation: Conversation, action: (() -> Unit)? = null,haveAction: ((Conversation) -> Unit)? = null) {
+fun ConversationDao.insertConversation(conversation: Conversation, action: (() -> Unit)? = null, haveAction: ((Conversation) -> Unit)? = null) {
     val c = findConversationById(conversation.conversationId)
     if (c == null) {
         insert(conversation)

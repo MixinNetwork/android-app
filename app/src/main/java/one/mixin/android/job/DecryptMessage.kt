@@ -507,9 +507,9 @@ class DecryptMessage : Injector() {
 
     private fun syncConversation(data: BlazeMessageData) {
         val conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
-        conversationDao.insertConversation(conversation) {
+        conversationDao.insertConversation(conversation, {
             refreshConversation(data.conversationId)
-        }
+        }, {})
         if (jobManager.findJobById(data.conversationId) == null) {
             if (conversation.status == ConversationStatus.START.ordinal) {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
