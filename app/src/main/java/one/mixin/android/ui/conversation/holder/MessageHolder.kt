@@ -38,6 +38,7 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+        super.chatLayout(isMe,isLast)
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f

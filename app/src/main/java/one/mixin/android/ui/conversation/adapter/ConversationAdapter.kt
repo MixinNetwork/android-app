@@ -10,6 +10,8 @@ import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullElse
@@ -78,7 +80,6 @@ class ConversationAdapter(
     fun markRead() {
         unreadIndex?.let {
             unreadIndex = null
-            notifyItemChanged(it)
         }
     }
 
@@ -242,12 +243,10 @@ class ConversationAdapter(
         }
     }
 
-    override fun submitList(pagedList: PagedList<MessageItem>?) {
-        super.submitList(pagedList)
-        pagedList?.let {
-            if (it.size >= 2) {
-                lastId = it[1]?.messageId
-            }
+    override fun onCurrentListChanged(currentList: PagedList<MessageItem>?) {
+        super.onCurrentListChanged(currentList)
+        getItem(1)?.let {
+            RxBus.publish(BlinkEvent(it.messageId, isLast(1)))
         }
     }
 
@@ -266,7 +265,9 @@ class ConversationAdapter(
     }
 
     public override fun getItem(position: Int): MessageItem? {
-        return if (isSecret && hasBottomView) {
+        return if (position > itemCount - 1) {
+            null
+        } else if (isSecret && hasBottomView) {
             when (position) {
                 0 -> create(MessageCategory.STRANGER.name, if (super.getItemCount() > 0) {
                     super.getItem(0)?.createdAt
@@ -453,20 +454,14 @@ class ConversationAdapter(
         const val VIDEO_TYPE = 16
         const val AUDIO_TYPE = 17
 
-        private var lastId: String? = null
-
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
                 return oldItem.messageId == newItem.messageId
             }
 
             override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
-                return if (oldItem.messageId == lastId) {
-                    false
-                } else {
-                    return oldItem.mediaStatus == newItem.mediaStatus &&
-                        oldItem.status == newItem.status
-                }
+                return oldItem.mediaStatus == newItem.mediaStatus &&
+                    oldItem.status == newItem.status
             }
         }
     }

@@ -72,6 +72,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+        super.chatLayout(isMe,isLast)
         if (isMe) {
             if (isLast) {
                 itemView.chat_layout.setBackgroundResource(R.drawable.bill_bubble_me_last)

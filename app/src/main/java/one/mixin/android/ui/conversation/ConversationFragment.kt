@@ -197,12 +197,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     when {
                         isFirstLoad -> {
                             isFirstLoad = false
+                            if (chat_rv.adapter == null) {
+                                chat_rv.adapter = chatAdapter
+                            }
                             if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
                                     ?.getBoolean(conversationId, false) == true) {
                                 showGroupNotification = true
-                                showAlert(0)
-                            } else if (unreadCount > 0) {
-                                isBottom = false
                                 showAlert(0)
                             }
                             val position = if (messageId != null) {
@@ -561,7 +561,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var isFirstMessage = false
     private var isFirstLoad = true
-    private var isBottom = false
+    private var isBottom = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -589,11 +589,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         savedInstanceState: Bundle?
     ): View? =
         inflater.inflate(R.layout.fragment_conversation, container, false)
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
-        chat_rv.adapter = chatAdapter
-    }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -765,7 +760,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             stackFromEnd = true
         }
         chat_rv.addItemDecoration(decoration)
-        chat_rv.itemAnimator = null
         chat_rv.addOnLayoutChangeListener(layoutChangeListener)
 
         chat_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
