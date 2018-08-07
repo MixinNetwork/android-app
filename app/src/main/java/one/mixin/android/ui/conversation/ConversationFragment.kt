@@ -215,7 +215,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             verticalScrollOffset.set(0)
                         }
                         isBottom -> {
-                            chat_rv.layoutManager.scrollToPosition(0)
+                            chat_rv.layoutManager?.scrollToPosition(0)
                             verticalScrollOffset.set(0)
                         }
                         else -> {
@@ -1460,7 +1460,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun scrollToDown() {
-        chat_rv.layoutManager.scrollToPosition(0)
+        chat_rv.layoutManager?.scrollToPosition(0)
         verticalScrollOffset.set(0)
     }
 
@@ -1468,7 +1468,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_rv.postDelayed({
             if (isAdded) {
                 if (position == 0 && offset == 0) {
-                    chat_rv.layoutManager.scrollToPosition(0)
+                    chat_rv.layoutManager?.scrollToPosition(0)
                 } else if (offset == -1) {
                     (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, 0)
                 } else {
@@ -1480,9 +1480,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }, delay)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
-            data?.data?.let {
+            data.data?.let {
                 if (data.hasExtra(IS_VIDEO)) {
                     sendVideoMessage(it)
                 } else {
@@ -1494,7 +1494,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 showPreview(imageUri) { sendImageMessage(it) }
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
-            val uri = data?.data ?: return
+            val uri = data.data ?: return
             context?.getAttachment(uri)?.let {
                 AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                     .setMessage(if (isGroup) {
