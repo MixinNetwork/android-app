@@ -222,6 +222,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+        super.chatLayout(isMe, isLast)
         if (isMe) {
             if (isLast) {
                 itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow_last)

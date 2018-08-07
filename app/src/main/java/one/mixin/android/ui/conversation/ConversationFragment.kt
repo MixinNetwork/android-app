@@ -760,6 +760,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             stackFromEnd = true
         }
         chat_rv.addItemDecoration(decoration)
+        chat_rv.itemAnimator = null
         chat_rv.addOnLayoutChangeListener(layoutChangeListener)
 
         chat_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
