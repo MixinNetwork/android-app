@@ -243,8 +243,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         val biometricPrompt = BiometricPromptCompat.Builder(requireContext())
             .setTitle(getString(R.string.wallet_bottom_transfer_to, user!!.fullName))
             .setSubtitle(getString(R.string.contact_mixin_id, user!!.identityNumber))
-            .setDescription(getString(R.string.wallet_unit_usd,
-                "≈ ${(BigDecimal(contentView.transfer_amount.text.toString().toDot()) * BigDecimal(currentAsset!!.priceUsd)).numberFormat2()}"))
+            .setDescription(getDescription())
             .setNegativeButton(getString(R.string.wallet_pay_with_pwd)) { _, _ -> showTransferBottom() }
             .build()
         val cipher = try {
@@ -285,6 +284,14 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 ErrorHandler.handleError(it)
                 if (!isAdded) return@subscribe
             })
+    }
+
+    private fun getDescription(): String {
+        val amount = contentView.transfer_amount.text.toString()
+        val pre = "$amount ${currentAsset!!.symbol}"
+        val post = getString(R.string.wallet_unit_usd,
+            "≈ ${(BigDecimal(contentView.transfer_amount.text.toString().toDot()) * BigDecimal(currentAsset!!.priceUsd)).numberFormat2()}")
+        return "$pre ($post)"
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

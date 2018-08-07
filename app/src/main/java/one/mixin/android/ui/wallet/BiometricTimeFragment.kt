@@ -62,6 +62,10 @@ class BiometricTimeFragment : BaseFragment() {
                     val intervalMillis = (VALUES[i] * X_HOUR).toLong()
                     defaultSharedPreferences.putLong(BIOMETRIC_INTERVAL, intervalMillis)
                     adapter.selectedPos = i
+
+                    val walletSettingFragment = requireFragmentManager().findFragmentByTag(WalletSettingFragment.TAG)
+                    (walletSettingFragment as? WalletSettingFragment)?.setTimeDesc()
+                    activity?.onBackPressed()
                 }
             }
             bottomSheet.showNow(requireFragmentManager(), PinBiometricsBottomSheetDialogFragment.TAG)

@@ -9,6 +9,8 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_wallet_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
+import one.mixin.android.Constants.BIOMETRIC_INTERVAL
+import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.putBoolean
@@ -16,6 +18,7 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.remove
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.util.BiometricUtil
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 
@@ -35,20 +38,36 @@ class WalletSettingFragment : BaseFragment() {
         change_tv.setOnClickListener {
             activity?.addFragment(this@WalletSettingFragment, OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
         }
-        time_tv.setOnClickListener {
+        time_rl.setOnClickListener {
             activity?.addFragment(this@WalletSettingFragment, BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
         }
         biometrics_sc.isClickable = false
         biometrics_rl.setOnClickListener(biometricsClickListener)
         val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        biometrics_sc.isChecked = open
-        time_tv.visibility = if (open) VISIBLE else GONE
+        if (open) {
+            biometrics_sc.isChecked = true
+            time_rl.visibility = VISIBLE
+            setTimeDesc()
+        } else {
+            biometrics_sc.isChecked = false
+            time_rl.visibility = GONE
+        }
+    }
+
+    fun setTimeDesc() {
+        val biometricInterval = defaultSharedPreferences.getLong(BIOMETRIC_INTERVAL, BIOMETRIC_INTERVAL_DEFAULT)
+        val hour = biometricInterval / X_HOUR.toFloat()
+        time_desc_tv.text = if (hour < 1) {
+            getString(R.string.wallet_pin_pay_interval_minutes, (hour * 60).toInt())
+        } else {
+            getString(R.string.wallet_pin_pay_interval_hours, hour.toInt())
+        }
     }
 
     private val biometricsClickListener = View.OnClickListener {
         if (biometrics_sc.isChecked) {
             biometrics_sc.isChecked = false
-            time_tv.visibility = GONE
+            time_rl.visibility = GONE
             defaultSharedPreferences.remove(Constants.BIOMETRICS_IV)
             defaultSharedPreferences.remove(Constants.BIOMETRICS_ALIAS)
             BiometricUtil.deleteKey()
@@ -58,7 +77,8 @@ class WalletSettingFragment : BaseFragment() {
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     biometrics_sc.isChecked = true
-                    time_tv.visibility = VISIBLE
+                    time_rl.visibility = VISIBLE
+                    setTimeDesc()
                     defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                     save2Pref(true)
                 }

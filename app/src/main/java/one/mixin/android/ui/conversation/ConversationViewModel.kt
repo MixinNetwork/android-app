@@ -424,10 +424,8 @@ internal constructor(
     fun getXIN(): AssetItem? = assetRepository.getXIN()
 
     fun transfer(assetId: String, userId: String, amount: String, code: String, trace: String?, memo: String?) =
-        accountRepository.getPinToken().map { pinToken ->
-            assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptPin(pinToken, code), trace, memo))
-                .execute().body()!!
-        }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
+        assetRepository.transfer(TransferRequest(assetId, userId, amount, encryptPin(Session.getPinToken()!!, code), trace, memo))
+            .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
     fun getSystemAlbums() = accountRepository.getSystemAlbums()
 
