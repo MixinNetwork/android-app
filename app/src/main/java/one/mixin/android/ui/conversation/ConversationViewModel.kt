@@ -386,8 +386,19 @@ internal constructor(
         conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
     }
 
-    fun findUnreadMessages(conversationId: String) =
-        conversationRepository.findUnreadMessages(conversationId).subscribeOn(Schedulers.io())!!
+    fun makeMessageRead(conversationId: String, accountId: String, messageId: String) {
+        doAsync {
+            conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
+                conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
+            }.map {
+                BlazeAckMessage(it, MessageStatus.READ.name)
+            }.let {
+                it.chunked(100).forEach {
+                    jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                }
+            }
+        }
+    }
 
     fun getFriends() = userRepository.findFriends()
 

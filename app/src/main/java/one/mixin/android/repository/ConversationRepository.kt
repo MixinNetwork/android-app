@@ -91,6 +91,14 @@ internal constructor(
         }
     }
 
+    fun makeMessageReadByConversationIdSync(conversationId: String, accountId: String, messageId: String) {
+        messageDao.makeMessageReadByConversationId(conversationId, accountId, messageId)
+    }
+
+    fun getUnreadMessage(conversationId: String, accountId: String, messageId: String): List<String> {
+        return messageDao.getUnreadMessage(conversationId, accountId, messageId)
+    }
+
     fun updateLastReadMessageId(conversationId: String, messageId: String) {
         conversationDao.updateLastReadMessageId(conversationId, messageId)
     }

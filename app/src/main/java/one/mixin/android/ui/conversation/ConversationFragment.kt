@@ -116,7 +116,6 @@ import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
@@ -125,9 +124,7 @@ import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
-import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.TransferStickerData
-import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
@@ -222,11 +219,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             verticalScrollOffset.set(0)
                         }
                         else -> {
-                            down_unread.visibility = VISIBLE
-                            down_unread.text = "$unreadTipCount"
+                            if (unreadTipCount > 0) {
+                                down_unread.visibility = VISIBLE
+                                down_unread.text = "$unreadTipCount"
+                            } else {
+                                down_unread.visibility = GONE
+                            }
                         }
                     }
-                    startMarkRead()
                 }
             })
         }
@@ -734,12 +734,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onDestroy() {
         super.onDestroy()
         AudioPlayer.release()
-        markDisposable?.let {
-            if (!it.isDisposed) {
-                it.dispose()
-            }
-            markDisposable = null
-        }
     }
 
     @SuppressLint("CheckResult")
@@ -989,6 +983,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else if (it.size != chatAdapter.getRealItemCount()) {
                     chatAdapter.unreadIndex = null
                 }
+                if (it.size > 0) {
+                    it[0]?.let {
+                        chatViewModel.makeMessageRead(it.conversationId, sender.userId, it.messageId)
+                    }
+                }
             }
             chatAdapter.submitList(it)
         })
@@ -1039,27 +1038,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     app_rv.visibility = VISIBLE
                     extensions.visibility = VISIBLE
                 }
-            })
-        }
-    }
-
-    private var markDisposable: Disposable? = null
-    private fun startMarkRead() {
-        if (markDisposable == null) {
-            markDisposable = chatViewModel.findUnreadMessages(conversationId).map { it ->
-                if (it.isNotEmpty()) {
-                    chatViewModel.makeMessageReadByConversationId(conversationId, sender.userId, it.last().messageId)
-                }
-                notificationManager.cancel(conversationId.hashCode())
-                it.map { BlazeAckMessage(it.messageId, MessageStatus.READ.name) }
-            }.subscribe({
-                if (it.isNotEmpty()) {
-                    it.chunked(100).forEach {
-                        chatViewModel.sendAckMessage(createAckListParamBlazeMessage(it))
-                    }
-                }
-            }, {
-                Timber.e(it)
             })
         }
     }
