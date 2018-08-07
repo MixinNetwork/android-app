@@ -112,7 +112,7 @@ internal constructor(
     fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(conversationRepository.getMessages(id), PagedList.Config.Builder()
             .setPrefetchDistance(60)
-            .setPageSize(30)
+            .setPageSize(20)
             .setEnablePlaceholders(true)
             .build())
             .setInitialLoadKey(initialLoadKey)
