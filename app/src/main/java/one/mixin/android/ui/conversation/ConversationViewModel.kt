@@ -382,19 +382,23 @@ internal constructor(
         }
     }
 
-    fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
+    private fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
         conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
     }
 
-    fun makeMessageRead(conversationId: String, accountId: String, messageId: String) {
+    fun makeMessageRead(conversationId: String, accountId: String) {
         doAsync {
-            conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
-                conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
-            }.map {
-                BlazeAckMessage(it, MessageStatus.READ.name)
-            }.let {
-                it.chunked(100).forEach {
-                    jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+            conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
+                conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
+                    if (this.isNotEmpty()) {
+                        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
+                    }
+                }.map {
+                    BlazeAckMessage(it, MessageStatus.READ.name)
+                }.let {
+                    it.chunked(100).forEach {
+                        jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                    }
                 }
             }
         }

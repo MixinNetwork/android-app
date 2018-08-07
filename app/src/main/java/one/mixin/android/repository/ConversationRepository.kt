@@ -91,16 +91,8 @@ internal constructor(
         }
     }
 
-    fun makeMessageReadByConversationIdSync(conversationId: String, accountId: String, messageId: String) {
-        messageDao.makeMessageReadByConversationId(conversationId, accountId, messageId)
-    }
-
     fun getUnreadMessage(conversationId: String, accountId: String, messageId: String): List<String> {
         return messageDao.getUnreadMessage(conversationId, accountId, messageId)
-    }
-
-    fun updateLastReadMessageId(conversationId: String, messageId: String) {
-        conversationDao.updateLastReadMessageId(conversationId, messageId)
     }
 
     fun updateCodeUrl(conversationId: String, codeUrl: String) {
@@ -167,4 +159,7 @@ internal constructor(
     fun findMessageIndex(conversationId: String, messageId: String) = messageDao.findMessageIndex(conversationId, messageId)
 
     fun findUnreadMessagesSync(conversationId: String) = messageDao.findUnreadMessagesSync(conversationId)
+
+    fun getLastMessageIdByConversationId(conversationId: String) =
+        conversationDao.getLastMessageIdByConversationId(conversationId)
 }

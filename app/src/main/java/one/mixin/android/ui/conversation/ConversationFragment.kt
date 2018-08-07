@@ -978,9 +978,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     chatAdapter.unreadIndex = null
                 }
                 if (it.size > 0) {
-                    it[0]?.let {
-                        chatViewModel.makeMessageRead(it.conversationId, sender.userId, it.messageId)
-                    }
+                    chatViewModel.makeMessageRead(conversationId, sender.userId)
                 }
             }
             chatAdapter.submitList(it)
