@@ -73,10 +73,11 @@
             android:id="@+id/chat_send_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@null"
             android:layout_gravity="center_vertical"
-            android:paddingStart="12dp"
-            android:paddingEnd="12dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="2dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
             android:src="@drawable/ic_record_mic_black"
             tools:ignore="ContentDescription"/>
     </LinearLayout>
