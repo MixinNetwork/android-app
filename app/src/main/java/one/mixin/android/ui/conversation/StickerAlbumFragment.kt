@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter
 import one.mixin.android.vo.StickerAlbum
+import org.jetbrains.anko.backgroundResource
 import javax.inject.Inject
 
 class StickerAlbumFragment : BaseFragment() {
@@ -58,6 +59,12 @@ class StickerAlbumFragment : BaseFragment() {
                         if (album_tl.selectedTabPosition == i) {
                             tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
                         }
+                    }
+
+                    val slidingTabStrip = album_tl.getChildAt(0) as ViewGroup
+                    for (i in 0 until slidingTabStrip.childCount) {
+                        val v = slidingTabStrip.getChildAt(i)
+                        v.backgroundResource = 0
                     }
                 }
             }
