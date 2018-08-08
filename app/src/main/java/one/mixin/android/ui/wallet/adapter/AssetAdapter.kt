@@ -74,7 +74,7 @@ class AssetAdapter(private val rv: RecyclerView) : HeaderAdapter<AssetItem>() {
                     val isPositive = changeUsd > BigDecimal.ZERO
                     val t = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
                     holder.itemView.change_tv.text = if (isPositive) "+$t" else t
-                    holder.itemView.change_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
+                    holder.itemView.change_tv.textColorResource = if (isPositive) R.color.colorChangeGreen else R.color.colorChangeRed
                 }
             }
             holder.itemView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
