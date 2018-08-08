@@ -1509,9 +1509,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }, delay)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
-            data.data?.let {
+            data?.data?.let {
                 if (data.hasExtra(IS_VIDEO)) {
                     sendVideoMessage(it)
                 } else {
@@ -1523,7 +1523,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 showPreview(imageUri) { sendImageMessage(it) }
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
-            val uri = data.data ?: return
+            val uri = data?.data ?: return
             context?.getAttachment(uri)?.let {
                 AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                     .setMessage(if (isGroup) {
