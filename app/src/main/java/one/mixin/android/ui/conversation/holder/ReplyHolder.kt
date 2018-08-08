@@ -52,7 +52,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        super.chatLayout(isMe,isLast)
+        super.chatLayout(isMe, isLast)
         val lp = (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams)
         if (isMe) {
             lp.gravity = Gravity.END

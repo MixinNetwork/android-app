@@ -193,5 +193,4 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId AND category=:category")
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String): List<MediaMessageMinimal>?
-
 }

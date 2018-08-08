@@ -286,8 +286,8 @@ class ChatControlView : FrameLayout {
             inputLayout.show(chat_et, stickerContainer)
             callback.onStickerClick()
 
-            if (stickerStatus == KEYBOARD && inputLayout.isInputOpen
-                && sendStatus == AUDIO && lastSendStatus == AUDIO) {
+            if (stickerStatus == KEYBOARD && inputLayout.isInputOpen &&
+                sendStatus == AUDIO && lastSendStatus == AUDIO) {
                 setSend()
             }
         }

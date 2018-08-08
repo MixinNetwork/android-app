@@ -122,7 +122,7 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        super.chatLayout(isMe,isLast)
+        super.chatLayout(isMe, isLast)
         if (isMe) {
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
             itemView.requestLayout()

@@ -20,7 +20,7 @@ class WaitingHolder constructor(
 ) : BaseViewHolder(containerView) {
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        super.chatLayout(isMe,isLast)
+        super.chatLayout(isMe, isLast)
         if (isLast) {
             itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other_last)
         } else {
