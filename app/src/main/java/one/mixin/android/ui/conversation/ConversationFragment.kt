@@ -45,6 +45,7 @@ import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -139,6 +140,7 @@ import timber.log.Timber
 import java.io.File
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -758,6 +760,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         AudioPlayer.release()
     }
 
+    private var firstPosition = 0
     @SuppressLint("CheckResult")
     private fun initView() {
         chat_rv.visibility = INVISIBLE
@@ -814,7 +817,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (state.get() != RecyclerView.SCROLL_STATE_IDLE) {
                     verticalScrollOffset.getAndAdd(dy)
                 }
-                val firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                 if (firstPosition > 0) {
                     if (isBottom) {
                         isBottom = false
@@ -1482,6 +1485,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun scrollToDown() {
         chat_rv.layoutManager?.scrollToPosition(0)
         verticalScrollOffset.set(0)
+        if (firstPosition > PAGE_SIZE * 6) {
+            chatAdapter.notifyDataSetChanged()
+        }
     }
 
     private fun scrollTo(position: Int, offset: Int = -1, delay: Long = 30, action: (() -> Unit)? = null) {
@@ -1495,6 +1501,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
                 }
                 action?.let { it() }
+                if (abs(firstPosition - position) > PAGE_SIZE * 6) {
+                    chatAdapter.notifyDataSetChanged()
+                }
                 verticalScrollOffset.set(0)
             }
         }, delay)
