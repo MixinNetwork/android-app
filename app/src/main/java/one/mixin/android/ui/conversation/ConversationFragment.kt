@@ -192,43 +192,60 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {
         ConversationAdapter(keyword, onItemListener, isGroup, !isPlainMessage()).apply {
-            registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    when {
-                        isFirstLoad -> {
-                            isFirstLoad = false
-                            if (chat_rv.adapter == null) {
-                                chat_rv.adapter = chatAdapter
-                            }
-                            if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                                    ?.getBoolean(conversationId, false) == true) {
-                                showGroupNotification = true
-                                showAlert(0)
-                            }
-                            val position = if (messageId != null) {
-                                unreadCount + 1
-                            } else {
-                                unreadCount
-                            }
-                            (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, chat_rv.measuredHeight * 3 / 4)
-                            chat_rv.visibility = VISIBLE
-                            verticalScrollOffset.set(0)
+            registerAdapterDataObserver(chatAdapterDataObserver)
+        }
+    }
+
+    private val chatAdapterDataObserver by lazy {
+        object : RecyclerView.AdapterDataObserver() {
+            var oldSize = 0
+
+            override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
+                chatAdapter.currentList?.let {
+                    oldSize = it.size
+                }
+            }
+
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                when {
+                    isFirstLoad -> {
+                        isFirstLoad = false
+                        if (chat_rv.adapter == null) {
+                            chat_rv.adapter = chatAdapter
                         }
-                        isBottom -> {
+                        if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                                ?.getBoolean(conversationId, false) == true) {
+                            showGroupNotification = true
+                            showAlert(0)
+                        }
+                        val position = if (messageId != null) {
+                            unreadCount + 1
+                        } else {
+                            unreadCount
+                        }
+                        (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, chat_rv.measuredHeight * 3 / 4)
+                        chat_rv.visibility = VISIBLE
+                        verticalScrollOffset.set(0)
+                    }
+                    isBottom -> {
+                        if (chatAdapter.currentList != null && chatAdapter.currentList!!.size > oldSize) {
                             chat_rv.layoutManager?.scrollToPosition(0)
                             verticalScrollOffset.set(0)
                         }
-                        else -> {
-                            if (unreadTipCount > 0) {
-                                down_unread.visibility = VISIBLE
-                                down_unread.text = "$unreadTipCount"
-                            } else {
-                                down_unread.visibility = GONE
-                            }
+                    }
+                    else -> {
+                        if (unreadTipCount > 0) {
+                            down_unread.visibility = VISIBLE
+                            down_unread.text = "$unreadTipCount"
+                        } else {
+                            down_unread.visibility = GONE
                         }
                     }
                 }
-            })
+                chatAdapter.currentList?.let {
+                    oldSize = it.size
+                }
+            }
         }
     }
 
@@ -630,6 +647,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
             }
         }
+        chat_rv.adapter?.let {
+            it.notifyDataSetChanged()
+        }
     }
 
     override fun onPause() {
@@ -730,6 +750,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         }
         chat_rv.removeOnLayoutChangeListener(layoutChangeListener)
+        chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
     }
 
     override fun onDestroy() {
