@@ -596,6 +596,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var verticalScrollOffset = AtomicInteger(0)
     private val layoutChangeListener =
         View.OnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
+            if (sticker_container.height > input_layout.keyboardHeight) {
+                return@OnLayoutChangeListener
+            }
             val y = oldBottom - bottom
             if (Math.abs(y) > 0 && isAdded) {
                 chat_rv.post {
@@ -818,6 +821,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if (sticker_container.height > input_layout.keyboardHeight) {
+                    return
+                }
                 if (state.get() != RecyclerView.SCROLL_STATE_IDLE) {
                     verticalScrollOffset.getAndAdd(dy)
                 }
@@ -1397,10 +1403,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onStickerClick(stickerId: String) {
-                if (isAdded && sticker_container.height != input_layout.keyboardHeight) {
-                    stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                if (isAdded) {
+                    if (sticker_container.height != input_layout.keyboardHeight) {
+                        stickerAnim(sticker_container.height, input_layout.keyboardHeight) {
+                            sendStickerMessage(stickerId)
+                        }
+                    } else {
+                        sendStickerMessage(stickerId)
+                    }
                 }
-                sendStickerMessage(stickerId)
             }
         })
     }
@@ -1413,7 +1424,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         return Color.argb(alpha, red, green, blue)
     }
 
-    private fun stickerAnim(curH: Int, targetH: Int) {
+    private fun stickerAnim(curH: Int, targetH: Int, action: (() -> Unit)? = null) {
         val anim = ValueAnimator.ofInt(curH, targetH).apply {
             duration = 200
             interpolator = DecelerateInterpolator()
@@ -1444,6 +1455,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 chat_control.updateUp(true)
             }
+            action?.let { action -> action() }
         }
         anim.start()
     }
