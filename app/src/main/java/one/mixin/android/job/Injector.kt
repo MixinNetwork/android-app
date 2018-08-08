@@ -6,6 +6,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
+import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
@@ -35,6 +36,8 @@ open class Injector : Injectable {
     lateinit var participantDao: ParticipantDao
     @Inject
     lateinit var snapshotDao: SnapshotDao
+    @Inject
+    lateinit var assetDao: AssetDao
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
     @Inject

@@ -293,7 +293,9 @@ class DecryptMessage : Injector() {
             data.createdAt, MessageStatus.DELIVERED, snapshot.type, null, snapshot.snapshotId)
         snapshotDao.insert(snapshot)
         messageDao.insert(message)
-        jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
+        if (assetDao.simpleAsset(snapshot.assetId) == null) {
+            jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
+        }
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             sendNotificationJob(message, data.source)
         }

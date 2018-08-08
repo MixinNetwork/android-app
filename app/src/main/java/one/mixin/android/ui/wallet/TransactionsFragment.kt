@@ -163,8 +163,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             activity?.addFragment(this@TransactionsFragment,
                 WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
         }
-        view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show
-        else R.string.wallet_transactions_hide)
+        view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
         view.hide.setOnClickListener {
             doAsync {
                 walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
