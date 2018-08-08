@@ -57,11 +57,16 @@ class ConversationAdapter(
         set(value) {
             if (field != value) {
                 field = value
+                notifyDataSetChanged()
             }
         }
 
     override fun getAttachIndex(): Int? = if (unreadIndex != null) {
-        unreadIndex!! - 1
+        if (hasBottomView) {
+            unreadIndex
+        } else {
+            unreadIndex!! - 1
+        }
     } else {
         null
     }
@@ -70,11 +75,7 @@ class ConversationAdapter(
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
 
     override fun onBindAttachView(view: View) {
-        if (hasBottomView) {
-            view.unread_tv.text = view.context.getString(R.string.unread, unreadIndex!! - 1)
-        } else {
-            view.unread_tv.text = view.context.getString(R.string.unread, unreadIndex!!)
-        }
+        view.unread_tv.text = view.context.getString(R.string.unread, unreadIndex!!)
     }
 
     fun markRead() {
