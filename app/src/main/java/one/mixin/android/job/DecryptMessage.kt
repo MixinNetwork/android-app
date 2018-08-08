@@ -11,7 +11,6 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
-import one.mixin.android.db.insertConversation
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
@@ -508,10 +507,12 @@ class DecryptMessage : Injector() {
     }
 
     private fun syncConversation(data: BlazeMessageData) {
-        val conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
-        conversationDao.insertConversation(conversation, {
+        var conversation = conversationDao.getConversation(data.conversationId)
+        if (conversation == null) {
+            conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
+            conversationDao.insert(conversation)
             refreshConversation(data.conversationId)
-        }, {})
+        }
         if (jobManager.findJobById(data.conversationId) == null) {
             if (conversation.status == ConversationStatus.START.ordinal) {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
