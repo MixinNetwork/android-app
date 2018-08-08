@@ -5,7 +5,7 @@ import android.arch.lifecycle.Observer
 import android.os.Bundle
 import kotlinx.android.synthetic.main.view_link_state.*
 import one.mixin.android.R
-import one.mixin.android.db.MessageDao
+import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
@@ -18,7 +18,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     @Inject
     lateinit var linkState: LinkState
     @Inject
-    lateinit var messageDao: MessageDao
+    lateinit var floodMessageDao: FloodMessageDao
 
     private lateinit var floodMessageCount: LiveData<Int>
 
@@ -26,7 +26,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        floodMessageCount = messageDao.getFloodMessageCount()
+        floodMessageCount = floodMessageDao.getFloodMessageCount()
         linkState.observe(this, Observer { state ->
             check(state)
         })

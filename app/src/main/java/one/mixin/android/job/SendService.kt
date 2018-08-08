@@ -7,7 +7,6 @@ import android.support.v4.app.RemoteInput
 import androidx.core.content.systemService
 import dagger.android.AndroidInjection
 import one.mixin.android.db.MessageDao
-import one.mixin.android.extension.async
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.NotificationJob.Companion.CONVERSATION_ID
 import one.mixin.android.job.NotificationJob.Companion.IS_PLAIN
@@ -52,10 +51,9 @@ class SendService : IntentService("SendService") {
                 if (it.isNotEmpty()) {
                     messageDao.makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
                     it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
-                        async {
-                            it.chunked(100).forEach {
-                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
-                            }
+                        val chunkList = it.chunked(100)
+                        for (item in chunkList) {
+                            jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))
                         }
                     }
                 }

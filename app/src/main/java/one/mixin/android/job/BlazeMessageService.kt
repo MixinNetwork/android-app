@@ -36,7 +36,7 @@ import javax.inject.Inject
 class BlazeMessageService : Service(), NetworkEventProvider.Listener {
 
     companion object {
-        val TAG = BlazeMessageService::class.java.simpleName!!
+        val TAG = BlazeMessageService::class.java.simpleName
         const val CHANNEL_NODE = "channel_node"
         const val FOREGROUND_ID = 666666
         const val ACTION_TO_BACKGROUND = "action_to_background"
@@ -217,13 +217,14 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
                 try {
                     while (networkConnected() && !stopThread.get()) {
                         try {
-                            val m = floodMessageDao.findFloodMessage()
-                            if (m != null) {
-                                val blazeMessageData = Gson().fromJson(m.data, BlazeMessageData::class.java)
-                                messageDecrypt.onRun(blazeMessageData)
-                                floodMessageDao.delete(m)
+                            val messages = floodMessageDao.findFloodMessages()
+                            if (messages != null) {
+                                for (m in messages) {
+                                    messageDecrypt.onRun(Gson().fromJson(m.data, BlazeMessageData::class.java))
+                                    floodMessageDao.delete(m)
+                                }
                             } else {
-                                sleep(500)
+                                sleep(1000)
                             }
                         } catch (e: TimeoutException) {
                             Log.e(TAG, "Application level read timeout...")

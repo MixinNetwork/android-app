@@ -1,6 +1,5 @@
 package one.mixin.android.db
 
-import android.arch.lifecycle.LiveData
 import android.arch.paging.DataSource
 import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Query
@@ -195,6 +194,4 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId AND category=:category")
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String): List<MediaMessageMinimal>?
 
-    @Query("select count(1) from flood_messages")
-    fun getFloodMessageCount(): LiveData<Int>
 }
