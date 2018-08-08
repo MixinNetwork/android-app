@@ -31,6 +31,7 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getAttachment
+import one.mixin.android.extension.getDistinct
 import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
@@ -116,7 +117,7 @@ internal constructor(
             .setEnablePlaceholders(true)
             .build())
             .setInitialLoadKey(initialLoadKey)
-            .build()
+            .build().getDistinct()
     }
 
     fun indexUnread(conversationId: String) =

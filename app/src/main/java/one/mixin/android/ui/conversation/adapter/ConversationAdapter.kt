@@ -243,10 +243,22 @@ class ConversationAdapter(
         }
     }
 
+    private var oldSize = 0
+    override fun submitList(pagedList: PagedList<MessageItem>?) {
+        currentList?.let {
+            oldSize = it.size
+        }
+        super.submitList(pagedList)
+    }
+
     override fun onCurrentListChanged(currentList: PagedList<MessageItem>?) {
         super.onCurrentListChanged(currentList)
-        getItem(1)?.let {
-            RxBus.publish(BlinkEvent(it.messageId, isLast(1)))
+        if (currentList != null) {
+            val changeCount = oldSize - currentList.size
+            for (i in 1..changeCount + 1)
+                getItem(i)?.let {
+                    RxBus.publish(BlinkEvent(it.messageId, isLast(1)))
+                }
         }
     }
 
