@@ -312,9 +312,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         activity?.supportFragmentManager?.inTransaction {
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                                 .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                .add(R.id.container, FriendsFragment.newInstance(conversationId, isGroup, isBot), FriendsFragment.TAG)
+                                .add(R.id.container,
+                                    FriendsFragment.newInstance(conversationId, isGroup, isBot).apply {
+                                        setOnFriendClick {
+                                            sendContactMessage(it.userId)
+                                        }
+                                    }, FriendsFragment.TAG)
                                 .addToBackStack(null)
                         }
+                        hideMediaLayout()
                     }
                 }
             }

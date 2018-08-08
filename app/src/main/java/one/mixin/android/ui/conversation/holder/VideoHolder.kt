@@ -80,40 +80,6 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             itemView.chat_name.visibility = View.GONE
         }
 
-        var width = mediaWidth - dp6
-        when {
-            isLast -> {
-                width = mediaWidth
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
-            }
-            isMe -> {
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
-            }
-            else -> {
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
-            }
-        }
-        if (messageItem.mediaWidth == null || messageItem.mediaHeight == null ||
-            messageItem.mediaWidth <= 0 || messageItem.mediaHeight <= 0) {
-            itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height = width
-        } else {
-            itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height = width * messageItem.mediaHeight / messageItem.mediaWidth
-        }
-
-        val mark = when {
-            isMe && isLast -> R.drawable.chat_mark_image_me
-            isMe -> R.drawable.chat_mark_image
-            !isMe && isLast -> R.drawable.chat_mark_image_other
-            else -> R.drawable.chat_mark_image
-        }
-
-        itemView.chat_image.setShape(mark)
-        itemView.chat_image.loadVideoMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
         if (messageItem.mediaStatus == MediaStatus.DONE.name) {
             notNullElse(messageItem.mediaDuration, {
                 itemView.duration_tv.visibility = VISIBLE
@@ -235,8 +201,18 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
         }, true)
+
+        dataUrl = messageItem.mediaUrl
+        dataThumbImage = messageItem.thumbImage
+        dataUrl = messageItem.mediaUrl
+        dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
     }
+
+    private var dataUrl: String? = null
+    private var dataThumbImage: String? = null
+    private var dataWidth: Int? = null
+    private var dataHeight: Int? = null
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
         super.chatLayout(isMe, isLast)
@@ -259,5 +235,42 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
         }
+
+
+        var width = mediaWidth - dp6
+        when {
+            isLast -> {
+                width = mediaWidth
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            isMe -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            else -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
+            }
+        }
+        if (dataWidth == null || dataHeight == null ||
+            dataWidth!! <= 0 || dataHeight!! <= 0) {
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width
+        } else {
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width * dataHeight!! / dataWidth!!
+        }
+
+        val mark = when {
+            isMe && isLast -> R.drawable.chat_mark_image_me
+            isMe -> R.drawable.chat_mark_image
+            !isMe && isLast -> R.drawable.chat_mark_image_other
+            else -> R.drawable.chat_mark_image
+        }
+
+        itemView.chat_image.setShape(mark)
+        itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
+
     }
 }

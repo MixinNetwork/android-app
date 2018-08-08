@@ -44,7 +44,6 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        val isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
@@ -74,48 +73,6 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
             itemView.chat_name.setTextColor(colors[messageItem.userIdentityNumber.toLong().rem(colors.size).toInt()])
         } else {
             itemView.chat_name.visibility = View.GONE
-        }
-
-        var width = mediaWidth - dp6
-        when {
-            isLast -> {
-                width = mediaWidth
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
-            }
-            isMe -> {
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
-            }
-            else -> {
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
-                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
-            }
-        }
-        if (messageItem.mediaWidth == null || messageItem.mediaHeight == null ||
-            messageItem.mediaWidth <= 0 || messageItem.mediaHeight <= 0) {
-            itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height = width
-        } else {
-            itemView.chat_image.layoutParams.width = width
-            itemView.chat_image.layoutParams.height =
-                min(width * messageItem.mediaHeight / messageItem.mediaWidth, mediaHeight)
-        }
-
-        val mark = when {
-            isMe && isLast -> R.drawable.chat_mark_image_me
-            isMe -> R.drawable.chat_mark_image
-            !isMe && isLast -> R.drawable.chat_mark_image_other
-            else -> R.drawable.chat_mark_image
-        }
-
-        itemView.chat_image.setShape(mark)
-        if (isGif) {
-            itemView.chat_image.loadGifMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
-        } else if (itemView.chat_image.layoutParams.height == mediaHeight) {
-            itemView.chat_image.loadLongImageMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
-        } else {
-            itemView.chat_image.loadImageMark(messageItem.mediaUrl, messageItem.thumbImage, mark)
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
@@ -218,8 +175,20 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
         }, true)
+
+        dataWidth = messageItem.mediaWidth
+        dataHeight = messageItem.mediaHeight
+        dataUrl = messageItem.mediaUrl
+        dataThumbImage = messageItem.thumbImage
+        isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
         chatLayout(isMe, isLast)
     }
+
+    private var isGif = false
+    private var dataUrl: String? = null
+    private var dataThumbImage: String? = null
+    private var dataWidth: Int? = null
+    private var dataHeight: Int? = null
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean) {
         super.chatLayout(isMe, isLast)
@@ -239,6 +208,48 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
             }
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+        }
+
+        var width = mediaWidth - dp6
+        when {
+            isLast -> {
+                width = mediaWidth
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            isMe -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            else -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
+            }
+        }
+        if (dataWidth == null || dataHeight == null ||
+            dataWidth!! <= 0 || dataHeight!! <= 0) {
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width
+        } else {
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height =
+                min(width * dataHeight!! / dataWidth!!, mediaHeight)
+        }
+
+        val mark = when {
+            isMe && isLast -> R.drawable.chat_mark_image_me
+            isMe -> R.drawable.chat_mark_image
+            !isMe && isLast -> R.drawable.chat_mark_image_other
+            else -> R.drawable.chat_mark_image
+        }
+
+        itemView.chat_image.setShape(mark)
+        if (isGif) {
+            itemView.chat_image.loadGifMark(dataUrl, dataThumbImage, mark)
+        } else if (itemView.chat_image.layoutParams.height == mediaHeight) {
+            itemView.chat_image.loadLongImageMark(dataUrl, dataThumbImage, mark)
+        } else {
+            itemView.chat_image.loadImageMark(dataUrl, dataThumbImage, mark)
         }
     }
 }
