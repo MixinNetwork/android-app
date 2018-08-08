@@ -631,7 +631,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var showGroupNotification = false
     private var disposable: Disposable? = null
-
+    private var paused = false
     override fun onResume() {
         super.onResume()
         input_layout.addOnKeyboardShownListener(this)
@@ -649,13 +649,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
             }
         }
-        chat_rv.adapter?.let {
-            it.notifyDataSetChanged()
+        if (paused) {
+            paused = false
+            chat_rv.adapter?.let {
+                it.notifyDataSetChanged()
+            }
         }
     }
 
     override fun onPause() {
         super.onPause()
+        paused = true
         input_layout.removeOnKeyboardShownListener(this)
         input_layout.removeOnKeyboardHiddenListener(this)
         markRead()

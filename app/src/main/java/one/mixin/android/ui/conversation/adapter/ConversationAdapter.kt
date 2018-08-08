@@ -254,11 +254,15 @@ class ConversationAdapter(
     override fun onCurrentListChanged(currentList: PagedList<MessageItem>?) {
         super.onCurrentListChanged(currentList)
         if (currentList != null) {
-            val changeCount = oldSize - currentList.size
-            for (i in 1..changeCount + 1)
-                getItem(i)?.let {
-                    RxBus.publish(BlinkEvent(it.messageId, isLast(1)))
-                }
+            val changeCount = currentList.size - oldSize
+            if (changeCount > 0) {
+                for (i in 1 until changeCount + 1)
+                    getItem(i)?.let {
+                        RxBus.publish(BlinkEvent(it.messageId, isLast(i)))
+                    }
+            } else if (changeCount < 0) {
+                notifyDataSetChanged()
+            }
         }
     }
 
