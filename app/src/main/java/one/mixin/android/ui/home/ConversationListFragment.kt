@@ -88,6 +88,7 @@ class ConversationListFragment : LinkFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         message_rv.adapter = messageAdapter
+        message_rv.itemAnimator = null
         message_rv.setHasFixedSize(true)
         message_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
