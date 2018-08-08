@@ -190,8 +190,8 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
     private var dataWidth: Int? = null
     private var dataHeight: Int? = null
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        super.chatLayout(isMe, isLast)
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
                 itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow_last)
@@ -235,7 +235,6 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
             itemView.chat_image.layoutParams.height =
                 min(width * dataHeight!! / dataWidth!!, mediaHeight)
         }
-
         val mark = when {
             isMe && isLast -> R.drawable.chat_mark_image_me
             isMe -> R.drawable.chat_mark_image
@@ -244,12 +243,18 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         itemView.chat_image.setShape(mark)
-        if (isGif) {
-            itemView.chat_image.loadGifMark(dataUrl, dataThumbImage, mark)
-        } else if (itemView.chat_image.layoutParams.height == mediaHeight) {
-            itemView.chat_image.loadLongImageMark(dataUrl, dataThumbImage, mark)
+        if (isBlink) {
+            when {
+                isGif -> itemView.chat_image.loadGifMark(dataUrl, mark)
+                itemView.chat_image.layoutParams.height == mediaHeight -> itemView.chat_image.loadLongImageMark(dataUrl, mark)
+                else -> itemView.chat_image.loadImageMark(dataUrl, mark)
+            }
         } else {
-            itemView.chat_image.loadImageMark(dataUrl, dataThumbImage, mark)
+            when {
+                isGif -> itemView.chat_image.loadGifMark(dataUrl, dataThumbImage, mark)
+                itemView.chat_image.layoutParams.height == mediaHeight -> itemView.chat_image.loadLongImageMark(dataUrl, dataThumbImage, mark)
+                else -> itemView.chat_image.loadImageMark(dataUrl, dataThumbImage, mark)
+            }
         }
     }
 }

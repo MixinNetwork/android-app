@@ -41,8 +41,8 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        super.chatLayout(isMe, isLast)
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f

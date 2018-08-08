@@ -84,6 +84,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
     }
 }

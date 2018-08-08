@@ -79,8 +79,8 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        super.chatLayout(isMe, isLast)
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
                 itemView.chat_layout.setBackgroundResource(R.drawable.bill_bubble_me_last)

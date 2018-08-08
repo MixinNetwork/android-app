@@ -214,8 +214,8 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
     private var dataWidth: Int? = null
     private var dataHeight: Int? = null
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        super.chatLayout(isMe, isLast)
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
                 itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow_last)
@@ -235,7 +235,6 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
         }
-
 
         var width = mediaWidth - dp6
         when {
@@ -270,7 +269,10 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         itemView.chat_image.setShape(mark)
-        itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
-
+        if (isBlink) {
+            itemView.chat_image.loadVideoMark(dataUrl, mark)
+        } else {
+            itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
+        }
     }
 }

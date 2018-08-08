@@ -19,8 +19,8 @@ class WaitingHolder constructor(
     private val onItemListener: ConversationAdapter.OnItemListener
 ) : BaseViewHolder(containerView) {
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
-        super.chatLayout(isMe, isLast)
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         if (isLast) {
             itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other_last)
         } else {
