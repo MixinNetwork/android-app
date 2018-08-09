@@ -1352,8 +1352,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onStickerClick(stickerId: String) {
-                if (isAdded && sticker_container.height != input_layout.keyboardHeight) {
-                    stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                if (isAdded) {
+                    if (sticker_container.height != input_layout.keyboardHeight) {
+                        stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                    }
                     sendStickerMessage(stickerId)
                 }
             }
