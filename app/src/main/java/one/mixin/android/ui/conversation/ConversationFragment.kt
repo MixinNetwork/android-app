@@ -600,10 +600,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             if (sticker_container.height > input_layout.keyboardHeight) {
                 return@OnLayoutChangeListener
             }
-            if (starTransition) {
-                starTransition = false
-                return@OnLayoutChangeListener
-            }
             val y = oldBottom - bottom
             if (Math.abs(y) > 0 && isAdded) {
                 chat_rv.post {

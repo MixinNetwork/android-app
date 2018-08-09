@@ -68,7 +68,6 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadVideo
-import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.statusBarHeight
@@ -130,35 +129,33 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         view_pager.backgroundDrawable = colorDrawable
         Observable.just(conversationId).observeOn(Schedulers.io())
             .map { conversationRepository.getMediaMessages(it).reversed() }
-            .subscribeOn(AndroidSchedulers.mainThread())
+            .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-                mainThread {
-                    index = it.indexOfFirst { item -> messageId == item.messageId }
-                    it.map {
-                        if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
-                            it.type == MessageCategory.PLAIN_VIDEO.name) {
-                        }
+                index = it.indexOfFirst { item -> messageId == item.messageId }
+                it.map {
+                    if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
+                        it.type == MessageCategory.PLAIN_VIDEO.name) {
                     }
-                    pagerAdapter = MediaAdapter(it, this)
-                    view_pager.adapter = pagerAdapter
-                    if (index != -1) {
-                        view_pager.currentItem = index
-                        lastPos = index
-                    } else {
-                        view_pager.currentItem = 0
-                        lastPos = 0
-                    }
-                    play(index)
                 }
+                pagerAdapter = MediaAdapter(it, this)
+                view_pager.adapter = pagerAdapter
+                if (index != -1) {
+                    view_pager.currentItem = index
+                    lastPos = index
+                } else {
+                    view_pager.currentItem = 0
+                    lastPos = 0
+                }
+                play(index)
             }
         view_pager.addOnPageChangeListener(pageListener)
         window.decorView.systemUiVisibility =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 SYSTEM_UI_FLAG_FULLSCREEN or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             } else {
                 SYSTEM_UI_FLAG_FULLSCREEN or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             }
     }
 

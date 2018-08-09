@@ -392,6 +392,7 @@ internal constructor(
             conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
                 conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
                     if (this.isNotEmpty()) {
+                        notificationManager.cancel(conversationId.hashCode())
                         conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
                     }
                 }.map {
