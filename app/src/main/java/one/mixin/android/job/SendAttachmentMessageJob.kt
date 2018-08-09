@@ -25,7 +25,9 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         private const val serialVersionUID = 1L
     }
 
+    @Transient
     private var disposable: Disposable? = null
+
     override fun cancel() {
         isCancel = true
         inputStream?.close()
@@ -92,7 +94,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         }
         val inputStream = MixinApplication.appContext.contentResolver.openInputStream(Uri.parse(message.mediaUrl))
         val attachmentData =
-            PushAttachmentData(message.mediaMineType,
+            PushAttachmentData(message.mediaMimeType,
                 inputStream,
                 message.mediaSize!!,
                 if (isPlain()) {
@@ -101,7 +103,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
                     AttachmentCipherOutputStreamFactory(key)
                 },
                 PushAttachmentData.ProgressListener { total, progress ->
-                    RxBus.getInstance().post(ProgressEvent(message.id, progress.toFloat() / total.toFloat()))
+                    RxBus.publish(ProgressEvent(message.id, progress.toFloat() / total.toFloat()))
                 })
         val digest = if (isPlain()) {
             uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)
@@ -115,10 +117,11 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         val size = message.mediaSize
         val thumbnail = message.thumbImage
         val name = message.name
-        val mineType = message.mediaMineType!!
-
+        val mimeType = message.mediaMimeType!!
+        val duration = if (message.mediaDuration == null) null else message.mediaDuration.toLong()
+        val waveform = message.mediaWaveform
         val transferMediaData = TransferAttachmentData(key, digest, attachmentId,
-            mineType, size, name, width, height, thumbnail, message.mediaDuration)
+            mimeType, mimeType, size, name, width, height, thumbnail, duration, waveform)
         val plainText = GsonHelper.customGson.toJson(transferMediaData)
         val encoded = Base64.encodeBytes(plainText.toByteArray())
         message.content = encoded
@@ -127,6 +130,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         return true
     }
 
+    @Transient
     private var inputStream: InputStream? = null
 
     private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {

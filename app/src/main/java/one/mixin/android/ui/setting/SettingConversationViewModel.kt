@@ -26,7 +26,13 @@ internal constructor(private val userService: AccountService) : ViewModel() {
         return preferences
     }
 
+    fun initGroupPreferences(context: Context): MessageGroupSourcePreferences {
+        groupPreferences = MessageGroupSourcePreferences(context)
+        return groupPreferences
+    }
+
     lateinit var preferences: MessageSourcePreferences
+    lateinit var groupPreferences: MessageGroupSourcePreferences
 
     class MessageSourcePreferences(val context: Context) : LiveData<Int>() {
         init {
@@ -43,6 +49,25 @@ internal constructor(private val userService: AccountService) : ViewModel() {
         fun setContacts() {
             value = MessageSource.CONTACTS.ordinal
             context.defaultSharedPreferences.putInt(SettingConversationFragment.CONVERSATION_KEY,
+                MessageSource.CONTACTS.ordinal)
+        }
+    }
+
+    class MessageGroupSourcePreferences(val context: Context) : LiveData<Int>() {
+        init {
+            value = context.defaultSharedPreferences.getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY,
+                MessageSource.EVERYBODY.ordinal)
+        }
+
+        fun setEveryBody() {
+            value = MessageSource.EVERYBODY.ordinal
+            context.defaultSharedPreferences.putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY,
+                MessageSource.EVERYBODY.ordinal)
+        }
+
+        fun setContacts() {
+            value = MessageSource.CONTACTS.ordinal
+            context.defaultSharedPreferences.putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY,
                 MessageSource.CONTACTS.ordinal)
         }
     }

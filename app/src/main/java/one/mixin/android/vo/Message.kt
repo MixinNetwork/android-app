@@ -10,12 +10,11 @@ import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
 @Entity(tableName = "messages",
-    indices = [Index(value = arrayOf("conversation_id")), Index(value = arrayOf("created_at"))],
+    indices = [Index(value = arrayOf("conversation_id", "created_at")), Index(value = arrayOf("user_id"))],
     foreignKeys = [(ForeignKey(entity = Conversation::class,
         onDelete = CASCADE,
         parentColumns = arrayOf("conversation_id"),
         childColumns = arrayOf("conversation_id")))])
-
 class Message(
     @PrimaryKey
     @SerializedName("id")
@@ -42,9 +41,9 @@ class Message(
     @ColumnInfo(name = "media_url")
     val mediaUrl: String?,
 
-    @SerializedName("media_mine_type")
-    @ColumnInfo(name = "media_mine_type")
-    val mediaMineType: String?,
+    @SerializedName("media_mime_type")
+    @ColumnInfo(name = "media_mime_type")
+    val mediaMimeType: String?,
 
     @SerializedName("media_size")
     @ColumnInfo(name = "media_size")
@@ -107,13 +106,42 @@ class Message(
     @ColumnInfo(name = "name")
     val name: String? = null,
 
+    @Deprecated(
+        "Deprecated at database version 15",
+        ReplaceWith("@{link sticker_id}", "one.mixin.android.vo.Message.sticker_id"),
+        DeprecationLevel.ERROR
+    )
     @SerializedName("album_id")
     @ColumnInfo(name = "album_id")
     val albumId: String? = null,
 
+    @SerializedName("sticker_id")
+    @ColumnInfo(name = "sticker_id")
+    val stickerId: String? = null,
+
     @SerializedName("shared_user_id")
     @ColumnInfo(name = "shared_user_id")
-    val sharedUserId: String? = null
+    val sharedUserId: String? = null,
+
+    @ColumnInfo(name = "media_waveform", typeAffinity = ColumnInfo.BLOB)
+    val mediaWaveform: ByteArray? = null,
+
+    @Deprecated(
+        "Replace with mediaMimeType",
+        ReplaceWith("@{link mediaMimeType}", "one.mixin.android.vo.Message.mediaMimeType"),
+        DeprecationLevel.ERROR
+    )
+    @SerializedName("media_mine_type")
+    @ColumnInfo(name = "media_mine_type")
+    val mediaMineType: String? = null,
+
+    @SerializedName("quote_message_id")
+    @ColumnInfo(name = "quote_message_id")
+    val quoteMessageId: String? = null,
+
+    @SerializedName("quote_content")
+    @ColumnInfo(name = "quote_content")
+    val quoteContent: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 1L
@@ -124,6 +152,10 @@ fun Message.isPlain(): Boolean {
     return category.startsWith("PLAIN_")
 }
 
+fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
+    return conversation.category == ConversationCategory.CONTACT.name && conversation.ownerId != userId
+}
+
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,
@@ -132,14 +164,17 @@ enum class MessageCategory {
     SIGNAL_STICKER,
     SIGNAL_DATA,
     SIGNAL_CONTACT,
+    SIGNAL_AUDIO,
     PLAIN_TEXT,
     PLAIN_IMAGE,
     PLAIN_VIDEO,
     PLAIN_DATA,
     PLAIN_STICKER,
     PLAIN_CONTACT,
+    PLAIN_AUDIO,
     PLAIN_JSON,
     STRANGER,
+    SECRET,
     SYSTEM_CONVERSATION,
     SYSTEM_ACCOUNT_SNAPSHOT,
     APP_BUTTON_GROUP,
@@ -150,19 +185,6 @@ enum class MessageCategory {
 enum class MessageStatus { SENDING, SENT, DELIVERED, READ, FAILED }
 
 enum class MediaStatus { PENDING, DONE, CANCELED, EXPIRED }
-
-fun MessageItem.isMedia(): Boolean = this.type == MessageCategory.SIGNAL_IMAGE.name ||
-    this.type == MessageCategory.PLAIN_IMAGE.name ||
-    this.type == MessageCategory.SIGNAL_DATA.name ||
-    this.type == MessageCategory.PLAIN_DATA.name ||
-    this.type == MessageCategory.SIGNAL_VIDEO.name ||
-    this.type == MessageCategory.PLAIN_VIDEO.name
-
-fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name ||
-    this.type == MessageCategory.APP_BUTTON_GROUP.name ||
-    this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
-    this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-    (this.mediaStatus != MediaStatus.DONE.name && this.isMedia())
 
 fun createMessage(
     messageId: String,
@@ -182,6 +204,28 @@ fun createMessage(
     .setSnapshotId(snapshotId)
     .build()
 
+fun createReplyMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String,
+    createdAt: String,
+    status: MessageStatus,
+    quoteMessageId: String?,
+    quoteContent: String? = null,
+    action: String? = null,
+    participantId: String? = null,
+    snapshotId: String? = null
+) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    .setContent(content)
+    .setAction(action)
+    .setParticipantId(participantId)
+    .setSnapshotId(snapshotId)
+    .setQuoteMessageId(quoteMessageId)
+    .setQuoteContent(quoteContent)
+    .build()
+
 fun createAttachmentMessage(
     messageId: String,
     conversationId: String,
@@ -190,7 +234,7 @@ fun createAttachmentMessage(
     content: String?,
     name: String?,
     mediaUrl: String?,
-    mediaMineType: String,
+    mediaMimeType: String,
     mediaSize: Long,
     createdAt: String,
     key: ByteArray?,
@@ -201,7 +245,7 @@ fun createAttachmentMessage(
     .setContent(content)
     .setName(name)
     .setMediaUrl(mediaUrl)
-    .setMediaMineType(mediaMineType)
+    .setMediaMimeType(mediaMimeType)
     .setMediaSize(mediaSize)
     .setMediaKey(key)
     .setMediaDigest(digest)
@@ -220,7 +264,7 @@ fun createVideoMessage(
     mediaWidth: Int? = null,
     mediaHeight: Int? = null,
     thumbImage: String? = null,
-    mediaMineType: String,
+    mediaMimeType: String,
     mediaSize: Long,
     createdAt: String,
     key: ByteArray?,
@@ -235,7 +279,7 @@ fun createVideoMessage(
     .setMediaWidth(mediaWidth)
     .setMediaHeight(mediaHeight)
     .setThumbImage(thumbImage)
-    .setMediaMineType(mediaMineType)
+    .setMediaMimeType(mediaMimeType)
     .setMediaSize(mediaSize)
     .setMediaKey(key)
     .setMediaDigest(digest)
@@ -249,7 +293,7 @@ fun createMediaMessage(
     category: String,
     content: String?,
     mediaUrl: String?,
-    mediaMineType: String,
+    mediaMimeType: String,
     mediaSize: Long,
     mediaWidth: Int?,
     mediaHeight: Int?,
@@ -262,7 +306,7 @@ fun createMediaMessage(
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
     .setMediaUrl(mediaUrl)
-    .setMediaMineType(mediaMineType)
+    .setMediaMimeType(mediaMimeType)
     .setMediaSize(mediaSize)
     .setMediaWidth(mediaWidth)
     .setMediaHeight(mediaHeight)
@@ -278,12 +322,14 @@ fun createStickerMessage(
     userId: String,
     category: String,
     content: String?,
-    albumId: String,
-    stickerName: String,
+    albumId: String?,
+    stickerId: String,
+    stickerName: String?,
     status: MessageStatus,
     createdAt: String
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
+    .setStickerId(stickerId)
     .setAlbumId(albumId)
     .setName(stickerName)
     .build()
@@ -300,4 +346,31 @@ fun createContactMessage(
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
     .setSharedUserId(sharedUserId)
+    .build()
+
+fun createAudioMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    content: String?,
+    category: String,
+    mediaSize: Long,
+    mediaUrl: String?,
+    mediaDuration: String,
+    createdAt: String,
+    mediaWaveform: ByteArray?,
+    key: ByteArray?,
+    digest: ByteArray?,
+    mediaStatus: MediaStatus,
+    status: MessageStatus
+) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    .setMediaUrl(mediaUrl)
+    .setContent(content)
+    .setMediaWaveform(mediaWaveform)
+    .setMediaKey(key)
+    .setMediaSize(mediaSize)
+    .setMediaDuration(mediaDuration)
+    .setMediaMimeType("audio/ogg")
+    .setMediaDigest(digest)
+    .setMediaStatus(mediaStatus.name)
     .build()

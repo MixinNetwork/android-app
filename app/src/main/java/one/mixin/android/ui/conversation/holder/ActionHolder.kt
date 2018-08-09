@@ -22,7 +22,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -84,6 +84,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
     }
 }

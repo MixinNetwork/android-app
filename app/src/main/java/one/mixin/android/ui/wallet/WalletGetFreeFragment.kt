@@ -19,6 +19,7 @@ import kotlinx.android.synthetic.main.fragment_get_free.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
@@ -26,12 +27,11 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class WalletGetFreeFragment : BaseFragment() {
     companion object {
-        val TAG = "WalletGetFreeFragment"
+        const val TAG = "WalletGetFreeFragment"
 
         fun newInstance(): WalletGetFreeFragment = WalletGetFreeFragment()
     }
@@ -61,7 +61,6 @@ class WalletGetFreeFragment : BaseFragment() {
             return
         }
         val editText = EditText(context!!)
-        editText.id = R.id.profile_edit_name_et
         editText.hint = getString(R.string.wallet_redeem)
         editText.inputType = InputType.TYPE_CLASS_NUMBER
         val frameLayout = FrameLayout(context)
@@ -72,10 +71,10 @@ class WalletGetFreeFragment : BaseFragment() {
         dialog = android.support.v7.app.AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setTitle(R.string.wallet_get_free_redeem)
             .setView(frameLayout)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.wallet_redeem, { _, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.wallet_redeem) { _, _ ->
                 redeem(editText.text.toString())
-            })
+            }
             .show()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
             or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
@@ -84,7 +83,7 @@ class WalletGetFreeFragment : BaseFragment() {
 
     private fun redeem(code: String) {
         if (code.isEmpty()) {
-            toast(R.string.can_not_empty)
+            context?.toast(R.string.can_not_empty)
             return
         }
         dialog?.dismiss()

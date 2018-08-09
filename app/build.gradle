@@ -1,6 +1,6 @@
 def versionMajor = 0
-def versionMinor = 3
-def versionPatch = 2
+def versionMinor = 6
+def versionPatch = 3
 def versionBuild = 0
 
 apply plugin: 'com.android.application'
@@ -10,12 +10,12 @@ apply plugin: 'org.jetbrains.kotlin.android'
 apply plugin: 'kotlin-kapt'
 
 android {
-    compileSdkVersion 27
-    buildToolsVersion "27.0.3"
+    compileSdkVersion 28
+    buildToolsVersion "28.0.2"
     defaultConfig {
         applicationId "one.mixin.messenger"
         minSdkVersion 23
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
         versionName "${versionMajor}.${versionMinor}.${versionPatch}"
         multiDexEnabled true
@@ -32,7 +32,14 @@ android {
         }
 
         buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
+        buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
 
+        packagingOptions {
+            exclude 'kotlin/**'
+            exclude '**/*.kotlin_metadata'
+            exclude 'META-INF/*.kotlin_module'
+            exclude 'META-INF/*.version'
+        }
     }
 
     sourceSets {
@@ -40,9 +47,16 @@ android {
     }
 
     compileOptions {
-        targetCompatibility 1.8
-        sourceCompatibility 1.8
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
+
+    externalNativeBuild {
+        cmake {
+            path "src/main/cpp/CMakeLists.txt"
+        }
+    }
+
     productFlavors {
     }
 
@@ -67,12 +81,14 @@ android {
         if (project.hasProperty("RELEASE_STORE_FILE")) {
             release {
                 debuggable false
+                jniDebuggable false
                 proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
                 signingConfig signingConfigs.release
             }
         }
         debug {
             signingConfig signingConfigs.debug
+            jniDebuggable false
         }
     }
 
@@ -114,9 +130,7 @@ dependencies {
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
-    implementation("io.jsonwebtoken:jjwt:${jwtVersion}") {
-        exclude group: 'com.fasterxml.jackson.core', module: 'jackson-databind'
-    }
+    implementation("io.jsonwebtoken:jjwt:${jwtVersion}")
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
     implementation "com.bugsnag:bugsnag-android:${bugsnagVersion}"
     implementation "org.jsoup:jsoup:${jsoupVersion}"
@@ -137,7 +151,8 @@ dependencies {
     }
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"
-    implementation "com.google.firebase:firebase-messaging:${firebaseVersion}"
+    implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
+    implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.timehop.stickyheadersrecyclerview:library:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
     implementation 'org.whispersystems:curve25519-android:0.5.0'
@@ -147,6 +162,7 @@ dependencies {
     implementation "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
     implementation "org.jetbrains.anko:anko-coroutines:$anko_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "com.zlc.glide:webpdecoder:$webpdecoderVesion"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
@@ -163,13 +179,12 @@ dependencies {
     implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
     implementation "com.github.tougee:rx-contacts2:${rxContactsVersion}"
-    implementation "com.github.tougee:zxing-android-embedded:${zxingVersion}"
+    implementation "com.github.tougee:zxing-android-embedded:${zxingEmbeddedVersion}"
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
     implementation "com.tbruyelle.rxpermissions2:rxpermissions:${rxpermissionsVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
-    implementation "com.fasterxml.jackson.core:jackson-databind:${fasterxmlVersion}"
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
     implementation 'com.madgag.spongycastle:core:1.58.0.0'
     ktlint "com.github.shyiko:ktlint:${ktlintVersion}"
@@ -180,11 +195,11 @@ dependencies {
     })
     implementation "com.uber.autodispose:autodispose-kotlin:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-android-archcomponents-kotlin:${autodisposeVersion}"
-
-
     implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
     implementation "com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}"
-    implementation "com.googlecode.mp4parser:isoparser:1.0.6"
+    implementation 'com.googlecode.mp4parser:isoparser:1.0.6'
+    implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
+    implementation "com.shizhefei:LargeImageView:${largeImageViewVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

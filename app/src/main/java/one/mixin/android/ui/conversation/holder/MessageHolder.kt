@@ -1,9 +1,7 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.support.constraint.ConstraintLayout
-import android.support.v7.content.res.AppCompatResources
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
@@ -12,12 +10,10 @@ import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_message.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dip
 
@@ -26,9 +22,6 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-        (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).also {
-            it.matchConstraintMaxWidth = itemView.context.maxItemWidth()
-        }
 
         itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
@@ -44,7 +37,8 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         val lp = (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams)
         if (isMe) {
             lp.horizontalBias = 1f
@@ -76,7 +70,7 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
     ) {
         this.onItemListener = onItemListener
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -149,30 +143,12 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
             itemView.chat_name.setCompoundDrawables(null, null, null, null)
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        if (isMe) {
-            val drawable: Drawable? =
-                when (messageItem.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            itemView.chat_flag.setImageDrawable(drawable)
+        setStatusIcon(isMe, messageItem.status, {
+            itemView.chat_flag.setImageDrawable(it)
             itemView.chat_flag.visibility = View.VISIBLE
-        } else {
+        }, {
             itemView.chat_flag.visibility = View.GONE
-        }
-
-        itemView.setOnClickListener {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-            }
-        }
+        })
 
         chatLayout(isMe, isLast)
     }

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/chat_control_height"
+                android:layout_alignParentBottom="true">
+
+    <FrameLayout
+            android:id="@+id/cancel_fl"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true">
+
+        <TextView
+                android:id="@+id/cancel_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
+                android:alpha="0"
+                android:layout_gravity="center"
+                android:textColor="@color/colorDarkBlue"
+                android:textSize="18sp"
+                android:text="@string/cancel"/>
+
+        <LinearLayout
+                android:id="@+id/slide_ll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingStart="48dp"
+                android:paddingEnd="48dp"
+                android:gravity="center"
+                android:layout_gravity="center"
+                tools:ignore="RelativeOverlap,UseCompoundDrawables">
+
+            <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_chevron_left_gray_24dp"
+                    tools:ignore="ContentDescription"/>
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/color_gray"
+                    android:text="@string/slide_to_cancel"
+                    tools:ignore="RelativeOverlap"/>
+        </LinearLayout>
+    </FrameLayout>
+
+    <TextView
+            android:id="@+id/time_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:typeface="monospace"
+            android:layout_alignParentBottom="true"
+            android:layout_marginStart="@dimen/margin12"
+            android:drawablePadding="@dimen/padding8"
+            android:textColor="@android:color/black"
+            tools:ignore="RelativeOverlap"/>
+</merge>

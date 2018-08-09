@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.text.TextUtils
 import android.view.View
-import android.view.View.GONE
 import android.view.View.VISIBLE
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.parcel.Parcelize
@@ -17,8 +16,9 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -30,7 +30,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 import java.util.UUID
@@ -60,6 +59,8 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getParcelable<AssetItem>(ARGS_ASSET)
     }
 
+    private val trace = UUID.randomUUID().toString()
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -71,18 +72,8 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.title_view.left_ib.setOnClickListener { dialog?.dismiss() }
-        contentView.title_view.right_animator.setOnClickListener {
-            if (contentView.addr_tv.visibility == GONE) {
-                contentView.addr_tv.visibility = VISIBLE
-                contentView.title_view.right_ib.setImageResource(R.drawable.ic_arrow_up)
-            } else {
-                contentView.addr_tv.visibility = GONE
-                contentView.title_view.right_ib.setImageResource(R.drawable.ic_arrow_down)
-            }
-        }
         contentView.title_view.setSubTitle(getString(R.string.withdrawal_to, withdrawalItem.label),
             withdrawalItem.publicKey.formatPublicKey())
-        contentView.addr_tv.text = withdrawalItem.publicKey
         if (!TextUtils.isEmpty(withdrawalItem.memo)) {
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = withdrawalItem.memo
@@ -92,7 +83,7 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val a = bottomViewModel.simpleAssetItem(asset.assetId)
             uiThread { a?.let { contentView.asset_icon.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder) } }
         }
-        contentView.balance.text = withdrawalItem.amount.numberFormat8() + " " + asset.symbol
+        contentView.balance.text = withdrawalItem.amount.numberFormat() + " " + asset.symbol
         contentView.balance_as.text = getString(R.string.wallet_unit_usd,
             "≈ ${(BigDecimal(withdrawalItem.amount) * BigDecimal(asset.priceUsd)).numberFormat2()}")
         contentView.keyboard.setKeyboardKeys(KEYS)
@@ -120,11 +111,11 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (index == contentView.pin.getCount()) {
                     contentView.pin_va.displayedChild = POS_PB
                     bottomViewModel.withdrawal(withdrawalItem.addressId, withdrawalItem.amount,
-                        contentView.pin.code(), UUID.randomUUID().toString(), withdrawalItem.memo)
+                        contentView.pin.code(), trace, withdrawalItem.memo)
                         .autoDisposable(scopeProvider).subscribe({
                         if (it.isSuccess) {
                             context?.updatePinCheck()
-                            toast(R.string.withdrawal_success)
+                            context?.toast(R.string.withdrawal_success)
                             callback?.onSuccess()
                             bottomViewModel.insertSnapshot(it.data!!)
                             dismiss()

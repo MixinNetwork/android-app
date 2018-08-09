@@ -1,8 +1,8 @@
 package one.mixin.android.ui.conversation
 
 import android.annotation.SuppressLint
+import android.app.Dialog
 import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.support.v7.widget.RecyclerView
@@ -13,52 +13,66 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.fragment_transfer.*
+import androidx.core.view.updateLayoutParams
+import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
-import one.mixin.android.Constants
+import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.notNullElse
-import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
+import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.toDot
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
-import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
+import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.util.UUID
 import javax.inject.Inject
 
 @SuppressLint("InflateParams")
-class TransferFragment : BaseFragment() {
+class TransferFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "TransferFragment"
         const val ASSERT_PREFERENCE = "TRANSFER_ASSERT"
 
-        fun newInstance(user: User): TransferFragment {
-            val fragment = TransferFragment()
-            val b = Bundle()
-            b.putParcelable(Constants.ARGS_USER, user)
-            fragment.arguments = b
-            return fragment
+        fun newInstance(userId: String) = TransferFragment().apply {
+            arguments = bundleOf(
+                ARGS_USER_ID to userId
+            )
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = View.inflate(context, R.layout.fragment_transfer, null)
+        contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+            height = requireContext().statusBarHeight()
+        }
+        (dialog as BottomSheet).apply {
+            fullScreen = true
+            setCustomView(contentView)
+        }
+    }
+
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -78,10 +92,9 @@ class TransferFragment : BaseFragment() {
         TypeAdapter()
     }
 
-    private val user: User by lazy {
-        val u = arguments!!.getParcelable(Constants.ARGS_USER) as User
-        u
-    }
+    private val userId: String by lazy { arguments!!.getString(ARGS_USER_ID) }
+
+    private var user: User? = null
 
     private val assetsView: View by lazy {
         val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null)
@@ -91,44 +104,35 @@ class TransferFragment : BaseFragment() {
     }
 
     private val assetsBottomSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(context!!)
+        val builder = BottomSheet.Builder(requireActivity())
         val bottomSheet = builder.create()
         builder.setCustomView(assetsView)
         bottomSheet.setOnDismissListener {
             if (isAdded) {
-                transfer_amount.post { transfer_amount.showKeyboard() }
+                contentView.transfer_amount.post { contentView.transfer_amount.showKeyboard() }
             }
         }
         bottomSheet
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_transfer, container, false)
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         jobManager.addJobInBackground(RefreshAssetsJob())
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.avatar_iv.visibility = View.VISIBLE
-        title_view.avatar_iv.setTextSize(16f)
-        title_view.avatar_iv.setInfo(if (!user.fullName.isNullOrEmpty()) user.fullName!![0] else ' ',
-            user.avatarUrl, user.identityNumber)
-        title_view.avatar_iv.setOnClickListener {
-            UserBottomSheetDialogFragment.newInstance(user).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
-        }
-        title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, user.fullName))
-        transfer_amount.addTextChangedListener(mWatcher)
-        asset_rl.setOnClickListener {
-            transfer_amount.hideKeyboard()
+        contentView.title_view.left_ib.setOnClickListener { dialog?.dismiss() }
+        contentView.title_view.avatar_iv.visibility = View.VISIBLE
+        contentView.title_view.avatar_iv.setTextSize(16f)
+        contentView.transfer_amount.addTextChangedListener(mWatcher)
+        contentView.asset_rl.setOnClickListener {
+            contentView.transfer_amount.hideKeyboard()
             context?.let {
                 adapter.coins = assets
                 adapter.setTypeListener(object : OnTypeClickListener {
                     override fun onTypeClick(asset: AssetItem) {
                         currentAsset = asset
-                        asset_name.text = asset.name
-                        asset_desc.text = asset.balance.numberFormat8()
-                        asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                        asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                        contentView.asset_name.text = asset.name
+                        contentView.asset_desc.text = asset.balance.numberFormat()
+                        contentView.asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+                        contentView.asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
                         adapter.notifyDataSetChanged()
                         assetsBottomSheet.dismiss()
                     }
@@ -144,17 +148,29 @@ class TransferFragment : BaseFragment() {
                 }
             }
         }
-        continue_animator.setOnClickListener {
-            if (!isAdded) return@setOnClickListener
 
-            transfer_amount.hideKeyboard()
+        chatViewModel.findUserById(userId).observe(this, Observer { u ->
+            if (u == null) {
+                jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
+            } else {
+                user = u
+
+                contentView.title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, u.fullName))
+                contentView.title_view.avatar_iv.setInfo(u.fullName, u.avatarUrl, u.identityNumber)
+            }
+        })
+
+        contentView.continue_animator.setOnClickListener {
+            if (!isAdded || user == null) return@setOnClickListener
+
+            contentView.transfer_amount.hideKeyboard()
             val bottom = TransferBottomSheetDialogFragment
-                .newInstance(user, transfer_amount.text.toString(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
-                    transfer_memo.text.toString())
-            bottom.show(fragmentManager, TransferBottomSheetDialogFragment.TAG)
+                .newInstance(user!!, contentView.transfer_amount.text.toString().toDot(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
+                    contentView.transfer_memo.text.toString())
+            bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
             bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
-                    this@TransferFragment.activity?.onBackPressed()
+                    dialog?.dismiss()
                 }
             })
         }
@@ -163,28 +179,28 @@ class TransferFragment : BaseFragment() {
             if (r != null && r.isNotEmpty()) {
                 assets = r
                 adapter.coins = r
-                expand_iv.visibility = VISIBLE
-                asset_rl.isEnabled = true
+                contentView.expand_iv.visibility = VISIBLE
+                contentView.asset_rl.isEnabled = true
 
                 notNullElse(r.find {
                     it.assetId == activity?.defaultSharedPreferences!!.getString(ASSERT_PREFERENCE, "")
                 }, { a ->
-                    asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
-                    asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                    asset_name.text = a.name
-                    asset_desc.text = a.balance.numberFormat8()
+                    contentView.asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
+                    contentView.asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                    contentView.asset_name.text = a.name
+                    contentView.asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
                 }, {
                     val a = assets[0]
-                    asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
-                    asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                    asset_name.text = a.name
-                    asset_desc.text = a.balance.numberFormat8()
+                    contentView.asset_avatar.bg.loadImage(a.iconUrl, R.drawable.ic_avatar_place_holder)
+                    contentView.asset_avatar.badge.loadImage(a.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                    contentView.asset_name.text = a.name
+                    contentView.asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
                 })
             } else {
-                expand_iv.visibility = GONE
-                asset_rl.isEnabled = false
+                contentView.expand_iv.visibility = GONE
+                contentView.asset_rl.isEnabled = false
 
                 doAsync {
                     val xin = chatViewModel.getXIN()
@@ -192,37 +208,38 @@ class TransferFragment : BaseFragment() {
                         if (!isAdded) return@uiThread
 
                         notNullElse(xin, {
-                            asset_avatar.bg.loadImage(it.iconUrl, R.drawable.ic_avatar_place_holder)
-                            asset_avatar.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                            asset_name.text = it.name
-                            asset_desc.text = it.balance.numberFormat8()
+                            contentView.asset_avatar.bg.loadImage(it.iconUrl, R.drawable.ic_avatar_place_holder)
+                            contentView.asset_avatar.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                            contentView.asset_name.text = it.name
+                            contentView.asset_desc.text = it.balance.numberFormat()
                         }, {
-                            asset_avatar.bg.setImageResource(R.drawable.ic_avatar_place_holder)
-                            asset_name.text = getString(R.string.app_name)
-                            asset_desc.text = "0"
+                            contentView.asset_avatar.bg.setImageResource(R.drawable.ic_avatar_place_holder)
+                            contentView.asset_name.text = getString(R.string.app_name)
+                            contentView.asset_desc.text = "0"
                         })
                     }
                 }
             }
         })
 
-        transfer_amount.post { transfer_amount.showKeyboard() }
+        contentView.transfer_amount.post { contentView.transfer_amount.showKeyboard() }
     }
 
     private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+        override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
         }
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
         }
 
         override fun afterTextChanged(s: Editable) {
-            if (s.isNotEmpty() && asset_rl.isEnabled) {
-                transfer_amount.textSize = 26f
-                continue_animator.visibility = VISIBLE
+            s.maxDecimal()
+            if (s.isNotEmpty() && contentView.asset_rl.isEnabled) {
+                contentView.transfer_amount.textSize = 26f
+                contentView.continue_animator.visibility = VISIBLE
             } else {
-                transfer_amount.textSize = 16f
-                continue_animator.visibility = GONE
+                contentView.transfer_amount.textSize = 16f
+                contentView.continue_animator.visibility = GONE
             }
         }
     }
@@ -246,8 +263,8 @@ class TransferFragment : BaseFragment() {
             val itemAssert = coins!![position]
             holder.itemView.type_avatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.type_avatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            holder.itemView.asset_name.text = itemAssert.name
-            holder.itemView.value.text = itemAssert.balance
+            holder.itemView.name.text = itemAssert.name
+            holder.itemView.value.text = itemAssert.balance.numberFormat()
             currentAsset?.let {
                 holder.itemView.check_iv.visibility = if (itemAssert.assetId == currentAsset?.assetId) VISIBLE else GONE
             }

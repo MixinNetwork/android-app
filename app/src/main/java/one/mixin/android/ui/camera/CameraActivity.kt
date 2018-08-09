@@ -83,7 +83,7 @@ class CameraActivity : AppCompatActivity(), CameraView.CameraViewListener {
     }
 
     companion object {
-        val REQUEST_CODE = 0x01
+        private const val REQUEST_CODE = 0x01
         fun show(context: Activity) {
             val intent = Intent(context, CameraActivity::class.java)
             context.startActivity(intent)

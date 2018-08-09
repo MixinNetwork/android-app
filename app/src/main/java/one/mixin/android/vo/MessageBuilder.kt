@@ -1,5 +1,7 @@
 package one.mixin.android.vo
 
+import kotlin.math.abs
+
 class MessageBuilder(
     val id: String,
     val conversationId: String,
@@ -10,7 +12,7 @@ class MessageBuilder(
 ) {
     private var content: String? = null
     private var mediaUrl: String? = null
-    private var mediaMineType: String? = null
+    private var mediaMimeType: String? = null
     private var mediaSize: Long? = null
     private var mediaDuration: String? = null
     private var mediaWidth: Int? = null
@@ -26,7 +28,11 @@ class MessageBuilder(
     private var hyperlink: String? = null
     private var name: String? = null
     private var albumId: String? = null
+    private var stickerId: String? = null
     private var sharedUserId: String? = null
+    private var mediaWaveform: ByteArray? = null
+    private var quoteMessageId: String? = null
+    private var quoteContent: String? = null
 
     fun setContent(content: String?): MessageBuilder {
         this.content = content
@@ -38,8 +44,8 @@ class MessageBuilder(
         return this
     }
 
-    fun setMediaMineType(mediaMineType: String): MessageBuilder {
-        this.mediaMineType = mediaMineType
+    fun setMediaMimeType(mediaMimeType: String): MessageBuilder {
+        this.mediaMimeType = mediaMimeType
         return this
     }
 
@@ -54,12 +60,12 @@ class MessageBuilder(
     }
 
     fun setMediaWidth(mediaWidth: Int?): MessageBuilder {
-        this.mediaWidth = mediaWidth
+        this.mediaWidth = mediaWidth?.let { abs(it) }
         return this
     }
 
     fun setMediaHeight(mediaHeight: Int?): MessageBuilder {
-        this.mediaHeight = mediaHeight
+        this.mediaHeight = mediaHeight?.let { abs(it) }
         return this
     }
 
@@ -113,8 +119,13 @@ class MessageBuilder(
         return this
     }
 
-    fun setAlbumId(albumId: String): MessageBuilder {
+    fun setAlbumId(albumId: String?): MessageBuilder {
         this.albumId = albumId
+        return this
+    }
+
+    fun setStickerId(stickerId: String): MessageBuilder {
+        this.stickerId = stickerId
         return this
     }
 
@@ -123,9 +134,24 @@ class MessageBuilder(
         return this
     }
 
+    fun setMediaWaveform(mediaWaveform: ByteArray?): MessageBuilder {
+        this.mediaWaveform = mediaWaveform
+        return this
+    }
+
+    fun setQuoteMessageId(quoteMessageId: String?): MessageBuilder {
+        this.quoteMessageId = quoteMessageId
+        return this
+    }
+
+    fun setQuoteContent(quoteContent: String?): MessageBuilder {
+        this.quoteContent = quoteContent
+        return this
+    }
+
     fun build(): Message =
         Message(id, conversationId, userId, category, content, mediaUrl,
-            mediaMineType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
+            mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
             thumbImage, mediaKey, mediaDigest, mediaStatus, status, createdAt,
-            action, participantId, snapshotId, hyperlink, name, albumId, sharedUserId)
+            action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent)
 }

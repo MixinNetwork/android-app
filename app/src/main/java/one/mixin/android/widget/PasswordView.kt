@@ -12,10 +12,10 @@ import org.jetbrains.anko.dip
 class PasswordView : View {
 
     companion object {
-        private val RING_WIDTH = 2
-        private val CIRCLE_RADIUS = 6
-        private val CIRCLE_COUNT = 6
-        private val COLOR = android.R.color.white
+        private const val RING_WIDTH = 2
+        private const val CIRCLE_RADIUS = 6
+        private const val CIRCLE_COUNT = 6
+        private const val COLOR = android.R.color.white
     }
 
     private var circleColor = resources.getColor(COLOR, null)

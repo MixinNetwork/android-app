@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import one.mixin.android.AppExecutors
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentResponse
@@ -29,7 +30,9 @@ internal constructor(
         assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun saveAsset(asset: Asset) {
-        assetRepository.upsert(asset)
+        AppExecutors().diskIO().execute {
+            assetRepository.upsert(asset)
+        }
     }
 
     fun saveUser(user: User) {

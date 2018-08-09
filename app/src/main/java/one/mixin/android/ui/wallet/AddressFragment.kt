@@ -17,16 +17,16 @@ import kotlinx.android.synthetic.main.fragment_address.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getAddressCodePath
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.isAddressCodeFileExists
+import one.mixin.android.extension.getQRCodePath
+import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.saveQRCode
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
-import org.jetbrains.anko.support.v4.toast
 
 class AddressFragment : Fragment() {
     companion object {
@@ -59,34 +59,36 @@ class AddressFragment : Fragment() {
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         title.title_tv.text = asset.symbol
         user?.let { user ->
-            val info = if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0] else ' '
-            avatar.setInfo(info, user.avatarUrl, user.identityNumber)
+            avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             qr_avatar.setUrl(asset.iconUrl, R.drawable.ic_avatar_place_holder)
             name.text = user.fullName
             user_id.text = context?.getString(R.string.contact_mixin_id, user.identityNumber)
         }
-        address_layout.setOnClickListener {
+        key_code.setOnClickListener {
             context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.publicKey)
-            toast(R.string.copy_success)
+            context?.toast(R.string.copy_success)
         }
         key_code.text = asset.publicKey
-        if (context!!.isAddressCodeFileExists(asset.publicKey)) {
-            qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getAddressCodePath(asset.publicKey).absolutePath))
-        } else {
-            qr.post {
-                Observable.create<Bitmap> { e ->
-                    val b = asset.publicKey.generateQRCode(qr.width)
-                    if (b != null) {
-                        b.saveQRCode(context!!, asset.publicKey)
-                        e.onNext(b)
-                    }
-                }.subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDisposable(scopeProvider)
-                    .subscribe({ r ->
-                        qr.setImageBitmap(r)
-                    }, { _ ->
-                    })
+        confirm_tv.text = getString(R.string.wallet_block_confirmations, asset.confirmations)
+        if (asset.publicKey != null) {
+            if (context!!.isQRCodeFileExists(asset.publicKey!!)) {
+                qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(asset.publicKey!!).absolutePath))
+            } else {
+                qr.post {
+                    Observable.create<Bitmap> { e ->
+                        val b = asset.publicKey!!.generateQRCode(qr.width)
+                        if (b != null) {
+                            b.saveQRCode(context!!, asset.publicKey!!)
+                            e.onNext(b)
+                        }
+                    }.subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDisposable(scopeProvider)
+                        .subscribe({ r ->
+                            qr.setImageBitmap(r)
+                        }, { _ ->
+                        })
+                }
             }
         }
     }

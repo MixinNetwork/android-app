@@ -12,7 +12,7 @@ import one.mixin.android.ui.common.BaseFragment
 
 class AboutFragment : BaseFragment() {
     companion object {
-        val TAG = "AboutFragment"
+        const val TAG = "AboutFragment"
 
         fun newInstance() = AboutFragment()
     }

@@ -13,8 +13,6 @@ import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_EXIT
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
-import one.mixin.android.job.ConversationJob.Companion.TYPE_UPDATE
-import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -83,18 +81,6 @@ internal constructor(
 
     fun findSelf() = userRepository.findSelf()
 
-    fun updateGroup(
-        conversationId: String,
-        name: String? = null,
-        iconBase64: String? = null,
-        announcement: String? = null
-    ) {
-        val request = ConversationRequest(conversationId, name = name,
-            iconBase64 = iconBase64, announcement = announcement)
-        jobManager.addJobInBackground(ConversationJob(conversationId = conversationId,
-            request = request, type = TYPE_UPDATE))
-    }
-
     fun updateGroup(conversationId: String, announcement: String): Observable<MixinResponse<ConversationResponse>> {
         val request = ConversationRequest(conversationId, name = null,
             iconBase64 = null, announcement = announcement)
@@ -121,10 +107,6 @@ internal constructor(
         jobManager.addJobInBackground(ConversationJob(conversationId = conversationId, type = TYPE_EXIT))
     }
 
-    fun deleteGroup(conversationId: String) {
-        conversationRepository.deleteConversationById(conversationId)
-    }
-
     fun deleteMessageByConversationId(conversationId: String) {
         conversationRepository.deleteMessageByConversationId(conversationId)
     }
@@ -133,10 +115,6 @@ internal constructor(
         jobManager.addJobInBackground(ConversationJob(conversationId = conversationId,
             request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
             type = ConversationJob.TYPE_MUTE))
-    }
-
-    fun startGenerateAvatar(conversationId: String) {
-        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
     }
 
     fun updateAnnouncement(conversationId: String, announcement: String?) {

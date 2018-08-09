@@ -1,14 +1,13 @@
 package one.mixin.android.util
 
 import android.content.Context
-import android.util.Log
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
+import one.mixin.android.extension.toast
 import org.jetbrains.anko.runOnUiThread
-import org.jetbrains.anko.toast
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.SocketTimeoutException
@@ -37,7 +36,6 @@ open class ErrorHandler {
                     }
                     else -> ctx.toast(R.string.error_unknown)
                 }
-                Log.e("Error", "", throwable)
             }
         }
 
@@ -53,6 +51,12 @@ open class ErrorHandler {
                     }
                     PHONE_SMS_DELIVERY -> {
                         toast(R.string.error_phone_sms_delivery)
+                    }
+                    RECAPTCHA_IS_INVALID -> {
+                        toast(R.string.error_recaptcha_is_invalid)
+                    }
+                    OLD_VERSION -> {
+                        toast(R.string.error_old_version)
                     }
                     PHONE_INVALID_FORMAT -> {
                         toast(R.string.error_phone_invalid_format)
@@ -95,6 +99,9 @@ open class ErrorHandler {
                     }
                     INSUFFICIENT_TRANSACTION_FEE -> {
                         toast(R.string.error_insufficient_transaction_fee)
+                    }
+                    TOO_MANY_STICKERS -> {
+                        toast(R.string.error_too_many_stickers)
                     }
                     BLOCKCHAIN_ERROR -> {
                         toast(R.string.error_blockchain)
@@ -141,6 +148,9 @@ open class ErrorHandler {
         private const val TRANSACTION = 10001
         private const val BAD_DATA = 10002
         private const val PHONE_SMS_DELIVERY = 10003
+        private const val RECAPTCHA_IS_INVALID = 10004
+        const val NEED_RECAPTCHA = 10005
+        private const val OLD_VERSION = 10006
         private const val PHONE_INVALID_FORMAT = 20110
         private const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         private const val INVALID_INVITATION_CODE = 20112
@@ -154,6 +164,7 @@ open class ErrorHandler {
         private const val TOO_SMALL = 20120
         private const val USED_PHONE = 20122
         private const val INSUFFICIENT_TRANSACTION_FEE = 20124
+        private const val TOO_MANY_STICKERS = 20126
         private const val BLOCKCHAIN_ERROR = 30100
         private const val INVALID_ADDRESS = 30102
     }

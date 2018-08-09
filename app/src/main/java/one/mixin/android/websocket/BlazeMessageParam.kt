@@ -15,7 +15,8 @@ data class BlazeMessageParam(
     val status: String?,
     val recipients: ArrayList<String>? = null,
     val keys: SignalKeyRequest? = null,
-    val messages: ArrayList<BlazeSignalKeyMessage>? = null
+    val messages: List<Any>? = null,
+    val quote_message_id: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -24,6 +25,9 @@ data class BlazeMessageParam(
 
 fun createAckParam(message_id: String, status: String) =
     BlazeMessageParam(null, null, message_id, null, null, status)
+
+fun createAckListParam(messages: List<BlazeAckMessage>) =
+    BlazeMessageParam(null, null, null, null, null, null, null, null, messages)
 
 fun createSignalKeyParam(conversationId: String, recipientId: String, cipherText: String) =
     BlazeMessageParam(conversationId, recipientId, UUID.randomUUID().toString(), MessageCategory.SIGNAL_KEY.name,

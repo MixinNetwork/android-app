@@ -7,9 +7,12 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Environment
+import android.provider.MediaStore
 import android.provider.MediaStore.Images.ImageColumns
 import android.support.media.ExifInterface
 import android.support.v4.content.ContextCompat
@@ -17,11 +20,14 @@ import android.support.v4.os.EnvironmentCompat
 import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
+import androidx.core.net.toUri
 import one.mixin.android.MixinApplication
+import one.mixin.android.widget.gallery.MimeType
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -62,17 +68,34 @@ private fun Context.getAppPath(): File {
     }
 }
 
-fun getMineType(uri: Uri): String? {
+fun getMimeType(uri: Uri): String? {
     var type: String? = null
     if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
         type = MixinApplication.get().contentResolver.getType(uri)
     } else {
-        val extension = MimeTypeMap.getFileExtensionFromUrl(uri.getFilePath(MixinApplication.get())!!)
+        val extension = try {
+            MimeTypeMap.getFileExtensionFromUrl(uri.getFilePath())
+        } catch (e: Exception) {
+            null
+        }
         if (extension != null) {
             type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
         }
     }
     return type
+}
+
+fun String.isImageSupport(): Boolean {
+    return this.equals(MimeType.GIF.toString(), true) ||
+        this.equals(MimeType.JPEG.toString(), true) ||
+        this.equals(MimeType.PNG.toString(), true)
+}
+
+fun String.isStickerSupport(): Boolean {
+    return this.equals(MimeType.GIF.toString(), true) ||
+        this.equals(MimeType.JPEG.toString(), true) ||
+        this.equals(MimeType.WEBP.toString(), true) ||
+        this.equals(MimeType.PNG.toString(), true)
 }
 
 fun getImageSize(file: File): Size {
@@ -87,6 +110,10 @@ fun getImageSize(file: File): Size {
         }
     }
     return Size(width, height)
+}
+
+fun String.fileExists(): Boolean {
+    return File(this.toUri().getFilePath(MixinApplication.appContext)).exists()
 }
 
 private fun getOrientationFromExif(imagePath: String): Int {
@@ -125,33 +152,27 @@ fun Context.getVideoPath(): File {
     return File("$root${File.separator}Video")
 }
 
+fun Context.getAudioPath(): File {
+    val root = getAppPath()
+    return File("$root${File.separator}Audio")
+}
+
+fun Context.getPublicPictyresPath(): File {
+    return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mixin")
+}
+
 fun Context.getImageCachePath(): File {
     val root = getBestAvailableCacheRoot()
     return File("$root${File.separator}Images")
 }
 
-fun Context.isQRCodeFileExists(): Boolean {
-    val root = getBestAvailableCacheRoot()
-    val file = File("$root${File.separator}QRCodeUrl.png")
-    return file.exists() && file.length() > 0
-}
-
-fun Context.getQRCodePath(): File {
-    val root = getBestAvailableCacheRoot()
-    val file = File("$root${File.separator}QRCodeUrl.png")
-    if (!file.exists()) {
-        file.createNewFile()
-    }
-    return file
-}
-
-fun Context.isAddressCodeFileExists(name: String): Boolean {
+fun Context.isQRCodeFileExists(name: String): Boolean {
     val root = getBestAvailableCacheRoot()
     val file = File("$root${File.separator}$name.png")
     return file.exists() && file.length() > 0
 }
 
-fun Context.getAddressCodePath(name: String): File {
+fun Context.getQRCodePath(name: String): File {
     val root = getBestAvailableCacheRoot()
     val file = File("$root${File.separator}$name.png")
     if (!file.exists()) {
@@ -169,43 +190,59 @@ fun Context.getGroupAvatarPath(name: String, create: Boolean = true): File {
     return file
 }
 
-fun File.createImageDir() {
-    if (!this.exists()) {
-        this.mkdirs()
-    }
+fun File.createNoMediaDir() {
     val no = File(this, ".nomedia")
     if (!no.exists()) {
         no.createNewFile()
     }
 }
 
-fun File.createImageTemp(prefix: String? = null, type: String? = null): File {
+fun File.createImageTemp(prefix: String? = null, type: String? = null, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return if (prefix != null) {
-        createTempFile("${prefix}_IMAGE_$time", type ?: ".jpg")
+        newTempFile("${prefix}_IMAGE_$time", type ?: ".jpg", noMedia)
     } else {
-        createTempFile("IMAGE_$time", type ?: ".jpg")
+        newTempFile("IMAGE_$time", type ?: ".jpg", noMedia)
     }
 }
 
-fun File.createGifTemp(): File {
+fun File.createGifTemp(noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("IMAGE_$time", ".gif")
+    return newTempFile("IMAGE_$time", ".gif", noMedia)
 }
 
-fun File.createDocumentTemp(type: String): File {
+fun File.createWebpTemp(noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("FILE_$time", ".$type")
+    return newTempFile("IMAGE_$time", ".webp", noMedia)
 }
 
-fun File.createVideoTemp(type: String): File {
+fun File.createDocumentTemp(type: String?, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-    return createTempFile("VIDEO_$time", ".$type")
+    return newTempFile("FILE_$time", if (type == null) {
+        ""
+    } else {
+        ".$type"
+    }, noMedia)
 }
 
-fun File.createTempFile(name: String, type: String): File {
-    createImageDir()
-    return createTempFile(name, type, absoluteFile)
+fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    return newTempFile("VIDEO_$time", ".$type", noMedia)
+}
+
+fun File.createAudioTemp(type: String, noMedia: Boolean = true): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    return newTempFile("Audio_$time", ".$type", noMedia)
+}
+
+private fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
+    if (!this.exists()) {
+        this.mkdirs()
+    }
+    if (noMedia) {
+        createNoMediaDir()
+    }
+    return createTempFile(name, type, this)
 }
 
 fun File.processing(to: File) {
@@ -217,7 +254,9 @@ fun File.processing(to: File) {
     outStream.close()
 }
 
-fun Uri.getFilePath(context: Context): String? {
+fun String.getFilePath(): String? = Uri.parse(this).getFilePath()
+
+fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
     val scheme = this.scheme
     var data: String? = null
     if (scheme == null)
@@ -225,20 +264,22 @@ fun Uri.getFilePath(context: Context): String? {
     else if (ContentResolver.SCHEME_FILE == scheme) {
         data = this.path
     } else if (ContentResolver.SCHEME_CONTENT == scheme) {
-        val cursor = context.contentResolver.query(this, arrayOf(ImageColumns.DATA), null, null, null)
+        val cursor = context.contentResolver.query(this, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
         if (null != cursor) {
             if (cursor.moveToFirst()) {
                 val index = cursor.getColumnIndex(ImageColumns.DATA)
                 if (index > -1) {
                     data = cursor.getString(index)
-                    // from google photo cloud image
-                    // content://com.google.android.apps.photos.contentprovider/0/1/content%3A%2F%2Fmedia%2Fexternal%2Fimages%2Fmedia%2F75209/ACTUAL
                     if (data == null) {
                         return getImageUrlWithAuthority(context)
                     }
+                } else if (index == -1) {
+                    return getImageUrlWithAuthority(context)
                 }
             }
             cursor.close()
+        } else {
+            return getImageUrlWithAuthority(context)
         }
     }
     return data
@@ -249,10 +290,10 @@ fun Uri.getImageUrlWithAuthority(context: Context): String? {
         var input: InputStream? = null
         try {
             input = context.contentResolver.openInputStream(this)
-            val bitmap = BitmapFactory.decodeStream(input)
-            val outFile = context.getImageCachePath().createImageTemp()
-            val out = FileOutputStream(outFile)
-            out.write(bitmap.toBytes())
+            val mimeTypeMap = MimeTypeMap.getSingleton()
+            val type = mimeTypeMap.getExtensionFromMimeType(context.contentResolver.getType(this))
+            val outFile = context.getImageCachePath().createImageTemp(type = ".$type")
+            outFile.copyFromInputStream(input)
             return outFile.absolutePath
         } catch (ignored: Exception) {
         } finally {
@@ -260,6 +301,14 @@ fun Uri.getImageUrlWithAuthority(context: Context): String? {
         }
     }
     return null
+}
+
+fun File.copyFromInputStream(inputStream: InputStream) {
+    inputStream.use { input ->
+        this.outputStream().use { output ->
+            input.copyTo(output)
+        }
+    }
 }
 
 fun File.copy(destFile: File) {
@@ -317,13 +366,13 @@ private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
     return null
 }
 
-fun String.decodeBase64(): ByteArray? {
+fun String.decodeBase64(): ByteArray {
     return Base64.decode(this, 0)
 }
 
-fun Bitmap.bitmap2String(mineType: String = "", bitmapQuality: Int = 90): String? {
+fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String? {
     val stream = ByteArrayOutputStream()
-    if (mineType == "image/png") {
+    if (mimeType == MimeType.PNG.toString()) {
         this.compress(Bitmap.CompressFormat.PNG, bitmapQuality, stream)
     } else {
         this.compress(Bitmap.CompressFormat.JPEG, bitmapQuality, stream)
@@ -331,6 +380,36 @@ fun Bitmap.bitmap2String(mineType: String = "", bitmapQuality: Int = 90): String
     val data = stream.toByteArray()
     stream.closeSilently()
     return Base64.encodeToString(data, Base64.NO_WRAP)
+}
+
+fun ByteArray.encodeBitmap(): Bitmap? {
+    return if (this.isEmpty()) {
+        null
+    } else {
+        BitmapFactory.decodeByteArray(this, 0, this.size)
+    }
+}
+
+fun Bitmap.toDrawable(): Drawable = BitmapDrawable(MixinApplication.appContext.resources, this)
+
+fun String.toDrawable() = this.decodeBase64().encodeBitmap()?.toDrawable()
+
+fun String.getFileNameNoEx(): String {
+    val dot = this.lastIndexOf('.')
+    if (dot > -1 && dot < this.length) {
+        return this.substring(0, dot)
+    }
+    return this
+}
+
+fun String.getExtensionName(): String? {
+    if (this.isNotEmpty()) {
+        val dot = this.lastIndexOf('.')
+        if (dot > -1 && dot < this.length - 1) {
+            return this.substring(dot + 1)
+        }
+    }
+    return null
 }
 
 fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
@@ -582,4 +661,23 @@ fun Bitmap.fastBlur(scale: Float, radius: Int): Bitmap? {
     bitmap.setPixels(pix, 0, w, 0, 0, w, h)
 
     return bitmap
+}
+
+fun File.toByteArray(): ByteArray? {
+    var byteArray: ByteArray? = null
+    try {
+        val inputStream = FileInputStream(this)
+        val bos = ByteArrayOutputStream()
+        val b = ByteArray(1024 * 8)
+
+        while (inputStream.read(b) != -1) {
+            bos.write(b, 0, b.size)
+        }
+
+        byteArray = bos.toByteArray()
+    } catch (e: IOException) {
+        e.printStackTrace()
+    }
+
+    return byteArray
 }

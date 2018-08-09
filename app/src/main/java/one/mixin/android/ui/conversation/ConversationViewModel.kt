@@ -11,31 +11,42 @@ import android.net.Uri
 import android.support.annotation.WorkerThread
 import android.support.v4.util.ArraySet
 import androidx.core.net.toUri
+import com.google.gson.Gson
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import one.mixin.android.AppExecutors
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
-import one.mixin.android.crypto.Util
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
+import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.fileExists
+import one.mixin.android.extension.getAttachment
+import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
-import one.mixin.android.extension.getMineType
-import one.mixin.android.extension.getUriForFile
+import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
+import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendMessageJob
@@ -52,27 +63,40 @@ import one.mixin.android.util.video.MediaController
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createAttachmentMessage
+import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
+import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.toUser
+import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.websocket.createAckListParamBlazeMessage
+import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.toast
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.util.UUID
 import javax.inject.Inject
 
@@ -86,23 +110,24 @@ internal constructor(
     private val accountRepository: AccountRepository
 ) : ViewModel() {
 
-    fun getMessages(id: String): LiveData<PagedList<MessageItem>> {
+    fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(conversationRepository.getMessages(id), PagedList.Config.Builder()
-            .setPageSize(100)
+            .setPrefetchDistance(PAGE_SIZE * 2)
+            .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build())
+            .setInitialLoadKey(initialLoadKey)
             .build()
     }
 
-    fun getMessagesMinimal(id: String) = conversationRepository.getMessagesMinimal(id)
-
-    fun indexUnread(conversationId: String, userId: String) =
-        conversationRepository.indexUnread(conversationId, userId)
-            .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
+    fun indexUnread(conversationId: String) =
+        conversationRepository.indexUnread(conversationId)
 
     fun searchConversationById(id: String) =
         conversationRepository.searchConversationById(id)
             .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
+
+    fun getConversationIdIfExistsSync(recipientId: String) = conversationRepository.getConversationIdIfExistsSync(recipientId)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
@@ -125,12 +150,27 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
+    fun sendReplyMessage(conversationId: String, sender: User, content: String, replyMessage: MessageItem, isPlain: Boolean) {
+        val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
+        val message = createReplyMessage(UUID.randomUUID().toString(), conversationId,
+            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING, replyMessage.messageId, Gson().toJson(QuoteMessageItem(replyMessage)))
+        jobManager.addJobInBackground(SendMessageJob(message))
+    }
+
     fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
         val message = createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
             null, attachment.filename, attachment.uri.toString(),
-            attachment.mineType, attachment.filesize, nowInUtc(), null,
+            attachment.mimeType, attachment.fileSize, nowInUtc(), null,
             null, MediaStatus.PENDING, MessageStatus.SENDING)
+        jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+    }
+
+    fun sendAudioMessage(conversationId: String, sender: User, file: File, duration: Long, waveForm: ByteArray, isPlain: Boolean) {
+        val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+        val message = createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
+            file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
+            MediaStatus.PENDING, MessageStatus.SENDING)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 
@@ -142,9 +182,11 @@ internal constructor(
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_STICKER.name else MessageCategory.SIGNAL_STICKER.name
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferStickerData).toByteArray())
-        val message = createStickerMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
-            encoded, transferStickerData.albumId, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
-        jobManager.addJobInBackground(SendMessageJob(message))
+        transferStickerData.stickerId?.let {
+            val message = createStickerMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
+                encoded, transferStickerData.albumId, it, transferStickerData.name, MessageStatus.SENDING, nowInUtc())
+            jobManager.addJobInBackground(SendMessageJob(message))
+        }
     }
 
     fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean) {
@@ -160,13 +202,15 @@ internal constructor(
         Flowable.just(uri).subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).map {
             val video = MixinApplication.appContext.getVideoModel(it)!!
             val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-            val videoFile = MixinApplication.get().getVideoPath()
-                .createVideoTemp(
-                    when {
-                        video.needChange -> "mp4"
-                        video.fileName.contains(".") -> video.fileName.substring(video.fileName.lastIndexOf(".") + 1)
-                        else -> ""
-                    })
+            val mimeType = getMimeType(uri)
+            if (mimeType != "video/mp4") {
+                video.needChange = true
+            }
+            if (!video.fileName.endsWith(".mp4")) {
+                video.fileName = "${video.fileName.getFileNameNoEx()}.mp4"
+            }
+            val videoFile = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
+
             MediaController().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight, video
                 .originalWidth, video
                 .originalHeight, videoFile, video.needChange)
@@ -174,79 +218,39 @@ internal constructor(
             val message = createVideoMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
                 category, null, video.fileName, videoFile.toUri().toString(), video.duration, video
                 .resultWidth,
-                video.resultHeight, video.thumbnail, if (video.needChange) {
-                "video/mp4"
-            } else {
-                getMineType(uri)!!
-            },
+                video.resultHeight, video.thumbnail,
+                "video/mp4",
                 videoFile.length(), nowInUtc(), null, null, MediaStatus.PENDING, MessageStatus.SENDING)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }.observeOn(AndroidSchedulers.mainThread())!!
 
-    fun sendFordVideoMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
-        Flowable.just(id).observeOn(Schedulers.io()).map {
-            val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-            conversationRepository.findMessageById(id)?.let { message ->
-                jobManager.addJobInBackground(SendAttachmentMessageJob(createVideoMessage(UUID.randomUUID().toString(),
-                    conversationId, sender.userId, category, null, message.name, message.mediaUrl,
-                    message.mediaDuration?.toLong(), message.mediaWidth, message.mediaHeight, message.thumbImage,
-                    message.mediaMineType!!, message.mediaSize!!, nowInUtc(), null, null,
-                    MediaStatus.PENDING, MessageStatus.SENDING
-                )))
-            }
-        }.observeOn(AndroidSchedulers.mainThread())!!
-
-    fun sendFordDataMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
-        Flowable.just(id).observeOn(Schedulers.io()).map {
-            val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-            conversationRepository.findMessageById(id)?.let { message ->
-                val uri: Uri = if (message.userId != Session.getAccountId()) {
-                    MixinApplication.appContext.getUriForFile(File(message.mediaUrl))
-                } else {
-                    Uri.parse(message.mediaUrl)
-                }
-                jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-                    category, null, message.name, uri.toString(), message.mediaMineType!!, message.mediaSize!!, nowInUtc(), null,
-                    null, MediaStatus.PENDING, MessageStatus.SENDING)))
-            }
-        }.observeOn(AndroidSchedulers.mainThread())!!
-
-    fun sendFordStickerMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
-        Flowable.just(id).observeOn(Schedulers.io()).map {
-            conversationRepository.findMessageById(id)?.let { message ->
-                sendStickerMessage(conversationId, sender, TransferStickerData(message.albumId!!, message.name!!), isPlain)
-            }
-        }.observeOn(AndroidSchedulers.mainThread())!!
-
-    fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int> {
+    fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
-        val mineType = getMineType(uri)
-        if (mineType == "image/gif") {
+        val mimeType = getMimeType(uri)
+        if (mimeType?.isImageSupport() != true) {
+            MixinApplication.get().toast(R.string.error_format)
+            return null
+        }
+        if (mimeType == MimeType.GIF.toString()) {
             return Flowable.just(uri).map {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp()
-                Util.copy(FileInputStream(uri.getFilePath(MixinApplication.get())), FileOutputStream(gifFile))
+                gifFile.copyFromInputStream(FileInputStream(uri.getFilePath(MixinApplication.get())))
                 val size = getImageSize(gifFile)
-                val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mineType)
+                val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, Uri.fromFile(gifFile).toString(),
-                    mineType, gifFile.length(), size.width, size.height, thumbnail, null, null,
+                    mimeType, gifFile.length(), size.width, size.height, thumbnail, null, null,
                     nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
         }
-        val temp = MixinApplication.get().getImagePath().createImageTemp(type = if (mineType == "image/png") {
-            ".png"
-        } else {
-            ".jpg"
-        })
+
+        val temp = MixinApplication.get().getImagePath().createImageTemp(type = ".jpg")
+
         return Compressor()
-            .setCompressFormat(if (mineType == "image/png") {
-                Bitmap.CompressFormat.PNG
-            } else {
-                Bitmap.CompressFormat.JPEG
-            })
+            .setCompressFormat(Bitmap.CompressFormat.JPEG)
             .compressToFileAsFlowable(File(uri.getFilePath(MixinApplication.get())), temp.absolutePath)
             .map { imageFile ->
                 val imageUrl = Uri.fromFile(temp).toString()
@@ -254,16 +258,12 @@ internal constructor(
                 if (length <= 0) {
                     return@map -1
                 }
-                if (mineType == null || (mineType != "image/png" &&
-                        mineType != "image/jpg" && mineType != "image/jpeg")) {
-                    return@map -2
-                }
                 val size = getImageSize(imageFile)
-                val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mineType)
+                val thumbnail = imageFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
                 val message = createMediaMessage(UUID.randomUUID().toString(),
                     conversationId, sender.userId, category, null, imageUrl,
-                    mineType, length, size.width, size.height, thumbnail, null, null,
+                    MimeType.JPEG.toString(), length, size.width, size.height, thumbnail, null, null,
                     nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
                 return@map -0
@@ -271,6 +271,70 @@ internal constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
     }
+
+    fun sendFordMessage(conversationId: String, sender: User, id: String, isPlain: Boolean) =
+        Flowable.just(id).observeOn(Schedulers.io()).map {
+            conversationRepository.findMessageById(id)?.let { message ->
+                when {
+                    message.category.endsWith("_IMAGE") -> {
+                        val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                        if (message.mediaUrl?.fileExists() != true) {
+                            return@let 0
+                        }
+                        jobManager.addJobInBackground(SendAttachmentMessageJob(createMediaMessage(UUID.randomUUID().toString(),
+                            conversationId, sender.userId, category, null, message.mediaUrl, message.mediaMimeType!!, message.mediaSize!!,
+                            message.mediaWidth, message.mediaHeight, message.thumbImage, null, null, nowInUtc(),
+                            MediaStatus.PENDING, MessageStatus.SENDING
+                        )))
+                    }
+                    message.category.endsWith("_VIDEO") -> {
+                        val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
+                        if (message.mediaUrl?.fileExists() != true) {
+                            return@let 0
+                        }
+                        jobManager.addJobInBackground(SendAttachmentMessageJob(createVideoMessage(UUID.randomUUID().toString(),
+                            conversationId, sender.userId, category, null, message.name, message.mediaUrl,
+                            message.mediaDuration?.toLong(), message.mediaWidth, message.mediaHeight, message.thumbImage,
+                            message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null, null,
+                            MediaStatus.PENDING, MessageStatus.SENDING
+                        )))
+                    }
+                    message.category.endsWith("_DATA") -> {
+                        val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
+                        val uri = if (message.userId == Session.getAccountId()) {
+                            if (message.mediaUrl?.fileExists() != true) {
+                                return@let 0
+                            }
+                            message.mediaUrl
+                        } else {
+                            val file = File(message.mediaUrl).apply {
+                                if (!this.exists()) {
+                                    return@let 0
+                                }
+                            }
+                            file.toUri().toString()
+                        }
+
+                        jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+                            category, null, message.name, uri, message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null,
+                            null, MediaStatus.PENDING, MessageStatus.SENDING)))
+                    }
+                    message.category.endsWith("_STICKER") -> {
+                        sendStickerMessage(conversationId, sender, TransferStickerData(name = message.name, stickerId = message.stickerId!!), isPlain)
+                    }
+                    message.category.endsWith("_AUDIO") -> {
+                        val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
+                        if (message.mediaUrl?.fileExists() != true) {
+                            return@let 0
+                        }
+                        jobManager.addJobInBackground(SendAttachmentMessageJob(createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+                            null, category, message.mediaSize!!, message.mediaUrl, message.mediaDuration!!, nowInUtc(), message.mediaWaveform!!, null,
+                            null, MediaStatus.PENDING, MessageStatus.SENDING)))
+                    }
+                }
+                return@let 1
+            }
+        }.observeOn(AndroidSchedulers.mainThread())!!
 
     fun updateRelationship(request: RelationshipRequest) {
         jobManager.addJobInBackground(UpdateRelationshipJob(request))
@@ -319,12 +383,28 @@ internal constructor(
         }
     }
 
-    fun makeMessageReadByConversationId(conversationId: String, accountId: String) {
-        conversationRepository.makeMessageReadByConversationId(conversationId, accountId)
+    private fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
+        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
     }
 
-    fun findUnreadMessages(conversationId: String) =
-        conversationRepository.findUnreadMessages(conversationId).subscribeOn(Schedulers.io())!!
+    fun makeMessageRead(conversationId: String, accountId: String) {
+        doAsync {
+            conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
+                conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
+                    if (this.isNotEmpty()) {
+                        notificationManager.cancel(conversationId.hashCode())
+                        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
+                    }
+                }.map {
+                    BlazeAckMessage(it, MessageStatus.READ.name)
+                }.let {
+                    it.chunked(100).forEach {
+                        jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                    }
+                }
+            }
+        }
+    }
 
     fun getFriends() = userRepository.findFriends()
 
@@ -347,16 +427,20 @@ internal constructor(
 
     fun transfer(transferRequest: TransferRequest) = assetRepository.transfer(transferRequest)
 
-    fun getStickerAlbums() = accountRepository.getStickerAlbums()
+    fun getSystemAlbums() = accountRepository.getSystemAlbums()
 
-    fun getStickers(id: String) = accountRepository.getStickers(id)
+    fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
+
+    fun observeStickers(id: String) = accountRepository.observeStickers(id)
+
+    fun observePersonalStickers() = accountRepository.observePersonalStickers()
 
     fun recentStickers() = accountRepository.recentUsedStickers()
 
-    fun updateStickerUsedAt(albumId: String, name: String) {
+    fun updateStickerUsedAt(stickerId: String) {
         doAsync {
             val cur = System.currentTimeMillis()
-            accountRepository.updateUsedAt(albumId, name, cur.toString())
+            accountRepository.updateUsedAt(stickerId, cur.toString())
         }
     }
 
@@ -368,5 +452,106 @@ internal constructor(
         }
     }
 
+    fun findAppById(id: String) = userRepository.findAppById(id)
+
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+
+    fun addSticker(stickerAddRequest: StickerAddRequest) = accountRepository.addSticker(stickerAddRequest)
+
+    fun addStickerLocal(sticker: Sticker, albumId: String) = accountRepository.addStickerLocal(sticker, albumId)
+
+    fun removeStickers(ids: List<String>) {
+        jobManager.addJobInBackground(RemoveStickersJob(ids))
+    }
+
+    fun refreshStickerAlbums() {
+        jobManager.addJobInBackground(RefreshStickerAlbumJob())
+    }
+
+    fun findMessageIndexSync(conversationId: String, messageId: String) =
+        conversationRepository.findMessageIndex(conversationId, messageId)
+
+    fun findMessageIndex(conversationId: String, messageId: String) =
+        Observable.just(1).map {
+            conversationRepository.findMessageIndex(conversationId, messageId)
+        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
+
+    private fun findUnreadMessagesSync(conversationId: String) = conversationRepository.findUnreadMessagesSync(conversationId)
+
+    private fun sendForwardMessages(conversationId: String, messages: List<ForwardMessage>?, isPlainMessage: Boolean) {
+        messages?.let {
+            val sender = Session.getAccount()!!.toUser()
+            for (item in it) {
+                if (item.id != null) {
+                    sendFordMessage(conversationId, sender, item.id, isPlainMessage).subscribe({}, {
+                        Timber.e("")
+                    })
+                } else {
+                    when (item.type) {
+                        ForwardCategory.CONTACT.name -> {
+                            sendContactMessage(item.sharedUserId!!, sender, item.sharedUserId, isPlainMessage)
+                        }
+                        ForwardCategory.IMAGE.name -> {
+                            sendImageMessage(conversationId, sender, Uri.parse(item.mediaUrl), isPlainMessage)
+                                ?.subscribe({
+                                }, {
+                                    Timber.e(it)
+                                })
+                        }
+                        ForwardCategory.DATA.name -> {
+                            MixinApplication.get().getAttachment(Uri.parse(item.mediaUrl))?.let {
+                                sendAttachmentMessage(conversationId, sender, it, isPlainMessage)
+                            }
+                        }
+                        ForwardCategory.VIDEO.name -> {
+                            sendVideoMessage(conversationId, sender,
+                                Uri.parse(item.mediaUrl), isPlainMessage)
+                                .subscribe({
+                                }, {
+                                    Timber.e(it)
+                                })
+                        }
+                        ForwardCategory.TEXT.name -> {
+                            item.content?.let {
+                                sendTextMessage(conversationId, sender, it, isPlainMessage)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
+        AppExecutors().diskIO().execute {
+            var conversationId: String? = null
+            for (item in selectItem) {
+                if (item is User) {
+                    conversationId = getConversationIdIfExistsSync(item.userId)
+                    if (conversationId == null) {
+                        conversationId = generateConversationId(Session.getAccountId()!!, item.userId)
+                        initConversation(conversationId, item, Session.getAccount()!!.toUser())
+                    }
+                    sendForwardMessages(conversationId, messages, item.isBot())
+                } else if (item is ConversationItem) {
+                    conversationId = item.conversationId
+                    sendForwardMessages(item.conversationId, messages, item.isBot())
+                }
+
+                MixinApplication.get().mainThread {
+                    MixinApplication.get().toast(R.string.forward_success)
+                }
+                findUnreadMessagesSync(conversationId!!)?.let {
+                    if (it.isNotEmpty()) {
+                        makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
+                        it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
+                            it.chunked(100).forEach {
+                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

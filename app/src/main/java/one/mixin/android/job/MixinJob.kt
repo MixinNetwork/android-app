@@ -42,7 +42,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
     companion object {
         private const val serialVersionUID = 1L
-        val TAG = MixinJob::class.java.simpleName!!
+        val TAG = MixinJob::class.java.simpleName
     }
 
     override fun onAdded() {

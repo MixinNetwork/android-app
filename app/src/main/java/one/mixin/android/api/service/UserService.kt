@@ -15,6 +15,9 @@ interface UserService {
     @POST("users/fetch")
     fun getUsers(@Body ids: List<String>): Call<MixinResponse<List<User>>>
 
+    @GET("users/{id}")
+    fun getUserById(@Path("id") id: String): Call<MixinResponse<User>>
+
     @GET("search/{query}")
     fun search(@Path("query") query: String): Observable<MixinResponse<User>>
 

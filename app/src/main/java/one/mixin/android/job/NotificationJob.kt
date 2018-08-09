@@ -5,11 +5,13 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.support.v4.app.NotificationCompat
+import android.support.v4.app.RemoteInput
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -21,6 +23,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.supportsNougat
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.Message
@@ -28,9 +31,8 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import one.mixin.android.vo.isGroup
+import one.mixin.android.vo.isRepresentativeMessage
 import org.jetbrains.anko.notificationManager
-import org.threeten.bp.Instant
 
 class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).requireNetwork().groupBy("notification_group")) {
 
@@ -38,6 +40,9 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         private const val serialVersionUID = 1L
         const val CHANNEL_GROUP = "channel_group"
         const val CHANNEL_MESSAGE = "channel_message"
+        const val KEY_REPLY = "key_reply"
+        const val CONVERSATION_ID = "conversation_id"
+        const val IS_PLAIN = "is_plain"
     }
 
     override fun onRun() {
@@ -53,27 +58,20 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
     @SuppressLint("NewApi")
     private fun notifyMessage(message: Message) {
         val context = MixinApplication.appContext
-        val user = syncUser(message) ?: return
+        val user = syncUser(message.userId) ?: return
         if (user.relationship == UserRelationship.BLOCKING.name) {
             return
         }
-        user.muteUntil?.let {
-            if (Instant.now().isBefore(Instant.parse(it))) {
-                return
-            }
-        }
-        val conversation = conversationDao.getConversation(message.conversationId)
-        conversation?.muteUntil?.let {
-            if (it.isNotBlank() && Instant.now().isBefore(Instant.parse(it))) {
-                return
-            }
+        val conversation = conversationDao.getConversationItem(message.conversationId) ?: return
+        if (conversation.isMute() || conversation.category == null) {
+            return
         }
         val mainIntent = MainActivity.getSingleIntent(context)
         val conversationIntent = ConversationActivity
-            .putIntent(context, message.conversationId, isGroup = notNullElse(conversation, { it.isGroup() }, false))
+            .putIntent(context, message.conversationId)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = if (conversation?.isGroup() == true) {
+            val channel = if (conversation.isGroup()) {
                 notificationBuilder = NotificationCompat.Builder(context, CHANNEL_GROUP)
                 NotificationChannel(CHANNEL_GROUP,
                     MixinApplication.get().getString(R.string.notification_group), NotificationManager.IMPORTANCE_HIGH)
@@ -92,10 +90,27 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         notificationBuilder.setContentIntent(
             PendingIntent.getActivities(context, message.id.hashCode(),
                 arrayOf(mainIntent, conversationIntent), PendingIntent.FLAG_UPDATE_CURRENT))
+        supportsNougat {
+            val remoteInput = RemoteInput.Builder(KEY_REPLY)
+                .setLabel(context.getString(R.string.notification_reply))
+                .build()
+            val sendIntent = Intent(context, SendService::class.java)
+            sendIntent.putExtra(CONVERSATION_ID, message.conversationId)
+            sendIntent.putExtra(IS_PLAIN, user.isBot() || message.isRepresentativeMessage(conversation))
+            val pendingIntent = PendingIntent.getService(
+                context, message.conversationId.hashCode(), sendIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+            val action = NotificationCompat.Action.Builder(R.mipmap.ic_launcher,
+                context.getString(R.string.notification_reply), pendingIntent)
+                .addRemoteInput(remoteInput)
+                .setAllowGeneratedReplies(true)
+                .build()
+            notificationBuilder.addAction(action)
+        }
+
         when (message.category) {
             MessageCategory.SIGNAL_TEXT.name, MessageCategory.PLAIN_TEXT.name -> {
-                if (conversation?.isGroup() == true) {
-                    notificationBuilder.setContentTitle(conversation.name)
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_text_message, user.fullName))
                     notificationBuilder.setContentText("${user.fullName} : ${message.content}")
@@ -106,10 +121,10 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                 }
             }
             MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name -> {
-                if (conversation?.isGroup() == true) {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_image_message, user.fullName))
-                    notificationBuilder.setContentTitle(conversation.name)
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setContentText(
                         context.getString(R.string.alert_key_group_image_message, user.fullName))
                 } else {
@@ -119,10 +134,10 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                 }
             }
             MessageCategory.SIGNAL_VIDEO.name, MessageCategory.PLAIN_VIDEO.name -> {
-                if (conversation?.isGroup() == true) {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_video_message, user.fullName))
-                    notificationBuilder.setContentTitle(conversation.name)
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setContentText(
                         context.getString(R.string.alert_key_group_video_message, user.fullName))
                 } else {
@@ -132,10 +147,10 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                 }
             }
             MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name -> {
-                if (conversation?.isGroup() == true) {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_data_message, user.fullName))
-                    notificationBuilder.setContentTitle(conversation.name)
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setContentText(
                         context.getString(R.string.alert_key_group_data_message, user.fullName))
                 } else {
@@ -144,11 +159,24 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_data_message))
                 }
             }
+            MessageCategory.SIGNAL_AUDIO.name, MessageCategory.PLAIN_AUDIO.name -> {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+                    notificationBuilder.setTicker(
+                        context.getString(R.string.alert_key_group_audio_message, user.fullName))
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
+                    notificationBuilder.setContentText(
+                        context.getString(R.string.alert_key_group_audio_message, user.fullName))
+                } else {
+                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_audio_message))
+                    notificationBuilder.setContentTitle(user.fullName)
+                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_audio_message))
+                }
+            }
             MessageCategory.SIGNAL_STICKER.name, MessageCategory.PLAIN_STICKER.name -> {
-                if (conversation?.isGroup() == true) {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_sticker_message, user.fullName))
-                    notificationBuilder.setContentTitle(conversation.name)
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setContentText(
                         context.getString(R.string.alert_key_group_sticker_message, user.fullName))
                 } else {
@@ -158,10 +186,10 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                 }
             }
             MessageCategory.SIGNAL_CONTACT.name, MessageCategory.PLAIN_CONTACT.name -> {
-                if (conversation?.isGroup() == true) {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
                         context.getString(R.string.alert_key_group_contact_message, user.fullName))
-                    notificationBuilder.setContentTitle(conversation.name)
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
                     notificationBuilder.setContentText(
                         context.getString(R.string.alert_key_group_contact_message, user.fullName))
                 } else {
@@ -232,10 +260,10 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         })
     }
 
-    private fun syncUser(message: Message): User? {
-        val u = userDao.findUser(message.userId)
+    private fun syncUser(userId: String): User? {
+        val u = userDao.findUser(userId)
         if (u == null) {
-            val response = userService.getUsers(arrayListOf(message.userId)).execute().body()
+            val response = userService.getUsers(arrayListOf(userId)).execute().body()
             if (response != null && response.isSuccess) {
                 response.data?.let { data ->
                     for (user in data) {
@@ -245,5 +273,9 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
             }
         }
         return u
+    }
+
+    private fun syncContactUser(conversationId: String): User? {
+        return userDao.findContactByConversationId(conversationId)
     }
 }

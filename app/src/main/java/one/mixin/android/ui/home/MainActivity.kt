@@ -23,6 +23,7 @@ import one.mixin.android.api.service.UserService
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
+import one.mixin.android.db.insertConversation
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
@@ -34,12 +35,14 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RotateSignedPreKeyJob
-import one.mixin.android.job.UploadContactsService
+import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
+import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment.Companion.ARGS_AMOUNT
@@ -113,7 +116,7 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(RefreshAssetsJob())
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
         if (RxPermissions(this).isGranted(Manifest.permission.READ_CONTACTS)) {
-            UploadContactsService.startUploadContacts(this.applicationContext)
+            jobManager.addJobInBackground(UploadContactsJob())
         }
         rotateSignalPreKey()
 
@@ -142,11 +145,16 @@ class MainActivity : BlazeBaseActivity() {
     private var alertDialog: AlertDialog? = null
 
     private fun handlerCode(intent: Intent) {
-        if (intent.hasExtra(CODE)) {
+        if (intent.hasExtra(SCAN)) {
+            val scan = intent.getStringExtra(SCAN)
+            bottomSheet?.dismiss()
+            bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
+            bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+        } else if (intent.hasExtra(CODE)) {
             val code = intent.getStringExtra(CODE)
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(code)
-            bottomSheet?.show(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(ARGS_AMOUNT)) {
             val user = intent.getParcelableExtra<User>(ARGS_USER)
             val amount = intent.getStringExtra(ARGS_AMOUNT)
@@ -155,11 +163,14 @@ class MainActivity : BlazeBaseActivity() {
             val memo = intent.getStringExtra(ARGS_MEMO)
             bottomSheet?.dismiss()
             bottomSheet = TransferBottomSheetDialogFragment.newInstance(user, amount, asset, trace, memo)
-            bottomSheet?.show(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
+            bottomSheet?.showNow(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(ARGS_USER)) {
             val user = intent.getParcelableExtra<User>(ARGS_USER)
             bottomSheet?.dismiss()
-            UserBottomSheetDialogFragment.newInstance(user).show(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+            UserBottomSheetDialogFragment.newInstance(user).showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
+        } else if (intent.hasExtra(TRANSFER)) {
+            val userId = intent.getStringExtra(TRANSFER)
+            TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
         } else if (intent.extras != null && intent.extras.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()
@@ -196,7 +207,7 @@ class MainActivity : BlazeBaseActivity() {
                                     ConversationStatus.SUCCESS.ordinal,
                                     null)
                                 conversation = c
-                                conversationDao.insert(c)
+                                conversationDao.insertConversation(c)
                             } else {
                                 conversationDao.updateConversation(data.conversationId, ownerId, data.category,
                                     data.name, data.announcement, data.createdAt, ConversationStatus.SUCCESS.ordinal)
@@ -225,7 +236,7 @@ class MainActivity : BlazeBaseActivity() {
                     }
                 }
                 if (conversation?.isGroup() == true) {
-                    innerIntent = ConversationActivity.putIntent(this, conversationId, isGroup = true)
+                    innerIntent = ConversationActivity.putIntent(this, conversationId)
                 } else {
                     var user = userDao.findPlainUserByConversationId(conversationId)
                     if (user == null) {
@@ -239,7 +250,7 @@ class MainActivity : BlazeBaseActivity() {
                             user = response.data?.get(0)
                         }
                     }
-                    innerIntent = ConversationActivity.putIntent(this, conversationId, user, isGroup = false)
+                    innerIntent = ConversationActivity.putIntent(this, conversationId, user?.userId)
                 }
                 runOnUiThread { alertDialog?.dismiss() }
                 innerIntent
@@ -311,14 +322,32 @@ class MainActivity : BlazeBaseActivity() {
 
     companion object {
         private const val CODE = "code"
+        private const val SCAN = "scan"
+        private const val TRANSFER = "transfer"
+
         fun showGroup(context: Context, code: String) {
-            Intent(context, MainActivity::class.java).apply { putExtra(CODE, code) }.run {
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(CODE, code)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
                 context.startActivity(this)
             }
         }
 
         fun showUser(context: Context, user: User) {
-            Intent(context, MainActivity::class.java).apply { putExtra(ARGS_USER, user) }.run {
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(ARGS_USER, user)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
+                context.startActivity(this)
+            }
+        }
+
+        fun showTransfer(context: Context, userId: String) {
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(TRANSFER, userId)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
                 context.startActivity(this)
             }
         }
@@ -330,19 +359,32 @@ class MainActivity : BlazeBaseActivity() {
                 putExtra(ARGS_ASSET, asset)
                 putExtra(TransferBottomSheetDialogFragment.ARGS_TRACE, trace)
                 putExtra(TransferBottomSheetDialogFragment.ARGS_MEMO, memo)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }.run {
                 context.startActivity(this)
             }
         }
 
+        fun showScan(context: Context, text: String) {
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(SCAN, text)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run { context.startActivity(this) }
+        }
+
         fun show(context: Context) {
-            Intent(context, MainActivity::class.java).run {
+            Intent(context, MainActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
                 context.startActivity(this)
             }
         }
 
         fun getSingleIntent(context: Context): Intent {
-            return Intent(context, MainActivity::class.java)
+            return Intent(context, MainActivity::class.java).apply {
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+            }
         }
     }
 }

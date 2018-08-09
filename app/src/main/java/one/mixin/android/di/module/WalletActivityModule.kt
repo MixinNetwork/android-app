@@ -2,13 +2,11 @@ package one.mixin.android.di.module
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
-import one.mixin.android.ui.wallet.AddressAddFragment
-import one.mixin.android.ui.wallet.AddressManagementFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment
+import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.ui.wallet.FeeFragment
 import one.mixin.android.ui.wallet.HiddenAssetsFragment
 import one.mixin.android.ui.wallet.OldPasswordFragment
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinCheckDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
@@ -58,14 +56,8 @@ abstract class WalletActivityModule {
     internal abstract fun contributeWithdrawalBottomSheetDialogFragment(): WithdrawalBottomSheetDialogFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributePinAddrBottomSheetFragment(): PinAddrBottomSheetDialogFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeAddressManagementFragment(): AddressManagementFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeAddressAddFragment(): AddressAddFragment
-
-    @ContributesAndroidInjector
     internal abstract fun contributeAllTransactionsFragment(): AllTransactionsFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeDepositQrBottomFragment(): DepositQrBottomFragment
 }

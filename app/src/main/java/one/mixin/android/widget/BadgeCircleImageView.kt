@@ -7,10 +7,12 @@ import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 
-class BadgeCircleImageView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
+open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
     init {
         LayoutInflater.from(context).inflate(R.layout.view_badge_circle_image, this, true)
     }
+
+    var pos: Int = START_BOTTOM
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -21,6 +23,15 @@ class BadgeCircleImageView(context: Context, attrs: AttributeSet?) : FrameLayout
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
         val i = measuredWidth / 8
-        badge.layout(0, 5 * i, 2 * i, 7 * i)
+        if (pos == START_BOTTOM) {
+            badge.layout(0, 5 * i, 2 * i, 7 * i)
+        } else if (pos == END_BOTTOM) {
+            badge.layout(5 * i, 5 * i, 7 * i, 7 * i)
+        }
+    }
+
+    companion object {
+        const val START_BOTTOM = 0
+        const val END_BOTTOM = 1
     }
 }

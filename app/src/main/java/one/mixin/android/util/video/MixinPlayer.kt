@@ -3,6 +3,7 @@ package one.mixin.android.util.video
 import android.net.Uri
 import android.view.TextureView
 import com.google.android.exoplayer2.C
+import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.PlaybackParameters
@@ -24,21 +25,37 @@ import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import java.util.concurrent.TimeUnit
 
-class MixinPlayer : Player.EventListener, VideoListener {
+class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoListener {
 
     val player: SimpleExoPlayer by lazy {
-        val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory(BANDWIDTH_METER)
-        val trackSelector = DefaultTrackSelector(videoTrackSelectionFactory)
-        ExoPlayerFactory.newSimpleInstance(MixinApplication.appContext, trackSelector).apply {
-            addListener(this@MixinPlayer)
-            addVideoListener(this@MixinPlayer)
+        if (isAudio) {
+            val renderersFactory = DefaultRenderersFactory(MixinApplication.appContext, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
+            val trackSelector = DefaultTrackSelector()
+            ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector).apply {
+                addListener(this@MixinPlayer)
+                addVideoListener(this@MixinPlayer)
+            }
+        } else {
+
+            val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory(BANDWIDTH_METER)
+            val trackSelector = DefaultTrackSelector(videoTrackSelectionFactory)
+            ExoPlayerFactory.newSimpleInstance(MixinApplication.appContext, trackSelector).apply {
+                addListener(this@MixinPlayer)
+                addVideoListener(this@MixinPlayer)
+            }
         }
     }
     private var onVideoPlayerListener: OnVideoPlayerListener? = null
     private var mHlsMediaSource: MediaSource? = null
+    private var cycle = true
+
+    fun setCycle(cycle: Boolean) {
+        this.cycle = cycle
+    }
 
     fun isPlaying() = player.playWhenReady
 
@@ -48,9 +65,19 @@ class MixinPlayer : Player.EventListener, VideoListener {
 
     fun currentPosition() = player.currentPosition
 
-    fun release() {
-        player.release()
+    val period = Timeline.Period()
+
+    fun getCurrentPos(): Long {
+        var position = player.currentPosition
+        val currentTimeline = player.currentTimeline
+        if (!currentTimeline.isEmpty) {
+            position -= currentTimeline.getPeriod(player.currentPeriodIndex, period)
+                .positionInWindowMs
+        }
+        return position
     }
+
+    fun release() = player.release()
 
     fun stop() = player.stop()
 
@@ -69,8 +96,7 @@ class MixinPlayer : Player.EventListener, VideoListener {
     fun seekTo(timeMillis: Int) {
         val seekPos = (if (player.duration == C.TIME_UNSET)
             0
-        else
-            Math.min(Math.max(0, timeMillis), duration())).toLong()
+        else Math.min(Math.max(0, timeMillis), duration())).toLong()
         seekTo(seekPos)
     }
 
@@ -87,6 +113,13 @@ class MixinPlayer : Player.EventListener, VideoListener {
             .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
+
+    fun loadAudio(url: String) {
+        val mediaSource = ExtractorMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
+            .createMediaSource(Uri.parse(url))
+        player.prepare(mediaSource)
+    }
+
     private fun buildDataSourceFactory(bandwidthMeter: DefaultBandwidthMeter): DataSource.Factory {
         return DefaultDataSourceFactory(MixinApplication.appContext, bandwidthMeter, buildOkHttpDataSourceFactory())
     }
@@ -99,7 +132,7 @@ class MixinPlayer : Player.EventListener, VideoListener {
             .readTimeout(30, TimeUnit.SECONDS)
             .addNetworkInterceptor(logging)
             .build()
-        return OkHttpDataSourceFactory(okHttpClient, Util.getUserAgent(MixinApplication.appContext, "Shou"), null)
+        return OkHttpDataSourceFactory(okHttpClient, Util.getUserAgent(MixinApplication.appContext, BuildConfig.APPLICATION_ID), null)
     }
 
     override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
@@ -116,7 +149,7 @@ class MixinPlayer : Player.EventListener, VideoListener {
     override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
         onVideoPlayerListener?.onPlayerStateChanged(playWhenReady, playbackState)
 
-        if (playbackState == Player.STATE_ENDED) {
+        if (cycle && playbackState == Player.STATE_ENDED) {
             player.seekTo(0)
         }
     }
@@ -132,6 +165,7 @@ class MixinPlayer : Player.EventListener, VideoListener {
             player.prepare(mHlsMediaSource)
         }
         // HttpDataSourceException
+        onVideoPlayerListener?.onPlayerError(error)
     }
 
     override fun onPositionDiscontinuity(reason: Int) {
@@ -183,15 +217,19 @@ class MixinPlayer : Player.EventListener, VideoListener {
         fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray)
 
         fun onTimelineChanged(timeline: Timeline, manifest: Any)
+
+        fun onPlayerError(error: ExoPlaybackException)
     }
 
     open class VideoPlayerListenerWrapper : OnVideoPlayerListener {
+
         override fun onVideoSizeChanged(
             width: Int,
             height: Int,
             unappliedRotationDegrees: Int,
             pixelWidthHeightRatio: Float
-        ) {}
+        ) {
+        }
 
         override fun onRenderedFirstFrame() {}
 
@@ -206,6 +244,8 @@ class MixinPlayer : Player.EventListener, VideoListener {
         override fun onTracksChanged(trackGroups: TrackGroupArray, trackSelections: TrackSelectionArray) {}
 
         override fun onTimelineChanged(timeline: Timeline, manifest: Any) {}
+
+        override fun onPlayerError(error: ExoPlaybackException) {}
     }
 
     companion object {

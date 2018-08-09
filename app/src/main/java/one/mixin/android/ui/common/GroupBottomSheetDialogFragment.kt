@@ -20,16 +20,15 @@ import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
-import one.mixin.android.ui.url.isMixinUrl
+import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -42,7 +41,6 @@ import org.jetbrains.anko.dimen
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.margin
 import org.jetbrains.anko.support.v4.dip
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import org.threeten.bp.Instant
@@ -66,13 +64,13 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private lateinit var menu: AlertDialog
+    private var menu: AlertDialog? = null
     var callback: Callback? = null
 
     private val conversationId: String by lazy {
         arguments!!.getString(ARGS_CONVERSATION_ID)
     }
-    private var code: String? = null
+    private val code: String? by lazy { arguments!!.getString(CODE) }
     private lateinit var conversation: Conversation
     private var me: Participant? = null
     private var keepDialog: Boolean = false
@@ -87,41 +85,35 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        code = arguments!!.getString(CODE)
-
         contentView.left_iv.setOnClickListener { dialog?.dismiss() }
         contentView.right_iv.setOnClickListener {
             (dialog as BottomSheet).fakeDismiss()
-            menu.show()
+            menu?.show()
         }
 
         contentView.join_tv.setOnClickListener {
+            if (code == null) return@setOnClickListener
+
             contentView.join_va.displayedChild = POS_PB
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
                 if (it.isSuccess) {
                     dialog?.dismiss()
-                    ConversationActivity.show(context!!, conversationId, isGroup = true)
+                    ConversationActivity.show(requireContext(), conversationId)
                 } else {
-                    contentView.join_va.displayedChild = POS_TV
+                    contentView.join_va?.displayedChild = POS_TV
                     ErrorHandler.handleMixinError(it.errorCode)
                 }
             }, {
-                contentView.join_va.displayedChild = POS_TV
+                contentView.join_va?.displayedChild = POS_TV
                 ErrorHandler.handleError(it)
             })
         }
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
-        contentView.detail_tv.setAutoLinkOnClickListener({ _, url ->
-            when {
-                isMixinUrl(url) -> LinkBottomSheetDialogFragment
-                    .newInstance(url).show(fragmentManager, LinkBottomSheetDialogFragment.TAG)
-                else -> WebBottomSheetDialogFragment
-                    .newInstance(url, conversationId)
-                    .show(fragmentManager, WebBottomSheetDialogFragment.TAG)
-            }
+        contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
+            openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
             dialog?.dismiss()
-        })
+        }
 
         bottomViewModel.getConversationById(conversationId).observe(this, Observer { c ->
             if (c == null) return@Observer
@@ -134,7 +126,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             contentView.name.text = c.name
             contentView.detail_tv.text = c.announcement
-            initMenu()
             initParticipant()
         })
 
@@ -151,6 +142,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             uiThread {
                 if (!isAdded) return@uiThread
 
+                initMenu()
+
                 val size = resources.getDimensionPixelSize(R.dimen.bottom_group_avatar_size)
                 val margin = dip(7.5f)
                 val params = LinearLayout.LayoutParams(size, size)
@@ -161,11 +154,10 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 for (i in 0 until if (participants.size >= DEFAULT_COUNT) DEFAULT_COUNT - 1 else participants.size) {
                     val u = participants[i]
-                    val avatarView = AvatarView(context!!, null)
+                    val avatarView = AvatarView(requireContext(), null)
                     contentView.avatar_container_ll.addView(avatarView, params)
                     avatarView.setTextSize(14f)
-                    avatarView.setInfo(if (u.fullName != null && u.fullName.isNotEmpty())
-                        u.fullName[0] else ' ', u.avatarUrl, u.identityNumber)
+                    avatarView.setInfo(u.fullName, u.avatarUrl, u.identityNumber)
                 }
                 if (participants.size >= DEFAULT_COUNT) {
                     val moreView = TextView(context).apply {
@@ -178,7 +170,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 contentView.avatar_container_ll.setOnClickListener {
                     dialog?.dismiss()
-                    GroupActivity.show(context!!, GroupActivity.INFO, conversationId)
+                    GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
                 }
 
                 contentView.join_va.visibility = if ((me == null) && !TextUtils.isEmpty(code)) VISIBLE else GONE
@@ -211,12 +203,12 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             choices.add(getString(R.string.group_info_delete_group))
         }
-        menu = AlertDialog.Builder(context!!)
-            .setItems(choices.toTypedArray(), { _, which ->
+        menu = AlertDialog.Builder(requireContext())
+            .setItems(choices.toTypedArray()) { _, which ->
                 when (choices[which]) {
                     getString(R.string.participants) -> {
                         dialog?.dismiss()
-                        GroupActivity.show(context!!, GroupActivity.INFO, conversationId)
+                        GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
                     }
                     getString(R.string.group_info_add) -> {
                         activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
@@ -226,7 +218,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
                             conversationId, conversation.announcement), GroupEditFragment.TAG)
                     }
-                    getString(R.string.edit_name) -> {
+                    getString(R.string.group_edit_name) -> {
                         keepDialog = true
                         showDialog(conversation.name)
                     }
@@ -246,8 +238,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         callback?.onDelete()
                     }
                 }
-            }).create()
-        menu.setOnDismissListener {
+            }.create()
+        menu?.setOnDismissListener {
             if (!keepDialog) {
                 dialog?.dismiss()
             }
@@ -262,7 +254,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val account = Session.getAccount()
         account?.let {
             bottomViewModel.mute(conversationId, 0)
-            toast(getString(R.string.un_mute) + " ${conversation.name}")
+            context?.toast(getString(R.string.un_mute) + " ${conversation.name}")
         }
     }
 
@@ -271,27 +263,27 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             getString(R.string.contact_mute_1week), getString(R.string.contact_mute_1year))
         var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
         var whichItem = 0
-        val alert = AlertDialog.Builder(context!!)
+        val alert = AlertDialog.Builder(requireContext())
             .setTitle(getString(R.string.contact_mute_title))
-            .setNegativeButton(R.string.cancel, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
-            })
-            .setPositiveButton(R.string.confirm, { dialog, which ->
+            }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 val account = Session.getAccount()
                 account?.let {
                     bottomViewModel.mute(conversationId, duration.toLong())
-                    toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
+                    context?.toast(getString(R.string.contact_mute_title) + " ${conversation.name} " + choices[whichItem])
                 }
                 dialog.dismiss()
-            })
-            .setSingleChoiceItems(choices, 0, { _, which ->
+            }
+            .setSingleChoiceItems(choices, 0) { _, which ->
                 whichItem = which
                 when (which) {
                     0 -> duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
                     1 -> duration = UserBottomSheetDialogFragment.MUTE_1_WEEK
                     2 -> duration = UserBottomSheetDialogFragment.MUTE_1_YEAR
                 }
-            })
+            }
             .show()
         alert.setOnDismissListener { dialog?.dismiss() }
     }
@@ -301,8 +293,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (context == null) {
             return
         }
-        val editText = EditText(context!!)
-        editText.id = R.id.profile_edit_name_et
+        val editText = EditText(requireContext())
         editText.hint = getString(R.string.profile_modify_name_hint)
         editText.setText(name)
         if (name != null) {
@@ -311,16 +302,16 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val frameLayout = FrameLayout(context)
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
+        params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
         editText.layoutParams = params
-        val nameDialog = android.support.v7.app.AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+        val nameDialog = android.support.v7.app.AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(R.string.profile_modify_name)
             .setView(frameLayout)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 bottomViewModel.updateGroup(conversationId, editText.text.toString(), null)
                 dialog.dismiss()
-            })
+            }
             .show()
         nameDialog.setOnDismissListener { dialog?.dismiss() }
         nameDialog.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or

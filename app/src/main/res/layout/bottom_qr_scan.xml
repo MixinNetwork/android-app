@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:orientation="vertical">
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:background="@drawable/bg_upper_round">
+
+        <one.mixin.android.widget.linktext.AutoLinkTextView
+                android:layout_width="wrap_content"
+                android:id="@+id/qr_tv"
+                android:textColor="@color/text_black"
+                android:layout_gravity="center"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/activity_vertical_margin"
+                android:layout_height="wrap_content"
+                android:maxLines="3"
+                android:ellipsize="end"
+                android:gravity="center_horizontal"/>
+    </FrameLayout>
+
+    <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height">
+
+        <TextView
+                android:id="@+id/copy"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/white"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:textColor="@color/colorBlue"
+                android:text="@string/copy"/>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
+                android:background="@color/divider"/>
+    </FrameLayout>
+
+    <FrameLayout
+            android:id="@+id/open_fl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/bottom_button_height">
+
+        <TextView
+                android:id="@+id/open"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/white"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:textColor="@color/colorBlue"
+                android:text="@string/open"/>
+
+        <View
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
+                android:background="@color/divider"/>
+    </FrameLayout>
+</LinearLayout>

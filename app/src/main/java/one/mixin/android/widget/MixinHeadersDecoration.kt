@@ -161,7 +161,7 @@ class MixinHeadersDecoration private constructor(
         return -1
     }
 
-    fun getHeaderView(parent: RecyclerView, position: Int): View =
+    private fun getHeaderView(parent: RecyclerView, position: Int): View =
         mHeaderProvider.getHeader(parent, position)
 
     @Suppress("unused")

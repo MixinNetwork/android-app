@@ -36,7 +36,7 @@ import javax.inject.Inject
 class BlazeMessageService : Service(), NetworkEventProvider.Listener {
 
     companion object {
-        val TAG = BlazeMessageService::class.java.simpleName!!
+        val TAG = BlazeMessageService::class.java.simpleName
         const val CHANNEL_NODE = "channel_node"
         const val FOREGROUND_ID = 666666
         const val ACTION_TO_BACKGROUND = "action_to_background"
@@ -155,18 +155,17 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black_24dp, getString(R.string.exit), exitPendingIntent)
 
-        val intent = Intent(this, MainActivity::class.java)
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent, 0)
+        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getSingleIntent(this), 0)
         builder.setContentIntent(pendingIntent)
 
-        supportsOreo({
+        supportsOreo {
             val channel = NotificationChannel(CHANNEL_NODE,
                 MixinApplication.get().getString(R.string.notification_node), NotificationManager.IMPORTANCE_LOW)
             channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
             channel.setSound(null, null)
             channel.setShowBadge(false)
             notificationManager.createNotificationChannel(channel)
-        })
+        }
         startForeground(FOREGROUND_ID, builder.build())
     }
 
@@ -218,13 +217,14 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
                 try {
                     while (networkConnected() && !stopThread.get()) {
                         try {
-                            val m = floodMessageDao.findFloodMessage()
-                            if (m != null) {
-                                val blazeMessageData = Gson().fromJson(m.data, BlazeMessageData::class.java)
-                                messageDecrypt.onRun(blazeMessageData)
-                                floodMessageDao.delete(m)
+                            val messages = floodMessageDao.findFloodMessages()
+                            if (messages != null) {
+                                for (m in messages) {
+                                    messageDecrypt.onRun(Gson().fromJson(m.data, BlazeMessageData::class.java))
+                                    floodMessageDao.delete(m)
+                                }
                             } else {
-                                sleep(500)
+                                sleep(1000)
                             }
                         } catch (e: TimeoutException) {
                             Log.e(TAG, "Application level read timeout...")

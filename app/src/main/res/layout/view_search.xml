@@ -9,36 +9,38 @@
     <ImageButton
         android:id="@+id/left_ib"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
-        android:background="@null"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
         app:srcCompat="@drawable/ic_wallet"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <ImageButton
         android:id="@+id/back_ib"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
-        android:background="@null"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
         android:visibility="gone"
         app:srcCompat="@drawable/ic_back"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <ImageButton
         android:id="@+id/right_ib"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|end"
-        android:background="@null"
-        android:paddingEnd="16dp"
-        android:paddingStart="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:padding="4dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginStart="12dp"
         app:srcCompat="@drawable/ic_group"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <TextView
         android:id="@+id/search_tv"
@@ -57,7 +59,7 @@
         android:paddingStart="12dp"
         android:textColor="@color/black"
         android:textColorHint="@color/text_light_gray"
-        android:textSize="14sp" />
+        android:textSize="14sp"/>
 
     <EditText
         android:id="@+id/search_et"
@@ -65,7 +67,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="center_vertical"
         android:layout_marginBottom="10dp"
-        android:layout_marginEnd="54dp"
+        android:layout_marginEnd="78dp"
         android:layout_marginStart="54dp"
         android:layout_marginTop="10dp"
         android:background="@null"
@@ -80,24 +82,23 @@
         android:textColor="@color/black"
         android:textColorHint="@color/gray_50"
         android:textSize="14sp"
-        android:visibility="invisible" />
+        android:visibility="invisible"/>
 
     <ImageButton
         android:id="@+id/right_clear"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|end"
-        android:layout_marginEnd="24dp"
+        android:layout_marginEnd="12dp"
         android:background="@null"
-        android:padding="8dp"
         android:visibility="gone"
         app:srcCompat="@drawable/ic_close_black_24dp"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <View
         android:layout_width="match_parent"
         android:layout_height="0.5dp"
         android:layout_gravity="bottom"
-        android:background="@color/divider" />
+        android:background="@color/divider"/>
 
 </FrameLayout>

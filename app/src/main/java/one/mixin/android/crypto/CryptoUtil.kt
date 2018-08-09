@@ -1,8 +1,8 @@
 @file:Suppress("NOTHING_TO_INLINE")
 package one.mixin.android.crypto
 
+import android.os.Build
 import one.mixin.android.extension.toLeByteArray
-import one.mixin.android.util.Session
 import org.spongycastle.asn1.pkcs.PrivateKeyInfo
 import org.spongycastle.util.io.pem.PemObject
 import org.spongycastle.util.io.pem.PemWriter
@@ -44,19 +44,15 @@ fun KeyPair.getPrivateKeyPem(): String {
     return stringWriter2.toString()
 }
 
-fun aesEncrypt(key: String, code: String?): String? {
-    if (code == null) {
-        return null
-    }
+fun aesEncrypt(key: String, iterator: Long, code: String): String? {
     val keySpec = SecretKeySpec(Base64.decode(key), "AES")
     val iv = ByteArray(16)
     SecureRandom().nextBytes(iv)
-    val iterator = Session.getPinIterator()
+
     val pinByte = code.toByteArray() + (System.currentTimeMillis() / 1000).toLeByteArray() + iterator.toLeByteArray()
     val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
     cipher.init(Cipher.ENCRYPT_MODE, keySpec, IvParameterSpec(iv))
     val result = cipher.doFinal(pinByte)
-    Session.storePinIterator(iterator + 1)
     return Base64.encodeBytes(iv.plus(result))
 }
 
@@ -70,7 +66,11 @@ fun rsaDecrypt(privateKey: PrivateKey, iv: String, pinToken: String): String {
 fun getRSAPrivateKeyFromString(privateKeyPEM: String): PrivateKey {
     val striped = stripRsaPrivateKeyHeaders(privateKeyPEM)
     val keySpec = PKCS8EncodedKeySpec(Base64.decode(striped))
-    val kf = KeyFactory.getInstance("RSA", "BC")
+    val kf = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        KeyFactory.getInstance("RSA")
+    } else {
+        KeyFactory.getInstance("RSA", "BC")
+    }
     return kf.generatePrivate(keySpec)
 }
 

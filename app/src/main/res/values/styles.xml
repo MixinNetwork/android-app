@@ -30,9 +30,16 @@
         <item name="android:windowFullscreen">true</item>
     </style>
 
-    <style name="AppTheme.Photo" parent="AppTheme">
+    <style name="AppTheme.Avatar" parent="AppTheme.FullScreen">
+        <item name="android:windowAnimationStyle">@null</item>
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
+    <style name="AppTheme.Photo" parent="AppTheme.NoActionBar">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowTranslucentStatus">true</item>
@@ -40,12 +47,12 @@
     </style>
 
     <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
-        <item name="colorAccent">@color/colorBlue</item>
+        <item name="colorAccent">@color/colorDarkBlue</item>
         <item name="android:textColorPrimary">@android:color/black</item>
         <item name="android:background">@android:color/white</item>
     </style>
 
-    <style name="TransparentDialog" parent="@android:style/Theme.Dialog">
+    <style name="TransparentDialog" parent="@style/AppTheme.Dialog">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:background">@null</item>
         <item name="android:windowContentOverlay">@null</item>
@@ -53,6 +60,10 @@
         <item name="android:windowIsFloating">true</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowFullscreen">false</item>
+    </style>
+
+    <style name="Custom">
+        <item name="android:textColor">@color/text_default</item>
     </style>
 
     <style name="DialogNoAnimation">
@@ -87,19 +98,25 @@
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 
+    <style name="BottomSheetModal" parent="@style/Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/bg_upper_round</item>
+    </style>
+
     <style name="AppTheme.Dialog" parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@color/white</item>
         <item name="android:windowFrame">@null</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:colorBackground">@android:color/transparent</item>
-        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsFloating">false</item>
         <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:backgroundDimAmount">0.3</item>
-        <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowAnimationStyle">@style/BottomSheet.Animation</item>
         <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="bottomSheetStyle">@style/BottomSheetModal</item>
     </style>
     <style name="AppTheme.Transparent" parent="AppTheme.FullScreen">
         <item name="android:windowBackground">@android:color/transparent</item>
@@ -107,9 +124,21 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowAnimationStyle">@android:style/Animation.Translucent</item>
     </style>
+
+    <style name="BoxStyle" parent="AppTheme">
+        <item name="colorAccent">@color/colorDarkBlue</item>
+    </style>
+
     <style name="BottomSheet"/>
     <style name="BottomSheet.Animation">
         <item name="android:windowEnterAnimation">@anim/dock_bottom_enter</item>
         <item name="android:windowExitAnimation">@anim/dock_bottom_exit</item>
+    </style>
+    <style name="SeekBar">
+        <item name="android:splitTrack">false</item>
+        <item name="android:progressDrawable">@drawable/layer_progress</item>
+        <item name="android:thumb">@drawable/ic_seek_bar</item>
+        <item name="android:minHeight">2dp</item>
+        <item name="android:maxHeight">2dp</item>
     </style>
 </resources>

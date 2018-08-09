@@ -1,6 +1,6 @@
 package one.mixin.android.widget.linktext;
 
-import android.util.Log;
+import timber.log.Timber;
 
 class Utils {
 
@@ -22,7 +22,7 @@ class Utils {
                 return RegexParser.EMAIL_PATTERN;
             case MODE_CUSTOM:
                 if (!Utils.isValidRegex(customRegex)) {
-                    Log.e(AutoLinkTextView.TAG, "Your custom regex is null, returning URL_PATTERN");
+                    Timber.e("Your custom regex is null, returning URL_PATTERN");
                     return RegexParser.URL_PATTERN;
                 } else {
                     return customRegex;

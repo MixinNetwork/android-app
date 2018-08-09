@@ -27,4 +27,15 @@
     <dimen name="bottom_group_avatar_size">40dp</dimen>
     <dimen name="bottom_button_height">56dp</dimen>
     <dimen name="bottom_name_text_size">18sp</dimen>
+    <dimen name="margin16">16dp</dimen>
+    <dimen name="margin12">12dp</dimen>
+    <dimen name="blink_size">8dp</dimen>
+    <dimen name="padding8">8dp</dimen>
+    <dimen name="chat_control_height">52dp</dimen>
+    <dimen name="chat_menu_height">87dp</dimen>
+    <dimen name="chat_app_height">103dp</dimen>
+    <dimen name="media_grid_size">48dp</dimen>
+    <dimen name="media_grid_spacing">4dp</dimen>
+
+    <dimen name="album_item_height">72dp</dimen>
 </resources>

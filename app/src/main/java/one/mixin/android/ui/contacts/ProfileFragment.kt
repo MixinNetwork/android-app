@@ -32,13 +32,13 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.extension.REQUEST_IMAGE
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.util.ErrorHandler
@@ -51,7 +51,6 @@ import org.jetbrains.anko.margin
 import org.jetbrains.anko.noButton
 import org.jetbrains.anko.singleLine
 import org.jetbrains.anko.support.v4.alert
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class ProfileFragment : BaseFragment() {
@@ -74,7 +73,7 @@ class ProfileFragment : BaseFragment() {
     }
     private var user: User? = null
     private val imageUri: Uri by lazy {
-        Uri.fromFile(context?.getImagePath()?.createImageTemp())
+        Uri.fromFile(requireContext().getImagePath().createImageTemp())
     }
     private var dialog: Dialog? = null
 
@@ -88,16 +87,11 @@ class ProfileFragment : BaseFragment() {
         if (account != null) {
             name_desc_tv.text = account.full_name
             phone_desc_tv.text = account.phone
-//            renderInvitation(account)
-
-            qr_rl.setOnClickListener {
-                activity?.addFragment(this@ProfileFragment, QRFragment.newInstance(user), QRFragment.TAG)
-            }
 
             name_rl.setOnClickListener { showDialog(false) }
             phone_rl.setOnClickListener {
                 alert(getString(R.string.profile_modify_number)) {
-                    positiveButton(R.string.profile_phone, { dialog ->
+                    positiveButton(R.string.profile_phone) { dialog ->
                         dialog.dismiss()
                         activity?.supportFragmentManager?.inTransaction {
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
@@ -105,7 +99,7 @@ class ProfileFragment : BaseFragment() {
                                 .add(R.id.container, VerifyFragment.newInstance())
                                 .addToBackStack(null)
                         }
-                    })
+                    }
                     noButton { dialog -> dialog.dismiss() }
                 }.show()
             }
@@ -132,9 +126,7 @@ class ProfileFragment : BaseFragment() {
                 user = self
                 name_desc_tv.text = self.fullName
                 phone_desc_tv.text = self.phone
-                profile_avatar.setInfo(if (self.fullName != null &&
-                    self.fullName.isNotEmpty()) self.fullName[0] else ' ',
-                    self.avatarUrl, self.identityNumber)
+                profile_avatar.setInfo(self.fullName, self.avatarUrl, self.identityNumber)
             }
         })
     }
@@ -169,7 +161,7 @@ class ProfileFragment : BaseFragment() {
         } else if (resultCode == UCrop.RESULT_ERROR) {
             if (data != null) {
                 val cropError = UCrop.getError(data)
-                toast(cropError.toString())
+                context?.toast(cropError.toString())
             }
         }
     }
@@ -180,7 +172,6 @@ class ProfileFragment : BaseFragment() {
             return
         }
         val editText = EditText(context!!)
-        editText.id = R.id.profile_edit_name_et
         editText.singleLine = true
         if (!isRedeem) {
             editText.hint = getString(R.string.profile_modify_name_hint)
@@ -191,7 +182,7 @@ class ProfileFragment : BaseFragment() {
             editText.hint = getString(R.string.wallet_redeem)
             editText.inputType = InputType.TYPE_CLASS_NUMBER
         }
-        val frameLayout = FrameLayout(context)
+        val frameLayout = FrameLayout(requireContext())
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
         params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
@@ -199,15 +190,15 @@ class ProfileFragment : BaseFragment() {
         dialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setTitle(if (isRedeem) R.string.wallet_get_free_redeem else R.string.profile_modify_name)
             .setView(frameLayout)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(if (isRedeem) R.string.wallet_redeem else R.string.confirm, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(if (isRedeem) R.string.wallet_redeem else R.string.confirm) { dialog, _ ->
                 if (isRedeem) {
                     redeem(editText.text.toString())
                 } else {
                     update(editText.text.toString(), false)
                     dialog.dismiss()
                 }
-            })
+            }
             .show()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
@@ -216,7 +207,7 @@ class ProfileFragment : BaseFragment() {
 
     private fun redeem(code: String) {
         if (code.isEmpty()) {
-            toast(R.string.can_not_empty)
+            context?.toast(R.string.can_not_empty)
             return
         }
         dialog?.dismiss()

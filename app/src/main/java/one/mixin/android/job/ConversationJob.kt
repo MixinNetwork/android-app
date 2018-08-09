@@ -7,6 +7,7 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantAction
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
+import one.mixin.android.db.insertConversation
 import one.mixin.android.event.ConversationEvent
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationBuilder
@@ -22,8 +23,7 @@ class ConversationJob(
     private val participantRequests: List<ParticipantRequest>? = null,
     private val type: Int,
     private val recipientId: String? = null
-)
-    : MixinJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy(GROUP), UUID.randomUUID().toString()) {
+) : MixinJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy(GROUP), UUID.randomUUID().toString()) {
 
     companion object {
         const val GROUP = "ConversationJob"
@@ -68,7 +68,7 @@ class ConversationJob(
             handleResult(response)
         } catch (e: Exception) {
             if (type != TYPE_CREATE || type != TYPE_MUTE) {
-                RxBus.getInstance().post(ConversationEvent(type, false))
+                RxBus.publish(ConversationEvent(type, false))
                 ErrorHandler.handleError(e)
             }
             Timber.e(e)
@@ -89,7 +89,7 @@ class ConversationJob(
                     .setIconUrl(cr.iconUrl)
                     .setCodeUrl(cr.codeUrl)
                     .build()
-                conversationDao.insert(conversation)
+                conversationDao.insertConversation(conversation)
 
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) { Participant(cr.conversationId, it.userId, it.role, cr.createdAt) }
@@ -102,11 +102,11 @@ class ConversationJob(
                     conversationId?.let { conversationDao.updateGroupDuration(it, cr.muteUntil) }
                 }
             } else {
-                RxBus.getInstance().post(ConversationEvent(type, true))
+                RxBus.publish(ConversationEvent(type, true))
             }
         } else {
             if (type != TYPE_CREATE || type != TYPE_MUTE) {
-                RxBus.getInstance().post(ConversationEvent(type, false))
+                RxBus.publish(ConversationEvent(type, false))
             } else if (type == TYPE_CREATE) {
                 request?.let {
                     conversationDao.updateConversationStatusById(request.conversationId,

@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import com.google.gson.annotations.SerializedName
 
-data class AppCardData (
+data class AppCardData(
     @SerializedName("icon_url")
     val iconUrl: String,
     val title: String,

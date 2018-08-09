@@ -15,10 +15,14 @@ class RefreshFcmTokenJob(private val token: String? = null)
 
     @SuppressLint("CheckResult")
     override fun onRun() {
-        val fcmToken = token ?: FirebaseInstanceId.getInstance().token
-        if (fcmToken != null) {
-            accountService.updateSession(SessionRequest(notificationToken = fcmToken))
+        if (token != null) {
+            accountService.updateSession(SessionRequest(notificationToken = token))
                 .observeOn(Schedulers.io()).subscribe({}, {})
+        } else {
+            FirebaseInstanceId.getInstance().instanceId.addOnSuccessListener {
+                accountService.updateSession(SessionRequest(notificationToken = it.token))
+                    .observeOn(Schedulers.io()).subscribe({}, {})
+            }
         }
     }
 }

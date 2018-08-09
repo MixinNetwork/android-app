@@ -3,25 +3,24 @@ package one.mixin.android.ui.forward
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_header.view.*
-import kotlinx.android.synthetic.main.item_contact_normal.view.*
-import kotlinx.android.synthetic.main.item_forward_conversation.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
+import one.mixin.android.widget.ConversationCheckView
 
 class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     StickyRecyclerHeadersAdapter<ForwardAdapter.HeaderViewHolder> {
 
     companion object {
-        val TYPE_CONVERSATION = 0
-        val TYPE_FRIEND = 1
+        const val TYPE_CONVERSATION = 0
+        const val TYPE_FRIEND = 1
     }
+
+    var selectItem = ArrayList<Any>()
 
     private var listener: ForwardListener? = null
     var conversations: List<ConversationItem>? = null
@@ -81,13 +80,13 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
         }
         if (holder is ConversationViewHolder) {
             val conversationItem = conversations!![position]
-            holder.bind(conversationItem, listener)
+            holder.bind(conversationItem, listener, selectItem.contains(conversationItem))
         } else {
             holder as FriendViewHolder
             val pos = if (conversations != null && conversations!!.isNotEmpty())
                 position - conversations!!.size else position
             val user = friends!![pos]
-            holder.bind(user, listener)
+            holder.bind(user, listener, selectItem.contains(user))
         }
     }
 
@@ -96,7 +95,7 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
             ConversationViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_forward_conversation,
                 parent, false))
         } else {
-            FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_normal,
+            FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_friend,
                 parent, false))
         }
     }
@@ -106,31 +105,19 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     }
 
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: User, listener: ForwardListener?) {
-            itemView.normal.text = item.fullName
-            itemView.avatar.setInfo(if (item.fullName != null && item.fullName.isNotEmpty())
-                item.fullName[0] else ' ', item.avatarUrl, item.identityNumber)
-            itemView.setOnClickListener {
-                listener?.onUserItemClick(item)
+        fun bind(item: User, listener: ForwardListener?, isCheck: Boolean) {
+            (itemView as ConversationCheckView).let {
+                it.isChecked = isCheck
+                it.bind(item, listener)
             }
-            itemView.bot_iv.visibility = if (item.appId != null) VISIBLE else GONE
-            itemView.verified_iv.visibility = if (item.isVerified == true) VISIBLE else GONE
         }
     }
 
     class ConversationViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(item: ConversationItem, listener: ForwardListener?) {
-            if (item.isGroup()) {
-                itemView.name.text = item.groupName
-                itemView.avatar_conversation.setGroup(item.iconUrl())
-            } else {
-                itemView.name.text = item.name
-                itemView.avatar_conversation.setInfo(if (item.getConversationName().isNotEmpty())
-                    item.getConversationName()[0] else ' ', item.iconUrl(), item.ownerIdentityNumber)
-            }
-            itemView.c_bot_iv.visibility = if (item.isBot()) VISIBLE else GONE
-            itemView.setOnClickListener {
-                listener?.onConversationItemClick(item)
+        fun bind(item: ConversationItem, listener: ForwardListener?, isCheck: Boolean) {
+            (itemView as ConversationCheckView).let {
+                it.isChecked = isCheck
+                it.bind(item, listener)
             }
         }
     }

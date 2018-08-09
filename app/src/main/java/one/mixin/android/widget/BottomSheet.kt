@@ -11,7 +11,6 @@ import android.content.Context
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.content.ContextCompat
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -25,11 +24,15 @@ import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import one.mixin.android.R
 import one.mixin.android.extension.isTablet
+import one.mixin.android.extension.notNullElse
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
+import kotlin.math.abs
+import kotlin.math.min
 
 class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(context, R.style.TransparentDialog) {
 
@@ -43,9 +46,13 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
     private var customView: View? = null
     private var customViewHeight: Int = 0
 
+    private val speed = context.dip(0.5f)
+
     private val backDrawable = ColorDrawable(-0x1000000)
 
     private var bottomSheetListener: BottomSheetListener? = null
+
+    var fullScreen = false
 
     private inner class ContainerView(context: Context) : FrameLayout(context) {
 
@@ -109,7 +116,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         container.background = backDrawable
         container.fitsSystemWindows = true
         container.setOnApplyWindowInsetsListener { v, insets ->
-            if (lastInsets == null && customView != null) {
+            if (lastInsets == null && customView != null && !fullScreen) {
                 val params = customView!!.layoutParams as FrameLayout.LayoutParams
                 params.topMargin = insets.systemWindowInsetTop
                 customView!!.layoutParams = params
@@ -124,12 +131,11 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val window = window
         window.setWindowAnimations(R.style.DialogNoAnimation)
         if (Build.VERSION.SDK_INT >= 26) {
-            window.navigationBarColor = ContextCompat.getColor(context!!, R.color.white)
             window.decorView.systemUiVisibility =
-                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
+                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
@@ -271,18 +277,37 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
 
     fun getCustomView() = customView
 
-    fun setCustomViewHeight(height: Int) {
+    fun setCustomViewHeight(height: Int, endAction: (() -> Unit)? = null) {
         customViewHeight = height
         val params = customView?.layoutParams
+        val duration = notNullElse(customView?.layoutParams, {
+            min(abs(height - it.height) / speed, 200)
+        }, 200).toLong()
+
+        if (duration == 0L) {
+            return
+        }
         if (params != null) {
             val anim = ValueAnimator.ofInt(customView!!.height, height)
+            anim.interpolator = LinearInterpolator()
             anim.addUpdateListener {
                 val value = it.animatedValue as Int
                 params.height = value
                 customView?.layoutParams = params
+                if (value == height) {
+                    endAction?.let { it() }
+                }
             }
-            anim.duration = 200
+            anim.duration = duration
             anim.start()
+        }
+    }
+
+    fun setCustomViewHeightSync(height: Int) {
+        customViewHeight = height
+        customView?.layoutParams?.let { params ->
+            params.height = height
+            customView?.layoutParams = params
         }
     }
 

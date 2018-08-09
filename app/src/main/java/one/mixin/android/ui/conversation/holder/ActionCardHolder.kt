@@ -25,7 +25,7 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
     ) {
         val isMe = meId == messageItem.userId
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -64,6 +64,7 @@ class ActionCardHolder constructor(containerView: View) : BaseViewHolder(contain
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
     }
 }

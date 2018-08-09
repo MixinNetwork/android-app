@@ -17,7 +17,7 @@
             android:layout_width="60dp"
             android:layout_height="60dp"
             android:layout_centerVertical="true"
-            android:layout_margin="@dimen/activity_horizontal_margin" />
+            android:layout_margin="@dimen/activity_horizontal_margin"/>
 
         <TextView
             android:id="@+id/contact_header_name_tv"
@@ -25,12 +25,12 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/contact_header_id_tv"
             android:layout_marginBottom="4dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:layout_toEndOf="@+id/contact_header_avatar"
-            android:layout_toStartOf="@id/right1"
             android:ellipsize="end"
             android:singleLine="true"
             android:textColor="@android:color/black"
-            android:textSize="16sp" />
+            android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/contact_header_id_tv"
@@ -38,11 +38,11 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toEndOf="@+id/contact_header_avatar"
-            android:layout_toStartOf="@id/right1"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:maxLines="1"
             android:text="@string/contact_mixin_id"
             android:textColor="@color/text_gray"
-            android:textSize="11sp" />
+            android:textSize="11sp"/>
 
         <TextView
             android:id="@+id/contact_header_mobile_tv"
@@ -51,22 +51,64 @@
             android:layout_below="@+id/contact_header_id_tv"
             android:layout_marginTop="4dp"
             android:layout_toEndOf="@+id/contact_header_avatar"
-            android:layout_toStartOf="@id/right1"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:maxLines="1"
             android:text="@string/contact_mobile"
             android:textColor="@color/text_gray"
-            android:textSize="11sp" />
-
-        <ImageView
-            android:id="@+id/right1"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_chevron_right_gray_24dp"
-            tools:ignore="ContentDescription" />
+            android:textSize="11sp"/>
     </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@android:color/white">
+
+        <FrameLayout
+            android:id="@+id/receive_fl"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:id="@+id/receive_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawablePadding="8dp"
+                android:drawableStart="@drawable/ic_contacts_receive"
+                android:textColor="@color/black"
+                android:text="@string/contact_receive_money"/>
+        </FrameLayout>
+
+        <View
+            android:layout_width=".5dp"
+            android:layout_height="match_parent"
+            android:background="@color/divider"/>
+
+        <FrameLayout
+            android:id="@+id/my_qr_fl"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:id="@+id/my_qr_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:drawablePadding="8dp"
+                android:drawableStart="@drawable/ic_contacts_qr"
+                android:textColor="@color/black"
+                android:text="@string/contact_my_qr_title"/>
+        </FrameLayout>
+    </LinearLayout>
 
     <include layout="@layout/view_item_divider"/>
 
@@ -81,16 +123,17 @@
             android:id="@+id/center_new_group"
             android:layout_width="1dp"
             android:layout_height="1dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"/>
 
         <ImageView
             android:id="@+id/new_group_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:src="@drawable/ic_new_group"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"/>
 
         <TextView
             android:id="@+id/new_group_title_iv"
@@ -99,7 +142,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/center_new_group"
             android:layout_toEndOf="@+id/new_group_iv"
-            android:text="@string/contact_new_group_chat_title" />
+            android:text="@string/contact_new_group_chat_title"/>
 
         <TextView
             android:id="@+id/new_group_desc_iv"
@@ -108,14 +151,14 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/center_new_group"
             android:layout_toEndOf="@+id/new_group_iv"
-            android:text="@string/contact_new_group_chat_desc" />
+            android:text="@string/contact_new_group_chat_desc"/>
 
         <View
             android:layout_width="match_parent"
             android:layout_height=".5dp"
             android:layout_alignParentBottom="true"
             android:layout_toEndOf="@+id/new_group_iv"
-            android:background="@color/divider" />
+            android:background="@color/divider"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -129,16 +172,17 @@
             android:id="@+id/center_add_contact"
             android:layout_width="1dp"
             android:layout_height="1dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"/>
 
         <ImageView
             android:id="@+id/add_contact_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:src="@drawable/ic_add_contact"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"/>
 
         <TextView
             android:id="@+id/add_contact_title_iv"
@@ -147,7 +191,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/center_add_contact"
             android:layout_toEndOf="@+id/add_contact_iv"
-            android:text="@string/contact_add_contact_title" />
+            android:text="@string/contact_add_contact_title"/>
 
         <TextView
             android:id="@+id/add_contact_desc_iv"
@@ -156,7 +200,13 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/center_add_contact"
             android:layout_toEndOf="@+id/add_contact_iv"
-            android:text="@string/contact_add_contact_desc" />
+            android:text="@string/contact_add_contact_desc"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:layout_alignParentBottom="true"
+            android:background="@color/divider"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -171,16 +221,17 @@
             android:id="@+id/center_qr"
             android:layout_width="1dp"
             android:layout_height="1dp"
-            android:layout_centerVertical="true" />
+            android:layout_centerVertical="true"/>
 
         <ImageView
             android:id="@+id/qr_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_margin="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
             android:src="@drawable/ic_qr_code"
-            tools:ignore="ContentDescription" />
+            tools:ignore="ContentDescription"/>
 
         <TextView
             android:id="@+id/qr_title_iv"
@@ -189,7 +240,7 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/center_qr"
             android:layout_toEndOf="@+id/qr_iv"
-            android:text="@string/contact_qr_mixin" />
+            android:text="@string/contact_qr_mixin"/>
 
         <TextView
             android:id="@+id/qr_desc_iv"
@@ -198,7 +249,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/center_qr"
             android:layout_toEndOf="@+id/qr_iv"
-            android:text="@string/contact_qr_desc" />
+            android:text="@string/contact_qr_desc"/>
 
     </RelativeLayout>
 
@@ -215,18 +266,20 @@
             android:layout_width="1dp"
             android:layout_height="1dp"
             android:layout_centerVertical="true"/>
+
         <ImageView
             android:id="@+id/invite_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:src="@drawable/ic_invite"
             android:layout_centerVertical="true"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            tools:ignore="ContentDescription" />
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="24dp"
+            tools:ignore="ContentDescription"/>
 
         <TextView
-            style="@style/NormalTextStyle"
             android:id="@+id/invite_title_iv"
+            style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_toEndOf="@+id/invite_iv"
@@ -234,12 +287,12 @@
             android:text="@string/contact_invite_title"/>
 
         <TextView
-            style="@style/DescTextStyle"
             android:id="@+id/invite_desc_iv"
+            style="@style/DescTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/center_invite"
             android:text="@string/contact_invite_desc"
-            android:layout_toEndOf="@+id/invite_iv" />
+            android:layout_toEndOf="@+id/invite_iv"/>
     </RelativeLayout>
 </LinearLayout>

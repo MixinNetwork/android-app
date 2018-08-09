@@ -9,6 +9,7 @@ import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
@@ -17,17 +18,20 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.rsaDecrypt
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
+import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.Sticker
+import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
 import retrofit2.Call
 import javax.inject.Inject
@@ -44,7 +48,8 @@ constructor(
     private val appDao: AppDao,
     private val authService: AuthorizationService,
     private val stickerDao: StickerDao,
-    private val stickerAlbumDao: StickerAlbumDao
+    private val stickerAlbumDao: StickerAlbumDao,
+    private val stickerRelationshipDao: StickerRelationshipDao
 ) {
 
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -105,19 +110,23 @@ constructor(
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
-    fun verifyPin(code: String) = getPinToken().map { pinToken ->
-        accountService.verifyPin(PinRequest(aesEncrypt(pinToken, code)!!)).execute().body()!!
+    fun verifyPin(code: String): Observable<MixinResponse<Account>> = getPinToken().map { pinToken ->
+        accountService.verifyPin(PinRequest(encryptPin(pinToken, code)!!)).execute().body()!!
     }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 
-    fun getStickerAlbums() = stickerAlbumDao.albums()
+    fun getSystemAlbums() = stickerAlbumDao.getSystemAlbums()
 
-    fun getStickers(id: String) = stickerDao.getStickersByAlbumId(id)
+    fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
+
+    fun observeStickers(id: String) = stickerRelationshipDao.observeStickersByAlbumId(id)
+
+    fun observePersonalStickers() = stickerRelationshipDao.observePersonalStickers()
 
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
 
-    fun updateUsedAt(albumId: String, name: String, at: String) = stickerDao.updateUsedAt(albumId, name, at)
+    fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
 
     fun getPinToken(): Observable<String> {
         val pinToken = Session.getPinToken()
@@ -136,5 +145,12 @@ constructor(
         } else {
             Observable.just(pinToken).subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
         }
+    }
+
+    fun addSticker(request: StickerAddRequest) = accountService.addSticker(request)
+
+    fun addStickerLocal(sticker: Sticker, albumId: String) {
+        stickerDao.insertUpdate(sticker)
+        stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
     }
 }

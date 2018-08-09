@@ -64,7 +64,7 @@
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="8dp"
                 android:layout_toEndOf="@id/line"
-                android:maxWidth="200dp"
+                android:maxWidth="270dp"
                 android:singleLine="true"
                 android:textColor="@android:color/black"
                 android:textSize="15sp"
@@ -82,7 +82,7 @@
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="4dp"
                 android:maxLines="3"
-                android:maxWidth="200dp"
+                android:maxWidth="270dp"
                 android:textStyle="italic"
                 tools:text="When we do automatic pings it’d be nice to fail the connection if the peer isn’t ponging back. As-is a server that blackholes pings is not sufficient to consider the connection healthy. See also #3197" />
         </android.support.constraint.ConstraintLayout>

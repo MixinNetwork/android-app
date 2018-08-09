@@ -11,6 +11,7 @@ import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
+import android.text.TextPaint
 import android.util.ArrayMap
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
@@ -21,6 +22,7 @@ import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
+import one.mixin.android.widget.AvatarView
 import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -33,7 +35,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
     }
 
     @Transient
-    private lateinit var texts: ArrayMap<Int, Char>
+    private lateinit var texts: ArrayMap<Int, String>
 
     private val size = 256
 
@@ -87,7 +89,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
         val textOffset = applicationContext.dip(5f).toFloat()
         val dividerOffset = applicationContext.dip(.5f).toFloat()
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
         }
         val c0 = Color.parseColor("#33FFFFFF")  // 20%
@@ -296,7 +298,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
 
             if (item.isNullOrEmpty()) {
                 val user = users[i]
-                texts[i] = if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0] else ' '
+                texts[i] = AvatarView.checkEmoji(user.fullName)
                 bitmaps.add(getBitmapByPlaceHolder(getAvatarPlaceHolderById(user.identityNumber.toLong())))
             } else {
                 bitmaps.add(Glide.with(applicationContext)

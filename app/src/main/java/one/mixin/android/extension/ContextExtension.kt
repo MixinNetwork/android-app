@@ -45,9 +45,11 @@ import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
+import one.mixin.android.widget.gallery.Gallery
+import one.mixin.android.widget.gallery.MimeType
+import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import org.jetbrains.anko.displayMetrics
-import org.jetbrains.anko.support.v4.toast
-import org.jetbrains.anko.toast
+import timber.log.Timber
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
@@ -97,6 +99,11 @@ fun Context.navigationBarHeight(): Int {
     return dpToPx(24f)
 }
 
+fun Context.hasNavBar(): Boolean {
+    val id = resources.getIdentifier("config_showNavigationBar", "bool", "android")
+    return id > 0 && resources.getBoolean(id)
+}
+
 @Suppress("DEPRECATION")
 fun Context.vibrate(pattern: LongArray) {
     if (Build.VERSION.SDK_INT >= 26) {
@@ -139,23 +146,24 @@ fun Context.networkConnected(): Boolean {
     return network != null && network.isConnected
 }
 
-fun Context.inWifi(): Boolean {
-    val cm = systemService<ConnectivityManager>()
-    val network: NetworkInfo
-    try {
-        network = cm.activeNetworkInfo
-    } catch (t: Throwable) {
-        return false
-    }
-    return network != null && network.type == ConnectivityManager.TYPE_WIFI
-}
-
 fun Context.displaySize(): Point {
     val displaySize = Point()
     val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val display = manager.defaultDisplay
-    display?.getSize(displaySize)
+    display.getSize(displaySize)
     return displaySize
+}
+
+fun Context.realSize(): Point {
+    val displaySize = Point()
+    val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val display = manager.defaultDisplay
+    display.getRealSize(displaySize)
+    return displaySize
+}
+
+fun Context.displayHeight(): Int {
+    return displaySize().y
 }
 
 fun Context.getUriForFile(file: File): Uri {
@@ -220,12 +228,11 @@ inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> Unit) {
     fragmentTransaction.commit()
 }
 
-val REQUEST_IMAGE = 0x01
-val REQUEST_GALLERY = 0x02
-val REQUEST_GAMERA = 0x03
-val REQUEST_FILE = 0x04
-val REQUEST_AUDIO = 0x05
-val REQUEST_VIDEO = 0x06
+const val REQUEST_IMAGE = 0x01
+const val REQUEST_GALLERY = 0x02
+const val REQUEST_CAMERA = 0x03
+const val REQUEST_FILE = 0x04
+const val REQUEST_AUDIO = 0x05
 fun Fragment.openImage(output: Uri) {
     val cameraIntents = ArrayList<Intent>()
     val captureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
@@ -264,9 +271,9 @@ fun Fragment.openCamera(output: Uri) {
     }
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     if (intent.resolveActivity(context!!.packageManager) != null) {
-        startActivityForResult(intent, REQUEST_GAMERA)
+        startActivityForResult(intent, REQUEST_CAMERA)
     } else {
-        toast(R.string.error_no_camera)
+        context?.toast(R.string.error_no_camera)
     }
 }
 
@@ -329,69 +336,49 @@ private val maxVideoSize by lazy {
 }
 
 fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
-    var cursor: Cursor? = null
-
     try {
-        cursor = contentResolver.query(uri, null, null, null, null)
-
-        if (cursor != null && cursor.moveToFirst()) {
-
-            val fileName = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-
-            val path = cursor.getString(cursor.getColumnIndex(MediaStore.Video.Media.DATA))
-            val duration = cursor.getLong(cursor.getColumnIndex(MediaStore.Video.Media.DURATION))
-            val m = MediaMetadataRetriever().apply {
-                setDataSource(path)
-            }
-
-            val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
-            val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
-            val mediaWith = image.width
-            val mediaHeight = image.height
-
-            val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
-
-            val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
-            val resultWidth = (Math.round((mediaWith * scale / 2).toDouble()) * 2).toInt()
-            val resultHeight = (Math.round((mediaHeight * scale / 2).toDouble()) * 2).toInt()
-
-            return if (scale > 0) {
-                VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                    fileName, 0, false)
-            } else {
-                val bitrate = MediaController.getBitrate(path, scale)
-                VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                    fileName, bitrate)
-            }
+        val path = uri.getFilePath() ?: return null
+        val m = MediaMetadataRetriever().apply {
+            setDataSource(path)
         }
-    } finally {
-        if (cursor != null) cursor.close()
+        val fileName = File(path).name
+        val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)
+        val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST)
+        val mediaWith = image.width
+        val mediaHeight = image.height
+        val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
+        val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
+        val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
+        val resultWidth = (Math.round((mediaWith * scale / 2).toDouble()) * 2).toInt()
+        val resultHeight = (Math.round((mediaHeight * scale / 2).toDouble()) * 2).toInt()
+        return if (scale > 0) {
+            VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
+                fileName, 0, false)
+        } else {
+            val bitrate = MediaController.getBitrate(path, scale)
+            VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
+                fileName, bitrate)
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
     }
     return null
 }
 
 fun Fragment.openGallery() {
-    val galleryIntent = Intent()
-    galleryIntent.type = "image/*"
-    galleryIntent.action = Intent.ACTION_PICK
-
-    val chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.select_picture))
-    try {
-        this.startActivityForResult(chooserIntent, REQUEST_GALLERY)
-    } catch (e: ActivityNotFoundException) {
-    }
+    Gallery.from(this)
+        .choose(MimeType.ofMedia())
+        .imageEngine(GlideEngine())
+        .forResult(REQUEST_GALLERY)
 }
 
-fun Fragment.openVideo() {
-    val galleryIntent = Intent()
-    galleryIntent.type = "video/*"
-    galleryIntent.action = Intent.ACTION_PICK
-
-    val chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.select_video))
-    try {
-        this.startActivityForResult(chooserIntent, REQUEST_VIDEO)
-    } catch (e: ActivityNotFoundException) {
-    }
+fun Fragment.openGalleryFromSticker() {
+    Gallery.from(this)
+        .choose(MimeType.ofSticker())
+        .showSingleMediaType(true)
+        .preview(false)
+        .imageEngine(GlideEngine())
+        .forResult(REQUEST_GALLERY)
 }
 
 fun Context.openUrl(url: String) {
@@ -458,6 +445,12 @@ inline fun <T : Number, R> notEmptyOrElse(input: T?, normalAction: (T) -> R, els
 
 inline fun supportsOreo(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        code()
+    }
+}
+
+inline fun supportsNougat(code: () -> Unit) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         code()
     }
 }

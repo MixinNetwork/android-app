@@ -10,14 +10,16 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import com.shizhefei.view.largeimage.LargeImageView;
 
 public class DismissFrameLayout extends FrameLayout {
     private SwipeGestureDetector swipeGestureDetector;
     private OnDismissListener dismissListener;
-    private int initHeight; //child view's original height;
+    private int initHeight;
     private int initWidth;
     private int initLeft = 0;
     private int initTop = 0;
+    private float deltaY = 0f;
 
     public DismissFrameLayout(@NonNull Context context) {
         super(context);
@@ -34,7 +36,6 @@ public class DismissFrameLayout extends FrameLayout {
         init();
     }
 
-    @SuppressWarnings("unused")
     public DismissFrameLayout(@NonNull Context context, @Nullable AttributeSet attrs, @AttrRes int defStyleAttr, @StyleRes int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
         init();
@@ -45,7 +46,8 @@ public class DismissFrameLayout extends FrameLayout {
                 new SwipeGestureDetector.OnSwipeGestureListener() {
                     @Override
                     public void onSwipeTopBottom(float deltaX, float deltaY) {
-                        dragChildView(deltaX, deltaY);
+                        DismissFrameLayout.this.deltaY = deltaY;
+                        dragChildView(deltaY);
                     }
 
                     @Override
@@ -56,7 +58,7 @@ public class DismissFrameLayout extends FrameLayout {
                     public void onFinish(int direction, float distanceX, float distanceY) {
                         if (dismissListener != null
                                 && direction == SwipeGestureDetector.DIRECTION_TOP_BOTTOM) {
-                            if (distanceY > initHeight / 10) {
+                            if (Math.abs(distanceY) > initHeight / 10) {
                                 dismissListener.onDismiss();
                             } else {
                                 dismissListener.onCancel();
@@ -75,18 +77,37 @@ public class DismissFrameLayout extends FrameLayout {
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return swipeGestureDetector.onTouchEvent(event);
-    }
-
-    private void dragChildView(float deltaX, float deltaY) {
         int count = getChildCount();
         if (count > 0) {
             View view = getChildAt(0);
-            scaleAndMove(view, deltaX, deltaY);
+            if (view instanceof PhotoView) {
+                if (((PhotoView) view).getScale() != 1) {
+                    if (view.onTouchEvent(event)) {
+                        return true;
+                    }
+                }
+            } else if (view instanceof LargeImageView) {
+                if (view.onTouchEvent(event)) {
+                    return true;
+                }
+            }
+        }
+        if (deltaY != 0) {
+            swipeGestureDetector.onTouchEvent(event);
+            return true;
+        }
+        return swipeGestureDetector.onTouchEvent(event);
+    }
+
+    private void dragChildView(float deltaY) {
+        int count = getChildCount();
+        if (count > 0) {
+            View view = getChildAt(0);
+            moveChildView(view, deltaY);
         }
     }
 
-    private void scaleAndMove(View view, float deltaX, float deltaY) {
+    private void moveChildView(View view, float deltaY) {
         MarginLayoutParams params = (MarginLayoutParams) view.getLayoutParams();
         if (params == null) {
             params = new MarginLayoutParams(view.getWidth(), view.getHeight());
@@ -101,22 +122,16 @@ public class DismissFrameLayout extends FrameLayout {
             initLeft = params.leftMargin;
             initTop = params.topMargin;
         }
-        float percent = deltaY / getHeight();
-        int scaleX = (int) (initWidth * percent);
-        int scaleY = (int) (initHeight * percent);
-        params.width = params.width - scaleX;
-        params.height = params.height - scaleY;
-        params.leftMargin += (calXOffset(deltaX) + scaleX / 2);
-        params.topMargin += (calYOffset(deltaY) + scaleY / 2);
+
+        percent += (deltaY / getHeight());
+        params.topMargin += (calYOffset(deltaY));
         view.setLayoutParams(params);
         if (dismissListener != null) {
-            dismissListener.onScaleProgress(percent);
+            dismissListener.onDismissProgress(Math.abs(percent));
         }
     }
 
-    private int calXOffset(float deltaX) {
-        return (int) deltaX;
-    }
+    private float percent = 0f;
 
     private int calYOffset(float deltaY) {
         return (int) deltaY;
@@ -131,6 +146,7 @@ public class DismissFrameLayout extends FrameLayout {
             params.height = initHeight;
             params.leftMargin = initLeft;
             params.topMargin = initTop;
+            percent = 0;
             view.setLayoutParams(params);
         }
     }
@@ -140,7 +156,7 @@ public class DismissFrameLayout extends FrameLayout {
     }
 
     public interface OnDismissListener {
-        void onScaleProgress(float scale);
+        void onDismissProgress(float scale);
 
         void onDismiss();
 

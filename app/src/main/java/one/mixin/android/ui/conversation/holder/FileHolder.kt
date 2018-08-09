@@ -1,14 +1,12 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
-import android.support.v7.content.res.AppCompatResources
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
-import android.widget.FrameLayout
+import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_file.view.*
 import one.mixin.android.R
@@ -18,7 +16,6 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
@@ -37,7 +34,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -79,24 +76,12 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         } else {
             itemView.file_size_tv.text = "${messageItem.mediaSize?.fileSize()}"
         }
-        if (isMe) {
-            val drawable: Drawable? =
-                when (messageItem.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            itemView.chat_flag.setImageDrawable(drawable)
+        setStatusIcon(isMe, messageItem.status, {
+            itemView.chat_flag.setImageDrawable(it)
             itemView.chat_flag.visibility = View.VISIBLE
-        } else {
+        }, {
             itemView.chat_flag.visibility = View.GONE
-        }
+        })
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -187,16 +172,17 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
                 itemView.chat_layout.setBackgroundResource(R.drawable.bill_bubble_me_last)
             } else {
                 itemView.chat_layout.setBackgroundResource(R.drawable.bill_bubble_me)
             }
-            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
+            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.END
         } else {
-            (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
+            (itemView.chat_layout.layoutParams as LinearLayout.LayoutParams).gravity = Gravity.START
             if (isLast) {
                 itemView.chat_layout.setBackgroundResource(R.drawable.chat_bubble_other_last)
             } else {

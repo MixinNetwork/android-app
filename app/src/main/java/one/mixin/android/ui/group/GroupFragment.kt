@@ -156,7 +156,7 @@ class GroupFragment : BaseFragment() {
         }
 
         if (disposable == null) {
-            disposable = RxBus.getInstance().toFlowable(ConversationEvent::class.java)
+            disposable = RxBus.listen(ConversationEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.type == TYPE_ADD || it.type == TYPE_REMOVE) {
@@ -172,6 +172,7 @@ class GroupFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         disposable?.dispose()
+        disposable = null
         dialog?.dismiss()
     }
 

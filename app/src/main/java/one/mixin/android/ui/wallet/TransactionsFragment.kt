@@ -5,6 +5,7 @@ import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
+import android.support.v7.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,22 +18,24 @@ import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
-class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsListener {
+class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     companion object {
         const val TAG = "TransactionsFragment"
@@ -77,24 +80,30 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
         header.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         updateHeader(header, asset)
         header.deposit_tv.setOnClickListener {
-            activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
+            if (asset.publicKey.isNullOrEmpty() && !asset.accountName.isNullOrEmpty() && !asset.accountTag.isNullOrEmpty()) {
+                activity?.addFragment(this@TransactionsFragment, DepositFragment.newInstance(asset), DepositFragment.TAG)
+            } else if (!asset.publicKey.isNullOrEmpty() && asset.accountName.isNullOrEmpty() && asset.accountTag.isNullOrEmpty()) {
+                activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
+            } else {
+                toast(R.string.error_bad_data)
+            }
         }
 
-        adapter = TransactionsAdapter(snapshots, asset)
-        adapter.setListener(this)
-        adapter.header = header
+        adapter = TransactionsAdapter(asset).apply { data = snapshots }
+        adapter.onItemListener = this
+        adapter.headerView = header
         recycler_view.addItemDecoration(SpaceItemDecoration(1))
         recycler_view.adapter = adapter
 
         walletViewModel.snapshotsFromDb(asset.assetId).observe(this, Observer {
             it?.let {
                 snapshots = it
-                adapter.snapshots = snapshots
+                adapter.data = snapshots
                 adapter.notifyDataSetChanged()
 
                 doAsync {
                     for (s in snapshots) {
-                        s.counterUserId?.let {
+                        s.opponentId?.let {
                             val u = walletViewModel.getUserById(it)
                             if (u == null) {
                                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(it)))
@@ -117,40 +126,58 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.TransactionsLis
 
     @SuppressLint("SetTextI18n")
     private fun updateHeader(header: View, asset: AssetItem) {
-        header.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
+        header.balance.text = asset.balance.numberFormat() + " " + asset.symbol
         header.balance_as.text = getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
-        header.deposit_animator.displayedChild = if (asset.publicKey.isEmpty()) POS_PB else POS_TEXT
+        if (showPB(asset)) {
+            if (header.deposit_animator.displayedChild != POS_PB) {
+                header.deposit_animator.displayedChild = POS_PB
+            }
+        } else {
+            if (header.deposit_animator.displayedChild != POS_TEXT) {
+                header.deposit_animator.displayedChild = POS_TEXT
+            }
+        }
+    }
+
+    private fun showPB(asset: AssetItem): Boolean {
+        if (asset.publicKey.isNullOrEmpty()) {
+            if (asset.accountName.isNullOrEmpty() || asset.accountTag.isNullOrEmpty()) {
+                return true
+            }
+        } else {
+            if (!asset.accountName.isNullOrEmpty() || !asset.accountTag.isNullOrEmpty()) {
+                return true
+            }
+        }
+        return false
     }
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
-        context?.let {
-            val builder = BottomSheet.Builder(it)
-            val view = LayoutInflater.from(it).inflate(R.layout.view_wallet_transactions_bottom, null, false)
-            builder.setCustomView(view)
-            val bottomSheet = builder.create()
-            view.withdrawal.setOnClickListener {
-                bottomSheet.dismiss()
-                activity?.addFragment(this@TransactionsFragment,
-                    WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
-            }
-            view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show
-            else R.string.wallet_transactions_hide)
-            view.hide.setOnClickListener {
-                doAsync {
-                    walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
-                }
-                bottomSheet.dismiss()
-                activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
-            }
-            view.cancel.setOnClickListener { bottomSheet.dismiss() }
-
-            bottomSheet.show()
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_transactions_bottom, null)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.withdrawal.setOnClickListener {
+            bottomSheet.dismiss()
+            activity?.addFragment(this@TransactionsFragment,
+                WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
         }
+        view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
+        view.hide.setOnClickListener {
+            doAsync {
+                walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
+            }
+            bottomSheet.dismiss()
+            activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
+        }
+        view.cancel.setOnClickListener { bottomSheet.dismiss() }
+
+        bottomSheet.show()
     }
 
-    override fun onItemClick(snapshot: SnapshotItem) {
-        val fragment = TransactionFragment.newInstance(snapshot, asset)
+    override fun <T> onNormalItemClick(item: T) {
+        val fragment = TransactionFragment.newInstance(item as SnapshotItem, asset)
         activity?.addFragment(this@TransactionsFragment, fragment, TransactionFragment.TAG)
     }
 }

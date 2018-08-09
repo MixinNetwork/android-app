@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/item_contact_height"
+    android:background="@android:color/white"
+    android:foreground="?attr/selectableItemBackground">
+
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"/>
+
+    <TextView
+        android:id="@+id/normal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_toEndOf="@id/avatar"
+        android:ellipsize="end"
+        android:maxWidth="160dp"
+        android:singleLine="true"
+        android:textColor="@android:color/black"/>
+
+    <TextView
+        android:id="@+id/storage_tv"
+        android:textColor="@color/text_gray"
+        android:layout_width="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="@dimen/margin16"
+        android:layout_height="wrap_content"/>
+
+</RelativeLayout>

@@ -28,7 +28,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
         this.data = data
         mShowHeader = showHeader
         data?.filterNot { mCheckedMap.containsKey(it.identityNumber) }
-            ?.forEach { mCheckedMap.put(it.identityNumber, false) }
+            ?.forEach { mCheckedMap[it.identityNumber] = false }
         notifyDataSetChanged()
     }
 
@@ -85,8 +85,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
             isAdd: Boolean
         ) {
             itemView.name.text = user.fullName
-            itemView.avatar.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0] else ' ',
-                user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             if (isAdd) {
                 alreadyUserIds?.let {
                     if (it.contains(user.userId)) {

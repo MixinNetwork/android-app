@@ -16,7 +16,7 @@ class ShareHelper {
 
         fun get(): ShareHelper =
             INSTANCE ?: synchronized(this) {
-                INSTANCE ?: ShareHelper()
+                INSTANCE ?: ShareHelper().also { INSTANCE = it }
             }
     }
 
@@ -33,24 +33,32 @@ class ShareHelper {
                 ForwardMessage(ForwardCategory.TEXT.name, content = text).addTo(result)
             } else if (type.startsWith("image/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                generateImageMessage(imageUri)?.addTo(result)
+                generateShareMessage(imageUri)?.addTo(result)
+            } else if (type.startsWith("video/")) {
+                val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                generateShareMessage(imageUri, ForwardCategory.VIDEO.name)?.addTo(result)
             }
         } else if (Intent.ACTION_SEND_MULTIPLE == action) {
             if (type.startsWith("image/")) {
                 val imageUriList = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
                 for (item in imageUriList) {
-                    generateImageMessage(item)?.addTo(result)
+                    generateShareMessage(item)?.addTo(result)
+                }
+            } else if (type.startsWith("video/")) {
+                val imageUriList = intent.getParcelableArrayListExtra<Uri>(Intent.EXTRA_STREAM)
+                for (item in imageUriList) {
+                    generateShareMessage(item, ForwardCategory.VIDEO.name)?.addTo(result)
                 }
             }
         }
         return result
     }
 
-    private fun generateImageMessage(imageUri: Uri?): ForwardMessage? {
+    private fun generateShareMessage(imageUri: Uri?, type: String = ForwardCategory.IMAGE.name): ForwardMessage? {
         if (imageUri == null) {
             return null
         }
-        return ForwardMessage(ForwardCategory.IMAGE.name,
+        return ForwardMessage(type,
             mediaUrl = imageUri.getFilePath(MixinApplication.appContext))
     }
 }

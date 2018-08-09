@@ -12,12 +12,13 @@ import kotlinx.android.synthetic.main.view_title.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
 
-class HiddenAssetsFragment : BaseFragment(), AssetAdapter.AssetsListener {
+class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     companion object {
         val TAG = HiddenAssetsFragment::class.java.simpleName!!
@@ -33,7 +34,7 @@ class HiddenAssetsFragment : BaseFragment(), AssetAdapter.AssetsListener {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
     private var assets: List<AssetItem> = listOf()
-    private val assetsAdapter: AssetAdapter = AssetAdapter(assets)
+    private val assetsAdapter by lazy { AssetAdapter(assets_rv) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_hidden_assets, container, false)
@@ -41,23 +42,22 @@ class HiddenAssetsFragment : BaseFragment(), AssetAdapter.AssetsListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         left_ib.setOnClickListener { activity?.onBackPressed() }
-        assetsAdapter.setAssetListener(this)
+        assetsAdapter.onItemListener = this
         assets_rv.adapter = assetsAdapter
         assets_rv.addItemDecoration(SpaceItemDecoration())
         walletViewModel.hiddenAssets().observe(this, Observer {
             if (it != null && it.isNotEmpty()) {
                 assets_va.displayedChild = POS_ASSET
                 assets = it
-                assetsAdapter.assets = it
-                assetsAdapter.notifyDataSetChanged()
+                assetsAdapter.setAssetList(it)
             } else {
                 assets_va.displayedChild = POS_EMPTY
             }
         })
     }
 
-    override fun onAsset(asset: AssetItem) {
+    override fun <T> onNormalItemClick(item: T) {
         activity?.addFragment(this@HiddenAssetsFragment,
-            TransactionsFragment.newInstance(asset), TransactionsFragment.TAG)
+            TransactionsFragment.newInstance(item as AssetItem), TransactionsFragment.TAG)
     }
 }

@@ -4,10 +4,12 @@
     <color name="colorPrimaryDark">#FFFFFF</color>
     <color name="colorAccent">#000000</color>
     <color name="colorBlue">#19C2FD</color>
+    <color name="colorDarkBlue">#1987FF</color>
     <color name="colorGray">#9B9B9B</color>
 
     <color name="black">#ff000000</color>
     <color name="black_50">#88000000</color>
+    <color name="black_70">#B2000000</color>
     <color name="gray_50">#88888888</color>
     <color name="color_chat_date">#ff7799A9</color>
     <color name="bg_gray">#F5F5F5</color>
@@ -20,6 +22,9 @@
     <color name="colorRed">#FF001F</color>
     <color name="dotRed">#FF001F</color>
     <color name="colorGreen">#00C500</color>
+    <color name="colorChangeGreen">#00B56E</color>
+    <color name="colorChangeRed">#E55541</color>
+    <color name="stateGreen">#55CD96</color>
     <color name="touch_highlight">#400099cc</color>
     <color name="button_blue">#0D94FC</color>
     <color name="button_blue_highlighted">#2CC3FA</color>
@@ -28,6 +33,13 @@
     <color name="pie_item_second">#3387FF</color>
     <color name="pie_item_third">#70BEFF</color>
     <color name="blue_highlight">#660D94FC</color>
+    <color name="transparent_white">#CCFFFFFF</color>
+    <color name="color_blink">#FF5E5E</color>
+    <color name="color_gray">#D6D6D6</color>
+    <color name="progress_gary">#F2F2F6</color>
+    <color name="shadow">#33000000</color>
+    <color name="color_record_circle_bg">#EE1987FF</color>
+    <color name="text_default">#767676</color>
 
     <array name="name_colors">
         <item>#AA4848</item>

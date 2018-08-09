@@ -96,7 +96,7 @@ class GroupInfoFragment : BaseFragment() {
         group_info_rv.adapter = adapter
         group_info_rv.addItemDecoration(SpaceItemDecoration(2))
         header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
-        adapter.setHeader(header)
+        adapter.headerView = header
         adapter.setGroupInfoListener(object : GroupInfoAdapter.GroupInfoListener {
             override fun onAdd() {
                 modifyMember(true)
@@ -126,13 +126,13 @@ class GroupInfoFragment : BaseFragment() {
                     }
                 }
                 AlertDialog.Builder(context!!)
-                    .setItems(choices.toTypedArray(), { _, which ->
+                    .setItems(choices.toTypedArray()) { _, which ->
                         when (which) {
                             0 -> {
                                 openChat(user)
                             }
                             1 -> {
-                                UserBottomSheetDialogFragment.newInstance(user, conversationId).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                                UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                             }
                             2 -> {
                                 showConfirmDialog(getString(R.string.group_info_remove_tip,
@@ -143,7 +143,7 @@ class GroupInfoFragment : BaseFragment() {
                                 groupViewModel.makeAdmin(conversationId, user)
                             }
                         }
-                    }).show()
+                    }.show()
             }
 
             override fun onLongClick(name: View, user: User): Boolean {
@@ -186,7 +186,7 @@ class GroupInfoFragment : BaseFragment() {
                         }
                         R.id.view -> {
                             UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                                .show(fragmentManager, UserBottomSheetDialogFragment.TAG)
+                                .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                         }
                         R.id.remove -> {
                             showConfirmDialog(getString(R.string.group_info_remove_tip,
@@ -232,7 +232,14 @@ class GroupInfoFragment : BaseFragment() {
                     }
                     adapter.participantsMap = participantsMap
 
-                    uiThread { adapter.users = u }
+                    uiThread {
+                        val s = search_et.text.toString()
+                        if (s.isNotBlank()) {
+                            filter(s)
+                        } else {
+                            adapter.data = u
+                        }
+                    }
                 }
             }
         })
@@ -249,7 +256,7 @@ class GroupInfoFragment : BaseFragment() {
         })
 
         if (disposable == null) {
-            disposable = RxBus.getInstance().toFlowable(ConversationEvent::class.java)
+            disposable = RxBus.listen(ConversationEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE || it.type == TYPE_EXIT) {
@@ -264,34 +271,39 @@ class GroupInfoFragment : BaseFragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                val us = arrayListOf<User>()
-                users.forEach {
-                    if (it.fullName?.startsWith(s, true) == true) {
-                        us.add(it)
-                    }
-                }
-                adapter.users = us
+                filter(s.toString())
             }
         })
 
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 
+    private fun filter(s: String) {
+        val us = arrayListOf<User>()
+        users.forEach {
+            if (it.fullName?.contains(s, true) == true) {
+                us.add(it)
+            }
+        }
+        adapter.data = us
+    }
+
     private fun openChat(user: User) {
-        context?.let { ctx -> ConversationActivity.show(ctx, null, user) }
+        context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         disposable?.dispose()
+        disposable = null
         dialog?.dismiss()
     }
 
     private fun showConfirmDialog(message: String, type: Int, user: User? = null) {
         AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setMessage(message)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
                 showPb()
                 when (type) {
                     TYPE_REMOVE -> {
@@ -306,7 +318,7 @@ class GroupInfoFragment : BaseFragment() {
                     }
                 }
                 dialog.dismiss()
-            }).show()
+            }.show()
     }
 
     private fun showPb() {
@@ -320,7 +332,7 @@ class GroupInfoFragment : BaseFragment() {
 
     private fun modifyMember(isAdd: Boolean) {
         val list = arrayListOf<User>()
-        adapter.users.let {
+        adapter.data.let {
             list += it!!
         }
         activity?.addFragment(this@GroupInfoFragment,

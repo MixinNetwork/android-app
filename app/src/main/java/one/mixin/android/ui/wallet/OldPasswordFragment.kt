@@ -42,6 +42,7 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        title_view.setSubTitle(getString(R.string.wallet_password_old_title), "1/5")
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener { verify() }
         disableTitleRight()

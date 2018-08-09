@@ -25,6 +25,7 @@
         <attr name="border_width" format="dimension" />
         <attr name="border_color" format="color" />
         <attr name="border_overlay" format="boolean" />
+        <attr name="border_text_size" format="dimension" />
     </declare-styleable>
     <declare-styleable name="CameraView">
         <attr name="camera" format="integer" />
@@ -68,5 +69,12 @@
     <declare-styleable name="PlayView">
         <attr name="bg" format="color"/>
         <attr name="color" format="color"/>
+    </declare-styleable>
+    <declare-styleable name="MessageLayout">
+        <attr name="max_width" format="dimension" />
+        <attr name="content_padding" format="dimension" />
+    </declare-styleable>
+    <declare-styleable name="AudioRecordView">
+        <attr name="blink_color" format="color"/>
     </declare-styleable>
 </resources>

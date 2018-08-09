@@ -28,10 +28,18 @@ data class SnapshotItem(
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
     val createdAt: String,
+    @SerializedName("opponent_id")
+    @ColumnInfo(name = "opponent_id")
+    val opponentId: String?,
+    @Deprecated(
+        "Replace with opponent_id",
+        ReplaceWith("@{link opponentId}", "one.mixin.android.vo.Snapshot.opponentId"),
+        DeprecationLevel.ERROR
+    )
     @SerializedName("counter_user_id")
     @ColumnInfo(name = "counter_user_id")
     val counterUserId: String?,
-    val counterFullName: String?,
+    val opponentFullName: String?,
     @SerializedName("transaction_hash")
     @ColumnInfo(name = "transaction_hash")
     val transactionHash: String?,
@@ -46,5 +54,5 @@ data class SnapshotItem(
     val memo: String?,
     @SerializedName("asset_symbol")
     @ColumnInfo(name = "asset_symbol")
-    val assetSymbol: String
+    val assetSymbol: String?
 ) : Parcelable

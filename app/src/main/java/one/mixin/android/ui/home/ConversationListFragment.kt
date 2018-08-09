@@ -10,6 +10,7 @@ import android.os.Bundle
 import android.support.v4.widget.TextViewCompat
 import android.support.v7.content.res.AppCompatResources
 import android.support.v7.util.DiffUtil
+import android.support.v7.view.ContextThemeWrapper
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
@@ -25,10 +26,6 @@ import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
-import one.mixin.android.R.id.empty_view
-import one.mixin.android.R.id.message_rv
-import one.mixin.android.R.id.shadow_view
-import one.mixin.android.R.id.start_bn
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyOrElse
@@ -36,6 +33,7 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.timeAgo
+import one.mixin.android.extension.toast
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.LinkFragment
@@ -52,7 +50,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import java.io.File
 import javax.inject.Inject
 
@@ -91,6 +88,7 @@ class ConversationListFragment : LinkFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         message_rv.adapter = messageAdapter
+        message_rv.itemAnimator = null
         message_rv.setHasFixedSize(true)
         message_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
@@ -133,13 +131,12 @@ class ConversationListFragment : LinkFragment() {
                 if (conversation.isGroup() && (conversation.status == ConversationStatus.START.ordinal ||
                         conversation.status == ConversationStatus.FAILURE.ordinal)) {
                     if (!context!!.networkConnected()) {
-                        toast(R.string.error_network)
+                        context?.toast(R.string.error_network)
                         return
                     }
                     doAsync { messagesViewModel.createGroupConversation(conversation.conversationId) }
                 } else {
-                    ConversationActivity.show(context!!, conversationId = conversation.conversationId,
-                        isGroup = conversation.isGroup(), isBot = conversation.isBot())
+                    ConversationActivity.show(context!!, conversationId = conversation.conversationId)
                 }
             }
         }
@@ -161,8 +158,8 @@ class ConversationListFragment : LinkFragment() {
 
     @SuppressLint("InflateParams")
     fun showBottomSheet(conversationId: String, hasPin: Boolean) {
-        val builder = BottomSheet.Builder(context!!)
-        val view = LayoutInflater.from(context).inflate(R.layout.view_conversation_bottom, null, false)
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_conversation_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.delete_tv.setOnClickListener {
@@ -220,9 +217,9 @@ class ConversationListFragment : LinkFragment() {
                     }
                 })
                 conversations = newConversations
-                val recyclerViewState = rv.layoutManager.onSaveInstanceState()
+                val recyclerViewState = rv.layoutManager?.onSaveInstanceState()
                 diffResult.dispatchUpdatesTo(this)
-                rv.layoutManager.onRestoreInstanceState(recyclerViewState)
+                rv.layoutManager?.onRestoreInstanceState(recyclerViewState)
             }
         }
 
@@ -289,6 +286,12 @@ class ConversationListFragment : LinkFragment() {
                     setConversationName(conversationItem)
                     itemView.msg_tv.setText(R.string.conversation_status_file)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_file)
+                }
+                conversationItem.contentType == MessageCategory.SIGNAL_AUDIO.name ||
+                    conversationItem.contentType == MessageCategory.PLAIN_AUDIO.name -> {
+                    setConversationName(conversationItem)
+                    itemView.msg_tv.setText(R.string.conversation_status_audio)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_audio)
                 }
                 conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
                     itemView.group_name_tv.visibility = GONE
@@ -442,8 +445,7 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.isGroup()) {
                 itemView.avatar_iv.setGroup(conversationItem.iconUrl())
             } else {
-                itemView.avatar_iv.setInfo(if (conversationItem.getConversationName().isNotEmpty())
-                    conversationItem.getConversationName()[0] else ' ',
+                itemView.avatar_iv.setInfo(conversationItem.getConversationName(),
                     conversationItem.iconUrl(), conversationItem.ownerIdentityNumber)
             }
             itemView.setOnClickListener { onItemClickListener?.click(position, conversationItem) }

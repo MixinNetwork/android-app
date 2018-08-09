@@ -7,7 +7,7 @@ data class BlazeMessageData(
     @SerializedName("conversation_id")
     val conversationId: String,
     @SerializedName("user_id")
-    val userId: String,
+    var userId: String,
     @SerializedName("message_id")
     var messageId: String,
     @SerializedName("category")
@@ -21,7 +21,11 @@ data class BlazeMessageData(
     @SerializedName("updated_at")
     val updatedAt: String,
     @SerializedName("source")
-    val source: String
+    val source: String,
+    @SerializedName("representative_id")
+    val representativeId: String?,
+    @SerializedName("quote_message_id")
+    val quoteMessageId: String?
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 5L

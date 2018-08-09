@@ -34,7 +34,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     private var mHeaderView: View? = null
     private var mFooterView: View? = null
     private var mContactListener: ContactListener? = null
-    private var mSelf: User? = null
+    var me: User? = null
 
     override fun getItemCount(): Int {
         return if (mHeaderView == null && mFooterView == null) {
@@ -108,7 +108,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             val view = parent.inflate(R.layout.item_contact_contact, false)
             ContactViewHolder(view)
         } else {
-            val view = parent.inflate(R.layout.item_contact_normal, false)
+            val view = parent.inflate(R.layout.item_contact_friend, false)
             FriendViewHolder(view)
         }
     }
@@ -116,7 +116,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         when (holder) {
             is HeadViewHolder -> {
-                holder.bind(mSelf, mContactListener)
+                holder.bind(me, mContactListener)
             }
             is FootViewHolder -> {
                 holder.bind(mContactListener)
@@ -153,10 +153,6 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         mFooterView = null
     }
 
-    fun setSelf(self: User) {
-        mSelf = self
-    }
-
     fun setContactListener(listener: ContactListener) {
         mContactListener = listener
     }
@@ -178,8 +174,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun bind(self: User?, listener: ContactListener?) {
             val account = Session.getAccount()
             if (self != null) {
-                itemView.contact_header_avatar.setInfo(if (self.fullName != null &&
-                    self.fullName.isNotEmpty()) self.fullName[0] else ' ', self.avatarUrl, self.identityNumber)
+                itemView.contact_header_avatar.setInfo(self.fullName, self.avatarUrl, self.identityNumber)
                 itemView.contact_header_name_tv.text = self.fullName
                 itemView.contact_header_id_tv.text =
                     itemView.context.getString(R.string.contact_mixin_id, self.identityNumber)
@@ -187,9 +182,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                     itemView.context.getString(R.string.contact_mobile, self.phone)
             } else {
                 if (account != null) {
-                    itemView.contact_header_avatar.setInfo(if (account.full_name != null &&
-                        account.full_name.isNotEmpty()) account.full_name[0] else ' ',
-                        account.avatar_url, account.identity_number)
+                    itemView.contact_header_avatar.setInfo(account.full_name, account.avatar_url, account.identity_number)
                     itemView.contact_header_name_tv.text = account.full_name
                     itemView.contact_header_id_tv.text =
                         itemView.context.getString(R.string.contact_mixin_id, account.identity_number)
@@ -201,6 +194,8 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                 itemView.contact_header_rl.setOnClickListener { listener.onHeaderRl() }
                 itemView.new_group_rl.setOnClickListener { listener.onNewGroup() }
                 itemView.add_contact_rl.setOnClickListener { listener.onAddContact() }
+                itemView.my_qr_fl.setOnClickListener { listener.onMyQr(self) }
+                itemView.receive_fl.setOnClickListener { listener.onReceiveQr(self) }
             }
         }
     }
@@ -216,8 +211,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     class FriendViewHolder(itemView: View) : ViewHolder(itemView) {
         fun bind(user: User, listener: ContactListener?) {
             itemView.normal.text = user.fullName
-            itemView.avatar.setInfo(if (user.fullName != null && user.fullName.isNotEmpty())
-                user.fullName[0] else ' ', user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
             itemView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
             if (listener != null) {
@@ -244,5 +238,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun onEmptyRl()
         fun onFriendItem(user: User)
         fun onContactItem(user: User)
+        fun onMyQr(self: User?)
+        fun onReceiveQr(self: User?)
     }
 }

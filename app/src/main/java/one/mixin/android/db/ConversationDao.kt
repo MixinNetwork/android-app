@@ -6,23 +6,26 @@ import android.arch.persistence.room.Query
 import android.arch.persistence.room.RoomWarnings
 import android.arch.persistence.room.Transaction
 import io.reactivex.Maybe
+import io.reactivex.Single
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationItemMinimal
+import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.StorageUsage
 
 @Dao
 interface ConversationDao : BaseDao<Conversation> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT c.conversation_id as conversationId, c.icon_url as groupIconUrl, c.category as category, " +
-        "c.name as groupName, c.status as status, c.last_read_message_id as lastReadMessageId, " +
-        "c.unseen_message_count as unseenMessageCount, c.owner_id as ownerId, c.pin_time as pinTime, c.mute_until as muteUntil, " +
-        "ou.avatar_url as avatarUrl, ou.full_name as name, ou.is_verified as ownerVerified, " +
-        "ou.identity_number as ownerIdentityNumber, ou.mute_until as ownerMuteUntil, ou.app_id as appId, " +
-        "m.content as content, m.category as contentType, m.created_at as createdAt, m.media_url as mediaUrl, " +
-        "m.user_id as senderId, m.action as actionName, m.status as messageStatus, " +
-        "mu.full_name as senderFullName, s.type as SnapshotType,  " +
-        "pu.full_name as participantFullName, pu.user_id as participantUserId " +
+    @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, " +
+        "c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId, " +
+        "c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil, " +
+        "ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified, " +
+        "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId, " +
+        "m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl, " +
+        "m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus, " +
+        "mu.full_name AS senderFullName, s.type AS SnapshotType,  " +
+        "pu.full_name AS participantFullName, pu.user_id AS participantUserId " +
         "FROM conversations c " +
         "INNER JOIN users ou ON ou.user_id = c.owner_id " +
         "LEFT JOIN messages m ON c.last_message_id = m.id " +
@@ -34,8 +37,8 @@ interface ConversationDao : BaseDao<Conversation> {
     fun conversationList(): LiveData<List<ConversationItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT c.conversation_id as conversationId, c.icon_url as groupIconUrl, c.category as category, c.name as groupName, " +
-        "ou.identity_number as ownerIdentityNumber " +
+    @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName, " +
+        "ou.identity_number AS ownerIdentityNumber " +
         "FROM conversations c " +
         "INNER JOIN users ou ON ou.user_id = c.owner_id " +
         "WHERE c.category = 'GROUP' AND c.status != 'SUCCESS' AND c.name LIKE :query ORDER BY c.created_at DESC")
@@ -46,6 +49,9 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation>
+
+    @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
+    fun indexUnread(conversationId: String): Int
 
     @Transaction
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
@@ -61,8 +67,22 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversation(conversationId: String): Conversation?
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, " +
+        "c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId, " +
+        "c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil, " +
+        "ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified, " +
+        "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil " +
+        "FROM conversations c " +
+        "INNER JOIN users ou ON ou.user_id = c.owner_id " +
+        "WHERE c.conversation_id = :conversationId")
+    fun getConversationItem(conversationId: String): ConversationItem?
+
     @Query("UPDATE conversations SET last_read_message_id = :messageId WHERE conversation_id = :conversationId")
     fun updateLastReadMessageId(conversationId: String, messageId: String)
+
+    @Query("SELECT last_message_id  FROM conversations WHERE conversation_id = :conversationId")
+    fun getLastMessageIdByConversationId(conversationId: String): String?
 
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
     fun updateCodeUrl(conversationId: String, codeUrl: String)
@@ -88,9 +108,6 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET announcement = :announcement WHERE conversation_id = :conversationId")
     fun updateConversationAnnouncement(conversationId: String, announcement: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId AND status = 'DELIVERED'")
-    fun makeMessageReadByConversationId(conversationId: String, userId: String)
-
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     fun deleteConversationById(conversationId: String)
 
@@ -102,4 +119,17 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query("SELECT icon_url FROM conversations WHERE conversation_id = :conversationId")
     fun getGroupIconUrl(conversationId: String): String?
+
+    @Query("SELECT   c.conversation_id as conversationId, c.owner_id as ownerId, c.category, c.icon_url as groupIconUrl, c.name as groupName, " +
+        "u.identity_number as ownerIdentityNumber,u.full_name as name, u.avatar_url as avatarUrl, u.is_verified as ownerIsVerified, m.mediaSize " +
+        "FROM conversations c " +
+        "INNER JOIN (SELECT conversation_id, sum(media_size) as mediaSize FROM messages WHERE IFNULL(media_size,'') != '' GROUP BY conversation_id) m " +
+        "ON m.conversation_id = c.conversation_id " +
+        "INNER JOIN users u ON u.user_id = c.owner_id " +
+        "ORDER BY m.mediaSize DESC")
+    fun getConversationStorageUsage(): LiveData<List<ConversationStorageUsage>?>
+
+    @Query("SELECT category, sum(media_size) as mediaSize ,conversation_id as conversationId, count(id) as count FROM messages " +
+        "WHERE conversation_id = :conversationId AND IFNULL(media_size,'') != '' GROUP BY category")
+    fun getStorageUsage(conversationId: String): Single<List<StorageUsage>?>
 }

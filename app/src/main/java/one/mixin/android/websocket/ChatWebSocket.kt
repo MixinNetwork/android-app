@@ -124,7 +124,7 @@ class ChatWebSocket(
                 }
             })
         transactions[blazeMessage.id] = transaction
-        client!!.send(gson.toJson(blazeMessage).gzip())
+        client?.send(gson.toJson(blazeMessage).gzip())
     }
 
     @Synchronized

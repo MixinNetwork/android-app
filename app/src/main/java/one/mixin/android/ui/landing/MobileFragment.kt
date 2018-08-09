@@ -1,5 +1,6 @@
 package one.mixin.android.ui.landing
 
+import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -32,7 +34,9 @@ import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.RecaptchaView
 import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
@@ -59,15 +63,30 @@ class MobileFragment : BaseFragment() {
     }
     private lateinit var countryPicker: CountryPicker
     private lateinit var mCountry: Country
-    private var mNeedInvitation: Boolean = true
     private val phoneUtil = PhoneNumberUtil.getInstance()
     private var phoneNumber: Phonenumber.PhoneNumber? = null
 
     private var pin: String? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_mobile, container, false)
+    private lateinit var recaptchaView: RecaptchaView
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val parent = layoutInflater.inflate(R.layout.fragment_mobile, container, false) as ViewGroup
+        recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
+            override fun onStop() {
+                mobile_fab?.hide()
+                mobile_cover?.visibility = GONE
+            }
+
+            override fun onPostToken(value: String) {
+                requestSend(value)
+            }
+        })
+        parent.addView(recaptchaView.webView, MATCH_PARENT, MATCH_PARENT)
+        return parent
+    }
+
+    @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         pin = arguments!!.getString(ARGS_PIN)
@@ -104,6 +123,10 @@ class MobileFragment : BaseFragment() {
     }
 
     override fun onBackPressed(): Boolean {
+        if (recaptchaView.isVisible()) {
+            hideLoading()
+            return true
+        }
         if (pin == null) {
             activity?.supportFragmentManager?.popBackStackImmediate()
             return true
@@ -115,36 +138,49 @@ class MobileFragment : BaseFragment() {
         AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setMessage(getString(R.string.landing_invitation_dialog_content,
                 mCountry.dialCode + " " + mobile_et.text.toString()))
-            .setNegativeButton(R.string.change, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.confirm, { dialog, _ ->
-                mobile_fab.show()
-                mobile_cover.visibility = VISIBLE
-
-                val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
-                val verificationRequest = VerificationRequest(
-                    phoneNum,
-                    null,
-                    if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name)
-                mobileViewModel.verification(verificationRequest)
-                    .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
-                        mobile_fab?.hide()
-                        mobile_cover?.visibility = GONE
-                        if (!r.isSuccess) {
-                            mNeedInvitation = true
-                            ErrorHandler.handleMixinError(r.errorCode)
-                            return@subscribe
-                        }
-                        mNeedInvitation = false
-                        activity?.addFragment(this@MobileFragment,
-                            VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
-                    }, { t: Throwable ->
-                        mobile_fab?.hide()
-                        mobile_cover?.visibility = GONE
-                        ErrorHandler.handleError(t)
-                    })
+            .setNegativeButton(R.string.change) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
+                requestSend()
                 dialog.dismiss()
-            })
+            }
             .show()
+    }
+
+    private fun requestSend(gRecaptchaResponse: String? = null) {
+        if (!isAdded) return
+
+        mobile_fab.show()
+        mobile_cover.visibility = VISIBLE
+        val phoneNum = phoneUtil.format(phoneNumber, PhoneNumberUtil.PhoneNumberFormat.E164)
+        val verificationRequest = VerificationRequest(
+            phoneNum,
+            null,
+            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
+            gRecaptchaResponse)
+        mobileViewModel.verification(verificationRequest)
+            .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
+                if (!r.isSuccess) {
+                    if (r.errorCode == NEED_RECAPTCHA) {
+                        recaptchaView.loadRecaptcha()
+                    } else {
+                        hideLoading()
+                    }
+                    ErrorHandler.handleMixinError(r.errorCode)
+                    return@subscribe
+                }
+                hideLoading()
+                activity?.addFragment(this@MobileFragment,
+                    VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
+            }, { t: Throwable ->
+                hideLoading()
+                ErrorHandler.handleError(t)
+            })
+    }
+
+    private fun hideLoading() {
+        mobile_fab?.hide()
+        mobile_cover?.visibility = GONE
+        recaptchaView.webView.visibility = GONE
     }
 
     private fun handleEditView(str: String) {

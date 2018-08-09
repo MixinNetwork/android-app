@@ -1,31 +1,29 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.Drawable
 import android.support.constraint.ConstraintLayout
 import android.support.v4.widget.TextViewCompat
-import android.support.v7.content.res.AppCompatResources
 import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadImageUseMark
+import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.vo.MessageStatus
 import org.jetbrains.anko.dip
 
-class VideoHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class VideoHolder constructor(containerView: View) : MediaHolder(containerView) {
 
     init {
         val radius = itemView.context.dpToPx(4f).toFloat()
@@ -34,23 +32,9 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         itemView.progress.round(radius)
     }
 
-    private val dp10 by lazy {
-        itemView.context.dpToPx(10f)
+    private val dp4 by lazy {
+        itemView.context.dpToPx(4f)
     }
-
-    private val dp94 by lazy {
-        itemView.context.dpToPx(94f)
-    }
-
-    private val dp194 by lazy {
-        itemView.context.dpToPx(194f)
-    }
-
-    private val dp6 by lazy {
-        itemView.context.dpToPx(6f)
-    }
-
-    private var thumbId: Int? = null
 
     fun bind(
         messageItem: MessageItem,
@@ -61,7 +45,7 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -95,39 +79,23 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
         } else {
             itemView.chat_name.visibility = View.GONE
         }
-        if (messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-            var maxWidth = dp194
-            var minWidth = dp94
-            when {
-                messageItem.mediaWidth!! > maxWidth -> {
-                    itemView.chat_image.layoutParams.width = maxWidth
-                    itemView.chat_image.layoutParams.height =
-                        maxWidth * messageItem.mediaHeight!! / messageItem.mediaWidth
-                }
-                messageItem.mediaWidth < minWidth -> {
-                    itemView.chat_image.layoutParams.width = minWidth
-                    itemView.chat_image.layoutParams.height =
-                        minWidth * messageItem.mediaHeight!! / messageItem.mediaWidth
-                }
-                else -> {
-                    itemView.chat_image.layoutParams.width = messageItem.mediaWidth
-                    itemView.chat_image.layoutParams.height = messageItem.mediaHeight!!
-                }
-            }
-        }
-        val mark = R.drawable.chat_mark_image
 
-        notNullElse(messageItem.mediaUrl, {
-            itemView.chat_image.loadImageUseMark(it, R.drawable.image_holder, mark)
-        }, {
-            if (!isMe && messageItem.mediaWidth != 0 && messageItem.mediaHeight != 0) {
-                if (thumbId != messageItem.thumbImage!!.hashCode()) {
-                    itemView.chat_image.loadImage(messageItem.thumbImage.decodeBase64(),
-                        itemView.chat_image.layoutParams.width, itemView.chat_image.layoutParams.height, mark)
-                    thumbId = messageItem.thumbImage.hashCode()
-                }
-            }
-        })
+        if (messageItem.mediaStatus == MediaStatus.DONE.name) {
+            notNullElse(messageItem.mediaDuration, {
+                itemView.duration_tv.visibility = VISIBLE
+                itemView.duration_tv.text = it.toLong().formatMillis()
+            }, {
+                itemView.duration_tv.visibility = GONE
+            })
+        } else {
+            notNullElse(messageItem.mediaSize, {
+                itemView.duration_tv.visibility = VISIBLE
+                itemView.duration_tv.text = it.fileSize()
+            }, {
+                itemView.duration_tv.visibility = GONE
+            })
+        }
+
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         messageItem.mediaStatus?.let {
             when (it) {
@@ -227,36 +195,84 @@ class VideoHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 }
             }
         }
-        if (isMe) {
-            val drawable: Drawable? =
-                when (messageItem.status) {
-                    MessageStatus.SENDING.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending_white)
-                    MessageStatus.SENT.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sent_white)
-                    MessageStatus.DELIVERED.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_delivered_white)
-                    MessageStatus.READ.name ->
-                        AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
-                    else -> null
-                }
-            drawable.also {
-                it?.setBounds(0, 0, dp10, dp10)
-                TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, drawable, null)
-            }
-        } else {
+
+        setStatusIcon(isMe, messageItem.status, {
+            TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
+        }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
-        }
+        }, true)
+
+        dataUrl = messageItem.mediaUrl
+        dataThumbImage = messageItem.thumbImage
+        dataUrl = messageItem.mediaUrl
+        dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    private var dataUrl: String? = null
+    private var dataThumbImage: String? = null
+    private var dataWidth: Int? = null
+    private var dataHeight: Int? = null
+
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
+            if (isLast) {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow_last)
+            } else {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            }
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
+            (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
         } else {
+            if (isLast) {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            } else {
+                itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
+            }
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
+            (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
+        }
+
+        var width = mediaWidth - dp6
+        when {
+            isLast -> {
+                width = mediaWidth
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            isMe -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = dp6
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = 0
+            }
+            else -> {
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginEnd = 0
+                (itemView.chat_image.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp6
+            }
+        }
+        if (dataWidth == null || dataHeight == null ||
+            dataWidth!! <= 0 || dataHeight!! <= 0) {
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width
+        } else {
+            itemView.chat_image.layoutParams.width = width
+            itemView.chat_image.layoutParams.height = width * dataHeight!! / dataWidth!!
+        }
+
+        val mark = when {
+            isMe && isLast -> R.drawable.chat_mark_image_me
+            isMe -> R.drawable.chat_mark_image
+            !isMe && isLast -> R.drawable.chat_mark_image_other
+            else -> R.drawable.chat_mark_image
+        }
+
+        itemView.chat_image.setShape(mark)
+        if (isBlink) {
+            itemView.chat_image.loadVideoMark(dataUrl, mark)
+        } else {
+            itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
         }
     }
 }

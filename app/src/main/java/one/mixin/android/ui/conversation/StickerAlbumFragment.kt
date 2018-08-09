@@ -3,23 +3,19 @@ package one.mixin.android.ui.conversation
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
-import android.content.Context
 import android.os.Bundle
 import android.support.design.widget.TabLayout
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentPagerAdapter
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.fragment_sticker_album.*
-import kotlinx.android.synthetic.main.layout_sticker_tab.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.adapter.AlbumAdapter
 import one.mixin.android.vo.StickerAlbum
+import org.jetbrains.anko.backgroundResource
 import javax.inject.Inject
 
 class StickerAlbumFragment : BaseFragment() {
@@ -40,7 +36,7 @@ class StickerAlbumFragment : BaseFragment() {
     private val albums = mutableListOf<StickerAlbum>()
 
     private val albumAdapter: AlbumAdapter by lazy {
-        AlbumAdapter(activity!!.supportFragmentManager, albums).apply {
+        AlbumAdapter(requireActivity().supportFragmentManager, albums).apply {
             callback = this@StickerAlbumFragment.callback
         }
     }
@@ -51,18 +47,24 @@ class StickerAlbumFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        stickerViewModel.getStickerAlbums().observe(this, Observer { r ->
+        stickerViewModel.getSystemAlbums().observe(this, Observer { r ->
             r?.let {
                 albums.clear()
                 albums.addAll(r)
                 albumAdapter.notifyDataSetChanged()
                 context?.let { c ->
-                    for (i in 0..albums.size) {
+                    for (i in 0 until albumAdapter.count) {
                         val tabView = albumAdapter.getTabView(i, c) as FrameLayout
                         album_tl.getTabAt(i)?.customView = tabView
                         if (album_tl.selectedTabPosition == i) {
                             tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
                         }
+                    }
+
+                    val slidingTabStrip = album_tl.getChildAt(0) as ViewGroup
+                    for (i in 0 until slidingTabStrip.childCount) {
+                        val v = slidingTabStrip.getChildAt(i)
+                        v.backgroundResource = 0
                     }
                 }
             }
@@ -108,42 +110,8 @@ class StickerAlbumFragment : BaseFragment() {
         this.callback = callback
     }
 
-    class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm) {
-        var callback: StickerAlbumFragment.Callback? = null
-
-        override fun getItem(position: Int): Fragment {
-            val stickerFragment = if (position == 0) {
-                StickerFragment.newInstance(recent = true)
-            } else {
-                StickerFragment.newInstance(albums[position - 1].albumId)
-            }
-            stickerFragment.setCallback(object : Callback {
-                override fun onStickerClick(albumId: String, name: String) {
-                    callback?.onStickerClick(albumId, name)
-                }
-            })
-            return stickerFragment
-        }
-
-        override fun getCount(): Int = albums.size + 1
-
-        fun getTabView(pos: Int, context: Context): View {
-            val view = View.inflate(context, R.layout.layout_sticker_tab, null)
-            if (pos == 0) {
-                view.icon.setImageResource(R.drawable.ic_access_time_gray_24dp)
-            } else {
-                view.icon.loadImage(albums[pos - 1].iconUrl)
-            }
-            return view
-        }
-
-        interface Callback {
-            fun onStickerClick(albumId: String, name: String)
-        }
-    }
-
     interface Callback {
-        fun onStickerClick(albumId: String, name: String)
+        fun onStickerClick(stickerId: String)
 
         fun onMove(dis: Float)
 

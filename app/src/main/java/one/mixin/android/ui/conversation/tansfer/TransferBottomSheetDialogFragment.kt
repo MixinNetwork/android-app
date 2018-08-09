@@ -14,13 +14,12 @@ import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Asset
@@ -29,7 +28,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 
@@ -89,11 +87,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.title_view.setSubTitle(getString(R.string.wallet_bottom_transfer_to, user.fullName), user.identityNumber)
         contentView.title_view.avatar_iv.visibility = VISIBLE
         contentView.title_view.avatar_iv.setTextSize(16f)
-        contentView.title_view.avatar_iv.setInfo(if (user.fullName!!.isNotEmpty()) user.fullName!![0]
-        else ' ', user.avatarUrl, user.identityNumber)
-        contentView.title_view.avatar_iv.setOnClickListener {
-            UserBottomSheetDialogFragment.newInstance(user).show(fragmentManager, UserBottomSheetDialogFragment.TAG)
-        }
+        contentView.title_view.avatar_iv.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         if (!TextUtils.isEmpty(memo)) {
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = memo
@@ -103,7 +97,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val a = bottomViewModel.simpleAssetItem(asset.assetId)
             uiThread { a?.let { contentView.asset_icon.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder) } }
         }
-        contentView.balance.text = amount.numberFormat8() + " " + asset.symbol
+        contentView.balance.text = amount.numberFormat() + " " + asset.symbol
         contentView.balance_as.text = getString(R.string.wallet_unit_usd,
         "≈ ${(BigDecimal(amount) * BigDecimal(asset.priceUsd)).numberFormat2()}")
         contentView.keyboard.setKeyboardKeys(KEYS)
@@ -138,7 +132,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             contentView.pin_va.displayedChild = POS_PIN
                             if (it.isSuccess) {
                                 context?.updatePinCheck()
-                                toast(R.string.transfer_success)
                                 dismiss()
                                 callback?.onSuccess()
                             } else {

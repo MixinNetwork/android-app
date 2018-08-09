@@ -13,8 +13,7 @@ class ContactHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
 
     fun bind(user: User, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean) {
         itemView.search_name.text = user.fullName
-        itemView.search_avatar_iv.setInfo(if (user.fullName != null && user.fullName.isNotEmpty())
-            user.fullName[0] else ' ', user.avatarUrl, user.identityNumber)
+        itemView.search_avatar_iv.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         if (isEnd) {
             itemView.divider.visibility = View.GONE
         } else {

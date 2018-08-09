@@ -8,5 +8,7 @@ data class AccountUpdateRequest(
     @SerializedName("avatar_base64")
     val avatarBase64: String? = null,
     @SerializedName("receive_message_source")
-    val receiveMessageSource: String? = null
+    val receiveMessageSource: String? = null,
+    @SerializedName("accept_conversation_source")
+    val acceptConversationSource: String? = null
 )

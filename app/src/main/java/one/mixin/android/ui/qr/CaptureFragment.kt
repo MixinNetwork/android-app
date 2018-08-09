@@ -9,8 +9,11 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.graphics.PorterDuff
+import android.media.AudioManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.SystemClock
 import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
@@ -29,32 +32,45 @@ import com.journeyapps.barcodescanner.SourceData
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_capture.*
+import kotlinx.android.synthetic.main.view_camera_tip.view.*
 import kotlinx.android.synthetic.main.view_custom_barcode_scannner.*
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getImageCachePath
+import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
+import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.rotate
 import one.mixin.android.extension.toBytes
-import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.extension.xYuv2Simple
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.CameraOpView
+import one.mixin.android.widget.PseudoNotificationView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.support.v4.alert
+import org.jetbrains.anko.support.v4.defaultSharedPreferences
+import org.jetbrains.anko.support.v4.dip
 import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.yesButton
+import java.io.File
 import java.io.FileOutputStream
 import javax.inject.Inject
 
@@ -64,12 +80,18 @@ class CaptureFragment : BaseFragment() {
 
         const val ARGS_FOR_ADDRESS = "args_for_address"
         const val ARGS_ADDRESS_RESULT = "args_address_result"
+        const val ARGS_FOR_ACCOUNT_NAME = "args_for_account_name"
+        const val ARGS_ACCOUNT_NAME_RESULT = "args_account_name_result"
         const val RESULT_CODE = 0x0000c0df
 
         val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "ASSETS:READ", "APPS:READ", "APPS:WRITE", "CONTACTS:READ")
 
-        fun newInstance(forAddress: Boolean = false) = CaptureFragment().withArgs {
+        private const val MAX_DURATION = 15
+        private const val MIN_DURATION = 1
+
+        fun newInstance(forAddress: Boolean = false, forAccountName: Boolean = false) = CaptureFragment().withArgs {
             putBoolean(ARGS_FOR_ADDRESS, forAddress)
+            putBoolean(ARGS_FOR_ACCOUNT_NAME, forAccountName)
         }
     }
 
@@ -93,6 +115,7 @@ class CaptureFragment : BaseFragment() {
     private val sprintConfig = fromOrigamiTensionAndFriction(80.0, 4.0)
 
     private val forAddress: Boolean by lazy { arguments!!.getBoolean(ARGS_FOR_ADDRESS) }
+    private val forAccountName: Boolean by lazy { arguments!!.getBoolean(ARGS_FOR_ACCOUNT_NAME) }
 
     private var mode = Mode.SCAN
     private var flashOpen = false
@@ -112,6 +135,13 @@ class CaptureFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_CAMERA_TIP, false)) {
+            val v = stub.inflate()
+            v.continue_tv.setOnClickListener {
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_CAMERA_TIP, true)
+                v.visibility = GONE
+            }
+        }
         op.post {
             val b = op.bottom
             val hasNavigationBar = context!!.hasNavigationBar(b)
@@ -139,30 +169,79 @@ class CaptureFragment : BaseFragment() {
         switch_camera.setOnClickListener {
             anim(switch_camera)
             zxing_barcode_scanner.switchCamera()
+            checkFlash()
         }
+        checkFlash()
+        op.setMaxDuration(MAX_DURATION)
         op.setCameraOpCallback(object : CameraOpView.CameraOpCallback {
+            val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+            var oldStreamVolume = 0
             override fun onClick() {
                 mCaptureManager.capture()
                 mode = Mode.CAPTURE
             }
 
+            private var videoFile: File? = null
+
             override fun onProgressStart() {
-                context!!.vibrate(longArrayOf(0, 30))
-                mCaptureManager.record()
+                close.fadeOut()
+                flash.fadeOut()
+                switch_camera.fadeOut()
+                chronometer_layout.fadeIn()
+                chronometer.base = SystemClock.elapsedRealtime()
+                chronometer.start()
+                videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
+                if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
+                    oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
+                    audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
+                }
+                mCaptureManager.record(videoFile, MAX_DURATION)
                 mode = Mode.RECORD
             }
 
-            override fun onProgressStop() {
-                mCaptureManager.pause()
-                mode = Mode.SCAN
+            override fun onProgressStop(time: Float) {
+                close.fadeIn()
+                flash.fadeIn()
+                switch_camera.fadeIn()
+                chronometer_layout.fadeOut()
+                chronometer.stop()
+                if (time < MIN_DURATION) {
+                    mCaptureManager.stopRecord()
+                    mCaptureManager.resume()
+                    mode = Mode.SCAN
+                    toast(R.string.error_duration_short)
+                } else {
+                    videoFile?.let {
+                        mCaptureManager.stopRecord()
+                        mCaptureManager.pause()
+                        mode = Mode.SCAN
+                        activity?.supportFragmentManager?.inTransaction {
+                            add(R.id.container, EditFragment.newInstance(it.absolutePath, true), EditFragment.TAG)
+                                .addToBackStack(null)
+                        }
+                    }
+                }
+                if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
+                    requireContext().mainThreadDelayed({ audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0) }, 300)
+                }
             }
         })
+        pseudo_view.translationY = -dip(300).toFloat()
+        pseudo_view.callback = pseudoViewCallback
 
         val p = Point()
         activity?.windowManager?.defaultDisplay?.getSize(p)
         zxing_barcode_surface.framingRectSize = Size(p.x, p.y)
         pb.indeterminateDrawable.setColorFilter(ContextCompat.getColor(context!!, android.R.color.white),
             PorterDuff.Mode.SRC_IN)
+    }
+
+    private fun checkFlash() {
+        if (zxing_barcode_scanner.isFacingBack) {
+            flash.visibility = VISIBLE
+        } else {
+            flash.visibility = GONE
+        }
     }
 
     private fun anim(view: View) {
@@ -208,12 +287,9 @@ class CaptureFragment : BaseFragment() {
 
     @SuppressLint("CheckResult")
     fun handleScanResult(data: String) {
-        if (forAddress) {
-            val result = Intent().apply {
-                putExtra(ARGS_ADDRESS_RESULT, data)
-            }
-            activity?.setResult(RESULT_CODE, result)
-            activity?.finish()
+        if (!isMixinUrl(data)) {
+            MainActivity.showScan(context!!, data)
+            mCaptureManager.closeAndFinish()
             return
         }
 
@@ -233,7 +309,7 @@ class CaptureFragment : BaseFragment() {
                     captureViewModel.saveAsset(paymentResponse.asset)
                     captureViewModel.saveUser(paymentResponse.recipient)
                     if (paymentResponse.status == PaymentStatus.paid.name) {
-                        toast(R.string.pay_paid)
+                        context?.toast(R.string.pay_paid)
                     } else {
                         MainActivity.showPay(context!!, paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
                     }
@@ -248,6 +324,11 @@ class CaptureFragment : BaseFragment() {
                 ErrorHandler.handleError(it)
             })
             return
+        } else if (data.startsWith("mixin://transfer/", true)) {
+            val segments = Uri.parse(data).pathSegments
+            val userId = segments[0]
+            MainActivity.showTransfer(requireContext(), userId)
+            mCaptureManager.closeAndFinish()
         } else {
             val code = if (data.startsWith("https://mixin.one/codes/", true)) {
                 val segments = Uri.parse(data).pathSegments
@@ -271,7 +352,7 @@ class CaptureFragment : BaseFragment() {
                             pb?.visibility = View.GONE
                             val account = Session.getAccount()
                             if (account != null && account.userId == (result.second as User).userId) {
-                                toast("It's your QR Code, please try another.")
+                                context?.toast("It's your QR Code, please try another.")
                                 mCaptureManager.resume()
                                 return@subscribe
                             }
@@ -328,9 +409,26 @@ class CaptureFragment : BaseFragment() {
         }
     }
 
+    private val pseudoViewCallback = object : PseudoNotificationView.Callback {
+        override fun onClick(content: String) {
+            handleScanResult(content)
+        }
+    }
+
     private val captureCallback = object : CaptureManagerCallback {
-        override fun onScanResult(result: BarcodeResult) {
-            handleScanResult(result.text)
+        override fun onScanResult(barcodeResult: BarcodeResult) {
+            if (forAddress || forAccountName) {
+                val result = Intent().apply {
+                    putExtra(if (forAddress) ARGS_ADDRESS_RESULT else ARGS_ACCOUNT_NAME_RESULT, barcodeResult.text)
+                }
+                activity?.setResult(RESULT_CODE, result)
+                activity?.finish()
+                return
+            }
+            pseudo_view.addContent(barcodeResult.text)
+            requireContext().mainThreadDelayed({
+                mCaptureManager.decode()
+            }, 1000)
         }
 
         override fun onPreview(sourceData: SourceData) {

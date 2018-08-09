@@ -12,7 +12,7 @@ import one.mixin.android.ui.common.BaseFragment
 
 class WalletChangePasswordFragment : BaseFragment() {
     companion object {
-        val TAG = "WalletChangePasswordFragment"
+        const val TAG = "WalletChangePasswordFragment"
 
         fun newInstance(): WalletChangePasswordFragment = WalletChangePasswordFragment()
     }

@@ -3,6 +3,7 @@ package one.mixin.android
 object Constants {
 
     object API {
+        const val DOMAIN = "https://mixin.one"
         const val URL = "https://api.mixin.one/"
         const val WS_URL = "wss://blaze.mixin.one"
     }
@@ -15,6 +16,7 @@ object Constants {
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_PIN_INTERVAL = "pref_pin_interval"
         const val PREF_PIN_ITERATOR = "pref_pin_iterator"
+        const val PREF_CAMERA_TIP = "pref_camera_tip"
     }
 
     const val SLEEP_MILLIS: Long = 1000
@@ -23,9 +25,15 @@ object Constants {
     const val INTERVAL_10_MINS: Long = 1000 * 60 * 10
 
     const val ARGS_USER = "args_user"
+    const val ARGS_USER_ID = "args_user_id"
+
+    const val MIXIN_TRANSFER_PREFIX = "mixin://transfer/"
+    const val MY_QR = "my_qr"
 
     const val Mixin_Conversation_ID_HEADER = "Mixin-Conversation-ID"
     val KEYS = arrayOf("1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "<<")
 
     const val BATCH_SIZE = 700
+
+    const val PAGE_SIZE = 20
 }

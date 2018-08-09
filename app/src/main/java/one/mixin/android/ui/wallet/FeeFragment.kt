@@ -11,7 +11,7 @@ import one.mixin.android.ui.common.BaseFragment
 
 class FeeFragment : BaseFragment() {
     companion object {
-        val TAG = "FeeFragment"
+        const val TAG = "FeeFragment"
 
         fun newInstance(): FeeFragment = FeeFragment()
     }

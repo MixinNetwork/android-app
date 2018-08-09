@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
+import one.mixin.android.db.insertConversation
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
@@ -49,11 +50,11 @@ class RefreshConversationJob(val conversationId: String)
                         .setAnnouncement(data.announcement)
                         .setCodeUrl(data.codeUrl).build()
                     if (c.announcement.isNullOrBlank()) {
-                        RxBus.getInstance().post(GroupEvent(data.conversationId))
+                        RxBus.publish(GroupEvent(data.conversationId))
                         applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
                             .putBoolean(data.conversationId, true)
                     }
-                    conversationDao.insert(c)
+                    conversationDao.insertConversation(c)
                 } else {
                     val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
                         ConversationStatus.SUCCESS.ordinal
@@ -61,7 +62,7 @@ class RefreshConversationJob(val conversationId: String)
                         ConversationStatus.QUIT.ordinal
                     }
                     if (!data.announcement.isNullOrBlank() && c.announcement != data.announcement) {
-                        RxBus.getInstance().post(GroupEvent(data.conversationId))
+                        RxBus.publish(GroupEvent(data.conversationId))
                         applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
                             .putBoolean(data.conversationId, true)
                     }
@@ -83,6 +84,12 @@ class RefreshConversationJob(val conversationId: String)
                     if (u == null) {
                         userIdList.add(p.userId)
                     }
+                }
+                val local = participantDao.getRealParticipants(data.conversationId)
+                val remoteIds = participants.map { it.userId }
+                val needRemove = local.filter { !remoteIds.contains(it.userId) }
+                if (needRemove.isNotEmpty()) {
+                    participantDao.deleteList(needRemove)
                 }
                 participantDao.insertList(participants)
                 if (userIdList.isNotEmpty()) {

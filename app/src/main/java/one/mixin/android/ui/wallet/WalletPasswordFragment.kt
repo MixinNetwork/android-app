@@ -16,6 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -28,7 +29,6 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.support.v4.indeterminateProgressDialog
-import org.jetbrains.anko.support.v4.toast
 import javax.inject.Inject
 
 class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
@@ -75,6 +75,9 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (change) {
+            title_view.setSubTitle(getString(R.string.wallet_password_set_new_pin), "2/5")
+            tip_tv.text = getString(R.string.wallet_password_set_new_pin_desc)
+        } else {
             title_view.setSubTitle(getString(R.string.wallet_password_set_pin), "1/4")
         }
         title_view.left_ib.setOnClickListener {
@@ -130,8 +133,9 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
         step = STEP1
         lastPassword = null
         pin.clear()
-        title_view.setSubTitle(getString(R.string.wallet_password_set_pin), "1/4")
-        tip_tv.text = getString(R.string.wallet_password_set_pin_desc)
+        title_view.setSubTitle(
+            getString(if (change) R.string.wallet_password_set_new_pin else R.string.wallet_password_set_pin), getSubTitle())
+        tip_tv.text = getString(if (change) R.string.wallet_password_set_new_pin_desc else R.string.wallet_password_set_pin_desc)
     }
 
     private fun toStep2(check: Boolean = false) {
@@ -143,7 +147,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
         step = STEP2
         lastPassword = pin.code()
         pin.clear()
-        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), "2/4")
+        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
         tip_tv.text = getString(R.string.wallet_password_confirm_1)
     }
 
@@ -152,7 +156,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
         step = STEP3
         pin.clear()
-        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), "3/4")
+        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
         tip_tv.text = getString(R.string.wallet_password_confirm_2)
     }
 
@@ -161,14 +165,24 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
         step = STEP4
         pin.clear()
-        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), "4/4")
+        title_view.setSubTitle(getString(R.string.wallet_password_confirm_pin), getSubTitle())
         tip_tv.text = getString(R.string.wallet_password_confirm_3)
+    }
+
+    private fun getSubTitle(): String {
+        return when (step) {
+            STEP1 -> if (change) "2/5" else "1/4"
+            STEP2 -> if (change) "3/5" else "2/4"
+            STEP3 -> if (change) "4/5" else "3/4"
+            STEP4 -> if (change) "5/5" else "4/4"
+            else -> throw IllegalArgumentException("")
+        }
     }
 
     private fun validatePin(): Boolean {
         val pin = pin.code()
         if (pin == "123456") {
-            toast(R.string.wallet_password_unsafe)
+            context?.toast(R.string.wallet_password_unsafe)
             return false
         }
 
@@ -179,7 +193,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
             }
         }
         if (numKind.size <= 2) {
-            toast(R.string.wallet_password_unsafe)
+            context?.toast(R.string.wallet_password_unsafe)
             return false
         }
 
@@ -195,7 +209,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                 if (checkEqual()) return
 
                 val dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message),
-                    title = getString(R.string.group_creating))
+                    title = if (change) getString(R.string.changing) else getString(R.string.group_creating))
                 dialog.setCancelable(false)
                 dialog.show()
 
@@ -212,15 +226,15 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
                                 activity?.let {
                                     if (it is ConversationActivity) {
-                                        toast(R.string.wallet_set_password_success)
+                                        context?.toast(R.string.wallet_set_password_success)
                                         it.onBackPressed()
                                     } else {
                                         if (change) {
                                             it.supportFragmentManager.popBackStackImmediate()
                                             it.supportFragmentManager.popBackStackImmediate()
-                                            toast(R.string.wallet_change_password_success)
+                                            context?.toast(R.string.wallet_change_password_success)
                                         } else {
-                                            toast(R.string.wallet_set_password_success)
+                                            context?.toast(R.string.wallet_set_password_success)
                                         }
                                         (it as AppCompatActivity).replaceFragment(WalletFragment.newInstance(),
                                             R.id.container, WalletFragment.TAG)
@@ -241,7 +255,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
     private fun checkEqual(): Boolean {
         if (lastPassword != pin.code()) {
-            toast(R.string.wallet_password_not_equal)
+            context?.toast(R.string.wallet_password_not_equal)
             toStep1()
             return true
         }

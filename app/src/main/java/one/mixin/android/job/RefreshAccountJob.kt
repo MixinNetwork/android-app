@@ -7,6 +7,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.saveQRCode
+import one.mixin.android.ui.setting.SettingConversationFragment.Companion.CONVERSATION_GROUP_KEY
 import one.mixin.android.ui.setting.SettingConversationFragment.Companion.CONVERSATION_KEY
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageSource
@@ -31,7 +32,7 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(RefreshAccoun
                 MixinApplication.appContext.windowManager.defaultDisplay?.getSize(p)
                 val size = minOf(p.x, p.y)
                 val b = account.code_url.generateQRCode(size)
-                b?.saveQRCode(MixinApplication.appContext)
+                b?.saveQRCode(MixinApplication.appContext, account.userId)
             }
 
             val receive = MixinApplication.appContext.defaultSharedPreferences
@@ -44,6 +45,18 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(RefreshAccoun
                 receive != MessageSource.CONTACTS.ordinal) {
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(CONVERSATION_KEY, MessageSource.CONTACTS.ordinal)
+            }
+
+            val receiveGroup = MixinApplication.appContext.defaultSharedPreferences
+                .getInt(CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
+            if (response.data!!.accept_conversation_source == MessageSource.EVERYBODY.name &&
+                receiveGroup != MessageSource.EVERYBODY.ordinal) {
+                MixinApplication.appContext.defaultSharedPreferences
+                    .putInt(CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
+            } else if (response.data!!.accept_conversation_source == MessageSource.CONTACTS.name &&
+                receiveGroup != MessageSource.CONTACTS.ordinal) {
+                MixinApplication.appContext.defaultSharedPreferences
+                    .putInt(CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
             }
         }
     }

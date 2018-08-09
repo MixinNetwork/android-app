@@ -45,7 +45,7 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
         }
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -71,7 +71,8 @@ class BillHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
     }
 
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
         if (isMe) {
             if (isLast) {
                 itemView.chat_layout.setBackgroundResource(R.drawable.bill_bubble_me_last)

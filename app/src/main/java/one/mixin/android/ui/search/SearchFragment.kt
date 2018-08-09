@@ -1,32 +1,31 @@
 package one.mixin.android.ui.search
 
-import android.arch.lifecycle.Observer
+import android.annotation.SuppressLint
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import com.uber.autodispose.kotlin.autoDisposable
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_search.*
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationItemMinimal
-import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.isGroup
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.runOnUiThread
+import timber.log.Timber
 import javax.inject.Inject
 
-class SearchFragment : Fragment(), Injectable {
+class SearchFragment : BaseFragment(), Injectable {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val searchViewModel: SearchViewModel by lazy {
@@ -47,25 +46,42 @@ class SearchFragment : Fragment(), Injectable {
     }
 
     private var keyword: String? = null
+        set(value) {
+            if (field != value) {
+                field = value
+                bindData()
+            }
+        }
+
     fun setQueryText(text: String) {
         if (isAdded && text != keyword) {
             keyword = text
-            if (text.isEmpty()) {
-                searchViewModel.contactList.observe(this, Observer {
-                    searchAdapter.setData(null, it, null, null)
-                })
-            } else {
-                doAsync {
-                    val assetList = searchViewModel.fuzzySearchAsset(text)
-                    val userList = searchViewModel.fuzzySearchUser(text)
-                    val groupList = searchViewModel.fuzzySearchGroup(text)
-                    val messageList = searchViewModel.fuzzySearchMessage(text)
-                    context?.runOnUiThread {
-                        searchAdapter.setData(assetList, userList, groupList, messageList)
-                    }
-                }
+        }
+    }
+
+    private var searchDisposable: Disposable? = null
+    @Suppress("UNCHECKED_CAST")
+    @SuppressLint("CheckResult")
+    private fun bindData(keyword: String? = this@SearchFragment.keyword) {
+        searchDisposable?.let {
+            if (!it.isDisposed) {
+                it.dispose()
             }
         }
+        searchDisposable = searchViewModel.fuzzySearch(keyword).autoDisposable(scopeProvider).subscribe({
+            if (it.second != null) {
+                it.second?.let {
+                    searchAdapter.setData(it[0] as List<AssetItem>?,
+                        it[1] as List<User>?,
+                        it[2] as List<ConversationItemMinimal>?,
+                        it[3] as List<SearchMessageItem>?)
+                }
+            } else {
+                searchAdapter.setData(null, it.first, null, null)
+            }
+        }, {
+            Timber.e(it)
+        })
     }
 
     override fun onCreateView(
@@ -80,9 +96,7 @@ class SearchFragment : Fragment(), Injectable {
         search_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         search_rv.addItemDecoration(StickyRecyclerHeadersDecoration(searchAdapter))
         search_rv.adapter = searchAdapter
-        searchViewModel.contactList.observe(this, Observer {
-            searchAdapter.setData(null, it, null, null)
-        })
+
         searchAdapter.onItemClickListener = object : OnSearchClickListener {
             override fun onAsset(assetItem: AssetItem) {
                 activity?.let { WalletActivity.show(it, assetItem) }
@@ -91,33 +105,33 @@ class SearchFragment : Fragment(), Injectable {
             override fun onGroupClick(conversationItemMinimal: ConversationItemMinimal) {
                 search_rv.hideKeyboard()
                 context?.let { ctx ->
-                    ConversationActivity.show(ctx,
-                        conversationItemMinimal.conversationId, null, true)
+                    ConversationActivity.show(ctx, conversationItemMinimal.conversationId, null)
                 }
             }
 
-            override fun onMessageClick(message: MessageItem) {
+            @SuppressLint("CheckResult")
+            override fun onMessageClick(message: SearchMessageItem) {
                 searchViewModel.findConversationById(message.conversationId).subscribe {
                     search_rv.hideKeyboard()
                     ConversationActivity.show(context!!,
                         conversationId = message.conversationId,
                         messageId = message.messageId,
-                        keyword = keyword,
-                        isGroup = notNullElse(it, { it.isGroup() }, false))
+                        keyword = keyword)
                 }
             }
 
             override fun onUserClick(user: User) {
                 search_rv.hideKeyboard()
-                context?.let { ctx -> ConversationActivity.show(ctx, null, user) }
+                context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             }
         }
+        bindData()
     }
 
     interface OnSearchClickListener {
         fun onUserClick(user: User)
         fun onGroupClick(conversationItemMinimal: ConversationItemMinimal)
-        fun onMessageClick(message: MessageItem)
+        fun onMessageClick(message: SearchMessageItem)
         fun onAsset(assetItem: AssetItem)
     }
 }

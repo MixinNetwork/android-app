@@ -34,6 +34,7 @@ import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toBytes
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
@@ -45,7 +46,6 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.support.v4.indeterminateProgressDialog
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
@@ -146,7 +146,7 @@ class NewGroupFragment : BaseFragment() {
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
             if (data != null) {
-                toast("crop failed")
+                context?.toast("crop failed")
             }
         }
     }
@@ -179,7 +179,7 @@ class NewGroupFragment : BaseFragment() {
                         name_desc_et.hideKeyboard()
                         dialog?.dismiss()
                         startActivity(Intent(context, MainActivity::class.java))
-                        ConversationActivity.show(context!!, conversation.conversationId, null, true)
+                        ConversationActivity.show(context!!, conversation.conversationId, null)
                     }
                     c.status == ConversationStatus.FAILURE.ordinal -> {
                         name_desc_et.hideKeyboard()
@@ -219,8 +219,7 @@ class NewGroupFragment : BaseFragment() {
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(user: User) {
-            itemView.avatar.setInfo(if (user.fullName != null && user.fullName.isNotEmpty()) user.fullName[0] else ' ',
-                user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             itemView.normal.text = user.fullName
         }
     }

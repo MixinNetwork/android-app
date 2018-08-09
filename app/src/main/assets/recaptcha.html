@@ -1,0 +1,35 @@
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <script type="text/javascript">
+      var postToken = function(response) {
+        window.MixinContext.postToken(response);
+      }
+
+      var postMessage = function(value) {
+        window.MixinContext.postMessage(value);
+      }
+
+      var gReCaptchaExecute = function() {
+        var observer = new MutationObserver(function(mutations) { postMessage("challenge_change"); });
+        observer.observe(document.getElementsByTagName("div")[4], { attributes: true, attributeFilter: ['style'] });
+        grecaptcha.execute();
+      };
+
+      var onloadCallback = function() {
+        grecaptcha.render('html_element', {
+          'sitekey' : '#apiKey',
+          'callback' : postToken,
+          'size': 'invisible'
+        });
+      };
+    </script>
+</head>
+<body>
+<form action="?" method="POST" style="hidden">
+    <div id="html_element"></div>
+</form>
+<script src="https://www.recaptcha.net/recaptcha/api.js?onload=onloadCallback&render=explicit" async defer>
+</script>
+</body>
+</html>

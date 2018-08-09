@@ -10,7 +10,8 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.SystemConversationAction
 
 class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView) {
-    override fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
+        super.chatLayout(isMe, isLast, isBlink)
     }
 
     var context: Context = itemView.context
@@ -20,13 +21,12 @@ class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView
         messageItem: MessageItem,
         hasSelect: Boolean,
         isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener,
-        group: String?
+        onItemListener: ConversationAdapter.OnItemListener
     ) {
         val id = meId
 
         if (hasSelect && isSelect) {
-            itemView.setBackgroundColor(Color.parseColor("#660D94FC"))
+            itemView.setBackgroundColor(SELECT_COLOR)
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
@@ -46,15 +46,13 @@ class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView
 
         when (messageItem.actionName) {
             SystemConversationAction.CREATE.name -> {
-                group?.let {
-                    itemView.chat_info.text =
-                        String.format(getText(R.string.chat_group_create),
-                            if (id == messageItem.userId) {
-                                getText(R.string.chat_you_start)
-                            } else {
-                                messageItem.userFullName
-                            }, group)
-                }
+                itemView.chat_info.text =
+                    String.format(getText(R.string.chat_group_create),
+                        if (id == messageItem.userId) {
+                            getText(R.string.chat_you_start)
+                        } else {
+                            messageItem.userFullName
+                        }, messageItem.groupName)
             }
             SystemConversationAction.ADD.name -> {
                 itemView.chat_info.text =

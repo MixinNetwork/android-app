@@ -77,6 +77,6 @@ class DispatchQueue(threadName: String) : Thread() {
     }
 
     companion object {
-        private val TAG = "DispatchQueue"
+        private const val TAG = "DispatchQueue"
     }
 }

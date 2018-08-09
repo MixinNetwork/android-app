@@ -12,21 +12,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_upper_round"
-            app:leftIcon="@drawable/ic_close_black_24dp"
-            app:rightIcon="@drawable/ic_arrow_down"/>
-
-    <TextView
-            android:id="@+id/addr_tv" android:background="@color/colorBlue"
-            android:layout_width="match_parent" android:layout_height="wrap_content"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:paddingTop="2dp" android:paddingBottom="2dp"
-            android:gravity="center" android:visibility="gone"
-            android:textColor="@color/white" android:textSize="12sp"/>
+            app:leftIcon="@drawable/ic_close_black_24dp"/>
 
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
             android:background="@android:color/white"
             android:orientation="vertical">
 
@@ -34,15 +25,13 @@
                 android:id="@+id/asset_icon"
                 android:layout_width="46dp"
                 android:layout_height="46dp"
-                android:layout_gravity="center_horizontal"
                 android:layout_margin="@dimen/activity_vertical_margin"
                 tools:ignore="ContentDescription"/>
 
         <TextView
                 android:id="@+id/balance"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:textColor="@android:color/black"
@@ -50,9 +39,8 @@
 
         <TextView
                 android:id="@+id/balance_as"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
                 android:layout_marginTop="4dp"
@@ -66,7 +54,6 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_gravity="center_horizontal"
                 android:layout_marginBottom="@dimen/activity_vertical_margin"
                 android:visibility="gone"
                 android:textColor="@color/text_gray"/>
@@ -80,10 +67,12 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
-        <View android:layout_width="match_parent" android:layout_height=".5dp"
-              android:layout_marginStart="32dp"
-              android:layout_marginEnd="32dp"
-              android:background="@color/bg_gray"/>
+        <View
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="32dp"
+                android:background="@color/bg_gray"/>
 
         <ViewAnimator
                 android:id="@+id/pin_va"
@@ -104,6 +93,7 @@
                     android:layout_gravity="center">
 
                 <ProgressBar
+                        style="?android:attr/progressBarStyleSmall"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"

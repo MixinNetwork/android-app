@@ -3,7 +3,7 @@ package one.mixin.android.ui.common
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
+import android.support.v4.app.MixinDialogFragment
 import android.view.View
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import one.mixin.android.R
@@ -12,7 +12,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
 import javax.inject.Inject
 
-abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
+abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectable {
 
     protected lateinit var contentView: View
     protected val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
@@ -23,19 +23,20 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment(), Injectable {
         ViewModelProviders.of(this, viewModelFactory).get(BottomSheetViewModel::class.java)
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setStyle(DialogFragment.STYLE_NO_TITLE, R.style.AppTheme_Dialog)
-    }
+    override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
-        return BottomSheet.Builder(context!!, true).create()
+        return BottomSheet.Builder(requireActivity(), true).create()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDetach() {
+        super.onDetach()
         if (activity is UrlInterpreterActivity) {
-            (activity as UrlInterpreterActivity).finish()
+            fragmentManager?.fragments?.let {
+                if (it.size <= 0) {
+                    activity?.finish()
+                }
+            }
         }
     }
 
