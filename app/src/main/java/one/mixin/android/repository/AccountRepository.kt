@@ -78,16 +78,16 @@ constructor(
                 val result: Pair<String, Any>
                 val type = response.data?.get("type")?.asString
                 result = when (type) {
-                    QrCodeType.USER.name -> {
+                    QrCodeType.user.name -> {
                         val user = Gson().fromJson(response.data, User::class.java)
                         userDao.insertUpdate(user, appDao)
                         Pair(type, user)
                     }
-                    QrCodeType.CONVERSATION.name -> {
+                    QrCodeType.conversation.name -> {
                         val conversationResponse = Gson().fromJson(response.data, ConversationResponse::class.java)
                         Pair(type, conversationResponse)
                     }
-                    QrCodeType.AUTHORIZATION.name -> {
+                    QrCodeType.authorization.name -> {
                         val resp = Gson().fromJson(response.data, AuthorizationResponse::class.java)
                         Pair(type, resp)
                     }
