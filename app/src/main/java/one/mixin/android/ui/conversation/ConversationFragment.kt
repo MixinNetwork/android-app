@@ -5,7 +5,6 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
-import android.app.NotificationManager
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
@@ -138,7 +137,6 @@ import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 import kotlin.math.abs
 import kotlin.math.max
@@ -227,12 +225,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                         (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, chat_rv.measuredHeight * 3 / 4)
                         chat_rv.visibility = VISIBLE
-                        verticalScrollOffset.set(0)
                     }
                     isBottom -> {
                         if (chatAdapter.currentList != null && chatAdapter.currentList!!.size > oldSize) {
                             chat_rv.layoutManager?.scrollToPosition(0)
-                            verticalScrollOffset.set(0)
                         }
                     }
                     else -> {
@@ -594,24 +590,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         recipient = arguments!!.getParcelable<User?>(RECIPIENT)
     }
 
-    private var verticalScrollOffset = AtomicInteger(0)
-    private val layoutChangeListener =
-        View.OnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
-            if (sticker_container.height > input_layout.keyboardHeight) {
-                return@OnLayoutChangeListener
-            }
-            val y = oldBottom - bottom
-            if (Math.abs(y) > 0 && isAdded) {
-                chat_rv.post {
-                    if (y > 0 || Math.abs(verticalScrollOffset.get()) >= Math.abs(y)) {
-                        chat_rv.scrollBy(0, y)
-                    } else {
-                        chat_rv.scrollBy(0, verticalScrollOffset.get())
-                    }
-                }
-            }
-        }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -627,10 +605,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         } else {
             initView()
         }
-    }
-
-    private val notificationManager: NotificationManager by lazy {
-        requireContext().getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
     }
 
     private var showGroupNotification = false
@@ -761,7 +735,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         }
-        chat_rv.removeOnLayoutChangeListener(layoutChangeListener)
         chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
     }
 
@@ -796,40 +769,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         })
         chat_control.chat_more_ib.setOnClickListener { toggleMediaLayout() }
-        chat_rv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, true).apply {
-            stackFromEnd = true
-        }
+        chat_rv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
         chat_rv.itemAnimator = null
-        chat_rv.addOnLayoutChangeListener(layoutChangeListener)
 
         chat_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            var state = AtomicInteger(RecyclerView.SCROLL_STATE_IDLE)
-
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                state.compareAndSet(RecyclerView.SCROLL_STATE_IDLE, newState)
-                when (newState) {
-                    RecyclerView.SCROLL_STATE_IDLE -> {
-                        if (!state.compareAndSet(RecyclerView.SCROLL_STATE_SETTLING, newState)) {
-                            state.compareAndSet(RecyclerView.SCROLL_STATE_DRAGGING, newState)
-                        }
-                    }
-                    RecyclerView.SCROLL_STATE_DRAGGING -> {
-                        state.compareAndSet(RecyclerView.SCROLL_STATE_IDLE, newState)
-                    }
-                    RecyclerView.SCROLL_STATE_SETTLING -> {
-                        state.compareAndSet(RecyclerView.SCROLL_STATE_DRAGGING, newState)
-                    }
-                }
-            }
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (sticker_container.height > input_layout.keyboardHeight) {
-                    return
-                }
-                if (state.get() != RecyclerView.SCROLL_STATE_IDLE) {
-                    verticalScrollOffset.getAndAdd(dy)
-                }
                 firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                 if (firstPosition > 0) {
                     if (isBottom) {
@@ -1406,14 +1352,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onStickerClick(stickerId: String) {
-                if (isAdded) {
-                    if (sticker_container.height != input_layout.keyboardHeight) {
-                        stickerAnim(sticker_container.height, input_layout.keyboardHeight) {
-                            sendStickerMessage(stickerId)
-                        }
-                    } else {
-                        sendStickerMessage(stickerId)
-                    }
+                if (isAdded && sticker_container.height != input_layout.keyboardHeight) {
+                    stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                    sendStickerMessage(stickerId)
                 }
             }
         })
@@ -1427,7 +1368,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         return Color.argb(alpha, red, green, blue)
     }
 
-    private fun stickerAnim(curH: Int, targetH: Int, action: (() -> Unit)? = null) {
+    private fun stickerAnim(curH: Int, targetH: Int) {
         val anim = ValueAnimator.ofInt(curH, targetH).apply {
             duration = 200
             interpolator = DecelerateInterpolator()
@@ -1458,7 +1399,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 chat_control.updateUp(true)
             }
-            action?.let { action -> action() }
         }
         anim.start()
     }
@@ -1503,7 +1443,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun scrollToDown() {
         chat_rv.layoutManager?.scrollToPosition(0)
-        verticalScrollOffset.set(0)
         if (firstPosition > PAGE_SIZE * 6) {
             chatAdapter.notifyDataSetChanged()
         }
@@ -1523,7 +1462,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (abs(firstPosition - position) > PAGE_SIZE * 6) {
                     chatAdapter.notifyDataSetChanged()
                 }
-                verticalScrollOffset.set(0)
             }
         }, delay)
     }
