@@ -14,6 +14,7 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
+import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.job.ConversationJob
@@ -46,17 +47,6 @@ class BottomSheetViewModel @Inject internal constructor(
         return accountRepository.searchCode(code).observeOn(AndroidSchedulers.mainThread())
     }
 
-    fun retrieval(list: List<ParticipantRequest>): Observable<ArrayList<User>> =
-        Observable.just(list).observeOn(Schedulers.io()).map {
-            val l = ArrayList<User>()
-            for (p in it) {
-                userRepository.getFriend(p.userId)?.let {
-                    l.add(it)
-                }
-            }
-            l
-        }.observeOn(AndroidSchedulers.mainThread())
-
     fun join(code: String): Observable<MixinResponse<ConversationResponse>> =
         accountRepository.join(code).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
@@ -72,7 +62,7 @@ class BottomSheetViewModel @Inject internal constructor(
                 .execute().body()!!
         }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
-    fun authorize(request: AuthorizeRequest) =
+    fun authorize(request: AuthorizeRequest): Observable<MixinResponse<AuthorizationResponse>> =
         accountRepository.authorize(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun pay(request: TransferRequest): Observable<MixinResponse<PaymentResponse>> =

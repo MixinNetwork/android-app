@@ -78,16 +78,16 @@ constructor(
                 val result: Pair<String, Any>
                 val type = response.data?.get("type")?.asString
                 result = when (type) {
-                    QrCodeType.user.name -> {
+                    QrCodeType.USER.name -> {
                         val user = Gson().fromJson(response.data, User::class.java)
                         userDao.insertUpdate(user, appDao)
                         Pair(type, user)
                     }
-                    QrCodeType.conversation.name -> {
+                    QrCodeType.CONVERSATION.name -> {
                         val conversationResponse = Gson().fromJson(response.data, ConversationResponse::class.java)
                         Pair(type, conversationResponse)
                     }
-                    QrCodeType.authorization.name -> {
+                    QrCodeType.AUTHORIZATION.name -> {
                         val resp = Gson().fromJson(response.data, AuthorizationResponse::class.java)
                         Pair(type, resp)
                     }
@@ -110,7 +110,7 @@ constructor(
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
-    fun verifyPin(code: String) = getPinToken().map { pinToken ->
+    fun verifyPin(code: String): Observable<MixinResponse<Account>> = getPinToken().map { pinToken ->
         accountService.verifyPin(PinRequest(encryptPin(pinToken, code)!!)).execute().body()!!
     }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 

@@ -10,11 +10,9 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
-import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MUTE
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -49,10 +47,6 @@ internal constructor(
             .observeOn(AndroidSchedulers.mainThread())
 
     fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
-
-    fun updateRelationship(request: RelationshipRequest) {
-        jobManager.addJobInBackground(UpdateRelationshipJob(request))
-    }
 
     fun redeem(code: String): Observable<MixinResponse<Account>> =
         accountRepository.redeem(code).subscribeOn(Schedulers.io())

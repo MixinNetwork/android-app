@@ -35,7 +35,7 @@ open class BaseActivity : AppCompatActivity(), HasSupportFragmentInjector {
 
     override fun onBackPressed() {
         val fragments = supportFragmentManager.fragments
-        if (fragments != null && fragments.size > 0) {
+        if (fragments.size > 0) {
             // Make sure there is a BaseFragment handle this event.
             fragments.indices.reversed()
                 .map { fragments[it] }

@@ -12,7 +12,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.ConversationCheckView
 
-class ForwardAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
+class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     StickyRecyclerHeadersAdapter<ForwardAdapter.HeaderViewHolder> {
 
     companion object {

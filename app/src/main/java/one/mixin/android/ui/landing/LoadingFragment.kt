@@ -18,8 +18,8 @@ import javax.inject.Inject
 class LoadingFragment : BaseFragment() {
 
     companion object {
-        val TAG: String = "LoadingFragment"
-        val IS_LOADED = "is_loaded"
+        const val TAG: String = "LoadingFragment"
+        const val IS_LOADED = "is_loaded"
         fun newInstance() = LoadingFragment()
     }
 

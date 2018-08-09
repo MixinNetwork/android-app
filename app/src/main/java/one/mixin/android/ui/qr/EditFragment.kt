@@ -41,7 +41,7 @@ class EditFragment : BaseFragment() {
     companion object {
         const val TAG = "EditFragment"
         const val ARGS_PATH = "args_path"
-        const val IS_VIDEO: String = "IS_VIDEO"
+        private const val IS_VIDEO: String = "IS_VIDEO"
         fun newInstance(path: String, isVideo: Boolean = false): EditFragment {
             return EditFragment().withArgs {
                 putString(ARGS_PATH, path)

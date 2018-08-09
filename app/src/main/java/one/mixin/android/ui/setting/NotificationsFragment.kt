@@ -11,7 +11,7 @@ import one.mixin.android.ui.common.BaseFragment
 
 class NotificationsFragment : BaseFragment() {
     companion object {
-        val TAG = "NotificationsFragment"
+        const val TAG = "NotificationsFragment"
         fun newInstance(): NotificationsFragment {
             return NotificationsFragment()
         }

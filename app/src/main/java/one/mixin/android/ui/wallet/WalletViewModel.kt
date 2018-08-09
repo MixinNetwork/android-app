@@ -16,7 +16,6 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
@@ -63,20 +62,6 @@ internal constructor(
     fun hiddenAssets(): LiveData<List<AssetItem>> = assetRepository.hiddenAssetItems()
 
     fun addresses(id: String) = assetRepository.addresses(id)
-
-    fun checkAsset(id: String): Asset? {
-        val a = assetRepository.assetLocal(id)
-        if (a != null) return a
-
-        val response = assetRepository.asset(id).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let {
-                assetRepository.insertAsset(it)
-                return it
-            }
-        }
-        return null
-    }
 
     fun allSnapshots(): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(assetRepository.allSnapshots(), PagedList.Config.Builder()

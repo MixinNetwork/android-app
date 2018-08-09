@@ -169,7 +169,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
             }
             linkViewModel.searchCode(code).autoDisposable(scopeProvider).subscribe({ result ->
                 when {
-                    result.first == QrCodeType.conversation.name -> {
+                    result.first == QrCodeType.CONVERSATION.name -> {
                         val response = result.second as ConversationResponse
                         val found = response.participants.find { it.userId == Session.getAccountId() }
                         if (found != null) {
@@ -186,7 +186,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                 .showNow(requireFragmentManager(), GroupBottomSheetDialogFragment.TAG)
                         }
                     }
-                    result.first == QrCodeType.user.name -> {
+                    result.first == QrCodeType.USER.name -> {
                         val user = result.second as User
                         val account = Session.getAccount()
                         if (account != null && account.userId == (result.second as User).userId) {
@@ -197,7 +197,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                         dismiss()
                         UserBottomSheetDialogFragment.newInstance(user).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }
-                    result.first == QrCodeType.authorization.name -> {
+                    result.first == QrCodeType.AUTHORIZATION.name -> {
                         val authorization = result.second as AuthorizationResponse
                         doAsync {
                             val assets = linkViewModel.simpleAssetsWithBalance()

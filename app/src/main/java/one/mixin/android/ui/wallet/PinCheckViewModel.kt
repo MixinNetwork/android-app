@@ -7,6 +7,5 @@ import javax.inject.Inject
 class PinCheckViewModel @Inject
 internal constructor(private val accountRepository: AccountRepository) : ViewModel() {
 
-    fun verifyPin(code: String) =
-        accountRepository.verifyPin(code)
+    fun verifyPin(code: String) = accountRepository.verifyPin(code)
 }

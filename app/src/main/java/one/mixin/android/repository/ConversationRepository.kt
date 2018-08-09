@@ -108,8 +108,6 @@ internal constructor(
 
     fun updateMediaStatusStatus(status: String, messageId: String) = messageDao.updateMediaStatus(status, messageId)
 
-    fun findUnreadMessages(conversationId: String) = messageDao.findUnreadMessages(conversationId)
-
     fun deleteMessage(id: String) = messageDao.deleteMessage(id)
     fun deleteConversationById(conversationId: String) {
         appExecutors.diskIO().execute {

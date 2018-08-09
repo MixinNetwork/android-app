@@ -71,10 +71,10 @@ class WalletGetFreeFragment : BaseFragment() {
         dialog = android.support.v7.app.AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
             .setTitle(R.string.wallet_get_free_redeem)
             .setView(frameLayout)
-            .setNegativeButton(R.string.cancel, { dialog, _ -> dialog.dismiss() })
-            .setPositiveButton(R.string.wallet_redeem, { _, _ ->
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.wallet_redeem) { _, _ ->
                 redeem(editText.text.toString())
-            })
+            }
             .show()
         dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
             or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)

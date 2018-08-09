@@ -24,7 +24,7 @@ class SetupNameActivity : BaseActivity() {
     }
 
     companion object {
-        val SET_NAME = "set_name"
+        const val SET_NAME = "set_name"
         fun getIntent(context: Context, setName: Boolean): Intent {
             return Intent(context, SetupNameActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)
