@@ -8,6 +8,7 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
@@ -15,6 +16,7 @@ import one.mixin.android.db.insertConversation
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationItemMinimal
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SearchMessageItem
@@ -31,6 +33,7 @@ internal constructor(
     private val appDao: AppDao,
     private val appExecutors: AppExecutors,
     private val appDatabase: MixinDatabase,
+    private val jobDao: JobDao,
     private val conversationService: ConversationService
 ) {
 
@@ -158,5 +161,9 @@ internal constructor(
 
     fun batchMarkRead(list: List<String>) {
         messageDao.batchMarkRead(list)
+    }
+
+    fun insertJobs(it: List<Job>) {
+        jobDao.insertList(it)
     }
 }

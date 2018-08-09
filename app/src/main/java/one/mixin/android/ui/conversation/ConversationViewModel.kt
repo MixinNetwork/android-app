@@ -69,6 +69,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -88,11 +89,10 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.toUser
-import one.mixin.android.websocket.BlazeAckMessage
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
-import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -395,12 +395,8 @@ internal constructor(
                             conversationRepository.batchMarkRead(list)
                         }
                     }
-                }.map {
-                    BlazeAckMessage(it, MessageStatus.READ.name)
-                }.let {
-                    it.chunked(100).forEach {
-                        jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
-                    }
+                }.map { Job(it, ACKNOWLEDGE_MESSAGE_RECEIPTS, MessageStatus.READ.name) }.let {
+                    conversationRepository.insertJobs(it)
                 }
             }
         }
@@ -548,10 +544,8 @@ internal constructor(
                         async(SINGLE_DB_CONTEXT) {
                             conversationRepository.batchMarkRead(it)
                         }
-                        it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
-                            it.chunked(100).forEach {
-                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
-                            }
+                        it.map { Job(it, ACKNOWLEDGE_MESSAGE_RECEIPTS, MessageStatus.READ.name) }.let {
+                            conversationRepository.insertJobs(it)
                         }
                     }
                 }

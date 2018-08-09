@@ -13,12 +13,11 @@ import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
-import one.mixin.android.job.BaseJob.Companion.PRIORITY_DELIVERED_ACK_MESSAGE
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -39,6 +38,7 @@ import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import one.mixin.android.websocket.PlainDataAction
@@ -49,7 +49,6 @@ import one.mixin.android.websocket.TransferAttachmentData
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.TransferStickerData
-import one.mixin.android.websocket.createAckParamBlazeMessage
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
@@ -499,11 +498,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
-        var priority = PRIORITY_ACK_MESSAGE
-        if (status == MessageStatus.DELIVERED) {
-            priority = PRIORITY_DELIVERED_ACK_MESSAGE
-        }
-        jobManager.addJobInBackground(SendAckMessageJob(createAckParamBlazeMessage(messageId, status), priority))
+        jobDao.insert(Job(messageId, ACKNOWLEDGE_MESSAGE_RECEIPTS, status.name))
     }
 
     private fun syncConversation(data: BlazeMessageData) {

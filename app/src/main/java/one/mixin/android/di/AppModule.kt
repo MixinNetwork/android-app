@@ -236,6 +236,10 @@ internal class AppModule {
 
     @Singleton
     @Provides
+    fun providesJobDao(db: MixinDatabase) = db.jobDao()
+
+    @Singleton
+    @Provides
     fun providesAddressDao(db: MixinDatabase) = db.addressDao()
 
     @Singleton
