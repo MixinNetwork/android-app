@@ -91,8 +91,19 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
         })
     }
 
+    private var friendClick: ((User) -> Unit)? = null
+
+    fun setOnFriendClick(friendClick: (User) -> Unit) {
+        this.friendClick = friendClick
+    }
+
     override fun onFriendClick(user: User) {
-        val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)
-        ConversationActivity.show(requireContext(), conversationId, null, messages = arrayListOf(fw))
+        if (friendClick != null) {
+            friendClick!!(user)
+            requireFragmentManager().beginTransaction().remove(this).commit()
+        } else {
+            val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)
+            ConversationActivity.show(requireContext(), conversationId, null, messages = arrayListOf(fw))
+        }
     }
 }

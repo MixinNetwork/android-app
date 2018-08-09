@@ -5,7 +5,6 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
-import android.app.NotificationManager
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
@@ -45,6 +44,7 @@ import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -137,8 +137,8 @@ import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
-import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 
@@ -192,43 +192,58 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var unreadTipCount: Int = 0
     private val chatAdapter: ConversationAdapter by lazy {
         ConversationAdapter(keyword, onItemListener, isGroup, !isPlainMessage()).apply {
-            registerAdapterDataObserver(object : RecyclerView.AdapterDataObserver() {
-                override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
-                    when {
-                        isFirstLoad -> {
-                            isFirstLoad = false
-                            if (chat_rv.adapter == null) {
-                                chat_rv.adapter = chatAdapter
-                            }
-                            if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
-                                    ?.getBoolean(conversationId, false) == true) {
-                                showGroupNotification = true
-                                showAlert(0)
-                            }
-                            val position = if (messageId != null) {
-                                unreadCount + 1
-                            } else {
-                                unreadCount
-                            }
-                            (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, chat_rv.measuredHeight * 3 / 4)
-                            chat_rv.visibility = VISIBLE
-                            verticalScrollOffset.set(0)
+            registerAdapterDataObserver(chatAdapterDataObserver)
+        }
+    }
+
+    private val chatAdapterDataObserver by lazy {
+        object : RecyclerView.AdapterDataObserver() {
+            var oldSize = 0
+
+            override fun onItemRangeRemoved(positionStart: Int, itemCount: Int) {
+                chatAdapter.currentList?.let {
+                    oldSize = it.size
+                }
+            }
+
+            override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                when {
+                    isFirstLoad -> {
+                        isFirstLoad = false
+                        if (chat_rv.adapter == null) {
+                            chat_rv.adapter = chatAdapter
                         }
-                        isBottom -> {
+                        if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                                ?.getBoolean(conversationId, false) == true) {
+                            showGroupNotification = true
+                            showAlert(0)
+                        }
+                        val position = if (messageId != null) {
+                            unreadCount + 1
+                        } else {
+                            unreadCount
+                        }
+                        (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, chat_rv.measuredHeight * 3 / 4)
+                        chat_rv.visibility = VISIBLE
+                    }
+                    isBottom -> {
+                        if (chatAdapter.currentList != null && chatAdapter.currentList!!.size > oldSize) {
                             chat_rv.layoutManager?.scrollToPosition(0)
-                            verticalScrollOffset.set(0)
                         }
-                        else -> {
-                            if (unreadTipCount > 0) {
-                                down_unread.visibility = VISIBLE
-                                down_unread.text = "$unreadTipCount"
-                            } else {
-                                down_unread.visibility = GONE
-                            }
+                    }
+                    else -> {
+                        if (unreadTipCount > 0) {
+                            down_unread.visibility = VISIBLE
+                            down_unread.text = "$unreadTipCount"
+                        } else {
+                            down_unread.visibility = GONE
                         }
                     }
                 }
-            })
+                chatAdapter.currentList?.let {
+                    oldSize = it.size
+                }
+            }
         }
     }
 
@@ -312,9 +327,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         activity?.supportFragmentManager?.inTransaction {
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                                 .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                .add(R.id.container, FriendsFragment.newInstance(conversationId, isGroup, isBot), FriendsFragment.TAG)
+                                .add(R.id.container,
+                                    FriendsFragment.newInstance(conversationId, isGroup, isBot).apply {
+                                        setOnFriendClick {
+                                            sendContactMessage(it.userId)
+                                        }
+                                    }, FriendsFragment.TAG)
                                 .addToBackStack(null)
                         }
+                        hideMediaLayout()
                     }
                 }
             }
@@ -413,6 +434,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onImageClick(messageItem: MessageItem, view: View) {
+                starTransition = true
                 DragMediaActivity.show(requireActivity(), view, messageItem)
             }
 
@@ -568,21 +590,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         recipient = arguments!!.getParcelable<User?>(RECIPIENT)
     }
 
-    private var verticalScrollOffset = AtomicInteger(0)
-    private val layoutChangeListener =
-        View.OnLayoutChangeListener { _, _, _, _, bottom, _, _, _, oldBottom ->
-            val y = oldBottom - bottom
-            if (Math.abs(y) > 0 && isAdded) {
-                chat_rv.post {
-                    if (y > 0 || Math.abs(verticalScrollOffset.get()) >= Math.abs(y)) {
-                        chat_rv.scrollBy(0, y)
-                    } else {
-                        chat_rv.scrollBy(0, verticalScrollOffset.get())
-                    }
-                }
-            }
-        }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -600,12 +607,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private val notificationManager: NotificationManager by lazy {
-        requireContext().getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
-    }
-
     private var showGroupNotification = false
     private var disposable: Disposable? = null
+    private var paused = false
+    private var starTransition = false
 
     override fun onResume() {
         super.onResume()
@@ -624,10 +629,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
             }
         }
+        if (paused) {
+            paused = false
+            chat_rv.adapter?.let {
+                it.notifyDataSetChanged()
+            }
+        }
     }
 
     override fun onPause() {
         super.onPause()
+        paused = true
         input_layout.removeOnKeyboardShownListener(this)
         input_layout.removeOnKeyboardHiddenListener(this)
         markRead()
@@ -723,7 +735,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         }
-        chat_rv.removeOnLayoutChangeListener(layoutChangeListener)
+        chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
     }
 
     override fun onDestroy() {
@@ -731,6 +743,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         AudioPlayer.release()
     }
 
+    private var firstPosition = 0
     @SuppressLint("CheckResult")
     private fun initView() {
         chat_rv.visibility = INVISIBLE
@@ -756,37 +769,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         })
         chat_control.chat_more_ib.setOnClickListener { toggleMediaLayout() }
-        chat_rv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, true).apply {
-            stackFromEnd = true
-        }
+        chat_rv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
-        chat_rv.addOnLayoutChangeListener(layoutChangeListener)
+        chat_rv.itemAnimator = null
 
         chat_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
-            var state = AtomicInteger(RecyclerView.SCROLL_STATE_IDLE)
-
-            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-                state.compareAndSet(RecyclerView.SCROLL_STATE_IDLE, newState)
-                when (newState) {
-                    RecyclerView.SCROLL_STATE_IDLE -> {
-                        if (!state.compareAndSet(RecyclerView.SCROLL_STATE_SETTLING, newState)) {
-                            state.compareAndSet(RecyclerView.SCROLL_STATE_DRAGGING, newState)
-                        }
-                    }
-                    RecyclerView.SCROLL_STATE_DRAGGING -> {
-                        state.compareAndSet(RecyclerView.SCROLL_STATE_IDLE, newState)
-                    }
-                    RecyclerView.SCROLL_STATE_SETTLING -> {
-                        state.compareAndSet(RecyclerView.SCROLL_STATE_DRAGGING, newState)
-                    }
-                }
-            }
 
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
-                if (state.get() != RecyclerView.SCROLL_STATE_IDLE) {
-                    verticalScrollOffset.getAndAdd(dy)
-                }
-                val firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+                firstPosition = (chat_rv.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
                 if (firstPosition > 0) {
                     if (isBottom) {
                         isBottom = false
@@ -1362,10 +1352,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onStickerClick(stickerId: String) {
-                if (isAdded && sticker_container.height != input_layout.keyboardHeight) {
-                    stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                if (isAdded) {
+                    if (sticker_container.height != input_layout.keyboardHeight) {
+                        stickerAnim(sticker_container.height, input_layout.keyboardHeight)
+                    }
+                    sendStickerMessage(stickerId)
                 }
-                sendStickerMessage(stickerId)
             }
         })
     }
@@ -1453,7 +1445,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun scrollToDown() {
         chat_rv.layoutManager?.scrollToPosition(0)
-        verticalScrollOffset.set(0)
+        if (firstPosition > PAGE_SIZE * 6) {
+            chatAdapter.notifyDataSetChanged()
+        }
     }
 
     private fun scrollTo(position: Int, offset: Int = -1, delay: Long = 30, action: (() -> Unit)? = null) {
@@ -1467,14 +1461,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, offset)
                 }
                 action?.let { it() }
-                verticalScrollOffset.set(0)
+                if (abs(firstPosition - position) > PAGE_SIZE * 6) {
+                    chatAdapter.notifyDataSetChanged()
+                }
             }
         }, delay)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
-            data.data?.let {
+            data?.data?.let {
                 if (data.hasExtra(IS_VIDEO)) {
                     sendVideoMessage(it)
                 } else {
@@ -1486,7 +1482,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 showPreview(imageUri) { sendImageMessage(it) }
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
-            val uri = data.data ?: return
+            val uri = data?.data ?: return
             context?.getAttachment(uri)?.let {
                 AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                     .setMessage(if (isGroup) {

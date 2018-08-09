@@ -17,6 +17,7 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.AppExecutors
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipRequest
@@ -111,8 +112,8 @@ internal constructor(
 
     fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
         return LivePagedListBuilder(conversationRepository.getMessages(id), PagedList.Config.Builder()
-            .setPrefetchDistance(60)
-            .setPageSize(20)
+            .setPrefetchDistance(PAGE_SIZE * 2)
+            .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build())
             .setInitialLoadKey(initialLoadKey)
@@ -391,6 +392,7 @@ internal constructor(
             conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
                 conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
                     if (this.isNotEmpty()) {
+                        notificationManager.cancel(conversationId.hashCode())
                         conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
                     }
                 }.map {

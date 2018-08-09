@@ -57,11 +57,16 @@ class ConversationAdapter(
         set(value) {
             if (field != value) {
                 field = value
+                notifyDataSetChanged()
             }
         }
 
     override fun getAttachIndex(): Int? = if (unreadIndex != null) {
-        unreadIndex!! - 1
+        if (hasBottomView) {
+            unreadIndex
+        } else {
+            unreadIndex!! - 1
+        }
     } else {
         null
     }
@@ -70,11 +75,7 @@ class ConversationAdapter(
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
 
     override fun onBindAttachView(view: View) {
-        if (hasBottomView) {
-            view.unread_tv.text = view.context.getString(R.string.unread, unreadIndex!! - 1)
-        } else {
-            view.unread_tv.text = view.context.getString(R.string.unread, unreadIndex!!)
-        }
+        view.unread_tv.text = view.context.getString(R.string.unread, unreadIndex!!)
     }
 
     fun markRead() {
@@ -243,10 +244,26 @@ class ConversationAdapter(
         }
     }
 
+    private var oldSize = 0
+    override fun submitList(pagedList: PagedList<MessageItem>?) {
+        currentList?.let {
+            oldSize = it.size
+        }
+        super.submitList(pagedList)
+    }
+
     override fun onCurrentListChanged(currentList: PagedList<MessageItem>?) {
         super.onCurrentListChanged(currentList)
-        getItem(1)?.let {
-            RxBus.publish(BlinkEvent(it.messageId, isLast(1)))
+        if (currentList != null) {
+            val changeCount = currentList.size - oldSize
+            if (changeCount > 0) {
+                for (i in 1 until changeCount + 1)
+                    getItem(i)?.let {
+                        RxBus.publish(BlinkEvent(it.messageId, isLast(i)))
+                    }
+            } else if (changeCount < 0) {
+                notifyDataSetChanged()
+            }
         }
     }
 

@@ -34,12 +34,12 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
 
     protected var isMe = false
 
-    protected open fun chatLayout(isMe: Boolean, isLast: Boolean) {
+    protected open fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean = false) {
         this.isMe = isMe
     }
 
     private fun chatLayout(isLast: Boolean) {
-        chatLayout(isMe, isLast)
+        chatLayout(isMe, isLast, true)
     }
 
     protected val botIcon: Drawable? by lazy {

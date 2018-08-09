@@ -5,10 +5,13 @@ import android.net.Uri
 import android.support.annotation.DrawableRes
 import android.widget.ImageView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.util.StringSignature
@@ -58,6 +61,21 @@ fun ImageView.loadGifMark(uri: String?, holder: String?, mark: Int) {
     }).into(this)
 }
 
+fun ImageView.loadGifMark(uri: String?, mark: Int) {
+    Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform().signature(StringSignature("$uri$mark")))
+        .listener(object : RequestListener<GifDrawable> {
+            override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<GifDrawable>?, isFirstResource: Boolean): Boolean {
+                return true
+            }
+
+            override fun onResourceReady(resource: GifDrawable?, model: Any?, target: Target<GifDrawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                setImageDrawable(resource)
+                return true
+            }
+        })
+        .submit(layoutParams.width, layoutParams.height)
+}
+
 fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
     Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
         .signature(StringSignature("$uri$mark")).apply {
@@ -65,6 +83,22 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
                 this.placeholder(holder.toDrawable())
             }
         }).into(this)
+}
+
+fun ImageView.loadImageMark(uri: String?, mark: Int) {
+    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
+        .signature(StringSignature("$uri$mark")))
+        .listener(object : RequestListener<Drawable> {
+            override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+                return true
+            }
+
+            override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+                setImageDrawable(resource)
+                return true
+            }
+        })
+        .submit(layoutParams.width, layoutParams.height)
 }
 
 fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
@@ -77,6 +111,21 @@ fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
         }).into(this)
 }
 
+fun ImageView.loadLongImageMark(uri: String?, mark: Int) {
+    Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(CropTransformation(0, layoutParams.height, CropTransformation.CropType.TOP))
+        .dontAnimate()
+        .signature(StringSignature("$uri$mark"))).listener(object : RequestListener<Drawable> {
+        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+            return true
+        }
+
+        override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+            setImageDrawable(resource)
+            return true
+        }
+    }).submit(layoutParams.width, layoutParams.height)
+}
+
 fun ImageView.loadVideoMark(uri: String?, holder: String?, mark: Int) {
     Glide.with(this).load(uri).apply(RequestOptions().frame(0)
         .signature(StringSignature("$uri$mark"))
@@ -86,6 +135,21 @@ fun ImageView.loadVideoMark(uri: String?, holder: String?, mark: Int) {
             }
         }
     ).into(this)
+}
+
+fun ImageView.loadVideoMark(uri: String?, mark: Int) {
+    Glide.with(this).load(uri).apply(RequestOptions().frame(0)
+        .signature(StringSignature("$uri$mark"))
+        .centerCrop().dontAnimate()).listener(object : RequestListener<Drawable> {
+        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
+            return true
+        }
+
+        override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+            setImageDrawable(resource)
+            return true
+        }
+    }).submit(layoutParams.width, layoutParams.height)
 }
 
 fun ImageView.loadVideo(uri: String, @DrawableRes holder: Int) {
