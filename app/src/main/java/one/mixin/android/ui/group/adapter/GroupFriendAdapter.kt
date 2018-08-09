@@ -28,7 +28,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
         this.data = data
         mShowHeader = showHeader
         data?.filterNot { mCheckedMap.containsKey(it.identityNumber) }
-            ?.forEach { mCheckedMap.put(it.identityNumber, false) }
+            ?.forEach { mCheckedMap[it.identityNumber] = false }
         notifyDataSetChanged()
     }
 

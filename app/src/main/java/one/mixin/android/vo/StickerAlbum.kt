@@ -31,5 +31,3 @@ data class StickerAlbum(
     @ColumnInfo(name = "description")
     val description: String
 )
-
-enum class StickerAlbumCategory { SYSTEM, PERSONAL }

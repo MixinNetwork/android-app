@@ -18,12 +18,10 @@ class CaptureActivity : BlazeBaseActivity(), CaptureFragment.Callback, EditFragm
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        captureFragment = if (intent.hasExtra(ARGS_FOR_ADDRESS)) {
-            newInstance(true)
-        } else if (intent.hasExtra(ARGS_FOR_ACCOUNT_NAME)) {
-            newInstance(forAccountName = true)
-        } else {
-            newInstance()
+        captureFragment = when {
+            intent.hasExtra(ARGS_FOR_ADDRESS) -> newInstance(true)
+            intent.hasExtra(ARGS_FOR_ACCOUNT_NAME) -> newInstance(forAccountName = true)
+            else -> newInstance()
         }
         replaceFragment(captureFragment, R.id.container, CaptureFragment.TAG)
     }

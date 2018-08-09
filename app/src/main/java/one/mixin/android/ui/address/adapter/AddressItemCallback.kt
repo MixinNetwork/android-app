@@ -34,9 +34,7 @@ class AddressItemCallback(private val listener: AddressAdapter.AddressListener? 
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
-        viewHolder?.let {
-            ItemTouchHelper.Callback.getDefaultUIUtil().clearView(it.itemView.foreground_rl)
-        }
+        ItemTouchHelper.Callback.getDefaultUIUtil().clearView(viewHolder.itemView.foreground_rl)
     }
 
     override fun onChildDraw(
@@ -48,10 +46,8 @@ class AddressItemCallback(private val listener: AddressAdapter.AddressListener? 
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
-        viewHolder?.let {
-            ItemTouchHelper.Callback.getDefaultUIUtil()
-                .onDraw(c, recyclerView, it.itemView.foreground_rl, dX, dY, actionState, isCurrentlyActive)
-        }
+        ItemTouchHelper.Callback.getDefaultUIUtil()
+            .onDraw(c, recyclerView, viewHolder.itemView.foreground_rl, dX, dY, actionState, isCurrentlyActive)
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {

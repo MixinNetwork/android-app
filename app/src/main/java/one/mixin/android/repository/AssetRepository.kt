@@ -64,8 +64,6 @@ constructor(
 
     fun addresses(id: String) = addressDao.addresses(id)
 
-    fun assetsFee(id: String) = assetService.assetsFee(id)
-
     fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
 
     fun saveAddr(addr: Address) = addressDao.insert(addr)
@@ -84,11 +82,7 @@ constructor(
 
     fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
 
-    fun insertAddresses(addresses: List<Address>) = addressDao.insertList(addresses)
-
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
 
     fun allSnapshots() = snapshotDao.allSnapshots()
-
-    fun getAddressById(id: String) = addressDao.getById(id)
 }

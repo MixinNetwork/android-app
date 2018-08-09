@@ -26,9 +26,7 @@ internal constructor(
             ?.let {
                 for (item in it) {
                     if (item.mediaUrl != null) {
-                        File(item.mediaUrl.getFilePath()).let {
-                            it.delete()
-                        }
+                        File(item.mediaUrl.getFilePath()).delete()
                     }
                     conversationRepository.deleteMessage(item.messageId)
                 }

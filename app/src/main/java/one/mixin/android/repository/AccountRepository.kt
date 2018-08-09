@@ -110,7 +110,7 @@ constructor(
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
-    fun verifyPin(code: String) = getPinToken().map { pinToken ->
+    fun verifyPin(code: String): Observable<MixinResponse<Account>> = getPinToken().map { pinToken ->
         accountService.verifyPin(PinRequest(encryptPin(pinToken, code)!!)).execute().body()!!
     }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 

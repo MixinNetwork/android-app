@@ -23,7 +23,7 @@ import org.jetbrains.anko.backgroundColor
 class VerificationCodeView : LinearLayout {
 
     companion object {
-        val DEFAULT_COUNT = 4
+        const val DEFAULT_COUNT = 4
     }
 
     private val spaces = ArrayList<View>()

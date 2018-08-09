@@ -413,7 +413,7 @@ class ConversationAdapter(
         (holder as BaseViewHolder).stopListen()
     }
 
-    fun getItemType(messageItem: MessageItem?): Int =
+    private fun getItemType(messageItem: MessageItem?): Int =
         notNullElse(messageItem, { item ->
             when {
                 item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE

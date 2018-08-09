@@ -18,7 +18,7 @@ import one.mixin.android.widget.NoUnderLineSpan
 class LandingFragment : Fragment() {
 
     companion object {
-        val TAG: String = "LandingFragment"
+        const val TAG: String = "LandingFragment"
 
         fun newInstance() = LandingFragment()
     }

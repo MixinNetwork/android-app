@@ -85,7 +85,7 @@ class SettingStorageFragment : BaseFragment() {
     private val selectSet: ArraySet<StorageUsage> = ArraySet()
 
     private fun showMenu(conversationId: String) {
-        settingStorageViewModel.getStorageUsage(conversationId).subscribe({
+        settingStorageViewModel.getStorageUsage(conversationId).autoDisposable(scopeProvider).subscribe({
             menuAdapter.setData(it)
             selectSet.clear()
             it?.let {
@@ -160,7 +160,7 @@ class SettingStorageFragment : BaseFragment() {
     }
 
     private val menuView: RecyclerView by lazy {
-        (LayoutInflater.from(requireContext()).inflate(R.layout.view_stotage_list, null) as RecyclerView)
+        View.inflate(requireContext(), R.layout.view_stotage_list, null) as RecyclerView
     }
     private val menuAdapter: MenuAdapter by lazy {
         MenuAdapter(object : (Boolean, StorageUsage) -> Unit {
