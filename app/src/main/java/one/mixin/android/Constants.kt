@@ -36,4 +36,6 @@ object Constants {
     const val BATCH_SIZE = 700
 
     const val PAGE_SIZE = 20
+
+    const val SINGLE_THREAD = "single_thread"
 }

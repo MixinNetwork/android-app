@@ -10,6 +10,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.SearchMessageItem
 
@@ -120,10 +121,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET hyperlink = :hyperlink WHERE id = :id")
     fun updateHyperlink(hyperlink: String, id: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
-        "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId)")
-    fun makeMessageReadByConversationId(conversationId: String, userId: String, messageId: String)
-
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
         "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId)")
     fun getUnreadMessage(conversationId: String, userId: String, messageId: String): List<String>
@@ -193,4 +190,11 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId AND category=:category")
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String): List<MediaMessageMinimal>?
+
+    @Transaction
+    fun batchMarkRead(list: List<String>) {
+        list.forEach {
+            updateMessageStatus(MessageStatus.READ.name, it)
+        }
+    }
 }

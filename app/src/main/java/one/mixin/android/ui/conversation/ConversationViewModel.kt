@@ -16,7 +16,8 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import one.mixin.android.AppExecutors
+import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -24,6 +25,7 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
+import one.mixin.android.db.SINGLE_DB_CONTEXT
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
@@ -127,7 +129,7 @@ internal constructor(
         conversationRepository.searchConversationById(id)
             .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
-    fun getConversationIdIfExistsSync(recipientId: String) = conversationRepository.getConversationIdIfExistsSync(recipientId)
+    private fun getConversationIdIfExistsSync(recipientId: String) = conversationRepository.getConversationIdIfExistsSync(recipientId)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
@@ -383,17 +385,15 @@ internal constructor(
         }
     }
 
-    private fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
-        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
-    }
-
     fun makeMessageRead(conversationId: String, accountId: String) {
-        doAsync {
+        launch {
             conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
-                conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
-                    if (this.isNotEmpty()) {
+                conversationRepository.getUnreadMessage(conversationId, accountId, messageId).also { list ->
+                    if (list.isNotEmpty()) {
                         notificationManager.cancel(conversationId.hashCode())
-                        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
+                        async(SINGLE_DB_CONTEXT) {
+                            conversationRepository.batchMarkRead(list)
+                        }
                     }
                 }.map {
                     BlazeAckMessage(it, MessageStatus.READ.name)
@@ -416,10 +416,12 @@ internal constructor(
 
     fun deleteMessages(set: ArraySet<MessageItem>) {
         val data = ArraySet(set)
-        Flowable.fromIterable(data).subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe {
-            conversationRepository.deleteMessage(it.messageId)
-            jobManager.cancelJobById(it.messageId)
-            notificationManager.cancel(it.userId.hashCode())
+        launch(SINGLE_DB_CONTEXT) {
+            data.forEach { item ->
+                conversationRepository.deleteMessage(item.messageId)
+                jobManager.cancelJobById(item.messageId)
+                notificationManager.cancel(item.userId.hashCode())
+            }
         }
     }
 
@@ -523,7 +525,7 @@ internal constructor(
     }
 
     fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
-        AppExecutors().diskIO().execute {
+        launch {
             var conversationId: String? = null
             for (item in selectItem) {
                 if (item is User) {
@@ -543,7 +545,9 @@ internal constructor(
                 }
                 findUnreadMessagesSync(conversationId!!)?.let {
                     if (it.isNotEmpty()) {
-                        makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
+                        async(SINGLE_DB_CONTEXT) {
+                            conversationRepository.batchMarkRead(it)
+                        }
                         it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
                             it.chunked(100).forEach {
                                 jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))

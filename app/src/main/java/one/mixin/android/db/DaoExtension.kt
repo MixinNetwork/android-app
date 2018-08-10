@@ -1,9 +1,15 @@
 package one.mixin.android.db
 
 import android.arch.persistence.room.Transaction
+import kotlinx.coroutines.experimental.newSingleThreadContext
+import one.mixin.android.Constants
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
+
+val SINGLE_DB_CONTEXT by lazy {
+    newSingleThreadContext(Constants.SINGLE_THREAD)
+}
 
 @Transaction
 fun UserDao.insertUpdate(user: User, appDao: AppDao) {

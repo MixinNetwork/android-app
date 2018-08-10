@@ -85,12 +85,6 @@ internal constructor(
 
     fun getConversationIdIfExistsSync(recipientId: String) = conversationDao.getConversationIdIfExistsSync(recipientId)
 
-    fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
-        appExecutors.diskIO().execute {
-            messageDao.makeMessageReadByConversationId(conversationId, accountId, messageId)
-        }
-    }
-
     fun getUnreadMessage(conversationId: String, accountId: String, messageId: String): List<String> {
         return messageDao.getUnreadMessage(conversationId, accountId, messageId)
     }
@@ -109,6 +103,7 @@ internal constructor(
     fun updateMediaStatusStatus(status: String, messageId: String) = messageDao.updateMediaStatus(status, messageId)
 
     fun deleteMessage(id: String) = messageDao.deleteMessage(id)
+
     fun deleteConversationById(conversationId: String) {
         appExecutors.diskIO().execute {
             conversationDao.deleteConversationById(conversationId)
@@ -160,4 +155,8 @@ internal constructor(
 
     fun getLastMessageIdByConversationId(conversationId: String) =
         conversationDao.getLastMessageIdByConversationId(conversationId)
+
+    fun batchMarkRead(list: List<String>) {
+        messageDao.batchMarkRead(list)
+    }
 }

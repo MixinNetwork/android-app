@@ -197,9 +197,10 @@ dependencies {
     implementation "com.uber.autodispose:autodispose-android-archcomponents-kotlin:${autodisposeVersion}"
     implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
     implementation "com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}"
-    implementation 'com.googlecode.mp4parser:isoparser:1.0.6'
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.shizhefei:LargeImageView:${largeImageViewVersion}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:${kotlinxCoroutinesVersion}"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:${kotlinxCoroutinesVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {
