@@ -209,9 +209,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 when {
                     isFirstLoad -> {
                         isFirstLoad = false
-                        if (chat_rv.adapter == null) {
-                            chat_rv.adapter = chatAdapter
-                        }
                         if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
                                 ?.getBoolean(conversationId, false) == true) {
                             showGroupNotification = true
@@ -746,6 +743,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     @SuppressLint("CheckResult")
     private fun initView() {
         chat_rv.visibility = INVISIBLE
+        if (chat_rv.adapter == null) {
+            chat_rv.adapter = chatAdapter
+        }
         chat_control.callback = chatControlCallback
         chat_control.activity = requireActivity()
         chat_control.inputLayout = input_layout
@@ -933,8 +933,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideMediaLayout()
         }
 
-        initStickerLayout()
-
         if (isGroup || isBot) {
             menuAdapter.showTransfer = false
         }
@@ -967,7 +965,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     chatAdapter.unreadIndex = null
                 }
                 if (it.size > 0) {
-                    chatViewModel.makeMessageRead(conversationId, sender.userId)
+                    chatViewModel.markMessageRead(conversationId, sender.userId)
                 }
             }
             chatAdapter.submitList(it)

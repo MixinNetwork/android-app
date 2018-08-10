@@ -49,8 +49,8 @@ class SendService : IntentService("SendService") {
             jobManager.addJobInBackground(SendMessageJob(message))
             messageDao.findUnreadMessagesSync(conversationId)?.let {
                 if (it.isNotEmpty()) {
-                    messageDao.makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
-                    it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
+                    messageDao.batchMarkRead(conversationId, Session.getAccountId()!!, it.last().created_at)
+                    it.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {
                         val chunkList = it.chunked(100)
                         for (item in chunkList) {
                             jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))

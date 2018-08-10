@@ -4,6 +4,7 @@ import android.arch.persistence.room.Transaction
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
+import one.mixin.android.websocket.BlazeAckMessage
 
 @Transaction
 fun UserDao.insertUpdate(user: User, appDao: AppDao) {
@@ -58,4 +59,11 @@ fun StickerDao.insertUpdate(s: Sticker) {
 fun MixinDatabase.clearParticipant(conversationId: String, participantId: String) {
     participantDao().deleteById(conversationId, participantId)
     sentSenderKeyDao().delete(conversationId)
+}
+
+@Transaction
+fun JobDao.deleteList(list: List<BlazeAckMessage>) {
+    list.forEach {
+        deleteById(it.message_id)
+    }
 }

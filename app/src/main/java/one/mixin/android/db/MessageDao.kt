@@ -10,6 +10,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.SearchMessageItem
 
@@ -120,13 +121,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET hyperlink = :hyperlink WHERE id = :id")
     fun updateHyperlink(hyperlink: String, id: String)
 
-    @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
-        "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId)")
-    fun makeMessageReadByConversationId(conversationId: String, userId: String, messageId: String)
-
-    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
-        "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId)")
-    fun getUnreadMessage(conversationId: String, userId: String, messageId: String): List<String>
+    @Query("SELECT id,created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
+        "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId) ORDER BY created_at ASC")
+    fun getUnreadMessage(conversationId: String, userId: String, messageId: String): List<MessageMinimal>
 
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
@@ -183,14 +180,20 @@ interface MessageDao : BaseDao<Message> {
     fun findUnreadMessages(conversationId: String, userId: String = Session.getAccountId()!!): Flowable<List<MessageItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT id FROM messages WHERE conversation_id = :conversationId " +
+    @Query("SELECT id,created_at FROM messages WHERE conversation_id = :conversationId " +
         "AND user_id != :userId AND status = 'DELIVERED' ORDER BY created_at ASC")
-    fun findUnreadMessagesSync(conversationId: String, userId: String = Session.getAccountId()!!): List<String>?
+    fun findUnreadMessagesSync(conversationId: String, userId: String = Session.getAccountId()!!): List<MessageMinimal>?
 
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND " +
         "status = 'FAILED' ORDER BY created_at DESC LIMIT 1000")
     fun findFailedMessages(conversationId: String, userId: String): List<String>?
 
-    @Query("SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId AND category=:category")
+    @Query("SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId " +
+        "AND category=:category ORDER BY created_at ASC")
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String): List<MediaMessageMinimal>?
+
+    @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
+        "AND status = 'DELIVERED' AND created_at <= :createdAt")
+    fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
+
 }

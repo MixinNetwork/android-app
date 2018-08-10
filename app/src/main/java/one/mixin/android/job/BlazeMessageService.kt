@@ -6,6 +6,8 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.arch.lifecycle.LiveData
+import android.arch.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
@@ -17,16 +19,21 @@ import com.birbit.android.jobqueue.network.NetworkUtil
 import com.birbit.android.jobqueue.timer.SystemTimer
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
+import one.mixin.android.db.JobDao
+import one.mixin.android.db.deleteList
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.LinkState
+import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
+import one.mixin.android.websocket.createAckListParamBlazeMessage
 import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.runOnUiThread
 import java.util.concurrent.TimeoutException
@@ -68,6 +75,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     @Inject
     lateinit var floodMessageDao: FloodMessageDao
     @Inject
+    lateinit var jobDao: JobDao
+    @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var linkState: LinkState
@@ -81,6 +90,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         super.onCreate()
         retrievalThread = MessageRetrievalThread()
         retrievalThread!!.start()
+        startAckJob()
 
         networkUtil.setListener(this)
     }
@@ -106,6 +116,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         if (retrievalThread != null) {
             retrievalThread!!.stopThread()
         }
+        stopAckJob()
     }
 
     override fun onNetworkChange(networkStatus: Int) {
@@ -188,6 +199,29 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
 
     fun shutdown() {
         webSocket.disconnect()
+    }
+
+    private var jobs: LiveData<List<BlazeAckMessage>>? = null
+    private fun startAckJob() {
+        if (jobs == null) {
+            jobs = jobDao.findAckJobs()
+            jobs?.observeForever(ob)
+        }
+    }
+
+    private val ob: Observer<List<BlazeAckMessage>?> by lazy {
+        Observer<List<BlazeAckMessage>?> { list ->
+            if (list?.isNotEmpty() == true) {
+                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
+                launch {
+                    jobDao.deleteList(list)
+                }
+            }
+        }
+    }
+
+    private fun stopAckJob() {
+        jobs?.removeObserver(ob)
     }
 
     private inner class MessageRetrievalThread internal constructor() :

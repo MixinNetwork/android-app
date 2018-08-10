@@ -164,6 +164,7 @@ dependencies {
     implementation "org.jetbrains.anko:anko-appcompat-v7:$anko_version"
     implementation "org.jetbrains.anko:anko-coroutines:$anko_version"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutines_version"
     implementation "com.zlc.glide:webpdecoder:$webpdecoderVesion"
     implementation "com.github.bumptech.glide:glide:$glideVersion"
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion") {
@@ -199,7 +200,6 @@ dependencies {
     implementation "com.uber.autodispose:autodispose-android-archcomponents-kotlin:${autodisposeVersion}"
     implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
     implementation "com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}"
-    implementation 'com.googlecode.mp4parser:isoparser:1.0.6'
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.shizhefei:LargeImageView:${largeImageViewVersion}"
 }
