@@ -3,14 +3,14 @@ package one.mixin.android.di
 import android.app.Application
 import dagger.BindsInstance
 import dagger.Component
-import dagger.android.AndroidInjectionModule
+import dagger.android.support.AndroidSupportInjectionModule
 import one.mixin.android.MixinApplication
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.Injector
 import javax.inject.Singleton
 
 @Singleton
-@Component(modules = [(AndroidInjectionModule::class),
+@Component(modules = [(AndroidSupportInjectionModule::class),
     (AppModule::class),
     (ActivityModule::class),
     (ServiceModule::class)])
