@@ -208,7 +208,7 @@ class DecryptMessage : Injector() {
                 if (mediaData.invalidData()) {
                     return
                 }
-                val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
+                val mimeType = if (mediaData.mimeType.isNullOrEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createMediaMessage(data.messageId, data.conversationId, data.userId, data.category,
                     mediaData.attachmentId, null,
                     mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,
