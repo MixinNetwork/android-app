@@ -79,10 +79,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         user = arguments!!.getParcelable(ARGS_USER)
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
         contentView.left_iv.setOnClickListener { dialog?.dismiss() }
-        contentView.right_iv.setOnClickListener {
-            (dialog as BottomSheet).fakeDismiss()
-            menu.show()
-        }
         contentView.avatar.setOnClickListener {
             user.avatarUrl?.let { url ->
                 doAsync {
@@ -169,6 +165,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (!keepDialog) {
                 dialog?.dismiss()
             }
+        }
+
+        contentView.right_iv.setOnClickListener {
+            (dialog as BottomSheet).fakeDismiss()
+            menu.show()
         }
     }
 
