@@ -30,7 +30,6 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
     private var emailModeColor = DEFAULT_COLOR
     private var customModeColor = DEFAULT_COLOR
     private var defaultSelectedColor = Color.LTGRAY
-    private val linkTouchMovementMethod = LinkTouchMovementMethod()
     var clickTime: Long = 0
 
     override fun setText(text: CharSequence, type: TextView.BufferType) {
@@ -40,16 +39,14 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
         }
 
         val spannableString = makeSpannableString(text)
-        movementMethod = linkTouchMovementMethod
+        if (movementMethod == null) {
+            movementMethod = LinkTouchMovementMethod()
+        }
         super.setText(spannableString as CharSequence, type)
     }
 
     private fun makeSpannableString(text: CharSequence, spannable: SpannableString? = null): SpannableString {
-        val spannableString = if (spannable != null) {
-            spannable
-        } else {
-            SpannableString(text)
-        }
+        val spannableString = spannable ?: SpannableString(text)
 
         val autoLinkItems = matchedRanges(text)
 

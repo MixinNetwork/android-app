@@ -8,6 +8,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE
@@ -76,7 +78,7 @@ class AddressAddFragment : BaseFragment() {
         title_view.title_tv.text = getString(if (type == ADD) R.string.withdrawal_addr_new
             else R.string.withdrawal_addr_modify, asset.symbol)
         title_view.right_animator.setOnClickListener {
-            val bottomSheet = if (noPublickKey()) {
+            val bottomSheet = if (noPublicKey()) {
                 PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, type = type,
                     accountName = label_et.text.toString(), accountTag = addr_et.text.toString())
             } else {
@@ -102,10 +104,15 @@ class AddressAddFragment : BaseFragment() {
         addr_et.addTextChangedListener(mWatcher)
         qr_iv.setOnClickListener { handleClick(true) }
         label_iv.setOnClickListener { handleClick(false) }
+        if (noPublicKey()) {
+            label_iv.visibility = VISIBLE
+        } else {
+            label_iv.visibility = GONE
+        }
 
         address?.let {
-            label_et.setText(if (noPublickKey()) it.accountName else it.label)
-            addr_et.setText(if (noPublickKey()) it.accountTag else it.publicKey)
+            label_et.setText(if (noPublicKey()) it.accountName else it.label)
+            addr_et.setText(if (noPublicKey()) it.accountTag else it.publicKey)
             title_view.title_tv.text = getString(R.string.withdrawal_addr_modify, asset.symbol)
         }
     }
@@ -126,7 +133,7 @@ class AddressAddFragment : BaseFragment() {
         }
     }
 
-    private fun noPublickKey() = !asset.accountName.isNullOrEmpty()
+    private fun noPublicKey() = !asset.accountName.isNullOrEmpty()
 
     @SuppressLint("CheckResult")
     private fun handleClick(isAddr: Boolean) {
