@@ -19,6 +19,7 @@ import android.widget.TextView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
+import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.notNullElse
@@ -101,6 +102,14 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
                 if (it.isSuccess) {
                     dialog?.dismiss()
+                    val conversationResponse = it.data as ConversationResponse
+                    val accountId = Session.getAccountId()
+                    conversationResponse.participants.forEach {
+                        if (it.userId == accountId) {
+                            bottomViewModel.refreshConversation(conversationId)
+                            return@forEach
+                        }
+                    }
                     ConversationActivity.show(requireContext(), conversationId)
                 } else {
                     contentView.join_va?.displayedChild = POS_TV
