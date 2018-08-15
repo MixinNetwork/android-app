@@ -134,6 +134,9 @@ open class ErrorHandler {
                     SERVER -> {
                         ctx.toast(R.string.error_server_5xx)
                     }
+                    else -> {
+                        ctx.toast(getString(R.string.error_unknown_with_code, code))
+                    }
                 }
             }
         }

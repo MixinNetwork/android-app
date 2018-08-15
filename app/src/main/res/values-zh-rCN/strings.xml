@@ -57,6 +57,7 @@
     <string name="error_network">网络错误</string>
     <string name="error_server_5xx">服务器正在维护中</string>
     <string name="error_unknown">未知错误</string>
+    <string name="error_unknown_with_code">未知错误: %d</string>
     <string name="error_many_requests">请求太快啦，请稍后再试</string>
     <string name="error_forbidden">禁止访问</string>
     <string name="error_not_found">没有找到相应的信息</string>
