@@ -8,9 +8,8 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -104,11 +103,7 @@ class AddressAddFragment : BaseFragment() {
         addr_et.addTextChangedListener(mWatcher)
         qr_iv.setOnClickListener { handleClick(true) }
         label_iv.setOnClickListener { handleClick(false) }
-        if (noPublicKey()) {
-            label_iv.visibility = VISIBLE
-        } else {
-            label_iv.visibility = GONE
-        }
+        label_iv.isVisible = noPublicKey()
 
         address?.let {
             label_et.setText(if (noPublicKey()) it.accountName else it.label)
