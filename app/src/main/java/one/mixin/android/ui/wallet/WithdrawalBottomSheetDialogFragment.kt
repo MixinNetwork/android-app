@@ -71,7 +71,7 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetJavaScriptEnabled", "SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title_view.left_ib.setOnClickListener { dialog?.dismiss() }
+        contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.title_view.setSubTitle(getString(R.string.withdrawal_to, withdrawalItem.label),
             withdrawalItem.publicKey.formatPublicKey())
         if (!TextUtils.isEmpty(withdrawalItem.memo)) {

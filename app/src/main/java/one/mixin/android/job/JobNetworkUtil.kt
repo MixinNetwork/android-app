@@ -74,7 +74,11 @@ class JobNetworkUtil(val context: Context, private val linkState: LinkState) : N
         } catch (t: Throwable) {
             return NetworkUtil.DISCONNECTED
         }
-        val metered = ConnectivityManagerCompat.isActiveNetworkMetered(cm)
+        val metered = try {
+            ConnectivityManagerCompat.isActiveNetworkMetered(cm)
+        } catch (e: Exception) {
+            return NetworkUtil.DISCONNECTED
+        }
         if (netInfo.isConnected) {
             if (LinkState.isOnline(linkState.state)) {
                 return NetworkUtil.WEB_SOCKET

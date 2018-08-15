@@ -73,7 +73,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title.left_ib.setOnClickListener { dialog?.dismiss() }
+        contentView.title.left_ib.setOnClickListener { dismiss() }
         contentView.right_animator.setOnClickListener { showBottom() }
         if (type == TYPE_MY_QR) {
             contentView.title.title_tv.text = getString(R.string.contact_my_qr_title)
@@ -82,7 +82,6 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.title.title_tv.text = getString(R.string.contact_receive_money)
             contentView.tip_tv.text = getString(R.string.contact_receive_tip)
         }
-        dialog?.dismiss()
         bottomViewModel.findUserById(userId).observe(this, Observer { user ->
             if (user == null) {
                 bottomViewModel.refreshUser(userId)

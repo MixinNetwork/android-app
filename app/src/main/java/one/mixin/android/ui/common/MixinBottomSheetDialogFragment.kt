@@ -42,7 +42,7 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
 
     override fun dismiss() {
         if (isAdded) {
-            super.dismiss()
+            super.dismissAllowingStateLoss()
         }
     }
 }

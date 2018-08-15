@@ -120,16 +120,16 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     user
                 }.observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider).subscribe({
                     notNullElse(it, {
-                        dialog?.dismiss()
+                        dismiss()
                         UserBottomSheetDialogFragment.newInstance(it)
                             .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }, {
                         context?.toast(R.string.error_user_not_found)
-                        dialog?.dismiss()
+                        dismiss()
                     })
                 }, {
                     context?.toast(R.string.error_user_not_found)
-                    dialog?.dismiss()
+                    dismiss()
                 })
             }
         } else if (url.startsWith("https://mixin.one/pay", true) || url.startsWith("mixin://pay", true)) {
@@ -181,7 +181,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             }
                             dismiss()
                         } else {
-                            dialog?.dismiss()
+                            dismiss()
                             GroupBottomSheetDialogFragment.newInstance(response.conversationId, code)
                                 .showNow(requireFragmentManager(), GroupBottomSheetDialogFragment.TAG)
                         }
@@ -226,7 +226,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
 
     override fun dismiss() {
         if (isAdded) {
-            super.dismiss()
+            super.dismissAllowingStateLoss()
         }
     }
 

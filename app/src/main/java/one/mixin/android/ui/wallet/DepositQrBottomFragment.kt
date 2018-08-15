@@ -55,7 +55,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title.left_ib.setOnClickListener { dialog?.dismiss() }
+        contentView.title.left_ib.setOnClickListener { dismiss() }
         if (type == TYPE_NAME) {
             contentView.title.setSubTitle(getString(R.string.account_name), asset.accountName!!)
         } else {
