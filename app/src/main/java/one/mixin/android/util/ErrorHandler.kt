@@ -41,8 +41,8 @@ open class ErrorHandler {
 
         fun handleMixinError(code: Int) {
             val ctx = MixinApplication.appContext
-            handleErrorCode(code, ctx)
             ctx.runOnUiThread {
+                var handled = true
                 when (code) {
                     TRANSACTION -> {
                     }
@@ -109,6 +109,11 @@ open class ErrorHandler {
                     INVALID_ADDRESS -> {
                         toast(R.string.error_invalid_address)
                     }
+                    else -> handled = false
+                }
+
+                if (!handled) {
+                    handleErrorCode(code, ctx)
                 }
             }
         }
