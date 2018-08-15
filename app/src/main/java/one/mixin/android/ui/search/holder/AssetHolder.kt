@@ -44,7 +44,7 @@ class AssetHolder constructor(containerView: View) : RecyclerView.ViewHolder(con
                 val isPositive = changeUsd > BigDecimal.ZERO
                 val t = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
                 itemView.change_tv.text = if (isPositive) "+$t" else t
-                itemView.change_tv.textColorResource = if (isPositive) R.color.colorChangeGreen else R.color.colorChangeRed
+                itemView.change_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
             }
         }
     }

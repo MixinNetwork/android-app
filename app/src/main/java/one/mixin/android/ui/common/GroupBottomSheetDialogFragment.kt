@@ -6,6 +6,7 @@ import android.arch.lifecycle.Observer
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
+import android.text.method.LinkMovementMethod
 import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
@@ -19,6 +20,7 @@ import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -91,23 +93,27 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             menu?.show()
         }
 
-        contentView.join_tv.setOnClickListener {
+        contentView.join_va.setOnClickListener {
             if (code == null) return@setOnClickListener
 
             contentView.join_va.displayedChild = POS_PB
+            contentView.join_va.isEnabled = false
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
                 if (it.isSuccess) {
                     dialog?.dismiss()
                     ConversationActivity.show(requireContext(), conversationId)
                 } else {
                     contentView.join_va?.displayedChild = POS_TV
+                    contentView.join_va.isEnabled = true
                     ErrorHandler.handleMixinError(it.errorCode)
                 }
             }, {
                 contentView.join_va?.displayedChild = POS_TV
+                contentView.join_va.isEnabled = true
                 ErrorHandler.handleError(it)
             })
         }
+        contentView.detail_tv.movementMethod = LinkMovementMethod()
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
@@ -128,6 +134,10 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.detail_tv.text = c.announcement
             initParticipant()
         })
+
+        contentView.post {
+            contentView.detail_tv.maxHeight = requireContext().displayHeight() / 3
+        }
 
         bottomViewModel.refreshConversation(conversationId)
     }

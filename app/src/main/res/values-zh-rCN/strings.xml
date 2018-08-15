@@ -87,7 +87,7 @@
     <string name="error_phone_verification_code_invalid">验证码错误</string>
     <string name="error_phone_invalid_format">手机号码不合法</string>
     <string name="error_phone_sms_delivery">发送短信失败</string>
-    <string name="error_bad_data">数据请求错误，请升级版本或稍后重试</string>
+    <string name="error_bad_data">请求数据不合法</string>
     <string name="error_permission">请开启相关权限</string>
     <string name="error_user_invalid_format">用户数据不合法</string>
     <string name="error_share">分享出错</string>

@@ -6,6 +6,7 @@ import android.arch.lifecycle.Observer
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.text.TextUtils
+import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
@@ -109,6 +110,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dialog?.dismiss()
         }
 
+        contentView.detail_tv.movementMethod = LinkMovementMethod()
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener { _, url ->

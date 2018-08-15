@@ -117,9 +117,11 @@
 
     <one.mixin.android.widget.linktext.AutoLinkTextView
         android:id="@+id/detail_tv"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:scrollbars="vertical"
         android:textColor="@color/text_black"
+        android:maxLength="1024"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
         android:layout_marginTop="@dimen/activity_vertical_margin"

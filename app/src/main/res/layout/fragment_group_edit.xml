@@ -16,6 +16,7 @@
             android:id="@+id/desc_et"
             android:background="@android:color/white"
             android:padding="@dimen/activity_horizontal_margin"
+            android:maxLength="1024"
             style="@style/NormalTextStyle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
