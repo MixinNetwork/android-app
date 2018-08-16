@@ -7,6 +7,7 @@ import android.support.v4.app.RemoteInput
 import androidx.core.content.systemService
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.experimental.launch
+import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.SINGLE_DB_CONTEXT
 import one.mixin.android.extension.nowInUtc
@@ -14,11 +15,11 @@ import one.mixin.android.job.NotificationJob.Companion.CONVERSATION_ID
 import one.mixin.android.job.NotificationJob.Companion.IS_PLAIN
 import one.mixin.android.job.NotificationJob.Companion.KEY_REPLY
 import one.mixin.android.util.Session
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMessage
-import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.createAckListParamBlazeMessage
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import java.util.UUID
 import javax.inject.Inject
 
@@ -28,6 +29,8 @@ class SendService : IntentService("SendService") {
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var messageDao: MessageDao
+    @Inject
+    lateinit var jobDao: JobDao
 
     override fun onCreate() {
         super.onCreate()
@@ -54,11 +57,8 @@ class SendService : IntentService("SendService") {
                     launch(SINGLE_DB_CONTEXT) {
                         messageDao.batchMarkRead(it)
                     }
-                    it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
-                        val chunkList = it.chunked(100)
-                        for (item in chunkList) {
-                            jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))
-                        }
+                    it.map { Job(it, ACKNOWLEDGE_MESSAGE_RECEIPTS, MessageStatus.READ.name) }.let {
+                        jobDao.insertList(it)
                     }
                 }
             }
