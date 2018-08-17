@@ -113,7 +113,9 @@ class ConversationJob(
                         ConversationStatus.FAILURE.ordinal)
                 }
             }
-            r?.let { ErrorHandler.handleMixinError(it.errorCode) }
+            if (r?.isSuccess == false) {
+                ErrorHandler.handleMixinError(r.errorCode)
+            }
         }
     }
 
