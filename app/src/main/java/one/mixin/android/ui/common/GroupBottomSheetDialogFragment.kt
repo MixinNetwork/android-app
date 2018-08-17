@@ -19,6 +19,7 @@ import android.widget.TextView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
+import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.notNullElse
@@ -87,7 +88,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.left_iv.setOnClickListener { dialog?.dismiss() }
+        contentView.left_iv.setOnClickListener { dismiss() }
         contentView.right_iv.setOnClickListener {
             (dialog as BottomSheet).fakeDismiss()
             menu?.show()
@@ -100,7 +101,15 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.join_va.isEnabled = false
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
                 if (it.isSuccess) {
-                    dialog?.dismiss()
+                    dismiss()
+                    val conversationResponse = it.data as ConversationResponse
+                    val accountId = Session.getAccountId()
+                    conversationResponse.participants.forEach {
+                        if (it.userId == accountId) {
+                            bottomViewModel.refreshConversation(conversationId)
+                            return@forEach
+                        }
+                    }
                     ConversationActivity.show(requireContext(), conversationId)
                 } else {
                     contentView.join_va?.displayedChild = POS_TV
@@ -118,7 +127,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
             openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
-            dialog?.dismiss()
+            dismiss()
         }
 
         bottomViewModel.getConversationById(conversationId).observe(this, Observer { c ->
@@ -179,7 +188,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     contentView.avatar_container_ll.addView(moreView, params)
                 }
                 contentView.avatar_container_ll.setOnClickListener {
-                    dialog?.dismiss()
+                    dismiss()
                     GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
                 }
 
@@ -217,7 +226,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             .setItems(choices.toTypedArray()) { _, which ->
                 when (choices[which]) {
                     getString(R.string.participants) -> {
-                        dialog?.dismiss()
+                        dismiss()
                         GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
                     }
                     getString(R.string.group_info_add) -> {
@@ -251,7 +260,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }.create()
         menu?.setOnDismissListener {
             if (!keepDialog) {
-                dialog?.dismiss()
+                dismiss()
             }
         }
     }
@@ -295,7 +304,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
             .show()
-        alert.setOnDismissListener { dialog?.dismiss() }
+        alert.setOnDismissListener { dismiss() }
     }
 
     @SuppressLint("RestrictedApi")
@@ -323,7 +332,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dialog.dismiss()
             }
             .show()
-        nameDialog.setOnDismissListener { dialog?.dismiss() }
+        nameDialog.setOnDismissListener { dismiss() }
         nameDialog.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
         nameDialog.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)

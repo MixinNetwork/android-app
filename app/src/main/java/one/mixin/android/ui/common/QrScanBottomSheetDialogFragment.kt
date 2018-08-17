@@ -48,20 +48,20 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.qr_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.qr_tv.setAutoLinkOnClickListener { _, url ->
             openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
-            dialog?.dismiss()
+            dismiss()
         }
         contentView.qr_tv.text = text
         contentView.copy.setOnClickListener {
             context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, text)
             toast(R.string.copy_success)
-            dialog?.dismiss()
+            dismiss()
         }
         if (text.isWebUrl()) {
             contentView.open_fl.visibility = VISIBLE
             contentView.open.setOnClickListener {
                 WebBottomSheetDialogFragment.newInstance(text, conversationId)
                     .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
-                dialog.dismiss()
+                dismiss()
             }
         } else {
             contentView.open_fl.visibility = GONE

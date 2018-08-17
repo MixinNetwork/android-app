@@ -111,7 +111,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
-import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MessageCategory
@@ -1217,14 +1216,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 action_bar.setSubTitle(groupName
                     ?: "", getString(R.string.title_participants, groupNumber))
                 action_bar.avatar_iv.setGroup(it.iconUrl)
-                if (it.status == ConversationStatus.QUIT.ordinal) {
-                    chat_control.visibility = INVISIBLE
-                    bottom_cant_send.visibility = VISIBLE
-                    chat_control.chat_et.hideKeyboard()
-                } else {
-                    chat_control.visibility = VISIBLE
-                    bottom_cant_send.visibility = GONE
-                }
             }
         })
         chatViewModel.getGroupParticipantsLiveData(conversationId).observe(this, Observer { users ->
@@ -1232,6 +1223,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 groupNumber = it.size
                 action_bar.setSubTitle(groupName
                     ?: "", getString(R.string.title_participants, groupNumber))
+
+                val userIds = arrayListOf<String>()
+                users.mapTo(userIds) { it.userId }
+                if (userIds.contains(Session.getAccountId())) {
+                    chat_control.visibility = VISIBLE
+                    bottom_cant_send.visibility = GONE
+                } else {
+                    chat_control.visibility = INVISIBLE
+                    bottom_cant_send.visibility = VISIBLE
+                    chat_control.chat_et.hideKeyboard()
+                }
             }
             mentionAdapter.list = users
             mentionAdapter.notifyDataSetChanged()

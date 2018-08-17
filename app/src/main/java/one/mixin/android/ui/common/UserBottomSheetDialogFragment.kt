@@ -79,7 +79,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.onActivityCreated(savedInstanceState)
         user = arguments!!.getParcelable(ARGS_USER)
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
-        contentView.left_iv.setOnClickListener { dialog?.dismiss() }
+        contentView.left_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             user.avatarUrl?.let { url ->
                 doAsync {
@@ -87,7 +87,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     uiThread { AvatarActivity.show(requireActivity(), url, contentView.avatar, bitmap) }
                 }
             }
-            dialog?.dismiss()
+            dismiss()
         }
 
         bottomViewModel.findUserById(user.userId).observe(this, Observer { u ->
@@ -95,7 +95,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             // prevent add self
             if (u.userId == Session.getAccountId()) {
                 activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
-                dialog?.dismiss()
+                dismiss()
                 return@Observer
             }
             user = u
@@ -107,7 +107,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.send_fl.setOnClickListener {
             context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
-            dialog?.dismiss()
+            dismiss()
         }
 
         contentView.detail_tv.movementMethod = LinkMovementMethod()
@@ -115,7 +115,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
             openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
-            dialog?.dismiss()
+            dismiss()
         }
 
         bottomViewModel.refreshUser(user.userId)
@@ -142,7 +142,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 when (choices[which]) {
                     getString(R.string.contact_other_share) -> {
                         ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
-                        dialog?.dismiss()
+                        dismiss()
                     }
                     getString(R.string.edit_name) -> {
                         keepDialog = true
@@ -165,7 +165,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }.create()
         menu.setOnDismissListener {
             if (!keepDialog) {
-                dialog?.dismiss()
+                dismiss()
             }
         }
 
@@ -199,7 +199,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         contentView.open_fl.visibility = VISIBLE
                         contentView.detail_tv.text = app.description
                         contentView.open_fl.setOnClickListener {
-                            dialog?.dismiss()
+                            dismiss()
                             WebBottomSheetDialogFragment
                                 .newInstance(app.homeUri, conversationId, app.name)
                                 .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
@@ -215,7 +215,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                         } else {
                                             UserBottomSheetDialogFragment.newInstance(u).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                                         }
-                                        dialog?.dismiss()
+                                        dismiss()
                                     }
                                 } else {
                                     contentView.creator_tv.visibility = GONE
@@ -245,7 +245,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.unblock_fl.visibility = VISIBLE
                 contentView.unblock_fl.setOnClickListener {
                     bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
-                    dialog?.dismiss()
+                    dismiss()
                 }
             }
             UserRelationship.FRIEND.name -> {
@@ -293,7 +293,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dialog.dismiss()
             }
             .show()
-        nameDialog.setOnDismissListener { dialog?.dismiss() }
+        nameDialog.setOnDismissListener { dismiss() }
         nameDialog.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
         nameDialog.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
@@ -327,7 +327,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
             .show()
-        alert.setOnDismissListener { dialog?.dismiss() }
+        alert.setOnDismissListener { dismiss() }
     }
 
     private fun mute() {

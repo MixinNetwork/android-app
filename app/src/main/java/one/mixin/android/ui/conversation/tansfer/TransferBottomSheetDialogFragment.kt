@@ -83,7 +83,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetJavaScriptEnabled", "SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title_view.left_ib.setOnClickListener { dialog?.dismiss() }
+        contentView.title_view.left_ib.setOnClickListener { dismiss()}
         contentView.title_view.setSubTitle(getString(R.string.wallet_bottom_transfer_to, user.fullName), user.identityNumber)
         contentView.title_view.avatar_iv.visibility = VISIBLE
         contentView.title_view.avatar_iv.setTextSize(16f)

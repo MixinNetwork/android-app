@@ -118,7 +118,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         jobManager.addJobInBackground(RefreshAssetsJob())
-        contentView.title_view.left_ib.setOnClickListener { dialog?.dismiss() }
+        contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.title_view.avatar_iv.visibility = View.VISIBLE
         contentView.title_view.avatar_iv.setTextSize(16f)
         contentView.transfer_amount.addTextChangedListener(mWatcher)
@@ -170,7 +170,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
             bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
-                    dialog?.dismiss()
+                    dismiss()
                 }
             })
         }
