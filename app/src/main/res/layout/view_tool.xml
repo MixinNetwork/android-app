@@ -9,11 +9,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_margin="14dp"
-        android:padding="2dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="16dp"
         android:src="@drawable/ic_close_black_24dp"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/delete_iv"
@@ -21,11 +20,10 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_margin="14dp"
-        android:padding="2dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="16dp"
         android:src="@drawable/ic_msg_delete"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/copy_iv"
@@ -33,11 +31,10 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toStartOf="@id/delete_iv"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_margin="14dp"
-        android:padding="2dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="16dp"
         android:src="@drawable/ic_content_copy"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/forward_iv"
@@ -45,11 +42,10 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toStartOf="@id/copy_iv"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_margin="14dp"
-        android:padding="2dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="16dp"
         android:src="@drawable/ic_forward_black_24dp"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
     <ImageView
         android:id="@+id/add_sticker_iv"
@@ -57,9 +53,8 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toStartOf="@id/forward_iv"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_margin="14dp"
-        android:padding="2dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="16dp"
         android:src="@drawable/ic_sticker_add"
         tools:ignore="ContentDescription"/>
 
@@ -69,6 +64,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_toStartOf="@id/add_sticker_iv"
+        android:background="@drawable/mixin_ripple"
         android:padding="16dp"
         android:src="@drawable/ic_reply"
         tools:ignore="ContentDescription"/>

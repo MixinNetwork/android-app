@@ -17,25 +17,23 @@
 
             <ImageView
                 android:id="@+id/close_iv"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/mixin_ripple"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentStart="true"
                 android:layout_centerVertical="true"
-                android:padding="2dp"
-                android:layout_margin="14dp"
+                android:padding="16dp"
                 android:src="@drawable/ic_close_black_24dp"
                 tools:ignore="ContentDescription" />
 
             <ImageView
                 android:id="@+id/more_iv"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:background="@drawable/mixin_ripple"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
-                android:padding="2dp"
-                android:layout_margin="14dp"
+                android:padding="16dp"
                 android:src="@drawable/ic_more"
                 android:checked="false"
                 tools:ignore="ContentDescription" />

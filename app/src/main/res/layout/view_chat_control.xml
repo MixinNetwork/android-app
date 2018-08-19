@@ -19,10 +19,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:padding="2dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="4dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/mixin_ripple"
             app:srcCompat="@drawable/ic_chat_bot"
             tools:ignore="ContentDescription"/>
 
@@ -31,16 +30,16 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="2dp"
-            android:layout_marginStart="10dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="6dp"
+            android:layout_marginStart="4dp"
             app:srcCompat="@drawable/ic_chat_sticker"
             tools:ignore="ContentDescription"/>
 
         <one.mixin.android.widget.ContentEditText
             android:id="@+id/chat_et"
             android:layout_width="0dp"
-            android:layout_marginStart="10dp"
+            android:layout_marginStart="6dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:minHeight="40dp"
@@ -62,10 +61,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="2dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="6dp"
+            android:layout_marginStart="4dp"
             app:srcCompat="@drawable/ic_chat_ext"
             tools:ignore="ContentDescription"/>
 
@@ -74,10 +72,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="2dp"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="6dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="4dp"
             android:src="@drawable/ic_record_mic_black"
             tools:ignore="ContentDescription"/>
     </LinearLayout>
