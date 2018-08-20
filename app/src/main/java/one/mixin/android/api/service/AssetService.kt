@@ -27,7 +27,7 @@ interface AssetService {
     fun snapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
 
     @POST("transfers")
-    fun transfer(@Body request: TransferRequest): Call<MixinResponse<Asset>>
+    fun transfer(@Body request: TransferRequest): Observable<MixinResponse<Asset>>
 
     @POST("payments")
     fun pay(@Body request: TransferRequest): Observable<MixinResponse<PaymentResponse>>

@@ -47,12 +47,12 @@ internal constructor(
 
     fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
-    fun updatePin(pin: String, oldPin: String?): Observable<MixinResponse<Account>> =
-        Observable.just(Session.getPinToken()).map { pinToken ->
-            val old = encryptPin(pinToken, oldPin)
-            val fresh = encryptPin(pinToken, pin)!!
-            accountRepository.updatePin(PinRequest(fresh, old)).execute().body()!!
-        }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+    fun updatePin(pin: String, oldPin: String?): Observable<MixinResponse<Account>> {
+        val pinToken = Session.getPinToken()!!
+        val old = encryptPin(pinToken, oldPin)
+        val fresh = encryptPin(pinToken, pin)!!
+        return accountRepository.updatePin(PinRequest(fresh, old)).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+    }
 
     fun verifyPin(code: String) = accountRepository.verifyPin(code)
 

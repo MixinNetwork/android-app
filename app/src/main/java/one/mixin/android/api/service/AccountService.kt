@@ -28,7 +28,7 @@ interface AccountService {
     fun create(@Path("id") id: String, @Body request: AccountRequest): Observable<MixinResponse<Account>>
 
     @POST("verifications/{id}")
-    fun changePhone(@Path("id") id: String, @Body request: AccountRequest): Call<MixinResponse<Account>>
+    fun changePhone(@Path("id") id: String, @Body request: AccountRequest): Observable<MixinResponse<Account>>
 
     @POST("me")
     fun update(@Body request: AccountUpdateRequest): Observable<MixinResponse<Account>>
@@ -49,10 +49,10 @@ interface AccountService {
     fun invitations(@Path("code") code: String): Observable<MixinResponse<Account>>
 
     @POST("pin/update")
-    fun updatePin(@Body request: PinRequest): Call<MixinResponse<Account>>
+    fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>
 
     @POST("pin/verify")
-    fun verifyPin(@Body request: PinRequest): Call<MixinResponse<Account>>
+    fun verifyPin(@Body request: PinRequest): Observable<MixinResponse<Account>>
 
     @POST("session")
     fun updateSession(@Body request: SessionRequest): Observable<MixinResponse<Account>>

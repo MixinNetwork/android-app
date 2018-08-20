@@ -31,7 +31,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
-import retrofit2.Call
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -56,7 +55,7 @@ constructor(
     fun create(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
         accountService.create(id, request)
 
-    fun changePhone(id: String, request: AccountRequest): Call<MixinResponse<Account>> =
+    fun changePhone(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
         accountService.changePhone(id, request)
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
@@ -108,9 +107,9 @@ constructor(
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
-    fun verifyPin(code: String): Observable<MixinResponse<Account>> = Observable.just(Session.getPinToken()).map { pinToken ->
-        accountService.verifyPin(PinRequest(encryptPin(pinToken, code)!!)).execute().body()!!
-    }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    fun verifyPin(code: String): Observable<MixinResponse<Account>> =
+        accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
+            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 
