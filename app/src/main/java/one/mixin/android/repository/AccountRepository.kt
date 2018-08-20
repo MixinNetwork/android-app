@@ -18,8 +18,6 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.getRSAPrivateKeyFromString
-import one.mixin.android.crypto.rsaDecrypt
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
@@ -33,7 +31,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
-import retrofit2.Call
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -58,7 +55,7 @@ constructor(
     fun create(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
         accountService.create(id, request)
 
-    fun changePhone(id: String, request: AccountRequest): Call<MixinResponse<Account>> =
+    fun changePhone(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
         accountService.changePhone(id, request)
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
@@ -110,9 +107,9 @@ constructor(
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
-    fun verifyPin(code: String): Observable<MixinResponse<Account>> = getPinToken().map { pinToken ->
-        accountService.verifyPin(PinRequest(encryptPin(pinToken, code)!!)).execute().body()!!
-    }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    fun verifyPin(code: String): Observable<MixinResponse<Account>> =
+        accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
+            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 
@@ -127,25 +124,6 @@ constructor(
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
 
     fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
-
-    fun getPinToken(): Observable<String> {
-        val pinToken = Session.getPinToken()
-        return if (pinToken == null) {
-            accountService.getPinToken().map {
-                val token = if (it.isSuccess && it.data != null) {
-                    it.data!!.pinToken
-                } else {
-                    null
-                }
-                val priKey = getRSAPrivateKeyFromString(Session.getToken()!!)
-                val key = rsaDecrypt(priKey, Session.getAccount()!!.session_id, token!!)
-                Session.storePinToken(key)
-                key
-            }.subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-        } else {
-            Observable.just(pinToken).subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-        }
-    }
 
     fun addSticker(request: StickerAddRequest) = accountService.addSticker(request)
 

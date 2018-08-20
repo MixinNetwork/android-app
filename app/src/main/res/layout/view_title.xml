@@ -10,9 +10,9 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_centerVertical="true"
-        android:layout_marginStart="14dp"
-        android:padding="2dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginStart="6dp"
+        android:padding="8dp"
+        android:background="@drawable/mixin_ripple"
         android:src="@drawable/ic_back"
         tools:ignore="ContentDescription" />
 
@@ -30,9 +30,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:padding="2dp"
-            android:layout_marginEnd="6dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="6dp"
+            android:background="@drawable/mixin_ripple"
             tools:ignore="ContentDescription" />
 
         <TextView

@@ -11,10 +11,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="4dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="8dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
         app:srcCompat="@drawable/ic_wallet"
         tools:ignore="ContentDescription"/>
 
@@ -23,9 +23,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|start"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
+        android:background="@drawable/mixin_ripple"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:padding="8dp"
         android:visibility="gone"
         app:srcCompat="@drawable/ic_back"
         tools:ignore="ContentDescription"/>
@@ -35,10 +36,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|end"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="4dp"
-        android:layout_marginEnd="12dp"
-        android:layout_marginStart="12dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="8dp"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
         app:srcCompat="@drawable/ic_group"
         tools:ignore="ContentDescription"/>
 
@@ -89,9 +90,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical|end"
-        android:layout_marginEnd="12dp"
-        android:background="@null"
         android:visibility="gone"
+        android:background="@drawable/mixin_ripple"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:padding="8dp"
         app:srcCompat="@drawable/ic_close_black_24dp"
         tools:ignore="ContentDescription"/>
 

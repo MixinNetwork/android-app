@@ -12,6 +12,7 @@ import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
@@ -30,10 +31,8 @@ constructor(
         accountRepository.create(id, request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun changePhone(id: String, verificationCode: String, pin: String): Observable<MixinResponse<Account>> =
-        accountRepository.getPinToken().map { pinToken ->
-            accountRepository.changePhone(id, AccountRequest(verificationCode, purpose = VerificationPurpose.PHONE.name,
-                pin = encryptPin(pinToken, pin))).execute().body()!!
-        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        accountRepository.changePhone(id, AccountRequest(verificationCode, purpose = VerificationPurpose.PHONE.name,
+            pin = encryptPin(Session.getPinToken()!!, pin))).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
         accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())

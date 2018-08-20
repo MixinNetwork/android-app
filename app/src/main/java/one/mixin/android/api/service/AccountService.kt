@@ -6,7 +6,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.PinRequest
-import one.mixin.android.api.request.PinToken
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
@@ -29,7 +28,7 @@ interface AccountService {
     fun create(@Path("id") id: String, @Body request: AccountRequest): Observable<MixinResponse<Account>>
 
     @POST("verifications/{id}")
-    fun changePhone(@Path("id") id: String, @Body request: AccountRequest): Call<MixinResponse<Account>>
+    fun changePhone(@Path("id") id: String, @Body request: AccountRequest): Observable<MixinResponse<Account>>
 
     @POST("me")
     fun update(@Body request: AccountUpdateRequest): Observable<MixinResponse<Account>>
@@ -50,13 +49,10 @@ interface AccountService {
     fun invitations(@Path("code") code: String): Observable<MixinResponse<Account>>
 
     @POST("pin/update")
-    fun updatePin(@Body request: PinRequest): Call<MixinResponse<Account>>
+    fun updatePin(@Body request: PinRequest): Observable<MixinResponse<Account>>
 
     @POST("pin/verify")
-    fun verifyPin(@Body request: PinRequest): Call<MixinResponse<Account>>
-
-    @GET("pin/token")
-    fun getPinToken(): Observable<MixinResponse<PinToken>>
+    fun verifyPin(@Body request: PinRequest): Observable<MixinResponse<Account>>
 
     @POST("session")
     fun updateSession(@Body request: SessionRequest): Observable<MixinResponse<Account>>
