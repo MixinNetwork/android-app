@@ -41,6 +41,7 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getImageCachePath
@@ -77,6 +78,8 @@ import javax.inject.Inject
 class CaptureFragment : BaseFragment() {
     companion object {
         const val TAG = "CaptureFragment"
+
+        const val SHOW_QR_CODE = "show_qr_code"
 
         const val ARGS_FOR_ADDRESS = "args_for_address"
         const val ARGS_ADDRESS_RESULT = "args_address_result"
@@ -417,6 +420,7 @@ class CaptureFragment : BaseFragment() {
 
     private val captureCallback = object : CaptureManagerCallback {
         override fun onScanResult(barcodeResult: BarcodeResult) {
+            requireContext().defaultSharedPreferences.putBoolean(SHOW_QR_CODE, false)
             if (forAddress || forAccountName) {
                 val result = Intent().apply {
                     putExtra(if (forAddress) ARGS_ADDRESS_RESULT else ARGS_ACCOUNT_NAME_RESULT, barcodeResult.text)

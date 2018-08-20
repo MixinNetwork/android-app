@@ -351,7 +351,7 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
         val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
         val resultWidth = (Math.round((mediaWith * scale / 2).toDouble()) * 2).toInt()
         val resultHeight = (Math.round((mediaHeight * scale / 2).toDouble()) * 2).toInt()
-        return if (scale > 0) {
+        return if (scale >= 1) {
             VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
                 fileName, 0, false)
         } else {

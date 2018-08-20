@@ -8,9 +8,13 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
+import android.support.v4.content.ContextCompat
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.ui.qr.CaptureFragment
 import org.jetbrains.anko.dip
 
 class ShadowCircleView : View {
@@ -24,11 +28,13 @@ class ShadowCircleView : View {
 
     private val ringPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
-        color = Color.parseColor("#BBBBBB")
-        strokeWidth = dip(4f).toFloat()
+        color = Color.parseColor("#979797")
+        strokeWidth = dip(3f).toFloat()
     }
 
     private val framePaint = Paint()
+
+    private val icon = ContextCompat.getDrawable(context, R.drawable.ic_qrcode)
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -49,12 +55,16 @@ class ShadowCircleView : View {
             midY = (height - shadowHeight) / 2
             frameRect = RectF(0f, 0f, width.toFloat(), height.toFloat())
             circleRect = RectF(midX - radius, 0f, midX + radius, height.toFloat())
+            icon?.setBounds((midX - radius / 2).toInt(), (midY - radius / 2).toInt(), (midX + radius / 2).toInt(), (midY + radius / 2).toInt())
         }
     }
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawPaint(framePaint)
         canvas.drawCircle(midX, midY, radius, ringPaint)
+        if (context.defaultSharedPreferences.getBoolean(CaptureFragment.SHOW_QR_CODE, true)) {
+            icon?.draw(canvas)
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
