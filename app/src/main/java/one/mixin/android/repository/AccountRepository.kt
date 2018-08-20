@@ -108,7 +108,7 @@ constructor(
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
-    fun verifyPin(code: String): Observable<MixinResponse<Account>> = getPinToken().map { pinToken ->
+    fun verifyPin(code: String): Observable<MixinResponse<Account>> = Observable.just(Session.getPinToken()).map { pinToken ->
         accountService.verifyPin(PinRequest(encryptPin(pinToken, code)!!)).execute().body()!!
     }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
@@ -125,11 +125,6 @@ constructor(
     fun recentUsedStickers() = stickerDao.recentUsedStickers()
 
     fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
-
-    fun getPinToken(): Observable<String> {
-        val pinToken = Session.getPinToken()!!
-        return Observable.just(pinToken).subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-    }
 
     fun addSticker(request: StickerAddRequest) = accountService.addSticker(request)
 

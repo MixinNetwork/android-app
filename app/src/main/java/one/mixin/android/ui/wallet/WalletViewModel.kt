@@ -14,6 +14,7 @@ import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.AssetItem
@@ -47,7 +48,7 @@ internal constructor(
     fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
     fun updatePin(pin: String, oldPin: String?): Observable<MixinResponse<Account>> =
-        accountRepository.getPinToken().map { pinToken ->
+        Observable.just(Session.getPinToken()).map { pinToken ->
             val old = encryptPin(pinToken, oldPin)
             val fresh = encryptPin(pinToken, pin)!!
             accountRepository.updatePin(PinRequest(fresh, old)).execute().body()!!
