@@ -83,8 +83,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.avatar.setOnClickListener {
             user.avatarUrl?.let { url ->
                 doAsync {
-                    val bitmap = Glide.with(this@UserBottomSheetDialogFragment).asBitmap().load(url).submit().get()
-                    uiThread { AvatarActivity.show(requireActivity(), url, contentView.avatar, bitmap) }
+                    if (isAdded) {
+                        val bitmap = Glide.with(this@UserBottomSheetDialogFragment).asBitmap().load(url).submit().get()
+                        uiThread { AvatarActivity.show(requireActivity(), url, contentView.avatar, bitmap) }
+                    }
                 }
             }
             dismiss()
