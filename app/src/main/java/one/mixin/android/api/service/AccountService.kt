@@ -6,7 +6,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.PinRequest
-import one.mixin.android.api.request.PinToken
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
@@ -54,9 +53,6 @@ interface AccountService {
 
     @POST("pin/verify")
     fun verifyPin(@Body request: PinRequest): Call<MixinResponse<Account>>
-
-    @GET("pin/token")
-    fun getPinToken(): Observable<MixinResponse<PinToken>>
 
     @POST("session")
     fun updateSession(@Body request: SessionRequest): Observable<MixinResponse<Account>>
