@@ -15,7 +15,6 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.core.view.updateLayoutParams
-import com.bumptech.glide.Glide
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
@@ -82,14 +81,9 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.left_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             user.avatarUrl?.let { url ->
-                doAsync {
-                    if (isAdded) {
-                        val bitmap = Glide.with(this@UserBottomSheetDialogFragment).asBitmap().load(url).submit().get()
-                        uiThread { AvatarActivity.show(requireActivity(), url, contentView.avatar, bitmap) }
-                    }
-                }
+                AvatarActivity.show(requireActivity(), url, contentView.avatar)
+                dismiss()
             }
-            dismiss()
         }
 
         bottomViewModel.findUserById(user.userId).observe(this, Observer { u ->
