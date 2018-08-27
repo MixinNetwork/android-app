@@ -293,24 +293,24 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.video_texture.surfaceTextureListener = this
             val textureParams = view.video_texture.layoutParams
             val previewParams = view.video_texture.layoutParams
-            val scaleW = container.width / messageItem.mediaWidth!!.toFloat()
-            val scaleH = container.height / messageItem.mediaHeight!!.toFloat()
+            val scaleW = container.measuredWidth / messageItem.mediaWidth!!.toFloat()
+            val scaleH = container.measuredHeight / messageItem.mediaHeight!!.toFloat()
             when {
                 scaleW > scaleH -> {
-                    textureParams.height = container.height
-                    previewParams.height = container.height
+                    textureParams.height = container.measuredHeight
+                    previewParams.height = container.measuredHeight
                     textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
                     previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
                 }
                 scaleW < scaleH -> {
-                    textureParams.width = container.width
-                    previewParams.width = container.width
+                    textureParams.width = container.measuredWidth
+                    previewParams.width = container.measuredWidth
                     textureParams.height = (messageItem.mediaHeight * scaleW).toInt()
                     previewParams.height = (messageItem.mediaHeight * scaleW).toInt()
                 }
                 else -> {
-                    textureParams.height = container.height
-                    previewParams.height = container.height
+                    textureParams.height = container.measuredHeight
+                    previewParams.height = container.measuredHeight
                     textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
                     previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
                 }

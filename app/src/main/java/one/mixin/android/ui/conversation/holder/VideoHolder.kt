@@ -202,8 +202,8 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
         }, true)
 
-        dataUrl = messageItem.mediaUrl
-        dataThumbImage = messageItem.thumbImage
+        dataWidth = messageItem.mediaWidth
+        dataHeight = messageItem.mediaHeight
         dataUrl = messageItem.mediaUrl
         dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
