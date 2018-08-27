@@ -40,6 +40,8 @@ android {
             exclude 'META-INF/*.kotlin_module'
             exclude 'META-INF/*.version'
         }
+
+        vectorDrawables.useSupportLibrary = true
     }
 
     sourceSets {
