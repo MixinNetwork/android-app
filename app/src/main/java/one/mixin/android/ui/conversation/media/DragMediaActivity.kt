@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation.media
 
 import android.Manifest
 import android.animation.ValueAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.ContentResolver
@@ -120,6 +121,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     @Inject
     lateinit var conversationRepository: ConversationRepository
 
+    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
@@ -130,14 +132,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         Observable.just(conversationId).observeOn(Schedulers.io())
             .map { conversationRepository.getMediaMessages(it).reversed() }
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe {
-                index = it.indexOfFirst { item -> messageId == item.messageId }
-                it.map {
+            .subscribe { list ->
+                index = list.indexOfFirst { item -> messageId == item.messageId }
+                list.map {
                     if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
                         it.type == MessageCategory.PLAIN_VIDEO.name) {
                     }
                 }
-                pagerAdapter = MediaAdapter(it, this)
+                pagerAdapter = MediaAdapter(list, this)
                 view_pager.adapter = pagerAdapter
                 if (index != -1) {
                     view_pager.currentItem = index
@@ -174,14 +176,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.save.setOnClickListener {
+        view.save.setOnClickListener { _ ->
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {
-                            pagerAdapter.list?.let {
-                                val item = it[view_pager.currentItem]
+                            pagerAdapter.list?.let { list ->
+                                val item = list[view_pager.currentItem]
                                 val file = File(item.mediaUrl?.toUri()?.getFilePath())
                                 val outFile = if (item.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
                                     this@DragMediaActivity.getPublicPictyresPath().createGifTemp(false)
@@ -201,9 +203,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 })
             bottomSheet.dismiss()
         }
-        view.decode.setOnClickListener {
-            findViewPagerChildByTag {
-                val imageView = it.getChildAt(0) as ImageView
+        view.decode.setOnClickListener { _ ->
+            findViewPagerChildByTag { viewGroup ->
+                val imageView = viewGroup.getChildAt(0) as ImageView
                 doAsync {
                     if (imageView.drawable is BitmapDrawable) {
                         val url = (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
@@ -291,32 +293,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 view.share_iv.translationY = statusBarHeight
             }
             view.video_texture.surfaceTextureListener = this
-            val textureParams = view.video_texture.layoutParams
-            val previewParams = view.video_texture.layoutParams
-            val scaleW = container.width / messageItem.mediaWidth!!.toFloat()
-            val scaleH = container.height / messageItem.mediaHeight!!.toFloat()
-            when {
-                scaleW > scaleH -> {
-                    textureParams.height = container.height
-                    previewParams.height = container.height
-                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
-                    previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
-                }
-                scaleW < scaleH -> {
-                    textureParams.width = container.width
-                    previewParams.width = container.width
-                    textureParams.height = (messageItem.mediaHeight * scaleW).toInt()
-                    previewParams.height = (messageItem.mediaHeight * scaleW).toInt()
-                }
-                else -> {
-                    textureParams.height = container.height
-                    previewParams.height = container.height
-                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
-                    previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
-                }
-            }
-            view.video_texture.layoutParams = textureParams
-            view.preview_iv.layoutParams = previewParams
+            setSize(messageItem, view, false)
+            view.post { setSize(messageItem, view, true) }
             view.preview_iv.visibility = VISIBLE
 
             view.preview_iv.loadVideo(messageItem.mediaUrl ?: "", R.drawable.image_holder)
@@ -384,6 +362,37 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             })
 
             return view
+        }
+
+        private fun setSize(messageItem: MessageItem, view: View, post: Boolean) {
+            val w = if (post) container.width else container.measuredWidth
+            val h = if (post) container.height else container.measuredHeight
+            val textureParams = view.video_texture.layoutParams
+            val previewParams = view.video_texture.layoutParams
+            val scaleW = w / messageItem.mediaWidth!!.toFloat()
+            val scaleH = h / messageItem.mediaHeight!!.toFloat()
+            when {
+                scaleW > scaleH -> {
+                    textureParams.height = h
+                    previewParams.height = h
+                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
+                    previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
+                }
+                scaleW < scaleH -> {
+                    textureParams.width = w
+                    previewParams.width = w
+                    textureParams.height = (messageItem.mediaHeight * scaleW).toInt()
+                    previewParams.height = (messageItem.mediaHeight * scaleW).toInt()
+                }
+                else -> {
+                    textureParams.height = h
+                    previewParams.height = h
+                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
+                    previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
+                }
+            }
+            view.video_texture.layoutParams = textureParams
+            view.preview_iv.layoutParams = previewParams
         }
 
         private fun createLargeImageView(container: ViewGroup, position: Int, messageItem: MessageItem): LargeImageView {
@@ -606,8 +615,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private fun start() {
         view_pager.post {
             setPreviewIv(false, view_pager.currentItem)
-            findViewPagerChildByTag {
-                val parentView = it.getChildAt(0)
+            findViewPagerChildByTag { viewGroup ->
+                val parentView = viewGroup.getChildAt(0)
                 if (parentView is FrameLayout) {
                     fadeOut(parentView)
                     (parentView.getChildAt(2) as PlayView).status = STATUS_PLAYING

@@ -351,13 +351,13 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
         val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
         val resultWidth = (Math.round((mediaWith * scale / 2).toDouble()) * 2).toInt()
         val resultHeight = (Math.round((mediaHeight * scale / 2).toDouble()) * 2).toInt()
-        return if (scale >= 1) {
-            VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
-                fileName, 0, false)
-        } else {
+        return if (scale < 1) {
             val bitrate = MediaController.getBitrate(path, scale)
             VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
                 fileName, bitrate)
+        } else {
+            VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, mediaWith, mediaHeight, thumbnail,
+                fileName, 0, false)
         }
     } catch (e: Exception) {
         Timber.e(e)
