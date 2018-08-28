@@ -1,10 +1,16 @@
 package one.mixin.android.db
 
 import android.arch.persistence.room.Transaction
+import kotlinx.coroutines.experimental.newSingleThreadContext
+import one.mixin.android.Constants.FLOOD_THREAD
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.websocket.BlazeAckMessage
+
+val FloodThread by lazy {
+    newSingleThreadContext(FLOOD_THREAD)
+}
 
 @Transaction
 fun UserDao.insertUpdate(user: User, appDao: AppDao) {

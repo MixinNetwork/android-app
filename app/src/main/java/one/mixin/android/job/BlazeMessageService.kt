@@ -19,16 +19,20 @@ import com.birbit.android.jobqueue.network.NetworkUtil
 import com.birbit.android.jobqueue.timer.SystemTimer
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
+import one.mixin.android.db.FloodThread
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.deleteList
+import one.mixin.android.extension.getDistinct
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -36,7 +40,6 @@ import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.runOnUiThread
-import java.util.concurrent.TimeoutException
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -91,7 +94,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         retrievalThread = MessageRetrievalThread()
         retrievalThread!!.start()
         startAckJob()
-
+        startFloodJob()
         networkUtil.setListener(this)
     }
 
@@ -205,11 +208,11 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     private fun startAckJob() {
         if (jobs == null) {
             jobs = jobDao.findAckJobs()
-            jobs?.observeForever(ob)
+            jobs?.observeForever(ackOb)
         }
     }
 
-    private val ob: Observer<List<BlazeAckMessage>?> by lazy {
+    private val ackOb: Observer<List<BlazeAckMessage>?> by lazy {
         Observer<List<BlazeAckMessage>?> { list ->
             if (list?.isNotEmpty() == true) {
                 jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
@@ -221,8 +224,31 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     }
 
     private fun stopAckJob() {
-        jobs?.removeObserver(ob)
+        jobs?.removeObserver(ackOb)
     }
+
+    private var floodMessages: LiveData<FloodMessage>? = null
+
+    private fun startFloodJob() {
+        if (floodMessages == null) {
+            webSocket.connect()
+            floodMessages = floodMessageDao.findFloodMessages().getDistinct()
+            floodMessages?.observeForever(floodOb)
+        }
+    }
+
+    private val floodOb: Observer<FloodMessage> by lazy {
+        Observer<FloodMessage> { message ->
+            message?.let { message ->
+                async(FloodThread) {
+                    messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
+                    floodMessageDao.delete(message)
+                }
+            }
+        }
+    }
+
+    private val messageDecrypt = DecryptMessage()
 
     private inner class MessageRetrievalThread internal constructor() :
         Thread("MessageRetrieval"), Thread.UncaughtExceptionHandler {
@@ -237,7 +263,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         }
 
         private val stopThread = AtomicBoolean(false)
-        private val messageDecrypt = DecryptMessage()
 
         init {
             uncaughtExceptionHandler = this
@@ -250,19 +275,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
 
                 try {
                     while (networkConnected() && !stopThread.get()) {
-                        try {
-                            val messages = floodMessageDao.findFloodMessages()
-                            if (messages != null) {
-                                for (m in messages) {
-                                    messageDecrypt.onRun(Gson().fromJson(m.data, BlazeMessageData::class.java))
-                                    floodMessageDao.delete(m)
-                                }
-                            } else {
-                                sleep(1000)
-                            }
-                        } catch (e: TimeoutException) {
-                            Log.e(TAG, "Application level read timeout...")
-                        }
+                        sleep(5000)
                     }
                 } catch (e: Throwable) {
                     Log.e(TAG, "Blaze Message service", e)
