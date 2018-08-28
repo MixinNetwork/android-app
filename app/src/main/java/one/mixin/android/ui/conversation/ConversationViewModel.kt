@@ -388,13 +388,14 @@ internal constructor(
     fun markMessageRead(conversationId: String, accountId: String) {
         AppExecutors().diskIO().execute {
             conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
-                conversationRepository.getUnreadMessage(conversationId, accountId, messageId).also { list ->
+                conversationRepository.getUnreadMessage(conversationId, accountId, messageId)?.also { list ->
                     if (list.isNotEmpty()) {
                         notificationManager.cancel(conversationId.hashCode())
                         conversationRepository.batchMarkRead(conversationId, Session.getAccountId()!!, list.last().created_at)
+                        list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
+                            conversationRepository.insertList(it)
+                        }
                     }
-                }.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                    conversationRepository.insertList(it)
                 }
             }
         }

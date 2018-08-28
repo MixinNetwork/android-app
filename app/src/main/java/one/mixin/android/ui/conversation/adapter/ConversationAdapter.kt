@@ -244,7 +244,7 @@ class ConversationAdapter(
         }
     }
 
-    private var oldSize = 0
+    private var oldSize: Int? = null
     override fun submitList(pagedList: PagedList<MessageItem>?) {
         currentList?.let {
             oldSize = it.size
@@ -254,8 +254,8 @@ class ConversationAdapter(
 
     override fun onCurrentListChanged(currentList: PagedList<MessageItem>?) {
         super.onCurrentListChanged(currentList)
-        if (currentList != null) {
-            val changeCount = currentList.size - oldSize
+        if (currentList != null && oldSize != null) {
+            val changeCount = currentList.size - oldSize!!
             if (changeCount > 0) {
                 for (i in 1 until changeCount + 1)
                     getItem(i)?.let {

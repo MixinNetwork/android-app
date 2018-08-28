@@ -89,7 +89,7 @@ internal constructor(
 
     fun getConversationIdIfExistsSync(recipientId: String) = conversationDao.getConversationIdIfExistsSync(recipientId)
 
-    fun getUnreadMessage(conversationId: String, accountId: String, messageId: String): List<MessageMinimal> {
+    fun getUnreadMessage(conversationId: String, accountId: String, messageId: String): List<MessageMinimal>? {
         return messageDao.getUnreadMessage(conversationId, accountId, messageId)
     }
 

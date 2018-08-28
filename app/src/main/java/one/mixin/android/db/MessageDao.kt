@@ -123,7 +123,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT id,created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
         "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId) ORDER BY created_at ASC")
-    fun getUnreadMessage(conversationId: String, userId: String, messageId: String): List<MessageMinimal>
+    fun getUnreadMessage(conversationId: String, userId: String, messageId: String): List<MessageMinimal>?
 
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
