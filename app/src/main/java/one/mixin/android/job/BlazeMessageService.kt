@@ -121,6 +121,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
             retrievalThread!!.stopThread()
         }
         stopAckJob()
+        stopFloodJob()
     }
 
     override fun onNetworkChange(networkStatus: Int) {
@@ -244,6 +245,10 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
             floodMessages = floodMessageDao.findFloodMessages().getDistinct()
             floodMessages?.observeForever(floodOb)
         }
+    }
+
+    private fun stopFloodJob() {
+        floodMessages?.removeObserver(floodOb)
     }
 
     private val floodOb: Observer<FloodMessage> by lazy {
