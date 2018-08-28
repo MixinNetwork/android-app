@@ -21,7 +21,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SearchMessageItem
-import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -165,7 +164,7 @@ internal constructor(
         messageDao.batchMarkRead(conversationId, userId, createdAt)
     }
 
-    fun insertJobs(it: List<Job>) {
+    fun insertList(it: List<Job>) {
         jobDao.insertList(it)
     }
 

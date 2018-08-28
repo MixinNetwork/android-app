@@ -26,13 +26,14 @@ import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.FloodThread
 import one.mixin.android.db.JobDao
-import one.mixin.android.db.deleteList
 import one.mixin.android.extension.getDistinct
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.FloodMessage
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -204,7 +205,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         webSocket.disconnect()
     }
 
-    private var jobs: LiveData<List<BlazeAckMessage>>? = null
+    private var jobs: LiveData<List<Job>>? = null
     private fun startAckJob() {
         if (jobs == null) {
             jobs = jobDao.findAckJobs()
@@ -212,12 +213,20 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         }
     }
 
-    private val ackOb: Observer<List<BlazeAckMessage>?> by lazy {
-        Observer<List<BlazeAckMessage>?> { list ->
-            if (list?.isNotEmpty() == true) {
-                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
-                launch {
-                    jobDao.deleteList(list)
+    private val processing = AtomicBoolean(false)
+    private val ackOb: Observer<List<Job>?> by lazy {
+        Observer<List<Job>?> { list ->
+            if (processing.compareAndSet(false, true)) {
+                if (list?.isNotEmpty() == true) {
+                    list.map { GsonHelper.customGson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+                        jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                    }
+                    launch {
+                        jobDao.deleteList(list)
+                        processing.set(false)
+                    }
+                } else {
+                    processing.set(false)
                 }
             }
         }

@@ -67,7 +67,6 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import one.mixin.android.vo.Job
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -76,6 +75,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
+import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
@@ -393,8 +393,8 @@ internal constructor(
                         notificationManager.cancel(conversationId.hashCode())
                         conversationRepository.batchMarkRead(conversationId, Session.getAccountId()!!, list.last().created_at)
                     }
-                }.map { Job(it.id, ACKNOWLEDGE_MESSAGE_RECEIPTS, MessageStatus.READ.name) }.let {
-                    conversationRepository.insertJobs(it)
+                }.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
+                    conversationRepository.insertList(it)
                 }
             }
         }

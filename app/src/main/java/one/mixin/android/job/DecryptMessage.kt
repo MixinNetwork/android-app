@@ -17,7 +17,6 @@ import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationStatus
-import one.mixin.android.vo.Job
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -28,6 +27,7 @@ import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
@@ -39,6 +39,7 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
+import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import one.mixin.android.websocket.PlainDataAction
@@ -498,7 +499,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
-        jobDao.insert(Job(messageId, ACKNOWLEDGE_MESSAGE_RECEIPTS, status.name))
+        jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS,BlazeAckMessage(messageId,status.name)))
     }
 
     private fun syncConversation(data: BlazeMessageData) {

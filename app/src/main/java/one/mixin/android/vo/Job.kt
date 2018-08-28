@@ -4,6 +4,11 @@ import android.arch.persistence.room.ColumnInfo
 import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.extension.nowInUtc
+import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.websocket.BlazeAckMessage
+import java.util.UUID
 
 @Entity(tableName = "jobs")
 class Job(
@@ -11,11 +16,34 @@ class Job(
     @SerializedName("job_id")
     @ColumnInfo(name = "job_id")
     var jobId: String,
-
     @SerializedName("job_action")
     @ColumnInfo(name = "job_action")
     var action: String,
+    @SerializedName("created_at")
+    @ColumnInfo(name = "created_at")
+    var created_at: String,
+    @SerializedName("order_id")
+    @ColumnInfo(name = "order_id")
+    var orderId: Int?,
+    @SerializedName("priority")
+    @ColumnInfo(name = "priority")
+    var priority: Int,
+    @SerializedName("user_id")
+    @ColumnInfo(name = "user_id")
+    var userId: String?,
+    @SerializedName("blaze_message")
+    @ColumnInfo(name = "blaze_message")
+    var blazeMessage: String?,
+    @SerializedName("conversation_id")
+    @ColumnInfo(name = "conversation_id")
+    var conversationId: String?,
+    @SerializedName("resendMessage_id")
+    @ColumnInfo(name = "resendMessage_id")
+    var resendMessageId: String?,
+    @SerializedName("run_count")
+    @ColumnInfo(name = "run_count")
+    var runCount: Int = 0)
 
-    @SerializedName("status")
-    @ColumnInfo(name = "status")
-    var status: String)
+fun createAckJob(action: String, ackMessage: BlazeAckMessage) =
+    Job(UUID.randomUUID().toString(), action, nowInUtc(), null, PRIORITY_ACK_MESSAGE, null,
+        GsonHelper.customGson.toJson(ackMessage), null, null, 0)
