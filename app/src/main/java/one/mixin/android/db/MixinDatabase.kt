@@ -325,8 +325,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("DROP TABLE IF EXISTS addresses")
                 database.execSQL("CREATE TABLE IF NOT EXISTS addresses(address_id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, " +
                     "public_key TEXT, label TEXT, updated_at TEXT NOT NULL, reserve TEXT NOT NULL, fee TEXT NOT NULL, account_name TEXT, account_tag TEXT)")
-                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, job_action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
-                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resendMessage_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
+                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
+                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
                     "(job_id))")
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
                     "status, created_at)")
@@ -364,8 +364,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("DROP TABLE IF EXISTS addresses")
                 database.execSQL("CREATE TABLE IF NOT EXISTS addresses(address_id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, " +
                     "public_key TEXT, label TEXT, updated_at TEXT NOT NULL, reserve TEXT NOT NULL, fee TEXT NOT NULL, account_name TEXT, account_tag TEXT)")
-                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, job_action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
-                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resendMessage_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
+                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
+                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
                     "(job_id))")
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
                     "status, created_at)")
@@ -399,8 +399,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("DROP TABLE IF EXISTS addresses")
                 database.execSQL("CREATE TABLE IF NOT EXISTS addresses(address_id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, " +
                     "public_key TEXT, label TEXT, updated_at TEXT NOT NULL, reserve TEXT NOT NULL, fee TEXT NOT NULL, account_name TEXT, account_tag TEXT)")
-                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, job_action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
-                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resendMessage_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
+                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
+                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
                     "(job_id))")
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
                     "status, created_at)")
@@ -416,8 +416,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("DROP TABLE IF EXISTS addresses")
                 database.execSQL("CREATE TABLE IF NOT EXISTS addresses(address_id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, " +
                     "public_key TEXT, label TEXT, updated_at TEXT NOT NULL, reserve TEXT NOT NULL, fee TEXT NOT NULL, account_name TEXT, account_tag TEXT)")
-                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, job_action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
-                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resendMessage_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
+                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
+                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
                     "(job_id))")
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
                     "status, created_at)")
@@ -426,8 +426,8 @@ abstract class MixinDatabase : RoomDatabase() {
 
         private val MIGRATION_16_17: Migration = object : Migration(16, 17) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, job_action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
-                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resendMessage_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
+                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
+                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
                     "(job_id))")
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
                     "status, created_at)")

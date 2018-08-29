@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 17,
-    "identityHash": "fe0344f9b9ab30752ad7bce20b10f3a5",
+    "identityHash": "9fa191529af7a523a7057e10603a0a16",
     "entities": [
       {
         "tableName": "users",
@@ -1220,7 +1220,7 @@
       },
       {
         "tableName": "jobs",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`job_id` TEXT NOT NULL, `job_action` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_id` INTEGER, `priority` INTEGER NOT NULL, `user_id` TEXT, `blaze_message` TEXT, `conversation_id` TEXT, `resendMessage_id` TEXT, `run_count` INTEGER NOT NULL, PRIMARY KEY(`job_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`job_id` TEXT NOT NULL, `action` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_id` INTEGER, `priority` INTEGER NOT NULL, `user_id` TEXT, `blaze_message` TEXT, `conversation_id` TEXT, `resend_message_id` TEXT, `run_count` INTEGER NOT NULL, PRIMARY KEY(`job_id`))",
         "fields": [
           {
             "fieldPath": "jobId",
@@ -1230,7 +1230,7 @@
           },
           {
             "fieldPath": "action",
-            "columnName": "job_action",
+            "columnName": "action",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -1272,7 +1272,7 @@
           },
           {
             "fieldPath": "resendMessageId",
-            "columnName": "resendMessage_id",
+            "columnName": "resend_message_id",
             "affinity": "TEXT",
             "notNull": false
           },
@@ -1295,7 +1295,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"fe0344f9b9ab30752ad7bce20b10f3a5\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"9fa191529af7a523a7057e10603a0a16\")"
     ]
   }
 }

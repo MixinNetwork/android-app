@@ -21,21 +21,26 @@ import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.newSingleThreadContext
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.NetworkException
+import one.mixin.android.api.WebSocketException
 import one.mixin.android.db.FloodMessageDao
-import one.mixin.android.db.FloodThread
 import one.mixin.android.db.JobDao
 import one.mixin.android.extension.getDistinct
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.BlazeAckMessage
+import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.createAckListParamBlazeMessage
@@ -206,6 +211,10 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         webSocket.disconnect()
     }
 
+    private val floodThread by lazy {
+        newSingleThreadContext(Constants.FLOOD_THREAD)
+    }
+
     private var jobs: LiveData<List<Job>>? = null
     private fun startAckJob() {
         if (jobs == null) {
@@ -218,16 +227,17 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     private val ackOb: Observer<List<Job>?> by lazy {
         Observer<List<Job>?> { list ->
             if (processing.compareAndSet(false, true)) {
-                if (list?.isNotEmpty() == true) {
-                    list.map { GsonHelper.customGson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                        jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
-                    }
-                    launch {
-                        jobDao.deleteList(list)
+                launch {
+                    if (list?.isNotEmpty() == true) {
+                        list.map { GsonHelper.customGson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+                            deliver(createAckListParamBlazeMessage(it)).let {
+                                jobDao.deleteList(list)
+                                processing.set(false)
+                            }
+                        }
+                    } else {
                         processing.set(false)
                     }
-                } else {
-                    processing.set(false)
                 }
             }
         }
@@ -253,7 +263,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     private val floodOb: Observer<FloodMessage> by lazy {
         Observer<FloodMessage> { message ->
             message?.let { message ->
-                async(FloodThread) {
+                async(floodThread) {
                     messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
                     floodMessageDao.delete(message)
                 }
@@ -298,5 +308,21 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
                 }
             }
         }
+    }
+
+    protected fun deliver(blazeMessage: BlazeMessage): Boolean {
+        val bm = webSocket.sendMessage(blazeMessage)
+        if (bm == null) {
+            Thread.sleep(Constants.SLEEP_MILLIS)
+            throw WebSocketException()
+        } else if (bm.error != null) {
+            if (bm.error.code == ErrorHandler.FORBIDDEN) {
+                return true
+            } else {
+                Thread.sleep(Constants.SLEEP_MILLIS)
+                throw NetworkException()
+            }
+        }
+        return true
     }
 }

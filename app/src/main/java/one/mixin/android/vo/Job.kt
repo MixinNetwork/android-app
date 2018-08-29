@@ -16,8 +16,8 @@ class Job(
     @SerializedName("job_id")
     @ColumnInfo(name = "job_id")
     var jobId: String,
-    @SerializedName("job_action")
-    @ColumnInfo(name = "job_action")
+    @SerializedName("action")
+    @ColumnInfo(name = "action")
     var action: String,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
@@ -37,8 +37,8 @@ class Job(
     @SerializedName("conversation_id")
     @ColumnInfo(name = "conversation_id")
     var conversationId: String?,
-    @SerializedName("resendMessage_id")
-    @ColumnInfo(name = "resendMessage_id")
+    @SerializedName("resend_message_id")
+    @ColumnInfo(name = "resend_message_id")
     var resendMessageId: String?,
     @SerializedName("run_count")
     @ColumnInfo(name = "run_count")
