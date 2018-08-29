@@ -9,7 +9,4 @@ import one.mixin.android.vo.Job
 interface JobDao : BaseDao<Job> {
     @Query("SELECT * FROM jobs WHERE `action` = 'ACKNOWLEDGE_MESSAGE_RECEIPTS' ORDER BY created_at ASC LIMIT 100")
     fun findAckJobs(): LiveData<List<Job>>
-
-    @Query("DELETE FROM jobs WHERE job_id = :id")
-    fun deleteById(id: String)
 }

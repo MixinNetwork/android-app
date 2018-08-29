@@ -183,7 +183,6 @@ class ChatWebSocket(
                 connectTimer = Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
                     connect()
                 }, {
-
                 })
             }
         } else {

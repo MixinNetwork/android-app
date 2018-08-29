@@ -47,18 +47,22 @@ class AvatarActivity : AppCompatActivity() {
         setContentView(R.layout.activity_avatar)
 
         Glide.with(this).asBitmap().load(url).listener(object : RequestListener<Bitmap> {
-            override fun onLoadFailed(e: GlideException?,
+            override fun onLoadFailed(
+                e: GlideException?,
                 model: Any?,
                 target: Target<Bitmap>?,
-                isFirstResource: Boolean): Boolean {
+                isFirstResource: Boolean
+            ): Boolean {
                 return false
             }
 
-            override fun onResourceReady(resource: Bitmap,
+            override fun onResourceReady(
+                resource: Bitmap,
                 model: Any?,
                 target: Target<Bitmap>?,
                 dataSource: DataSource?,
-                isFirstResource: Boolean): Boolean {
+                isFirstResource: Boolean
+            ): Boolean {
                 avatar.doOnPreDraw {
                     val avatarTransform = AvatarTransform(resource).apply { addTarget(avatar) }
                     window.sharedElementEnterTransition = avatarTransform

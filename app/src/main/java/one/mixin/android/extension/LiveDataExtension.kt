@@ -14,8 +14,8 @@ fun <T> LiveData<T>.getDistinct(): LiveData<T> {
                 initialized = true
                 lastObj = obj
                 distinctLiveData.postValue(lastObj)
-            } else if ((obj == null && lastObj != null)
-                || obj != lastObj) {
+            } else if ((obj == null && lastObj != null) ||
+                obj != lastObj) {
                 lastObj = obj
                 distinctLiveData.postValue(lastObj)
             }

@@ -167,5 +167,4 @@ internal constructor(
     fun insertList(it: List<Job>) {
         jobDao.insertList(it)
     }
-
 }
