@@ -6,10 +6,12 @@ import one.mixin.android.fcm.FcmService
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MyJobService
 import one.mixin.android.job.SendService
+import one.mixin.android.webrtc.CallService
 
 @Module abstract class ServiceModule {
     @ContributesAndroidInjector internal abstract fun contributeFcmService(): FcmService
     @ContributesAndroidInjector internal abstract fun contributeMyJobService(): MyJobService
     @ContributesAndroidInjector internal abstract fun contributeMessageService(): BlazeMessageService
     @ContributesAndroidInjector internal abstract fun contributeSendService(): SendService
+    @ContributesAndroidInjector internal abstract fun contributeCallService(): CallService
 }

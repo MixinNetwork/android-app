@@ -44,6 +44,7 @@ import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
+import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -87,6 +88,7 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
+import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -123,6 +125,9 @@ import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
+import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_OUTGOING
+import one.mixin.android.webrtc.CallService.Companion.EXTRA_CONVERSATION_ID
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.ChatControlView
@@ -791,6 +796,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
         action_bar.left_ib.setOnClickListener {
             activity?.onBackPressed()
+        }
+
+        // TODO test
+        action_bar.title_tv.setOnClickListener { _ ->
+            if (!isGroup && (recipient!!.identityNumber == "20012" || recipient!!.identityNumber == "20026") || recipient!!.identityNumber == "20004") {
+                CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
+                    intent.putExtra(ARGS_USER, recipient!!)
+                    intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+                }
+                CallActivity.show(requireContext(), recipient!!, CallActivity.CallAction.CALL_OUTGOING.name)
+            }
         }
 
         if (isGroup) {

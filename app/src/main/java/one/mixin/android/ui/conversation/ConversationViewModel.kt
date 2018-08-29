@@ -81,6 +81,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
+import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage

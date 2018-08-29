@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.util.Log
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
+import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
@@ -31,6 +32,7 @@ import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
+import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
@@ -39,6 +41,15 @@ import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
+import one.mixin.android.webrtc.CallService
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_ANSWER
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_BUSY
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_CANCEL
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_DECLINE
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_INCOMING
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_REMOTE_END
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_REMOTE_FAILED
+import one.mixin.android.webrtc.CallService.Companion.ACTION_CANDIDATE
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -71,6 +82,8 @@ class DecryptMessage : Injector() {
     }
 
     private var refreshKeyMap = arrayMapOf<String, Long?>()
+    private val gson = Gson()
+    private val customGson = GsonHelper.customGson
 
     fun onRun(data: BlazeMessageData) {
         if (!isExistMessage(data.messageId)) {
@@ -86,10 +99,63 @@ class DecryptMessage : Injector() {
             processSignalMessage(data)
             processAppButton(data)
             processAppCard(data)
+            processWebRTC(data)
         } catch (e: Exception) {
             Log.e(TAG, "Process error: ", e)
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         }
+    }
+
+    private fun processWebRTC(data: BlazeMessageData) {
+        if (!data.category.startsWith("WEBRTC_")) {
+            return
+        }
+
+        when (data.category) {
+            MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
+                val message = createCallMessage(data.messageId, data.conversationId, data.userId, data.category,
+                    null, data.createdAt, MessageStatus.DELIVERED)
+                messageDao.insert(message)
+
+                val user = userDao.findUser(data.userId)!!
+                CallService.startService(MixinApplication.appContext, ACTION_CALL_INCOMING) {
+                    it.putExtra(ARGS_USER, user)
+                    it.putExtra(CallService.EXTRA_BLAZE, data)
+                }
+            }
+            MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
+                updateCallMessageCategory(data)
+                CallService.startService(MixinApplication.appContext, ACTION_CALL_ANSWER) {
+                    it.putExtra(CallService.EXTRA_BLAZE, data)
+                }
+            }
+            MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
+                CallService.startService(MixinApplication.appContext, ACTION_CANDIDATE) {
+                    it.putExtra(CallService.EXTRA_BLAZE, data)
+                }
+            }
+            MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
+                updateCallMessageCategory(data)
+                CallService.startService(MixinApplication.appContext, ACTION_CALL_CANCEL)
+            }
+            MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
+                updateCallMessageCategory(data)
+                CallService.startService(MixinApplication.appContext, ACTION_CALL_DECLINE)
+            }
+            MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
+                updateCallMessageCategory(data)
+                CallService.startService(MixinApplication.appContext, ACTION_CALL_BUSY)
+            }
+            MessageCategory.WEBRTC_AUDIO_END.name -> {
+                updateCallMessageCategory(data)
+                CallService.startService(MixinApplication.appContext, ACTION_CALL_REMOTE_END)
+            }
+            MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
+                updateCallMessageCategory(data)
+                CallService.startService(MixinApplication.appContext, ACTION_CALL_REMOTE_FAILED)
+            }
+        }
+        updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
     private fun processAppButton(data: BlazeMessageData) {
@@ -118,11 +184,11 @@ class DecryptMessage : Injector() {
         }
         if (data.category == MessageCategory.SYSTEM_CONVERSATION.name) {
             val json = Base64.decode(data.data)
-            val systemMessage = Gson().fromJson(String(json), SystemConversationData::class.java)
+            val systemMessage = gson.fromJson(String(json), SystemConversationData::class.java)
             processSystemConversationMessage(data, systemMessage)
         } else if (data.category == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name) {
             val json = Base64.decode(data.data)
-            val systemSnapshot = Gson().fromJson(String(json), Snapshot::class.java)
+            val systemSnapshot = gson.fromJson(String(json), Snapshot::class.java)
             processSystemSnapshotMessage(data, systemSnapshot)
         }
 
@@ -135,7 +201,7 @@ class DecryptMessage : Injector() {
         }
         if (data.category == MessageCategory.PLAIN_JSON.name) {
             val json = Base64.decode(data.data)
-            val plainData = Gson().fromJson(String(json), TransferPlainData::class.java)
+            val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
             if (plainData.action == PlainDataAction.RESEND_KEY.name) {
                 if (signalProtocol.containsSession(data.userId)) {
                     jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.RESEND_KEY))
@@ -150,7 +216,7 @@ class DecryptMessage : Injector() {
                     if (needResendMessage != null) {
                         needResendMessage.id = UUID.randomUUID().toString()
                         jobManager.addJobInBackground(SendMessageJob(needResendMessage,
-                            ResendData(data.userId, mId), true, PRIORITY_SEND_ATTACHMENT_MESSAGE))
+                            ResendData(data.userId, mId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE))
                         resendMessageDao.insert(ResendMessage(mId, data.userId, 1, nowInUtc()))
                     } else {
                         resendMessageDao.insert(ResendMessage(mId, data.userId, 0, nowInUtc()))
@@ -193,7 +259,7 @@ class DecryptMessage : Injector() {
                     val quoteMsg = messageDao.findMessageItemById(data.conversationId, data.quoteMessageId)
                     if (quoteMsg != null) {
                         createReplyMessage(data.messageId, data.conversationId, data.userId, data.category,
-                            plain, data.createdAt, MessageStatus.DELIVERED, data.quoteMessageId, Gson().toJson(quoteMsg))
+                            plain, data.createdAt, MessageStatus.DELIVERED, data.quoteMessageId, gson.toJson(quoteMsg))
                     } else {
                         createReplyMessage(data.messageId, data.conversationId, data.userId, data.category,
                             plain, data.createdAt, MessageStatus.DELIVERED, data.quoteMessageId)
@@ -202,10 +268,22 @@ class DecryptMessage : Injector() {
 
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
+
+                // TODO test
+//                if (message.content == "test::call") {
+//                    val msg = createMessage(UUID.randomUUID().toString(), message.conversationId,
+//                    Session.getAccountId()!!, MessageCategory.SIGNAL_TEXT.name, "test::answer", nowInUtc(), MessageStatus.SENDING)
+//                    val user = userDao.findUser(message.userId)!!
+//                    CallActivity.show(MixinApplication.appContext, user)
+//                    jobManager.addJobInBackground(SendMessageJob(msg))
+//                    CallService.startService(MixinApplication.appContext, ACTION_CALL_INCOMING)
+//                } else if (message.content == "test::answer") {
+//                    CallService.startService(MixinApplication.appContext, ACTION_CALL_OUTGOING)
+//                }
             }
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 if (mediaData.invalidData()) {
                     return
                 }
@@ -221,7 +299,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 if (mediaData.invalidData()) {
                     return
                 }
@@ -235,7 +313,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_DATA") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createAttachmentMessage(data.messageId, data.conversationId, data.userId,
                     data.category, mediaData.attachmentId, mediaData.name, null,
@@ -246,7 +324,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_AUDIO") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val message = createAudioMessage(data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                     data.category, mediaData.size, null, mediaData.duration.toString(), nowInUtc(), mediaData.waveform,
                     mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
@@ -256,7 +334,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_STICKER") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
+                val mediaData = customGson.fromJson(String(decoded), TransferStickerData::class.java)
                 val message = if (mediaData.stickerId == null) {
                     val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
                     if (sticker != null) {
@@ -278,7 +356,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_CONTACT") -> {
                 val decoded = Base64.decode(plainText)
-                val contactData = GsonHelper.customGson.fromJson(String(decoded), TransferContactData::class.java)
+                val contactData = customGson.fromJson(String(decoded), TransferContactData::class.java)
                 val message = createContactMessage(data.messageId, data.conversationId, data.userId, data.category,
                     plainText, contactData.userId, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)
@@ -445,7 +523,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_DATA.name) {
             val decoded = Base64.decode(plainText)
-            val mediaData = GsonHelper.customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+            val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
             val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
             val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
             messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mimeType, mediaData.size,
@@ -457,7 +535,7 @@ class DecryptMessage : Injector() {
             }
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
-            val stickerData = GsonHelper.customGson.fromJson(String(decoded), TransferStickerData::class.java)
+            val stickerData = customGson.fromJson(String(decoded), TransferStickerData::class.java)
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
                 if (sticker == null) {
@@ -467,19 +545,19 @@ class DecryptMessage : Injector() {
             stickerData.stickerId?.let { messageDao.updateStickerMessage(it, MessageStatus.DELIVERED.name, messageId) }
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
-            val contactData = GsonHelper.customGson.fromJson(String(decoded), TransferContactData::class.java)
+            val contactData = customGson.fromJson(String(decoded), TransferContactData::class.java)
             messageDao.updateContactMessage(contactData.userId, MessageStatus.DELIVERED.name, messageId)
             syncUser(contactData.userId)
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId)?.let {
-                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, Gson().toJson(it))
+                messageDao.updateQuoteContentByQuoteId(data.conversationId, messageId, gson.toJson(it))
             }
         }
     }
 
     private fun requestResendKey(conversationId: String, userId: String, messageId: String) {
-        val plainText = Gson().toJson(TransferPlainData(
+        val plainText = gson.toJson(TransferPlainData(
             action = PlainDataAction.RESEND_KEY.name,
             messageId = messageId
         ))
@@ -495,7 +573,7 @@ class DecryptMessage : Injector() {
 
     private fun requestResendMessage(conversationId: String, userId: String) {
         val messages = messageDao.findFailedMessages(conversationId, userId) ?: return
-        val plainText = Gson().toJson(TransferPlainData(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
+        val plainText = gson.toJson(TransferPlainData(PlainDataAction.RESEND_MESSAGES.name, messages.reversed()))
         val encoded = Base64.encodeBytes(plainText.toByteArray())
         val bm = createParamBlazeMessage(createPlainJsonParam(conversationId, userId, encoded))
         jobManager.addJobInBackground(SendPlaintextJob(bm))
@@ -570,7 +648,7 @@ class DecryptMessage : Injector() {
         refreshKeyMap[conversationId] = current
         val blazeMessage = createCountSignalKeys()
         val data = signalKeysChannel(blazeMessage) ?: return
-        val count = Gson().fromJson(data, SignalKeyCount::class.java)
+        val count = gson.fromJson(data, SignalKeyCount::class.java)
         if (count.preKeyCount >= RefreshOneTimePreKeysJob.PREKEY_MINI_NUM) {
             return
         }
@@ -596,5 +674,14 @@ class DecryptMessage : Injector() {
             return
         }
         jobManager.addJobInBackground(NotificationJob(message))
+    }
+
+    private fun updateCallMessageCategory(data: BlazeMessageData) {
+        if (data.quoteMessageId != null) {
+            val message = messageDao.findMessageById(data.quoteMessageId)
+            if (message != null) {
+                messageDao.updateMessageCategory(data.category, message.id)
+            }
+        }
     }
 }

@@ -19,7 +19,7 @@ data class BlazeMessage(
     }
 
     fun isReceiveMessageAction(): Boolean {
-        return action == CREATE_MESSAGE || action == ACKNOWLEDGE_MESSAGE_RECEIPT
+        return action == CREATE_MESSAGE || action == ACKNOWLEDGE_MESSAGE_RECEIPT || action == CREATE_CALL
     }
 }
 
@@ -32,6 +32,7 @@ const val COUNT_SIGNAL_KEYS = "COUNT_SIGNAL_KEYS"
 const val CONSUME_SIGNAL_KEYS = "CONSUME_SIGNAL_KEYS"
 const val SYNC_SIGNAL_KEYS = "SYNC_SIGNAL_KEYS"
 const val CREATE_SIGNAL_KEY_MESSAGES = "CREATE_SIGNAL_KEY_MESSAGES"
+const val CREATE_CALL = "CREATE_CALL"
 
 fun createAckParamBlazeMessage(messageId: String, status: MessageStatus) =
     BlazeMessage(UUID.randomUUID().toString(), ACKNOWLEDGE_MESSAGE_RECEIPT, createAckParam(messageId, status.name))
@@ -56,3 +57,6 @@ fun createSyncSignalKeys(param: BlazeMessageParam) =
 
 fun createSignalKeyMessage(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CREATE_SIGNAL_KEY_MESSAGES, param)
+
+fun createCallMessage(param: BlazeMessageParam) =
+    BlazeMessage(UUID.randomUUID().toString(), CREATE_CALL, param)

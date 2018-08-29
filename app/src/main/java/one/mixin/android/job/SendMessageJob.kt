@@ -12,17 +12,21 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus.SENT
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.isCall
+import one.mixin.android.vo.isCallNotOffer
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
+import one.mixin.android.websocket.createCallMessage
 import one.mixin.android.websocket.createParamBlazeMessage
 
 open class SendMessageJob(
     val message: Message,
     private val resendData: ResendData? = null,
     private val alreadyExistMessage: Boolean = false,
+    private val recipientId: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).addTags(message.id).groupBy("send_message_group")
     .requireWebSocketConnected().persist(), message.id) {
@@ -40,6 +44,9 @@ open class SendMessageJob(
         super.onAdded()
         if (chatWebSocket.connected) {
             jobManager.start()
+        }
+        if (message.isCallNotOffer()) {
+            return
         }
         if (!alreadyExistMessage) {
             val conversation = conversationDao.findConversationById(message.conversationId)
@@ -67,7 +74,7 @@ open class SendMessageJob(
 
     override fun onRun() {
         jobManager.saveJob(this)
-        if (message.isPlain()) {
+        if (message.isPlain() || message.isCall()) {
             sendPlainMessage()
         } else {
             sendSignalMessage()
@@ -79,12 +86,19 @@ open class SendMessageJob(
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
         requestCreateConversation(conversation)
         var content = message.content
-        if (message.category == MessageCategory.PLAIN_TEXT.name) {
-            content = Base64.encodeBytes(message.content!!.toByteArray())
+        if (message.category == MessageCategory.PLAIN_TEXT.name || message.isCall()) {
+            if (message.content != null) {
+                content = Base64.encodeBytes(message.content!!.toByteArray())
+            }
         }
-        val blazeParam = BlazeMessageParam(message.conversationId, null,
+        val blazeParam = BlazeMessageParam(message.conversationId, recipientId,
             message.id, message.category, content, SENT.name, quote_message_id = message.quoteMessageId)
-        deliver(createParamBlazeMessage(blazeParam))
+        val blazeMessage = if (message.isCall()) {
+            createCallMessage(blazeParam)
+        } else {
+            createParamBlazeMessage(blazeParam)
+        }
+        deliver(blazeMessage)
     }
 
     private fun sendSignalMessage() {
