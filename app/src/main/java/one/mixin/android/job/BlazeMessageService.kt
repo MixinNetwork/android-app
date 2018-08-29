@@ -241,7 +241,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
 
     private fun startFloodJob() {
         if (floodMessages == null) {
-            webSocket.connect()
             floodMessages = floodMessageDao.findFloodMessages().getDistinct()
             floodMessages?.observeForever(floodOb)
         }

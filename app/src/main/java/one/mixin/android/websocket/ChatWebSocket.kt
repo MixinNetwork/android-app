@@ -16,12 +16,12 @@ import okio.ByteString
 import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
-import one.mixin.android.api.NetworkException
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.gzip
+import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.ungzip
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
@@ -70,7 +70,6 @@ class ChatWebSocket(
         if (client == null) {
             connected = false
             client = okHttpClient.newWebSocket(Request.Builder().url(WS_URL).build(), this)
-            connectTimer?.dispose()
         }
     }
 
@@ -138,6 +137,7 @@ class ChatWebSocket(
             MixinApplication.appContext.runOnUiThread {
                 linkState.state = LinkState.ONLINE
             }
+            connectTimer?.dispose()
             jobManager.start()
             jobManager.addJobInBackground(RefreshOffsetJob())
             sendPendingMessage()
@@ -179,10 +179,13 @@ class ChatWebSocket(
         if (code == failCode) {
             closeInternal(code)
             jobManager.stop()
-            connectTimer = Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
-                connect()
-            }, {
-            })
+            if (connectTimer == null || connectTimer?.isDisposed == true) {
+                connectTimer = Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
+                    connect()
+                }, {
+
+                })
+            }
         } else {
             webSocket?.cancel()
         }
@@ -192,7 +195,7 @@ class ChatWebSocket(
 
     @Synchronized
     override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
-        if (client != null && t !is NetworkException) {
+        if (client != null && MixinApplication.appContext.networkConnected()) {
             t?.let {
                 Bugsnag.notify(it)
                 Log.e(TAG, "WebSocket onFailure ", it)
