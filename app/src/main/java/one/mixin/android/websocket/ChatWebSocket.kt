@@ -6,6 +6,7 @@ import android.util.Log
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -15,6 +16,7 @@ import okio.ByteString
 import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
+import one.mixin.android.api.NetworkException
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.MessageDao
@@ -68,6 +70,7 @@ class ChatWebSocket(
         if (client == null) {
             connected = false
             client = okHttpClient.newWebSocket(Request.Builder().url(WS_URL).build(), this)
+            connectTimer?.dispose()
         }
     }
 
@@ -176,7 +179,7 @@ class ChatWebSocket(
         if (code == failCode) {
             closeInternal(code)
             jobManager.stop()
-            Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
+            connectTimer = Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
                 connect()
             }, {
             })
@@ -185,13 +188,15 @@ class ChatWebSocket(
         }
     }
 
+    private var connectTimer: Disposable? = null
+
     @Synchronized
     override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
-        t?.let {
-            Bugsnag.notify(it)
-            Log.e(TAG, "WebSocket onFailure ", it)
-        }
-        if (client != null) {
+        if (client != null && t !is NetworkException) {
+            t?.let {
+                Bugsnag.notify(it)
+                Log.e(TAG, "WebSocket onFailure ", it)
+            }
             if (t != null && (t is ClientErrorException && t.code == AUTHENTICATION)) {
                 closeInternal(quitCode)
             } else {
