@@ -47,15 +47,6 @@ interface MessageDao : BaseDao<Message> {
         "AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)")
     fun findMessageIndex(conversationId: String, messageId: String): Int
 
-    @Query("SELECT m.id AS messageId " +
-        "FROM messages m " +
-        "WHERE m.conversation_id = :conversationId " +
-        "ORDER BY m.created_at DESC")
-    fun getMessagesMinimal(conversationId: String): List<String>
-
-    @Query("SELECT * FROM messages WHERE conversation_id = :conversationId")
-    fun getMessageList(conversationId: String): List<Message>
-
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
         "u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type, " +
@@ -170,17 +161,7 @@ interface MessageDao : BaseDao<Message> {
     fun findMessageIdById(messageId: String): String?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
-        "u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type, " +
-        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus," +
-        "m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.media_url AS mediaUrl " +
-        "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
-        "AND u.user_id != :userId AND m.status = 'DELIVERED' " +
-        "ORDER BY m.created_at ASC")
-    fun findUnreadMessages(conversationId: String, userId: String = Session.getAccountId()!!): Flowable<List<MessageItem>>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT id,created_at FROM messages WHERE conversation_id = :conversationId " +
+    @Query("SELECT id, created_at FROM messages WHERE conversation_id = :conversationId " +
         "AND user_id != :userId AND status = 'DELIVERED' ORDER BY created_at ASC")
     fun findUnreadMessagesSync(conversationId: String, userId: String = Session.getAccountId()!!): List<MessageMinimal>?
 
@@ -189,7 +170,7 @@ interface MessageDao : BaseDao<Message> {
     fun findFailedMessages(conversationId: String, userId: String): List<String>?
 
     @Query("SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId " +
-        "AND category=:category ORDER BY created_at ASC")
+        "AND category = :category ORDER BY created_at ASC")
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String): List<MediaMessageMinimal>?
 
     @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
