@@ -95,7 +95,6 @@
         android:layout_marginBottom="4dp"
         android:layout_gravity="center_horizontal"
         android:maxLines="1"
-        android:text="@string/contact_mixin_id"
         android:textColor="@color/text_gray"/>
 
     <TextView
@@ -133,7 +132,8 @@
     <FrameLayout
         android:id="@+id/add_fl"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_button_height">
+        android:layout_height="@dimen/bottom_button_height"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/add_contact_tv"
@@ -155,7 +155,8 @@
     <FrameLayout
         android:id="@+id/send_fl"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_button_height">
+        android:layout_height="@dimen/bottom_button_height"
+        android:visibility="gone">
 
         <TextView
             android:id="@+id/send_tv"
@@ -178,7 +179,8 @@
     <FrameLayout
         android:id="@+id/open_fl"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/bottom_button_height">
+        android:layout_height="@dimen/bottom_button_height"
+        android:visibility="gone">
 
         <View
             android:layout_width="match_parent"
