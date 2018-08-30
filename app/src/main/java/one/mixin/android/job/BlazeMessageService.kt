@@ -71,12 +71,14 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     }
 
     private var retrievalThread: MessageRetrievalThread? = null
-    @Inject
-    lateinit var networkUtil: JobNetworkUtil
     private val timer = SystemTimer()
     private val isWait = AtomicBoolean(false)
     private var activeActivities = 0
 
+    @Inject
+    lateinit var networkUtil: JobNetworkUtil
+    @Inject
+    lateinit var database: MixinDatabase
     @Inject
     lateinit var webSocket: ChatWebSocket
     @Inject
@@ -216,11 +218,16 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     }
 
     private fun startAckJob() {
-        MixinDatabase.getDatabase(MixinApplication.appContext).invalidationTracker.addObserver(ackObserver)
+        database.invalidationTracker.addObserver(ackObserver)
     }
 
     private fun stopAckJob() {
-        MixinDatabase.getDatabase(MixinApplication.appContext).invalidationTracker.removeObserver(ackObserver)
+        database.invalidationTracker.removeObserver(ackObserver)
+        ackJob?.let {
+            if (it.isActive) {
+                it.cancel()
+            }
+        }
     }
 
     private val ackObserver by lazy {
@@ -265,11 +272,16 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     private val messageDecrypt = DecryptMessage()
 
     private fun startFloodJob() {
-        MixinDatabase.getDatabase(MixinApplication.appContext).invalidationTracker.addObserver(floodObserver)
+        database.invalidationTracker.addObserver(floodObserver)
     }
 
     private fun stopFloodJob() {
-        MixinDatabase.getDatabase(MixinApplication.appContext).invalidationTracker.removeObserver(floodObserver)
+        database.invalidationTracker.removeObserver(floodObserver)
+        floodJob?.let {
+            if (it.isActive) {
+                it.cancel()
+            }
+        }
     }
 
     private val floodObserver by lazy {
