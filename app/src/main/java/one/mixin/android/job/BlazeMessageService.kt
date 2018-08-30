@@ -43,7 +43,6 @@ import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.runOnUiThread
-import java.net.SocketException
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -310,8 +309,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
                     messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
                     floodMessageDao.delete(message)
                 }
-            } catch (e: SocketException) {
-
             } catch (e: Exception) {
                 runFloodJob()
             }
@@ -326,8 +323,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         }
 
         override fun uncaughtException(t: Thread?, e: Throwable?) {
-            Log.w(TAG, "MessageRetrieval Uncaught exception!")
-            Log.w(TAG, e)
+            Log.w(TAG, "MessageRetrieval Uncaught exception!", e)
         }
 
         private val stopThread = AtomicBoolean(false)
@@ -343,7 +339,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
 
                 try {
                     while (networkConnected() && !stopThread.get()) {
-                        sleep(5000)
+                        sleep(3000)
                     }
                 } catch (e: Throwable) {
                     Log.e(TAG, "Blaze Message service", e)

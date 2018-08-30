@@ -5,7 +5,6 @@ import android.arch.persistence.room.Dao
 import android.arch.persistence.room.Query
 import android.arch.persistence.room.RoomWarnings
 import android.arch.persistence.room.Transaction
-import io.reactivex.Flowable
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
