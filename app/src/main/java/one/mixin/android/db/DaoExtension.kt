@@ -4,6 +4,7 @@ import android.arch.persistence.room.Transaction
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.async
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
@@ -65,4 +66,8 @@ fun MixinDatabase.clearParticipant(conversationId: String, participantId: String
 
 fun JobDao.findAckJobsDeferred(): Deferred<List<Job>?> = async {
     findAckJobsSync()
+}
+
+fun FloodMessageDao.findFloodMessageDeferred(): Deferred<FloodMessage?> = async {
+    findFloodMessagesSync()
 }

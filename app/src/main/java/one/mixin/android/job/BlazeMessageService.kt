@@ -6,8 +6,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
 import android.arch.persistence.room.InvalidationTracker
 import android.content.Context
 import android.content.Intent
@@ -21,7 +19,6 @@ import com.birbit.android.jobqueue.timer.SystemTimer
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.newSingleThreadContext
 import one.mixin.android.Constants
@@ -31,14 +28,13 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.findAckJobsDeferred
-import one.mixin.android.extension.getDistinct
+import one.mixin.android.db.findFloodMessageDeferred
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
@@ -47,6 +43,7 @@ import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.runOnUiThread
+import java.net.SocketException
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
@@ -134,6 +131,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         if (networkStatus != NetworkUtil.DISCONNECTED) {
             detectNotify()
             runAckJob()
+            runFloodJob()
         }
     }
 
@@ -264,31 +262,47 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         newSingleThreadContext(Constants.FLOOD_THREAD)
     }
 
-    private var floodMessages: LiveData<FloodMessage>? = null
+    private val messageDecrypt = DecryptMessage()
 
     private fun startFloodJob() {
-        if (floodMessages == null) {
-            floodMessages = floodMessageDao.findFloodMessages().getDistinct()
-            floodMessages?.observeForever(floodOb)
-        }
+        MixinDatabase.getDatabase(MixinApplication.appContext).invalidationTracker.addObserver(floodObserver)
     }
 
     private fun stopFloodJob() {
-        floodMessages?.removeObserver(floodOb)
+        MixinDatabase.getDatabase(MixinApplication.appContext).invalidationTracker.removeObserver(floodObserver)
     }
 
-    private val floodOb: Observer<FloodMessage> by lazy {
-        Observer<FloodMessage> { message ->
-            message?.let { message ->
-                async(floodThread) {
-                    messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
-                    floodMessageDao.delete(message)
-                }
+    private val floodObserver by lazy {
+        object : InvalidationTracker.Observer("flood_messages") {
+            override fun onInvalidated(tables: MutableSet<String>) {
+                runFloodJob()
             }
         }
     }
 
-    private val messageDecrypt = DecryptMessage()
+    private fun runFloodJob() {
+        if (floodJob?.isActive == true) {
+            return
+        }
+        floodJob = launch(floodThread) {
+            floodJobBlock()
+        }
+    }
+
+    private var floodJob: Job? = null
+
+    private suspend fun floodJobBlock() {
+        floodMessageDao.findFloodMessageDeferred().await()?.let { message ->
+            try {
+                messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
+                floodMessageDao.delete(message)
+            } catch (e: SocketException) {
+
+            } catch (e: Exception) {
+                runFloodJob()
+            }
+        }
+    }
 
     private inner class MessageRetrievalThread internal constructor() :
         Thread("MessageRetrieval"), Thread.UncaughtExceptionHandler {
