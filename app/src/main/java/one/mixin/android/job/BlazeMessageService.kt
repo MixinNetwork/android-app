@@ -304,10 +304,12 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     private var floodJob: Job? = null
 
     private suspend fun floodJobBlock() {
-        floodMessageDao.findFloodMessageDeferred().await()?.let { message ->
+        floodMessageDao.findFloodMessageDeferred().await()?.let { list ->
             try {
-                messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
-                floodMessageDao.delete(message)
+                list.forEach { message ->
+                    messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
+                    floodMessageDao.delete(message)
+                }
             } catch (e: SocketException) {
 
             } catch (e: Exception) {

@@ -68,6 +68,6 @@ fun JobDao.findAckJobsDeferred(): Deferred<List<Job>?> = async {
     findAckJobsSync()
 }
 
-fun FloodMessageDao.findFloodMessageDeferred(): Deferred<FloodMessage?> = async {
+fun FloodMessageDao.findFloodMessageDeferred(): Deferred<List<FloodMessage>?> = async {
     findFloodMessagesSync()
 }
