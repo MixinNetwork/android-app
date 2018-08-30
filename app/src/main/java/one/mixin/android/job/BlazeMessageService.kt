@@ -8,6 +8,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.Observer
+import android.arch.persistence.room.InvalidationTracker
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
@@ -19,6 +20,7 @@ import com.birbit.android.jobqueue.network.NetworkUtil
 import com.birbit.android.jobqueue.timer.SystemTimer
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.newSingleThreadContext
@@ -27,6 +29,8 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.findAckJobsDeferred
 import one.mixin.android.extension.getDistinct
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
@@ -35,7 +39,6 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.FloodMessage
-import one.mixin.android.vo.Job
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
@@ -130,6 +133,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     override fun onNetworkChange(networkStatus: Int) {
         if (networkStatus != NetworkUtil.DISCONNECTED) {
             detectNotify()
+            runAckJob()
         }
     }
 
@@ -209,40 +213,55 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         webSocket.disconnect()
     }
 
-    private val floodThread by lazy {
-        newSingleThreadContext(Constants.FLOOD_THREAD)
+    private val ackThread by lazy {
+        newSingleThreadContext(Constants.ACK_THREAD)
     }
 
-    private var jobs: LiveData<List<Job>>? = null
     private fun startAckJob() {
-        if (jobs == null) {
-            jobs = jobDao.findAckJobs()
-            jobs?.observeForever(ackOb)
+        MixinDatabase.getDatabase(MixinApplication.appContext).invalidationTracker.addObserver(ackObserver)
+    }
+
+    private fun stopAckJob() {
+        MixinDatabase.getDatabase(MixinApplication.appContext).invalidationTracker.removeObserver(ackObserver)
+    }
+
+    private val ackObserver by lazy {
+        object : InvalidationTracker.Observer("jobs") {
+            override fun onInvalidated(tables: MutableSet<String>) {
+                runAckJob()
+            }
         }
     }
 
-    private val processing = AtomicBoolean(false)
-    private val ackOb: Observer<List<Job>?> by lazy {
-        Observer<List<Job>?> { list ->
-            if (processing.compareAndSet(false, true)) {
-                launch {
-                    if (list?.isNotEmpty() == true) {
-                        list.map { GsonHelper.customGson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                            deliver(createAckListParamBlazeMessage(it)).let {
-                                jobDao.deleteList(list)
-                                processing.set(false)
-                            }
+    private fun runAckJob() {
+        if (ackJob?.isActive == true || !networkConnected()) {
+            return
+        }
+        ackJob = launch(ackThread) {
+            ackJobBlock()
+        }
+    }
+
+    private var ackJob: Job? = null
+
+    private suspend fun ackJobBlock() {
+        jobDao.findAckJobsDeferred().await()?.let { list ->
+            if (list.isNotEmpty()) {
+                list.map { GsonHelper.customGson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+                    try {
+                        deliver(createAckListParamBlazeMessage(it)).let {
+                            jobDao.deleteList(list)
                         }
-                    } else {
-                        processing.set(false)
+                    } catch (e: Exception) {
+                        runAckJob()
                     }
                 }
             }
         }
     }
 
-    private fun stopAckJob() {
-        jobs?.removeObserver(ackOb)
+    private val floodThread by lazy {
+        newSingleThreadContext(Constants.FLOOD_THREAD)
     }
 
     private var floodMessages: LiveData<FloodMessage>? = null

@@ -38,4 +38,6 @@ object Constants {
     const val PAGE_SIZE = 20
 
     const val FLOOD_THREAD = "flood_thread"
+
+    const val ACK_THREAD = "ack_thread"
 }
