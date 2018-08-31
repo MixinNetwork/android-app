@@ -108,7 +108,6 @@ class ChatWebSocket(
             }
         } else {
             Log.e(TAG, "WebSocket not connect")
-            Bugsnag.notify(Throwable("WebSocket not connect"))
         }
         return bm
     }
