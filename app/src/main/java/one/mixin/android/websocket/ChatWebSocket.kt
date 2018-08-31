@@ -6,6 +6,7 @@ import android.util.Log
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import io.reactivex.Observable
+import io.reactivex.disposables.Disposable
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -20,6 +21,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.gzip
+import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.ungzip
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
@@ -106,7 +108,6 @@ class ChatWebSocket(
             }
         } else {
             Log.e(TAG, "WebSocket not connect")
-            Bugsnag.notify(Throwable("WebSocket not connect"))
         }
         return bm
     }
@@ -132,9 +133,11 @@ class ChatWebSocket(
         if (client != null) {
             connected = true
             client = webSocket
+            webSocketObserver?.onSocketOpen()
             MixinApplication.appContext.runOnUiThread {
                 linkState.state = LinkState.ONLINE
             }
+            connectTimer?.dispose()
             jobManager.start()
             jobManager.addJobInBackground(RefreshOffsetJob())
             sendPendingMessage()
@@ -176,14 +179,20 @@ class ChatWebSocket(
         if (code == failCode) {
             closeInternal(code)
             jobManager.stop()
-            Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
-                connect()
-            }, {
-            })
+            if (connectTimer == null || connectTimer?.isDisposed == true) {
+                connectTimer = Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
+                    if (MixinApplication.appContext.networkConnected()) {
+                        connect()
+                    }
+                }, {
+                })
+            }
         } else {
             webSocket?.cancel()
         }
     }
+
+    private var connectTimer: Disposable? = null
 
     @Synchronized
     override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
@@ -210,6 +219,7 @@ class ChatWebSocket(
             Bugsnag.notify(e)
         } finally {
             client = null
+            webSocketObserver?.onSocketClose()
             MixinApplication.appContext.runOnUiThread {
                 linkState.state = LinkState.OFFLINE
             }
@@ -235,5 +245,16 @@ class ChatWebSocket(
         if (curStatus != null && curStatus != MessageStatus.READ.name) {
             messageDao.updateMessageStatus(status, messageId)
         }
+    }
+
+    fun setWebSocketObserver(webSocketObserver: WebSocketObserver) {
+        this.webSocketObserver = webSocketObserver
+    }
+
+    private var webSocketObserver: WebSocketObserver? = null
+
+    interface WebSocketObserver {
+        fun onSocketClose()
+        fun onSocketOpen()
     }
 }

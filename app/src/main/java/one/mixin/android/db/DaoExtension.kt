@@ -1,7 +1,11 @@
 package one.mixin.android.db
 
 import android.arch.persistence.room.Transaction
+import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.async
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.FloodMessage
+import one.mixin.android.vo.Job
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 
@@ -58,4 +62,12 @@ fun StickerDao.insertUpdate(s: Sticker) {
 fun MixinDatabase.clearParticipant(conversationId: String, participantId: String) {
     participantDao().deleteById(conversationId, participantId)
     sentSenderKeyDao().delete(conversationId)
+}
+
+fun JobDao.findAckJobsDeferred(): Deferred<List<Job>?> = async {
+    findAckJobsSync()
+}
+
+fun FloodMessageDao.findFloodMessageDeferred(): Deferred<List<FloodMessage>?> = async {
+    findFloodMessagesSync()
 }

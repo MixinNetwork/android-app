@@ -75,6 +75,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.QuoteMessageItem
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
+import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
@@ -86,6 +87,7 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.toUser
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.TransferContactData
@@ -127,7 +129,7 @@ internal constructor(
         conversationRepository.searchConversationById(id)
             .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
-    fun getConversationIdIfExistsSync(recipientId: String) = conversationRepository.getConversationIdIfExistsSync(recipientId)
+    private fun getConversationIdIfExistsSync(recipientId: String) = conversationRepository.getConversationIdIfExistsSync(recipientId)
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
@@ -383,23 +385,16 @@ internal constructor(
         }
     }
 
-    private fun makeMessageReadByConversationId(conversationId: String, accountId: String, messageId: String) {
-        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
-    }
-
-    fun makeMessageRead(conversationId: String, accountId: String) {
-        doAsync {
+    fun markMessageRead(conversationId: String, accountId: String) {
+        AppExecutors().diskIO().execute {
             conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
-                conversationRepository.getUnreadMessage(conversationId, accountId, messageId).apply {
-                    if (this.isNotEmpty()) {
+                conversationRepository.getUnreadMessage(conversationId, accountId, messageId)?.also { list ->
+                    if (list.isNotEmpty()) {
                         notificationManager.cancel(conversationId.hashCode())
-                        conversationRepository.makeMessageReadByConversationId(conversationId, accountId, messageId)
-                    }
-                }.map {
-                    BlazeAckMessage(it, MessageStatus.READ.name)
-                }.let {
-                    it.chunked(100).forEach {
-                        jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                        conversationRepository.batchMarkRead(conversationId, Session.getAccountId()!!, list.last().created_at)
+                        list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
+                            conversationRepository.insertList(it)
+                        }
                     }
                 }
             }
@@ -416,10 +411,12 @@ internal constructor(
 
     fun deleteMessages(set: ArraySet<MessageItem>) {
         val data = ArraySet(set)
-        Flowable.fromIterable(data).subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe {
-            conversationRepository.deleteMessage(it.messageId)
-            jobManager.cancelJobById(it.messageId)
-            notificationManager.cancel(it.userId.hashCode())
+        AppExecutors().diskIO().execute {
+            data.forEach { item ->
+                conversationRepository.deleteMessage(item.messageId)
+                jobManager.cancelJobById(item.messageId)
+                notificationManager.cancel(item.userId.hashCode())
+            }
         }
     }
 
@@ -543,8 +540,8 @@ internal constructor(
                 }
                 findUnreadMessagesSync(conversationId!!)?.let {
                     if (it.isNotEmpty()) {
-                        makeMessageReadByConversationId(conversationId, Session.getAccountId()!!, it.last())
-                        it.map { BlazeAckMessage(it, MessageStatus.READ.name) }.let {
+                        conversationRepository.batchMarkRead(conversationId, Session.getAccountId()!!, it.last().created_at)
+                        it.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {
                             it.chunked(100).forEach {
                                 jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
                             }

@@ -246,6 +246,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             UserRelationship.FRIEND.name -> {
                 contentView.add_fl.visibility = GONE
+                contentView.send_fl.visibility = VISIBLE
                 contentView.send_fl.updateLayoutParams<LinearLayout.LayoutParams> {
                     topMargin = resources.getDimensionPixelOffset(R.dimen.activity_vertical_margin)
                 }
@@ -253,12 +254,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             UserRelationship.STRANGER.name -> {
                 contentView.add_fl.visibility = VISIBLE
+                contentView.send_fl.visibility = VISIBLE
                 contentView.add_fl.updateLayoutParams<LinearLayout.LayoutParams> {
                     topMargin = resources.getDimensionPixelOffset(R.dimen.activity_vertical_margin)
                 }
                 contentView.unblock_fl.visibility = GONE
-            }
-            else -> {
             }
         }
     }

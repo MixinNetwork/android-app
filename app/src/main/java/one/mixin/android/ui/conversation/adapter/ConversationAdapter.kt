@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.BlinkEvent
@@ -42,6 +43,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
+import kotlin.math.abs
 
 class ConversationAdapter(
     private val keyword: String?,
@@ -244,7 +246,7 @@ class ConversationAdapter(
         }
     }
 
-    private var oldSize = 0
+    private var oldSize: Int = 0
     override fun submitList(pagedList: PagedList<MessageItem>?) {
         currentList?.let {
             oldSize = it.size
@@ -254,15 +256,15 @@ class ConversationAdapter(
 
     override fun onCurrentListChanged(currentList: PagedList<MessageItem>?) {
         super.onCurrentListChanged(currentList)
-        if (currentList != null) {
+        if (currentList != null && oldSize != 0) {
             val changeCount = currentList.size - oldSize
-            if (changeCount > 0) {
-                for (i in 1 until changeCount + 1)
+            when {
+                abs(changeCount) >= PAGE_SIZE -> notifyDataSetChanged()
+                changeCount > 0 -> for (i in 1 until changeCount + 1)
                     getItem(i)?.let {
                         RxBus.publish(BlinkEvent(it.messageId, isLast(i)))
                     }
-            } else if (changeCount < 0) {
-                notifyDataSetChanged()
+                changeCount < 0 -> notifyDataSetChanged()
             }
         }
     }
