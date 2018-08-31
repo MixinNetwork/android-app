@@ -12,10 +12,8 @@ import android.content.Intent
 import android.os.IBinder
 import android.support.v4.app.NotificationCompat
 import android.support.v4.content.ContextCompat
-import android.util.Log
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
-import com.birbit.android.jobqueue.timer.SystemTimer
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.experimental.Job
@@ -37,15 +35,12 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import org.jetbrains.anko.notificationManager
-import org.jetbrains.anko.runOnUiThread
-import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 class BlazeMessageService : Service(), NetworkEventProvider.Listener {
@@ -71,11 +66,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         }
     }
 
-    private var retrievalThread: MessageRetrievalThread? = null
-    private val timer = SystemTimer()
-    private val isWait = AtomicBoolean(false)
-    private var activeActivities = 0
-
     @Inject
     lateinit var networkUtil: JobNetworkUtil
     @Inject
@@ -88,8 +78,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     lateinit var jobDao: JobDao
     @Inject
     lateinit var jobManager: MixinJobManager
-    @Inject
-    lateinit var linkState: LinkState
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -98,24 +86,19 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     override fun onCreate() {
         AndroidInjection.inject(this)
         super.onCreate()
-        retrievalThread = MessageRetrievalThread()
-        retrievalThread!!.start()
+        webSocket.connect()
         startAckJob()
         startFloodJob()
         networkUtil.setListener(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        detectNotify()
         if (intent == null) return START_STICKY
-
-        when {
-            intent.action == ACTION_TO_BACKGROUND -> {
+        when (ACTION_TO_BACKGROUND) {
+            intent.action -> {
                 stopForeground(true)
                 return START_STICKY
             }
-            intent.action == ACTION_ACTIVITY_RESUME -> incrementActivity()
-            intent.action == ACTION_ACTIVITY_PAUSE -> decrementActivity()
         }
         setForegroundIfNecessary()
         return START_STICKY
@@ -123,40 +106,16 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (retrievalThread != null) {
-            retrievalThread!!.stopThread()
-        }
         stopAckJob()
         stopFloodJob()
+        webSocket.disconnect()
     }
 
     override fun onNetworkChange(networkStatus: Int) {
         if (networkStatus != NetworkUtil.DISCONNECTED) {
-            detectNotify()
+            webSocket.connect()
             runAckJob()
             runFloodJob()
-        }
-    }
-
-    private fun incrementActivity() {
-        activeActivities++
-        detectNotify()
-    }
-
-    private fun decrementActivity() {
-        activeActivities--
-        detectNotify()
-    }
-
-    private fun detectNotify() {
-        synchronized(this) {
-            try {
-                if (isWait.get()) {
-                    isWait.set(false)
-                    timer.notifyObject(this)
-                }
-            } catch (e: Exception) {
-            }
         }
     }
 
@@ -191,27 +150,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
             notificationManager.createNotificationChannel(channel)
         }
         startForeground(FOREGROUND_ID, builder.build())
-    }
-
-    @Synchronized
-    private fun waitForConnectionNecessary() {
-        try {
-            while (!this.networkConnected()) {
-                MixinApplication.appContext.runOnUiThread {
-                    linkState.state = LinkState.OFFLINE
-                }
-                if (!isWait.get()) {
-                    isWait.set(true)
-                    timer.waitOnObject(this)
-                }
-            }
-        } catch (e: InterruptedException) {
-            throw AssertionError(e)
-        }
-    }
-
-    fun shutdown() {
-        webSocket.disconnect()
     }
 
     private val ackThread by lazy {
@@ -313,42 +251,6 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
                 }
             } catch (e: Exception) {
                 runFloodJob()
-            }
-        }
-    }
-
-    private inner class MessageRetrievalThread internal constructor() :
-        Thread("MessageRetrieval"), Thread.UncaughtExceptionHandler {
-
-        fun stopThread() {
-            stopThread.set(true)
-        }
-
-        override fun uncaughtException(t: Thread?, e: Throwable?) {
-            Log.w(TAG, "MessageRetrieval Uncaught exception!", e)
-        }
-
-        private val stopThread = AtomicBoolean(false)
-
-        init {
-            uncaughtExceptionHandler = this
-        }
-
-        override fun run() {
-            while (!stopThread.get()) {
-                waitForConnectionNecessary()
-                webSocket.connect()
-
-                try {
-                    while (networkConnected() && !stopThread.get()) {
-                        sleep(3000)
-                    }
-                } catch (e: Throwable) {
-                    Log.e(TAG, "Blaze Message service", e)
-                } finally {
-                    Log.e(TAG, "Shutting down ...")
-                    shutdown()
-                }
             }
         }
     }
