@@ -181,7 +181,9 @@ class ChatWebSocket(
             jobManager.stop()
             if (connectTimer == null || connectTimer?.isDisposed == true) {
                 connectTimer = Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
-                    connect()
+                    if (MixinApplication.appContext.networkConnected()) {
+                        connect()
+                    }
                 }, {
                 })
             }
@@ -194,11 +196,11 @@ class ChatWebSocket(
 
     @Synchronized
     override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
-        if (client != null && MixinApplication.appContext.networkConnected()) {
-            t?.let {
-                Bugsnag.notify(it)
-                Log.e(TAG, "WebSocket onFailure ", it)
-            }
+        t?.let {
+            Bugsnag.notify(it)
+            Log.e(TAG, "WebSocket onFailure ", it)
+        }
+        if (client != null) {
             if (t != null && (t is ClientErrorException && t.code == AUTHENTICATION)) {
                 closeInternal(quitCode)
             } else {
