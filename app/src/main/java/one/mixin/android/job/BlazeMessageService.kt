@@ -24,6 +24,8 @@ import kotlinx.coroutines.experimental.newSingleThreadContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.NetworkException
+import one.mixin.android.api.WebSocketException
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
@@ -355,13 +357,13 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
         val bm = webSocket.sendMessage(blazeMessage)
         if (bm == null) {
             Thread.sleep(Constants.SLEEP_MILLIS)
-            return deliver(blazeMessage)
+            throw WebSocketException()
         } else if (bm.error != null) {
             if (bm.error.code == ErrorHandler.FORBIDDEN) {
                 return true
             } else {
                 Thread.sleep(Constants.SLEEP_MILLIS)
-                return deliver(blazeMessage)
+                throw NetworkException()
             }
         }
         return true
