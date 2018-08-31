@@ -134,6 +134,7 @@ class ChatWebSocket(
         if (client != null) {
             connected = true
             client = webSocket
+            webSocketObserver?.onSocketOpen()
             MixinApplication.appContext.runOnUiThread {
                 linkState.state = LinkState.ONLINE
             }
@@ -219,6 +220,7 @@ class ChatWebSocket(
             Bugsnag.notify(e)
         } finally {
             client = null
+            webSocketObserver?.onSocketClose()
             MixinApplication.appContext.runOnUiThread {
                 linkState.state = LinkState.OFFLINE
             }
@@ -244,5 +246,16 @@ class ChatWebSocket(
         if (curStatus != null && curStatus != MessageStatus.READ.name) {
             messageDao.updateMessageStatus(status, messageId)
         }
+    }
+
+    fun setWebSocketObserver(webSocketObserver: WebSocketObserver) {
+        this.webSocketObserver = webSocketObserver
+    }
+
+    private var webSocketObserver: WebSocketObserver? = null
+
+    interface WebSocketObserver {
+        fun onSocketClose()
+        fun onSocketOpen()
     }
 }

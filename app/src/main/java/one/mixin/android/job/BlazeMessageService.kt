@@ -43,7 +43,7 @@ import one.mixin.android.websocket.createAckListParamBlazeMessage
 import org.jetbrains.anko.notificationManager
 import javax.inject.Inject
 
-class BlazeMessageService : Service(), NetworkEventProvider.Listener {
+class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 
     companion object {
         val TAG = BlazeMessageService::class.java.simpleName
@@ -86,6 +86,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     override fun onCreate() {
         AndroidInjection.inject(this)
         super.onCreate()
+        webSocket.setWebSocketObserver(this)
         webSocket.connect()
         startAckJob()
         startFloodJob()
@@ -114,9 +115,15 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener {
     override fun onNetworkChange(networkStatus: Int) {
         if (networkStatus != NetworkUtil.DISCONNECTED) {
             webSocket.connect()
-            runAckJob()
-            runFloodJob()
         }
+    }
+
+    override fun onSocketClose() {
+    }
+
+    override fun onSocketOpen() {
+        runAckJob()
+        runFloodJob()
     }
 
     @SuppressLint("NewApi")
