@@ -42,7 +42,7 @@ buildscript {
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.27.0'
-        ext.exoplayerVersion = '2.8.2'
+        ext.exoplayerVersion = '2.8.4'
 
         ext.junitVersion = '4.12'
         ext.leakcanaryVerison = '1.5.1'

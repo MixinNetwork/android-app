@@ -180,7 +180,7 @@ class ChatWebSocket(
             closeInternal(code)
             jobManager.stop()
             if (connectTimer == null || connectTimer?.isDisposed == true) {
-                connectTimer = Observable.timer(2000, TimeUnit.MILLISECONDS).subscribe({
+                connectTimer = Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe({
                     if (MixinApplication.appContext.networkConnected()) {
                         connect()
                     }
@@ -197,7 +197,6 @@ class ChatWebSocket(
     @Synchronized
     override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
         t?.let {
-            Bugsnag.notify(it)
             Log.e(TAG, "WebSocket onFailure ", it)
         }
         if (client != null) {
