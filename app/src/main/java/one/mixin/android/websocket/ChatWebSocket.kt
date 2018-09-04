@@ -179,16 +179,22 @@ class ChatWebSocket(
         if (code == failCode) {
             closeInternal(code)
             jobManager.stop()
-            if (connectTimer == null || connectTimer?.isDisposed == true) {
-                connectTimer = Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe({
-                    if (MixinApplication.appContext.networkConnected()) {
-                        connect()
-                    }
-                }, {
-                })
-            }
+            connectInternal()
         } else {
             webSocket?.cancel()
+        }
+    }
+
+    @Synchronized
+    private fun connectInternal() {
+        if (connectTimer == null || connectTimer?.isDisposed == true) {
+            connectTimer = Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe({
+                if (MixinApplication.appContext.networkConnected()) {
+                    connect()
+                }
+            }, {
+                connectInternal()
+            })
         }
     }
 
