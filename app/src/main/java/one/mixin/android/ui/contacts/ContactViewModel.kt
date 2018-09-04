@@ -5,7 +5,7 @@ import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import one.mixin.android.AppExecutors
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.ConversationRequest
@@ -16,6 +16,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.User
@@ -53,7 +54,7 @@ internal constructor(
             .observeOn(AndroidSchedulers.mainThread())
 
     fun mute(senderId: String, recipientId: String, duration: Long) {
-        AppExecutors().diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             var conversationId = conversationRepository.getConversationIdIfExistsSync(recipientId)
             if (conversationId == null) {
                 conversationId = generateConversationId(senderId, recipientId)

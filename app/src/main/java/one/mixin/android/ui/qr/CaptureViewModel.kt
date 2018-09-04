@@ -4,13 +4,14 @@ import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import one.mixin.android.AppExecutors
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
 import org.jetbrains.anko.doAsync
@@ -30,7 +31,7 @@ internal constructor(
         assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun saveAsset(asset: Asset) {
-        AppExecutors().diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             assetRepository.upsert(asset)
         }
     }
