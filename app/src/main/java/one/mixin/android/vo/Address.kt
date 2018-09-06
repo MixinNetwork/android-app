@@ -38,5 +38,8 @@ data class Address(
     val accountName: String?,
     @ColumnInfo(name = "account_tag")
     @SerializedName("account_tag")
-    val accountTag: String?
+    val accountTag: String?,
+    @ColumnInfo(name = "dust")
+    @SerializedName("dust")
+    val dust: String?
 ) : Parcelable
