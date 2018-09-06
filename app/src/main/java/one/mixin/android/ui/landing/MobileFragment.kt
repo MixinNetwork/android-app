@@ -28,6 +28,7 @@ import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.vibrate
@@ -83,6 +84,7 @@ class MobileFragment : BaseFragment() {
             }
         })
         parent.addView(recaptchaView.webView, MATCH_PARENT, MATCH_PARENT)
+        recaptchaView.webView.translationY = requireContext().displayHeight().toFloat()
         return parent
     }
 
@@ -180,7 +182,7 @@ class MobileFragment : BaseFragment() {
     private fun hideLoading() {
         mobile_fab?.hide()
         mobile_cover?.visibility = GONE
-        recaptchaView.webView.visibility = GONE
+        recaptchaView.hide()
     }
 
     private fun handleEditView(str: String) {

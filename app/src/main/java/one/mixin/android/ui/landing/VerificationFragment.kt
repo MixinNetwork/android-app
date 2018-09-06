@@ -33,6 +33,7 @@ import one.mixin.android.crypto.generateRSAKeyPair
 import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.rsaDecrypt
+import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
@@ -102,6 +103,7 @@ class VerificationFragment : BaseFragment() {
             }
         })
         parent.addView(recaptchaView.webView, MATCH_PARENT, MATCH_PARENT)
+        recaptchaView.webView.translationY = requireContext().displayHeight().toFloat()
         return parent
     }
 
