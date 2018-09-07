@@ -3,7 +3,7 @@ package one.mixin.android.repository
 import android.arch.lifecycle.LiveData
 import android.arch.paging.DataSource
 import io.reactivex.Observable
-import one.mixin.android.AppExecutors
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.AppDao
@@ -13,6 +13,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.insertConversation
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationItemMinimal
@@ -32,7 +33,6 @@ internal constructor(
     private val conversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
     private val appDao: AppDao,
-    private val appExecutors: AppExecutors,
     private val appDatabase: MixinDatabase,
     private val jobDao: JobDao,
     private val conversationService: ConversationService
@@ -41,7 +41,7 @@ internal constructor(
     fun conversation(): LiveData<List<ConversationItem>> = conversationDao.conversationList()
 
     fun insertConversation(conversation: Conversation, participants: List<Participant>) {
-        appExecutors.diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             appDatabase.runInTransaction {
                 conversationDao.insertConversation(conversation)
                 participantDao.insertList(participants)
@@ -68,7 +68,7 @@ internal constructor(
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
     fun saveDraft(conversationId: String, draft: String) {
-        appExecutors.diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             conversationDao.saveDraft(conversationId, draft)
         }
     }
@@ -94,7 +94,7 @@ internal constructor(
     }
 
     fun updateCodeUrl(conversationId: String, codeUrl: String) {
-        appExecutors.diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             conversationDao.updateCodeUrl(conversationId, codeUrl)
         }
     }
@@ -109,19 +109,19 @@ internal constructor(
     fun deleteMessage(id: String) = messageDao.deleteMessage(id)
 
     fun deleteConversationById(conversationId: String) {
-        appExecutors.diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             conversationDao.deleteConversationById(conversationId)
         }
     }
 
     fun updateConversationPinTimeById(conversationId: String, pinTime: String?) {
-        appExecutors.diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             conversationDao.updateConversationPinTimeById(conversationId, pinTime)
         }
     }
 
     fun deleteMessageByConversationId(conversationId: String) {
-        appExecutors.diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             messageDao.deleteMessageByConversationId(conversationId)
         }
     }
@@ -136,7 +136,7 @@ internal constructor(
         conversationService.updateAsync(conversationId, request)
 
     fun updateAnnouncement(conversationId: String, announcement: String) {
-        appExecutors.diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             conversationDao.updateConversationAnnouncement(conversationId, announcement)
         }
     }

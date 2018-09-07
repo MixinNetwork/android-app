@@ -1,9 +1,10 @@
 package one.mixin.android.crypto
 
 import android.content.Context
-import one.mixin.android.AppExecutors
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.Identity
+import one.mixin.android.util.SINGLE_DB_THREAD
 import org.whispersystems.libsignal.util.KeyHelper
 
 open class IdentityKeyUtil {
@@ -20,7 +21,7 @@ open class IdentityKeyUtil {
                 identityKeyPair.privateKey.serialize(),
                 0,
                 System.currentTimeMillis())
-            AppExecutors().diskIO().execute {
+            launch(SINGLE_DB_THREAD) {
                 SignalDatabase.getDatabase(ctx).identityDao().insert(identity)
             }
         }

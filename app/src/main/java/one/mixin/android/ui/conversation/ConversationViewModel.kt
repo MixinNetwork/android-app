@@ -16,7 +16,7 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import one.mixin.android.AppExecutors
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -57,6 +57,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.util.video.MediaController
@@ -386,7 +387,7 @@ internal constructor(
     }
 
     fun markMessageRead(conversationId: String, accountId: String) {
-        AppExecutors().diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
                 conversationRepository.getUnreadMessage(conversationId, accountId, messageId)?.also { list ->
                     if (list.isNotEmpty()) {
@@ -411,7 +412,7 @@ internal constructor(
 
     fun deleteMessages(set: ArraySet<MessageItem>) {
         val data = ArraySet(set)
-        AppExecutors().diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             data.forEach { item ->
                 conversationRepository.deleteMessage(item.messageId)
                 jobManager.cancelJobById(item.messageId)
@@ -520,7 +521,7 @@ internal constructor(
     }
 
     fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
-        AppExecutors().diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             var conversationId: String? = null
             for (item in selectItem) {
                 if (item is User) {

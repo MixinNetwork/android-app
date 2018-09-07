@@ -5,7 +5,7 @@ import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import one.mixin.android.AppExecutors
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
@@ -27,6 +27,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Address
@@ -110,7 +111,7 @@ class BottomSheetViewModel @Inject internal constructor(
     fun findParticipantByIds(conversationId: String, userId: String) = conversationRepo.findParticipantByIds(conversationId, userId)
 
     fun mute(senderId: String, recipientId: String, duration: Long) {
-        AppExecutors().diskIO().execute {
+        launch(SINGLE_DB_THREAD) {
             var conversationId = conversationRepo.getConversationIdIfExistsSync(recipientId)
             if (conversationId == null) {
                 conversationId = generateConversationId(senderId, recipientId)

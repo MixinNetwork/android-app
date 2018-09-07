@@ -184,6 +184,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
     }
 
+    @Synchronized
     private fun runAckJob() {
         if (ackJob?.isActive == true || !networkConnected()) {
             return
@@ -205,6 +206,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                         }
                     } catch (e: Exception) {
                         runAckJob()
+                    } finally {
+                        ackJob = null
                     }
                 }
             }
@@ -238,6 +241,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
     }
 
+    @Synchronized
     private fun runFloodJob() {
         if (floodJob?.isActive == true) {
             return
@@ -258,6 +262,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                 }
             } catch (e: Exception) {
                 runFloodJob()
+            } finally {
+                floodJob = null
             }
         }
     }

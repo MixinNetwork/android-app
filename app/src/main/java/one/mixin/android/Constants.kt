@@ -40,4 +40,6 @@ object Constants {
     const val FLOOD_THREAD = "flood_thread"
 
     const val ACK_THREAD = "ack_thread"
+
+    const val SINGLE_DB = "single_db"
 }
