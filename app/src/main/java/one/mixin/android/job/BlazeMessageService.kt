@@ -206,6 +206,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                         }
                     } catch (e: Exception) {
                         runAckJob()
+                    } finally {
+                        ackJob = null
                     }
                 }
             }
@@ -260,6 +262,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                 }
             } catch (e: Exception) {
                 runFloodJob()
+            } finally {
+                floodJob = null
             }
         }
     }
