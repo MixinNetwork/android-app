@@ -184,6 +184,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
     }
 
+    @Synchronized
     private fun runAckJob() {
         if (ackJob?.isActive == true || !networkConnected()) {
             return
@@ -238,6 +239,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
     }
 
+    @Synchronized
     private fun runFloodJob() {
         if (floodJob?.isActive == true) {
             return
