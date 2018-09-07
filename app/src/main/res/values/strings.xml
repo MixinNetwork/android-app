@@ -103,6 +103,7 @@
     <string name="error_duration_short">Duration is too short</string>
     <string name="error_too_many_stickers">Too many stickers</string>
     <string name="error_too_small_withdraw_amount">Withdraw amount too small</string>
+    <string name="error_minimum_withdraw_amount">Minimum withdraw amount is %s</string>
     <!--home-->
     <string name="title_home">Contacts</string>
     <string name="title_dashboard">Chats</string>
