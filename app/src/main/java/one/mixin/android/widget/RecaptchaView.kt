@@ -3,7 +3,6 @@ package one.mixin.android.widget
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Bitmap
-import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -60,7 +59,6 @@ class RecaptchaView(private val context: Context, private val callback: Callback
         val input = context.assets.open("recaptcha.html")
         var html = Okio.buffer(Okio.source(input)).readByteString().string(Charset.forName("utf-8"))
         html = html.replace("#apiKey", BuildConfig.RECAPTCHA_KEY)
-        CookieManager.getInstance().removeAllCookies(null)
         webView.clearCache(true)
         webView.loadDataWithBaseURL(Constants.API.DOMAIN, html, "text/html", "UTF-8", null)
     }
