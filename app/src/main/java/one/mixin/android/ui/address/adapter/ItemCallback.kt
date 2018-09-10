@@ -5,7 +5,7 @@ import android.support.v7.widget.RecyclerView
 import android.support.v7.widget.helper.ItemTouchHelper
 import kotlinx.android.synthetic.main.item_address.view.*
 
-class AddressItemCallback(private val listener: AddressAdapter.AddressListener? = null) :
+class ItemCallback(private val listener: ItemCallbackListener) :
     ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
 
     override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
@@ -51,6 +51,10 @@ class AddressItemCallback(private val listener: AddressAdapter.AddressListener? 
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        listener?.onAddrDelete(viewHolder)
+        listener.onSwiped(viewHolder)
+    }
+
+    interface ItemCallbackListener {
+        fun onSwiped(viewHolder: RecyclerView.ViewHolder)
     }
 }

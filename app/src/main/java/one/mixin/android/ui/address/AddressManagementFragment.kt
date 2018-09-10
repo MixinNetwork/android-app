@@ -15,7 +15,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.ui.address.adapter.AddressAdapter
-import one.mixin.android.ui.address.adapter.AddressItemCallback
+import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
@@ -69,20 +69,6 @@ class AddressManagementFragment : BaseFragment() {
         })
         addr_rv.addItemDecoration(SpaceItemDecoration())
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
-            override fun onAddrDelete(viewHolder: RecyclerView.ViewHolder) {
-                val deletePos = viewHolder.adapterPosition
-                val addr = adapter.addresses!![deletePos]
-                val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
-                val bottomSheet = showBottomSheet(addr)
-                fragmentManager?.executePendingTransactions()
-                bottomSheet.dialog.setOnDismissListener {
-                    bottomSheet.dismiss()
-                    if (!deleteSuccess) {
-                        adapter.restoreItem(deleteItem, deletePos)
-                    }
-                }
-            }
-
             override fun onAddrLongClick(view: View, addr: Address) {
                 val popMenu = PopupMenu(activity!!, view)
                 popMenu.menuInflater.inflate(R.menu.address_mamangement_item, popMenu.menu)
@@ -98,7 +84,21 @@ class AddressManagementFragment : BaseFragment() {
                     AddressAddFragment.newInstance(asset, addr, MODIFY, true), AddressAddFragment.TAG)
             }
         }
-        ItemTouchHelper(AddressItemCallback(addrListener)).apply { attachToRecyclerView(addr_rv) }
+        ItemTouchHelper(ItemCallback(object : ItemCallback.ItemCallbackListener {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
+                val deletePos = viewHolder.adapterPosition
+                val addr = adapter.addresses!![deletePos]
+                val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
+                val bottomSheet = showBottomSheet(addr)
+                fragmentManager?.executePendingTransactions()
+                bottomSheet.dialog.setOnDismissListener {
+                    bottomSheet.dismiss()
+                    if (!deleteSuccess) {
+                        adapter.restoreItem(deleteItem, deletePos)
+                    }
+                }
+            }
+        })).apply { attachToRecyclerView(addr_rv) }
         addr_rv.adapter = adapter
         adapter.setAddrListener(addrListener)
     }

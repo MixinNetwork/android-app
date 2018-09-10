@@ -11,4 +11,7 @@ interface AuthorizationService {
 
     @POST("oauth/authorize")
     fun authorize(@Body request: AuthorizeRequest): Observable<MixinResponse<AuthorizationResponse>>
+
+    @POST("oauth/cancel")
+    fun deauthorize(@Body request: AuthorizeRequest)
 }

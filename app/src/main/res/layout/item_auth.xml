@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:id="@+id/user_info_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height">
+
+    <RelativeLayout
+            android:id="@+id/background_rl"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorRed">
+
+        <ImageView
+                android:id="@+id/delete_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:src="@drawable/ic_delete_white_24dp"
+                android:contentDescription="@null"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="8dp"
+                android:layout_toStartOf="@id/delete_icon"
+                android:text="@string/setting_deauthorize"
+                android:textColor="@android:color/white"/>
+    </RelativeLayout>
+
+
+    <LinearLayout
+            android:id="@+id/foreground_rl"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/white">
+
+        <one.mixin.android.widget.CircleImageView
+                android:id="@+id/avatar"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:layout_margin="12dp"/>
+
+        <TextView
+                android:id="@+id/name_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginEnd="12dp"
+                android:ellipsize="end"
+                android:textColor="@android:color/black"
+                tools:ignore="RelativeOverlap"/>
+    </LinearLayout>
+
+    <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:layout_marginStart="@dimen/item_contact_height"
+            android:layout_alignParentBottom="true"
+            android:background="@color/divider"/>
+</RelativeLayout>

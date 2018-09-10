@@ -1,5 +1,6 @@
 package one.mixin.android.repository
 
+import android.arch.lifecycle.LiveData
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -28,6 +29,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.App
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
@@ -131,4 +133,6 @@ constructor(
         stickerDao.insertUpdate(sticker)
         stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
     }
+
+    fun apps(): LiveData<List<App>> = appDao.apps()
 }

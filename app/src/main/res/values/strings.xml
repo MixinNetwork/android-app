@@ -373,6 +373,8 @@
     <string name="setting_logout_confirm">Do you want to log out?</string>
     <string name="setting_logout_message">You won\'t receive any new messages if you log out, and all your local chat history will also be deleted.</string>
     <string name="setting_no_blocked">No blocked users</string>
+    <string name="setting_authentications">Authentications</string>
+    <string name="setting_deauthorize">Deauthorize</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>

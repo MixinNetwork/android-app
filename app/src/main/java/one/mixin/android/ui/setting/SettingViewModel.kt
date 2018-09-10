@@ -1,9 +1,11 @@
 package one.mixin.android.ui.setting
 
+import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.vo.App
 import one.mixin.android.vo.UserRelationship
 import javax.inject.Inject
 
@@ -14,4 +16,10 @@ internal constructor(private val accountRepository: AccountRepository) : ViewMod
         accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
 
     fun logout(): Observable<MixinResponse<Unit>> = accountRepository.logout()
+
+    val apps: LiveData<List<App>> = accountRepository.apps()
+
+    fun deauthApp(appId: String) {
+        // TODO
+    }
 }

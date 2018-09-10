@@ -64,14 +64,11 @@ class AddressAdapter(private val asset: AssetItem, private val showIcon: Boolean
         fun onAddrClick(addr: Address)
 
         fun onAddrLongClick(view: View, addr: Address)
-
-        fun onAddrDelete(viewHolder: RecyclerView.ViewHolder)
     }
 
     open class SimpleAddressListener : AddressListener {
         override fun onAddrClick(addr: Address) {}
         override fun onAddrLongClick(view: View, addr: Address) {}
-        override fun onAddrDelete(viewHolder: RecyclerView.ViewHolder) {}
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
