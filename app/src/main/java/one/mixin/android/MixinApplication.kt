@@ -9,6 +9,7 @@ import android.webkit.WebStorage
 import com.bugsnag.android.Bugsnag
 import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
+import com.instacart.library.truetime.TrueTime
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
@@ -20,6 +21,7 @@ import one.mixin.android.di.AppComponent
 import one.mixin.android.di.AppInjector
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.landing.LandingActivity
@@ -61,6 +63,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         MixinApplication.appContext = applicationContext
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
+        doAsync { TrueTime.build().initialize() }
     }
 
     private fun init() {
@@ -82,13 +85,14 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         BlazeMessageService.stopService(ctx)
         notificationManager.cancelAll()
         Session.clearAccount()
-        ctx.defaultSharedPreferences.clear()
+        defaultSharedPreferences.clear()
+        defaultSharedPreferences.putBoolean(Constants.Account.PREF_LOGOUT_COMPLETE, false)
         CookieManager.getInstance().removeAllCookies(null)
         CookieManager.getInstance().flush()
         WebStorage.getInstance().deleteAllData()
         if (toLanding) {
             doAsync {
-                asyncClear()
+                clearData()
 
                 uiThread {
                     inject()
@@ -96,15 +100,16 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
                 }
             }
         } else {
-            asyncClear()
+            clearData()
             inject()
         }
     }
 
-    private fun asyncClear() {
+    fun clearData() {
         jobManager.cancelAllJob()
         jobManager.clear()
         SignalDatabase.getDatabase(ctx).clearAllTables()
         MixinDatabase.getDatabase(ctx).clearAllTables()
+        defaultSharedPreferences.putBoolean(Constants.Account.PREF_LOGOUT_COMPLETE, true)
     }
 }

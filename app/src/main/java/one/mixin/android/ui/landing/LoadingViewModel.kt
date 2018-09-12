@@ -5,9 +5,12 @@ import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import javax.inject.Inject
 
@@ -18,6 +21,12 @@ constructor(private val signalKeyService: SignalKeyService, private val app: App
         val start = System.currentTimeMillis()
         var signalKeys: SignalKeyRequest? = null
         return Observable.just(app).observeOn(Schedulers.io()).subscribeOn(Schedulers.io()).flatMap { _ ->
+            //check logout complete
+            val logoutComplete = MixinApplication.appContext.defaultSharedPreferences.getBoolean(Constants.Account.PREF_LOGOUT_COMPLETE, true)
+            if (!logoutComplete) {
+                MixinApplication.get().clearData()
+            }
+
             if (signalKeys == null) {
                 signalKeys = RefreshOneTimePreKeysJob.generateKeys()
             }
