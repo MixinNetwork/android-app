@@ -388,14 +388,12 @@ internal constructor(
 
     fun markMessageRead(conversationId: String, accountId: String) {
         launch(SINGLE_DB_THREAD) {
-            conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
-                conversationRepository.getUnreadMessage(conversationId, accountId, messageId)?.also { list ->
-                    if (list.isNotEmpty()) {
-                        notificationManager.cancel(conversationId.hashCode())
-                        conversationRepository.batchMarkRead(conversationId, Session.getAccountId()!!, list.last().created_at)
-                        list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                            conversationRepository.insertList(it)
-                        }
+            conversationRepository.getUnreadMessage(conversationId, accountId)?.also { list ->
+                if (list.isNotEmpty()) {
+                    notificationManager.cancel(conversationId.hashCode())
+                    conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
+                    list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
+                        conversationRepository.insertList(it)
                     }
                 }
             }
@@ -541,7 +539,7 @@ internal constructor(
                 }
                 findUnreadMessagesSync(conversationId!!)?.let {
                     if (it.isNotEmpty()) {
-                        conversationRepository.batchMarkRead(conversationId, Session.getAccountId()!!, it.last().created_at)
+                        conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, it.last().created_at)
                         it.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {
                             it.chunked(100).forEach {
                                 jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))

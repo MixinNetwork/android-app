@@ -71,3 +71,9 @@ fun JobDao.findAckJobsDeferred(): Deferred<List<Job>?> = async {
 fun FloodMessageDao.findFloodMessageDeferred(): Deferred<List<FloodMessage>?> = async {
     findFloodMessagesSync()
 }
+
+@Transaction
+fun MessageDao.batchMarkReadAndTake(conversationId: String, userId: String, createdAt: String) {
+    batchMarkRead(conversationId, userId, createdAt)
+    takeUnseen(userId, conversationId)
+}

@@ -12,6 +12,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.insertConversation
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Conversation
@@ -89,8 +90,8 @@ internal constructor(
 
     fun getConversationIdIfExistsSync(recipientId: String) = conversationDao.getConversationIdIfExistsSync(recipientId)
 
-    fun getUnreadMessage(conversationId: String, accountId: String, messageId: String): List<MessageMinimal>? {
-        return messageDao.getUnreadMessage(conversationId, accountId, messageId)
+    fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal>? {
+        return messageDao.getUnreadMessage(conversationId, accountId)
     }
 
     fun updateCodeUrl(conversationId: String, codeUrl: String) {
@@ -157,11 +158,8 @@ internal constructor(
 
     fun findUnreadMessagesSync(conversationId: String) = messageDao.findUnreadMessagesSync(conversationId)
 
-    fun getLastMessageIdByConversationId(conversationId: String) =
-        conversationDao.getLastMessageIdByConversationId(conversationId)
-
-    fun batchMarkRead(conversationId: String, userId: String, createdAt: String) {
-        messageDao.batchMarkRead(conversationId, userId, createdAt)
+    fun batchMarkReadAndTake(conversationId: String, userId: String, createdAt: String) {
+        messageDao.batchMarkReadAndTake(conversationId, userId, createdAt)
     }
 
     fun insertList(it: List<Job>) {

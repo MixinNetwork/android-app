@@ -7,6 +7,7 @@ import android.support.v4.app.RemoteInput
 import androidx.core.content.systemService
 import dagger.android.AndroidInjection
 import one.mixin.android.db.MessageDao
+import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.NotificationJob.Companion.CONVERSATION_ID
 import one.mixin.android.job.NotificationJob.Companion.IS_PLAIN
@@ -49,7 +50,7 @@ class SendService : IntentService("SendService") {
             jobManager.addJobInBackground(SendMessageJob(message))
             messageDao.findUnreadMessagesSync(conversationId)?.let {
                 if (it.isNotEmpty()) {
-                    messageDao.batchMarkRead(conversationId, Session.getAccountId()!!, it.last().created_at)
+                    messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, it.last().created_at)
                     it.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {
                         val chunkList = it.chunked(100)
                         for (item in chunkList) {

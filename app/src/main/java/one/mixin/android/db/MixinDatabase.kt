@@ -111,6 +111,7 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
                     "status, created_at)")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
+                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
             }
         }
 
@@ -122,12 +123,14 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
                     "status, created_at)")
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
+                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
             }
         }
 
         private val MIGRATION_17_18: Migration = object : Migration(17, 18) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
+                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
             }
         }
 
@@ -151,7 +154,6 @@ abstract class MixinDatabase : RoomDatabase() {
                 db.execSQL("CREATE TRIGGER conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id WHERE conversation_id = new.conversation_id; END")
                 db.execSQL("CREATE TRIGGER conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END")
                 db.execSQL("CREATE TRIGGER conversation_unseen_message_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
-                db.execSQL("CREATE TRIGGER conversation_unseen_message_count_update AFTER UPDATE ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = old.conversation_id) where conversation_id = old.conversation_id; END")
             }
         }
     }
