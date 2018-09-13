@@ -20,4 +20,7 @@ interface AppDao : BaseDao<App> {
 
     @Query("SELECT * FROM apps")
     fun apps(): LiveData<List<App>>
+
+    @Query("DELETE FROM apps WHERE app_id = :appId")
+    fun deleteAppById(appId: String)
 }
