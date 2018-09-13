@@ -16,6 +16,7 @@ import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.Job
 import kotlinx.coroutines.experimental.launch
 import kotlinx.coroutines.experimental.newSingleThreadContext
@@ -189,7 +190,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         if (ackJob?.isActive == true || !networkConnected()) {
             return
         }
-        ackJob = launch(ackThread) {
+        ackJob = GlobalScope.launch(ackThread) {
             ackJobBlock()
         }
     }
@@ -246,7 +247,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         if (floodJob?.isActive == true) {
             return
         }
-        floodJob = launch(floodThread) {
+        floodJob = GlobalScope.launch(floodThread) {
             floodJobBlock()
         }
     }

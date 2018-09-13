@@ -4,6 +4,7 @@ import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.TransferRequest
@@ -31,7 +32,7 @@ internal constructor(
         assetRepository.pay(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun saveAsset(asset: Asset) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             assetRepository.upsert(asset)
         }
     }

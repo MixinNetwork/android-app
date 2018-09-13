@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -54,7 +55,7 @@ internal constructor(
             .observeOn(AndroidSchedulers.mainThread())
 
     fun mute(senderId: String, recipientId: String, duration: Long) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             var conversationId = conversationRepository.getConversationIdIfExistsSync(recipientId)
             if (conversationId == null) {
                 conversationId = generateConversationId(senderId, recipientId)

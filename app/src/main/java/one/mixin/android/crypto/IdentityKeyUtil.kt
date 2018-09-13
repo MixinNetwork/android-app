@@ -1,6 +1,7 @@
 package one.mixin.android.crypto
 
 import android.content.Context
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.vo.Identity
@@ -21,7 +22,7 @@ open class IdentityKeyUtil {
                 identityKeyPair.privateKey.serialize(),
                 0,
                 System.currentTimeMillis())
-            launch(SINGLE_DB_THREAD) {
+            GlobalScope.launch(SINGLE_DB_THREAD) {
                 SignalDatabase.getDatabase(ctx).identityDao().insert(identity)
             }
         }

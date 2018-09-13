@@ -3,6 +3,7 @@ package one.mixin.android.repository
 import android.arch.lifecycle.LiveData
 import android.arch.paging.DataSource
 import io.reactivex.Observable
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
@@ -42,7 +43,7 @@ internal constructor(
     fun conversation(): LiveData<List<ConversationItem>> = conversationDao.conversationList()
 
     fun insertConversation(conversation: Conversation, participants: List<Participant>) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             appDatabase.runInTransaction {
                 conversationDao.insertConversation(conversation)
                 participantDao.insertList(participants)
@@ -69,7 +70,7 @@ internal constructor(
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
     fun saveDraft(conversationId: String, draft: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.saveDraft(conversationId, draft)
         }
     }
@@ -95,7 +96,7 @@ internal constructor(
     }
 
     fun updateCodeUrl(conversationId: String, codeUrl: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.updateCodeUrl(conversationId, codeUrl)
         }
     }
@@ -110,19 +111,19 @@ internal constructor(
     fun deleteMessage(id: String) = messageDao.deleteMessage(id)
 
     fun deleteConversationById(conversationId: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.deleteConversationById(conversationId)
         }
     }
 
     fun updateConversationPinTimeById(conversationId: String, pinTime: String?) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.updateConversationPinTimeById(conversationId, pinTime)
         }
     }
 
     fun deleteMessageByConversationId(conversationId: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             messageDao.deleteMessageByConversationId(conversationId)
         }
     }
@@ -137,7 +138,7 @@ internal constructor(
         conversationService.updateAsync(conversationId, request)
 
     fun updateAnnouncement(conversationId: String, announcement: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.updateConversationAnnouncement(conversationId, announcement)
         }
     }

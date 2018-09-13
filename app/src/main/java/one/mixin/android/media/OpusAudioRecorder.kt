@@ -8,7 +8,9 @@ import android.media.MediaRecorder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.systemService
-import kotlinx.coroutines.experimental.android.UI
+import kotlinx.coroutines.experimental.Dispatchers
+import kotlinx.coroutines.experimental.GlobalScope
+import kotlinx.coroutines.experimental.android.Main
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAudioTemp
@@ -225,7 +227,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
             if (send) {
                 val duration = recordTimeCount
                 val waveForm = getWaveform2(recordSamples, recordSamples.size)
-                launch(UI) {
+                GlobalScope.launch(Dispatchers.Main) {
                     if (recordingAudioFile != null) {
                         callback?.sendAudio(recordingAudioFile!!, duration, waveForm)
                     }

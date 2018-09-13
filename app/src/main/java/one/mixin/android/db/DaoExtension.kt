@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import android.arch.persistence.room.Transaction
 import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.async
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.FloodMessage
@@ -64,11 +65,11 @@ fun MixinDatabase.clearParticipant(conversationId: String, participantId: String
     sentSenderKeyDao().delete(conversationId)
 }
 
-fun JobDao.findAckJobsDeferred(): Deferred<List<Job>?> = async {
+fun JobDao.findAckJobsDeferred(): Deferred<List<Job>?> = GlobalScope.async {
     findAckJobsSync()
 }
 
-fun FloodMessageDao.findFloodMessageDeferred(): Deferred<List<FloodMessage>?> = async {
+fun FloodMessageDao.findFloodMessageDeferred(): Deferred<List<FloodMessage>?> = GlobalScope.async {
     findFloodMessagesSync()
 }
 
