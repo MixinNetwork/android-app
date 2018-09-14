@@ -90,30 +90,6 @@
             android:layout_height=".5dp"
             android:background="@color/divider"/>
 
-    <RelativeLayout
-            android:id="@+id/auth_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop=".5dp"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
-
-        <TextView
-                android:id="@+id/auth_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_authentications"
-                tools:ignore="RelativeOverlap"/>
-    </RelativeLayout>
-
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/divider"/>
-
     <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -130,6 +106,36 @@
                 android:textColor="@color/text_gray"
                 android:textSize="12sp"/>
     </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider"/>
+
+    <RelativeLayout
+        android:id="@+id/auth_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:layout_marginTop=".5dp"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/auth_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_authentications"
+            tools:ignore="RelativeOverlap"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:background="@color/bg_gray"/>
+
     <View
         android:layout_width="match_parent"
         android:layout_height=".5dp"
@@ -161,7 +167,7 @@
 
     <View
         android:layout_width="match_parent"
-        android:layout_height="40dp"
+        android:layout_height="32dp"
         android:background="@color/bg_gray"/>
 
     <View

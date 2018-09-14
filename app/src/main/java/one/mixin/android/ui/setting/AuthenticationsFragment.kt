@@ -15,6 +15,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.App
 import javax.inject.Inject
 
@@ -57,8 +58,11 @@ class AuthenticationsFragment : BaseFragment() {
                 }
                 adapter.submitList(this.list)
             }
-
-        }, {})
+            progress.visibility = View.GONE
+        }, {
+            progress.visibility = View.GONE
+            ErrorHandler.handleError(it)
+        })
         auth_rv.adapter = adapter
     }
 
