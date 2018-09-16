@@ -3,6 +3,7 @@ package one.mixin.android.repository
 import android.arch.lifecycle.LiveData
 import android.arch.paging.DataSource
 import io.reactivex.Observable
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
@@ -12,6 +13,7 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.insertConversation
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.Conversation
@@ -41,7 +43,7 @@ internal constructor(
     fun conversation(): LiveData<List<ConversationItem>> = conversationDao.conversationList()
 
     fun insertConversation(conversation: Conversation, participants: List<Participant>) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             appDatabase.runInTransaction {
                 conversationDao.insertConversation(conversation)
                 participantDao.insertList(participants)
@@ -68,7 +70,7 @@ internal constructor(
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
     fun saveDraft(conversationId: String, draft: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.saveDraft(conversationId, draft)
         }
     }
@@ -89,12 +91,12 @@ internal constructor(
 
     fun getConversationIdIfExistsSync(recipientId: String) = conversationDao.getConversationIdIfExistsSync(recipientId)
 
-    fun getUnreadMessage(conversationId: String, accountId: String, messageId: String): List<MessageMinimal>? {
-        return messageDao.getUnreadMessage(conversationId, accountId, messageId)
+    fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal>? {
+        return messageDao.getUnreadMessage(conversationId, accountId)
     }
 
     fun updateCodeUrl(conversationId: String, codeUrl: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.updateCodeUrl(conversationId, codeUrl)
         }
     }
@@ -109,19 +111,19 @@ internal constructor(
     fun deleteMessage(id: String) = messageDao.deleteMessage(id)
 
     fun deleteConversationById(conversationId: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.deleteConversationById(conversationId)
         }
     }
 
     fun updateConversationPinTimeById(conversationId: String, pinTime: String?) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.updateConversationPinTimeById(conversationId, pinTime)
         }
     }
 
     fun deleteMessageByConversationId(conversationId: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             messageDao.deleteMessageByConversationId(conversationId)
         }
     }
@@ -136,7 +138,7 @@ internal constructor(
         conversationService.updateAsync(conversationId, request)
 
     fun updateAnnouncement(conversationId: String, announcement: String) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             conversationDao.updateConversationAnnouncement(conversationId, announcement)
         }
     }
@@ -157,11 +159,8 @@ internal constructor(
 
     fun findUnreadMessagesSync(conversationId: String) = messageDao.findUnreadMessagesSync(conversationId)
 
-    fun getLastMessageIdByConversationId(conversationId: String) =
-        conversationDao.getLastMessageIdByConversationId(conversationId)
-
-    fun batchMarkRead(conversationId: String, userId: String, createdAt: String) {
-        messageDao.batchMarkRead(conversationId, userId, createdAt)
+    fun batchMarkReadAndTake(conversationId: String, userId: String, createdAt: String) {
+        messageDao.batchMarkReadAndTake(conversationId, userId, createdAt)
     }
 
     fun insertList(it: List<Job>) {

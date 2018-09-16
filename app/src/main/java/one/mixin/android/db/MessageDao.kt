@@ -112,8 +112,8 @@ interface MessageDao : BaseDao<Message> {
     fun updateHyperlink(hyperlink: String, id: String)
 
     @Query("SELECT id,created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
-        "AND status = 'DELIVERED' AND created_at <= (SELECT created_at FROM messages WHERE id = :messageId) ORDER BY created_at ASC")
-    fun getUnreadMessage(conversationId: String, userId: String, messageId: String): List<MessageMinimal>?
+        "AND status = 'DELIVERED' ORDER BY created_at ASC")
+    fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>?
 
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
@@ -175,4 +175,8 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
         "AND status = 'DELIVERED' AND created_at <= :createdAt")
     fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
+
+    @Query("UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.user_id != :userId " +
+        "AND m.status = 'DELIVERED' AND m.conversation_id = :conversationId) WHERE conversation_id = :conversationId")
+    fun takeUnseen(userId: String, conversationId: String)
 }

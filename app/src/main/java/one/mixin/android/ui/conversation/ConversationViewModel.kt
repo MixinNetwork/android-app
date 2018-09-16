@@ -16,6 +16,7 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -387,15 +388,13 @@ internal constructor(
     }
 
     fun markMessageRead(conversationId: String, accountId: String) {
-        launch(SINGLE_DB_THREAD) {
-            conversationRepository.getLastMessageIdByConversationId(conversationId)?.let { messageId ->
-                conversationRepository.getUnreadMessage(conversationId, accountId, messageId)?.also { list ->
-                    if (list.isNotEmpty()) {
-                        notificationManager.cancel(conversationId.hashCode())
-                        conversationRepository.batchMarkRead(conversationId, Session.getAccountId()!!, list.last().created_at)
-                        list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                            conversationRepository.insertList(it)
-                        }
+        GlobalScope.launch(SINGLE_DB_THREAD) {
+            conversationRepository.getUnreadMessage(conversationId, accountId)?.also { list ->
+                if (list.isNotEmpty()) {
+                    notificationManager.cancel(conversationId.hashCode())
+                    conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
+                    list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
+                        conversationRepository.insertList(it)
                     }
                 }
             }
@@ -412,7 +411,7 @@ internal constructor(
 
     fun deleteMessages(set: ArraySet<MessageItem>) {
         val data = ArraySet(set)
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             data.forEach { item ->
                 conversationRepository.deleteMessage(item.messageId)
                 jobManager.cancelJobById(item.messageId)
@@ -521,7 +520,7 @@ internal constructor(
     }
 
     fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             var conversationId: String? = null
             for (item in selectItem) {
                 if (item is User) {
@@ -541,7 +540,7 @@ internal constructor(
                 }
                 findUnreadMessagesSync(conversationId!!)?.let {
                     if (it.isNotEmpty()) {
-                        conversationRepository.batchMarkRead(conversationId, Session.getAccountId()!!, it.last().created_at)
+                        conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, it.last().created_at)
                         it.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {
                             it.chunked(100).forEach {
                                 jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))

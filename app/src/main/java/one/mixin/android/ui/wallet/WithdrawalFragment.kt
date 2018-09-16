@@ -36,6 +36,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.support.v4.dip
+import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
@@ -106,6 +107,13 @@ class WithdrawalFragment : BaseFragment() {
         title_view.right_animator.isEnabled = false
         title_view.right_animator.setOnClickListener {
             currAddr?.let {
+                it.dust?.let {
+                    if (it.isNotEmpty() && it.toFloat() > 0f && it.toFloat() > amount_et.text.toString().toFloat()) {
+                        toast(getString(R.string.error_minimum_withdraw_amount, "${currAddr?.dust} ${asset.symbol}"))
+                        return@setOnClickListener
+                    }
+                }
+
                 val amount = amount_et.text.toString()
                 val withdrawalItem = WithdrawalBottomSheetDialogFragment.WithdrawalItem(if (noPublicKey(it)) it.accountTag!! else it.publicKey!!,
                     amount.toDot(), memo_et.text.toString(), it.addressId, if (noPublicKey(it)) it.accountName!! else it.label!!)
@@ -117,7 +125,6 @@ class WithdrawalFragment : BaseFragment() {
                 })
                 bottom.showNow(requireFragmentManager(), WithdrawalBottomSheetDialogFragment.TAG)
             }
-            addrBottomSheet.dismiss()
         }
         balance_tv.text = "${getString(R.string.balance)} \n${asset.balance} ${asset.symbol}"
         addrBottomSheet.setCustomViewHeight(dip(300f))

@@ -17,6 +17,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.os.bundleOf
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_verification.*
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
@@ -206,7 +207,7 @@ class VerificationFragment : BaseFragment() {
 
                 account = r.data!!
                 if (account.code_id.isNotEmpty()) {
-                    launch(SINGLE_DB_THREAD) {
+                    GlobalScope.launch(SINGLE_DB_THREAD) {
                         val p = Point()
                         val ctx = MixinApplication.appContext
                         ctx.windowManager.defaultDisplay?.getSize(p)

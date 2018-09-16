@@ -2,6 +2,7 @@ package one.mixin.android.repository
 
 import android.arch.lifecycle.LiveData
 import io.reactivex.Observable
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.RelationshipRequest
@@ -49,19 +50,19 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
         userService.relationship(request)
 
     fun upsert(user: User) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             userDao.insertUpdate(user, appDao)
         }
     }
 
     fun insertApp(app: App) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             appDao.insert(app)
         }
     }
 
     fun upsertBlock(user: User) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             userDao.updateRelationship(user, UserRelationship.BLOCKING.name)
         }
     }

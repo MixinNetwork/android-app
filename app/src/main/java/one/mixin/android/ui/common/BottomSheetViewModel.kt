@@ -5,6 +5,7 @@ import android.arch.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -111,7 +112,7 @@ class BottomSheetViewModel @Inject internal constructor(
     fun findParticipantByIds(conversationId: String, userId: String) = conversationRepo.findParticipantByIds(conversationId, userId)
 
     fun mute(senderId: String, recipientId: String, duration: Long) {
-        launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(SINGLE_DB_THREAD) {
             var conversationId = conversationRepo.getConversationIdIfExistsSync(recipientId)
             if (conversationId == null) {
                 conversationId = generateConversationId(senderId, recipientId)
