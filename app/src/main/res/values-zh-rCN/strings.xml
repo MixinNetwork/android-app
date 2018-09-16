@@ -367,6 +367,8 @@
     <string name="setting_logout_confirm">确定退出吗？</string>
     <string name="setting_logout_message">退出将无法接受任何消息，本地已有的消息记录也将丢失! 请慎重!</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
+    <string name="setting_authentications">授权</string>
+    <string name="setting_deauthorize">取消授权</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>

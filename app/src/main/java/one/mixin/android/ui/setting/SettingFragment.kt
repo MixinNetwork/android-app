@@ -57,5 +57,9 @@ class SettingFragment : BaseFragment() {
             activity?.addFragment(this@SettingFragment,
                 SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
         }
+        auth_rl.setOnClickListener {
+            activity?.addFragment(this@SettingFragment,
+                AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
+        }
     }
 }

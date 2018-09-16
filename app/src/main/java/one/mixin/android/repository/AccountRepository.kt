@@ -8,6 +8,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AuthorizeRequest
+import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
@@ -113,6 +114,8 @@ constructor(
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 
+    fun deAuthorize(deauthorRequest: DeauthorRequest) = authService.deAuthorize(deauthorRequest)
+
     fun getSystemAlbums() = stickerAlbumDao.getSystemAlbums()
 
     fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
@@ -131,4 +134,5 @@ constructor(
         stickerDao.insertUpdate(sticker)
         stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
     }
+
 }

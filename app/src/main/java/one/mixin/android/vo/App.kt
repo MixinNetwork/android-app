@@ -6,6 +6,7 @@ import android.arch.persistence.room.Entity
 import android.arch.persistence.room.PrimaryKey
 import android.arch.persistence.room.TypeConverters
 import android.os.Parcelable
+import android.support.v7.util.DiffUtil
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
@@ -46,6 +47,19 @@ class App(
     @ColumnInfo(name = "creator_id")
     val creatorId: String
 
-) : Parcelable
+) : Parcelable {
+
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<App>() {
+            override fun areItemsTheSame(p0: App, p1: App): Boolean {
+                return p0.appId == p1.appId
+            }
+
+            override fun areContentsTheSame(p0: App, p1: App): Boolean {
+                return p0 == p1
+            }
+        }
+    }
+}
 
 enum class AppCap { GROUP, CONTACT }
