@@ -81,7 +81,7 @@ public class DismissFrameLayout extends FrameLayout {
         if (count > 0) {
             View view = getChildAt(0);
             if (view instanceof PhotoView) {
-                if (((PhotoView) view).getScale() != 1) {
+                if (((PhotoView) view).getScale() != 1 || event.getPointerCount() > 1) {
                     if (view.onTouchEvent(event)) {
                         return true;
                     }

@@ -56,7 +56,7 @@ buildscript {
         ext.bugsnagVersion = '4.5.0'
         ext.jsoupVersion = '1.11.2'
         ext.isoparserVersion = '1.0.6'
-        ext.largeImageViewVersion = '1.1.0'
+        ext.largeImageViewVersion = '1.1.1'
     }
 
     repositories {
