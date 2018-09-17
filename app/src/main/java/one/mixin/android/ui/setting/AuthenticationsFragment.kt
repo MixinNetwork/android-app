@@ -13,7 +13,6 @@ import kotlinx.android.synthetic.main.fragment_authentications.*
 import kotlinx.android.synthetic.main.item_auth.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.App
@@ -81,8 +80,9 @@ class AuthenticationsFragment : BaseFragment() {
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bindTo(app: App, onAppClick: OnAppClick) {
-            itemView.avatar.loadImage(app.icon_url)
+            itemView.avatar.setInfo(app.name, app.icon_url, app.appNumber)
             itemView.name_tv.text = app.name
+            itemView.number_tv.text = app.appNumber
             itemView.deauthorize.setOnClickListener {
                 onAppClick.onClick(app, adapterPosition)
             }

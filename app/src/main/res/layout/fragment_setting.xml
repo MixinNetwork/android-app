@@ -133,6 +133,11 @@
 
     <View
         android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider"/>
+
+    <View
+        android:layout_width="match_parent"
         android:layout_height="32dp"
         android:background="@color/bg_gray"/>
 
