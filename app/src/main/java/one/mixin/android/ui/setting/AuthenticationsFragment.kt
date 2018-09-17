@@ -2,7 +2,10 @@ package one.mixin.android.ui.setting
 
 import android.arch.lifecycle.ViewModelProvider
 import android.arch.lifecycle.ViewModelProviders
+import android.content.DialogInterface
+import android.graphics.Color
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.recyclerview.extensions.ListAdapter
 import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
@@ -41,9 +44,7 @@ class AuthenticationsFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         val adapter = AuthenticationAdapter(object : OnAppClick {
             override fun onClick(app: App, position: Int) {
-                settingViewModel.deauthApp(app.appId).autoDisposable(scopeProvider).subscribe({}, {})
-                list?.removeAt(position)
-                auth_rv.adapter?.notifyItemRemoved(position)
+                showDialog(app, position)
             }
         })
         settingViewModel.authorizations().autoDisposable(scopeProvider).subscribe({ list ->
@@ -63,6 +64,24 @@ class AuthenticationsFragment : BaseFragment() {
             ErrorHandler.handleError(it)
         })
         auth_rv.adapter = adapter
+    }
+
+    private fun showDialog(app: App, position: Int) {
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setMessage(getString(R.string.setting_auth_cancel_msg,app.name))
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                settingViewModel.deauthApp(app.appId).autoDisposable(scopeProvider).subscribe({}, {})
+                list?.removeAt(position)
+                auth_rv.adapter?.notifyItemRemoved(position)
+                dialog.dismiss()
+            }.create().apply {
+                setOnShowListener {
+                    getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.RED)
+                }
+            }.show()
     }
 
     class AuthenticationAdapter(private val onAppClick: OnAppClick) : ListAdapter<App, ItemHolder>(App.DIFF_CALLBACK) {

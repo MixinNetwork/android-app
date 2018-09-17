@@ -522,5 +522,6 @@
     <string name="setting_storage">Storage Usage</string>
     <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
     <string name="setting_storage_bn_clear">Clear</string>
+    <string name="setting_auth_cancel_msg">Deauthorize %s?</string>
 </resources>
 
