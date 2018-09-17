@@ -512,5 +512,5 @@
     <string name="setting_storage">储存空间</string>
     <string name="setting_storage_clear">清除 %1$d 条消息 (%2$s)?</string>
     <string name="setting_storage_bn_clear">清理</string>
-
+    <string name="setting_auth_cancel_msg">取消 %s 授权?</string>
 </resources>
