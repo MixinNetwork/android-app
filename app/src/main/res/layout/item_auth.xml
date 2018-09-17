@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:background="@android:color/white">
 
-        <one.mixin.android.widget.CircleImageView
+        <one.mixin.android.widget.AvatarView
             android:id="@+id/avatar"
             android:layout_alignParentStart="true"
             android:layout_width="36dp"
@@ -37,13 +37,27 @@
             android:id="@+id/name_tv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
             android:layout_marginEnd="12dp"
             android:layout_centerVertical="true"
+            android:layout_alignTop="@id/avatar"
             android:ellipsize="end"
             android:layout_toStartOf="@id/deauthorize"
             android:layout_toEndOf="@id/avatar"
             android:textColor="@android:color/black"
+            tools:ignore="RelativeOverlap"/>
+
+        <TextView
+            android:id="@+id/number_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="12dp"
+            android:layout_centerVertical="true"
+            android:layout_alignBottom="@id/avatar"
+            android:ellipsize="end"
+            android:textSize="12sp"
+            android:layout_toStartOf="@id/deauthorize"
+            android:layout_toEndOf="@id/avatar"
+            android:textColor="@color/text_gray"
             tools:ignore="RelativeOverlap"/>
 
     </RelativeLayout>
