@@ -58,7 +58,7 @@ class ChatWebSocket(
     private val accountId = Session.getAccountId()
 
     companion object {
-        val TAG = ChatWebSocket::class.java.simpleName!!
+        val TAG = ChatWebSocket::class.java.simpleName
     }
 
     init {
