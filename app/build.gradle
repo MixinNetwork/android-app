@@ -202,6 +202,7 @@ dependencies {
     implementation "com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}"
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
+    implementation "com.github.instacart.truetime-android:library:${truetimeVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

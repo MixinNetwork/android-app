@@ -1,8 +1,10 @@
 package one.mixin.android.util
 
 import androidx.core.util.arrayMapOf
+import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.instacart.library.truetime.TrueTime
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -96,6 +98,14 @@ class Session {
             val key = getRSAPrivateKeyFromString(token)
             val expire = System.currentTimeMillis() / 1000 + 1800
             val iat = System.currentTimeMillis() / 1000
+
+            if (TrueTime.isInitialized()) {
+                val now = TrueTime.now().time / 1000
+                if (now - iat > 60) {
+                    Bugsnag.notify(IllegalArgumentException("Mobile time different to NTP more than one minute!"))
+                }
+            }
+
             var content = "${request.method()}${request.url().cutOut()}"
             if (request.body() != null && request.body()!!.contentLength() > 0) {
                 content += request.body()!!.bodyToString()

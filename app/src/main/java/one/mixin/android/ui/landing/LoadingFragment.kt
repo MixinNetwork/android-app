@@ -35,7 +35,7 @@ class LoadingFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        context!!.defaultSharedPreferences.putBoolean(IS_LOADED, false)
+        requireContext().defaultSharedPreferences.putBoolean(IS_LOADED, false)
         load()
     }
 

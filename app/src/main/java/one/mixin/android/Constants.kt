@@ -17,6 +17,7 @@ object Constants {
         const val PREF_PIN_INTERVAL = "pref_pin_interval"
         const val PREF_PIN_ITERATOR = "pref_pin_iterator"
         const val PREF_CAMERA_TIP = "pref_camera_tip"
+        const val PREF_LOGOUT_COMPLETE = "pref_logout_complete"
     }
 
     const val SLEEP_MILLIS: Long = 1000
