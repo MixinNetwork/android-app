@@ -27,7 +27,12 @@ object BiometricUtil {
     const val REQUEST_CODE_CREDENTIALS = 101
 
     fun isSupport(ctx: Context): Boolean {
-        return isSecureHardware() && BiometricPromptCompat.isHardwareDetected(ctx) && !RootUtil.isDeviceRooted
+        return isKeyguardSecure(ctx) && isSecureHardware() && BiometricPromptCompat.isHardwareDetected(ctx) && !RootUtil.isDeviceRooted
+    }
+
+    private fun isKeyguardSecure(ctx: Context): Boolean {
+        val keyguardManager = ctx.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        return keyguardManager.isKeyguardSecure
     }
 
     fun showAuthenticationScreen(fragment: Fragment) {
