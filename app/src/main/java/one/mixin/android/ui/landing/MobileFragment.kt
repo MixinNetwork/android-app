@@ -159,7 +159,7 @@ class MobileFragment : BaseFragment() {
             null,
             if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
             gRecaptchaResponse)
-        mobileViewModel.verification(verificationRequest)
+        mobileViewModel.loginVerification(verificationRequest)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
                 if (!r.isSuccess) {
                     if (r.errorCode == NEED_RECAPTCHA) {
