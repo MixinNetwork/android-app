@@ -8,9 +8,11 @@ import android.security.keystore.KeyProperties
 import android.security.keystore.UserNotAuthenticatedException
 import android.support.v4.app.Fragment
 import androidx.core.content.systemService
+import com.bugsnag.android.Bugsnag
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
+import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
@@ -34,7 +36,8 @@ object BiometricUtil {
 
     fun showAuthenticationScreen(fragment: Fragment) {
         val intent = fragment.requireContext().systemService<KeyguardManager>().createConfirmDeviceCredentialIntent(
-            "Hey there!", "Please...")
+            fragment.requireContext().getString(R.string.wallet_biometric_screen_lock),
+            fragment.requireContext().getString(R.string.wallet_biometric_screen_lock_desc))
         if (intent != null) {
             fragment.startActivityForResult(intent, REQUEST_CODE_CREDENTIALS)
         }
@@ -43,8 +46,10 @@ object BiometricUtil {
     fun savePin(ctx: Context, pin: String, fragment: Fragment): Boolean {
         val cipher = try {
             getEncryptCipher()
-        } catch (e: UserNotAuthenticatedException) {
-            showAuthenticationScreen(fragment)
+        } catch (e: Exception) {
+            if (e is UserNotAuthenticatedException) {
+                showAuthenticationScreen(fragment)
+            }
             return false
         }
         val iv = Base64.encodeBytes(cipher.iv, Base64.URL_SAFE)
@@ -62,6 +67,7 @@ object BiometricUtil {
         try {
             ks.deleteEntry(BIOMETRICS_ALIAS)
         } catch (e: Exception) {
+            Bugsnag.notify(IllegalStateException("delete entry BIOMETRICS_ALIAS failed."))
             Timber.d("delete entry BIOMETRICS_ALIAS failed.")
         }
 
@@ -97,6 +103,7 @@ object BiometricUtil {
         try {
             key = ks.getKey(BIOMETRICS_ALIAS, null) as? SecretKey
         } catch (e: Exception) {
+            Bugsnag.notify(IllegalStateException("getKey BIOMETRICS_ALIAS failed."))
             Timber.d("getKey BIOMETRICS_ALIAS failed.")
         }
         try {
@@ -119,6 +126,7 @@ object BiometricUtil {
                 key = keyGenerator.generateKey()
             }
         } catch (e: Exception) {
+            Bugsnag.notify(IllegalStateException("keyGenerator init failed."))
             Timber.d("keyGenerator init failed.")
         }
         return key

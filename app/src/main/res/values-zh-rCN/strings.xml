@@ -297,8 +297,9 @@
     <string name="wallet_pin_pay_interval_minutes">%d 分钟</string>
     <string name="wallet_pin_pay_interval_hours">%d 小时</string>
     <string name="wallet_pin_pay_interval">支付密码使用间隔</string>
-    <string name="wallet_pin_pay_interval_confirm">Confirm PIN to protect your settings security.</string>
     <string name="wallet_pin_pay_interval_tips">为了您的资产安全，距离上次输入支付密码的时间超过以上指定时间时，再次转账时已然需要支付密码</string>
+    <string name="wallet_biometric_screen_lock">锁屏</string>
+    <string name="wallet_biometric_screen_lock_desc">请解锁您的设备以继续</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>
