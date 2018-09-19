@@ -203,7 +203,7 @@ dependencies {
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "com.github.instacart.truetime-android:library:${truetimeVersion}"
-    implementation "moe.feng.support.biometricprompt:library:${biometricpromptVersion}"
+    implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

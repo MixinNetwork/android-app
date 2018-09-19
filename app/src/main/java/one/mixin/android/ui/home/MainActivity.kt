@@ -26,7 +26,6 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertConversation
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.remove
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
@@ -130,10 +129,7 @@ class MainActivity : BlazeBaseActivity() {
 
     private fun checkRoot() {
         if (RootUtil.isDeviceRooted && defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)) {
-            defaultSharedPreferences.remove(Constants.BIOMETRICS_IV)
-            defaultSharedPreferences.remove(Constants.BIOMETRICS_ALIAS)
-            defaultSharedPreferences.remove(Constants.Account.PREF_BIOMETRICS)
-            BiometricUtil.deleteKey()
+            BiometricUtil.deleteKey(this)
         }
     }
 

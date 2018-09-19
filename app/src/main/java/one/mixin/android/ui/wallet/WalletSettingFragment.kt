@@ -15,7 +15,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.remove
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.BiometricTimeFragment.Companion.X_HOUR
@@ -68,10 +67,7 @@ class WalletSettingFragment : BaseFragment() {
         if (biometrics_sc.isChecked) {
             biometrics_sc.isChecked = false
             time_rl.visibility = GONE
-            defaultSharedPreferences.remove(Constants.BIOMETRICS_IV)
-            defaultSharedPreferences.remove(Constants.BIOMETRICS_ALIAS)
-            BiometricUtil.deleteKey()
-            save2Pref(false)
+            BiometricUtil.deleteKey(requireContext())
         } else {
             val bottomSheet = PinBiometricsBottomSheetDialogFragment.newInstance(true)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
@@ -80,14 +76,10 @@ class WalletSettingFragment : BaseFragment() {
                     time_rl.visibility = VISIBLE
                     setTimeDesc()
                     defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
-                    save2Pref(true)
+                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_BIOMETRICS, true)
                 }
             }
             bottomSheet.showNow(requireFragmentManager(), PinBiometricsBottomSheetDialogFragment.TAG)
         }
-    }
-
-    private fun save2Pref(open: Boolean) {
-        defaultSharedPreferences.putBoolean(Constants.Account.PREF_BIOMETRICS, open)
     }
 }

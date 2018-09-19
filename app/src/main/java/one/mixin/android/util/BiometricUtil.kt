@@ -14,6 +14,8 @@ import one.mixin.android.Constants.BIOMETRICS_ALIAS
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
+import timber.log.Timber
 import java.nio.charset.Charset
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -28,11 +30,6 @@ object BiometricUtil {
 
     fun isSupport(ctx: Context): Boolean {
         return isKeyguardSecure(ctx) && isSecureHardware() && BiometricPromptCompat.isHardwareDetected(ctx) && !RootUtil.isDeviceRooted
-    }
-
-    private fun isKeyguardSecure(ctx: Context): Boolean {
-        val keyguardManager = ctx.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-        return keyguardManager.isKeyguardSecure
     }
 
     fun showAuthenticationScreen(fragment: Fragment) {
@@ -58,14 +55,24 @@ object BiometricUtil {
         return true
     }
 
-    fun deleteKey() {
+    fun deleteKey(ctx: Context) {
         val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
             load(null)
         }
-        ks.deleteEntry(BIOMETRICS_ALIAS)
+        try {
+            ks.deleteEntry(BIOMETRICS_ALIAS)
+        } catch (e: Exception) {
+            Timber.d("delete entry BIOMETRICS_ALIAS failed.")
+        }
+
+        ctx.defaultSharedPreferences.remove(Constants.BIOMETRICS_IV)
+        ctx.defaultSharedPreferences.remove(Constants.BIOMETRICS_ALIAS)
+        ctx.defaultSharedPreferences.remove(Constants.Account.PREF_BIOMETRICS)
     }
 
     fun shouldShowBiometric(ctx: Context): Boolean {
+        if (!isSupport(ctx)) return false
+
         val openBiometrics = ctx.defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
         val biometricPinCheck = ctx.defaultSharedPreferences.getLong(Constants.BIOMETRIC_PIN_CHECK, 0)
         val biometricInterval = ctx.defaultSharedPreferences.getLong(Constants.BIOMETRIC_INTERVAL, Constants.BIOMETRIC_INTERVAL_DEFAULT)
@@ -73,28 +80,46 @@ object BiometricUtil {
         return openBiometrics && currTime - biometricPinCheck <= biometricInterval
     }
 
+    private fun isKeyguardSecure(ctx: Context): Boolean {
+        val keyguardManager = ctx.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+        val isKeyguardSecure = keyguardManager.isKeyguardSecure
+        if (!isKeyguardSecure) {
+            deleteKey(ctx)
+        }
+        return isKeyguardSecure
+    }
+
     private fun getKey(): SecretKey? {
         val ks: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply {
             load(null)
         }
-        var key = ks.getKey(BIOMETRICS_ALIAS, null) as? SecretKey
-        if (key == null) {
-            val keyGenerator = KeyGenerator.getInstance(
-                KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
-            keyGenerator.init(
-                KeyGenParameterSpec.Builder(BIOMETRICS_ALIAS,
-                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                    .setBlockModes(
-                        KeyProperties.BLOCK_MODE_CBC,
-                        KeyProperties.BLOCK_MODE_CTR,
-                        KeyProperties.BLOCK_MODE_GCM)
-                    .setEncryptionPaddings(
-                        KeyProperties.ENCRYPTION_PADDING_PKCS7,
-                        KeyProperties.ENCRYPTION_PADDING_NONE)
-                    .setUserAuthenticationRequired(true)
-                    .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
-                    .build())
-            key = keyGenerator.generateKey()
+        var key: SecretKey? = null
+        try {
+            key = ks.getKey(BIOMETRICS_ALIAS, null) as? SecretKey
+        } catch (e: Exception) {
+            Timber.d("getKey BIOMETRICS_ALIAS failed.")
+        }
+        try {
+            if (key == null) {
+                val keyGenerator = KeyGenerator.getInstance(
+                    KeyProperties.KEY_ALGORITHM_AES, "AndroidKeyStore")
+                keyGenerator.init(
+                    KeyGenParameterSpec.Builder(BIOMETRICS_ALIAS,
+                        KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                        .setBlockModes(
+                            KeyProperties.BLOCK_MODE_CBC,
+                            KeyProperties.BLOCK_MODE_CTR,
+                            KeyProperties.BLOCK_MODE_GCM)
+                        .setEncryptionPaddings(
+                            KeyProperties.ENCRYPTION_PADDING_PKCS7,
+                            KeyProperties.ENCRYPTION_PADDING_NONE)
+                        .setUserAuthenticationRequired(true)
+                        .setUserAuthenticationValidityDurationSeconds(2 * 60 * 60)
+                        .build())
+                key = keyGenerator.generateKey()
+            }
+        } catch (e: Exception) {
+            Timber.d("keyGenerator init failed.")
         }
         return key
     }
