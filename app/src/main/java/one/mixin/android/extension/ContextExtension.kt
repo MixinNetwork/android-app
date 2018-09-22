@@ -166,6 +166,15 @@ fun Context.displayHeight(): Int {
     return displaySize().y
 }
 
+fun Context.displayWitdh(): Int {
+    return displaySize().x
+}
+
+fun Context.displayRatio(): Float {
+    val size = displaySize()
+    return size.y.toFloat() / size.x
+}
+
 fun Context.getUriForFile(file: File): Uri {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
         val authority = String.format("%s.provider", this.packageName)

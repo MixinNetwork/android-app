@@ -58,8 +58,9 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
-import one.mixin.android.extension.displayHeight
+import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.displaySize
+import one.mixin.android.extension.displayWitdh
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
@@ -266,7 +267,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val messageItem = getItem(position)
             val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
                 messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
-                if (messageItem.mediaHeight!! > displayHeight() * 3) {
+                if (messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 3) {
                     createLargeImageView(container, position, messageItem)
                 } else {
                     createPhotoView(container, position, messageItem)
@@ -398,6 +399,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun createLargeImageView(container: ViewGroup, position: Int, messageItem: MessageItem): LargeImageView {
             val imageView = LargeImageView(container.context)
             imageView.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
+            if (messageItem.mediaWidth!! < displayWitdh()) {
+                imageView.scale = (displayWitdh().toFloat() / messageItem.mediaWidth)
+            }
             if (position == index) {
                 ViewCompat.setTransitionName(imageView, "transition")
                 setStartPostTransition(imageView)
