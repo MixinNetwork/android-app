@@ -12,10 +12,8 @@
         android:id="@+id/back_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="14dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:padding="8dp"
+        android:layout_marginTop="@dimen/margin12"
+        android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
         android:contentDescription="@string/landing_back_content_desc"
         app:layout_constraintEnd_toEndOf="parent"
@@ -28,9 +26,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/back_iv"
-        android:orientation="vertical"
-        android:paddingBottom="16dp"
-        android:paddingTop="16dp">
+        android:orientation="vertical" >
 
         <TextView
             android:id="@+id/mobile_title_tv"
@@ -38,7 +34,7 @@
             android:layout_height="wrap_content"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="12dp"
             android:text="@string/landing_enter_mobile_number"
             android:textColor="@android:color/black"
             android:textSize="18sp"
@@ -80,6 +76,7 @@
             android:id="@+id/mobile_et"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:minHeight="@dimen/btn_min_height"
             android:layout_marginEnd="16dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="36dp"
