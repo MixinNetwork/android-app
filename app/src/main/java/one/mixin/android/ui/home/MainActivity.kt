@@ -210,7 +210,7 @@ class MainActivity : BlazeBaseActivity() {
                                 conversationDao.insertConversation(c)
                             } else {
                                 conversationDao.updateConversation(data.conversationId, ownerId, data.category,
-                                    data.name, data.announcement, data.createdAt, ConversationStatus.SUCCESS.ordinal)
+                                    data.name, data.announcement, data.muteUntil, data.createdAt, ConversationStatus.SUCCESS.ordinal)
                             }
 
                             val participants = mutableListOf<Participant>()
