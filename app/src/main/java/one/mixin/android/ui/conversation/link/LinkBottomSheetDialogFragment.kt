@@ -23,6 +23,7 @@ import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
+import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
@@ -102,9 +103,13 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.link_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-        if (url.startsWith("mixin://users", true)) {
+        if (url.startsWith(Scheme.USERS, true) || url.startsWith(Scheme.HTTPS_USERS, true)) {
             val segments = Uri.parse(url).pathSegments
-            val userId = segments[0]
+            val userId = if (segments.size >= 2) {
+                segments[1]
+            } else {
+                segments[0]
+            }
             if (!userId.isUUID()) {
                 context?.toast(R.string.error_user_invalid_format)
                 dismiss()
@@ -132,7 +137,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     dismiss()
                 })
             }
-        } else if (url.startsWith("https://mixin.one/pay", true) || url.startsWith("mixin://pay", true)) {
+        } else if (url.startsWith(Scheme.HTTPS_PAY, true) || url.startsWith(Scheme.PAY, true)) {
             val uri = Uri.parse(url)
             val userId = uri.getQueryParameter("recipient")
             val assetId = uri.getQueryParameter("asset")
@@ -160,7 +165,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 error(R.string.bottom_sheet_check_payment_info)
                 ErrorHandler.handleError(it)
             })
-        } else if (url.startsWith("https://mixin.one/codes/", true) || url.startsWith("mixin://codes/", true)) {
+        } else if (url.startsWith(Scheme.HTTPS_CODES, true) || url.startsWith(Scheme.CODES, true)) {
             val segments = Uri.parse(url).pathSegments
             code = if (segments.size >= 2) {
                 segments[1]
@@ -213,13 +218,13 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             }
                         }
                     }
-                    else -> {
-                        error()
-                    }
+                    else -> error()
                 }
             }, {
                 error()
             })
+        } else {
+            error()
         }
         contentView.link_ok.setOnClickListener { dismiss() }
     }

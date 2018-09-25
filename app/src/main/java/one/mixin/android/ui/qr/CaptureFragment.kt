@@ -1,20 +1,15 @@
 package one.mixin.android.ui.qr
 
-import android.annotation.SuppressLint
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
-import android.graphics.PorterDuff
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
-import android.support.v4.content.ContextCompat
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -29,15 +24,12 @@ import com.journeyapps.barcodescanner.CaptureManager
 import com.journeyapps.barcodescanner.CaptureManagerCallback
 import com.journeyapps.barcodescanner.Size
 import com.journeyapps.barcodescanner.SourceData
-import com.uber.autodispose.kotlin.autoDisposable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_capture.*
 import kotlinx.android.synthetic.main.view_camera_tip.view.*
 import kotlinx.android.synthetic.main.view_custom_barcode_scannner.*
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
-import one.mixin.android.api.request.TransferRequest
-import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.closeSilently
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
@@ -48,32 +40,24 @@ import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.rotate
 import one.mixin.android.extension.toBytes
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.extension.xYuv2Simple
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.isMixinUrl
-import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.Session
-import one.mixin.android.vo.User
 import one.mixin.android.widget.CameraOpView
 import one.mixin.android.widget.PseudoNotificationView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.support.v4.dip
 import org.jetbrains.anko.support.v4.toast
-import org.jetbrains.anko.yesButton
 import java.io.File
 import java.io.FileOutputStream
-import javax.inject.Inject
 
 class CaptureFragment : BaseFragment() {
     companion object {
@@ -106,12 +90,6 @@ class CaptureFragment : BaseFragment() {
 
     private val mCaptureManager: CaptureManager by lazy {
         CaptureManager(activity, zxing_barcode_scanner, captureCallback)
-    }
-
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val captureViewModel: CaptureViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(CaptureViewModel::class.java)
     }
 
     private val springSystem = SpringSystem.create()
@@ -235,8 +213,6 @@ class CaptureFragment : BaseFragment() {
         val p = Point()
         activity?.windowManager?.defaultDisplay?.getSize(p)
         zxing_barcode_surface.framingRectSize = Size(p.x, p.y)
-        pb.indeterminateDrawable.setColorFilter(ContextCompat.getColor(context!!, android.R.color.white),
-            PorterDuff.Mode.SRC_IN)
     }
 
     private fun checkFlash() {
@@ -288,109 +264,22 @@ class CaptureFragment : BaseFragment() {
         mCaptureManager.resume()
     }
 
-    @SuppressLint("CheckResult")
     fun handleScanResult(data: String) {
         if (!isMixinUrl(data)) {
-            MainActivity.showScan(context!!, data)
-            mCaptureManager.closeAndFinish()
-            return
-        }
-
-        if (data.startsWith("https://mixin.one/pay", true)) {
-            pb?.visibility = VISIBLE
-            val uri = Uri.parse(data)
-            val userId = uri.getQueryParameter("recipient")
-            val assetId = uri.getQueryParameter("asset")
-            val amount = uri.getQueryParameter("amount")
-            val trace = uri.getQueryParameter("trace")
-            val memo = uri.getQueryParameter("memo")
-            val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
-            captureViewModel.pay(transferRequest).autoDisposable(scopeProvider).subscribe({ r ->
-                pb?.visibility = GONE
-                if (r.isSuccess) {
-                    val paymentResponse = r.data!!
-                    captureViewModel.saveAsset(paymentResponse.asset)
-                    captureViewModel.saveUser(paymentResponse.recipient)
-                    if (paymentResponse.status == PaymentStatus.paid.name) {
-                        context?.toast(R.string.pay_paid)
-                    } else {
-                        MainActivity.showPay(context!!, paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
-                    }
-                    mCaptureManager.closeAndFinish()
-                } else {
-                    mCaptureManager.resume()
-                    ErrorHandler.handleMixinError(r.errorCode)
-                }
-            }, {
-                pb?.visibility = GONE
-                mCaptureManager.resume()
-                ErrorHandler.handleError(it)
-            })
-            return
-        } else if (data.startsWith("mixin://transfer/", true)) {
+            MainActivity.showScan(requireContext(), data)
+        } else if (data.startsWith(Scheme.TRANSFER, true)
+                || data.startsWith(Scheme.HTTPS_TRANSFER, true)) {
             val segments = Uri.parse(data).pathSegments
-            val userId = segments[0]
-            MainActivity.showTransfer(requireContext(), userId)
-            mCaptureManager.closeAndFinish()
-        } else {
-            val code = if (data.startsWith("https://mixin.one/codes/", true)) {
-                val segments = Uri.parse(data).pathSegments
-                if (segments.size >= 2) {
-                    segments[1]
-                } else {
-                    return
-                }
+            val userId = if (segments.size >= 2) {
+                segments[1]
             } else {
-                data
+                segments[0]
             }
-            if (!code.isUUID()) {
-                mCaptureManager.resume()
-                return
-            }
-            pb.visibility = View.VISIBLE
-            captureViewModel.searchCode(code).observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(scopeProvider).subscribe({ result ->
-                    when {
-                        result.first == "user" -> {
-                            pb?.visibility = View.GONE
-                            val account = Session.getAccount()
-                            if (account != null && account.userId == (result.second as User).userId) {
-                                context?.toast("It's your QR Code, please try another.")
-                                mCaptureManager.resume()
-                                return@subscribe
-                            }
-                            MainActivity.showUser(context!!, result.second as User)
-                            mCaptureManager.closeAndFinish()
-                        }
-                        result.first == "authorization" -> {
-                            MainActivity.showGroup(context!!, data)
-                            pb?.visibility = View.GONE
-                            mCaptureManager.onPause()
-                        }
-                        result.first == "conversation" -> context?.let {
-                            MainActivity.showGroup(it, data)
-                            mCaptureManager.closeAndFinish()
-                        }
-                        else -> warning()
-                    }
-                }, {
-                    warning()
-                    ErrorHandler.handleError(it)
-                })
+            MainActivity.showTransfer(requireContext(), userId)
+        } else {
+            MainActivity.showUrl(requireContext(), data)
         }
-    }
-
-    private fun warning() {
-        if (isAdded) {
-            pb?.visibility = View.GONE
-            alert(getString(R.string.can_not_recognize)) {
-                yesButton { dialog ->
-                    mCaptureManager.resume()
-                    dialog.dismiss()
-                }
-                onCancelled { mCaptureManager.resume() }
-            }.show()
-        }
+        mCaptureManager.closeAndFinish()
     }
 
     private fun handleCapture(sourceData: SourceData) {

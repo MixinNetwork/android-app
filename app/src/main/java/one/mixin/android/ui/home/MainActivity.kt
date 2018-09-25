@@ -16,7 +16,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import one.mixin.android.Constants
-import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -40,14 +39,9 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment.Companion.ARGS_AMOUNT
-import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment.Companion.ARGS_MEMO
-import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment.Companion.ARGS_TRACE
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.LoadingFragment
 import one.mixin.android.ui.landing.SetupNameActivity
@@ -57,13 +51,11 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.Session
-import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
-import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
 import one.mixin.android.widget.MaterialSearchView
 import org.jetbrains.anko.alert
@@ -159,24 +151,11 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             bottomSheet = QrScanBottomSheetDialogFragment.newInstance(scan)
             bottomSheet?.showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-        } else if (intent.hasExtra(CODE)) {
-            val code = intent.getStringExtra(CODE)
+        } else if (intent.hasExtra(URL)) {
+            val url = intent.getStringExtra(URL)
             bottomSheet?.dismiss()
-            bottomSheet = LinkBottomSheetDialogFragment.newInstance(code)
+            bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        } else if (intent.hasExtra(ARGS_AMOUNT)) {
-            val user = intent.getParcelableExtra<User>(ARGS_USER)
-            val amount = intent.getStringExtra(ARGS_AMOUNT)
-            val asset = intent.getParcelableExtra<Asset>(ARGS_ASSET)
-            val trace = intent.getStringExtra(ARGS_TRACE)
-            val memo = intent.getStringExtra(ARGS_MEMO)
-            bottomSheet?.dismiss()
-            bottomSheet = TransferBottomSheetDialogFragment.newInstance(user, amount, asset, trace, memo)
-            bottomSheet?.showNow(supportFragmentManager, TransferBottomSheetDialogFragment.TAG)
-        } else if (intent.hasExtra(ARGS_USER)) {
-            val user = intent.getParcelableExtra<User>(ARGS_USER)
-            bottomSheet?.dismiss()
-            UserBottomSheetDialogFragment.newInstance(user).showNow(supportFragmentManager, UserBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
             TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
@@ -193,7 +172,7 @@ class MainActivity : BlazeBaseActivity() {
                         response.data?.let { data ->
                             var ownerId: String = data.creatorId
                             if (data.category == ConversationCategory.CONTACT.name) {
-                                ownerId = data.participants.find { it.userId != Session.getAccountId() }!!.userId
+                                ownerId = data.participants.find { p -> p.userId != Session.getAccountId() }!!.userId
                             } else if (data.category == ConversationCategory.GROUP.name) {
                                 ownerId = data.creatorId
                             }
@@ -265,8 +244,8 @@ class MainActivity : BlazeBaseActivity() {
                 innerIntent
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .autoDisposable(scopeProvider).subscribe({
-                    it?.let {
-                        this.startActivity(it)
+                    it?.let { intent ->
+                        this.startActivity(intent)
                     }
                 }, {
                     alertDialog?.dismiss()
@@ -330,22 +309,13 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     companion object {
-        private const val CODE = "code"
+        private const val URL = "url"
         private const val SCAN = "scan"
         private const val TRANSFER = "transfer"
 
-        fun showGroup(context: Context, code: String) {
+        fun showUrl(context: Context, url: String) {
             Intent(context, MainActivity::class.java).apply {
-                putExtra(CODE, code)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }.run {
-                context.startActivity(this)
-            }
-        }
-
-        fun showUser(context: Context, user: User) {
-            Intent(context, MainActivity::class.java).apply {
-                putExtra(ARGS_USER, user)
+                putExtra(URL, url)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }.run {
                 context.startActivity(this)
@@ -355,19 +325,6 @@ class MainActivity : BlazeBaseActivity() {
         fun showTransfer(context: Context, userId: String) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(TRANSFER, userId)
-                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-            }.run {
-                context.startActivity(this)
-            }
-        }
-
-        fun showPay(context: Context, user: User, transferAmount: String, asset: Asset, trace: String, memo: String?) {
-            Intent(context, MainActivity::class.java).apply {
-                putExtra(Constants.ARGS_USER, user)
-                putExtra(TransferBottomSheetDialogFragment.ARGS_AMOUNT, transferAmount)
-                putExtra(ARGS_ASSET, asset)
-                putExtra(TransferBottomSheetDialogFragment.ARGS_TRACE, trace)
-                putExtra(TransferBottomSheetDialogFragment.ARGS_MEMO, memo)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }.run {
                 context.startActivity(this)

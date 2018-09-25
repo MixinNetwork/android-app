@@ -24,8 +24,8 @@ import kotlinx.android.synthetic.main.view_qr_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_USER_ID
-import one.mixin.android.Constants.MIXIN_TRANSFER_PREFIX
 import one.mixin.android.Constants.MY_QR
+import one.mixin.android.Constants.Scheme.TRANSFER
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.generateQRCode
@@ -101,7 +101,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             val account = Session.getAccount() ?: return@create
                             val code = when (type) {
                                 TYPE_MY_QR -> account.code_url
-                                TYPE_RECEIVE_QR -> "$MIXIN_TRANSFER_PREFIX${user.userId}"
+                                TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
                                 else -> ""
                             }
                             val b = code.generateQRCode(contentView.qr.width)
