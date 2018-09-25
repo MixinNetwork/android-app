@@ -9,27 +9,22 @@
     <string name="next">下一步</string>
     <string name="create">创建</string>
     <string name="about">关于</string>
-    <string name="logout">退出登录</string>
     <string name="mute">静音通知</string>
     <string name="un_mute">取消静音</string>
     <string name="notification">通知</string>
     <string name="none">无</string>
-    <string name="from">From</string>
     <string name="to">To %s</string>
     <string name="fee">手续费</string>
     <string name="memo">备注</string>
     <string name="date">日期</string>
     <string name="slow">慢</string>
     <string name="fast">快</string>
-    <string name="edit">编辑</string>
     <string name="label">标题</string>
     <string name="address">地址</string>
-    <string name="add">添加</string>
     <string name="amount">金额</string>
     <string name="transfer">转账</string>
     <string name="balance">余额</string>
     <string name="admin">管理员</string>
-    <string name="free">免费</string>
     <string name="share_file">分享</string>
     <string name="done">完成</string>
     <string name="forward">转发</string>
@@ -40,8 +35,6 @@
     <string name="not_logged_in">还没有登录</string>
     <string name="got_it">知道了</string>
     <string name="exit">退出</string>
-    <string name="saving">保存中…</string>
-    <string name="undo">撤销</string>
     <string name="receiver">至</string>
     <string name="sender">来自</string>
     <string name="transaction_hash">交易哈希</string>
@@ -58,7 +51,6 @@
     <string name="error_server_5xx">服务器正在维护中</string>
     <string name="error_unknown">未知错误</string>
     <string name="error_unknown_with_code">未知错误: %d</string>
-    <string name="error_many_requests">请求太快啦，请稍后再试</string>
     <string name="error_forbidden">禁止访问</string>
     <string name="error_not_found">没有找到相应的信息</string>
     <string name="error_too_many_request">请求太快啦</string>
@@ -73,10 +65,7 @@
     <string name="error_invalid_pin_format">无效钱包密码格式</string>
     <string name="error_pin_incorrect">钱包密码不正确</string>
     <string name="error_too_small">金额太小</string>
-    <string name="error_too_long">群公告太长</string>
-    <string name="error_more">已超过 256 人</string>
     <string name="error_unable_to_open_media">无法找到能打开该媒体的应用</string>
-    <string name="error_group_transfer">无法在群组中转账</string>
     <string name="error_file_exists">文件不存在</string>
     <string name="error_pin_check_too_many_request">你已经尝试了超过5次，请等待24小时后再次尝试。</string>
     <string name="error_used_phone">电话号码已经被占用。</string>
@@ -101,8 +90,6 @@
     <string name="error_minimum_withdraw_amount">最小提现金额 %s</string>
     <!--home-->
     <string name="title_home">联系人</string>
-    <string name="title_dashboard">Chats</string>
-    <string name="title_notifications">设置</string>
     <string name="search_hint">搜索</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="open_app">打开应用</string>
@@ -123,19 +110,12 @@
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
     <string name="landing_resend_code_enable">重发验证码</string>
     <string name="landing_resend_code_disable">%d 秒后重新发送验证码</string>
-    <string name="landing_invitation_title">你需要一个邀请码</string>
-    <string name="landing_invitation_tip">你需要向朋友询问一个 Mixin 邀请码来登录</string>
-    <string name="landing_invitation_tip_2">什么是邀请码？</string>
-    <string name="landing_invitation_error">邀请码不正确</string>
     <string name="landing_validation_title">请输入发送至以下号码的 4 位验证码： %s</string>
     <string name="landing_validation_error">验证码不正确</string>
     <string name="landing_enter_name_title">你的名字?</string>
-    <string name="landing_enter_name_tip">你的朋友可以通过名字来找到你</string>
-    <string name="landing_enter_mobile_dialog_content">确认你的手机号码 %s</string>
     <string name="landing_invitation_dialog_content">我们将发送4位验证码到手机 %s, 请在下一个页面输入</string>
     <string name="landing_introduction">点击 \"同意并继续\" 接受 Mixin %1$s和%2$s</string>
     <string name="landing_agree">同意并继续</string>
-    <string name="landing_select_country">选择国家</string>
     <string name="landing_privacy_policy">隐私政策</string>
     <string name="landing_terms_service">服务条款</string>
     <!--contacts-->
@@ -143,7 +123,6 @@
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
     <string name="contact_add_contact_title">添加联系人</string>
     <string name="contact_add_contact_desc">通过 Mixin ID 或手机号添加联系人</string>
-    <string name="contact_qr_title">我的二维码</string>
     <string name="contact_qr_mixin">Mixin 二维码</string>
     <string name="contact_qr_desc">扫描好友的二维码</string>
     <string name="contact_invite_title">邀请好友</string>
@@ -161,7 +140,6 @@
     <!--profile-->
     <string name="profile_my_title">我的</string>
     <string name="profile_photo">个人头像</string>
-    <string name="profile_qr_code">我的二维码</string>
     <string name="profile_phone">修改手机号</string>
     <string name="profile_invitation">我的邀请码</string>
     <string name="profile_invitation_tip">你总共邀请了 %d 个人</string>
@@ -185,8 +163,6 @@
     <string name="week_sunday">星期日</string>
     <string name="yesterday">昨天</string>
     <string name="today">今天</string>
-    <string name="time_pm">下午</string>
-    <string name="time_am">上午</string>
     <string name="chat_item_title">最近聊天</string>
     <string name="copy_success">拷贝</string>
     <string name="photo">照片</string>
@@ -195,7 +171,6 @@
     <string name="save_failure">保存失败</string>
     <string name="hold_to_record_audio">长按说话，松手发送</string>
     <!--contact-->
-    <string name="contact_other_title">信息</string>
     <string name="contact_other_add">添加联系人</string>
     <string name="contact_other_send">发消息</string>
     <string name="contact_other_share">发送名片</string>
@@ -205,7 +180,6 @@
     <string name="contact_less_title">联系人</string>
     <string name="contact_less_invite">邀请至 Mixin</string>
     <string name="contact_less_invite_content">我正在使用 Mixin 聊天。\n 下载：https://mixin.one</string>
-    <string name="contact_mute">静音通知</string>
     <string name="contact_mute_title">静音通知</string>
     <string name="contact_mute_8hours">8 小时</string>
     <string name="contact_mute_1week">1 星期</string>
@@ -217,18 +191,10 @@
     <!--wallet-->
     <string name="wallet_title">钱包</string>
     <string name="wallet_get_free">获得免费的 XIN 代币</string>
-    <string name="wallet_get_free_share">分享你的邀请</string>
-    <string name="wallet_get_free_share_tip">给好友免费的 XIN 代币试用 Mixin。当他们使用你的邀请码时你们各自获得 10 个 XIN 代币</string>
     <string name="wallet_get_free_redeem">兑换邀请码</string>
     <string name="wallet_redeem">兑换</string>
-    <string name="wallet_invite_code">邀请码</string>
     <string name="wallet_get_free_redeem_tip">输入邀请码免费获得 10 个 XIN 代币。</string>
-    <string name="wallet_create">创建钱包</string>
-    <string name="wallet_import">导入钱包</string>
     <string name="wallet_create_tip">Create a Wallet to transfer BTC, ETH, XIN, etc between friends.</string>
-    <string name="wallet_password_tip">请输入 6 位数字钱包密码，这也是你的支付密码</string>
-    <string name="wallet_password_confirm_title">确认钱包密码</string>
-    <string name="wallet_password_confirm_tip">请再次输入 6 位数字钱包密码并且牢记该密码。如果忘记，你的钱包将无法恢复！</string>
     <string name="wallet_password_set_pin">设置钱包密码</string>
     <string name="wallet_password_set_new_pin">设置新的钱包密码</string>
     <string name="wallet_password_set_pin_desc">设置 6 位数字钱包密码。</string>
@@ -241,36 +207,19 @@
     <string name="wallet_bottom_show_hidden">显示所有隐藏的资产</string>
     <string name="wallet_hidden_assets">隐藏资产</string>
     <string name="wallet_bottom_password">修改钱包密码</string>
-    <string name="wallet_bottom_transactions">转账记录</string>
     <string name="wallet_bottom_deposit">充值</string>
-    <string name="wallet_bottom_transfer_out">转出</string>
     <string name="wallet_bottom_transfer_to">转账给 %s</string>
-    <string name="wallet_bottom_backup">备份</string>
     <string name="wallet_transactions_title">转账记录</string>
     <string name="wallet_transactions_show">显示</string>
     <string name="wallet_transactions_hide">隐藏</string>
     <string name="wallet_transaction_title">交易详情</string>
     <string name="wallet_password_change">修改钱包密码</string>
     <string name="wallet_password_old_title">验证旧的钱包密码</string>
-    <string name="wallet_password_new_title">新钱包密码</string>
-    <string name="wallet_password_new_title_confirm">确认新钱包密码</string>
     <string name="wallet_password_not_equal">钱包密码不一致, 请重新输入</string>
     <string name="wallet_password_change_tip">请输入6位钱包密码来验证</string>
-    <string name="wallet_transfer_out_receiver_address">Receiver\' Address</string>
-    <string name="wallet_transfer_out_receiver_address_tip">Choose Receiver\' Address from your Address Book. You can add new address to your Address Book.</string>
-    <string name="wallet_transfer_out_balance">Balance BTC 0.01, Transfer Out All</string>
     <string name="wallet_fee_regular">Regular</string>
-    <string name="wallet_fee_priority">Priority</string>
     <string name="wallet_fee_custom">Custom</string>
     <string name="wallet_fee_tip">The transaction fee is received by the miner</string>
-    <string name="wallet_address_book_title">BTC Address Book</string>
-    <string name="wallet_address_book_new">New BTC Address</string>
-    <string name="wallet_address_new_remark">remark the address</string>
-    <string name="wallet_address_new_enter">输入地址</string>
-    <string name="wallet_address_new_tip">You can get BTC address via + Scan QR Code</string>
-    <string name="wallet_transfer_confirm_send">Send(%d)</string>
-    <string name="wallet_transfer_confirm_title">转账确认</string>
-    <string name="wallet_transfer_coin">%s 转账</string>
     <string name="wallet_transfer_type">转账类型</string>
     <string name="wallet_pay_with_pwd">用钱包密码支付</string>
     <string name="wallet_transfer_amount">转账金额</string>
@@ -286,7 +235,6 @@
     <string name="pin_check_tip">定期输入钱包密码有助于记住该密码</string>
     <string name="transactions_id">交易编号</string>
     <string name="transactions_type">交易类型</string>
-    <string name="transactions_asset_name">资产类型</string>
     <string name="asset_no_hidden">没有隐藏的资产</string>
     <string name="asset_none">暂无价格</string>
     <string name="wallet_block_confirmations">充值到账至少需要 %d 个区块确认</string>
@@ -310,21 +258,13 @@
     <string name="group_new_notice">群组公告</string>
     <string name="group_new_notice_tip">关于</string>
     <string name="group_info_title">群组信息</string>
-    <string name="group_info_join_price">加入群组价格</string>
-    <string name="group_info_link">群组链接</string>
-    <string name="group_info_my_alias">我在本群的昵称</string>
-    <string name="group_info_member_title">%d PARTICIPANTS</string>
     <string name="group_info_not_in">你不在此群组</string>
-    <string name="group_info_invite_qr">Invite to Group via QR Code</string>
     <string name="group_info_clear_chat">清除聊天记录</string>
     <string name="group_info_remove_member">移除成员</string>
     <string name="group_info_exit_group">退出群组</string>
     <string name="group_info_delete_group">删除群组</string>
     <string name="group_edit_title">编辑群组</string>
-    <string name="group_edit_photo">群组头像</string>
     <string name="group_edit_name">编辑名称</string>
-    <string name="group_create_failure">不能创建，请点击重试。</string>
-    <string name="group_create_success">创建成功</string>
     <string name="group_pop_menu_message">发送消息至 %s</string>
     <string name="group_pop_menu_view">查看 %s</string>
     <string name="group_pop_menu_remove">移除 %s</string>
@@ -335,24 +275,18 @@
     <string name="group_creating">正在创建…</string>
     <string name="state_connecting">正在连接</string>
     <string name="state_syncing">正在同步消息</string>
-    <string name="group_info_exit_tip">退出 \"%s\" 群组?</string>
     <string name="group_cant_send">您不能发送消息，因为您已经不再是此群组成员。</string>
-    <string name="group_info_delete_tip">删除 \"%s\" 群组?</string>
     <string name="empty_info">你可以与你的 Mixin 好友一起聊天。</string>
     <string name="empty_start">开始聊天</string>
     <string name="group_join">加入群组</string>
     <string name="group_already_in">你已经在该群组里</string>
     <!--setting-->
     <string name="setting_title">设置</string>
-    <string name="setting_privacy">隐私和安全</string>
     <string name="setting_blocked">已屏蔽</string>
     <string name="setting_conversation">会话</string>
     <string name="setting_privacy_title">隐私</string>
     <string name="setting_privacy_tip">谁可以给你发消息或邀请你加入群聊。</string>
-    <string name="setting_security_title">SECURITY</string>
-    <string name="setting_payment">钱包密码</string>
     <string name="setting_my_contacts">我的联系人</string>
-    <string name="setting_everybody">任何人</string>
     <string name="setting_block">屏蔽</string>
     <string name="setting_unblock">解除屏蔽</string>
     <string name="setting_block_tip">被屏蔽的用户不能给你发送消息或者邀请你加入群聊</string>
@@ -371,19 +305,15 @@
     <string name="conversation_status_video">视频</string>
     <string name="conversation_status_file">文件</string>
     <string name="conversation_status_audio">语音</string>
-    <string name="conversation_status_pic_group">%s: 照片</string>
     <string name="conversation_status_transfer">转账</string>
     <string name="conversation_status_sticker">贴纸</string>
     <string name="conversation_status_unknown">未知</string>
-    <string name="setting_logout_confirm">确定退出吗？</string>
-    <string name="setting_logout_message">退出将无法接受任何消息，本地已有的消息记录也将丢失! 请慎重!</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_authentications">授权</string>
     <string name="setting_deauthorize">取消授权</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>
-    <string name="about_help_center">帮助中心</string>
     <string name="about_version">版本 %s</string>
     <string name="conversation_delete">删除</string>
     <string name="chat_group_create">%1$s创建了群组\"%2$s\"</string>
@@ -400,7 +330,6 @@
     <string name="group_error">无效链接</string>
     <string name="bottom_sheet_check_payment_info">请检查支付信息</string>
     <string name="bottom_sheet_invalid_payment">无效支付信息</string>
-    <string name="group_create_ad">创建于 %s</string>
     <string name="group_wait">请稍等</string>
     <string name="group_invite">群邀请链接</string>
     <!-- invite -->
@@ -411,18 +340,14 @@
     <string name="invite_forward">转发给好友</string>
     <string name="invite_title">群邀请链接</string>
     <string name="invite_invalid">邀请链接</string>
-    <string name="group_friend">%d 位好友</string>
     <string name="conversation_pin">置顶</string>
     <string name="conversation_pin_clear">取消置顶</string>
     <string name="group_role">你现在成为管理员</string>
-    <string name="coming_soon">敬请期待</string>
-    <string name="transfer_success">转账成功</string>
     <string name="transfer_to">您转账给%s</string>
     <string name="transfer_from">转账来自%s</string>
     <string name="loading_init">初始化…</string>
     <string name="loading_wait">请稍等</string>
     <!-- notification -->
-    <string name="alert_key_group_message">%s 发送一条消息</string>
     <string name="alert_key_group_text_message">%s 发送一条消息</string>
     <string name="alert_key_group_image_message">%s 发送一张照片</string>
     <string name="alert_key_group_video_message">%s 发送一个视频</string>
@@ -430,7 +355,6 @@
     <string name="alert_key_group_audio_message">%s 发送一条语音</string>
     <string name="alert_key_group_sticker_message">%s 发送一张贴纸</string>
     <string name="alert_key_group_contact_message">%s 分享了一个联系人</string>
-    <string name="alert_key_contact_message">发送一条消息</string>
     <string name="alert_key_contact_text_message">发送一条消息</string>
     <string name="alert_key_contact_image_message">发送一张照片</string>
     <string name="alert_key_contact_video_message">发送一个视频</string>
@@ -457,7 +381,6 @@
     <string name="auth_apps_write_description">管理你所有的应用</string>
     <string name="auth_profile_content">%s, %s, 头像</string>
     <string name="auth_assets_more">%s 等</string>
-    <string name="auth_success">成功登录 %s</string>
     <string name="auth_permission_contacts_read">读取联系人</string>
     <string name="auth_permission_contacts_read_description">访问你的联系人列表</string>
 
@@ -479,7 +402,6 @@
     <string name="withdrawal_tap_add_addr">点击添加地址</string>
     <string name="withdrawal_fee">需要 %s 作为 %s 的提现手续费。</string>
     <string name="withdrawal_fee_with_reserve">需要 %s 作为 %s 的提现手续费。%s 最少需要保留 %s 个 %s。</string>
-    <string name="withdrawal_asset">%s 提现</string>
     <string name="withdrawal_addr_book">%s 地址簿</string>
     <string name="withdrawal_addr_add">添加地址</string>
     <string name="withdrawal_addr_new">新 %s 地址</string>
@@ -488,20 +410,15 @@
     <string name="withdrawal_addr_pin_add">请输入钱包密码来完成添加</string>
     <string name="withdrawal_addr_pin_delete">请输入钱包密码来完成删除</string>
     <string name="withdrawal_addr_pin_modify">请输入钱包密码来完成修改</string>
-    <string name="withdrawal_fee_failed">获取手续费失败, 点击重试</string>
     <string name="withdrawal_success">提现成功</string>
-    <string name="withdrawal_delete_tip">已删除一条地址</string>
     <string name="withdrawal_with_pwd">用钱包密码提现</string>
     <string name="withdrawal_to">提现到 %s</string>
     <string name="group_info_add">添加群公告</string>
     <string name="group_info_edit">编辑群公告</string>
-    <string name="group_info_show_more_omit"><font color='#202020'>&#8230;</font> 显示更多</string>
+    <string name="group_info_show_more_omit"> 显示更多</string>
     <string name="group_info_show_more">显示更多</string>
-    <string name="select_picture">选取图片</string>
-    <string name="select_video">选取视频</string>
     <string name="send">发送</string>
     <string name="send_file">将 \"%1$s\" 发送给 %2$s?</string>
-    <string name="send_msg">发送给 %s?</string>
     <string name="send_file_group">将 \"%1$s\" 发送给 \"%2$s\"?</string>
     <string name="action_open">在浏览器中打开</string>
     <string name="action_refresh">刷新</string>
@@ -510,12 +427,10 @@
     <string name="gallery_empty_text">还没有图片或视频</string>
     <string name="account_name">账号名</string>
     <string name="account_memo">备注</string>
-    <string name="transaction_item_deposit">%s（%s）</string>
     <string name="deposit_tip">注意：账号名和备注同时使用才能充值 %s 到 Mixin，充值到账至少需要 %d 个区块确认。</string>
     <!--sticker-->
     <string name="sticker_manager">管理贴纸</string>
     <string name="sticker_add">添加贴纸</string>
-    <string name="sticker_delete">删除贴纸</string>
     <string name="sticker_add_failed">添加贴纸失败</string>
     <string name="sticker_add_invalid_size">贴纸要求大于 1KB 且小于 800KB，宽高大于 64 像素且小于 512 像素。</string>
     <string name="sticker_add_invalid_format">贴纸格式不支持</string>

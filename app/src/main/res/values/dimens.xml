@@ -3,14 +3,12 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="photo_size">90dp</dimen>
-    <dimen name="default_margin">8dp</dimen>
     <dimen name="min_keyboard_size">50dp</dimen>
     <dimen name="min_custom_keyboard_size">110dp</dimen>
     <dimen name="default_custom_keyboard_size">220dp</dimen>
     <dimen name="min_custom_keyboard_top_margin">170dp</dimen>
     <dimen name="item_contact_height">60dp</dimen>
     <dimen name="item_contact_header_height">30dp</dimen>
-    <dimen name="title_height">?actionBarSize</dimen>
     <dimen name="quick_camera_shutter_ring_size">52dp</dimen>
     <dimen name="transfer_coin_size">24sp</dimen>
     <dimen name="transfer_coin_desc_size">18sp</dimen>
