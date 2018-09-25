@@ -30,6 +30,7 @@ import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.ViewConfiguration
 import android.view.WindowManager
+import androidx.annotation.IdRes
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
@@ -48,8 +49,8 @@ import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
-import org.jetbrains.anko.displayMetrics
 import timber.log.Timber
+import org.jetbrains.anko.displayMetrics
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
@@ -235,6 +236,20 @@ inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> Unit) {
     val fragmentTransaction = beginTransaction()
     fragmentTransaction.func()
     fragmentTransaction.commit()
+}
+
+fun Fragment.bottomShowFragment(fragment: Fragment, @IdRes id: Int, tag: String) {
+    val fm = fragmentManager
+    fm?.let {
+        val ft = it.beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
+        if (fragment.isAdded) {
+            ft.show(fragment)
+        } else {
+            ft.add(id, fragment, tag).addToBackStack(null)
+        }
+        ft.commitAllowingStateLoss()
+    }
 }
 
 const val REQUEST_IMAGE = 0x01
