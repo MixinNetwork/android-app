@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="72dp">
 
-            <android.support.v4.widget.Space
+            <androidx.legacy.widget.Space
                 android:id="@+id/center_place_holder"
                 android:layout_width="1dp"
                 android:layout_height="1dp"

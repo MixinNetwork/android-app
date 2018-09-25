@@ -1,10 +1,10 @@
 package one.mixin.android.crypto.vo
 
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.ColumnInfo.BLOB
-import android.arch.persistence.room.Entity
-import android.arch.persistence.room.Index
-import android.arch.persistence.room.PrimaryKey
+import androidx.room.ColumnInfo
+import androidx.room.ColumnInfo.BLOB
+import androidx.room.Entity
+import androidx.room.Index
+import androidx.room.PrimaryKey
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.ecc.Curve

@@ -2,8 +2,8 @@ package one.mixin.android.ui.wallet.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.support.v7.util.DiffUtil
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE

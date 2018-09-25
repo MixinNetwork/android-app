@@ -6,8 +6,6 @@ import android.content.Context
 import android.database.Cursor
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
-import android.support.constraint.ConstraintLayout
-import android.support.v4.app.LoaderManager
 import android.util.Pair
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -21,6 +19,8 @@ import android.view.animation.ScaleAnimation
 import android.view.animation.TranslateAnimation
 import android.widget.LinearLayout
 import android.widget.PopupWindow
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.loader.app.LoaderManager
 import one.mixin.android.R
 
 @SuppressLint("InflateParams")

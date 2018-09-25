@@ -8,8 +8,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
-import android.support.v7.view.ContextThemeWrapper
+import androidx.fragment.app.FragmentManager
+import androidx.appcompat.view.ContextThemeWrapper
 import android.view.ContextMenu
 import android.view.MenuItem
 import android.view.View
@@ -35,6 +35,7 @@ import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
@@ -44,7 +45,6 @@ import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DragWebView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.net.URISyntaxException

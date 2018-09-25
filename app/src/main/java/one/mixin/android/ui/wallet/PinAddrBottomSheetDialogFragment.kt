@@ -4,6 +4,7 @@ import android.os.Bundle
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -11,7 +12,6 @@ import one.mixin.android.vo.Address
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.uiThread
 
 class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {

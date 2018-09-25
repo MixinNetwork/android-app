@@ -1,10 +1,10 @@
 package one.mixin.android.db
 
-import android.arch.paging.DataSource
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Query
-import android.arch.persistence.room.RoomWarnings
-import android.arch.persistence.room.Transaction
+import androidx.paging.DataSource
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.RoomWarnings
+import androidx.room.Transaction
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message

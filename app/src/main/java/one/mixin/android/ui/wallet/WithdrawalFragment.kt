@@ -1,12 +1,12 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import android.graphics.Typeface
 import android.os.Bundle
-import android.support.v7.view.ContextThemeWrapper
+import androidx.appcompat.view.ContextThemeWrapper
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -21,11 +21,13 @@ import kotlinx.android.synthetic.main.fragment_withdrawal.*
 import kotlinx.android.synthetic.main.layout_withdrawal_addr_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toDot
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.common.BaseFragment
@@ -33,10 +35,8 @@ import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
-import org.jetbrains.anko.support.v4.dip
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
@@ -127,7 +127,7 @@ class WithdrawalFragment : BaseFragment() {
             }
         }
         balance_tv.text = "${getString(R.string.balance)} \n${asset.balance} ${asset.symbol}"
-        addrBottomSheet.setCustomViewHeight(dip(300f))
+        addrBottomSheet.setCustomViewHeight(dp(300f))
         if (!asset.accountName.isNullOrEmpty()) {
             memo_rl.visibility = GONE
         }

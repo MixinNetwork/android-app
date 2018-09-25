@@ -2,8 +2,8 @@ package one.mixin.android.widget.linktext
 
 import android.content.Context
 import android.graphics.Color
-import android.support.annotation.ColorInt
-import android.support.v7.widget.AppCompatTextView
+import androidx.annotation.ColorInt
+import androidx.appcompat.widget.AppCompatTextView
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextUtils

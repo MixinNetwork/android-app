@@ -3,8 +3,8 @@ package one.mixin.android.ui.conversation.preview
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.MixinDialogFragment
+import androidx.fragment.app.FragmentManager
+import androidx.core.app.MixinDialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup

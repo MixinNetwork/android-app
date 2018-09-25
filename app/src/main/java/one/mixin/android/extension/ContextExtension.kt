@@ -24,21 +24,21 @@ import android.provider.Browser
 import android.provider.MediaStore
 import android.provider.OpenableColumns
 import android.provider.Settings
-import android.support.customtabs.CustomTabsIntent
-import android.support.v4.app.Fragment
-import android.support.v4.app.FragmentActivity
-import android.support.v4.app.FragmentManager
-import android.support.v4.app.FragmentTransaction
-import android.support.v4.content.ContextCompat
-import android.support.v4.content.FileProvider
 import android.util.Log
 import android.util.TypedValue
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.ViewConfiguration
 import android.view.WindowManager
-import androidx.core.content.systemService
+import androidx.browser.customtabs.CustomTabsIntent
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.content.getSystemService
 import androidx.core.net.toUri
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.receiver.ShareBroadcastReceiver
@@ -136,7 +136,7 @@ fun Context.appCompatActionBarHeight(): Int {
 }
 
 fun Context.networkConnected(): Boolean {
-    val cm = systemService<ConnectivityManager>()
+    val cm = getSystemService<ConnectivityManager>()?:return false
     val network: NetworkInfo
     try {
         network = cm.activeNetworkInfo

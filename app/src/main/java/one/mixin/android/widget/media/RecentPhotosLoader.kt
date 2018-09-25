@@ -3,7 +3,7 @@ package one.mixin.android.widget.media
 import android.content.Context
 import android.database.Cursor
 import android.provider.MediaStore
-import android.support.v4.content.CursorLoader
+import androidx.loader.content.CursorLoader
 
 class RecentPhotosLoader(context: Context) : CursorLoader(context) {
 

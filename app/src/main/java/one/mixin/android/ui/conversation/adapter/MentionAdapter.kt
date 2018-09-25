@@ -1,6 +1,6 @@
 package one.mixin.android.ui.conversation.adapter
 
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import one.mixin.android.R

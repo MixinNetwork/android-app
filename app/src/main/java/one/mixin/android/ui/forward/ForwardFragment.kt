@@ -3,8 +3,6 @@ package one.mixin.android.ui.forward
 import android.Manifest.permission.READ_EXTERNAL_STORAGE
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.annotation.SuppressLint
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -12,6 +10,9 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
@@ -31,7 +32,6 @@ import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import org.jetbrains.anko.bundleOf
-import org.jetbrains.anko.support.v4.ctx
 import javax.inject.Inject
 
 class ForwardFragment : BaseFragment() {
@@ -144,14 +144,14 @@ class ForwardFragment : BaseFragment() {
             }
         })
 
-        chatViewModel.getConversations().observe(this, android.arch.lifecycle.Observer {
+        chatViewModel.getConversations().observe(this, Observer {
             it?.let {
                 conversations = it
                 adapter.conversations = it.filter { conversationItem ->
                     conversationItem.status == ConversationStatus.SUCCESS.ordinal
                 }
 
-                chatViewModel.getFriends().observe(this, android.arch.lifecycle.Observer { r ->
+                chatViewModel.getFriends().observe(this, Observer { r ->
                     if (r != null) {
                         val mutableList = mutableListOf<User>()
                         mutableList.addAll(r)
@@ -205,7 +205,7 @@ class ForwardFragment : BaseFragment() {
                 .subscribe({ granted ->
                     if (granted) {
                         sharePreOperation()
-                        ConversationActivity.show(ctx, conversationId, userId, messages = messages)
+                        ConversationActivity.show(requireContext(), conversationId, userId, messages = messages)
                     } else {
                         requireContext().openPermissionSetting()
                     }
@@ -214,7 +214,7 @@ class ForwardFragment : BaseFragment() {
                 })
         } else {
             sharePreOperation()
-            ConversationActivity.show(ctx, conversationId, userId, messages = messages)
+            ConversationActivity.show(requireContext(), conversationId, userId, messages = messages)
         }
     }
 

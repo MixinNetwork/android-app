@@ -32,7 +32,6 @@ import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.ctx
 import org.jetbrains.anko.uiThread
 import java.io.File
 
@@ -118,13 +117,13 @@ class EditFragment : BaseFragment() {
                     if (granted) {
                         doAsync {
                             val outFile = if (isVideo) {
-                                ctx.getPublicPictyresPath().createVideoTemp("mp4", false)
+                                requireContext().getPublicPictyresPath().createVideoTemp("mp4", false)
                             } else {
-                                ctx.getPublicPictyresPath().createImageTemp(noMedia = false)
+                                requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
                             }
                             File(path).copy(outFile)
-                            ctx.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-                            uiThread { ctx.toast(R.string.save_success) }
+                            requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+                            uiThread { requireContext().toast(R.string.save_success) }
                         }
                     } else {
                         context?.openPermissionSetting()

@@ -2,14 +2,14 @@ package one.mixin.android.ui.conversation
 
 import android.app.Activity
 import android.app.NotificationManager
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.ViewModel
-import android.arch.paging.LivePagedListBuilder
-import android.arch.paging.PagedList
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.ViewModel
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import android.graphics.Bitmap
 import android.net.Uri
-import android.support.annotation.WorkerThread
-import android.support.v4.util.ArraySet
+import androidx.annotation.WorkerThread
+import androidx.collection.ArraySet
 import androidx.core.net.toUri
 import com.google.gson.Gson
 import io.reactivex.Flowable

@@ -19,7 +19,7 @@
         android:textColor="#19BEF1"
         android:textSize="14sp" />
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/chat_layout"
         android:layout_width="240dp"
         android:layout_height="wrap_content"
@@ -87,7 +87,7 @@
             android:id="@+id/bill_time"
             layout="@layout/date_wrapper" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
 
 

@@ -4,8 +4,8 @@ import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Build
-import android.support.annotation.MainThread
-import android.support.annotation.RequiresApi
+import androidx.annotation.MainThread
+import androidx.annotation.RequiresApi
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View

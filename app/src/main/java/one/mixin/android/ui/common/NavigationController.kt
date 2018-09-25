@@ -1,6 +1,6 @@
 package one.mixin.android.ui.common
 
-import android.support.v4.app.FragmentManager
+import androidx.fragment.app.FragmentManager
 import one.mixin.android.R
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment

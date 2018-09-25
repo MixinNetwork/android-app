@@ -13,13 +13,13 @@ import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.BiometricTimeFragment.Companion.X_HOUR
 import one.mixin.android.util.BiometricUtil
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
 
 class WalletSettingFragment : BaseFragment() {
     companion object {

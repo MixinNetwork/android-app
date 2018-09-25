@@ -14,7 +14,7 @@
     <string name="un_mute">Unmute</string>
     <string name="notification">Notifications</string>
     <string name="none">None</string>
-    <string name="to">To %s</string>
+    <string name="to">To %1$s</string>
     <string name="fee">Fee</string>
     <string name="memo">Memo</string>
     <string name="date">Date</string>
@@ -53,7 +53,7 @@
     <string name="error_network">Network error</string>
     <string name="error_server_5xx">Server is under maintenance</string>
     <string name="error_unknown">Unknown error</string>
-    <string name="error_unknown_with_code">Unknown error: %d</string>
+    <string name="error_unknown_with_code">Unknown error: %1$d</string>
     <string name="error_forbidden">Access denied</string>
     <string name="error_not_found">Not found</string>
     <string name="error_too_many_request">Rate limit exceeded</string>
@@ -91,7 +91,7 @@
     <string name="error_duration_short">Duration is too short</string>
     <string name="error_too_many_stickers">Too many stickers</string>
     <string name="error_too_small_withdraw_amount">Withdraw amount too small</string>
-    <string name="error_minimum_withdraw_amount">Minimum withdraw amount is %s</string>
+    <string name="error_minimum_withdraw_amount">Minimum withdraw amount is %1$s</string>
     <!--home-->
     <string name="title_home">Contacts</string>
     <string name="search_hint">Contacts and Chats</string>
@@ -114,11 +114,11 @@
     <string name="landing_enter_name_hint">Name</string>
     <string name="landing_enter_mobile_tip">We will never display your mobile number publicly.</string>
     <string name="landing_resend_code_enable">Resend code</string>
-    <string name="landing_resend_code_disable">Resend code in %d s</string>
-    <string name="landing_validation_title">Enter the 4-digit code send to you at %s</string>
+    <string name="landing_resend_code_disable">Resend code in %1$d s</string>
+    <string name="landing_validation_title">Enter the 4-digit code send to you at %1$s</string>
     <string name="landing_validation_error">The code you\'re entered is incorrect.</string>
     <string name="landing_enter_name_title">What\'s your name?</string>
-    <string name="landing_invitation_dialog_content">We will send a 4-digit code to your phone number %s, please enter the code in next screen.</string>
+    <string name="landing_invitation_dialog_content">We will send a 4-digit code to your phone number %1$s, please enter the code in next screen.</string>
     <string name="landing_introduction">Tap \"Agree &amp; Continue\" to accept  the %1$s and %2$s</string>
     <string name="landing_agree">Agree &amp; Continue</string>
     <string name="landing_privacy_policy">Privacy Policy</string>
@@ -133,9 +133,9 @@
     <string name="contact_qr_mixin">Mixin QR Code</string>
     <string name="contact_qr_desc">Scan a friend\'s Mixin QR code</string>
     <string name="contact_invite_title">Invite People</string>
-    <string name="contact_invite_desc">My invitation code is %s</string>
-    <string name="contact_mixin_id">Mixin ID: %s</string>
-    <string name="contact_mobile">Mobile: %s</string>
+    <string name="contact_invite_desc">My invitation code is %1$s</string>
+    <string name="contact_mixin_id">Mixin ID: %1$s</string>
+    <string name="contact_mobile">Mobile: %1$s</string>
     <string name="contact_empty">Phone Contacts</string>
     <string name="contact_empty_tip">Mixin needs access your contacts to help you connect with other people on Mixin.</string>
     <string name="contact_item_title">CONTACTS</string>
@@ -149,7 +149,7 @@
     <string name="profile_photo">Profile Photo</string>
     <string name="profile_phone">Change Number</string>
     <string name="profile_invitation">My Invitation Code</string>
-    <string name="profile_invitation_tip">You have invited total %d people</string>
+    <string name="profile_invitation_tip">You have invited total %1$d people</string>
     <string name="profile_modify_name">Modify Name</string>
     <string name="profile_modify_name_hint">Please input name</string>
     <string name="profile_modify_number">Do you want to change your phone number?</string>
@@ -158,7 +158,7 @@
     <string name="change_phone_success">Change phone number successfully!</string>
     <string name="edit_name">Edit Name</string>
     <!-- chat -->
-    <string name="chat_waiting">Waiting for %s to get online and establish an encrypted session. %s.</string>
+    <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %1$s.</string>
     <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>
     <string name="chat_learn">Learn more</string>
     <string name="week_monday">Monday</string>
@@ -173,7 +173,7 @@
     <string name="chat_item_title">CHATS</string>
     <string name="copy_success">Copy to clipboard</string>
     <string name="photo">Photo</string>
-    <string name="title_participants">%d participants</string>
+    <string name="title_participants">%1$d participants</string>
     <string name="save_success">Save success</string>
     <string name="save_failure">Save failure</string>
     <string name="hold_to_record_audio">Hold to record, release to send</string>
@@ -194,7 +194,7 @@
     <!--Add people-->
     <string name="add_people_title">Add People</string>
     <string name="add_people_search_hint">Mixin ID or Phone number</string>
-    <string name="add_people_tip">My Mixin ID: %s</string>
+    <string name="add_people_tip">My Mixin ID: %1$s</string>
     <!--wallet-->
     <string name="wallet_title">Wallet</string>
     <string name="wallet_get_free">Get Free XIN</string>
@@ -215,7 +215,7 @@
     <string name="wallet_hidden_assets">Hidden Assets</string>
     <string name="wallet_bottom_password">Change Wallet PIN</string>
     <string name="wallet_bottom_deposit">Deposit</string>
-    <string name="wallet_bottom_transfer_to">Transfer to %s</string>
+    <string name="wallet_bottom_transfer_to">Transfer to %1$s</string>
     <string name="wallet_transactions_title">Transactions</string>
     <string name="wallet_transactions_show">Show</string>
     <string name="wallet_transactions_hide">Hide</string>
@@ -231,12 +231,12 @@
     <string name="wallet_pay_with_pwd">Pay with Wallet PIN</string>
     <string name="wallet_transfer_amount">Transfer Amount</string>
     <string name="wallet_transfer_memo">Memo (optional)</string>
-    <string name="wallet_unit_btc">%s BTC</string>
-    <string name="wallet_unit_usd">%s USD</string>
+    <string name="wallet_unit_btc">%1$s BTC</string>
+    <string name="wallet_unit_usd">%1$s USD</string>
     <string name="wallet_verifying">Verifying…</string>
     <string name="wallet_change_password_success">Change Wallet PIN successfully</string>
     <string name="wallet_set_password_success">Set Wallet PIN successfully</string>
-    <string name="wallet_transactions_hash">%s…%s</string>
+    <string name="wallet_transactions_hash">%1$s…%1$s</string>
     <string name="wallet_all_transactions">All Transactions</string>
     <string name="pin_check_title">Enter your Wallet PIN</string>
     <string name="pin_check_tip">You\'ll be asked for it periodically to help you remember it.</string>
@@ -244,7 +244,7 @@
     <string name="transactions_type">Transaction Type</string>
     <string name="asset_no_hidden">No hidden assets</string>
     <string name="asset_none">N/A</string>
-    <string name="wallet_block_confirmations">Deposit will arrive after at least %d block confirmations.</string>
+    <string name="wallet_block_confirmations">Deposit will arrive after at least %1$d block confirmations.</string>
     <string name="wallet_setting">Wallet Setting</string>
     <string name="wallet_pay_with_biometrics">Pay with Biometrics</string>
     <string name="wallet_pin_open_biometrics">Please enter Wallet PIN to open Biometrics</string>
@@ -272,9 +272,9 @@
     <string name="group_info_delete_group">Delete Group</string>
     <string name="group_edit_title">Edit Group</string>
     <string name="group_edit_name">Edit Name</string>
-    <string name="group_pop_menu_message">Message %s</string>
-    <string name="group_pop_menu_view">View %s</string>
-    <string name="group_pop_menu_remove">Remove %s</string>
+    <string name="group_pop_menu_message">Message %1$s</string>
+    <string name="group_pop_menu_view">View %1$s</string>
+    <string name="group_pop_menu_remove">Remove %1$s</string>
     <string name="group_pop_menu_make_admin">Make group admin</string>
     <string name="group_info_remove_tip">Remove %1$s from \"%2$s\" group?</string>
     <string name="group_adding">Adding…</string>
@@ -321,13 +321,13 @@
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>
-    <string name="about_version">Version %s</string>
+    <string name="about_version">Version %1$s</string>
     <string name="conversation_delete">Delete</string>
     <string name="chat_group_create">%1$s created group \"%2$s\"</string>
     <string name="chat_group_add">%1$s added %2$s</string>
     <string name="chat_group_remove">%1$s removed %2$s</string>
-    <string name="chat_group_exit">%s left</string>
-    <string name="chat_group_join">%s joined using this group\'s invite link</string>
+    <string name="chat_group_exit">%1$s left</string>
+    <string name="chat_group_join">%1$s joined using this group\'s invite link</string>
     <string name="chat_you_start">You</string>
     <string name="chat_you">you</string>
     <string name="chat_group_checking">Checking link</string>
@@ -350,18 +350,18 @@
     <string name="conversation_pin">Pin to top</string>
     <string name="conversation_pin_clear">Clear Pin</string>
     <string name="group_role">You\' re now an admin</string>
-    <string name="transfer_to">To %s</string>
-    <string name="transfer_from">From %s</string>
+    <string name="transfer_to">To %1$s</string>
+    <string name="transfer_from">From %1$s</string>
     <string name="loading_init">Initializing…</string>
     <string name="loading_wait">Please wait a moment</string>
     <!-- notification -->
-    <string name="alert_key_group_text_message">%s send a message</string>
-    <string name="alert_key_group_image_message">%s send a photo</string>
-    <string name="alert_key_group_video_message">%s send a video</string>
-    <string name="alert_key_group_data_message">%s send a file</string>
-    <string name="alert_key_group_audio_message">%s send a audio</string>
-    <string name="alert_key_group_sticker_message">%s send a sticker</string>
-    <string name="alert_key_group_contact_message">%s shared a contact</string>
+    <string name="alert_key_group_text_message">%1$s send a message</string>
+    <string name="alert_key_group_image_message">%1$s send a photo</string>
+    <string name="alert_key_group_video_message">%1$s send a video</string>
+    <string name="alert_key_group_data_message">%1$s send a file</string>
+    <string name="alert_key_group_audio_message">%1$s send a audio</string>
+    <string name="alert_key_group_sticker_message">%1$s send a sticker</string>
+    <string name="alert_key_group_contact_message">%1$s shared a contact</string>
     <string name="alert_key_contact_text_message">send you a message</string>
     <string name="alert_key_contact_image_message">send you a photo</string>
     <string name="alert_key_contact_video_message">send you a video</string>
@@ -370,7 +370,7 @@
     <string name="alert_key_contact_audio_message">send a audio</string>
     <string name="alert_key_contact_sticker_message">send you a sticker</string>
     <string name="alert_key_contact_contact_message">shared a contact</string>
-    <string name="unread">%d new messages</string>
+    <string name="unread">%1$d new messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
     <string name="notification_group">Group Notification</string>
     <string name="notification_message">Message Notification</string>
@@ -385,8 +385,8 @@
     <string name="auth_apps_read_description">access your apps list</string>
     <string name="auth_apps_write">Manage apps</string>
     <string name="auth_apps_write_description">mange all your apps</string>
-    <string name="auth_profile_content">%s, %s, profile photo</string>
-    <string name="auth_assets_more">%s and more</string>
+    <string name="auth_profile_content">%1$s, %1$s, profile photo</string>
+    <string name="auth_assets_more">%1$s and more</string>
     <string name="auth_permission_contacts_read">Read contacts</string>
     <string name="auth_permission_contacts_read_description">access your contacts list</string>
 
@@ -406,19 +406,19 @@
     <!--withdrawal-->
     <string name="withdrawal">Withdrawal</string>
     <string name="withdrawal_tap_add_addr">Tap to add address</string>
-    <string name="withdrawal_fee">A transaction fee of %s is required for withdrawing %s</string>
-    <string name="withdrawal_fee_with_reserve">A transaction fee of %s is required for withdrawing %s. %s has a minimum %s %s reserve requirement.</string>
-    <string name="withdrawal_addr_book">%s Address Book</string>
+    <string name="withdrawal_fee">A transaction fee of %1$s is required for withdrawing %1$s</string>
+    <string name="withdrawal_fee_with_reserve">A transaction fee of %1$s is required for withdrawing %1$s. %1$s has a minimum %1$s %1$s reserve requirement.</string>
+    <string name="withdrawal_addr_book">%1$s Address Book</string>
     <string name="withdrawal_addr_add">Add Address</string>
-    <string name="withdrawal_addr_new">New %s Address</string>
-    <string name="withdrawal_addr_modify">Modify %s Address</string>
+    <string name="withdrawal_addr_new">New %1$s Address</string>
+    <string name="withdrawal_addr_modify">Modify %1$s Address</string>
     <string name="withdrawal_enter_pin">Enter your Wallet PIN</string>
     <string name="withdrawal_addr_pin_add">Please enter Wallet PIN to save address</string>
     <string name="withdrawal_addr_pin_delete">Please enter Wallet PIN to delete address</string>
     <string name="withdrawal_addr_pin_modify">Please enter Wallet PIN to modify address</string>
     <string name="withdrawal_success">Withdrawal success</string>
     <string name="withdrawal_with_pwd">Withdrawal with Wallet PIN</string>
-    <string name="withdrawal_to">Withdrawal to %s</string>
+    <string name="withdrawal_to">Withdrawal to %1$s</string>
     <string name="group_info_add">Add group description</string>
     <string name="group_info_edit">Edit group description</string>
     <string name="group_info_show_more_omit"> show more</string>
@@ -434,7 +434,7 @@
     <string name="gallery_empty_text">No media yet</string>
     <string name="account_name">Account Name</string>
     <string name="account_memo">Account Memo</string>
-    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your %s to Mixin, deposit will arrive after at least %d block confirmations.</string>
+    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your %1$s to Mixin, deposit will arrive after at least %1$d block confirmations.</string>
     <!--sticker-->
     <string name="sticker_manager">Manager Sticker</string>
     <string name="sticker_add">Add Sticker</string>
@@ -447,6 +447,6 @@
     <string name="setting_storage">Storage Usage</string>
     <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
     <string name="setting_storage_bn_clear">Clear</string>
-    <string name="setting_auth_cancel_msg">Deauthorize %s?</string>
+    <string name="setting_auth_cancel_msg">Deauthorize %1$s?</string>
 </resources>
 

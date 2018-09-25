@@ -1,6 +1,6 @@
 package one.mixin.android.db
 
-import android.arch.persistence.room.Transaction
+import androidx.room.Transaction
 import kotlinx.coroutines.experimental.Deferred
 import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.async

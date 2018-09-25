@@ -1,7 +1,7 @@
 package one.mixin.android.ui.common
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.Observer
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.Observer
 import android.os.Bundle
 import kotlinx.android.synthetic.main.view_link_state.*
 import one.mixin.android.R

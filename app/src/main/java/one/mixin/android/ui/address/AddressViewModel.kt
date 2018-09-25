@@ -1,6 +1,6 @@
 package one.mixin.android.ui.address
 
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
 import one.mixin.android.repository.AssetRepository
 import javax.inject.Inject
 

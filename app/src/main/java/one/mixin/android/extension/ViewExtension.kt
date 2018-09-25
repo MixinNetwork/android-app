@@ -5,9 +5,9 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Outline
-import android.support.annotation.LayoutRes
-import android.support.v4.view.ViewCompat
-import android.support.v4.view.ViewPropertyAnimatorListener
+import androidx.annotation.LayoutRes
+import androidx.core.view.ViewCompat
+import androidx.core.view.ViewPropertyAnimatorListener
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE

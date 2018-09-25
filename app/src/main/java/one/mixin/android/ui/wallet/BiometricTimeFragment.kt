@@ -14,10 +14,10 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
 
 class BiometricTimeFragment : BaseFragment() {
     companion object {

@@ -2,10 +2,10 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.graphics.Color
-import android.support.annotation.DrawableRes
-import android.support.constraint.ConstraintLayout
-import android.support.v4.widget.TextViewCompat
-import android.support.v7.content.res.AppCompatResources
+import androidx.annotation.DrawableRes
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.TextViewCompat
+import androidx.appcompat.content.res.AppCompatResources
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View

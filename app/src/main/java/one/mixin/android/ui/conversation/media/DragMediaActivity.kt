@@ -15,10 +15,10 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.support.v4.view.PagerAdapter
-import android.support.v4.view.ViewCompat
-import android.support.v4.view.ViewPager
-import android.support.v7.view.ContextThemeWrapper
+import androidx.viewpager.widget.PagerAdapter
+import androidx.core.view.ViewCompat
+import androidx.viewpager.widget.ViewPager
+import androidx.appcompat.view.ContextThemeWrapper
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE

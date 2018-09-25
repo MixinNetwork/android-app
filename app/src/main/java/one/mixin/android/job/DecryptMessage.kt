@@ -1,7 +1,6 @@
 package one.mixin.android.job
 
 import android.util.Log
-import androidx.core.util.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
@@ -11,6 +10,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE

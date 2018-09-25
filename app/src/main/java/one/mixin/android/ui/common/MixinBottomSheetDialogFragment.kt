@@ -1,9 +1,9 @@
 package one.mixin.android.ui.common
 
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v4.app.MixinDialogFragment
+import androidx.core.app.MixinDialogFragment
 import android.view.View
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import one.mixin.android.R

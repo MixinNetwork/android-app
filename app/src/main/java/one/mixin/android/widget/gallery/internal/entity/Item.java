@@ -6,7 +6,7 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.provider.MediaStore;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 import one.mixin.android.widget.gallery.MimeType;
 
 public class Item implements Parcelable {

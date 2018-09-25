@@ -3,8 +3,8 @@ package one.mixin.android.job
 import android.app.IntentService
 import android.app.NotificationManager
 import android.content.Intent
-import android.support.v4.app.RemoteInput
-import androidx.core.content.systemService
+import androidx.core.app.RemoteInput
+import androidx.core.content.getSystemService
 import dagger.android.AndroidInjection
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.batchMarkReadAndTake
@@ -43,8 +43,8 @@ class SendService : IntentService("SendService") {
             } else {
                 MessageCategory.SIGNAL_TEXT.name
             }
-            val manager = systemService<NotificationManager>()
-            manager.cancel(conversationId.hashCode())
+            val manager = getSystemService<NotificationManager>()
+            manager?.cancel(conversationId.hashCode())
             val message = createMessage(UUID.randomUUID().toString(), conversationId,
                 Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING)
             jobManager.addJobInBackground(SendMessageJob(message))

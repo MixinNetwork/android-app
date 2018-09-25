@@ -29,7 +29,7 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginBottom="@dimen/activity_vertical_margin">
 
-            <android.support.v4.widget.Space
+            <androidx.legacy.widget.Space
                 android:id="@+id/center_place_holder"
                 android:layout_width="1dp"
                 android:layout_height="1dp"

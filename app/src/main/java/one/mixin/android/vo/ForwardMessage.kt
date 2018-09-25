@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
-import android.arch.persistence.room.Entity
+import androidx.room.Entity
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 

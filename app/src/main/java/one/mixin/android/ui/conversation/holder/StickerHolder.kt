@@ -2,7 +2,7 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import android.support.v4.widget.TextViewCompat
+import androidx.core.widget.TextViewCompat
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout

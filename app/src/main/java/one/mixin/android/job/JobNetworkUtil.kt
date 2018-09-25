@@ -13,7 +13,7 @@ import android.net.NetworkRequest
 import android.os.Build
 import android.os.Build.VERSION
 import android.os.PowerManager
-import android.support.v4.net.ConnectivityManagerCompat
+import androidx.core.net.ConnectivityManagerCompat
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import one.mixin.android.vo.LinkState

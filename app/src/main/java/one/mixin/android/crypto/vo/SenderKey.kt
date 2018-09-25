@@ -1,7 +1,7 @@
 package one.mixin.android.crypto.vo
 
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Entity
+import androidx.room.ColumnInfo
+import androidx.room.Entity
 
 @Entity(tableName = "sender_keys", primaryKeys = ["group_id", "sender_id"])
 class SenderKey(

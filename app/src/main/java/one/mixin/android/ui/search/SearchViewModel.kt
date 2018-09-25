@@ -1,6 +1,7 @@
 package one.mixin.android.ui.search
 
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
