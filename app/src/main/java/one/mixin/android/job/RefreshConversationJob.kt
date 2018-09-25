@@ -67,7 +67,7 @@ class RefreshConversationJob(val conversationId: String)
                             .putBoolean(data.conversationId, true)
                     }
                     conversationDao.updateConversation(data.conversationId, ownerId, data.category, data.name,
-                        data.announcement, data.createdAt, status)
+                        data.announcement, data.muteUntil, data.createdAt, status)
                 }
 
                 val participants = mutableListOf<Participant>()

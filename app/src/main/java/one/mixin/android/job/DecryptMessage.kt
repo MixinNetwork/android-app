@@ -535,7 +535,7 @@ class DecryptMessage : Injector() {
                         ConversationStatus.QUIT.ordinal
                     }
                     conversationDao.updateConversation(conversationData.conversationId, conversationData.creatorId, conversationData.category, conversationData.name,
-                        conversationData.announcement, conversationData.createdAt, status)
+                        conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
                 }
             }
         } catch (e: IOException) {

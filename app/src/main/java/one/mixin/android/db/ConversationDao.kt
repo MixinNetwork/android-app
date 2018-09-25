@@ -88,13 +88,14 @@ interface ConversationDao : BaseDao<Conversation> {
     fun updateConversationPinTimeById(conversationId: String, pinTime: String?)
 
     @Query("UPDATE conversations SET owner_id = :ownerId, category = :category, name = :name, announcement = :announcement, " +
-        "created_at = :createdAt, status = :status WHERE conversation_id = :conversationId")
+        "mute_until = :muteUntil, created_at = :createdAt, status = :status WHERE conversation_id = :conversationId")
     fun updateConversation(
         conversationId: String,
         ownerId: String,
         category: String,
         name: String,
         announcement: String?,
+        muteUntil:String?,
         createdAt: String,
         status: Int
     )
