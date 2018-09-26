@@ -25,6 +25,7 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -120,6 +121,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun initMenu() {
         val choices = mutableListOf<String>()
         choices.add(getString(R.string.contact_other_share))
+        choices.add(getString(R.string.contact_other_transactions))
         when (user.relationship) {
             UserRelationship.BLOCKING.name -> {
             }
@@ -138,6 +140,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 when (choices[which]) {
                     getString(R.string.contact_other_share) -> {
                         ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
+                        dismiss()
+                    }
+                    getString(R.string.contact_other_transactions) -> {
+                        activity?.addFragment(this, UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
                         dismiss()
                     }
                     getString(R.string.edit_name) -> {

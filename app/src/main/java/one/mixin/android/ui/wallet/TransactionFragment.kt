@@ -60,11 +60,14 @@ class TransactionFragment : BaseFragment() {
     private val snapshotId: String? by lazy { arguments!!.getString(ARGS_SNAPSHOT_ID) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_transaction, container, false)
+        layoutInflater.inflate(R.layout.fragment_transaction, container, false).apply {
+            isClickable = true
+        }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.right_animator.visibility = View.GONE
         if (snapshot == null || asset == null) {
             doAsync {
                 val asset = walletViewModel.simpleAssetItem(assetId!!)

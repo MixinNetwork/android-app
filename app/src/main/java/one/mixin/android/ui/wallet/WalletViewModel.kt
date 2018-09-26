@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -41,6 +42,8 @@ internal constructor(
 
     fun snapshotsFromDb(id: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id)
 
+    fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsByUserId(opponentId)
+
     fun snapshotLocal(assetId: String, snapshotId: String) = assetRepository.snapshotLocal(assetId, snapshotId)
 
     fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
@@ -71,4 +74,7 @@ internal constructor(
     fun refreshAddressesByAssetId(assetId: String) {
         jobManager.addJobInBackground(RefreshAddressJob(assetId))
     }
+
+    fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
+        .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 }
