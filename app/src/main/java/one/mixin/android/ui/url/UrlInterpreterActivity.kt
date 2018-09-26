@@ -83,17 +83,16 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
             val data = segments[0]
             if (data.isUUID()) {
                 TransferFragment.newInstance(data).showNow(supportFragmentManager, TransferFragment.TAG)
-                return
             }
         }
-    }
-
-    if (isMixinUrl(url, false)) {
-        LinkBottomSheetDialogFragment
-            .newInstance(url)
-            .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
     } else {
-        extraAction()
+        if (isMixinUrl(url, false)) {
+            LinkBottomSheetDialogFragment
+                .newInstance(url)
+                .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        } else {
+            extraAction()
+        }
     }
 }
 

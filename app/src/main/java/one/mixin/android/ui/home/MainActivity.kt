@@ -46,7 +46,6 @@ import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.LoadingFragment
 import one.mixin.android.ui.landing.SetupNameActivity
 import one.mixin.android.ui.search.SearchFragment
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RootUtil
