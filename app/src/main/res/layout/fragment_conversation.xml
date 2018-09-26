@@ -253,13 +253,13 @@
                 app:layout_constraintTop_toBottomOf="@id/chat_rv"/>
 
             <one.mixin.android.widget.RecordCircleView
-                android:id="@+id/record_circle"
-                android:layout_width="124dp"
-                android:layout_height="194dp"
-                android:visibility="gone"
-                android:translationX="36dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"/>
+                    android:id="@+id/record_circle"
+                    android:layout_width="124dp"
+                    android:layout_height="194dp"
+                    android:visibility="gone"
+                    android:translationX="36dp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
                 android:id="@+id/record_tip_tv"
@@ -283,6 +283,7 @@
             android:layout_marginBottom="@dimen/chat_control_height"
             android:alpha="0"
             android:background="@android:color/black"/>
+
     </RelativeLayout>
 
     <one.mixin.android.widget.StickerLayout

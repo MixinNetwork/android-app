@@ -1358,6 +1358,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     sendStickerMessage(stickerId)
                 }
             }
+
+            override fun onGiphyClick(url: String) {
+                if (isAdded) {
+                    sendImageMessage(url.toUri())
+                }
+            }
         })
     }
 

@@ -13,6 +13,7 @@ import dagger.Provides
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
@@ -24,6 +25,7 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.api.service.UserService
@@ -307,4 +309,24 @@ internal class AppModule {
         linkState: LinkState
     ): ChatWebSocket =
         ChatWebSocket(okHttp, app, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState)
+
+    @Provides
+    @Singleton
+    fun provideGiphyService(): GiphyService {
+        val client = OkHttpClient.Builder().apply {
+            if (BuildConfig.DEBUG) {
+                val logging = HttpLoggingInterceptor()
+                logging.level = HttpLoggingInterceptor.Level.BODY
+                addNetworkInterceptor(logging)
+                addNetworkInterceptor(StethoInterceptor())
+            }
+        }.build()
+        val retrofit = Retrofit.Builder()
+            .baseUrl(GIPHY_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
+            .client(client)
+            .build()
+        return retrofit.create(GiphyService::class.java)
+    }
 }

@@ -16,7 +16,10 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
     companion object {
         const val TYPE_RECENT = 0
         const val TYPE_LIKE = 1
-        const val TYPE_NORMAL = 2
+        const val TYPE_GIPHY = 2
+        const val TYPE_NORMAL = 3
+
+        const val UN_NORMAL_COUNT = 3
     }
 
     var callback: StickerAlbumFragment.Callback? = null
@@ -25,29 +28,36 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
         val stickerFragment = when (position) {
             TYPE_RECENT -> StickerFragment.newInstance(type = TYPE_RECENT)
             TYPE_LIKE -> StickerFragment.newInstance(type = TYPE_LIKE)
-            else -> StickerFragment.newInstance(albums[position - 2].albumId, TYPE_NORMAL)
+            TYPE_GIPHY -> StickerFragment.newInstance(type = TYPE_GIPHY)
+            else -> StickerFragment.newInstance(albums[position - UN_NORMAL_COUNT].albumId, TYPE_NORMAL)
         }
         stickerFragment.setCallback(object : Callback {
             override fun onStickerClick(stickerId: String) {
                 callback?.onStickerClick(stickerId)
             }
+
+            override fun onGiphyClick(url: String) {
+                callback?.onGiphyClick(url)
+            }
         })
         return stickerFragment
     }
 
-    override fun getCount(): Int = albums.size + 2
+    override fun getCount(): Int = albums.size + UN_NORMAL_COUNT
 
     fun getTabView(pos: Int, context: Context): View {
         val view = View.inflate(context, R.layout.layout_sticker_tab, null)
         when (pos) {
             TYPE_RECENT -> view.icon.setImageResource(R.drawable.ic_access_time_gray_24dp)
             TYPE_LIKE -> view.icon.setImageResource(R.drawable.ic_favorite_border_gray_24dp)
-            else -> view.icon.loadImage(albums[pos - 2].iconUrl)
+            TYPE_GIPHY -> view.icon.setImageResource(R.drawable.ic_sticker_gif)
+            else -> view.icon.loadImage(albums[pos - UN_NORMAL_COUNT].iconUrl)
         }
         return view
     }
 
     interface Callback {
         fun onStickerClick(stickerId: String)
+        fun onGiphyClick(url: String)
     }
 }

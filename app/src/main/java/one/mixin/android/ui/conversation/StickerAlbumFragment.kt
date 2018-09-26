@@ -112,9 +112,8 @@ class StickerAlbumFragment : BaseFragment() {
 
     interface Callback {
         fun onStickerClick(stickerId: String)
-
+        fun onGiphyClick(url: String)
         fun onMove(dis: Float)
-
         fun onRelease()
     }
 }
