@@ -3,7 +3,7 @@ package one.mixin.android.ui.url
 import android.net.Uri
 import android.os.Bundle
 import android.support.v4.app.FragmentManager
-import one.mixin.android.Constants.MIXIN_TRANSFER_PREFIX
+import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
@@ -54,64 +54,45 @@ class UrlInterpreterActivity : BaseActivity() {
     }
 }
 
-fun isMixinUrl(url: String): Boolean {
-    if (url.startsWith("https://mixin.one/pay", true) ||
-        url.startsWith("mixin://pay", true) ||
-        url.startsWith("mixin://users", true)) {
-        return true
-    } else if (url.startsWith("https://mixin.one/codes/", true)) {
-        val segments = Uri.parse(url).pathSegments
-        if (segments.size >= 2) {
-            val data = segments[1]
-            if (data.isUUID()) {
-                return true
-            }
-        }
-        return false
-    } else if (url.startsWith("mixin://codes/", true) ||
-        url.startsWith("mixin://transfer/", true)) {
-        val segments = Uri.parse(url).pathSegments
-        if (segments.size >= 1) {
-            val data = segments[0]
-            if (data.isUUID()) {
-                return true
-            }
-        }
-        return false
+fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
+    return if (url.startsWith(Scheme.HTTPS_PAY, true)
+        || url.startsWith(Scheme.PAY, true)
+        || url.startsWith(Scheme.USERS, true)
+        || url.startsWith(Scheme.HTTPS_USERS, true)) {
+        true
     } else {
-        return false
+        val segments = Uri.parse(url).pathSegments
+        if (url.startsWith(Scheme.HTTPS_CODES, true)) {
+            segments.size >= 2 && segments[1].isUUID()
+        } else if (url.startsWith(Scheme.CODES, true)) {
+            segments.size >= 1 && segments[0].isUUID()
+        } else if (includeTransfer && url.startsWith(Scheme.TRANSFER, true)) {
+            segments.size >= 1 && segments[0].isUUID()
+        } else if (includeTransfer && url.startsWith(Scheme.HTTPS_TRANSFER, true)) {
+            segments.size >= 2 && segments[1].isUUID()
+        } else {
+            false
+        }
     }
 }
 
 inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAction: () -> Unit) {
-    val openWithLink = if (url.startsWith("https://mixin.one/pay", true) ||
-        url.startsWith("mixin://pay", true) ||
-        url.startsWith("mixin://users", true)) {
-        true
-    } else if (url.startsWith("https://mixin.one/codes/", true)) {
+    if (url.startsWith(Scheme.TRANSFER, true)) {
         val segments = Uri.parse(url).pathSegments
-        segments.size >= 2 && segments[1].isUUID()
-    } else if (url.startsWith("mixin://codes/", true)) {
-        val segments = Uri.parse(url).pathSegments
-        segments.size >= 1 && segments[0].isUUID()
-    } else {
-        false
-    }
-
-    when {
-        url.startsWith(MIXIN_TRANSFER_PREFIX, true) -> {
-            val segments = Uri.parse(url).pathSegments
-            if (segments.size >= 1) {
-                val data = segments[0]
-                if (data.isUUID()) {
-                    TransferFragment.newInstance(data).showNow(supportFragmentManager, TransferFragment.TAG)
-                }
+        if (segments.size >= 1) {
+            val data = segments[0]
+            if (data.isUUID()) {
+                TransferFragment.newInstance(data).showNow(supportFragmentManager, TransferFragment.TAG)
             }
         }
-        openWithLink -> LinkBottomSheetDialogFragment
-            .newInstance(url)
-            .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
-        else -> extraAction()
+    } else {
+        if (isMixinUrl(url, false)) {
+            LinkBottomSheetDialogFragment
+                .newInstance(url)
+                .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        } else {
+            extraAction()
+        }
     }
 }
 

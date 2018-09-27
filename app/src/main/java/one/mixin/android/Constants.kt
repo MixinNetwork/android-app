@@ -21,6 +21,18 @@ object Constants {
         const val PREF_BIOMETRICS = "pref_biometrics"
     }
 
+    object Scheme {
+        const val CODES = "mixin://codes"
+        const val PAY = "mixin://pay"
+        const val USERS = "mixin://users"
+        const val TRANSFER = "mixin://transfer"
+
+        const val HTTPS_CODES = "https://mixin.one/codes"
+        const val HTTPS_PAY = "https://mixin.one/pay"
+        const val HTTPS_USERS = "https://mixin.one/users"
+        const val HTTPS_TRANSFER = "https://mixin.one/transfer"
+    }
+
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
@@ -29,7 +41,6 @@ object Constants {
     const val ARGS_USER = "args_user"
     const val ARGS_USER_ID = "args_user_id"
 
-    const val MIXIN_TRANSFER_PREFIX = "mixin://transfer/"
     const val MY_QR = "my_qr"
 
     const val Mixin_Conversation_ID_HEADER = "Mixin-Conversation-ID"

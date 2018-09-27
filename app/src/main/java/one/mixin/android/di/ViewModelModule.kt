@@ -14,7 +14,6 @@ import one.mixin.android.ui.group.InviteViewModel
 import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.ui.landing.LoadingViewModel
 import one.mixin.android.ui.landing.MobileViewModel
-import one.mixin.android.ui.qr.CaptureViewModel
 import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.ui.setting.SettingBlockedViewModel
 import one.mixin.android.ui.setting.SettingConversationViewModel
@@ -96,11 +95,6 @@ internal abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(LoadingViewModel::class)
     internal abstract fun bindLoadingViewModel(loadingViewModel: LoadingViewModel): ViewModel
-
-    @Binds
-    @IntoMap
-    @ViewModelKey(CaptureViewModel::class)
-    internal abstract fun bindCaptureViewModel(captureViewModel: CaptureViewModel): ViewModel
 
     @Binds
     @IntoMap

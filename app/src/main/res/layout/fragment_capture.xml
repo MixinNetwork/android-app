@@ -80,14 +80,6 @@
         android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true"/>
 
-    <ProgressBar
-        android:id="@+id/pb"
-        android:theme="@style/AppTheme.WhiteAccent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
-        android:visibility="gone"/>
-
     <one.mixin.android.widget.PseudoNotificationView
         android:id="@+id/pseudo_view"
         android:layout_width="match_parent"
