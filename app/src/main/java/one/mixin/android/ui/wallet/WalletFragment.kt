@@ -76,7 +76,9 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         coins_rv.addItemDecoration(SpaceItemDecoration(1))
 
         walletViewModel.assetItems().observe(this, Observer { r: List<AssetItem>? ->
-            r?.let {
+            if (r == null || r.isEmpty()) {
+                header.pie_view.setPieItem(listOf(), !animated)
+            } else {
                 assets = r
                 assetsAdapter.setAssetList(r.filter { it.hidden != true })
 
@@ -93,9 +95,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 if (totalUSD.compareTo(BigDecimal.ZERO) == 0) return@Observer
 
                 setPieView(r, totalUSD)
-            }
-            if (r != null && r.isEmpty()) {
-                header.pie_view.setPieItem(listOf(), !animated)
             }
         })
 

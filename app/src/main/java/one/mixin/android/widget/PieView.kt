@@ -60,9 +60,8 @@ class PieView : View {
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-        if (pies == null) return
 
-        if (pies != null && pies!!.isEmpty()) {
+        if (pies == null || pies!!.isEmpty()) {
             arcPaint.color = COLOR_DEFAULT
             canvas.drawArc(arcRect, startAngle, 360f, true, arcPaint)
             canvas.drawCircle(midX, midY, circleWidth, arcInnerPaint)
