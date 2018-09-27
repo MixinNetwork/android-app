@@ -1,10 +1,14 @@
 package one.mixin.android.ui.conversation
 
 import android.annotation.SuppressLint
+import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.arch.lifecycle.Observer
 import android.arch.lifecycle.ViewModelProviders
+import android.content.Intent
 import android.os.Bundle
+import android.os.CancellationSignal
+import android.security.keystore.UserNotAuthenticatedException
 import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
@@ -14,13 +18,17 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
+import moe.feng.support.biometricprompt.BiometricPromptCompat
+import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
+import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
@@ -28,22 +36,31 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toDot
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.util.BiometricUtil
+import one.mixin.android.util.BiometricUtil.REQUEST_CODE_CREDENTIALS
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.ctx
+import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.uiThread
+import java.math.BigDecimal
+import java.nio.charset.Charset
 import java.util.UUID
 import javax.inject.Inject
 
@@ -164,15 +181,12 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             if (!isAdded || user == null) return@setOnClickListener
 
             contentView.transfer_amount.hideKeyboard()
-            val bottom = TransferBottomSheetDialogFragment
-                .newInstance(user!!, contentView.transfer_amount.text.toString().toDot(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
-                    contentView.transfer_memo.text.toString())
-            bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
-            bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
-                override fun onSuccess() {
-                    dismiss()
-                }
-            })
+
+            if (BiometricUtil.shouldShowBiometric(requireContext())) {
+                showBiometricPrompt()
+            } else {
+                showTransferBottom()
+            }
         }
 
         chatViewModel.assetItemsWithBalance().observe(this, Observer { r: List<AssetItem>? ->
@@ -225,6 +239,68 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.transfer_amount.post { contentView.transfer_amount.showKeyboard() }
     }
 
+    private fun showBiometricPrompt() {
+        val biometricPrompt = BiometricPromptCompat.Builder(requireContext())
+            .setTitle(getString(R.string.wallet_bottom_transfer_to, user!!.fullName))
+            .setSubtitle(getString(R.string.contact_mixin_id, user!!.identityNumber))
+            .setDescription(getDescription())
+            .setNegativeButton(getString(R.string.wallet_pay_with_pwd)) { _, _ -> showTransferBottom() }
+            .build()
+        val cipher = try {
+            BiometricUtil.getDecryptCipher(requireContext())
+        } catch (e: UserNotAuthenticatedException) {
+            BiometricUtil.showAuthenticationScreen(this)
+            return
+        }
+        val cryptoObject = BiometricPromptCompat.DefaultCryptoObject(cipher)
+        val cancellationSignal = CancellationSignal().apply {
+            setOnCancelListener { ctx.toast(R.string.cancel) }
+        }
+        biometricPrompt.authenticate(cryptoObject, cancellationSignal, biometricCallback)
+    }
+
+    private fun showTransferBottom() {
+        val bottom = TransferBottomSheetDialogFragment
+            .newInstance(user!!, contentView.transfer_amount.text.toString().toDot(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
+                contentView.transfer_memo.text.toString())
+        bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
+        bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
+            override fun onSuccess() {
+                dialog?.dismiss()
+            }
+        })
+    }
+
+    private fun startTransfer(pin: String) {
+        chatViewModel.transfer(currentAsset!!.assetId, user!!.userId, contentView.transfer_amount.text.toString().toDot(),
+            pin, UUID.randomUUID().toString(), contentView.transfer_memo.text.toString()).autoDisposable(scopeProvider)
+            .subscribe({
+                if (it.isSuccess) {
+                    dialog?.dismiss()
+                } else {
+                    ErrorHandler.handleMixinError(it.errorCode)
+                }
+            }, {
+                ErrorHandler.handleError(it)
+                if (!isAdded) return@subscribe
+            })
+    }
+
+    private fun getDescription(): String {
+        val amount = contentView.transfer_amount.text.toString()
+        val pre = "$amount ${currentAsset!!.symbol}"
+        val post = getString(R.string.wallet_unit_usd,
+            "≈ ${(BigDecimal(contentView.transfer_amount.text.toString().toDot()) * BigDecimal(currentAsset!!.priceUsd)).numberFormat2()}")
+        return "$pre ($post)"
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_CREDENTIALS && resultCode == RESULT_OK) {
+            showBiometricPrompt()
+        }
+    }
+
     private val mWatcher: TextWatcher = object : TextWatcher {
         override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
         }
@@ -241,6 +317,29 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 contentView.transfer_amount.textSize = 16f
                 contentView.continue_animator.visibility = GONE
             }
+        }
+    }
+
+    private val biometricCallback = object : BiometricPromptCompat.IAuthenticationCallback {
+        override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
+        }
+
+        override fun onAuthenticationSucceeded(result: BiometricPromptCompat.IAuthenticationResult) {
+            val cipher = result.cryptoObject?.cipher
+            if (cipher != null) {
+                try {
+                    val encrypt = defaultSharedPreferences.getString(Constants.BIOMETRICS_PIN, null)
+                    val decryptByteArray = cipher.doFinal(Base64.decode(encrypt, Base64.URL_SAFE))
+                    startTransfer(decryptByteArray.toString(Charset.defaultCharset()))
+                } catch (e: Exception) {
+                }
+            }
+        }
+
+        override fun onAuthenticationHelp(helpCode: Int, helpString: CharSequence?) {
+        }
+
+        override fun onAuthenticationFailed() {
         }
     }
 

@@ -63,12 +63,6 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.tip_tv.setText(when (type) {
-            ADD -> R.string.withdrawal_addr_pin_add
-            DELETE -> R.string.withdrawal_addr_pin_delete
-            MODIFY -> R.string.withdrawal_addr_pin_modify
-            else -> R.string.withdrawal_addr_pin_add
-        })
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
                 if (index != contentView.pin.getCount()) return
@@ -115,13 +109,10 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         })
     }
 
-    private var callback: Callback? = null
-
-    fun setCallback(callback: Callback) {
-        this.callback = callback
-    }
-
-    interface Callback {
-        fun onSuccess()
+    override fun getTipTextRes(): Int = when (type) {
+        ADD -> R.string.withdrawal_addr_pin_add
+        DELETE -> R.string.withdrawal_addr_pin_delete
+        MODIFY -> R.string.withdrawal_addr_pin_modify
+        else -> R.string.withdrawal_addr_pin_add
     }
 }

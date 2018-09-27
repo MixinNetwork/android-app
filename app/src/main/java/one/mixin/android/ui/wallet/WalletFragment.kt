@@ -27,6 +27,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
@@ -174,6 +175,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     @SuppressLint("InflateParams")
     private fun showBottom() {
+        val isBiometricsSupport = BiometricUtil.isSupport(requireContext())
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null)
         builder.setCustomView(view)
@@ -182,11 +184,14 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             activity?.addFragment(this@WalletFragment, HiddenAssetsFragment.newInstance(), HiddenAssetsFragment.TAG)
             bottomSheet.dismiss()
         }
-        view.password.setOnClickListener {
+        view.setting.text = getString(if (isBiometricsSupport) R.string.wallet_setting else R.string.wallet_password_change)
+        view.setting.setOnClickListener {
             activity?.supportFragmentManager?.inTransaction {
                 setCustomAnimations(R.anim.slide_in_bottom,
                     R.anim.slide_out_bottom, R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                    .add(R.id.container, OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
+                    .add(R.id.container,
+                        if (isBiometricsSupport) WalletSettingFragment.newInstance() else OldPasswordFragment.newInstance(),
+                        if (isBiometricsSupport) WalletSettingFragment.TAG else OldPasswordFragment.TAG)
                     .addToBackStack(null)
             }
             bottomSheet.dismiss()

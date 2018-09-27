@@ -19,6 +19,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
@@ -85,7 +86,7 @@ class AddressAddFragment : BaseFragment() {
                     label_et.text.toString(), addr_et.text.toString(), type = type)
             }
             bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
-            bottomSheet.setCallback(object : PinAddrBottomSheetDialogFragment.Callback {
+            bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     if (fromManagement) {
                         fragmentManager?.popBackStackImmediate()
@@ -93,7 +94,7 @@ class AddressAddFragment : BaseFragment() {
                         activity?.onBackPressed()
                     }
                 }
-            })
+            }
         }
         if (!asset.accountName.isNullOrEmpty()) {
             label_et.hint = getString(R.string.account_name)

@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
-              android:layout_height="match_parent"
+              android:layout_height="wrap_content"
               android:background="@drawable/bg_round_top_white"
               android:gravity="bottom"
               android:orientation="vertical">
 
-    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-              android:text="@string/withdrawal_enter_pin"
-              android:layout_marginTop="@dimen/activity_vertical_margin"
-              android:layout_marginBottom="@dimen/activity_vertical_margin"
-              android:layout_gravity="center_horizontal"
-              android:textSize="16sp"
-              android:textColor="@android:color/black"/>
+    <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/withdrawal_enter_pin"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_gravity="center_horizontal"
+            android:textSize="16sp"
+            android:textColor="@android:color/black"/>
 
-    <View android:layout_width="180dp" android:layout_height=".5dp"
-          android:background="@color/divider"
-          android:layout_marginBottom="6dp"
-          android:layout_gravity="center_horizontal"/>
+    <View
+            android:layout_width="180dp"
+            android:layout_height=".5dp"
+            android:background="@color/divider"
+            android:layout_marginBottom="6dp"
+            android:layout_gravity="center_horizontal"/>
 
     <LinearLayout
+            android:id="@+id/pin_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
@@ -53,18 +57,11 @@
             </FrameLayout>
         </ViewAnimator>
 
-        <View android:layout_width="180dp" android:layout_height=".5dp"
-              android:background="@color/divider"
-              android:layout_gravity="center_horizontal"/>
-
-        <TextView
-                android:id="@+id/tip_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:layout_marginTop="16dp"
-                android:text="@string/withdrawal_addr_pin_add"
-                android:textColor="@color/text_gray"/>
+        <View
+                android:layout_width="180dp"
+                android:layout_height=".5dp"
+                android:background="@color/divider"
+                android:layout_gravity="center_horizontal"/>
 
         <one.mixin.android.widget.Keyboard
                 android:id="@+id/keyboard"

@@ -11,11 +11,13 @@ import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_USER
+import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.putLong
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
@@ -28,6 +30,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 
@@ -131,6 +134,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                             contentView.pin_va.displayedChild = POS_PIN
                             if (it.isSuccess) {
+                                defaultSharedPreferences.putLong(BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                                 context?.updatePinCheck()
                                 dismiss()
                                 callback?.onSuccess()

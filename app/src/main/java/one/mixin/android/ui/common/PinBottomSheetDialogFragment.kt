@@ -3,13 +3,19 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
+import android.view.Gravity
 import android.view.View
+import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.LinearLayout
+import android.widget.TextView
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.vibrate
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
+import org.jetbrains.anko.support.v4.dip
 
 abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -22,6 +28,15 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet, null)
+        val tipTv = View.inflate(context, R.layout.view_pin_bottom_sheet_tip, null) as TextView
+        tipTv.setText(getTipTextRes())
+        val lp = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+            gravity = Gravity.CENTER
+            val dp16 = dip(16)
+            topMargin = dp16
+            bottomMargin = dp16
+        }
+        (contentView.pin_ll as ViewGroup).addView(tipTv, 2, lp)
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
@@ -51,5 +66,13 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.pin.append(value)
             }
         }
+    }
+
+    protected abstract fun getTipTextRes(): Int
+
+    var callback: Callback? = null
+
+    interface Callback {
+        fun onSuccess()
     }
 }

@@ -18,6 +18,7 @@ import one.mixin.android.ui.address.adapter.AddressAdapter
 import one.mixin.android.ui.address.adapter.ItemCallback
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
@@ -106,11 +107,11 @@ class AddressManagementFragment : BaseFragment() {
     private fun showBottomSheet(addr: Address): MixinBottomSheetDialogFragment {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(addressId = addr.addressId, type = DELETE)
         bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
-        bottomSheet.setCallback(object : PinAddrBottomSheetDialogFragment.Callback {
+        bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 deleteSuccess = true
             }
-        })
+        }
         return bottomSheet
     }
 }

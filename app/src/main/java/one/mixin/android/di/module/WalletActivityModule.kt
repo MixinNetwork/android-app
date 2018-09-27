@@ -3,17 +3,19 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.wallet.AllTransactionsFragment
+import one.mixin.android.ui.wallet.BiometricTimeFragment
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.ui.wallet.FeeFragment
 import one.mixin.android.ui.wallet.HiddenAssetsFragment
 import one.mixin.android.ui.wallet.OldPasswordFragment
+import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinCheckDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
-import one.mixin.android.ui.wallet.WalletChangePasswordFragment
 import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.ui.wallet.WalletGetFreeFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
+import one.mixin.android.ui.wallet.WalletSettingFragment
 import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WithdrawalFragment
 
@@ -24,9 +26,6 @@ abstract class WalletActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeWalletChangePasswordFragment(): WalletChangePasswordFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletTransactionsFragment(): TransactionsFragment
@@ -60,4 +59,13 @@ abstract class WalletActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeDepositQrBottomFragment(): DepositQrBottomFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeWalletSettingFragment(): WalletSettingFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePinBiometricsBottomSheetDialogFragment(): PinBiometricsBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeBiometricTimeFragment(): BiometricTimeFragment
 }
