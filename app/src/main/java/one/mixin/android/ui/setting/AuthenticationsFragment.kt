@@ -71,7 +71,7 @@ class AuthenticationsFragment : BaseFragment() {
             .setNegativeButton(R.string.cancel) { dialog, _ ->
                 dialog.dismiss()
             }
-            .setMessage(getString(R.string.setting_auth_cancel_msg,app.name))
+            .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
                 settingViewModel.deauthApp(app.appId).autoDisposable(scopeProvider).subscribe({}, {})
                 list?.removeAt(position)

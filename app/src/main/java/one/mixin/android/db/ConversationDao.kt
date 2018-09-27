@@ -95,7 +95,7 @@ interface ConversationDao : BaseDao<Conversation> {
         category: String,
         name: String,
         announcement: String?,
-        muteUntil:String?,
+        muteUntil: String?,
         createdAt: String,
         status: Int
     )

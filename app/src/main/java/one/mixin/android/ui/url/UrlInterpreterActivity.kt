@@ -14,7 +14,6 @@ import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.Session
 import one.mixin.android.Constants.Scheme
 
-
 class UrlInterpreterActivity : BaseActivity() {
     companion object {
         private const val CODE = "codes"

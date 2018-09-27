@@ -136,7 +136,7 @@ fun Context.appCompatActionBarHeight(): Int {
 }
 
 fun Context.networkConnected(): Boolean {
-    val cm = getSystemService<ConnectivityManager>()?:return false
+    val cm = getSystemService<ConnectivityManager>() ?: return false
     val network: NetworkInfo
     try {
         network = cm.activeNetworkInfo

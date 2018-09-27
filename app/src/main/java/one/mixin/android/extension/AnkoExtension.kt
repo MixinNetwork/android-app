@@ -86,7 +86,6 @@ inline fun android.app.Fragment.alert(
 inline fun AnkoContext<*>.alert(noinline init: AlertBuilder<DialogInterface>.() -> Unit) = ctx.alert(init)
 inline fun android.app.Fragment.alert(noinline init: AlertBuilder<DialogInterface>.() -> Unit) = activity.alert(init)
 
-
 inline fun AnkoContext<*>.progressDialog(
     message: Int? = null,
     title: Int? = null,
@@ -104,7 +103,6 @@ fun Context.progressDialog(
     title: Int? = null,
     init: (ProgressDialog.() -> Unit)? = null
 ) = progressDialog(false, message?.let { getString(it) }, title?.let { getString(it) }, init)
-
 
 inline fun AnkoContext<*>.indeterminateProgressDialog(
     message: Int? = null,
@@ -124,7 +122,6 @@ fun Context.indeterminateProgressDialog(
     init: (ProgressDialog.() -> Unit)? = null
 ) = progressDialog(true, message?.let { getString(it) }, title?.let { getString(it) }, init)
 
-
 inline fun AnkoContext<*>.progressDialog(
     message: CharSequence? = null,
     title: CharSequence? = null,
@@ -143,7 +140,6 @@ fun Context.progressDialog(
     init: (ProgressDialog.() -> Unit)? = null
 ) = progressDialog(false, message, title, init)
 
-
 inline fun AnkoContext<*>.indeterminateProgressDialog(
     message: CharSequence? = null,
     title: CharSequence? = null,
@@ -161,7 +157,6 @@ fun Context.indeterminateProgressDialog(
     title: CharSequence? = null,
     init: (ProgressDialog.() -> Unit)? = null
 ) = progressDialog(true, message, title, init)
-
 
 private fun Context.progressDialog(
     indeterminate: Boolean,
@@ -186,4 +181,3 @@ fun <K, V> arrayMapOf(vararg pairs: Pair<K, V>): ArrayMap<K, V> {
     }
     return map
 }
-

@@ -24,5 +24,4 @@ internal constructor(private val accountRepository: AccountRepository, private v
 
     @SuppressLint("CheckResult")
     fun deauthApp(appId: String) = accountRepository.deAuthorize(DeauthorRequest(appId)).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
-
 }

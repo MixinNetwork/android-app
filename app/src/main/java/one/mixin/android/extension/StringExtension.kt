@@ -210,8 +210,7 @@ fun String.getPattern(count: Int = 8): String {
         count + 1
     else if (index == 2 && this[0] == '-' && this[1] == '0')
         count + 2
-    else
-        count
+    else count
 
     val sb = StringBuilder(",###.")
     for (i in 0 until (bit - index)) {
@@ -234,8 +233,7 @@ fun Editable.maxDecimal(bit: Int = 8) {
             bit
         else if (index == 2 && this[0] == '-' && this[1] == '0')
             bit + 1
-        else
-            bit - 1
+        else bit - 1
         if (this.length - 1 - index > max) {
             this.delete(this.length - 1, this.length)
         }

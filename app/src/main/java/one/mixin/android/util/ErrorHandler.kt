@@ -109,7 +109,7 @@ open class ErrorHandler {
                     INVALID_ADDRESS -> {
                         toast(R.string.error_invalid_address)
                     }
-                    WITHDRAWAL_AMOUNT_SMALL->{
+                    WITHDRAWAL_AMOUNT_SMALL -> {
                         toast(R.string.error_too_small_withdraw_amount)
                     }
                     else -> handled = false
