@@ -109,7 +109,7 @@
     <string name="landing_enter_name_hint">名称</string>
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
     <string name="landing_resend_code_enable">重发验证码</string>
-    <string name="landing_resend_code_disable">%1$d 秒后重新发送验证码</string>%$1d
+    <string name="landing_resend_code_disable">%1$d 秒后重新发送验证码</string>
     <string name="landing_validation_title">请输入发送至以下号码的 4 位验证码： %1$s</string>
     <string name="landing_validation_error">验证码不正确</string>
     <string name="landing_enter_name_title">你的名字?</string>
@@ -152,7 +152,7 @@
     <string name="change_phone_success">修改手机号成功!</string>
     <string name="edit_name">修改昵称</string>
     <!-- chat -->
-    <string name="chat_waiting">等待%1$s上线后建立加密会话。%1$s。</string>
+    <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="chat_learn">了解更多</string>
     <string name="week_monday">星期一</string>
     <string name="week_tuesday">星期二</string>
@@ -230,7 +230,7 @@
     <string name="wallet_change_password_success">钱包密码修改成功</string>
     <string name="wallet_set_password_success">钱包密码设置成功</string>
     <string name="wallet_all_transactions">所有交易</string>
-    <string name="wallet_transactions_hash">%1$s......%1$s</string>
+    <string name="wallet_transactions_hash">%1$s......%2$s</string>
     <string name="pin_check_title">输入你的钱包密码</string>
     <string name="pin_check_tip">定期输入钱包密码有助于记住该密码</string>
     <string name="transactions_id">交易编号</string>
@@ -379,7 +379,7 @@
     <string name="auth_apps_read_description">访问你的应用列表</string>
     <string name="auth_apps_write">管理应用</string>
     <string name="auth_apps_write_description">管理你所有的应用</string>
-    <string name="auth_profile_content">%1$s, %1$s, 头像</string>
+    <string name="auth_profile_content">%1$s, %2$s, 头像</string>
     <string name="auth_assets_more">%1$s 等</string>
     <string name="auth_permission_contacts_read">读取联系人</string>
     <string name="auth_permission_contacts_read_description">访问你的联系人列表</string>
@@ -400,8 +400,8 @@
     <!--withdrawal-->
     <string name="withdrawal">提现</string>
     <string name="withdrawal_tap_add_addr">点击添加地址</string>
-    <string name="withdrawal_fee">需要 %1$s 作为 %1$s 的提现手续费。</string>
-    <string name="withdrawal_fee_with_reserve">需要 %1$s 作为 %1$s 的提现手续费。%1$s 最少需要保留 %1$s 个 %1$s。</string>
+    <string name="withdrawal_fee">需要 %1$s 作为 %2$s 的提现手续费。</string>
+    <string name="withdrawal_fee_with_reserve">需要 %1$s 作为 %2$s 的提现手续费。%3$s 最少需要保留 %4$s 个 %5$s。</string>
     <string name="withdrawal_addr_book">%1$s 地址簿</string>
     <string name="withdrawal_addr_add">添加地址</string>
     <string name="withdrawal_addr_new">新 %1$s 地址</string>
@@ -427,7 +427,7 @@
     <string name="gallery_empty_text">还没有图片或视频</string>
     <string name="account_name">账号名</string>
     <string name="account_memo">备注</string>
-    <string name="deposit_tip">注意：账号名和备注同时使用才能充值 %1$s 到 Mixin，充值到账至少需要 %1$d 个区块确认。</string>
+    <string name="deposit_tip">注意：账号名和备注同时使用才能充值 %1$s 到 Mixin，充值到账至少需要 %2$d 个区块确认。</string>
     <!--sticker-->
     <string name="sticker_manager">管理贴纸</string>
     <string name="sticker_add">添加贴纸</string>

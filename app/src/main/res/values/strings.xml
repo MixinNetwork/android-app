@@ -158,7 +158,7 @@
     <string name="change_phone_success">Change phone number successfully!</string>
     <string name="edit_name">Edit Name</string>
     <!-- chat -->
-    <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %1$s.</string>
+    <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %2$s.</string>
     <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>
     <string name="chat_learn">Learn more</string>
     <string name="week_monday">Monday</string>
@@ -236,7 +236,7 @@
     <string name="wallet_verifying">Verifying…</string>
     <string name="wallet_change_password_success">Change Wallet PIN successfully</string>
     <string name="wallet_set_password_success">Set Wallet PIN successfully</string>
-    <string name="wallet_transactions_hash">%1$s…%1$s</string>
+    <string name="wallet_transactions_hash">%1$s…%2$s</string>
     <string name="wallet_all_transactions">All Transactions</string>
     <string name="pin_check_title">Enter your Wallet PIN</string>
     <string name="pin_check_tip">You\'ll be asked for it periodically to help you remember it.</string>
@@ -385,7 +385,7 @@
     <string name="auth_apps_read_description">access your apps list</string>
     <string name="auth_apps_write">Manage apps</string>
     <string name="auth_apps_write_description">mange all your apps</string>
-    <string name="auth_profile_content">%1$s, %1$s, profile photo</string>
+    <string name="auth_profile_content">%1$s, %2$s, profile photo</string>
     <string name="auth_assets_more">%1$s and more</string>
     <string name="auth_permission_contacts_read">Read contacts</string>
     <string name="auth_permission_contacts_read_description">access your contacts list</string>
@@ -406,8 +406,8 @@
     <!--withdrawal-->
     <string name="withdrawal">Withdrawal</string>
     <string name="withdrawal_tap_add_addr">Tap to add address</string>
-    <string name="withdrawal_fee">A transaction fee of %1$s is required for withdrawing %1$s</string>
-    <string name="withdrawal_fee_with_reserve">A transaction fee of %1$s is required for withdrawing %1$s. %1$s has a minimum %1$s %1$s reserve requirement.</string>
+    <string name="withdrawal_fee">A transaction fee of %1$s is required for withdrawing %2$s</string>
+    <string name="withdrawal_fee_with_reserve">A transaction fee of %1$s is required for withdrawing %2$s. %3$s has a minimum %4$s %5$s reserve requirement.</string>
     <string name="withdrawal_addr_book">%1$s Address Book</string>
     <string name="withdrawal_addr_add">Add Address</string>
     <string name="withdrawal_addr_new">New %1$s Address</string>
@@ -434,7 +434,7 @@
     <string name="gallery_empty_text">No media yet</string>
     <string name="account_name">Account Name</string>
     <string name="account_memo">Account Memo</string>
-    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your %1$s to Mixin, deposit will arrive after at least %1$d block confirmations.</string>
+    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your %1$s to Mixin, deposit will arrive after at least %2$d block confirmations.</string>
     <!--sticker-->
     <string name="sticker_manager">Manager Sticker</string>
     <string name="sticker_add">Add Sticker</string>
