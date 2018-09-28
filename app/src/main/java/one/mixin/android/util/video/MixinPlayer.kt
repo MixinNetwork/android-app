@@ -132,7 +132,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
             .readTimeout(30, TimeUnit.SECONDS)
             .addNetworkInterceptor(logging)
             .build()
-        return OkHttpDataSourceFactory(okHttpClient, Util.getUserAgent(MixinApplication.appContext, BuildConfig.APPLICATION_ID), null)
+        return OkHttpDataSourceFactory(okHttpClient, Util.getUserAgent(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
     }
 
     override fun onTimelineChanged(timeline: Timeline?, manifest: Any?, reason: Int) {
