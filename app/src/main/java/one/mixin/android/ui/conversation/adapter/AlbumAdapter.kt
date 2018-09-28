@@ -8,6 +8,7 @@ import android.view.View
 import kotlinx.android.synthetic.main.layout_sticker_tab.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
+import one.mixin.android.ui.conversation.GiphyFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.vo.StickerAlbum
@@ -25,22 +26,33 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
     var callback: StickerAlbumFragment.Callback? = null
 
     override fun getItem(position: Int): Fragment {
-        val stickerFragment = when (position) {
+        val fragment = when (position) {
             TYPE_RECENT -> StickerFragment.newInstance(type = TYPE_RECENT)
             TYPE_LIKE -> StickerFragment.newInstance(type = TYPE_LIKE)
-            TYPE_GIPHY -> StickerFragment.newInstance(type = TYPE_GIPHY)
+            TYPE_GIPHY -> GiphyFragment.newInstance()
             else -> StickerFragment.newInstance(albums[position - UN_NORMAL_COUNT].albumId, TYPE_NORMAL)
         }
-        stickerFragment.setCallback(object : Callback {
-            override fun onStickerClick(stickerId: String) {
-                callback?.onStickerClick(stickerId)
-            }
+        if (fragment is GiphyFragment) {
+            fragment.callback = object : Callback {
+                override fun onStickerClick(stickerId: String) {
+                }
 
-            override fun onGiphyClick(url: String) {
-                callback?.onGiphyClick(url)
+                override fun onGiphyClick(url: String) {
+                    callback?.onGiphyClick(url)
+                }
             }
-        })
-        return stickerFragment
+        } else {
+            fragment as StickerFragment
+            fragment.setCallback(object : Callback {
+                override fun onGiphyClick(url: String) {
+                }
+
+                override fun onStickerClick(stickerId: String) {
+                    callback?.onStickerClick(stickerId)
+                }
+            })
+        }
+        return fragment
     }
 
     override fun getCount(): Int = albums.size + UN_NORMAL_COUNT
