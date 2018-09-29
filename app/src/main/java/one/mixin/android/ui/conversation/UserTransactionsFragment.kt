@@ -36,6 +36,9 @@ class UserTransactionsFragment : BaseFragment() {
         const val TAG = "UserTransactionsFragment"
         private const val ARGS_ID = "args_id"
 
+        const val POS_RV = 0
+        const val POS_EMPTY = 1
+
         fun newInstance(userId: String): UserTransactionsFragment {
             val f = UserTransactionsFragment()
             val b = Bundle()
@@ -78,37 +81,46 @@ class UserTransactionsFragment : BaseFragment() {
                 if (recycler_view.adapter == null) {
                     recycler_view.adapter = adapter
                 }
-                adapter.list = it
-                adapter.notifyDataSetChanged()
+                if (it != null && it.isNotEmpty()) {
+                    transactions_va.displayedChild = POS_RV
+                    adapter.list = it
+                    adapter.notifyDataSetChanged()
+                } else {
+                    transactions_va.postDelayed({
+                        if (isAdded && (it == null || it.isEmpty())) {
+                            transactions_va.displayedChild = POS_EMPTY
+                        }
+                    }, 1000)
+                }
             })
     }
 
     private val snapshotClick: (SnapshotItem) -> Unit = { snapshot ->
-        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({
-            it.let {
+        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({ assetItem ->
+            assetItem.let {
                 val fragment = TransactionFragment.newInstance(snapshot, it)
                 activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
             }
         }, {})
     }
 
-    class TransactionsAdapter(val action: (SnapshotItem) -> Unit) : RecyclerView.Adapter<TransacationHolder>() {
+    class TransactionsAdapter(val action: (SnapshotItem) -> Unit) : RecyclerView.Adapter<TransactionHolder>() {
         var list: List<SnapshotItem>? = null
 
-        override fun onCreateViewHolder(vg: ViewGroup, position: Int): TransacationHolder {
-            return TransacationHolder(LayoutInflater.from(vg.context).inflate(R.layout.item_wallet_transactions, vg, false))
+        override fun onCreateViewHolder(vg: ViewGroup, position: Int): TransactionHolder {
+            return TransactionHolder(LayoutInflater.from(vg.context).inflate(R.layout.item_wallet_transactions, vg, false))
         }
 
         override fun getItemCount(): Int = notNullElse(list, { it.size }, 0)
 
-        override fun onBindViewHolder(holder: TransacationHolder, position: Int) {
+        override fun onBindViewHolder(holder: TransactionHolder, position: Int) {
             list?.let {
                 holder.bind(it[position], action)
             }
         }
     }
 
-    class TransacationHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class TransactionHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(snapshot: SnapshotItem, action: (SnapshotItem) -> Unit) {
             val isPositive = snapshot.amount.toFloat() > 0
             itemView.date.text = snapshot.createdAt.date()
