@@ -149,9 +149,6 @@ class VerificationFragment : BaseFragment() {
         showLoading()
         mobileViewModel.changePhone(arguments!!.getString(ARGS_ID), pin_verification_view.code(), pin = pin!!)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
-                if (!isAdded) {
-                    return@subscribe
-                }
                 verification_next_fab.hide()
                 verification_cover.visibility = GONE
                 if (!r.isSuccess) {

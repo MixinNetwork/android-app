@@ -104,7 +104,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        contentView.chat_web_view.hitTestResult?.let {
+        contentView.chat_web_view.hitTestResult?.let { it ->
             val url = it.extra
             if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
                 doAsync {
