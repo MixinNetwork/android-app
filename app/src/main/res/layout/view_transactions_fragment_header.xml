@@ -6,6 +6,7 @@
     android:orientation="vertical">
 
     <LinearLayout
+        android:id="@+id/top_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/white"
@@ -78,6 +79,7 @@
         android:layout_height="50dp"
         android:background="@color/bg_gray"
         android:gravity="bottom"
+        android:visibility="gone"
         android:paddingBottom="8dp"
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:paddingStart="@dimen/activity_horizontal_margin"

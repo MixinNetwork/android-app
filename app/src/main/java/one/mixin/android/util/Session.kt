@@ -101,7 +101,10 @@ class Session {
 
             if (TrueTime.isInitialized()) {
                 val now = TrueTime.now().time / 1000
-                if (now - iat > 60) {
+                val diff = now - iat
+                if (diff > 60 * 30) {
+                    Bugsnag.notify(IllegalArgumentException("Mobile time different to NTP more than half an hour!"))
+                } else if (diff > 60) {
                     Bugsnag.notify(IllegalArgumentException("Mobile time different to NTP more than one minute!"))
                 }
             }

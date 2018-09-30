@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.support.v7.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_transactions.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -95,9 +97,11 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         recycler_view.addItemDecoration(SpaceItemDecoration(1))
         recycler_view.adapter = adapter
 
-        walletViewModel.snapshotsFromDb(asset.assetId).observe(this, Observer {
-            it?.let {
-                snapshots = it
+        walletViewModel.snapshotsFromDb(asset.assetId).observe(this, Observer { list ->
+            if (list != null && list.isNotEmpty()) {
+                header.group_info_member_title_tv.visibility = VISIBLE
+                bottom_fl.visibility = GONE
+                snapshots = list
                 adapter.data = snapshots
                 adapter.notifyDataSetChanged()
 
@@ -111,10 +115,18 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                         }
                     }
                 }
+            } else {
+                header.postDelayed({
+                    if (adapter.data == null || adapter.data!!.isEmpty()) {
+                        header?.group_info_member_title_tv?.visibility = GONE
+                        bottom_fl?.visibility = VISIBLE
+                        adapter.notifyDataSetChanged()
+                    }
+                }, 1000)
             }
         })
-        walletViewModel.assetItem(asset.assetId).observe(this, Observer {
-            it?.let {
+        walletViewModel.assetItem(asset.assetId).observe(this, Observer { assetItem ->
+            assetItem?.let {
                 asset = it
                 updateHeader(header, it)
             }
