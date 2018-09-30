@@ -282,7 +282,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 }
             }, {
                 ErrorHandler.handleError(it)
-                if (!isAdded) return@subscribe
             })
     }
 

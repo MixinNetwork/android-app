@@ -180,33 +180,28 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                         if (found != null) {
                             linkViewModel.refreshConversation(response.conversationId)
                             context?.toast(R.string.group_already_in)
-                            context?.let {
-                                if (isAdded)
-                                    ConversationActivity.show(it, response.conversationId)
-                            }
-                            dismiss()
+                            context?.let { ConversationActivity.show(it, response.conversationId) }
                         } else {
-                            dismiss()
                             GroupBottomSheetDialogFragment.newInstance(response.conversationId, code)
                                 .showNow(requireFragmentManager(), GroupBottomSheetDialogFragment.TAG)
                         }
+                        dismiss()
                     }
                     result.first == QrCodeType.user.name -> {
                         val user = result.second as User
                         val account = Session.getAccount()
                         if (account != null && account.userId == (result.second as User).userId) {
                             context?.toast("It's your QR Code, please try another.")
-                            dismiss()
-                            return@subscribe
+                        } else {
+                            UserBottomSheetDialogFragment.newInstance(user).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                         }
                         dismiss()
-                        UserBottomSheetDialogFragment.newInstance(user).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }
                     result.first == QrCodeType.authorization.name -> {
                         val authorization = result.second as AuthorizationResponse
                         doAsync {
                             val assets = linkViewModel.simpleAssetsWithBalance()
-                            uiThread {
+                            uiThread { _ ->
                                 activity?.let {
                                     val scopes = AuthBottomSheetDialogFragment
                                         .handleAuthorization(it, authorization, assets)

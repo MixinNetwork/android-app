@@ -308,7 +308,7 @@
     <string name="wallet_pin_pay_interval_tips">For the security of your assets, you need to verify your Wallet PIN for the specified interval.</string>
     <string name="wallet_biometric_screen_lock">Screen Lock</string>
     <string name="wallet_biometric_screen_lock_desc">Use your device pattern to continue</string>
-    <string name="wallet_transactions_empty">No transactions.</string>
+    <string name="wallet_transactions_empty">No transactions</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>

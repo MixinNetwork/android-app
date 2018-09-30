@@ -67,17 +67,15 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
                         context?.updatePinCheck()
                         dismiss()
                     } else {
-                        contentView.pin?.clear()
+                        contentView.pin.clear()
                         if (r.errorCode == ErrorHandler.PIN_INCORRECT) {
-                            contentView.pin?.error(getString(R.string.error_pin_incorrect))
+                            contentView.pin.error(getString(R.string.error_pin_incorrect))
                         } else if (r.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                            if (isAdded) {
-                                contentView.pin_va.displayedChild = POS_TIP
-                                contentView.tip_va.showNext()
-                                val transY = contentView.height / 2 - contentView.top_ll.translationY * 2
-                                contentView.top_ll.animate().translationY(transY).start()
-                                contentView.keyboard.animate().translationY(contentView.keyboard.height.toFloat()).start()
-                            }
+                            contentView.pin_va.displayedChild = POS_TIP
+                            contentView.tip_va.showNext()
+                            val transY = contentView.height / 2 - contentView.top_ll.translationY * 2
+                            contentView.top_ll.animate().translationY(transY).start()
+                            contentView.keyboard.animate().translationY(contentView.keyboard.height.toFloat()).start()
                         }
                         ErrorHandler.handleMixinError(r.errorCode)
                     }

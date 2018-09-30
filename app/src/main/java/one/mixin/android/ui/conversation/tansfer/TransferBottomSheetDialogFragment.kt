@@ -130,8 +130,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     bottomViewModel.transfer(asset.assetId, user.userId, amount,
                         contentView.pin.code(), trace, memo).autoDisposable(scopeProvider)
                         .subscribe({
-                            if (!isAdded) return@subscribe
-
                             contentView.pin_va.displayedChild = POS_PIN
                             if (it.isSuccess) {
                                 defaultSharedPreferences.putLong(BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
@@ -144,8 +142,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }
                         }, {
                             ErrorHandler.handleError(it)
-                            if (!isAdded) return@subscribe
-
                             contentView.pin.clear()
                             contentView.pin_va.displayedChild = POS_PIN
                         })
