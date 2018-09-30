@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_gray"
@@ -14,41 +13,10 @@
         app:layout_constraintTop_toTopOf="parent"
         app:titleText="@string/wallet_transactions_title"/>
 
-    <ViewAnimator
-        android:id="@+id/transactions_va"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
 
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical"
-            tools:ignore="UseCompoundDrawables">
-
-            <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
-                android:layout_marginBottom="8dp"
-                android:src="@drawable/ic_hidden_assets"
-                android:contentDescription="@null"
-                android:layout_above="@+id/empty_tv"
-                android:layout_centerHorizontal="true"/>
-
-            <TextView
-                android:id="@+id/empty_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="@string/wallet_transactions_empty"
-                android:textColor="@color/text_gray"
-                android:textSize="16sp"/>
-        </RelativeLayout>
-    </ViewAnimator>
 </LinearLayout>

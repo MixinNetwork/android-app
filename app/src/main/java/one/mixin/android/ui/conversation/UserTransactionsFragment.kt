@@ -36,9 +36,6 @@ class UserTransactionsFragment : BaseFragment() {
         const val TAG = "UserTransactionsFragment"
         private const val ARGS_ID = "args_id"
 
-        const val POS_RV = 0
-        const val POS_EMPTY = 1
-
         fun newInstance(userId: String): UserTransactionsFragment {
             val f = UserTransactionsFragment()
             val b = Bundle()
@@ -81,23 +78,14 @@ class UserTransactionsFragment : BaseFragment() {
                 if (recycler_view.adapter == null) {
                     recycler_view.adapter = adapter
                 }
-                if (it != null && it.isNotEmpty()) {
-                    transactions_va.displayedChild = POS_RV
-                    adapter.list = it
-                    adapter.notifyDataSetChanged()
-                } else {
-                    transactions_va.postDelayed({
-                        if (isAdded && (it == null || it.isEmpty())) {
-                            transactions_va.displayedChild = POS_EMPTY
-                        }
-                    }, 1000)
-                }
+                adapter.list = it
+                adapter.notifyDataSetChanged()
             })
     }
 
     private val snapshotClick: (SnapshotItem) -> Unit = { snapshot ->
-        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({ assetItem ->
-            assetItem.let {
+        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({
+            it.let {
                 val fragment = TransactionFragment.newInstance(snapshot, it)
                 activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
             }
