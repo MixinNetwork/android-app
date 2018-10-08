@@ -1,6 +1,6 @@
 package one.mixin.android.ui.common
 
-import android.support.v4.app.Fragment
+import androidx.fragment.app.Fragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import one.mixin.android.di.Injectable
 

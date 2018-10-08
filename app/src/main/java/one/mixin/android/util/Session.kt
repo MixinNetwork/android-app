@@ -1,6 +1,5 @@
 package one.mixin.android.util
 
-import androidx.core.util.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -13,6 +12,7 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
+import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.cutOut

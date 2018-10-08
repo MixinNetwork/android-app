@@ -16,25 +16,18 @@
 
 package android.support.v7.app;
 
-
 import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.os.Bundle;
-import android.support.annotation.RestrictTo;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.MixinDialogFragment;
 import android.view.Window;
 import android.view.WindowManager;
+import androidx.annotation.RestrictTo;
+import androidx.appcompat.app.AppCompatDialog;
+import androidx.core.app.MixinDialogFragment;
 
 
-import static android.support.annotation.RestrictTo.Scope.LIBRARY_GROUP;
+import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
 
-/**
- * A special version of {@link DialogFragment} which uses an {@link AppCompatDialog} in place of a
- * platform-styled dialog.
- *
- * @see DialogFragment
- */
 public class MixinAppCompatDialogFragment extends MixinDialogFragment {
 
     @Override

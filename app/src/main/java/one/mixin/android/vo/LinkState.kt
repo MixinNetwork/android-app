@@ -1,6 +1,6 @@
 package one.mixin.android.vo
 
-import android.arch.lifecycle.LiveData
+import androidx.lifecycle.LiveData
 
 class LinkState : LiveData<Int>() {
     companion object {

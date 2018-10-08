@@ -1,9 +1,9 @@
 package one.mixin.android.db
 
-import android.arch.lifecycle.LiveData
-import android.arch.persistence.room.Dao
-import android.arch.persistence.room.Query
-import android.arch.persistence.room.RoomWarnings
+import androidx.lifecycle.LiveData
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.RoomWarnings
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 

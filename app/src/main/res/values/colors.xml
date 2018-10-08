@@ -7,6 +7,7 @@
     <color name="colorDarkBlue">#1987FF</color>
     <color name="colorGray">#9B9B9B</color>
 
+    <color name="white">#ffffffff</color>
     <color name="black">#ff000000</color>
     <color name="black_50">#88000000</color>
     <color name="black_70">#B2000000</color>
@@ -35,7 +36,6 @@
     <color name="color_blink">#FF5E5E</color>
     <color name="color_gray">#D6D6D6</color>
     <color name="progress_gary">#F2F2F6</color>
-    <color name="shadow">#33000000</color>
     <color name="color_record_circle_bg">#EE1987FF</color>
     <color name="text_default">#767676</color>
 

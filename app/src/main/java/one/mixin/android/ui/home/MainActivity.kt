@@ -5,9 +5,9 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.support.v4.app.DialogFragment
 import android.view.KeyEvent
 import android.view.View
+import androidx.fragment.app.DialogFragment
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
@@ -57,6 +57,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
 import one.mixin.android.widget.MaterialSearchView
+import one.mixin.android.extension.alert
 import org.jetbrains.anko.alert
 import javax.inject.Inject
 

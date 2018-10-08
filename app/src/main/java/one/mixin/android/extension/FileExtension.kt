@@ -14,13 +14,13 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
 import android.provider.MediaStore.Images.ImageColumns
-import android.support.media.ExifInterface
-import android.support.v4.content.ContextCompat
-import android.support.v4.os.EnvironmentCompat
 import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.core.os.EnvironmentCompat
+import androidx.exifinterface.media.ExifInterface
 import one.mixin.android.MixinApplication
 import one.mixin.android.widget.gallery.MimeType
 import java.io.ByteArrayOutputStream

@@ -1,8 +1,8 @@
 package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
@@ -34,6 +34,7 @@ import one.mixin.android.crypto.generateRSAKeyPair
 import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.rsaDecrypt
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.saveQRCode
@@ -52,7 +53,6 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
 import one.mixin.android.widget.VerificationCodeView.OnCodeEnteredListener
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.alert
 import org.jetbrains.anko.uiThread
 import org.jetbrains.anko.windowManager
 import org.jetbrains.anko.yesButton

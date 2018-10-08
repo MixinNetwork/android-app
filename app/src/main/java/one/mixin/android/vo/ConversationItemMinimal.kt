@@ -1,6 +1,6 @@
 package one.mixin.android.vo
 
-import android.arch.persistence.room.Entity
+import androidx.room.Entity
 
 @Entity
 data class ConversationItemMinimal(

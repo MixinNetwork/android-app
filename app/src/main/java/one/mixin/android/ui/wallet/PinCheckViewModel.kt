@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet
 
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
 import one.mixin.android.repository.AccountRepository
 import javax.inject.Inject
 

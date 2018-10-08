@@ -6,8 +6,8 @@ import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyInfo
 import android.security.keystore.KeyProperties
 import android.security.keystore.UserNotAuthenticatedException
-import android.support.v4.app.Fragment
-import androidx.core.content.systemService
+import androidx.core.content.getSystemService
+import androidx.fragment.app.Fragment
 import com.bugsnag.android.Bugsnag
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
@@ -35,7 +35,7 @@ object BiometricUtil {
     }
 
     fun showAuthenticationScreen(fragment: Fragment) {
-        val intent = fragment.requireContext().systemService<KeyguardManager>().createConfirmDeviceCredentialIntent(
+        val intent = fragment.requireContext().getSystemService<KeyguardManager>()?.createConfirmDeviceCredentialIntent(
             fragment.requireContext().getString(R.string.wallet_biometric_screen_lock),
             fragment.requireContext().getString(R.string.wallet_biometric_screen_lock_desc))
         if (intent != null) {

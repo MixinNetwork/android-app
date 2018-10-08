@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/link_layout"
         android:layout_width="match_parent"
         android:layout_height="200dp"
@@ -85,7 +85,7 @@
             app:layout_constraintBottom_toBottomOf="@id/link_join"
             app:layout_constraintEnd_toStartOf="@id/link_join" />
 
-        <android.support.v7.widget.RecyclerView
+        <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/link_rv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -99,9 +99,9 @@
             app:layout_constraintTop_toBottomOf="@id/link_num_tv"
             app:layout_constraintVertical_bias="0" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/link_error"
         android:layout_width="match_parent"
         android:layout_height="200dp"
@@ -129,7 +129,7 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/link_loading"

@@ -7,7 +7,7 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
-import androidx.core.content.systemService
+import androidx.core.content.getSystemService
 import kotlinx.coroutines.experimental.Dispatchers
 import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.android.Main
@@ -83,7 +83,7 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                     }
                 }
             }
-            ctx.systemService<TelephonyManager>()?.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+            ctx.getSystemService<TelephonyManager>()?.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
         } catch (ignore: Exception) {
         }
     }

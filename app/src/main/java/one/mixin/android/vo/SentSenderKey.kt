@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Entity
+import androidx.room.ColumnInfo
+import androidx.room.Entity
 import one.mixin.android.extension.nowInUtc
 
 @Entity(tableName = "sent_sender_keys", primaryKeys = ["conversation_id", "user_id"])

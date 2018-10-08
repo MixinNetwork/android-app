@@ -119,7 +119,7 @@
         android:background="@android:color/white"
         android:foreground="?attr/selectableItemBackground">
 
-        <android.support.v4.widget.Space
+        <androidx.legacy.widget.Space
             android:id="@+id/center_new_group"
             android:layout_width="1dp"
             android:layout_height="1dp"
@@ -168,7 +168,7 @@
         android:background="@android:color/white"
         android:foreground="?attr/selectableItemBackground">
 
-        <android.support.v4.widget.Space
+        <androidx.legacy.widget.Space
             android:id="@+id/center_add_contact"
             android:layout_width="1dp"
             android:layout_height="1dp"
@@ -217,7 +217,7 @@
         android:background="@android:color/white"
         android:foreground="?attr/selectableItemBackground">
 
-        <android.support.v4.widget.Space
+        <androidx.legacy.widget.Space
             android:id="@+id/center_qr"
             android:layout_width="1dp"
             android:layout_height="1dp"
@@ -261,7 +261,7 @@
         android:foreground="?attr/selectableItemBackground"
         android:background="@android:color/white">
 
-        <android.support.v4.widget.Space
+        <androidx.legacy.widget.Space
             android:id="@+id/center_invite"
             android:layout_width="1dp"
             android:layout_height="1dp"

@@ -3,9 +3,9 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Color
 import android.os.SystemClock
-import android.support.v4.content.ContextCompat
-import android.support.v4.view.ViewCompat
-import android.support.v7.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.appcompat.app.AppCompatDelegate
 import android.text.Editable
 import android.text.InputType
 import android.text.TextUtils

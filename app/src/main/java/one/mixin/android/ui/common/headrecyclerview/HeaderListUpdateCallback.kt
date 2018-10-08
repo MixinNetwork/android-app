@@ -1,6 +1,6 @@
 package one.mixin.android.ui.common.headrecyclerview
 
-import android.support.v7.util.ListUpdateCallback
+import androidx.recyclerview.widget.ListUpdateCallback
 
 class HeaderListUpdateCallback<T>(private val adapter: HeaderAdapter<T>, private val headerCount: Int = 1) : ListUpdateCallback {
     override fun onChanged(position: Int, count: Int, payload: Any?) {

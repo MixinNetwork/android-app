@@ -3,13 +3,10 @@ package one.mixin.android.ui.conversation
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
 import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
-import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -18,6 +15,9 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
@@ -56,8 +56,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.ctx
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 import java.nio.charset.Charset
@@ -254,7 +252,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
         val cryptoObject = BiometricPromptCompat.DefaultCryptoObject(cipher)
         val cancellationSignal = CancellationSignal().apply {
-            setOnCancelListener { ctx.toast(R.string.cancel) }
+            setOnCancelListener { requireContext().toast(R.string.cancel) }
         }
         biometricPrompt.authenticate(cryptoObject, cancellationSignal, biometricCallback)
     }

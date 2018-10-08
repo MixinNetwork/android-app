@@ -1,8 +1,8 @@
 package one.mixin.android.ui.sticker
 
 import android.app.Dialog
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -30,6 +30,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.maxSizeScale
@@ -43,8 +44,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.indeterminateProgressDialog
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import java.io.File

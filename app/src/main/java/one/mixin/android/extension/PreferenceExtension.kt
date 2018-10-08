@@ -5,8 +5,12 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import androidx.fragment.app.Fragment
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
+
+inline val Fragment.defaultSharedPreferences: SharedPreferences
+    get() = requireContext().defaultSharedPreferences
 
 inline val Context.defaultSharedPreferences: SharedPreferences
     get() = PreferenceManager.getDefaultSharedPreferences(this)

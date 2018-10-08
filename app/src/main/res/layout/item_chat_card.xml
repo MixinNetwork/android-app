@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <android.support.constraint.ConstraintLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="262dp"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
@@ -68,7 +68,7 @@
             app:layout_constraintBottom_toBottomOf="@id/avatar_iv"
             app:layout_constraintStart_toEndOf="@id/avatar_iv" />
 
-    </android.support.constraint.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
 
 

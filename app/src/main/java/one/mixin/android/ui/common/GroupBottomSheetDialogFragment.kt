@@ -2,9 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.arch.lifecycle.Observer
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.view.Gravity
@@ -16,6 +14,8 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.Observer
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
@@ -37,13 +37,13 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.AvatarView
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.margin
-import org.jetbrains.anko.support.v4.dip
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import org.threeten.bp.Instant
@@ -164,7 +164,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 initMenu()
 
                 val size = resources.getDimensionPixelSize(R.dimen.bottom_group_avatar_size)
-                val margin = dip(7.5f)
+                val margin = dp(7.5f)
                 val params = LinearLayout.LayoutParams(size, size)
                 params.marginStart = margin
                 params.marginEnd = margin
@@ -323,7 +323,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val params = editText.layoutParams as FrameLayout.LayoutParams
         params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
         editText.layoutParams = params
-        val nameDialog = android.support.v7.app.AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        val nameDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(R.string.profile_modify_name)
             .setView(frameLayout)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }

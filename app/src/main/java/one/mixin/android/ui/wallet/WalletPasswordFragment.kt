@@ -1,9 +1,9 @@
 package one.mixin.android.ui.wallet
 
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +14,8 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
@@ -28,8 +30,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
-import org.jetbrains.anko.support.v4.indeterminateProgressDialog
 import javax.inject.Inject
 
 class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {

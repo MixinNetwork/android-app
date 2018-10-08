@@ -13,9 +13,9 @@ import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.vibrate
+import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
-import org.jetbrains.anko.support.v4.dip
 
 abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -32,7 +32,7 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         tipTv.setText(getTipTextRes())
         val lp = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
             gravity = Gravity.CENTER
-            val dp16 = dip(16)
+            val dp16 = dp(16f)
             topMargin = dp16
             bottomMargin = dp16
         }

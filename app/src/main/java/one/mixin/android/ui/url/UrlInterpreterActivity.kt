@@ -2,8 +2,8 @@ package one.mixin.android.ui.url
 
 import android.net.Uri
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
-import one.mixin.android.Constants.Scheme
+import androidx.fragment.app.FragmentManager
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
@@ -12,6 +12,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.Session
+import one.mixin.android.Constants.Scheme
 
 class UrlInterpreterActivity : BaseActivity() {
     companion object {
@@ -64,7 +65,7 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
         val segments = Uri.parse(url).pathSegments
         if (url.startsWith(Scheme.HTTPS_CODES, true)) {
             segments.size >= 2 && segments[1].isUUID()
-        } else if (url.startsWith(Scheme.CODES, true)) {
+        } else if (url.startsWith(Constants.Scheme.CODES, true)) {
             segments.size >= 1 && segments[0].isUUID()
         } else if (includeTransfer && url.startsWith(Scheme.TRANSFER, true)) {
             segments.size >= 1 && segments[0].isUUID()

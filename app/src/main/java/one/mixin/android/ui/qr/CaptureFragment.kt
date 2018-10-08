@@ -45,17 +45,16 @@ import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.rotate
 import one.mixin.android.extension.toBytes
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.extension.xYuv2Simple
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.isMixinUrl
+import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.CameraOpView
 import one.mixin.android.widget.PseudoNotificationView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
-import org.jetbrains.anko.support.v4.dip
-import org.jetbrains.anko.support.v4.toast
 import java.io.File
 import java.io.FileOutputStream
 
@@ -207,7 +206,7 @@ class CaptureFragment : BaseFragment() {
                 }
             }
         })
-        pseudo_view.translationY = -dip(300).toFloat()
+        pseudo_view.translationY = -dp(300f).toFloat()
         pseudo_view.callback = pseudoViewCallback
 
         val p = Point()
@@ -268,7 +267,7 @@ class CaptureFragment : BaseFragment() {
         if (!isMixinUrl(data)) {
             MainActivity.showScan(requireContext(), data)
         } else if (data.startsWith(Scheme.TRANSFER, true)
-                || data.startsWith(Scheme.HTTPS_TRANSFER, true)) {
+            || data.startsWith(Scheme.HTTPS_TRANSFER, true)) {
             val segments = Uri.parse(data).pathSegments
             val userId = if (segments.size >= 2) {
                 segments[1]

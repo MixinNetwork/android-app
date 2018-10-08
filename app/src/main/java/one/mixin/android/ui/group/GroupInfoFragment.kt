@@ -1,13 +1,13 @@
 package one.mixin.android.ui.group
 
 import android.app.Dialog
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.widget.PopupMenu
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.ArrayMap
@@ -26,6 +26,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.ConversationEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
 import one.mixin.android.job.ConversationJob.Companion.TYPE_DELETE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_EXIT
@@ -46,7 +47,6 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.indeterminateProgressDialog
 import org.jetbrains.anko.uiThread
 import javax.inject.Inject
 

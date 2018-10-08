@@ -49,7 +49,7 @@
 
                 <include layout="@layout/date_wrapper"/>
 
-                <android.support.constraint.ConstraintLayout
+                <androidx.constraintlayout.widget.ConstraintLayout
                     android:id="@+id/reply_layout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -126,7 +126,7 @@
                         app:layout_constraintStart_toStartOf="@id/reply_name_tv"
                         app:layout_constraintTop_toBottomOf="@id/reply_name_tv"
                         app:layout_constraintWidth_default="wrap"/>
-                </android.support.constraint.ConstraintLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </one.mixin.android.widget.MessageLayout>
         </FrameLayout>
     </LinearLayout>

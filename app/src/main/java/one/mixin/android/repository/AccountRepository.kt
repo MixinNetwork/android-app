@@ -134,5 +134,4 @@ constructor(
         stickerDao.insertUpdate(sticker)
         stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
     }
-
 }

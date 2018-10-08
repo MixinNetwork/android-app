@@ -4,15 +4,15 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.support.v4.content.ContextCompat
-import android.support.v7.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.appcompat.app.AlertDialog
 import android.text.InputType
 import android.util.Base64
 import android.view.LayoutInflater
@@ -32,6 +32,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.extension.REQUEST_IMAGE
+import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.inTransaction
@@ -50,7 +51,6 @@ import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.jetbrains.anko.noButton
 import org.jetbrains.anko.singleLine
-import org.jetbrains.anko.support.v4.alert
 import javax.inject.Inject
 
 class ProfileFragment : BaseFragment() {

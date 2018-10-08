@@ -1,6 +1,6 @@
 package one.mixin.android.ui.home
 
-import android.arch.lifecycle.ViewModel
+import androidx.lifecycle.ViewModel
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.extension.nowInUtc

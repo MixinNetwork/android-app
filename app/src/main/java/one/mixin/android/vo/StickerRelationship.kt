@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
-import android.arch.persistence.room.ColumnInfo
-import android.arch.persistence.room.Entity
+import androidx.room.ColumnInfo
+import androidx.room.Entity
 import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "sticker_relationships",

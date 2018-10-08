@@ -15,7 +15,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.widget.PinView
 
-class PinBiometricsBottomSheetDialogFragment: PinBottomSheetDialogFragment() {
+class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PinBiometricsBottomSheetDialogFragment"
         const val FROM_WALLET_SETTING = "from_wallet_setting"

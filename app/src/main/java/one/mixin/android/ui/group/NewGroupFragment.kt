@@ -3,21 +3,21 @@ package one.mixin.android.ui.group
 import android.Manifest
 import android.app.Activity
 import android.app.Dialog
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.support.v4.content.ContextCompat
-import android.support.v7.widget.RecyclerView
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.fragment_new_group.*
@@ -28,6 +28,7 @@ import one.mixin.android.extension.REQUEST_IMAGE
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openImage
@@ -45,7 +46,6 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
-import org.jetbrains.anko.support.v4.indeterminateProgressDialog
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 

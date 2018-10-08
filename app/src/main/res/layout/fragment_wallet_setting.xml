@@ -32,7 +32,7 @@
                 android:text="@string/wallet_pay_with_biometrics"
                 tools:ignore="RelativeOverlap"/>
 
-        <android.support.v7.widget.SwitchCompat
+        <androidx.appcompat.widget.SwitchCompat
                 android:id="@+id/biometrics_sc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

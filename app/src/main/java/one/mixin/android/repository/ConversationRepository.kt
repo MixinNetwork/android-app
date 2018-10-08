@@ -1,7 +1,7 @@
 package one.mixin.android.repository
 
-import android.arch.lifecycle.LiveData
-import android.arch.paging.DataSource
+import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
 import io.reactivex.Observable
 import kotlinx.coroutines.experimental.GlobalScope
 import kotlinx.coroutines.experimental.launch

@@ -1,7 +1,7 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.support.constraint.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintLayout
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan

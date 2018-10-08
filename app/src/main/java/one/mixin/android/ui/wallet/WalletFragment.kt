@@ -1,16 +1,16 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.os.Bundle
-import android.support.v7.view.ContextThemeWrapper
-import android.support.v7.widget.SimpleItemAnimator
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.SimpleItemAnimator
 import kotlinx.android.synthetic.main.fragment_wallet.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
@@ -18,6 +18,7 @@ import kotlinx.android.synthetic.main.view_wallet_fragment_header.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.numberFormat2
@@ -33,7 +34,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PieItemView
 import one.mixin.android.widget.PieView
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import java.math.BigDecimal
 import javax.inject.Inject
 

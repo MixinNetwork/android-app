@@ -3,10 +3,10 @@ package one.mixin.android.util.image
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
-import android.support.media.ExifInterface
-import android.support.media.ExifInterface.ORIENTATION_ROTATE_180
-import android.support.media.ExifInterface.ORIENTATION_ROTATE_270
-import android.support.media.ExifInterface.ORIENTATION_ROTATE_90
+import androidx.exifinterface.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180
+import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270
+import androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException

@@ -1,6 +1,6 @@
 package one.mixin.android.util
 
-import android.support.v4.util.LruCache
+import androidx.collection.LruCache
 
 class TimeCache private constructor(maxSize: Int) : LruCache<String, Any>(maxSize) {
 

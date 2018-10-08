@@ -2,7 +2,6 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.arch.lifecycle.Observer
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -10,9 +9,10 @@ import android.graphics.Canvas
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.support.v7.view.ContextThemeWrapper
 import android.view.View
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.os.bundleOf
+import androidx.lifecycle.Observer
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Observable
@@ -41,7 +41,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.widget.BadgeCircleImageView.Companion.END_BOTTOM
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.ctx
 import org.jetbrains.anko.uiThread
 import java.io.FileNotFoundException
 
@@ -132,7 +131,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(ContextThemeWrapper(ctx, R.style.Custom), R.layout.view_qr_bottom, null)
+        val view = View.inflate(ContextThemeWrapper(requireContext(), R.style.Custom), R.layout.view_qr_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.save.setOnClickListener {
@@ -141,23 +140,23 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {
-                            val outFile = ctx.getPublicPictyresPath().createImageTemp(noMedia = false)
+                            val outFile = requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
                             val b = Bitmap.createBitmap(contentView.bottom_ll.width, contentView.bottom_ll.height, Bitmap.Config.ARGB_8888)
                             val c = Canvas(b)
                             contentView.bottom_ll.draw(c)
                             b.save(outFile)
                             try {
-                                MediaStore.Images.Media.insertImage(ctx.contentResolver,
+                                MediaStore.Images.Media.insertImage(requireContext().contentResolver,
                                     outFile.absolutePath, outFile.name, null)
                             } catch (e: FileNotFoundException) {
                                 e.printStackTrace()
                             }
-                            ctx.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+                            requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
 
                             uiThread { context?.toast(R.string.save_success) }
                         }
                     } else {
-                        ctx.openPermissionSetting()
+                        requireContext().openPermissionSetting()
                     }
                 }, {
                     context?.toast(R.string.save_failure)

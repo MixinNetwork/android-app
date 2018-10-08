@@ -1,8 +1,8 @@
 package one.mixin.android.widget.gallery.internal.entity;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
-import android.support.v4.app.FragmentActivity;
+import androidx.annotation.IntDef;
+import androidx.fragment.app.FragmentActivity;
 import android.widget.Toast;
 import java.lang.annotation.Retention;
 import one.mixin.android.widget.gallery.internal.ui.widget.IncapableDialog;

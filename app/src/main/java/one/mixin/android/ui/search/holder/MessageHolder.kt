@@ -1,9 +1,9 @@
 package one.mixin.android.ui.search.holder
 
 import android.graphics.drawable.Drawable
-import android.support.v4.widget.TextViewCompat
-import android.support.v7.content.res.AppCompatResources
-import android.support.v7.widget.RecyclerView
+import androidx.core.widget.TextViewCompat
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import kotlinx.android.synthetic.main.item_search_message.view.*
 import one.mixin.android.R
