@@ -442,6 +442,7 @@
     <string name="sticker_add_invalid_format">贴纸格式不支持</string>
     <string name="sticker_add_success">添加成功</string>
     <string name="sticker_search_giphy">搜索 GIPHY</string>
+    <string name="sticker_no_result">未找到相关结果</string>
     <!--auth-->
     <string name="setting_storage">储存空间</string>
     <string name="setting_storage_clear">清除 %1$d 条消息 (%2$s)?</string>

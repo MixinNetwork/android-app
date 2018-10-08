@@ -5,8 +5,6 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
@@ -39,6 +37,10 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "GiphyBottomSheetFragment"
         const val LIMIT = 50
         const val INTERVAL = 3000
+
+        const val POS_RV = 0
+        const val POS_PB = 1
+        const val POS_EMPTY = 2
 
         fun newInstance() = GiphyBottomSheetFragment()
     }
@@ -95,7 +97,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private fun performSearch(search: Boolean) {
         searching = true
         if (offset == 0) {
-            contentView.pb.visibility = VISIBLE
+            contentView.sticker_va.displayedChild = POS_PB
         }
         val query = contentView.search_et.text.toString()
         if (search && query.isNotEmpty()) {
@@ -108,12 +110,16 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 if (search && offset == 0) {
                     adapter.notifyDataSetChanged()
                 }
-                update(list)
+                if (list.isEmpty()) {
+                    contentView.sticker_va.displayedChild = POS_EMPTY
+                } else {
+                    contentView.sticker_va.displayedChild = POS_RV
+                    update(list)
+                }
                 searching = false
-                contentView.pb?.visibility = GONE
             }, { t ->
                 searching = false
-                contentView.pb?.visibility = GONE
+                contentView.sticker_va.displayedChild = POS_EMPTY
                 Timber.d("Search gifs failed, t: ${t.printStackTrace()}")
                 if (t is HttpException && t.code() == 429) {
                     toast("Giphy API rate limit exceeded")

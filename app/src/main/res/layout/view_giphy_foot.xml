@@ -1,23 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="30dp">
 
-    <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:gravity="center_vertical|end"
-            android:text="POWERED BY"/>
-
-    <TextView
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent"
-            android:layout_marginStart="4dp"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:gravity="center_vertical|start"
-            android:text="GIPHY"/>
-</LinearLayout>
+    <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_giphy_power"/>
+</FrameLayout>

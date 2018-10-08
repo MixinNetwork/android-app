@@ -43,27 +43,32 @@
             android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/sticker_rv"
+    <ViewAnimator
+            android:id="@+id/sticker_va"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:scrollbars="vertical"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"
             app:layout_constraintTop_toBottomOf="@+id/search_et"
-            app:layout_constraintBottom_toBottomOf="parent"
-            />
+            app:layout_constraintBottom_toBottomOf="parent">
 
-    <ProgressBar
-            android:id="@+id/pb"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:theme="@style/AppTheme.BlueAccent"
-            android:visibility="gone"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/sticker_rv"
-            android:layout_marginBottom="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/sticker_rv"/>
+        <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/sticker_rv"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical"/>
+
+        <ProgressBar
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:theme="@style/AppTheme.BlueAccent"
+                android:layout_gravity="center"/>
+
+        <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/sticker_no_result"/>
+    </ViewAnimator>
 </androidx.constraintlayout.widget.ConstraintLayout>
