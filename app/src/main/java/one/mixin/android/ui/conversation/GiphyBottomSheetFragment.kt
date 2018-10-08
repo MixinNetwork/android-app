@@ -3,9 +3,6 @@ package one.mixin.android.ui.conversation
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
-import android.support.v7.recyclerview.extensions.ListAdapter
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -15,6 +12,9 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.updateLayoutParams
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_giphy_search_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_sticker.view.*
@@ -23,6 +23,7 @@ import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
@@ -30,8 +31,6 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.support.v4.ctx
-import org.jetbrains.anko.support.v4.toast
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -135,7 +134,6 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val onEditorActionListener = TextView.OnEditorActionListener { _, actionId, _ ->
-        ctx
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
             if (!searching) {
                 offset = 0

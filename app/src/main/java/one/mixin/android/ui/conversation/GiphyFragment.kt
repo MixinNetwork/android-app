@@ -1,17 +1,17 @@
 package one.mixin.android.ui.conversation
 
-import android.arch.lifecycle.ViewModelProvider
-import android.arch.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
-import android.support.v7.widget.GridLayoutManager
-import android.support.v7.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_sticker.*
@@ -22,6 +22,7 @@ import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.headrecyclerview.FooterAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
@@ -30,7 +31,6 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.giphy.Gif
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.toast
 import org.jetbrains.anko.toast
 import org.jetbrains.anko.uiThread
 import retrofit2.HttpException
