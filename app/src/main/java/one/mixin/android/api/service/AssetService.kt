@@ -43,4 +43,7 @@ interface AssetService {
 
     @GET("snapshots")
     fun allSnapshots(): Call<MixinResponse<List<Snapshot>>>
+
+    @GET("mutual_snapshots/{id}")
+    fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
 }
