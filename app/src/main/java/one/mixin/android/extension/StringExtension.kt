@@ -149,7 +149,7 @@ fun String.numberFormat8(): String {
     if (this.isEmpty()) return this
 
     return try {
-        DecimalFormat(this.getPattern()).format(BigDecimal(this))
+        DecimalFormat(getPattern()).format(BigDecimal(this))
     } catch (e: NumberFormatException) {
         this
     } catch (e: IllegalArgumentException) {

@@ -14,6 +14,7 @@ import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -30,7 +31,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 
