@@ -85,4 +85,8 @@ constructor(
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
 
     fun allSnapshots() = snapshotDao.allSnapshots()
+
+    fun getSnapshotsByOffset(offset: String) = assetService.getSnapshotsByOffset(offset)
+
+    fun insertSnapshots(list: List<Snapshot>) = snapshotDao.insertList(list)
 }

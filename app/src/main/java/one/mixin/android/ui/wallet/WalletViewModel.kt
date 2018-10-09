@@ -18,6 +18,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -38,6 +39,10 @@ internal constructor(
     }
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
+
+    fun getSnapshotsByOffset(offset: String)= assetRepository.getSnapshotsByOffset(offset)
+
+    fun insertSnapshots(list:List<Snapshot>)=assetRepository.insertSnapshots(list)
 
     fun snapshotsFromDb(id: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id)
 

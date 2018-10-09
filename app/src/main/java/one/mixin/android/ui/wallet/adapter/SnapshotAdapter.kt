@@ -1,11 +1,11 @@
 package one.mixin.android.ui.wallet.adapter
 
-import androidx.paging.PagedListAdapter
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.date
@@ -31,6 +31,10 @@ class SnapshotAdapter : PagedListAdapter<SnapshotItem, SnapshotAdapter.NormalHol
         getItem(position)?.let {
             holder.bind(it, transactionsListener)
         }
+    }
+
+    fun getLastTime(): String {
+        return getItem(itemCount - 1)?.createdAt!!
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NormalHolder {

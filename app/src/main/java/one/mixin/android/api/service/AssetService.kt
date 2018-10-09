@@ -1,6 +1,7 @@
 package one.mixin.android.api.service
 
 import io.reactivex.Observable
+import kotlinx.coroutines.experimental.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AssetFee
 import one.mixin.android.api.request.TransferRequest
@@ -14,6 +15,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface AssetService {
 
@@ -43,4 +45,7 @@ interface AssetService {
 
     @GET("snapshots")
     fun allSnapshots(): Call<MixinResponse<List<Snapshot>>>
+
+    @GET("snapshots")
+    fun getSnapshotsByOffset(@Query("offset") offset: String): Deferred<MixinResponse<List<Snapshot>>>
 }

@@ -7,8 +7,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.experimental.GlobalScope
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.cancelChildren
+import kotlinx.coroutines.experimental.launch
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.job.MixinJobManager
@@ -20,6 +26,7 @@ import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.vo.SnapshotItem
 import org.jetbrains.anko.doAsync
 import javax.inject.Inject
+import kotlin.coroutines.experimental.CoroutineContext
 
 class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsListener {
     companion object {
@@ -27,6 +34,8 @@ class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsList
 
         fun newInstance() = AllTransactionsFragment()
     }
+
+    private lateinit var snapshotContext: CoroutineContext
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -43,6 +52,7 @@ class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsList
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        snapshotContext = Job()
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         transaction_rv.adapter = adapter
         transaction_rv.addItemDecoration(SpaceItemDecoration())
@@ -62,7 +72,38 @@ class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsList
                 }
             }
         })
+        transaction_rv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                if ((recyclerView.layoutManager as LinearLayoutManager).findLastVisibleItemPosition() == adapter.itemCount - 1) {
+                    getMore(adapter.getLastTime())
+                }
+                super.onScrolled(recyclerView, dx, dy)
+            }
+        })
         jobManager.addJobInBackground(RefreshSnapshotsJob())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        snapshotContext.cancelChildren()
+    }
+
+    private var hasMore = true
+    private var job: Job? = null
+
+    @Synchronized
+    private fun getMore(offset: String) {
+        if (hasMore && (job == null || job?.isActive == false)) {
+            job = GlobalScope.launch(snapshotContext) {
+                val response = walletViewModel.getSnapshotsByOffset(offset).await()
+                hasMore = if (response.isSuccess && response.data != null && response.data?.isEmpty() != true) {
+                    walletViewModel.insertSnapshots(response.data!!)
+                    true
+                } else {
+                    false
+                }
+            }
+        }
     }
 
     override fun onItemClick(snapshot: SnapshotItem) {

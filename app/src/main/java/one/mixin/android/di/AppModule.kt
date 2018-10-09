@@ -41,6 +41,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
+import one.mixin.android.util.retrofit.CoroutineCallAdapterFactory
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
@@ -123,6 +124,7 @@ internal class AppModule {
             .baseUrl(URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttp)
         return builder.build()
