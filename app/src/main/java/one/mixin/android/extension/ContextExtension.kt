@@ -227,7 +227,7 @@ fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String) {
         } else {
             ft.add(R.id.container, to, tag)
         }
-        ft.hide(from).addToBackStack(null)
+        ft.addToBackStack(null)
         ft.commitAllowingStateLoss()
     }
 }
