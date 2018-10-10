@@ -162,6 +162,7 @@ class ChatWebSocket(
                     transactions.remove(blazeMessage.id)
                 }
                 if (blazeMessage.action == ERROR_ACTION && blazeMessage.error.code == AUTHENTICATION) {
+                    Bugsnag.notify(IllegalStateException("Force logout webSocket.\nblazeMessage: $blazeMessage"))
                     connected = false
                     closeInternal(quitCode)
                     (app as MixinApplication).closeAndClear()
