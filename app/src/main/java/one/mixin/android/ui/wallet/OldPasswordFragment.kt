@@ -76,8 +76,7 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             if (r.isSuccess) {
                 context?.updatePinCheck()
                 r.data?.let {
-                    activity?.addFragment(this@OldPasswordFragment,
-                        WalletPasswordFragment.newInstance(true, pin.code()), WalletPasswordFragment.TAG)
+                    activity?.addFragment( WalletPasswordFragment.newInstance(true, pin.code()), WalletPasswordFragment.TAG)
                 }
             } else {
                 pin.clear()

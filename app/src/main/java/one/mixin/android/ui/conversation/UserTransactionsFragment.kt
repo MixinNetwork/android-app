@@ -87,7 +87,7 @@ class UserTransactionsFragment : BaseFragment() {
         walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({
             it.let {
                 val fragment = TransactionFragment.newInstance(snapshot, it)
-                activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
+                activity?.addFragment( fragment, TransactionFragment.TAG)
             }
         }, {})
     }

@@ -230,11 +230,11 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
                     }
                     getString(R.string.group_info_add) -> {
-                        activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
+                        activity?.addFragment( GroupEditFragment.newInstance(
                             conversationId, conversation.announcement), GroupEditFragment.TAG)
                     }
                     getString(R.string.group_info_edit) -> {
-                        activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
+                        activity?.addFragment( GroupEditFragment.newInstance(
                             conversationId, conversation.announcement), GroupEditFragment.TAG)
                     }
                     getString(R.string.group_edit_name) -> {
@@ -318,7 +318,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (name != null) {
             editText.setSelection(name.length)
         }
-        val frameLayout = FrameLayout(context)
+        val frameLayout = FrameLayout(requireContext())
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
         params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
@@ -333,9 +333,9 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             .show()
         nameDialog.setOnDismissListener { dismiss() }
-        nameDialog.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+        nameDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-        nameDialog.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        nameDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     }
 
     interface Callback {

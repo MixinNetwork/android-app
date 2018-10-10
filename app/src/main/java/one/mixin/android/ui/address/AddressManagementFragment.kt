@@ -62,8 +62,7 @@ class AddressManagementFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener {
-            activity?.addFragment(this@AddressManagementFragment,
-                AddressAddFragment.newInstance(asset, fromManagement = true), AddressAddFragment.TAG)
+            activity?.addFragment(AddressAddFragment.newInstance(asset, fromManagement = true), AddressAddFragment.TAG)
         }
         addressViewModel.addresses(asset.assetId).observe(this, Observer {
             adapter.addresses = it?.toMutableList()
@@ -81,8 +80,7 @@ class AddressManagementFragment : BaseFragment() {
             }
 
             override fun onAddrClick(addr: Address) {
-                activity?.addFragment(this@AddressManagementFragment,
-                    AddressAddFragment.newInstance(asset, addr, MODIFY, true), AddressAddFragment.TAG)
+                activity?.addFragment(AddressAddFragment.newInstance(asset, addr, MODIFY, true), AddressAddFragment.TAG)
             }
         }
         ItemTouchHelper(ItemCallback(object : ItemCallback.ItemCallbackListener {

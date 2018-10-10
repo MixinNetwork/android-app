@@ -1,7 +1,7 @@
 package one.mixin.android.ui.search.holder
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_contact.view.*
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.ConversationItemMinimal
@@ -23,7 +23,7 @@ class GroupHolder constructor(containerView: View) : RecyclerView.ViewHolder(con
     ) {
         itemView.search_name.text = conversation.groupName
         itemView.search_avatar_iv.setInfo(conversation.groupName, conversation.groupIconUrl, conversation.ownerIdentityNumber)
-        itemView.divider.visibility = View.VISIBLE
+        itemView.divider.visibility = if (isEnd) View.GONE else View.VISIBLE
         itemView.setOnClickListener {
             onItemClickListener?.onGroupClick(conversation)
         }

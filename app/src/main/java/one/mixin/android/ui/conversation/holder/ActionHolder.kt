@@ -83,8 +83,4 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
             itemView.tag = messageItem.content?.hashCode()
         }
     }
-
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
-        super.chatLayout(isMe, isLast, isBlink)
-    }
 }

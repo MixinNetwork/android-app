@@ -77,7 +77,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        user = arguments!!.getParcelable(ARGS_USER)
+        user = arguments!!.getParcelable(ARGS_USER)!!
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
         contentView.left_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
@@ -91,7 +91,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (u == null) return@Observer
             // prevent add self
             if (u.userId == Session.getAccountId()) {
-                activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                activity?.addFragment( ProfileFragment.newInstance(), ProfileFragment.TAG)
                 dismiss()
                 return@Observer
             }
@@ -142,8 +142,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
                         dismiss()
                     }
-                    getString(R.string.contact_other_transactions) -> {
-                        activity?.addFragment(this, UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
+                    getString(R.string.contact_other_trclansactions) -> {
+                        activity?.addFragment( UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
                         dismiss()
                     }
                     getString(R.string.edit_name) -> {
@@ -213,7 +213,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     contentView.creator_tv.text = u.fullName
                                     contentView.creator_tv.setOnClickListener {
                                         if (app.creatorId == Session.getAccountId()) {
-                                            activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                                            activity?.addFragment( ProfileFragment.newInstance(), ProfileFragment.TAG)
                                         } else {
                                             UserBottomSheetDialogFragment.newInstance(u).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                                         }
@@ -280,7 +280,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (name != null) {
             editText.setSelection(name.length)
         }
-        val frameLayout = FrameLayout(context)
+        val frameLayout = FrameLayout(requireContext())
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
         params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
@@ -296,9 +296,9 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             .show()
         nameDialog.setOnDismissListener { dismiss() }
-        nameDialog.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+        nameDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-        nameDialog.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        nameDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     }
 
     private fun showMuteDialog() {

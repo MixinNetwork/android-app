@@ -335,7 +335,6 @@ class GroupInfoFragment : BaseFragment() {
         adapter.data.let {
             list += it!!
         }
-        activity?.addFragment(this@GroupInfoFragment,
-            GroupFragment.newInstance(if (isAdd) TYPE_ADD else TYPE_REMOVE, list, conversationId), GroupFragment.TAG)
+        activity?.addFragment(GroupFragment.newInstance(if (isAdd) TYPE_ADD else TYPE_REMOVE, list, conversationId), GroupFragment.TAG)
     }
 }

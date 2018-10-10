@@ -24,7 +24,7 @@ import javax.inject.Inject
 class VerifyFragment : BaseFragment(), PinView.OnPinListener {
 
     companion object {
-        val TAG = VerifyFragment::class.java.simpleName!!
+        val TAG = VerifyFragment::class.java.simpleName
 
         fun newInstance() = VerifyFragment()
     }

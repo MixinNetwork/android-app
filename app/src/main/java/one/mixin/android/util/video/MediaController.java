@@ -52,7 +52,7 @@ public class MediaController {
     private final Object videoConvertSync = new Object();
     private boolean cancelCurrentVideoConversion = false;
 
-    private void checkConversionCanceled() throws Exception {
+    private void checkConversionCanceled() {
         boolean cancelConversion;
         synchronized (videoConvertSync) {
             cancelConversion = cancelCurrentVideoConversion;

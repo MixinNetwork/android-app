@@ -484,13 +484,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onBillClick(messageItem: MessageItem) {
-                activity?.addFragment(this@ConversationFragment, TransactionFragment.newInstance(
+                activity?.addFragment(TransactionFragment.newInstance(
                     assetId = messageItem.assetId, snapshotId = messageItem.snapshotId), TransactionFragment.TAG)
             }
 
             override fun onContactCardClick(userId: String) {
                 if (userId == Session.getAccountId()) {
-                    activity?.addFragment(this@ConversationFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                    activity?.addFragment(ProfileFragment.newInstance(), ProfileFragment.TAG)
                     return
                 }
                 chatViewModel.getUserById(userId).autoDisposable(scopeProvider).subscribe({

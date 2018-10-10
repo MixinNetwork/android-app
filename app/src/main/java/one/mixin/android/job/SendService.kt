@@ -46,7 +46,7 @@ class SendService : IntentService("SendService") {
             val manager = getSystemService<NotificationManager>()
             manager?.cancel(conversationId.hashCode())
             val message = createMessage(UUID.randomUUID().toString(), conversationId,
-                Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING)
+                Session.getAccountId().toString(), category, content!!.toString().trim(), nowInUtc(), MessageStatus.SENDING)
             jobManager.addJobInBackground(SendMessageJob(message))
             messageDao.findUnreadMessagesSync(conversationId)?.let {
                 if (it.isNotEmpty()) {

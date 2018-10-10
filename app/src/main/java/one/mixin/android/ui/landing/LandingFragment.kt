@@ -43,7 +43,7 @@ class LandingFragment : Fragment() {
         introduction_tv.movementMethod = LinkMovementMethod.getInstance()
 
         agree_tv.setOnClickListener {
-            activity?.addFragment(this@LandingFragment, MobileFragment.newInstance(), MobileFragment.TAG)
+            activity?.addFragment( MobileFragment.newInstance(), MobileFragment.TAG)
         }
     }
 

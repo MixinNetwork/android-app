@@ -70,7 +70,7 @@ class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsList
             val a = walletViewModel.simpleAssetItem(snapshot.assetId)
             a?.let {
                 val fragment = TransactionFragment.newInstance(snapshot, it)
-                activity?.addFragment(this@AllTransactionsFragment, fragment, TransactionFragment.TAG)
+                activity?.addFragment(fragment, TransactionFragment.TAG)
             }
         }
     }

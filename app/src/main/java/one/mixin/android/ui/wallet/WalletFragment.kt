@@ -180,7 +180,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.hide.setOnClickListener {
-            activity?.addFragment(this@WalletFragment, HiddenAssetsFragment.newInstance(), HiddenAssetsFragment.TAG)
+            activity?.addFragment(HiddenAssetsFragment.newInstance(), HiddenAssetsFragment.TAG)
             bottomSheet.dismiss()
         }
         view.setting.text = getString(if (isBiometricsSupport) R.string.wallet_setting else R.string.wallet_password_change)
@@ -196,7 +196,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             bottomSheet.dismiss()
         }
         view.transactions_tv.setOnClickListener {
-            activity?.addFragment(this@WalletFragment, AllTransactionsFragment.newInstance(), AllTransactionsFragment.TAG)
+            activity?.addFragment( AllTransactionsFragment.newInstance(), AllTransactionsFragment.TAG)
             bottomSheet.dismiss()
         }
         view.cancel.setOnClickListener { bottomSheet.dismiss() }
@@ -205,6 +205,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        activity?.addFragment(this@WalletFragment, TransactionsFragment.newInstance(item as AssetItem), TransactionsFragment.TAG)
+        activity?.addFragment(TransactionsFragment.newInstance(item as AssetItem), TransactionsFragment.TAG)
     }
 }

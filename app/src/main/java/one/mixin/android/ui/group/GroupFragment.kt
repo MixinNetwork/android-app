@@ -120,8 +120,7 @@ class GroupFragment : BaseFragment() {
                 }
                 dialog!!.show()
             } else {
-                activity?.addFragment(this@GroupFragment,
-                    NewGroupFragment.newInstance(ArrayList(checkedUsers)), NewGroupFragment.TAG)
+                activity?.addFragment( NewGroupFragment.newInstance(ArrayList(checkedUsers)), NewGroupFragment.TAG)
             }
         }
         title_view.right_animator.isEnabled = false

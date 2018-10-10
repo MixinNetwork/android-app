@@ -67,7 +67,7 @@ public class MediaSelectionFragment extends Fragment implements
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
+        mRecyclerView = view.findViewById(R.id.recyclerview);
     }
 
     @Override
@@ -131,7 +131,7 @@ public class MediaSelectionFragment extends Fragment implements
     @Override
     public void onMediaClick(Album album, Item item, int adapterPosition) {
         if (mOnMediaClickListener != null) {
-            mOnMediaClickListener.onMediaClick((Album) getArguments().getParcelable(EXTRA_ALBUM),
+            mOnMediaClickListener.onMediaClick(getArguments().getParcelable(EXTRA_ALBUM),
                     item, adapterPosition);
         }
     }

@@ -35,10 +35,10 @@ class WalletSettingFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         change_tv.setOnClickListener {
-            activity?.addFragment(this@WalletSettingFragment, OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
+            activity?.addFragment(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
         }
         time_rl.setOnClickListener {
-            activity?.addFragment(this@WalletSettingFragment, BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
+            activity?.addFragment( BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
         }
         biometrics_sc.isClickable = false
         biometrics_rl.setOnClickListener(biometricsClickListener)

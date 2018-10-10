@@ -79,8 +79,7 @@ class AddPeopleFragment : BaseFragment() {
                 when {
                     r.isSuccess -> r.data?.let { data ->
                         if (data.userId == Session.getAccountId()) {
-                            activity?.addFragment(this@AddPeopleFragment,
-                                ProfileFragment.newInstance(), ProfileFragment.TAG)
+                            activity?.addFragment(ProfileFragment.newInstance(), ProfileFragment.TAG)
                         } else {
                             contactsViewModel.insertUser(user = data)
                             UserBottomSheetDialogFragment.newInstance(data).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)

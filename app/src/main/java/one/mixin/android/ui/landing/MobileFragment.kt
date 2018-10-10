@@ -171,8 +171,7 @@ class MobileFragment : BaseFragment() {
                     return@subscribe
                 }
                 hideLoading()
-                activity?.addFragment(this@MobileFragment,
-                    VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
+                activity?.addFragment( VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
             }, { t: Throwable ->
                 hideLoading()
                 ErrorHandler.handleError(t)

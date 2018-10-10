@@ -1,12 +1,12 @@
 package one.mixin.android.ui.wallet
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_hidden_assets.*
 import kotlinx.android.synthetic.main.view_title.*
 import one.mixin.android.R
@@ -21,7 +21,7 @@ import javax.inject.Inject
 class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     companion object {
-        val TAG = HiddenAssetsFragment::class.java.simpleName!!
+        val TAG = HiddenAssetsFragment::class.java.simpleName
         fun newInstance() = HiddenAssetsFragment()
 
         const val POS_ASSET = 0
@@ -57,7 +57,6 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        activity?.addFragment(this@HiddenAssetsFragment,
-            TransactionsFragment.newInstance(item as AssetItem), TransactionsFragment.TAG)
+        activity?.addFragment( TransactionsFragment.newInstance(item as AssetItem), TransactionsFragment.TAG)
     }
 }

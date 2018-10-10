@@ -60,40 +60,41 @@ class PieView : View {
 
     override fun draw(canvas: Canvas) {
         super.draw(canvas)
-
-        if (pies == null || pies!!.isEmpty()) {
-            arcPaint.color = COLOR_DEFAULT
-            canvas.drawArc(arcRect, startAngle, 360f, true, arcPaint)
-            canvas.drawCircle(midX, midY, circleWidth, arcInnerPaint)
-            return
-        }
-
-        when {
-            curSweepAngle <= firstAngle -> {
-                arcPaint.color = COLOR_FIRST
-                canvas.drawArc(arcRect, startAngle, firstSweepAngle, true, arcPaint)
-                firstSweepAngle += INTERVAL
+        arcRect?.let { arcRect ->
+            if (pies == null || pies!!.isEmpty()) {
+                arcPaint.color = COLOR_DEFAULT
+                canvas.drawArc(arcRect, startAngle, 360f, true, arcPaint)
+                canvas.drawCircle(midX, midY, circleWidth, arcInnerPaint)
+                return
             }
-            if (pies!!.size == 2) curSweepAngle <= 360 + INTERVAL else curSweepAngle <= firstAngle + secondAngle -> {
-                arcPaint.color = COLOR_FIRST
-                canvas.drawArc(arcRect, startAngle, firstAngle, true, arcPaint)
-                arcPaint.color = COLOR_SECOND
-                canvas.drawArc(arcRect, startAngle + firstAngle, secondSweepAngle, true, arcPaint)
-                secondSweepAngle += INTERVAL
-                if (firstAngle + secondSweepAngle > 360) {
-                    secondSweepAngle = 360 - firstAngle
+
+            when {
+                curSweepAngle <= firstAngle -> {
+                    arcPaint.color = COLOR_FIRST
+                    canvas.drawArc(arcRect, startAngle, firstSweepAngle, true, arcPaint)
+                    firstSweepAngle += INTERVAL
                 }
-            }
-            else -> {
-                arcPaint.color = COLOR_FIRST
-                canvas.drawArc(arcRect, startAngle, firstAngle, true, arcPaint)
-                arcPaint.color = COLOR_SECOND
-                canvas.drawArc(arcRect, startAngle + firstAngle, secondAngle, true, arcPaint)
-                arcPaint.color = COLOR_THIRD
-                canvas.drawArc(arcRect, startAngle + firstAngle + secondAngle, thirdSweepAngle, true, arcPaint)
-                thirdSweepAngle += INTERVAL
-                if (firstAngle + secondAngle + thirdSweepAngle > 360) {
-                    thirdSweepAngle = 360 - firstAngle - secondAngle
+                if (pies!!.size == 2) curSweepAngle <= 360 + INTERVAL else curSweepAngle <= firstAngle + secondAngle -> {
+                    arcPaint.color = COLOR_FIRST
+                    canvas.drawArc(arcRect, startAngle, firstAngle, true, arcPaint)
+                    arcPaint.color = COLOR_SECOND
+                    canvas.drawArc(arcRect, startAngle + firstAngle, secondSweepAngle, true, arcPaint)
+                    secondSweepAngle += INTERVAL
+                    if (firstAngle + secondSweepAngle > 360) {
+                        secondSweepAngle = 360 - firstAngle
+                    }
+                }
+                else -> {
+                    arcPaint.color = COLOR_FIRST
+                    canvas.drawArc(arcRect, startAngle, firstAngle, true, arcPaint)
+                    arcPaint.color = COLOR_SECOND
+                    canvas.drawArc(arcRect, startAngle + firstAngle, secondAngle, true, arcPaint)
+                    arcPaint.color = COLOR_THIRD
+                    canvas.drawArc(arcRect, startAngle + firstAngle + secondAngle, thirdSweepAngle, true, arcPaint)
+                    thirdSweepAngle += INTERVAL
+                    if (firstAngle + secondAngle + thirdSweepAngle > 360) {
+                        thirdSweepAngle = 360 - firstAngle - secondAngle
+                    }
                 }
             }
         }

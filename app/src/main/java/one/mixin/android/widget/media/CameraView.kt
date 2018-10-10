@@ -117,7 +117,6 @@ class CameraView @JvmOverloads constructor(
         enqueueTask(object : SerialAsyncTask<Void>() {
             override fun onRunBackground(): Void? {
                 try {
-                    val openStartMillis = System.currentTimeMillis()
                     camera = Optional.fromNullable(Camera.open(cameraId))
                     synchronized(this@CameraView) {
                         //                        this@CameraView.notifyAll()
@@ -129,7 +128,7 @@ class CameraView @JvmOverloads constructor(
                 return null
             }
 
-            override fun onPostMain(avoid: Void?) {
+            override fun onPostMain(result: Void?) {
                 if (!camera.isPresent) {
                     for (listener in listeners) {
                         listener.onCameraFail()
@@ -168,7 +167,7 @@ class CameraView @JvmOverloads constructor(
                 return null
             }
 
-            override fun onPostMain(avoid: Void?) {
+            override fun onPostMain(result: Void?) {
                 onOrientationChange.disable()
                 displayOrientation = -1
                 outputOrientation = -1
@@ -225,7 +224,7 @@ class CameraView @JvmOverloads constructor(
 
     fun setPreviewCallback(previewCallback: PreviewCallback) {
         enqueueTask(object : PostInitializationTask<Void>() {
-            override fun onPostMain(avoid: Void?) {
+            override fun onPostMain(result: Void?) {
                 if (camera.isPresent) {
                     camera.get().setPreviewCallback(Camera.PreviewCallback { data, camera ->
                         if (!this@CameraView.camera.isPresent) {
@@ -296,7 +295,6 @@ class CameraView @JvmOverloads constructor(
                 } else {
                     previewSize = parameters.previewSize
                 }
-                val previewStartMillis = System.currentTimeMillis()
                 camera.startPreview()
                 state = State.ACTIVE
                 context.mainThread {
@@ -327,8 +325,8 @@ class CameraView @JvmOverloads constructor(
             parameters)
     }
 
-    fun getCameraPictureRotation(orientation: Int): Int {
-        var orientation = orientation
+    fun getCameraPictureRotation(orientationAngle: Int): Int {
+        var orientation = orientationAngle
         val info = cameraInfo
         val rotation: Int
 

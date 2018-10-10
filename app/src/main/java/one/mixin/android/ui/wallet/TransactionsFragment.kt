@@ -1,16 +1,16 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.appcompat.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_transactions.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -83,9 +83,9 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         updateHeader(header, asset)
         header.deposit_tv.setOnClickListener {
             if (asset.publicKey.isNullOrEmpty() && !asset.accountName.isNullOrEmpty() && !asset.accountTag.isNullOrEmpty()) {
-                activity?.addFragment(this@TransactionsFragment, DepositFragment.newInstance(asset), DepositFragment.TAG)
+                activity?.addFragment( DepositFragment.newInstance(asset), DepositFragment.TAG)
             } else if (!asset.publicKey.isNullOrEmpty() && asset.accountName.isNullOrEmpty() && asset.accountTag.isNullOrEmpty()) {
-                activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
+                activity?.addFragment( AddressFragment.newInstance(asset), AddressFragment.TAG)
             } else {
                 toast(R.string.error_bad_data)
             }
@@ -172,8 +172,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         val bottomSheet = builder.create()
         view.withdrawal.setOnClickListener {
             bottomSheet.dismiss()
-            activity?.addFragment(this@TransactionsFragment,
-                WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
+            activity?.addFragment(WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
         }
         view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
         view.hide.setOnClickListener {
@@ -190,6 +189,6 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     override fun <T> onNormalItemClick(item: T) {
         val fragment = TransactionFragment.newInstance(item as SnapshotItem, asset)
-        activity?.addFragment(this@TransactionsFragment, fragment, TransactionFragment.TAG)
+        activity?.addFragment(fragment, TransactionFragment.TAG)
     }
 }

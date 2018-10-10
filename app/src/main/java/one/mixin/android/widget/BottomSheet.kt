@@ -110,7 +110,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
     }
 
     init {
-        window.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
+        window?.addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_INSET_DECOR
             or WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
             or WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         container.background = backDrawable
@@ -131,9 +131,9 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.setWindowAnimations(R.style.DialogNoAnimation)
+        window?.setWindowAnimations(R.style.DialogNoAnimation)
         if (Build.VERSION.SDK_INT >= 26) {
-            window.decorView.systemUiVisibility =
+            window?.decorView?.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
@@ -153,16 +153,19 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
                     Gravity.START or Gravity.TOP))
         }
 
-        val params = window.attributes
-        params.width = MATCH_PARENT
-        params.height = MATCH_PARENT
-        params.gravity = Gravity.START or Gravity.TOP
-        params.dimAmount = 0f
-        params.flags = params.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
-        if (!focusable) {
-            params.flags = params.flags or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+        window?.let {window->
+            val params = window.attributes!!
+            params.width = MATCH_PARENT
+            params.height = MATCH_PARENT
+            params.gravity = Gravity.START or Gravity.TOP
+            params.dimAmount = 0f
+            params.flags = params.flags and WindowManager.LayoutParams.FLAG_DIM_BEHIND.inv()
+            if (!focusable) {
+                params.flags = params.flags or WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+            }
+            window.attributes = params
         }
-        window.attributes = params
+
     }
 
     override fun show() {
@@ -171,7 +174,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         } catch (ignored: Exception) {
         }
         if (focusable) {
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
         isDismissed = false
         cancelSheetAnimation()

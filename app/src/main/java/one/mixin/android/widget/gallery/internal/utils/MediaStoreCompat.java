@@ -70,7 +70,7 @@ public class MediaStoreCompat {
         }
     }
 
-    private File createImageFile() throws IOException {
+    private File createImageFile() {
         String timeStamp =
                 new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
         String imageFileName = String.format("JPEG_%s.jpg", timeStamp);

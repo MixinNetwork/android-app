@@ -1,12 +1,12 @@
 package one.mixin.android.ui.setting
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -36,12 +36,10 @@ class SettingFragment : BaseFragment() {
             activity?.onBackPressed()
         }
         about_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                AboutFragment.newInstance(), AboutFragment.TAG)
+            activity?.addFragment(AboutFragment.newInstance(), AboutFragment.TAG)
         }
         storage_rl.setOnClickListener {
-            requireActivity().addFragment(this@SettingFragment,
-                SettingStorageFragment.newInstance(), SettingStorageFragment.TAG)
+            requireActivity().addFragment(SettingStorageFragment.newInstance(), SettingStorageFragment.TAG)
         }
 
         settingViewModel.countBlockingUsers().observe(this, Observer {
@@ -50,16 +48,13 @@ class SettingFragment : BaseFragment() {
             }
         })
         blocked_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                SettingBlockedFragment.newInstance(), SettingBlockedFragment.TAG)
+            activity?.addFragment( SettingBlockedFragment.newInstance(), SettingBlockedFragment.TAG)
         }
         conversation_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
+            activity?.addFragment(SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
         }
         auth_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
+            activity?.addFragment(AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
         }
     }
 }

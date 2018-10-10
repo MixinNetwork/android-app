@@ -26,6 +26,7 @@ import one.mixin.android.widget.gallery.MimeType
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -56,7 +57,8 @@ private fun Context.getAppPath(): File {
     } else {
         var externalFile: Array<File>? = ContextCompat.getExternalFilesDirs(this, null)
         if (externalFile == null) {
-            externalFile = arrayOf(this.getExternalFilesDir(null))
+            val dir = this.getExternalFilesDir(null) ?:throw FileNotFoundException("No storage")
+            externalFile = arrayOf(dir)
         }
         val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}Media${File.separator}")
         root.mkdirs()

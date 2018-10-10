@@ -144,7 +144,7 @@ class ContactsFragment : BaseFragment() {
     private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
 
         override fun onHeaderRl() {
-            activity?.addFragment(this@ContactsFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+            activity?.addFragment( ProfileFragment.newInstance(), ProfileFragment.TAG)
         }
 
         override fun onNewGroup() {
@@ -152,7 +152,7 @@ class ContactsFragment : BaseFragment() {
         }
 
         override fun onAddContact() {
-            activity?.addFragment(this@ContactsFragment, AddPeopleFragment.newInstance(), AddPeopleFragment.TAG)
+            activity?.addFragment(AddPeopleFragment.newInstance(), AddPeopleFragment.TAG)
         }
 
         @SuppressLint("CheckResult")

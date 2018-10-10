@@ -217,7 +217,7 @@ fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int, tag: Stri
     supportFragmentManager.inTransaction { replace(frameId, fragment, tag) }
 }
 
-fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String) {
+fun FragmentActivity.addFragment(to: Fragment, tag: String) {
     val fm = supportFragmentManager
     fm?.let {
         val ft = it.beginTransaction()
@@ -332,7 +332,7 @@ fun Fragment.selectDocument() {
     selectMediaType("*/*", arrayOf("*/*"), REQUEST_FILE)
 }
 
-fun Fragment.selectAudio(requestCode: Int) {
+fun Fragment.selectAudio() {
     selectMediaType("audio/*", null, REQUEST_AUDIO)
 }
 
@@ -345,12 +345,12 @@ fun Context.getAttachment(uri: Uri): Attachment? {
         if (cursor != null && cursor.moveToFirst()) {
             val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
             val fileSize = cursor.getLong(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE))
-            val mimeType = contentResolver.getType(uri)
+            val mimeType = contentResolver.getType(uri) ?: return null
 
             return Attachment(uri, fileName, mimeType, fileSize)
         }
     } finally {
-        if (cursor != null) cursor.close()
+        cursor?.close()
     }
     return null
 }
