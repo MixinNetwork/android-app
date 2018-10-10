@@ -2,8 +2,8 @@ package one.mixin.android.extension
 
 import android.graphics.drawable.Drawable
 import android.net.Uri
-import androidx.annotation.DrawableRes
 import android.widget.ImageView
+import androidx.annotation.DrawableRes
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.MultiTransformation
@@ -45,11 +45,15 @@ fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null
     }).into(this)
 }
 
-fun ImageView.loadGif(uri: String?, requestListener: RequestListener<GifDrawable?>? = null) {
+fun ImageView.loadGif(uri: String?, requestListener: RequestListener<GifDrawable?>? = null, centerCrop: Boolean? = null) {
+    var requestOptions = RequestOptions().dontTransform()
+    if (centerCrop != null) {
+        requestOptions = requestOptions.centerCrop()
+    }
     if (requestListener != null) {
-        Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform()).listener(requestListener).into(this)
+        Glide.with(this).asGif().load(uri).apply(requestOptions).listener(requestListener).into(this)
     } else {
-        Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform()).into(this)
+        Glide.with(this).asGif().load(uri).apply(requestOptions).into(this)
     }
 }
 

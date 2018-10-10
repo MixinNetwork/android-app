@@ -164,16 +164,16 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         override fun onBindViewHolder(holder: ItemHolder, pos: Int) {
             val params = holder.itemView.layoutParams
             params.width = size
-            params.height = size
+            params.height = (size * (3f / 4)).toInt()
             holder.itemView.layoutParams = params
             val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
             val image = getItem(pos).images.fixed_width
             item.loadGif(image.url)
             item.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = size
-                height = size
+                height = (size * (3f / 4)).toInt()
             }
-            holder.itemView.sticker_iv.loadGif(image.url)
+            holder.itemView.sticker_iv.loadGif(image.url, centerCrop = true)
             holder.itemView.setOnClickListener { listener.onGifClick(image.url) }
         }
     }

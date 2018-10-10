@@ -136,25 +136,24 @@ class GiphyFragment : BaseFragment() {
 
             val params = holder.itemView.layoutParams
             params.width = size
-            params.height = size
+            params.height = (size * (3f / 4)).toInt()
             holder.itemView.layoutParams = params
             val ctx = holder.itemView.context
             val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
             if (position == 0) {
                 item.updateLayoutParams<FrameLayout.LayoutParams> {
                     width = size - ctx.dip(20)
-                    height = size - ctx.dip(20)
-                    this.topMargin = ctx.dip(10)
+                    height = (width * (3f / 4)).toInt()
                 }
                 item.setImageResource(R.drawable.ic_gif_search)
                 item.setOnClickListener { listener?.onSearchClick() }
             } else {
                 val g = data!![position - 1].images.fixed_width
-                item.loadGif(g.url)
+                item.loadGif(g.url, centerCrop = true)
                 item.setOnClickListener { listener?.onItemClick(position, g.url) }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size
-                    height = size
+                    height = (size * (3f / 4)).toInt()
                 }
             }
         }
