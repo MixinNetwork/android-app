@@ -35,6 +35,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PieItemView
 import one.mixin.android.widget.PieView
 import java.math.BigDecimal
+import java.math.RoundingMode
 import javax.inject.Inject
 
 class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
@@ -89,7 +90,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     totalUSD += it.usd()
                 }
 
-                header.total_as_tv.text = getString(R.string.wallet_unit_btc, totalBTC.toString().numberFormat8())
+                header.total_as_tv.text = getString(R.string.wallet_unit_btc, totalBTC.numberFormat8())
                 header.total_tv.text = getString(R.string.wallet_unit_usd, totalUSD.numberFormat2())
 
                 if (totalUSD.compareTo(BigDecimal.ZERO) == 0) return@Observer
@@ -102,8 +103,10 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     private fun setPieView(r: List<AssetItem>, totalUSD: BigDecimal) {
-        val list = r.filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }
-            .map { PieView.PieItem(it.symbol, (it.usd() / totalUSD).numberFormat2().toFloat()) }.toMutableList()
+        val list = r.asSequence().filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }.map {
+            val p = (it.usd() / totalUSD).setScale(2, RoundingMode.DOWN).toFloat()
+            PieView.PieItem(it.symbol, p)
+        }.toMutableList()
         if (list.isNotEmpty()) {
             header.pie_item_container.removeAllViews()
             list.sortWith(Comparator { o1, o2 -> ((o2.percent - o1.percent) * 100).toInt() })

@@ -1,8 +1,8 @@
 package one.mixin.android.ui.search.holder
 
 import android.annotation.SuppressLint
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
@@ -32,7 +32,7 @@ class AssetHolder constructor(containerView: View) : RecyclerView.ViewHolder(con
         itemView.setOnClickListener { onItemClickListener?.onAsset(asset) }
 
         itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
-        itemView.balance_as.text = itemView.context.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().toString().numberFormat2()}")
+        itemView.balance_as.text = itemView.context.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
         if (asset.priceUsd == "0") {
             itemView.price_tv.setText(R.string.asset_none)
             itemView.change_tv.visibility = View.GONE

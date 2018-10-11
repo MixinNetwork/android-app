@@ -281,7 +281,11 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         customViewHeight = height
         val params = customView?.layoutParams
         val duration = notNullElse(customView?.layoutParams, {
-            min(abs(height - it.height) / speed, 200)
+            try {
+                min(abs(height - it.height) / speed, 200)
+            } catch (e: ArithmeticException) {
+                200
+            }
         }, 200).toLong()
 
         if (duration == 0L) {
@@ -290,8 +294,8 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         if (params != null) {
             val anim = ValueAnimator.ofInt(customView!!.height, height)
             anim.interpolator = LinearInterpolator()
-            anim.addUpdateListener {
-                val value = it.animatedValue as Int
+            anim.addUpdateListener { valueAnimator ->
+                val value = valueAnimator.animatedValue as Int
                 params.height = value
                 customView?.layoutParams = params
                 if (value == height) {
