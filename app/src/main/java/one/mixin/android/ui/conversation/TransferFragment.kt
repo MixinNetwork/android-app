@@ -6,6 +6,8 @@ import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.os.CancellationSignal
+import android.os.Handler
+import android.os.Looper
 import android.security.keystore.UserNotAuthenticatedException
 import android.text.Editable
 import android.text.TextWatcher
@@ -14,17 +16,18 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.biometrics.BiometricPrompt
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.common.util.concurrent.HandlerExecutor
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
-import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
@@ -33,6 +36,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.numberFormat
@@ -48,6 +52,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.BiometricTimeFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.BiometricUtil.REQUEST_CODE_CREDENTIALS
 import one.mixin.android.util.ErrorHandler
@@ -57,9 +62,11 @@ import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import timber.log.Timber
 import java.math.BigDecimal
 import java.nio.charset.Charset
 import java.util.UUID
+import java.util.concurrent.Executors
 import javax.inject.Inject
 
 @SuppressLint("InflateParams")
@@ -238,11 +245,12 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showBiometricPrompt() {
-        val biometricPrompt = BiometricPromptCompat.Builder(requireContext())
+        val biometricPrompt = BiometricPrompt(requireActivity(), HandlerExecutor(Handler(Looper.getMainLooper())), biometricCallback)
+        val biometricPromptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle(getString(R.string.wallet_bottom_transfer_to, user!!.fullName))
             .setSubtitle(getString(R.string.contact_mixin_id, user!!.identityNumber))
             .setDescription(getDescription())
-            .setNegativeButton(getString(R.string.wallet_pay_with_pwd)) { _, _ -> showTransferBottom() }
+            .setNegativeButtonText(getString(R.string.wallet_pay_with_pwd))
             .build()
         val cipher = try {
             BiometricUtil.getDecryptCipher(requireContext())
@@ -250,11 +258,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             BiometricUtil.showAuthenticationScreen(this)
             return
         }
-        val cryptoObject = BiometricPromptCompat.DefaultCryptoObject(cipher)
-        val cancellationSignal = CancellationSignal().apply {
-            setOnCancelListener { requireContext().toast(R.string.cancel) }
-        }
-        biometricPrompt.authenticate(cryptoObject, cancellationSignal, biometricCallback)
+        val cryptoObject = BiometricPrompt.CryptoObject(cipher)
+        biometricPrompt.authenticate(biometricPromptInfo, cryptoObject)
     }
 
     private fun showTransferBottom() {
@@ -317,11 +322,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val biometricCallback = object : BiometricPromptCompat.IAuthenticationCallback {
-        override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
-        }
+    private val biometricCallback = object : BiometricPrompt.AuthenticationCallback() {
 
-        override fun onAuthenticationSucceeded(result: BiometricPromptCompat.IAuthenticationResult) {
+        override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
             val cipher = result.cryptoObject?.cipher
             if (cipher != null) {
                 try {
@@ -333,10 +336,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        override fun onAuthenticationHelp(helpCode: Int, helpString: CharSequence?) {
-        }
-
-        override fun onAuthenticationFailed() {
+        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+            showTransferBottom()
         }
     }
 

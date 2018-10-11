@@ -9,10 +9,9 @@ import android.security.keystore.UserNotAuthenticatedException
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import com.bugsnag.android.Bugsnag
-import moe.feng.support.biometricprompt.BiometricPromptCompat
+import one.mixin.android.R
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
-import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
@@ -25,13 +24,21 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.IvParameterSpec
+import android.os.Build
+import android.content.pm.PackageManager
+import androidx.core.hardware.fingerprint.FingerprintManagerCompat
+import java.util.Arrays
 
 object BiometricUtil {
 
     const val REQUEST_CODE_CREDENTIALS = 101
 
+    private const val FEATURE_IRIS = "android.hardware.iris"
+    private const val FEATURE_FACE = "android.hardware.face"
+    private val SUPPORTED_BIOMETRIC_FEATURES = arrayOf(PackageManager.FEATURE_FINGERPRINT, FEATURE_IRIS, FEATURE_FACE)
+
     fun isSupport(ctx: Context): Boolean {
-        return isKeyguardSecure(ctx) && isSecureHardware() && BiometricPromptCompat.isHardwareDetected(ctx) && !RootUtil.isDeviceRooted
+        return isKeyguardSecure(ctx) && isSecureHardware() && isHardwareDetected(ctx) && !RootUtil.isDeviceRooted
     }
 
     fun showAuthenticationScreen(fragment: Fragment) {
@@ -84,6 +91,19 @@ object BiometricUtil {
         val biometricInterval = ctx.defaultSharedPreferences.getLong(Constants.BIOMETRIC_INTERVAL, Constants.BIOMETRIC_INTERVAL_DEFAULT)
         val currTime = System.currentTimeMillis()
         return openBiometrics && currTime - biometricPinCheck <= biometricInterval
+    }
+
+    private fun isHardwareDetected(context: Context): Boolean {
+        return when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.P -> {
+                val pm = context.packageManager
+                Arrays.stream(SUPPORTED_BIOMETRIC_FEATURES).anyMatch { pm.hasSystemFeature(it) }
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
+                FingerprintManagerCompat.from(context).isHardwareDetected
+            }
+            else -> false
+        }
     }
 
     private fun isKeyguardSecure(ctx: Context): Boolean {
