@@ -9,7 +9,6 @@ buildscript {
         ext.supportLibVersion = '1.0.0'
         ext.daggerVersion = '2.16'
         ext.ktxVersion = '1.0.0'
-        ext.biometricVersion = '1.0.0-alpha02'
         ext.espressoVersion = '3.1.0-alpha4'
         ext.glideVersion = '4.7.1'
         ext.webpdecoderVesion = '0.0.7.4.6.1'
@@ -59,6 +58,7 @@ buildscript {
         ext.isoparserVersion = '1.0.6'
         ext.largeImageViewVersion = '1.1.1'
         ext.truetimeVersion = '3.4'
+        ext.biometricpromptVersion = '1.0.2'
     }
 
     repositories {
