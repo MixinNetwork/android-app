@@ -58,6 +58,9 @@ class BiometricDialog(
 
     private val biometricCallback = object : BiometricPromptCompat.IAuthenticationCallback {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
+            if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_CANCELED) {
+                callback?.onCancel()
+            }
         }
 
         override fun onAuthenticationSucceeded(result: BiometricPromptCompat.IAuthenticationResult) {
@@ -87,5 +90,7 @@ class BiometricDialog(
         fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String, memo: String)
 
         fun showAuthenticationScreen()
+
+        fun onCancel()
     }
 }
