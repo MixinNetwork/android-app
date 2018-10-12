@@ -1,10 +1,14 @@
 package one.mixin.android.ui.conversation.link
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
+import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.CancellationSignal
+import android.security.keystore.UserNotAuthenticatedException
 import android.support.design.MixinBottomSheetDialogFragment
 import android.view.Gravity
 import android.view.View
@@ -18,34 +22,48 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposable
+import io.jsonwebtoken.lang.Assert
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.fragment_transfer.view.*
+import moe.feng.support.biometricprompt.BiometricPromptCompat
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentStatus
+import one.mixin.android.crypto.Base64
 import one.mixin.android.di.Injectable
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.toDot
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.QrCodeType
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
+import one.mixin.android.ui.common.BiometricDialog
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import java.math.BigDecimal
+import java.nio.charset.Charset
+import java.util.UUID
 import javax.inject.Inject
 
 class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectable {
@@ -62,6 +80,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     private var authOrPay = false
+    private var biometricDialog: BiometricDialog? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -149,13 +168,16 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     val paymentResponse = r.data!!
                     if (paymentResponse.status == PaymentStatus.paid.name) {
                         context?.toast(R.string.pay_paid)
+                        dismiss()
                     } else {
                         authOrPay = true
-                        TransferBottomSheetDialogFragment
-                            .newInstance(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
-                            .showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
+                        if (BiometricUtil.shouldShowBiometric(requireContext())) {
+                            showBiometricPrompt(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
+                        } else {
+                            showTransferBottom(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
+                            dismiss()
+                        }
                     }
-                    dismiss()
                 } else {
                     ErrorHandler.handleMixinError(r.errorCode)
                     error(R.string.bottom_sheet_invalid_payment)
@@ -234,6 +256,51 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         contentView.link_layout.visibility = GONE
         contentView.link_loading.visibility = GONE
         contentView.link_error.visibility = VISIBLE
+    }
+
+    private fun showBiometricPrompt(user: User, amount: String, asset: Asset, trace: String, memo: String) {
+        biometricDialog = BiometricDialog(requireContext(), user, amount, asset, trace, memo)
+        biometricDialog?.callback = biometricDialogCallback
+        biometricDialog?.showBiometricPrompt()
+    }
+
+    private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String, memo: String) {
+        TransferBottomSheetDialogFragment
+            .newInstance(user, amount, asset, trace, memo)
+            .showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
+            biometricDialog?.showBiometricPrompt()
+        }
+    }
+
+    private val biometricDialogCallback = object : BiometricDialog.Callback {
+        override fun onStartTransfer(assetId: String, userId: String, amount: String, pin: String, trace: String, memo: String) {
+            linkViewModel.transfer(assetId, userId, amount, pin, trace, memo).autoDisposable(scopeProvider)
+                .subscribe({
+                    if (it.isSuccess) {
+                        dialog?.dismiss()
+                    } else {
+                        ErrorHandler.handleMixinError(it.errorCode)
+                    }
+                    dismiss()
+                }, {
+                    ErrorHandler.handleError(it)
+                    dismiss()
+                })
+        }
+
+        override fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String, memo: String) {
+            this@LinkBottomSheetDialogFragment.showTransferBottom(user, amount, asset, trace, memo)
+            dismiss()
+        }
+
+        override fun showAuthenticationScreen() {
+            BiometricUtil.showAuthenticationScreen(this@LinkBottomSheetDialogFragment)
+        }
     }
 
     private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {
