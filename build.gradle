@@ -20,7 +20,7 @@ buildscript {
         ext.stethoVersion = '1.5.0'
         ext.loggerVersion = '2.2.0'
         ext.kotlin_version = '1.2.71'
-        ext.libphonenumberVersion = '8.9.10'
+        ext.libphonenumberVersion = '8.9.15'
         ext.anko_version = '0.10.5'
         ext.coroutines_version = '0.26.0'
         ext.firebaseVersion = '16.0.3'
@@ -53,7 +53,7 @@ buildscript {
 
         ext.gsonVersion = '2.8.5'
         ext.autodisposeVersion = '0.8.0'
-        ext.bugsnagVersion = '4.5.0'
+        ext.bugsnagVersion = '4.8.2'
         ext.jsoupVersion = '1.11.2'
         ext.isoparserVersion = '1.0.6'
         ext.largeImageViewVersion = '1.1.1'
