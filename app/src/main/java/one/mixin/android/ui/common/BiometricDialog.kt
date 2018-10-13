@@ -27,6 +27,7 @@ class BiometricDialog(
     private val memo: String
 ) {
     var callback: Callback? = null
+    private var cancellationSignal: CancellationSignal? = null
 
     fun show() {
         val biometricPrompt = BiometricPromptCompat.Builder(context)
@@ -44,7 +45,7 @@ class BiometricDialog(
             return
         }
         val cryptoObject = BiometricPromptCompat.DefaultCryptoObject(cipher)
-        val cancellationSignal = CancellationSignal().apply {
+        cancellationSignal = CancellationSignal().apply {
             setOnCancelListener { context.toast(R.string.cancel) }
         }
         biometricPrompt.authenticate(cryptoObject, cancellationSignal, biometricCallback)
@@ -63,6 +64,7 @@ class BiometricDialog(
                 callback?.onCancel()
             } else if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT
                 || errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT) {
+                cancellationSignal?.cancel()
                 callback?.showTransferBottom(user, amount, asset, trace, memo)
             }
         }
