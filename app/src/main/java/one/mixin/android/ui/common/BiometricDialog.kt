@@ -14,6 +14,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
+import timber.log.Timber
 import java.math.BigDecimal
 import java.nio.charset.Charset
 
@@ -27,7 +28,7 @@ class BiometricDialog(
 ) {
     var callback: Callback? = null
 
-    fun showBiometricPrompt() {
+    fun show() {
         val biometricPrompt = BiometricPromptCompat.Builder(context)
             .setTitle(context.getString(R.string.wallet_bottom_transfer_to, user.fullName))
             .setSubtitle(context.getString(R.string.contact_mixin_id, user.identityNumber))
@@ -60,6 +61,9 @@ class BiometricDialog(
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
             if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_CANCELED) {
                 callback?.onCancel()
+            } else if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT
+                || errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT) {
+                callback?.showTransferBottom(user, amount, asset, trace, memo)
             }
         }
 

@@ -248,7 +248,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     private fun showBiometricPrompt(user: User, amount: String, asset: Asset, trace: String, memo: String) {
         biometricDialog = BiometricDialog(requireContext(), user, amount, asset, trace, memo)
         biometricDialog?.callback = biometricDialogCallback
-        biometricDialog?.showBiometricPrompt()
+        biometricDialog?.show()
     }
 
     private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String, memo: String) {
@@ -260,7 +260,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
-            biometricDialog?.showBiometricPrompt()
+            biometricDialog?.show()
         }
     }
 
