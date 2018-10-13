@@ -19,7 +19,7 @@ import java.nio.charset.Charset
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
 class RecaptchaView(private val context: Context, private val callback: Callback) {
     companion object {
-        private const val WEB_VIEW_TIME_OUT = 10000L
+        private const val WEB_VIEW_TIME_OUT = 30000L
     }
 
     val webView: WebView by lazy {
@@ -33,8 +33,6 @@ class RecaptchaView(private val context: Context, private val callback: Callback
         }
     }
 
-    private var hasPostToken = false
-
     private val stopWebViewRunnable = Runnable {
         webView.stopLoading()
         hide()
@@ -44,7 +42,6 @@ class RecaptchaView(private val context: Context, private val callback: Callback
     }
 
     fun loadRecaptcha() {
-        hasPostToken = false
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
@@ -53,7 +50,9 @@ class RecaptchaView(private val context: Context, private val callback: Callback
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                webView.evaluateJavascript("javascript:gReCaptchaExecute()", null)
+                context.cancelRunOnUIThread(stopWebViewRunnable)
+                webView.animate().translationY(0f)
+                webView.evaluateJavascript("javascript:grecaptcha.execute()", null)
             }
         }
         val input = context.assets.open("recaptcha.html")
@@ -71,17 +70,12 @@ class RecaptchaView(private val context: Context, private val callback: Callback
 
     @JavascriptInterface
     fun postMessage(value: String) {
-        if (!hasPostToken && value == "challenge_change") {
-            context.cancelRunOnUIThread(stopWebViewRunnable)
-            webView.post {
-                webView.animate().translationY(0f)
-            }
-        }
+        context.cancelRunOnUIThread(stopWebViewRunnable)
+        context.runOnUIThread(stopWebViewRunnable)
     }
 
     @JavascriptInterface
     fun postToken(value: String) {
-        hasPostToken = true
         context.cancelRunOnUIThread(stopWebViewRunnable)
         webView.post {
             hide()
