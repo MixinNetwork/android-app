@@ -14,6 +14,8 @@
         grecaptcha.render('html_element', {
           'sitekey' : '#apiKey',
           'callback' : postToken,
+          'expired-callback' : postMessage,
+          'error-callback' : postMessage,
           'size': 'invisible'
         });
       };

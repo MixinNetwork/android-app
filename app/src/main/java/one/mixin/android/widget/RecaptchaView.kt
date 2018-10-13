@@ -34,8 +34,6 @@ class RecaptchaView(private val context: Context, private val callback: Callback
         }
     }
 
-    private var hasPostToken = false
-
     private val stopWebViewRunnable = Runnable {
         webView.stopLoading()
         hide()
@@ -45,7 +43,6 @@ class RecaptchaView(private val context: Context, private val callback: Callback
     }
 
     fun loadRecaptcha() {
-        hasPostToken = false
         webView.webViewClient = object : WebViewClient() {
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
@@ -74,19 +71,14 @@ class RecaptchaView(private val context: Context, private val callback: Callback
 
     @JavascriptInterface
     fun postMessage(value: String) {
-        Timber.d("@@@ postMessage")
-//        if (!hasPostToken && value == "challenge_change") {
-//            context.cancelRunOnUIThread(stopWebViewRunnable)
-//            webView.post {
-//                webView.animate().translationY(0f)
-//            }
-//        }
+        context.cancelRunOnUIThread(stopWebViewRunnable)
+        webView.post {
+            webView.animate().translationY(0f)
+        }
     }
 
     @JavascriptInterface
     fun postToken(value: String) {
-        Timber.d("@@@ postToken: $value")
-        hasPostToken = true
         context.cancelRunOnUIThread(stopWebViewRunnable)
         webView.post {
             hide()
