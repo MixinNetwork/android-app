@@ -14,7 +14,6 @@ import one.mixin.android.extension.cancelRunOnUIThread
 import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.runOnUIThread
 import one.mixin.android.extension.toast
-import timber.log.Timber
 import java.nio.charset.Charset
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
@@ -72,9 +71,7 @@ class RecaptchaView(private val context: Context, private val callback: Callback
     @JavascriptInterface
     fun postMessage(value: String) {
         context.cancelRunOnUIThread(stopWebViewRunnable)
-        webView.post {
-            webView.animate().translationY(0f)
-        }
+        context.runOnUIThread(stopWebViewRunnable)
     }
 
     @JavascriptInterface

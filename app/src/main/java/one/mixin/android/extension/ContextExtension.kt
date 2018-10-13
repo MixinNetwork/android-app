@@ -65,7 +65,7 @@ fun Context.mainThreadDelayed(runnable: () -> Unit, delayMillis: Long) {
     uiHandler.postDelayed(runnable, delayMillis)
 }
 
-fun Context.runOnUIThread(runnable: Runnable, delay: Long) {
+fun Context.runOnUIThread(runnable: Runnable, delay: Long = 0L) {
     if (delay == 0L) {
         uiHandler.post(runnable)
     } else {
