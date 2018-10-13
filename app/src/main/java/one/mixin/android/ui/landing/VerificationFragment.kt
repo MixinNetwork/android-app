@@ -276,9 +276,8 @@ class VerificationFragment : BaseFragment() {
                         recaptchaView.loadRecaptcha()
                     } else {
                         hideLoading()
+                        ErrorHandler.handleMixinError(r.errorCode)
                     }
-                    ErrorHandler.handleMixinError(r.errorCode)
-                    return@subscribe
                 } else {
                     hideLoading()
                 }
