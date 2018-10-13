@@ -14,12 +14,13 @@ import one.mixin.android.extension.cancelRunOnUIThread
 import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.runOnUIThread
 import one.mixin.android.extension.toast
+import timber.log.Timber
 import java.nio.charset.Charset
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
 class RecaptchaView(private val context: Context, private val callback: Callback) {
     companion object {
-        private const val WEB_VIEW_TIME_OUT = 10000L
+        private const val WEB_VIEW_TIME_OUT = 30000L
     }
 
     val webView: WebView by lazy {
@@ -53,7 +54,9 @@ class RecaptchaView(private val context: Context, private val callback: Callback
 
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                webView.evaluateJavascript("javascript:gReCaptchaExecute()", null)
+                context.cancelRunOnUIThread(stopWebViewRunnable)
+                webView.animate().translationY(0f)
+                webView.evaluateJavascript("javascript:grecaptcha.execute()", null)
             }
         }
         val input = context.assets.open("recaptcha.html")
@@ -71,16 +74,18 @@ class RecaptchaView(private val context: Context, private val callback: Callback
 
     @JavascriptInterface
     fun postMessage(value: String) {
-        if (!hasPostToken && value == "challenge_change") {
-            context.cancelRunOnUIThread(stopWebViewRunnable)
-            webView.post {
-                webView.animate().translationY(0f)
-            }
-        }
+        Timber.d("@@@ postMessage")
+//        if (!hasPostToken && value == "challenge_change") {
+//            context.cancelRunOnUIThread(stopWebViewRunnable)
+//            webView.post {
+//                webView.animate().translationY(0f)
+//            }
+//        }
     }
 
     @JavascriptInterface
     fun postToken(value: String) {
+        Timber.d("@@@ postToken: $value")
         hasPostToken = true
         context.cancelRunOnUIThread(stopWebViewRunnable)
         webView.post {
