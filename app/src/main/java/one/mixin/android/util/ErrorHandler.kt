@@ -177,8 +177,8 @@ open class ErrorHandler {
         private const val TOO_SMALL = 20120
         private const val USED_PHONE = 20122
         private const val INSUFFICIENT_TRANSACTION_FEE = 20124
-        private const val WITHDRAWAL_AMOUNT_SMALL = 20127
         private const val TOO_MANY_STICKERS = 20126
+        private const val WITHDRAWAL_AMOUNT_SMALL = 20127
         private const val BLOCKCHAIN_ERROR = 30100
         private const val INVALID_ADDRESS = 30102
     }
