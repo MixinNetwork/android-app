@@ -65,7 +65,7 @@ class GroupEditFragment : BaseFragment() {
         title_view.right_tv.isEnabled = false
         title_view.right_tv.setOnClickListener {
             if (desc_et.text.length > 1024) {
-                context?.toast(R.string.error_too_small)
+                context?.toast(R.string.group_edit_too_long)
             } else {
                 title_view.pb.visibility = View.VISIBLE
                 title_view.right_tv.visibility = View.GONE
