@@ -1,10 +1,10 @@
 package one.mixin.android.ui.wallet.adapter
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.date
@@ -33,7 +33,12 @@ class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>() 
             val isPositive = snapshot.amount.toFloat() > 0
             itemView.date.text = snapshot.createdAt.date()
             when {
+                snapshot.type == SnapshotType.pending.name -> {
+                    itemView.state.visibility = View.VISIBLE
+                    itemView.name.text = itemView.context.getString(R.string.pending_confirmations, snapshot.confirmations, asset.confirmations)
+                }
                 snapshot.type == SnapshotType.deposit.name -> {
+                    itemView.state.visibility = View.GONE
                     snapshot.transactionHash?.let {
                         if (it.length > 10) {
                             val start = it.substring(0, 6)
@@ -45,17 +50,31 @@ class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>() 
                     }
                 }
                 snapshot.type == SnapshotType.transfer.name -> itemView.name.text = if (isPositive) {
+                    itemView.state.visibility = View.GONE
                     itemView.context.getString(R.string.transfer_from, snapshot.opponentFullName)
                 } else {
+                    itemView.state.visibility = View.GONE
                     itemView.context.getString(R.string.transfer_to, snapshot.opponentFullName)
                 }
-                else -> itemView.name.text = snapshot.receiver!!.formatPublicKey()
+                else -> {
+                    itemView.state.visibility = View.GONE
+                    itemView.name.text = snapshot.receiver!!.formatPublicKey()
+                }
             }
+
             itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat()} ${asset.symbol}"
             else "${snapshot.amount.numberFormat()} ${asset.symbol}"
-            itemView.value.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
+            itemView.value.textColorResource = when {
+                snapshot.type == SnapshotType.pending.name -> R.color.text_gray
+                isPositive -> R.color.colorGreen
+                else -> R.color.colorRed
+            }
 
-            itemView.setOnClickListener { listener?.onNormalItemClick(snapshot) }
+            itemView.setOnClickListener {
+                if (snapshot.type != SnapshotType.pending.name) {
+                    listener?.onNormalItemClick(snapshot)
+                }
+            }
         }
     }
 }

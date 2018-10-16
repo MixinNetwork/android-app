@@ -26,4 +26,10 @@ interface SnapshotDao : BaseDao<Snapshot> {
     @Query("SELECT s.*, u.full_name AS opponentFullName, a.symbol AS asset_symbol FROM snapshots s LEFT JOIN users u ON u.user_id = s.opponent_id LEFT JOIN " +
         "assets a ON a.asset_id = s.asset_id WHERE s.opponent_id = :opponentId ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>>
+
+    @Query("DELETE FROM snapshots WHERE type = 'pending'")
+    fun clearPendingDeposits()
+
+    @Query("DELETE FROM snapshots WHERE transaction_hash = :transactionHash")
+    fun deleteSnapshotByHash(transactionHash: String)
 }

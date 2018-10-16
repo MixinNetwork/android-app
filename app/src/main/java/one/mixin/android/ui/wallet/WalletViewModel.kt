@@ -19,6 +19,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -77,4 +78,11 @@ internal constructor(
 
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
         .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
+
+    fun pendingDeposits(assetId: String) = assetRepository.pendingDeposits(assetId)
+        .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())
+
+    fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
+
+    fun clearPendingDeposits() = assetRepository.clearPendingDeposits()
 }

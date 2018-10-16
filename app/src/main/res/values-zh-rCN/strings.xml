@@ -451,4 +451,7 @@
     <string name="filters_fee">手续费</string>
     <string name="filters_rebate">折扣</string>
     <string name="filters_by">顺序</string>
+    <!--Pending-->
+    <string name="pending">确认中</string>
+    <string name="pending_confirmations">%1$d/%2$d 区块确认数</string>
 </resources>

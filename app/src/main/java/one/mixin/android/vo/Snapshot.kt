@@ -45,8 +45,11 @@ data class Snapshot(
     val receiver: String?,
     @SerializedName("memo")
     @ColumnInfo(name = "memo")
-    val memo: String?
+    val memo: String?,
+    @SerializedName("confirmations")
+    @ColumnInfo(name = "confirmations")
+    val confirmations: Int?
 )
 
 @Suppress("EnumEntryName")
-enum class SnapshotType { transfer, deposit, withdrawal, fee, rebate }
+enum class SnapshotType { transfer, deposit, withdrawal, fee, rebate, pending }

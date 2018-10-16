@@ -44,6 +44,8 @@ constructor(
 
     fun insertAsset(asset: Asset) = assetDao.insert(asset)
 
+    fun insertPendingDeposit(snapshot: List<Snapshot>) = snapshotDao.insertList(snapshot)
+
     fun snapshots(id: String) = assetService.snapshots(id)
 
     fun snapshotsFromDb(id: String, type: String? = null) = if (type == null) {
@@ -91,4 +93,8 @@ constructor(
     fun allSnapshots() = snapshotDao.allSnapshots()
 
     fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
+
+    fun pendingDeposits(assetId: String) = assetService.pendingDeposits(assetId)
+
+    fun clearPendingDeposits() = snapshotDao.clearPendingDeposits()
 }

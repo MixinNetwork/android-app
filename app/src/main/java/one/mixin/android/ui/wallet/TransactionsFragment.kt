@@ -12,6 +12,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.room.Transaction
+import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
 import kotlinx.android.synthetic.main.fragment_transactions.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -22,6 +24,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.toast
@@ -35,11 +38,14 @@ import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
+import java.util.UUID
 import javax.inject.Inject
 
 class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
@@ -113,9 +119,24 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 updateHeader(headerView, it)
             }
         })
+        walletViewModel.pendingDeposits(asset.assetId).autoDisposable(scopeProvider)
+            .subscribe({
+                updateData(it.data?.map { it.toSnapshot(asset.assetId) })
+            }, {
+                Timber.d(it)
+                ErrorHandler.handleError(it)
+            })
 
         jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
         jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId))
+    }
+
+    @Transaction
+    fun updateData(list: List<Snapshot>?) {
+        walletViewModel.clearPendingDeposits()
+        list?.let { data ->
+            walletViewModel.insertPendingDeposit(data)
+        }
     }
 
     @SuppressLint("SetTextI18n")
@@ -175,7 +196,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         activity?.addFragment(this@TransactionsFragment, fragment, TransactionFragment.TAG)
     }
 
-    private fun showFiltersSheet(){
+    private fun showFiltersSheet() {
         filtersView.filters_radio_group.setCheckedById(currentType)
         filtersSheet.show()
     }
@@ -198,7 +219,6 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 }
                 R.id.filters_radio_transfer -> {
                     bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name))
-                    Timber.d("transfer")
                 }
                 R.id.filters_radio_deposit -> {
                     bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name))
@@ -259,5 +279,4 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     private var currentType = R.id.filters_radio_all
-
 }
