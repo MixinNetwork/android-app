@@ -46,7 +46,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val POS_PIN = 0
         const val POS_PB = 1
 
-        fun newInstance(user: User, transferAmount: String, asset: Asset, trace: String, transferMemo: String?) =
+        fun newInstance(user: User, transferAmount: String, asset: Asset, trace: String?, transferMemo: String?) =
             TransferBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_USER, user)
                 putString(ARGS_AMOUNT, transferAmount)
