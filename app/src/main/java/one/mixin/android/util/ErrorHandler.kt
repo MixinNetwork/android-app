@@ -26,16 +26,16 @@ open class ErrorHandler {
                         handleErrorCode(throwable.code(), ctx)
                     }
                     is IOException -> when (throwable) {
-                        is SocketTimeoutException -> ctx.toast(R.string.error_connection_timeout)
-                        is UnknownHostException -> ctx.toast(R.string.error_no_connection)
-                        is ServerErrorException -> ctx.toast(R.string.error_server_5xx)
+                        is SocketTimeoutException -> toast(R.string.error_connection_timeout)
+                        is UnknownHostException -> toast(R.string.error_no_connection)
+                        is ServerErrorException -> toast(R.string.error_server_5xx)
                         is ClientErrorException -> {
                             handleErrorCode(throwable.code, ctx)
                         }
-                        is NetworkException -> ctx.toast(R.string.error_no_connection)
-                        else -> ctx.toast(R.string.error_unknown)
+                        is NetworkException -> toast(R.string.error_no_connection)
+                        else -> toast(R.string.error_unknown)
                     }
-                    else -> ctx.toast(R.string.error_unknown)
+                    else -> toast(R.string.error_unknown)
                 }
             }
         }
@@ -48,70 +48,70 @@ open class ErrorHandler {
                     TRANSACTION -> {
                     }
                     BAD_DATA -> {
-                        toast(R.string.error_bad_data)
+                        toast(getString(R.string.error_bad_data, BAD_DATA))
                     }
                     PHONE_SMS_DELIVERY -> {
-                        toast(R.string.error_phone_sms_delivery)
+                        toast(getString(R.string.error_phone_sms_delivery, PHONE_SMS_DELIVERY))
                     }
                     RECAPTCHA_IS_INVALID -> {
-                        toast(R.string.error_recaptcha_is_invalid)
+                        toast(getString(R.string.error_recaptcha_is_invalid, RECAPTCHA_IS_INVALID))
                     }
                     OLD_VERSION -> {
-                        toast(R.string.error_old_version)
+                        toast(getString(R.string.error_old_version, OLD_VERSION))
                     }
                     PHONE_INVALID_FORMAT -> {
-                        toast(R.string.error_phone_invalid_format)
+                        toast(getString(R.string.error_phone_invalid_format, PHONE_INVALID_FORMAT))
                     }
                     INSUFFICIENT_IDENTITY_NUMBER -> {
                     }
                     INVALID_INVITATION_CODE -> {
                     }
                     PHONE_VERIFICATION_CODE_INVALID -> {
-                        toast(R.string.error_phone_verification_code_invalid)
+                        toast(getString(R.string.error_phone_verification_code_invalid, PHONE_VERIFICATION_CODE_INVALID))
                     }
                     PHONE_VERIFICATION_CODE_EXPIRED -> {
-                        toast(R.string.error_phone_verification_code_expired)
+                        toast(getString(R.string.error_phone_verification_code_expired, PHONE_VERIFICATION_CODE_EXPIRED))
                     }
                     INVALID_QR_CODE -> {
                     }
                     NOT_FOUND -> {
-                        toast(R.string.error_not_found)
+                        toast(getString(R.string.error_not_found, NOT_FOUND))
                     }
                     GROUP_CHAT_FULL -> {
-                        toast(R.string.error_full_group)
+                        toast(getString(R.string.error_full_group, GROUP_CHAT_FULL))
                     }
                     INSUFFICIENT_BALANCE -> {
-                        toast(R.string.error_insufficient_balance)
+                        toast(getString(R.string.error_insufficient_balance, INSUFFICIENT_BALANCE))
                     }
                     INVALID_PIN_FORMAT -> {
-                        toast(R.string.error_invalid_pin_format)
+                        toast(getString(R.string.error_invalid_pin_format, INVALID_PIN_FORMAT))
                     }
                     PIN_INCORRECT -> {
-                        toast(R.string.error_pin_incorrect)
+                        toast(getString(R.string.error_pin_incorrect, PIN_INCORRECT))
                     }
                     TOO_SMALL -> {
-                        toast(R.string.error_too_small)
+                        toast(getString(R.string.error_too_small, TOO_SMALL))
                     }
                     TOO_MANY_REQUEST -> {
-                        toast(R.string.error_too_many_request)
+                        toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
                     }
                     USED_PHONE -> {
-                        toast(R.string.error_used_phone)
+                        toast(getString(R.string.error_used_phone, USED_PHONE))
                     }
                     INSUFFICIENT_TRANSACTION_FEE -> {
-                        toast(R.string.error_insufficient_transaction_fee)
+                        toast(getString(R.string.error_insufficient_transaction_fee, INSUFFICIENT_TRANSACTION_FEE))
                     }
                     TOO_MANY_STICKERS -> {
-                        toast(R.string.error_too_many_stickers)
+                        toast(getString(R.string.error_too_many_stickers, TOO_MANY_STICKERS))
                     }
                     BLOCKCHAIN_ERROR -> {
-                        toast(R.string.error_blockchain)
+                        toast(getString(R.string.error_blockchain, BLOCKCHAIN_ERROR))
                     }
                     INVALID_ADDRESS -> {
-                        toast(R.string.error_invalid_address)
+                        toast(getString(R.string.error_invalid_address, INVALID_ADDRESS))
                     }
                     WITHDRAWAL_AMOUNT_SMALL -> {
-                        toast(R.string.error_too_small_withdraw_amount)
+                        toast(getString(R.string.error_too_small_withdraw_amount, WITHDRAWAL_AMOUNT_SMALL))
                     }
                     else -> handled = false
                 }
@@ -128,24 +128,24 @@ open class ErrorHandler {
                     BAD_REQUEST -> {
                     }
                     AUTHENTICATION -> {
-                        ctx.toast(R.string.error_authentication)
+                        toast(R.string.error_authentication)
                         Bugsnag.notify(IllegalStateException("Force logout error code."))
                         MixinApplication.get().closeAndClear()
                     }
                     FORBIDDEN -> {
-                        ctx.toast(R.string.error_forbidden)
+                        toast(R.string.error_forbidden)
                     }
                     NOT_FOUND -> {
-                        ctx.toast(R.string.error_not_found)
+                        toast(R.string.error_not_found)
                     }
                     TOO_MANY_REQUEST -> {
-                        ctx.toast(R.string.error_too_many_request)
+                        toast(R.string.error_too_many_request)
                     }
                     SERVER -> {
-                        ctx.toast(R.string.error_server_5xx)
+                        toast(R.string.error_server_5xx)
                     }
                     else -> {
-                        ctx.toast(getString(R.string.error_unknown_with_code, code))
+                        toast(getString(R.string.error_unknown_with_code, code))
                     }
                 }
             }
@@ -159,7 +159,7 @@ open class ErrorHandler {
         private const val SERVER = 500
 
         private const val TRANSACTION = 10001
-        private const val BAD_DATA = 10002
+        const val BAD_DATA = 10002
         private const val PHONE_SMS_DELIVERY = 10003
         private const val RECAPTCHA_IS_INVALID = 10004
         const val NEED_RECAPTCHA = 10005
@@ -177,8 +177,8 @@ open class ErrorHandler {
         private const val TOO_SMALL = 20120
         private const val USED_PHONE = 20122
         private const val INSUFFICIENT_TRANSACTION_FEE = 20124
-        private const val WITHDRAWAL_AMOUNT_SMALL = 20127
         private const val TOO_MANY_STICKERS = 20126
+        private const val WITHDRAWAL_AMOUNT_SMALL = 20127
         private const val BLOCKCHAIN_ERROR = 30100
         private const val INVALID_ADDRESS = 30102
     }

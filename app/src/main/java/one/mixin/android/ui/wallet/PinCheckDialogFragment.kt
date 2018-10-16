@@ -69,7 +69,7 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
                     } else {
                         contentView.pin.clear()
                         if (r.errorCode == ErrorHandler.PIN_INCORRECT) {
-                            contentView.pin.error(getString(R.string.error_pin_incorrect))
+                            contentView.pin.error(getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT))
                         } else if (r.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                             contentView.pin_va.displayedChild = POS_TIP
                             contentView.tip_va.showNext()

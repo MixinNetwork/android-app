@@ -31,6 +31,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.widget.BottomSheet
@@ -87,7 +88,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             } else if (!asset.publicKey.isNullOrEmpty() && asset.accountName.isNullOrEmpty() && asset.accountTag.isNullOrEmpty()) {
                 activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
             } else {
-                toast(R.string.error_bad_data)
+                toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
             }
         }
 
