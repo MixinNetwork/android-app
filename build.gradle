@@ -23,8 +23,9 @@ buildscript {
         ext.libphonenumberVersion = '8.9.15'
         ext.anko_version = '0.10.5'
         ext.coroutines_version = '0.26.0'
-        ext.firebaseVersion = '16.0.3'
-        ext.firebaseMessageVersion = '17.3.2'
+        ext.firebaseVersion = '16.0.4'
+        ext.firebaseMessageVersion = '17.3.3'
+        ext.firebaseDylinkVersion = '16.1.2'
         ext.jwtVersion = '0.9.1'
         ext.zxingVersion = '3.3.3'
         ext.zxingEmbeddedVersion = '3.6.8'
@@ -41,7 +42,7 @@ buildscript {
         ext.fabVersion = '1.6'
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
-        ext.ktlintVersion = '0.27.0'
+        ext.ktlintVersion = '0.29.0'
         ext.exoplayerVersion = '2.9.0'
 
         ext.junitVersion = '4.12'
@@ -67,7 +68,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.3.0-alpha13'
+        classpath 'com.android.tools.build:gradle:3.2.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.0.2'
     }

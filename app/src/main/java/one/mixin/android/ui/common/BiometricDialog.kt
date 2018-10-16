@@ -14,7 +14,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
-import timber.log.Timber
 import java.math.BigDecimal
 import java.nio.charset.Charset
 
@@ -62,8 +61,8 @@ class BiometricDialog(
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
             if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_CANCELED) {
                 callback?.onCancel()
-            } else if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT
-                || errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT) {
+            } else if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT ||
+                errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT) {
                 cancellationSignal?.cancel()
                 callback?.showTransferBottom(user, amount, asset, trace, memo)
             }
@@ -76,7 +75,7 @@ class BiometricDialog(
                     val encrypt = context.defaultSharedPreferences.getString(Constants.BIOMETRICS_PIN, null)
                     val decryptByteArray = cipher.doFinal(Base64.decode(encrypt, Base64.URL_SAFE))
                     callback?.onStartTransfer(asset.assetId, user.userId, amount.toDot(),
-                        decryptByteArray.toString(Charset.defaultCharset()),trace, memo)
+                        decryptByteArray.toString(Charset.defaultCharset()), trace, memo)
                 } catch (e: Exception) {
                 }
             }
@@ -90,8 +89,14 @@ class BiometricDialog(
     }
 
     interface Callback {
-        fun onStartTransfer(assetId: String, userId: String, amount: String,
-            pin: String, trace: String?, memo: String?)
+        fun onStartTransfer(
+            assetId: String,
+            userId: String,
+            amount: String,
+            pin: String,
+            trace: String?,
+            memo: String?
+        )
 
         fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?)
 

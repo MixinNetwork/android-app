@@ -87,5 +87,4 @@ constructor(
     fun allSnapshots() = snapshotDao.allSnapshots()
 
     fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
-
 }

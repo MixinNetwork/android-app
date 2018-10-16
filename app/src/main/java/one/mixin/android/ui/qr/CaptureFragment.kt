@@ -266,8 +266,8 @@ class CaptureFragment : BaseFragment() {
     fun handleScanResult(data: String) {
         if (!isMixinUrl(data)) {
             MainActivity.showScan(requireContext(), data)
-        } else if (data.startsWith(Scheme.TRANSFER, true)
-            || data.startsWith(Scheme.HTTPS_TRANSFER, true)) {
+        } else if (data.startsWith(Scheme.TRANSFER, true) ||
+            data.startsWith(Scheme.HTTPS_TRANSFER, true)) {
             val segments = Uri.parse(data).pathSegments
             val userId = if (segments.size >= 2) {
                 segments[1]

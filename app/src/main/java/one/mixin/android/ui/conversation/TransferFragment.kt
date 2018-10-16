@@ -278,8 +278,14 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val biometricDialogCallback = object : BiometricDialog.Callback {
-        override fun onStartTransfer(assetId: String, userId: String, amount: String, pin: String,
-            trace: String?, memo: String?) {
+        override fun onStartTransfer(
+            assetId: String,
+            userId: String,
+            amount: String,
+            pin: String,
+            trace: String?,
+            memo: String?
+        ) {
             chatViewModel.transfer(assetId, userId, amount, pin, trace, memo).autoDisposable(scopeProvider)
                 .subscribe({
                     if (it.isSuccess) {

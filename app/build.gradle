@@ -154,6 +154,7 @@ dependencies {
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"
     implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
+    implementation "com.google.firebase:firebase-dynamic-links:${firebaseDylinkVersion}"
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.timehop.stickyheadersrecyclerview:library:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
