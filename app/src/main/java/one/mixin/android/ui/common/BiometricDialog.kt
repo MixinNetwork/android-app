@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import android.content.Context
 import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
+import com.bugsnag.android.Bugsnag
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.R
 import one.mixin.android.Constants
@@ -14,6 +15,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
+import org.jetbrains.anko.getStackTraceString
+import java.lang.IllegalStateException
 import java.math.BigDecimal
 import java.nio.charset.Charset
 
@@ -39,8 +42,12 @@ class BiometricDialog(
             .build()
         val cipher = try {
             BiometricUtil.getDecryptCipher(context)
-        } catch (e: UserNotAuthenticatedException) {
-            callback?.showAuthenticationScreen()
+        } catch (e: Exception) {
+            if (e is UserNotAuthenticatedException) {
+                callback?.showAuthenticationScreen()
+            } else {
+                Bugsnag.notify(BiometricException("getDecryptCipher. ${e.getStackTraceString()}"))
+            }
             return
         }
         val cryptoObject = BiometricPromptCompat.DefaultCryptoObject(cipher)
@@ -77,6 +84,7 @@ class BiometricDialog(
                     callback?.onStartTransfer(asset.assetId, user.userId, amount.toDot(),
                         decryptByteArray.toString(Charset.defaultCharset()), trace, memo)
                 } catch (e: Exception) {
+                    Bugsnag.notify(BiometricException("onAuthenticationSucceeded  ${e.getStackTraceString()}"))
                 }
             }
         }
@@ -105,3 +113,5 @@ class BiometricDialog(
         fun onCancel()
     }
 }
+
+class BiometricException(message: String) : IllegalStateException(message)

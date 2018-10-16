@@ -149,6 +149,10 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
             val amount = uri.getQueryParameter("amount")
             val trace = uri.getQueryParameter("trace")
             val memo = uri.getQueryParameter("memo")
+            if (userId == null || assetId == null || amount == null) {
+                error(R.string.bottom_sheet_check_payment_info)
+                return
+            }
             val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
             linkViewModel.pay(transferRequest).autoDisposable(scopeProvider).subscribe({ r ->
                 if (r.isSuccess) {
