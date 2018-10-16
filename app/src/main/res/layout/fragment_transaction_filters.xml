@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/filters_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:button="@drawable/bg_upper_round"
+        app:leftIcon="@drawable/ic_close_black_24dp"
+        app:rightText="@string/filters_apply"
+        app:rightTextColor="@color/colorBlue"
+        app:titleText="@string/filters_title"/>
+
+    <TextView
+        android:paddingTop="12dp"
+        android:paddingBottom="12dp"
+        android:text="@string/filters_by"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:background="@color/bg_gray"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <one.mixin.android.widget.RadioGroup
+        android:id="@+id/filters_radio_group"
+        android:layout_width="match_parent"
+        android:orientation="vertical"
+        android:layout_height="wrap_content">
+
+        <one.mixin.android.widget.RadioButton
+            android:id="@+id/filters_radio_all"
+            android:checked="true"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@drawable/selector_filters"
+            android:background="@color/white"
+            android:text="@string/filters_all"/>
+
+        <one.mixin.android.widget.RadioButton
+            android:id="@+id/filters_radio_transfer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@drawable/selector_filters"
+            android:background="@color/white"
+            android:text="@string/filters_transfer"/>
+
+        <one.mixin.android.widget.RadioButton
+            android:id="@+id/filters_radio_deposit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@drawable/selector_filters"
+            android:background="@color/white"
+            android:text="@string/filters_deposit"/>
+
+
+        <one.mixin.android.widget.RadioButton
+            android:id="@+id/filters_radio_withdrawal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@drawable/selector_filters"
+            android:background="@color/white"
+            android:text="@string/filters_withdrawal"/>
+
+        <one.mixin.android.widget.RadioButton
+            android:id="@+id/filters_radio_fee"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@drawable/selector_filters"
+            android:background="@color/white"
+            android:text="@string/filters_fee"/>
+
+        <one.mixin.android.widget.RadioButton
+            android:id="@+id/filters_radio_rebate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:button="@drawable/selector_filters"
+            android:background="@color/white"
+            android:text="@string/filters_rebate"/>
+
+    </one.mixin.android.widget.RadioGroup>
+</LinearLayout>

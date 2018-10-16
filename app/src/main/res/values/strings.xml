@@ -450,5 +450,15 @@
     <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
     <string name="setting_storage_bn_clear">Clear</string>
     <string name="setting_auth_cancel_msg">Deauthorize %1$s?</string>
+    <!--filter-->
+    <string name="filters_title">Filters</string>
+    <string name="filters_apply">Apply</string>
+    <string name="filters_all">All</string>
+    <string name="filters_transfer">Transfer</string>
+    <string name="filters_deposit">Deposit</string>
+    <string name="filters_withdrawal">Withdrawal</string>
+    <string name="filters_fee">Fee</string>
+    <string name="filters_rebate">Rebate</string>
+    <string name="filters_by">Filter by</string>
 </resources>
 

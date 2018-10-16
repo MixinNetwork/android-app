@@ -40,7 +40,7 @@ internal constructor(
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
 
-    fun snapshotsFromDb(id: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id)
+    fun snapshotsFromDb(id: String, type: String? = null): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id, type)
 
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsByUserId(opponentId)
 
