@@ -481,7 +481,9 @@ class ConversationAdapter(
             override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
                 return oldItem.mediaStatus == newItem.mediaStatus &&
                     oldItem.status == newItem.status &&
-                    oldItem.userFullName == newItem.userFullName
+                    oldItem.userFullName == newItem.userFullName &&
+                    oldItem.participantFullName == newItem.participantFullName &&
+                    oldItem.sharedUserFullName == newItem.sharedUserFullName
             }
         }
     }
