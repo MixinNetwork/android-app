@@ -23,8 +23,8 @@ class BiometricDialog(
     private val user: User,
     private val amount: String,
     private val asset: Asset,
-    private val trace: String,
-    private val memo: String
+    private val trace: String?,
+    private val memo: String?
 ) {
     var callback: Callback? = null
     private var cancellationSignal: CancellationSignal? = null
@@ -91,9 +91,9 @@ class BiometricDialog(
 
     interface Callback {
         fun onStartTransfer(assetId: String, userId: String, amount: String,
-            pin: String, trace: String, memo: String)
+            pin: String, trace: String?, memo: String?)
 
-        fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String, memo: String)
+        fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?)
 
         fun showAuthenticationScreen()
 

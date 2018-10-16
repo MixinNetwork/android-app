@@ -245,13 +245,13 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         contentView.link_error.visibility = VISIBLE
     }
 
-    private fun showBiometricPrompt(user: User, amount: String, asset: Asset, trace: String, memo: String) {
+    private fun showBiometricPrompt(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
         biometricDialog = BiometricDialog(requireContext(), user, amount, asset, trace, memo)
         biometricDialog?.callback = biometricDialogCallback
         biometricDialog?.show()
     }
 
-    private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String, memo: String) {
+    private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
         TransferBottomSheetDialogFragment
             .newInstance(user, amount, asset, trace, memo)
             .showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
@@ -265,7 +265,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     }
 
     private val biometricDialogCallback = object : BiometricDialog.Callback {
-        override fun onStartTransfer(assetId: String, userId: String, amount: String, pin: String, trace: String, memo: String) {
+        override fun onStartTransfer(assetId: String, userId: String, amount: String, pin: String, trace: String?, memo: String?) {
             linkViewModel.transfer(assetId, userId, amount, pin, trace, memo).autoDisposable(scopeProvider)
                 .subscribe({
                     if (it.isSuccess) {
@@ -280,7 +280,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 })
         }
 
-        override fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String, memo: String) {
+        override fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
             this@LinkBottomSheetDialogFragment.showTransferBottom(user, amount, asset, trace, memo)
             dismiss()
         }
