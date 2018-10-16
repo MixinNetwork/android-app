@@ -24,7 +24,7 @@ import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.headrecyclerview.FooterAdapter
+import one.mixin.android.ui.common.recyclerview.FooterAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
@@ -114,6 +114,8 @@ class GiphyFragment : BaseFragment() {
                 return@doAsync
             }
             uiThread {
+                if (!isAdded) return@uiThread
+
                 val file = requireContext().getImagePath().createGifTemp()
                 file.copyFromInputStream(FileInputStream(f))
                 if (file.absolutePath != null && f.length() > 0) {
@@ -145,11 +147,12 @@ class GiphyFragment : BaseFragment() {
                     width = size - ctx.dip(20)
                     height = (width * (3f / 4)).toInt()
                 }
-                item.setImageResource(R.drawable.ic_gif_search)
+                Glide.with(item).clear(item)
+                item.setImageDrawable(ctx.getDrawable(R.drawable.ic_gif_search))
                 item.setOnClickListener { listener?.onSearchClick() }
             } else {
                 val g = data!![position - 1].images.fixed_width
-                item.loadGif(g.url, centerCrop = true)
+                item.loadGif(g.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
                 item.setOnClickListener { listener?.onItemClick(position, g.url) }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size

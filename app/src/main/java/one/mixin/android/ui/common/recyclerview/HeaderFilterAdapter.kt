@@ -1,4 +1,4 @@
-package one.mixin.android.ui.common.headrecyclerview
+package one.mixin.android.ui.common.recyclerview
 
 import one.mixin.android.extension.notNullElse
 

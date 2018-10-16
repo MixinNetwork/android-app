@@ -1,4 +1,4 @@
-package one.mixin.android.ui.common.headrecyclerview
+package one.mixin.android.ui.common.recyclerview
 
 import androidx.recyclerview.widget.ListUpdateCallback
 

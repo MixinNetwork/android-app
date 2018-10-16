@@ -1,19 +1,19 @@
-package one.mixin.android.ui.common.headrecyclerview
+package one.mixin.android.ui.common.recyclerview
 
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.extension.notNullElse
 
-abstract class FooterAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+abstract class FooterListAdapter<T, VH : RecyclerView.ViewHolder>(diffCallback: DiffUtil.ItemCallback<T>) : ListAdapter<T, VH>(diffCallback) {
     companion object {
         const val TYPE_FOOTER = 0
         const val TYPE_NORMAL = 1
     }
 
     var footerView: View? = null
-    open var data: List<T>? = null
 
     override fun getItemViewType(position: Int): Int {
         return if (position == itemCount - 1 && footerView != null) {
@@ -23,15 +23,20 @@ abstract class FooterAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(data, {
-        if (footerView != null) it.size + 1 else it.size
-    }, 0)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_FOOTER) {
-            getFootViewHolder()
+    override fun getItemCount(): Int {
+        return if (footerView != null) {
+            super.getItemCount() + 1
         } else {
-            getNormalViewHolder(parent.context, parent)
+            super.getItemCount()
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        return if (viewType == TYPE_FOOTER) {
+            getFootViewHolder() as VH
+        } else {
+            getNormalViewHolder(parent.context, parent) as VH
         }
     }
 

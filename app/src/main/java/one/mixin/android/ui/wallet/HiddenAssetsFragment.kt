@@ -12,7 +12,7 @@ import kotlinx.android.synthetic.main.view_title.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
+import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
 import one.mixin.android.vo.AssetItem

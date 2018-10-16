@@ -10,7 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.date
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.ui.common.headrecyclerview.HeaderAdapter
+import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType

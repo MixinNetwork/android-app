@@ -1,4 +1,4 @@
-package one.mixin.android.ui.common.headrecyclerview
+package one.mixin.android.ui.common.recyclerview
 
 import android.content.Context
 import androidx.recyclerview.widget.RecyclerView

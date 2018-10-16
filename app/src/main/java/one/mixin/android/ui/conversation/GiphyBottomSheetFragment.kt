@@ -15,7 +15,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_giphy_search_bottom_sheet.view.*
-import kotlinx.android.synthetic.main.item_sticker.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.hideKeyboard
@@ -23,7 +22,7 @@ import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.headrecyclerview.FooterListAdapter
+import one.mixin.android.ui.common.recyclerview.FooterListAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
@@ -191,12 +190,11 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             holder.itemView.layoutParams = params
             val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
             val image = getItem(pos).images.fixed_width
-            item.loadGif(image.url)
             item.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = size
                 height = (size * (3f / 4)).toInt()
             }
-            holder.itemView.sticker_iv.loadGif(image.url, centerCrop = true)
+            item.loadGif(image.url, centerCrop = true,  holder = R.drawable.ic_giphy_place_holder)
             holder.itemView.setOnClickListener { listener.onGifClick(image.url) }
         }
     }
