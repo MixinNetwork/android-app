@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,7 +12,6 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_giphy_search_bottom_sheet.view.*
@@ -23,6 +23,7 @@ import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.headrecyclerview.FooterListAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
@@ -79,7 +80,19 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
+        contentView.sticker_rv.layoutManager = GridLayoutManager(context, COLUMN).apply {
+            spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
+                override fun getSpanSize(pos: Int): Int {
+                    return if (pos == adapter.itemCount - 1) {
+                        COLUMN
+                    } else {
+                        1
+                    }
+                }
+            }
+        }
+        val foot = layoutInflater.inflate(R.layout.view_giphy_foot, contentView.sticker_rv, false)
+        adapter.footerView = foot
         contentView.sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
         contentView.sticker_rv.adapter = adapter
         contentView.sticker_rv.addOnScrollListener(onScrollListener)
@@ -156,12 +169,14 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         fun onGiphyClick(url: String)
     }
 
-    class GiphyAdapter(private val size: Int, private val listener: GifListener) : ListAdapter<Gif, ItemHolder>(Gif.DIFF_CALLBACK) {
+    class GiphyAdapter(private val size: Int, private val listener: GifListener) : FooterListAdapter<Gif, RecyclerView.ViewHolder>(Gif.DIFF_CALLBACK) {
+        override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder {
+            return NormalHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false))
+        }
 
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
-            ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false))
+        override fun onBindViewHolder(holder: RecyclerView.ViewHolder, pos: Int) {
+            if (pos == itemCount - 1) return
 
-        override fun onBindViewHolder(holder: ItemHolder, pos: Int) {
             val params = holder.itemView.layoutParams
             params.width = size
             params.height = (size * (3f / 4)).toInt()
@@ -177,8 +192,6 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             holder.itemView.setOnClickListener { listener.onGifClick(image.url) }
         }
     }
-
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
     interface GifListener {
         fun onGifClick(url: String)
