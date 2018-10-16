@@ -17,6 +17,8 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.ui.common.BiometricException
+import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 import java.nio.charset.Charset
 import java.security.KeyStore
@@ -49,6 +51,8 @@ object BiometricUtil {
         } catch (e: Exception) {
             if (e is UserNotAuthenticatedException) {
                 showAuthenticationScreen(fragment)
+            } else {
+                Bugsnag.notify(BiometricException("getEncryptCipher. ${e.getStackTraceString()}"))
             }
             return false
         }
@@ -67,7 +71,7 @@ object BiometricUtil {
         try {
             ks.deleteEntry(BIOMETRICS_ALIAS)
         } catch (e: Exception) {
-            Bugsnag.notify(IllegalStateException("delete entry BIOMETRICS_ALIAS failed."))
+            Bugsnag.notify(BiometricException("delete entry BIOMETRICS_ALIAS failed. ${e.getStackTraceString()}"))
             Timber.d("delete entry BIOMETRICS_ALIAS failed.")
         }
 
@@ -103,7 +107,7 @@ object BiometricUtil {
         try {
             key = ks.getKey(BIOMETRICS_ALIAS, null) as? SecretKey
         } catch (e: Exception) {
-            Bugsnag.notify(IllegalStateException("getKey BIOMETRICS_ALIAS failed."))
+            Bugsnag.notify(BiometricException("getKey BIOMETRICS_ALIAS failed. ${e.getStackTraceString()}"))
             Timber.d("getKey BIOMETRICS_ALIAS failed.")
         }
         try {
@@ -126,7 +130,7 @@ object BiometricUtil {
                 key = keyGenerator.generateKey()
             }
         } catch (e: Exception) {
-            Bugsnag.notify(IllegalStateException("keyGenerator init failed."))
+            Bugsnag.notify(BiometricException("keyGenerator init failed. ${e.getStackTraceString()}"))
             Timber.d("keyGenerator init failed.")
         }
         return key
