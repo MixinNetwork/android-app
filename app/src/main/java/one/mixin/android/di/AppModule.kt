@@ -5,6 +5,7 @@ import android.content.ContentResolver
 import android.provider.Settings
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
+import com.bugsnag.android.Bugsnag
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
 import dagger.Module
@@ -34,6 +35,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.show
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
@@ -103,6 +105,7 @@ internal class AppModule {
                         throw ServerErrorException(code)
                     } else if (code in 400..499) {
                         if (code == 401) {
+                            Bugsnag.notify(IllegalStateException("Force logout. request: ${request.show()}, response: ${response.show()}"))
                             MixinApplication.get().closeAndClear()
                         }
                         throw ClientErrorException(code)

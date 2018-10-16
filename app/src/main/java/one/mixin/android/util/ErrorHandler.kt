@@ -1,6 +1,7 @@
 package one.mixin.android.util
 
 import android.content.Context
+import com.bugsnag.android.Bugsnag
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
@@ -128,6 +129,7 @@ open class ErrorHandler {
                     }
                     AUTHENTICATION -> {
                         ctx.toast(R.string.error_authentication)
+                        Bugsnag.notify(IllegalStateException("Force logout error code."))
                         MixinApplication.get().closeAndClear()
                     }
                     FORBIDDEN -> {
