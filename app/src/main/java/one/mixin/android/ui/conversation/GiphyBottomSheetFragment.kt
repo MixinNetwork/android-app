@@ -36,8 +36,8 @@ import timber.log.Timber
 class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GiphyBottomSheetFragment"
-        const val LIMIT = 50
-        const val INTERVAL = 3000
+        const val LIMIT = 51
+        const val INTERVAL = 4000
 
         const val POS_RV = 0
         const val POS_PB = 1
@@ -57,7 +57,9 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             })
     }
     private var offset = 0
+    private var fetching = false
     private var searching = false
+    private var noMore = false
     private var lastSearchTime = 0L
     private val totalGifs = mutableListOf<Gif>()
 
@@ -98,7 +100,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         contentView.sticker_rv.addOnScrollListener(onScrollListener)
         contentView.search_et.setOnEditorActionListener(onEditorActionListener)
         contentView.cancel_tv.setOnClickListener { dismiss() }
-        performSearch(false)
+        performSearch()
     }
 
     private fun update(list: List<Gif>) {
@@ -107,20 +109,20 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         adapter.submitList(totalGifs)
     }
 
-    private fun performSearch(search: Boolean) {
-        searching = true
+    private fun performSearch() {
+        fetching = true
         if (offset == 0) {
             contentView.sticker_va.displayedChild = POS_PB
         }
-        val query = contentView.search_et.text.toString()
-        if (search && query.isNotEmpty()) {
+        if (searching) {
+            val query = contentView.search_et.text.toString()
             bottomViewModel.searchGifs(query, LIMIT, offset)
         } else {
             bottomViewModel.trendingGifs(LIMIT, offset)
         }.autoDisposable(scopeProvider)
             .subscribe({ list ->
                 if (!isAdded) return@subscribe
-                if (search && offset == 0) {
+                if (offset == 0) {
                     adapter.notifyDataSetChanged()
                 }
                 if (list.isEmpty()) {
@@ -129,9 +131,12 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     contentView.sticker_va.displayedChild = POS_RV
                     update(list)
                 }
-                searching = false
+                if (list.size < LIMIT) {
+                    noMore = true
+                }
+                fetching = false
             }, { t ->
-                searching = false
+                fetching = false
                 contentView.sticker_va.displayedChild = POS_EMPTY
                 Timber.d("Search gifs failed, t: ${t.printStackTrace()}")
                 if (t is HttpException && t.code() == 429) {
@@ -142,22 +147,25 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
     private val onScrollListener = object : RecyclerView.OnScrollListener() {
         override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
-            if (!searching && !contentView.sticker_rv.canScrollVertically(1)) {
+            if (!fetching && !contentView.sticker_rv.canScrollVertically(1)) {
                 val cur = System.currentTimeMillis()
-                if (cur - lastSearchTime < INTERVAL) return
+                if (noMore || cur - lastSearchTime < INTERVAL) return
 
                 lastSearchTime = cur
-                performSearch(false)
+                performSearch()
             }
         }
     }
 
     private val onEditorActionListener = TextView.OnEditorActionListener { _, actionId, _ ->
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
-            if (!searching) {
+            if (!fetching) {
                 offset = 0
+                searching = contentView.search_et.text.toString().trim().isNotEmpty()
+                noMore = false
                 totalGifs.clear()
-                performSearch(true)
+                contentView.sticker_rv.scrollToPosition(0)
+                performSearch()
                 contentView.search_et.hideKeyboard()
             }
             return@OnEditorActionListener true
