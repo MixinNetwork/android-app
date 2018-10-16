@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.fragment.app.DialogFragment
 import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Maybe
@@ -102,6 +103,7 @@ class MainActivity : BlazeBaseActivity() {
 
         val account = Session.getAccount()
         Bugsnag.setUser(account?.userId, account?.identity_number, account?.full_name)
+        Crashlytics.setUserIdentifier(account?.userId)
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(RefreshAccountJob())

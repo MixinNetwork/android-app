@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.util.Log
 import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
@@ -162,7 +163,11 @@ class ChatWebSocket(
                     transactions.remove(blazeMessage.id)
                 }
                 if (blazeMessage.action == ERROR_ACTION && blazeMessage.error.code == AUTHENTICATION) {
-                    Bugsnag.notify(IllegalStateException("Force logout webSocket.\nblazeMessage: $blazeMessage"))
+                    val errorDescription = "Force logout webSocket.\nblazeMessage: $blazeMessage"
+                    val ise = IllegalStateException(errorDescription)
+                    Bugsnag.notify(ise)
+                    Crashlytics.log(Log.ERROR, "401", errorDescription)
+                    Crashlytics.logException(ise)
                     connected = false
                     closeInternal(quitCode)
                     (app as MixinApplication).closeAndClear()

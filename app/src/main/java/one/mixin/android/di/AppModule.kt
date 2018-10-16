@@ -3,6 +3,7 @@ package one.mixin.android.di
 import android.app.Application
 import android.content.ContentResolver
 import android.provider.Settings
+import android.util.Log
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.bugsnag.android.Bugsnag
@@ -52,6 +53,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import com.crashlytics.android.Crashlytics
 
 @Module(includes = [(ViewModelModule::class)])
 internal class AppModule {
@@ -105,7 +107,9 @@ internal class AppModule {
                         throw ServerErrorException(code)
                     } else if (code in 400..499) {
                         if (code == 401) {
-                            Bugsnag.notify(IllegalStateException("Force logout. request: ${request.show()}, response: ${response.show()}"))
+                            val ise = IllegalStateException("Force logout. request: ${request.show()}, response: ${response.show()}")
+                            Bugsnag.notify(ise)
+                            Crashlytics.logException(ise)
                             MixinApplication.get().closeAndClear()
                         }
                         throw ClientErrorException(code)
