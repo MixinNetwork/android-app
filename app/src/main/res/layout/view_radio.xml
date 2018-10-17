@@ -3,9 +3,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingStart="24dp"
-    android:paddingEnd="12dp"
+    android:paddingEnd="24dp"
     android:paddingTop="12dp"
-    android:paddingBottom="24dp"
+    android:paddingBottom="12dp"
     android:background="?android:attr/selectableItemBackground">
 
     <ImageView
@@ -23,5 +23,5 @@
         android:layout_centerVertical="true"
         android:layout_width="match_parent"
         android:gravity="center_vertical"
-        android:layout_height="24dp"/>
+        android:layout_height="26dp"/>
 </RelativeLayout>

@@ -24,7 +24,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.toast
@@ -45,7 +44,6 @@ import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
-import java.util.UUID
 import javax.inject.Inject
 
 class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
@@ -119,13 +117,15 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 updateHeader(headerView, it)
             }
         })
-        walletViewModel.pendingDeposits(asset.assetId).autoDisposable(scopeProvider)
-            .subscribe({
-                updateData(it.data?.map { it.toSnapshot(asset.assetId) })
-            }, {
-                Timber.d(it)
-                ErrorHandler.handleError(it)
-            })
+        asset.publicKey?.let { key ->
+            walletViewModel.pendingDeposits(key, asset.assetId).autoDisposable(scopeProvider)
+                .subscribe({
+                    updateData(it.data?.map { it.toSnapshot(asset.assetId) })
+                }, {
+                    Timber.d(it)
+                    ErrorHandler.handleError(it)
+                })
+        }
 
         jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
         jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId))
@@ -218,7 +218,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
                 }
                 R.id.filters_radio_transfer -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name))
+                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name))
                 }
                 R.id.filters_radio_deposit -> {
                     bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name))

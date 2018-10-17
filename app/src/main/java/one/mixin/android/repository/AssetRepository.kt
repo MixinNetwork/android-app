@@ -48,10 +48,10 @@ constructor(
 
     fun snapshots(id: String) = assetService.snapshots(id)
 
-    fun snapshotsFromDb(id: String, type: String? = null) = if (type == null) {
+    fun snapshotsFromDb(id: String, type: String? = null, otherType: String? = null) = if (type == null) {
         snapshotDao.snapshots(id)
     } else {
-        snapshotDao.snapshotsByType(id, type)
+        snapshotDao.snapshotsByType(id, type, otherType)
     }
 
     fun snapshotLocal(assetId: String, snapshotId: String) = snapshotDao.snapshotLocal(assetId, snapshotId)
@@ -94,7 +94,7 @@ constructor(
 
     fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
 
-    fun pendingDeposits(assetId: String) = assetService.pendingDeposits(assetId)
+    fun pendingDeposits(key: String, asset: String) = assetService.pendingDeposits(key, asset)
 
     fun clearPendingDeposits() = snapshotDao.clearPendingDeposits()
 }

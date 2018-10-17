@@ -15,6 +15,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface AssetService {
 
@@ -48,6 +49,6 @@ interface AssetService {
     @GET("mutual_snapshots/{id}")
     fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
 
-    @GET("external/transactions/{id}")
-    fun pendingDeposits(@Path("id") assetId: String): Observable<MixinResponse<List<PendingDeposit>>>
+    @GET("external/transactions/{key}")
+    fun pendingDeposits( @Path("key") key: String,@Query("asset") asset: String): Observable<MixinResponse<List<PendingDeposit>>>
 }

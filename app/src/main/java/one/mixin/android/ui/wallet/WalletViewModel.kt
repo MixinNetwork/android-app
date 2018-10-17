@@ -41,7 +41,7 @@ internal constructor(
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
 
-    fun snapshotsFromDb(id: String, type: String? = null): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id, type)
+    fun snapshotsFromDb(id: String, type: String? = null, otherType: String? = null): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id, type, otherType)
 
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsByUserId(opponentId)
 
@@ -79,7 +79,7 @@ internal constructor(
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
         .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
-    fun pendingDeposits(assetId: String) = assetRepository.pendingDeposits(assetId)
+    fun pendingDeposits(key: String, asset: String) = assetRepository.pendingDeposits(key, asset)
         .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())
 
     fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
