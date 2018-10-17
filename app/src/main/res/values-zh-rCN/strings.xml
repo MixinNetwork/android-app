@@ -250,6 +250,10 @@
     <string name="wallet_biometric_screen_lock">锁屏</string>
     <string name="wallet_biometric_screen_lock_desc">请解锁您的设备以继续</string>
     <string name="wallet_transactions_empty">暂无转账记录</string>
+    <string name="wallet_deposits_empty">暂无充值记录</string>
+    <string name="wallet_withdrawals_empty">暂无提现记录</string>
+    <string name="wallet_fees_empty">暂无手续费记录</string>
+    <string name="wallet_rebates_empty">暂无退款记录</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>

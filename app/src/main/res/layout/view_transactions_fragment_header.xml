@@ -93,6 +93,7 @@
             android:layout_height="wrap_content"/>
 
         <TextView
+            android:id="@+id/group_info_member_title"
             android:layout_toStartOf="@id/group_info_member_title_sort"
             android:layout_width="match_parent"
             android:layout_height="50dp"

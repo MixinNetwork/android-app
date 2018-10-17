@@ -257,6 +257,10 @@
     <string name="wallet_biometric_screen_lock">Screen Lock</string>
     <string name="wallet_biometric_screen_lock_desc">Use your device pattern to continue</string>
     <string name="wallet_transactions_empty">No transactions</string>
+    <string name="wallet_deposits_empty">No deposits</string>
+    <string name="wallet_withdrawals_empty">No withdrawals</string>
+    <string name="wallet_fees_empty">No fees</string>
+    <string name="wallet_rebates_empty">No rebates</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
