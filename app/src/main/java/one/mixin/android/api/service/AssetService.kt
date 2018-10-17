@@ -50,5 +50,5 @@ interface AssetService {
     fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
 
     @GET("external/transactions/{key}")
-    fun pendingDeposits( @Path("key") key: String,@Query("asset") asset: String): Observable<MixinResponse<List<PendingDeposit>>>
+    fun pendingDeposits(@Path("key") key: String, @Query("asset") asset: String): Observable<MixinResponse<List<PendingDeposit>>>
 }

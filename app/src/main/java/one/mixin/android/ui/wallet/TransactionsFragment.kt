@@ -111,6 +111,9 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         recycler_view.addItemDecoration(SpaceItemDecoration(1))
         recycler_view.adapter = adapter
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
+        doAsync {
+            walletViewModel.clearPendingDeposits()
+        }
         walletViewModel.assetItem(asset.assetId).observe(this, Observer { assetItem ->
             assetItem?.let {
                 asset = it
@@ -133,7 +136,6 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     @Transaction
     fun updateData(list: List<Snapshot>?) {
-        walletViewModel.clearPendingDeposits()
         list?.let { data ->
             walletViewModel.insertPendingDeposit(data)
         }
