@@ -37,18 +37,25 @@ class WalletSettingFragment : BaseFragment() {
         change_tv.setOnClickListener {
             activity?.addFragment(this@WalletSettingFragment, OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
         }
-        time_rl.setOnClickListener {
-            activity?.addFragment(this@WalletSettingFragment, BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
-        }
-        biometrics_sc.isClickable = false
-        biometrics_rl.setOnClickListener(biometricsClickListener)
-        val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
-        if (open) {
-            biometrics_sc.isChecked = true
-            time_rl.visibility = VISIBLE
-            setTimeDesc()
+
+        val isBiometricsSupport = BiometricUtil.isSupport(requireContext())
+        if (isBiometricsSupport) {
+            time_rl.setOnClickListener {
+                activity?.addFragment(this@WalletSettingFragment, BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
+            }
+            biometrics_sc.isClickable = false
+            biometrics_rl.setOnClickListener(biometricsClickListener)
+            val open = defaultSharedPreferences.getBoolean(Constants.Account.PREF_BIOMETRICS, false)
+            if (open) {
+                biometrics_sc.isChecked = true
+                time_rl.visibility = VISIBLE
+                setTimeDesc()
+            } else {
+                biometrics_sc.isChecked = false
+                time_rl.visibility = GONE
+            }
         } else {
-            biometrics_sc.isChecked = false
+            biometrics_rl.visibility = GONE
             time_rl.visibility = GONE
         }
     }

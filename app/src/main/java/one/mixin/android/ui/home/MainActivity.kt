@@ -58,7 +58,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
 import one.mixin.android.widget.MaterialSearchView
-import one.mixin.android.extension.alert
 import org.jetbrains.anko.alert
 import javax.inject.Inject
 
