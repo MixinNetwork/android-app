@@ -30,6 +30,7 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
                         override fun onCheckedChanged(id: Int, checked: Boolean) {
                             if (checked) {
                                 update(id)
+                                onCheckedListener?.onCheced(id)
                             }
                         }
                     })
@@ -74,5 +75,15 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
                 }
             }
         }
+    }
+
+    private var onCheckedListener: OnCheckedListener? = null
+
+    fun setOnCheckedListener(onCheckedListener: OnCheckedListener) {
+        this.onCheckedListener = onCheckedListener
+    }
+
+    interface OnCheckedListener {
+        fun onCheced(id: Int)
     }
 }

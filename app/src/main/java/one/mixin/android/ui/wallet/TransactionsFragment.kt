@@ -42,6 +42,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.RadioGroup
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 import javax.inject.Inject
@@ -213,30 +214,32 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private val filtersView: View by lazy {
         val view = View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null)
         view.filters_title.setOnClickListener { filtersSheet.dismiss() }
-        view.right_tv.setOnClickListener {
-            currentType = view.filters_radio_group.getCheckedId()
-            when (currentType) {
-                R.id.filters_radio_all -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
+        view.filters_radio_group.setOnCheckedListener(object : RadioGroup.OnCheckedListener {
+            override fun onCheced(id: Int) {
+                currentType = id
+                when (currentType) {
+                    R.id.filters_radio_all -> {
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
+                    }
+                    R.id.filters_radio_transfer -> {
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name))
+                    }
+                    R.id.filters_radio_deposit -> {
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name))
+                    }
+                    R.id.filters_radio_withdrawal -> {
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name))
+                    }
+                    R.id.filters_radio_fee -> {
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name))
+                    }
+                    R.id.filters_radio_rebate -> {
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name))
+                    }
                 }
-                R.id.filters_radio_transfer -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name))
-                }
-                R.id.filters_radio_deposit -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name))
-                }
-                R.id.filters_radio_withdrawal -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name))
-                }
-                R.id.filters_radio_fee -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name))
-                }
-                R.id.filters_radio_rebate -> {
-                    bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name))
-                }
+                filtersSheet.dismiss()
             }
-            filtersSheet.dismiss()
-        }
+        })
         view
     }
 

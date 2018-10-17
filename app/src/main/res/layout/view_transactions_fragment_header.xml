@@ -85,7 +85,9 @@
             android:id="@+id/group_info_member_title_sort"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:layout_marginEnd="16dp"
+            android:paddingTop="16dp"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:src="@drawable/ic_sort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>

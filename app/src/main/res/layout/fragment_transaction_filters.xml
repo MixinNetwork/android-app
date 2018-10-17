@@ -12,7 +12,6 @@
         android:button="@drawable/bg_upper_round"
         android:background="@drawable/bg_upper_round"
         app:leftIcon="@drawable/ic_close_black_24dp"
-        app:rightText="@string/filters_apply"
         app:rightTextColor="@color/colorBlue"
         app:titleText="@string/filters_title"/>
 
