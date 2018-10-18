@@ -84,5 +84,5 @@ internal constructor(
 
     fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
 
-    fun clearPendingDeposits() = assetRepository.clearPendingDeposits()
+    fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 }

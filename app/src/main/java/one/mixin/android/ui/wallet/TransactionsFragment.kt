@@ -113,7 +113,9 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         recycler_view.adapter = adapter
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
         doAsync {
-            walletViewModel.clearPendingDeposits()
+            asset.assetId.let { it ->
+                walletViewModel.clearPendingDepositsByAssetId(it)
+            }
         }
         walletViewModel.assetItem(asset.assetId).observe(this, Observer { assetItem ->
             assetItem?.let {
@@ -213,7 +215,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     private val filtersView: View by lazy {
         val view = View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null)
-        view.filters_title.setOnClickListener { filtersSheet.dismiss() }
+        view.filters_title.left_ib.setOnClickListener { filtersSheet.dismiss() }
         view.filters_radio_group.setOnCheckedListener(object : RadioGroup.OnCheckedListener {
             override fun onChecked(id: Int) {
                 currentType = id

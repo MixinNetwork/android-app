@@ -78,16 +78,15 @@
         android:background="@color/bg_gray"
         android:layout_width="match_parent"
         android:visibility="gone"
-        android:paddingBottom="8dp"
         android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/group_info_member_title_sort"
             android:layout_alignParentEnd="true"
             android:layout_alignParentBottom="true"
-            android:paddingTop="16dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
+            android:padding="8dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/mixin_ripple_small"
             android:src="@drawable/ic_sort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
@@ -100,6 +99,7 @@
             android:gravity="bottom"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:paddingStart="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="8dp"
             android:text="@string/wallet_transactions_title"/>
     </RelativeLayout>
 </LinearLayout>

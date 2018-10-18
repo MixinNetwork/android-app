@@ -96,5 +96,5 @@ constructor(
 
     fun pendingDeposits(key: String, asset: String) = assetService.pendingDeposits(key, asset)
 
-    fun clearPendingDeposits() = snapshotDao.clearPendingDeposits()
+    fun clearPendingDepositsByAssetId(assetId: String) = snapshotDao.clearPendingDepositsByAssetId(assetId)
 }
