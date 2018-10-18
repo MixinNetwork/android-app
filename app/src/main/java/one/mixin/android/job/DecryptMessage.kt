@@ -290,6 +290,9 @@ class DecryptMessage : Injector() {
     private fun processSystemSnapshotMessage(data: BlazeMessageData, snapshot: Snapshot) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, "",
             data.createdAt, MessageStatus.DELIVERED, snapshot.type, null, snapshot.snapshotId)
+        snapshot.transactionHash?.let {
+            snapshotDao.deleteSnapshotByHash(it)
+        }
         snapshotDao.insert(snapshot)
         messageDao.insert(message)
         if (assetDao.simpleAsset(snapshot.assetId) == null) {

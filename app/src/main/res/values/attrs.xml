@@ -77,4 +77,9 @@
     <declare-styleable name="AudioRecordView">
         <attr name="blink_color" format="color"/>
     </declare-styleable>
+
+    <declare-styleable name="RadioButton">
+        <attr name="android:text" format="string"/>
+        <attr name="android:checked" format="boolean"/>
+    </declare-styleable>
 </resources>

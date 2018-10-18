@@ -1,10 +1,10 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
@@ -54,5 +54,8 @@ data class SnapshotItem(
     val memo: String?,
     @SerializedName("asset_symbol")
     @ColumnInfo(name = "asset_symbol")
-    val assetSymbol: String?
+    val assetSymbol: String?,
+    @SerializedName("confirmations")
+    @ColumnInfo(name = "confirmations")
+    val confirmations: Int?
 ) : Parcelable

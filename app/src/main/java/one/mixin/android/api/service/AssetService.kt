@@ -8,12 +8,14 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
+import one.mixin.android.vo.PendingDeposit
 import one.mixin.android.vo.Snapshot
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface AssetService {
 
@@ -46,4 +48,7 @@ interface AssetService {
 
     @GET("mutual_snapshots/{id}")
     fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
+
+    @GET("external/transactions/{key}")
+    fun pendingDeposits(@Path("key") key: String, @Query("asset") asset: String): Observable<MixinResponse<List<PendingDeposit>>>
 }

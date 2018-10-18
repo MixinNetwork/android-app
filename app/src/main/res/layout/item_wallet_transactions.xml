@@ -9,7 +9,7 @@
         android:id="@+id/center"
         android:layout_width="1dp"
         android:layout_height="1dp"
-        android:layout_centerVertical="true" />
+        android:layout_centerVertical="true"/>
 
     <TextView
         android:id="@+id/name"
@@ -22,7 +22,7 @@
         android:ellipsize="end"
         android:singleLine="true"
         android:textColor="@color/text_gray"
-        android:textSize="13sp" />
+        android:textSize="13sp"/>
 
     <TextView
         android:id="@+id/date"
@@ -32,7 +32,20 @@
         android:layout_alignParentEnd="true"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:textColor="@color/text_gray"
-        android:textSize="12sp" />
+        android:textSize="12sp"/>
+
+    <TextView
+        android:id="@+id/state"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/center"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:textColor="@color/text_gray"
+        android:visibility="gone"
+        android:text="@string/pending"
+        android:textSize="12sp"/>
 
     <TextView
         android:id="@+id/value"
@@ -47,5 +60,5 @@
         android:ellipsize="end"
         android:gravity="start"
         android:singleLine="true"
-        android:textColor="@color/colorRed" />
+        android:textColor="@color/colorRed"/>
 </RelativeLayout>

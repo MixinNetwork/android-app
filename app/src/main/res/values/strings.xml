@@ -257,6 +257,10 @@
     <string name="wallet_biometric_screen_lock">Screen Lock</string>
     <string name="wallet_biometric_screen_lock_desc">Use your device pattern to continue</string>
     <string name="wallet_transactions_empty">No transactions</string>
+    <string name="wallet_deposits_empty">No deposits</string>
+    <string name="wallet_withdrawals_empty">No withdrawals</string>
+    <string name="wallet_fees_empty">No fees</string>
+    <string name="wallet_rebates_empty">No rebates</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
@@ -450,5 +454,18 @@
     <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
     <string name="setting_storage_bn_clear">Clear</string>
     <string name="setting_auth_cancel_msg">Deauthorize %1$s?</string>
+    <!--filter-->
+    <string name="filters_title">Filters</string>
+    <string name="filters_apply">Apply</string>
+    <string name="filters_all">All</string>
+    <string name="filters_transfer">Transfer</string>
+    <string name="filters_deposit">Deposit</string>
+    <string name="filters_withdrawal">Withdrawal</string>
+    <string name="filters_fee">Fee</string>
+    <string name="filters_rebate">Rebate</string>
+    <string name="filters_by">Filter by</string>
+    <!--Pending-->
+    <string name="pending">Pending</string>
+    <string name="pending_confirmations">%1$d/%2$d confimations</string>
 </resources>
 

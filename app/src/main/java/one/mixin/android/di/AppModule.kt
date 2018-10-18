@@ -3,7 +3,6 @@ package one.mixin.android.di
 import android.app.Application
 import android.content.ContentResolver
 import android.provider.Settings
-import android.util.Log
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.bugsnag.android.Bugsnag
