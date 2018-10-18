@@ -78,7 +78,17 @@
         android:layout_width="100dp"
         android:layout_height="100dp"
         android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"/>
+        android:layout_above="@+id/tip_tv"/>
+
+    <TextView
+        android:id="@+id/tip_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/margin16"
+        android:layout_alignParentBottom="true"
+        android:text="@string/hold_to_record_video"/>
 
     <one.mixin.android.widget.PseudoNotificationView
         android:id="@+id/pseudo_view"
