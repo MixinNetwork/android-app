@@ -11,13 +11,12 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.AttributeSet
-import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 
-class CameraOpView : View, GestureDetector.OnGestureListener {
+class CameraOpView : View {
 
     private enum class Mode {
         NONE,
@@ -28,7 +27,6 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
     private var ringColor = Color.WHITE
     private var circleColor = context.getColor(R.color.colorDarkBlue)
     private var ringStrokeWidth = dip(5).toFloat()
-    private var progressStrokeWidth = dip(5f).toFloat()
     private var circleWidth = -10f // initial value less than 0 for delay
     private var maxCircleWidth = 0f
     private var circleInterval = 3f
@@ -44,7 +42,6 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
 
     private var mode = Mode.NONE
 
-    private val gestureDetector = GestureDetector(context, this)
     private var callback: CameraOpCallback? = null
 
     private val mHandler by lazy {
@@ -98,7 +95,7 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
-    fun animateValue(form: Float, to: Float) {
+    private fun animateValue(form: Float, to: Float) {
         val anim = ValueAnimator.ofFloat(form, to)
         anim.addUpdateListener { valueAnimator ->
             radius = valueAnimator.animatedValue as Float * rawRadius
@@ -116,7 +113,7 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
             maxCircleWidth = radius - ringStrokeWidth
             midX = width / 2f
             midY = width / 2f
-            val maxRadius = rawRadius * expand.toFloat()
+            val maxRadius = rawRadius * expand
             progressRect = RectF(midX - maxRadius, midY - maxRadius, midX + maxRadius, midY + maxRadius)
         }
     }
@@ -135,58 +132,59 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         } else {
             canvas.drawCircle(midX, midY, radius, ringPaint)
             ringPaint.color = circleColor
-            canvas.drawArc(progressRect, progressStartAngle, curSweepAngle, false, ringPaint)
+            canvas.drawArc(progressRect!!, progressStartAngle, curSweepAngle, false, ringPaint)
             canvas.drawCircle(midX, midY, maxCircleWidth, circlePaint)
         }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        val handled = gestureDetector.onTouchEvent(event)
-        if (handled) {
-            return true
-        }
         when (event.action) {
-            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+            MotionEvent.ACTION_DOWN -> {
+                animateValue(1f, expand)
+                mode = Mode.EXPAND
+
+                postDelayed(longPressRunnable, 500)
+                return true
+            }
+            MotionEvent.ACTION_UP -> {
                 if (mode == Mode.PROGRESS) {
                     stop()
                     callback?.onProgressStop(curSweepAngle / progressInterval / 10)
+                    clean()
+                } else if (mode == Mode.EXPAND) {
+                    removeCallbacks(longPressRunnable)
+                    if (!post(clickRunnable)) {
+                        clickInternal()
+                    }
                 }
-                clean()
-                return true
+            }
+            MotionEvent.ACTION_CANCEL -> {
+                removeCallbacks(longPressRunnable)
+                if (mode == Mode.PROGRESS) {
+                    stop()
+                    callback?.onProgressStop(curSweepAngle / progressInterval / 10)
+                    clean()
+                }
             }
         }
         return super.onTouchEvent(event)
     }
 
-    override fun onShowPress(e: MotionEvent?) {
-    }
-
-    override fun onSingleTapUp(e: MotionEvent?): Boolean {
-        animateValue(expand, 1f)
-        clean()
-        callback?.onClick()
-        return true
-    }
-
-    override fun onDown(e: MotionEvent?): Boolean {
-        animateValue(1f, expand)
-        mode = Mode.EXPAND
-        return true
-    }
-
-    override fun onFling(e1: MotionEvent?, e2: MotionEvent?, velocityX: Float, velocityY: Float): Boolean {
-        return false
-    }
-
-    override fun onScroll(e1: MotionEvent?, e2: MotionEvent?, distanceX: Float, distanceY: Float): Boolean {
-        return false
-    }
-
-    override fun onLongPress(e: MotionEvent?) {
+    private val longPressRunnable = Runnable {
         mode = Mode.PROGRESS
         start()
         callback?.onProgressStart()
+    }
+
+    private val clickRunnable = Runnable {
+        clickInternal()
+    }
+
+    private fun clickInternal() {
+        animateValue(expand, 1f)
+        clean()
+        callback?.onClick()
     }
 
     private fun clean() {
