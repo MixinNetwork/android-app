@@ -39,15 +39,7 @@ class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>() 
                 }
                 snapshot.type == SnapshotType.deposit.name -> {
                     itemView.state.visibility = View.GONE
-                    snapshot.transactionHash?.let {
-                        if (it.length > 10) {
-                            val start = it.substring(0, 6)
-                            val end = it.substring(it.length - 4, it.length)
-                            itemView.name.text = itemView.context.getString(R.string.wallet_transactions_hash, start, end)
-                        } else {
-                            itemView.name.text = it
-                        }
-                    }
+                    itemView.name.setText(R.string.filters_deposit)
                 }
                 snapshot.type == SnapshotType.transfer.name -> itemView.name.text = if (isPositive) {
                     itemView.state.visibility = View.GONE
@@ -55,6 +47,18 @@ class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>() 
                 } else {
                     itemView.state.visibility = View.GONE
                     itemView.context.getString(R.string.transfer_to, snapshot.opponentFullName)
+                }
+                snapshot.type == SnapshotType.withdrawal.name -> {
+                    itemView.state.visibility = View.GONE
+                    itemView.name.setText(R.string.filters_withdrawal)
+                }
+                snapshot.type == SnapshotType.fee.name -> {
+                    itemView.state.visibility = View.GONE
+                    itemView.name.setText(R.string.filters_fee)
+                }
+                snapshot.type == SnapshotType.rebate.name -> {
+                    itemView.state.visibility = View.GONE
+                    itemView.name.setText(R.string.filters_rebate)
                 }
                 else -> {
                     itemView.state.visibility = View.GONE
