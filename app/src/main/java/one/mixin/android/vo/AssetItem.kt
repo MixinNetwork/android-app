@@ -37,3 +37,13 @@ data class AssetItem(
     fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden, confirmations,
         accountName, accountTag)
 }
+
+fun AssetItem.differentProcess(defaultAction: () -> Unit, eosAction: () -> Unit, errorAction: () -> Unit) {
+    if (publicKey.isNullOrEmpty() && !accountName.isNullOrEmpty() && !accountTag.isNullOrEmpty()) {
+        defaultAction()
+    } else if (!publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()) {
+        eosAction()
+    } else {
+        errorAction()
+    }
+}

@@ -40,6 +40,8 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
+import one.mixin.android.vo.differentProcess
+import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RadioGroup
@@ -97,13 +99,13 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         }
         updateHeader(headerView, asset)
         headerView.deposit_tv.setOnClickListener {
-            if (asset.publicKey.isNullOrEmpty() && !asset.accountName.isNullOrEmpty() && !asset.accountTag.isNullOrEmpty()) {
+            asset.differentProcess({
                 activity?.addFragment(this@TransactionsFragment, DepositFragment.newInstance(asset), DepositFragment.TAG)
-            } else if (!asset.publicKey.isNullOrEmpty() && asset.accountName.isNullOrEmpty() && asset.accountTag.isNullOrEmpty()) {
+            }, {
                 activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
-            } else {
+            }, {
                 toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
-            }
+            })
         }
 
         adapter = TransactionsAdapter(asset).apply { data = snapshots }
@@ -124,26 +126,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             }
         })
 
-        if (asset.publicKey.isNullOrEmpty() && !asset.accountName.isNullOrEmpty() && !asset.accountTag.isNullOrEmpty()) {
-            walletViewModel.pendingDeposits(asset.accountTag!!, asset.assetId).autoDisposable(scopeProvider)
-                .subscribe({
-                    updateData(it.data?.map { it.toSnapshot(asset.assetId) })
-                }, {
-                    Timber.d(it)
-                    ErrorHandler.handleError(it)
-                })
-        } else if (!asset.publicKey.isNullOrEmpty() && asset.accountName.isNullOrEmpty() && asset.accountTag.isNullOrEmpty()) {
-            walletViewModel.pendingDeposits(asset.publicKey!!, asset.assetId).autoDisposable(scopeProvider)
-                .subscribe({
-                    updateData(it.data?.map { it.toSnapshot(asset.assetId) })
-                }, {
-                    Timber.d(it)
-                    ErrorHandler.handleError(it)
-                })
-        } else {
-            toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
-        }
-
+        refreshPendingDeposits(asset)
         jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
         jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId))
     }
@@ -168,6 +151,42 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 header.deposit_animator.displayedChild = POS_TEXT
             }
         }
+    }
+
+    private fun refreshPendingDeposits(asset: AssetItem) {
+        asset.differentProcess({
+            walletViewModel.pendingDeposits(asset.accountTag!!, asset.assetId).autoDisposable(scopeProvider)
+                .subscribe({
+                    updateData(it.data?.map { it.toSnapshot(asset.assetId) })
+                }, {
+                    Timber.d(it)
+                    ErrorHandler.handleError(it)
+                })
+        }, {
+            walletViewModel.pendingDeposits(asset.publicKey!!, asset.assetId).autoDisposable(scopeProvider)
+                .subscribe({
+                    updateData(it.data?.map { it.toSnapshot(asset.assetId) })
+                }, {
+                    Timber.d(it)
+                    ErrorHandler.handleError(it)
+                })
+        }, {
+            walletViewModel.getAsset(asset.assetId).autoDisposable(scopeProvider).subscribe({ response ->
+                if (response?.isSuccess == true) {
+                    response.data?.let { asset ->
+                        asset.toAssetItem().let { assetItem ->
+                            assetItem.differentProcess({
+                                refreshPendingDeposits(assetItem)
+                            }, {
+                                refreshPendingDeposits(assetItem)
+                            }, {})
+                        }
+                    }
+                }
+            }, {
+                ErrorHandler.handleError(it)
+            })
+        })
     }
 
     private fun showPB(asset: AssetItem): Boolean {
