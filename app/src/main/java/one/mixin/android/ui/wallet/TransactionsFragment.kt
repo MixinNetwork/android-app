@@ -155,7 +155,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         asset.differentProcess({
-            walletViewModel.pendingDeposits(asset.accountTag!!, asset.assetId).autoDisposable(scopeProvider)
+            walletViewModel.pendingDeposits("${asset.accountName}:${asset.accountTag}", asset.assetId).autoDisposable(scopeProvider)
                 .subscribe({
                     updateData(it.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
