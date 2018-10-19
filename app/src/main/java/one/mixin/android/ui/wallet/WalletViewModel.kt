@@ -79,8 +79,8 @@ internal constructor(
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
         .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
 
-    fun pendingDeposits(key: String, asset: String) = assetRepository.pendingDeposits(key, asset)
-        .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())
+    fun pendingDeposits(asset: String, key: String? = null, name: String? = null, tag: String? = null) = assetRepository.pendingDeposits(asset, key, name, tag)
+        .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())!!
 
     fun insertPendingDeposit(snapshot: List<Snapshot>) = assetRepository.insertPendingDeposit(snapshot)
 

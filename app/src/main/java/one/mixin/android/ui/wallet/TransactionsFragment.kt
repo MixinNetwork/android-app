@@ -155,7 +155,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         asset.differentProcess({
-            walletViewModel.pendingDeposits("${asset.accountName}:${asset.accountTag}", asset.assetId).autoDisposable(scopeProvider)
+            walletViewModel.pendingDeposits(asset.assetId, name = asset.accountName, tag = asset.accountTag).autoDisposable(scopeProvider)
                 .subscribe({
                     updateData(it.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
@@ -163,7 +163,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     ErrorHandler.handleError(it)
                 })
         }, {
-            walletViewModel.pendingDeposits(asset.publicKey!!, asset.assetId).autoDisposable(scopeProvider)
+            walletViewModel.pendingDeposits(asset.assetId, key = asset.publicKey).autoDisposable(scopeProvider)
                 .subscribe({
                     updateData(it.data?.map { it.toSnapshot(asset.assetId) })
                 }, {

@@ -94,7 +94,7 @@ constructor(
 
     fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
 
-    fun pendingDeposits(key: String, asset: String) = assetService.pendingDeposits(key, asset)
+    fun pendingDeposits(asset: String, key: String? = null, name: String? = null, tag: String? = null) = assetService.pendingDeposits(asset, key, name, tag)
 
     fun clearPendingDepositsByAssetId(assetId: String) = snapshotDao.clearPendingDepositsByAssetId(assetId)
 }
