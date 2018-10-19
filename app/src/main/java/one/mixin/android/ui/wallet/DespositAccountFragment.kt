@@ -2,12 +2,12 @@ package one.mixin.android.ui.wallet
 
 import android.content.ClipData
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import kotlinx.android.synthetic.main.fragment_deposit.*
+import androidx.fragment.app.Fragment
+import kotlinx.android.synthetic.main.fragment_deposit_account.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.getClipboardManager
@@ -17,12 +17,12 @@ import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 
-class DepositFragment : Fragment() {
+class DespositAccountFragment : Fragment() {
 
     companion object {
-        const val TAG = "DepositFragment"
+        const val TAG = "DespositAccountFragment"
 
-        fun newInstance(asset: AssetItem) = DepositFragment().apply {
+        fun newInstance(asset: AssetItem) = DespositAccountFragment().apply {
             arguments = bundleOf(ARGS_ASSET to asset)
         }
     }
@@ -30,7 +30,7 @@ class DepositFragment : Fragment() {
     private val asset: AssetItem by lazy { arguments!!.getParcelable<AssetItem>(ARGS_ASSET) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_deposit, container, false)
+        inflater.inflate(R.layout.fragment_deposit_account, container, false)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

@@ -55,3 +55,6 @@ data class Asset(
     @ColumnInfo(name = "account_tag")
     val accountTag: String?
 ) : Parcelable
+
+fun Asset.toAssetItem(): AssetItem = AssetItem(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden,
+    confirmations, null, null, accountName, accountTag)
