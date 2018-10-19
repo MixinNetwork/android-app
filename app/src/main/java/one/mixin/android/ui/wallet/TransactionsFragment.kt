@@ -123,14 +123,25 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 updateHeader(headerView, it)
             }
         })
-        asset.publicKey?.let { key ->
-            walletViewModel.pendingDeposits(key, asset.assetId).autoDisposable(scopeProvider)
+
+        if (asset.publicKey.isNullOrEmpty() && !asset.accountName.isNullOrEmpty() && !asset.accountTag.isNullOrEmpty()) {
+            walletViewModel.pendingDeposits(asset.accountTag!!, asset.assetId).autoDisposable(scopeProvider)
                 .subscribe({
                     updateData(it.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
                     Timber.d(it)
                     ErrorHandler.handleError(it)
                 })
+        } else if (!asset.publicKey.isNullOrEmpty() && asset.accountName.isNullOrEmpty() && asset.accountTag.isNullOrEmpty()) {
+            walletViewModel.pendingDeposits(asset.publicKey!!, asset.assetId).autoDisposable(scopeProvider)
+                .subscribe({
+                    updateData(it.data?.map { it.toSnapshot(asset.assetId) })
+                }, {
+                    Timber.d(it)
+                    ErrorHandler.handleError(it)
+                })
+        } else {
+            toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
         }
 
         jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
