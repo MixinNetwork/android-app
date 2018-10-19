@@ -38,11 +38,11 @@ data class AssetItem(
         accountName, accountTag)
 }
 
-fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
+fun AssetItem.differentProcess(memoAction: () -> Unit, keyAction: () -> Unit, errorAction: () -> Unit) {
     if (publicKey.isNullOrEmpty() && !accountName.isNullOrEmpty() && !accountTag.isNullOrEmpty()) {
-        keyAction()
-    } else if (!publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()) {
         memoAction()
+    } else if (!publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()) {
+        keyAction()
     } else {
         errorAction()
     }
