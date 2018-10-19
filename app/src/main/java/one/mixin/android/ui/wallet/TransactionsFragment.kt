@@ -100,9 +100,9 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         updateHeader(headerView, asset)
         headerView.deposit_tv.setOnClickListener {
             asset.differentProcess({
-                activity?.addFragment(this@TransactionsFragment, DepositFragment.newInstance(asset), DepositFragment.TAG)
-            }, {
                 activity?.addFragment(this@TransactionsFragment, AddressFragment.newInstance(asset), AddressFragment.TAG)
+            }, {
+                activity?.addFragment(this@TransactionsFragment, DepositFragment.newInstance(asset), DepositFragment.TAG)
             }, {
                 toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
             })
@@ -155,7 +155,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         asset.differentProcess({
-            walletViewModel.pendingDeposits(asset.assetId, name = asset.accountName, tag = asset.accountTag).autoDisposable(scopeProvider)
+            walletViewModel.pendingDeposits(asset.assetId, key = asset.publicKey).autoDisposable(scopeProvider)
                 .subscribe({
                     updateData(it.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
@@ -163,7 +163,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     ErrorHandler.handleError(it)
                 })
         }, {
-            walletViewModel.pendingDeposits(asset.assetId, key = asset.publicKey).autoDisposable(scopeProvider)
+            walletViewModel.pendingDeposits(asset.assetId, name = asset.accountName, tag = asset.accountTag).autoDisposable(scopeProvider)
                 .subscribe({
                     updateData(it.data?.map { it.toSnapshot(asset.assetId) })
                 }, {

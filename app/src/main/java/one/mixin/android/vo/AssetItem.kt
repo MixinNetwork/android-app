@@ -36,13 +36,21 @@ data class AssetItem(
 
     fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden, confirmations,
         accountName, accountTag)
+
+    fun isPublicKeyAsset(): Boolean {
+        return !publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()
+    }
+
+    fun isAccountTagAsset(): Boolean {
+        return !accountName.isNullOrEmpty() && !accountTag.isNullOrEmpty() && publicKey.isNullOrEmpty()
+    }
 }
 
-fun AssetItem.differentProcess(memoAction: () -> Unit, keyAction: () -> Unit, errorAction: () -> Unit) {
-    if (publicKey.isNullOrEmpty() && !accountName.isNullOrEmpty() && !accountTag.isNullOrEmpty()) {
-        memoAction()
-    } else if (!publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()) {
+fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
+    if (isPublicKeyAsset()) {
         keyAction()
+    }  else if (isAccountTagAsset()) {
+        memoAction()
     } else {
         errorAction()
     }
