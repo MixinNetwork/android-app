@@ -38,11 +38,11 @@ data class AssetItem(
         accountName, accountTag)
 }
 
-fun AssetItem.differentProcess(defaultAction: () -> Unit, eosAction: () -> Unit, errorAction: () -> Unit) {
+fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
     if (publicKey.isNullOrEmpty() && !accountName.isNullOrEmpty() && !accountTag.isNullOrEmpty()) {
-        defaultAction()
+        keyAction()
     } else if (!publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()) {
-        eosAction()
+        memoAction()
     } else {
         errorAction()
     }
