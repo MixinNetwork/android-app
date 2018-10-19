@@ -4,16 +4,16 @@ import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.fragment_address.*
+import kotlinx.android.synthetic.main.fragment_deposit_key.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
@@ -28,12 +28,12 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 
-class AddressFragment : Fragment() {
+class DepositPublicKeyFragment : Fragment() {
     companion object {
-        const val TAG = "AddressFragment"
+        const val TAG = "DepositPublicKeyFragment"
 
-        fun newInstance(asset: AssetItem): AddressFragment {
-            val f = AddressFragment()
+        fun newInstance(asset: AssetItem): DepositPublicKeyFragment {
+            val f = DepositPublicKeyFragment()
             val b = Bundle()
             b.putParcelable(ARGS_ASSET, asset)
             f.arguments = b
@@ -44,7 +44,7 @@ class AddressFragment : Fragment() {
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_address, container, false)
+        layoutInflater.inflate(R.layout.fragment_deposit_key, container, false)
 
     val user: User? by lazy {
         Session.getAccount()?.toUser()
