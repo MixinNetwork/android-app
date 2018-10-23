@@ -32,6 +32,7 @@ import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.uiThread
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
 class MixinApplication : Application(), HasActivityInjector, HasServiceInjector {
@@ -81,27 +82,31 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
     override fun activityInjector(): DispatchingAndroidInjector<Activity>? = dispatchingAndroidInjector
     override fun serviceInjector(): DispatchingAndroidInjector<Service>? = dispatchingServiceInjector
 
-    fun closeAndClear(toLanding: Boolean = true) {
-        BlazeMessageService.stopService(ctx)
-        notificationManager.cancelAll()
-        Session.clearAccount()
-        defaultSharedPreferences.clear()
-        defaultSharedPreferences.putBoolean(Constants.Account.PREF_LOGOUT_COMPLETE, false)
-        CookieManager.getInstance().removeAllCookies(null)
-        CookieManager.getInstance().flush()
-        WebStorage.getInstance().deleteAllData()
-        if (toLanding) {
-            doAsync {
-                clearData()
+    var isLogined = AtomicBoolean(false)
 
-                uiThread {
-                    inject()
-                    LandingActivity.show(ctx)
+    fun closeAndClear(toLanding: Boolean = true) {
+        if (isLogined.compareAndSet(true, false)) {
+            BlazeMessageService.stopService(ctx)
+            notificationManager.cancelAll()
+            Session.clearAccount()
+            defaultSharedPreferences.clear()
+            defaultSharedPreferences.putBoolean(Constants.Account.PREF_LOGOUT_COMPLETE, false)
+            CookieManager.getInstance().removeAllCookies(null)
+            CookieManager.getInstance().flush()
+            WebStorage.getInstance().deleteAllData()
+            if (toLanding) {
+                doAsync {
+                    clearData()
+
+                    uiThread {
+                        inject()
+                        LandingActivity.show(ctx)
+                    }
                 }
+            } else {
+                clearData()
+                inject()
             }
-        } else {
-            clearData()
-            inject()
         }
     }
 
