@@ -1,12 +1,12 @@
 package one.mixin.android.ui.setting
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -60,6 +60,10 @@ class SettingFragment : BaseFragment() {
         auth_rl.setOnClickListener {
             activity?.addFragment(this@SettingFragment,
                 AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
+        }
+        backup_rl.setOnClickListener {
+            activity?.addFragment(this@SettingFragment,
+                BackUpFragment.newInstance(), BackUpFragment.TAG)
         }
     }
 }

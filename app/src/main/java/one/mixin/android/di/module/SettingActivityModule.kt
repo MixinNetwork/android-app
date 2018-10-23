@@ -4,6 +4,7 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.setting.AboutFragment
 import one.mixin.android.ui.setting.AuthenticationsFragment
+import one.mixin.android.ui.setting.BackUpFragment
 import one.mixin.android.ui.setting.NotificationsFragment
 import one.mixin.android.ui.setting.SettingBlockedFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
@@ -32,4 +33,7 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeAuthenticationsFragment(): AuthenticationsFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeBackUpFragment(): BackUpFragment
 }
