@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_gray"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:titleText="@string/setting_authentications"/>
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/sign_in"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:background="@color/white"
+            android:padding="16dp"
+            android:text="sign in"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:layout_marginTop="@dimen/margin16"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/backup"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:padding="16dp"
+            android:background="@color/white"
+            android:text="@string/setting_backup"
+            android:layout_marginTop="@dimen/margin16"
+            android:layout_width="match_parent"
+            android:visibility="gone"
+            android:layout_height="wrap_content"/>
+
+        <TextView
+            android:id="@+id/sign_out"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:padding="16dp"
+            android:text="sign out"
+            android:background="@color/white"
+            android:layout_marginTop="@dimen/margin16"
+            android:visibility="gone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+
+</LinearLayout>

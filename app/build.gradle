@@ -168,6 +168,10 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:${okhttpVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
+
+    implementation "com.google.android.gms:play-services-auth:${gcmVersion}"
+    implementation "com.google.android.gms:play-services-drive:${gcmVersion}"
+
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"
     implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
