@@ -79,6 +79,7 @@ class ChatWebSocket(
         if (client != null) {
             closeInternal(quitCode)
             transactions.clear()
+            connectTimer?.dispose()
             client = null
             connected = false
         }
@@ -187,7 +188,7 @@ class ChatWebSocket(
             jobManager.stop()
             if (connectTimer == null || connectTimer?.isDisposed == true) {
                 connectTimer = Observable.interval(2000, TimeUnit.MILLISECONDS).subscribe({
-                    if (MixinApplication.appContext.networkConnected()) {
+                    if (MixinApplication.appContext.networkConnected() && Session.checkToken()) {
                         connect()
                     }
                 }, {

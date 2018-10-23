@@ -90,9 +90,11 @@ class Session {
             return account?.userId
         }
 
+        fun checkToken() = getAccount() != null && hasToken()
+
         fun signToken(acct: Account?, request: Request): String {
             val token = getToken()
-            if (acct == null || token == null || token.isEmpty()) {
+            if (acct == null || token == null || token.isBlank()) {
                 return ""
             }
             val key = getRSAPrivateKeyFromString(token)
