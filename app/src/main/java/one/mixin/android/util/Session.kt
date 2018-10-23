@@ -90,10 +90,10 @@ class Session {
             return account?.userId
         }
 
-        fun signToken(acct: Account?, request: Request): String? {
+        fun signToken(acct: Account?, request: Request): String {
             val token = getToken()
             if (acct == null || token == null || token.isEmpty()) {
-                return null
+                return ""
             }
             val key = getRSAPrivateKeyFromString(token)
             val expire = System.currentTimeMillis() / 1000 + 1800

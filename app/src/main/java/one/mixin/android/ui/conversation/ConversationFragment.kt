@@ -1508,8 +1508,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (messageItem.userId == Session.getAccountId()) {
             try {
                 messageItem.mediaUrl?.let {
-                    intent.setDataAndType(Uri.parse(it), messageItem.mediaMimeType)
-                    requireActivity().startActivity(intent)
+                    val uri = Uri.parse(it)
+                    if (uri.scheme.equals("file", true)) {
+                        intent.setDataAndType(requireContext().getUriForFile(File(it)), messageItem.mediaMimeType)
+                        requireContext().startActivity(intent)
+                    } else {
+                        intent.setDataAndType(uri, messageItem.mediaMimeType)
+                        requireActivity().startActivity(intent)
+                    }
                 }
             } catch (e: ActivityNotFoundException) {
                 context?.toast(R.string.error_unable_to_open_media)

@@ -34,6 +34,7 @@ class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) 
                         }
                         try {
                             val phoneNum = PhoneNumberUtil.getInstance().parse(p, Locale.getDefault().country)
+                            if (PhoneNumberUtil.getInstance().isValidNumber(phoneNum)) continue
                             val phone = PhoneNumberUtil.getInstance().format(phoneNum, PhoneNumberUtil.PhoneNumberFormat.E164)
                             if (phone != null) {
                                 mutableList.add(ContactRequest(phone, item.displayName))
