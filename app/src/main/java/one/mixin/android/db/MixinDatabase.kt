@@ -134,7 +134,7 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_15_19: Migration = object : Migration(15, 18) {
+        private val MIGRATION_15_19: Migration = object : Migration(15, 19) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP TABLE IF EXISTS assets")
                 database.execSQL("CREATE TABLE IF NOT EXISTS assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
@@ -154,7 +154,7 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_16_19: Migration = object : Migration(16, 18) {
+        private val MIGRATION_16_19: Migration = object : Migration(16, 19) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
                     "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
@@ -167,7 +167,7 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_17_19: Migration = object : Migration(17, 18) {
+        private val MIGRATION_17_19: Migration = object : Migration(17, 19) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
