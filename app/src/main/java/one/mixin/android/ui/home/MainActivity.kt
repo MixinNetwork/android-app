@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home
 
-import android.Manifest
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -10,7 +9,6 @@ import android.view.View
 import androidx.fragment.app.DialogFragment
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
-import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -35,7 +33,6 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RotateSignedPreKeyJob
-import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
@@ -110,9 +107,6 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshAssetsJob())
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
-        if (RxPermissions(this).isGranted(Manifest.permission.READ_CONTACTS)) {
-            jobManager.addJobInBackground(UploadContactsJob())
-        }
         rotateSignalPreKey()
         checkRoot()
 
