@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.GiphyBottomSheetFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
@@ -36,4 +37,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeUserTransactionsFragment(): UserTransactionsFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeGiphyBottomSheetDialogFragment(): GiphyBottomSheetFragment
 }

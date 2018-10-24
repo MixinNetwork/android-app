@@ -1,11 +1,12 @@
 package one.mixin.android.widget.keyboard;
 
 import android.content.Context;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import one.mixin.android.ui.conversation.GiphyBottomSheetFragment;
 
 public class InputAwareLayout extends KeyboardAwareLinearLayout implements KeyboardAwareLinearLayout.OnKeyboardShownListener {
     private InputView current;
@@ -25,7 +26,9 @@ public class InputAwareLayout extends KeyboardAwareLinearLayout implements Keybo
 
     @Override
     public void onKeyboardShown() {
-        hideAttachedInput(true);
+        if (!GiphyBottomSheetFragment.shown) {
+            hideAttachedInput(true);
+        }
     }
 
     public void show(@NonNull final EditText imeTarget, @NonNull final InputView input) {

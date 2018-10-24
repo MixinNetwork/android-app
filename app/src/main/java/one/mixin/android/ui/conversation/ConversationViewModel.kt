@@ -89,6 +89,7 @@ import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
@@ -554,4 +555,14 @@ internal constructor(
             }
         }
     }
+
+    fun trendingGifs(limit: Int, offset: Int): Observable<List<Gif>> =
+        accountRepository.trendingGifs(limit, offset).map { it.data }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+
+    fun searchGifs(query: String, limit: Int, offset: Int): Observable<List<Gif>> =
+        accountRepository.searchGifs(query, limit, offset).map { it.data }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
 }

@@ -18,6 +18,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.StickerAlbumDao
@@ -47,7 +48,8 @@ constructor(
     private val authService: AuthorizationService,
     private val stickerDao: StickerDao,
     private val stickerAlbumDao: StickerAlbumDao,
-    private val stickerRelationshipDao: StickerRelationshipDao
+    private val stickerRelationshipDao: StickerRelationshipDao,
+    private val giphyService: GiphyService
 ) {
 
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -134,4 +136,8 @@ constructor(
         stickerDao.insertUpdate(sticker)
         stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
     }
+
+    fun trendingGifs(limit: Int, offset: Int) = giphyService.trendingGifs(limit, offset)
+
+    fun searchGifs(query: String, limit: Int, offset: Int) = giphyService.searchGifs(query, limit, offset)
 }

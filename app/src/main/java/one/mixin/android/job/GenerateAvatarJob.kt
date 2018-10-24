@@ -69,7 +69,6 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
             getBitmaps(bitmaps, users)
             drawInternal(c, bitmaps)
         } catch (e: Exception) {
-            Bugsnag.notify(e)
             throw LocalJobException()
         }
         result.saveGroupAvatar(applicationContext, name)

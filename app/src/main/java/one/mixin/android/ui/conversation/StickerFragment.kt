@@ -80,8 +80,8 @@ class StickerFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (type == TYPE_NORMAL && albumId != null) {
-            stickerViewModel.observeStickers(albumId!!).observe(this, Observer {
-                it?.let { updateStickers(it) }
+            stickerViewModel.observeStickers(albumId!!).observe(this, Observer { list ->
+                list?.let { updateStickers(it) }
             })
         } else {
             if (type == TYPE_RECENT) {
@@ -92,14 +92,16 @@ class StickerFragment : BaseFragment() {
                 doAsync {
                     personalAlbumId = stickerViewModel.getPersonalAlbums()?.albumId
 
-                    uiThread {
+                    uiThread { _ ->
                         if (personalAlbumId == null) { // not add any personal sticker yet
-                            stickerViewModel.observePersonalStickers().observe(this@StickerFragment, Observer {
-                                it?.let { updateStickers(it) }
+                            stickerViewModel.observePersonalStickers()
+                                .observe(this@StickerFragment, Observer { list ->
+                                list?.let { updateStickers(it) }
                             })
                         } else {
-                            stickerViewModel.observeStickers(personalAlbumId!!).observe(this@StickerFragment, Observer {
-                                it?.let { updateStickers(it) }
+                            stickerViewModel.observeStickers(personalAlbumId!!)
+                                .observe(this@StickerFragment, Observer { list ->
+                                list?.let { updateStickers(it) }
                             })
                         }
                     }

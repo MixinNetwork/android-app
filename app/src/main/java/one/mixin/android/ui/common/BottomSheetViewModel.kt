@@ -37,6 +37,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.giphy.Gif
 import org.jetbrains.anko.doAsync
 import javax.inject.Inject
 
@@ -170,4 +171,14 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     fun verifyPin(code: String): Observable<MixinResponse<Account>> = accountRepository.verifyPin(code)
+
+    fun trendingGifs(limit: Int, offset: Int): Observable<List<Gif>> =
+        accountRepository.trendingGifs(limit, offset).map { it.data }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+
+    fun searchGifs(query: String, limit: Int, offset: Int): Observable<List<Gif>> =
+        accountRepository.searchGifs(query, limit, offset).map { it.data }
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
 }
