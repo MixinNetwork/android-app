@@ -43,6 +43,9 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         const val POS_EMPTY = 2
 
         fun newInstance() = GiphyBottomSheetFragment()
+
+        @JvmField
+        var shown = false
     }
 
     private val adapter: GiphyAdapter by lazy {
@@ -77,6 +80,17 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             val h = requireContext().displaySize().y - requireContext().statusBarHeight() - requireContext().dip(56)
             setCustomViewHeight(h)
         }
+    }
+
+    override fun onAttach(context: Context?) {
+        super.onAttach(context)
+        shown = true
+    }
+
+    override fun onDetach() {
+        shown = false
+        contentView.hideKeyboard()
+        super.onDetach()
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -176,6 +190,11 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         fun onGiphyClick(url: String)
     }
 
+    interface GiphyBottomListener {
+        fun onShow()
+        fun onDismiss()
+    }
+
     class GiphyAdapter(private val size: Int, private val listener: GifListener) : FooterListAdapter<Gif, RecyclerView.ViewHolder>(Gif.DIFF_CALLBACK) {
         override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder {
             return NormalHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false))
@@ -194,7 +213,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 width = size
                 height = (size * (3f / 4)).toInt()
             }
-            item.loadGif(image.url, centerCrop = true,  holder = R.drawable.ic_giphy_place_holder)
+            item.loadGif(image.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
             holder.itemView.setOnClickListener { listener.onGifClick(image.url) }
         }
     }
