@@ -190,11 +190,6 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         fun onGiphyClick(url: String)
     }
 
-    interface GiphyBottomListener {
-        fun onShow()
-        fun onDismiss()
-    }
-
     class GiphyAdapter(private val size: Int, private val listener: GifListener) : FooterListAdapter<Gif, RecyclerView.ViewHolder>(Gif.DIFF_CALLBACK) {
         override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder {
             return NormalHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false))
