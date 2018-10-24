@@ -39,7 +39,7 @@ class Session {
         } else {
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
             val json = preference.getString(Constants.Account.PREF_NAME_ACCOUNT, "")
-            if (json.isNotEmpty()) {
+            if (!json.isNullOrBlank()) {
                 Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type)
             } else {
                 null
