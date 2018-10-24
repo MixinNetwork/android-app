@@ -81,7 +81,7 @@ class MainActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!Session.hasToken()) run {
+        if (!Session.checkToken()) run {
             startActivity(Intent(this, LandingActivity::class.java))
             finish()
             return
@@ -92,7 +92,7 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
-        MixinApplication.get().isLogined.set(true)
+        MixinApplication.get().onlining.set(true)
         setContentView(R.layout.activity_main)
 
         if (savedInstanceState == null) {

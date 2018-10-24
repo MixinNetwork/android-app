@@ -82,15 +82,13 @@ class Session {
             return preference.getLong(Constants.Account.PREF_PIN_ITERATOR, 1)
         }
 
-        fun hasToken(): Boolean = !getToken().isNullOrBlank()
-
         @JvmStatic
         fun getAccountId(): String? {
             val account = Session.getAccount()
             return account?.userId
         }
 
-        fun checkToken() = getAccount() != null && hasToken()
+        fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
 
         fun signToken(acct: Account?, request: Request): String {
             val token = getToken()

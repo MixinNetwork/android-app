@@ -82,10 +82,10 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
     override fun activityInjector(): DispatchingAndroidInjector<Activity>? = dispatchingAndroidInjector
     override fun serviceInjector(): DispatchingAndroidInjector<Service>? = dispatchingServiceInjector
 
-    var isLogined = AtomicBoolean(false)
+    var onlining = AtomicBoolean(false)
 
     fun closeAndClear(toLanding: Boolean = true) {
-        if (isLogined.compareAndSet(true, false)) {
+        if (onlining.compareAndSet(true, false)) {
             BlazeMessageService.stopService(ctx)
             notificationManager.cancelAll()
             Session.clearAccount()
