@@ -4,6 +4,7 @@ import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.AssetDao
@@ -53,6 +54,8 @@ open class Injector : Injectable {
     lateinit var resendMessageDao: ResendMessageDao
     @Inject
     lateinit var conversationApi: ConversationService
+    @Inject
+    lateinit var userApi: UserService
 
     init {
         MixinApplication.get().appComponent.inject(this)

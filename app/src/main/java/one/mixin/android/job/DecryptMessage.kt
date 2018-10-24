@@ -522,7 +522,17 @@ class DecryptMessage : Injector() {
     private fun syncUser(userId: String) {
         val user = userDao.findUser(userId)
         if (user == null) {
-            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+            try {
+                val call = userApi.getUserById(userId).execute()
+                val response = call.body()
+                if (response != null && response.isSuccess) {
+                    response.data?.let { data ->
+                        userDao.insert(data)
+                    }
+                }
+            } catch (e: IOException) {
+                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+            }
         }
     }
 
