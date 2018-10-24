@@ -34,7 +34,7 @@ class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) 
                         }
                         try {
                             val phoneNum = PhoneNumberUtil.getInstance().parse(p, Locale.getDefault().country)
-                            if (PhoneNumberUtil.getInstance().isValidNumber(phoneNum)) continue
+                            if (!PhoneNumberUtil.getInstance().isValidNumber(phoneNum)) continue
                             val phone = PhoneNumberUtil.getInstance().format(phoneNum, PhoneNumberUtil.PhoneNumberFormat.E164)
                             if (phone != null) {
                                 mutableList.add(ContactRequest(phone, item.displayName))
@@ -43,6 +43,7 @@ class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) 
                         }
                     }
                 }
+                if (mutableList.isEmpty()) return@subscribe
                 val call = contactService.syncContacts(mutableList)
                 call.enqueue(object : Callback<MixinResponse<Any>> {
                     override fun onResponse(call: Call<MixinResponse<Any>>, response: Response<MixinResponse<Any>>) {}

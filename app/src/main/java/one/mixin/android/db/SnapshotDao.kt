@@ -20,11 +20,12 @@ interface SnapshotDao : BaseDao<Snapshot> {
     @Query("SELECT s.*, u.full_name AS opponentFullName, a.symbol AS asset_symbol  FROM snapshots s LEFT JOIN users u ON u.user_id = s.opponent_id LEFT JOIN assets a ON a.asset_id = s.asset_id WHERE s.asset_id = :assetId and snapshot_id = :snapshotId")
     fun snapshotLocal(assetId: String, snapshotId: String): SnapshotItem?
 
-    @Query("SELECT s.*, u.full_name AS opponentFullName, a.symbol AS asset_symbol FROM snapshots s LEFT JOIN users u ON u.user_id = s.opponent_id LEFT JOIN assets a ON a.asset_id = s.asset_id ORDER BY created_at DESC")
+    @Query("SELECT s.*, u.full_name AS opponentFullName, a.symbol AS asset_symbol FROM snapshots s WHERE type != 'pending' LEFT JOIN users u ON u.user_id = s" +
+        ".opponent_id LEFT JOIN assets a ON a.asset_id = s.asset_id ORDER BY created_at DESC")
     fun allSnapshots(): DataSource.Factory<Int, SnapshotItem>
 
     @Query("SELECT s.*, u.full_name AS opponentFullName, a.symbol AS asset_symbol FROM snapshots s LEFT JOIN users u ON u.user_id = s.opponent_id LEFT JOIN " +
-        "assets a ON a.asset_id = s.asset_id WHERE s.opponent_id = :opponentId ORDER BY s.created_at DESC, s.snapshot_id DESC")
+        "assets a ON a.asset_id = s.asset_id WHERE type != 'pending' AND s.opponent_id = :opponentId ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>>
 
     @Query("DELETE FROM snapshots WHERE type = 'pending' AND asset_id = :assetId")

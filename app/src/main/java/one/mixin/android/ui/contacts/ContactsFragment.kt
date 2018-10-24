@@ -2,15 +2,15 @@ package one.mixin.android.ui.contacts
 
 import android.Manifest
 import android.annotation.SuppressLint
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.pm.PackageManager
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.kotlin.autoDisposable
@@ -139,6 +139,7 @@ class ContactsFragment : BaseFragment() {
                 contactAdapter.users = mutableList
                 contactAdapter.notifyDataSetChanged()
             }, { _ -> })
+        jobManager.addJobInBackground(UploadContactsJob())
     }
 
     private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
