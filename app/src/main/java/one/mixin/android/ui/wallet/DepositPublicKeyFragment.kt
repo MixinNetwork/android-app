@@ -44,7 +44,7 @@ class DepositPublicKeyFragment : Fragment() {
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_deposit_key, container, false)
+        layoutInflater.inflate(R.layout.fragment_deposit_key, container, false).apply { this.setOnClickListener { } }
 
     val user: User? by lazy {
         Session.getAccount()?.toUser()

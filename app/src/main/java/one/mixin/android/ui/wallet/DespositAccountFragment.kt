@@ -30,7 +30,7 @@ class DespositAccountFragment : Fragment() {
     private val asset: AssetItem by lazy { arguments!!.getParcelable<AssetItem>(ARGS_ASSET) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_deposit_account, container, false)
+        inflater.inflate(R.layout.fragment_deposit_account, container, false).apply { this.setOnClickListener { } }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
