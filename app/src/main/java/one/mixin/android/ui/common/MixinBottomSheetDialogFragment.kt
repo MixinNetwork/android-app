@@ -1,10 +1,10 @@
 package one.mixin.android.ui.common
 
+import android.os.Bundle
+import android.view.View
+import androidx.core.app.MixinDialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import android.os.Bundle
-import androidx.core.app.MixinDialogFragment
-import android.view.View
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
@@ -42,7 +42,11 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
 
     override fun dismiss() {
         if (isAdded) {
-            super.dismissAllowingStateLoss()
+            try {
+                dialog.dismiss()
+            } catch (e: IllegalStateException) {
+                super.dismissAllowingStateLoss()
+            }
         }
     }
 }
