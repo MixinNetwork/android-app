@@ -1,11 +1,11 @@
 package one.mixin.android.ui.wallet.adapter
 
-import androidx.paging.PagedListAdapter
-import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.date
@@ -43,19 +43,21 @@ class SnapshotAdapter : PagedListAdapter<SnapshotItem, SnapshotAdapter.NormalHol
             val isPositive = snapshot.amount.toFloat() > 0
             itemView.date.text = snapshot.createdAt.date()
             when {
-                snapshot.type == SnapshotType.deposit.name -> snapshot.transactionHash?.let {
-                    if (it.length > 10) {
-                        val start = it.substring(0, 6)
-                        val end = it.substring(it.length - 4, it.length)
-                        itemView.name.text = itemView.context.getString(R.string.wallet_transactions_hash, start, end)
-                    } else {
-                        itemView.name.text = it
-                    }
-                }
+                snapshot.type == SnapshotType.deposit.name ->
+                    itemView.name.setText(R.string.filters_deposit)
                 snapshot.type == SnapshotType.transfer.name -> itemView.name.text = if (isPositive) {
                     itemView.context.getString(R.string.transfer_from, snapshot.opponentFullName)
                 } else {
                     itemView.context.getString(R.string.transfer_to, snapshot.opponentFullName)
+                }
+                snapshot.type == SnapshotType.withdrawal.name -> {
+                    itemView.name.setText(R.string.filters_withdrawal)
+                }
+                snapshot.type == SnapshotType.fee.name -> {
+                    itemView.name.setText(R.string.filters_fee)
+                }
+                snapshot.type == SnapshotType.rebate.name -> {
+                    itemView.name.setText(R.string.filters_rebate)
                 }
                 else -> itemView.name.text = snapshot.receiver!!.formatPublicKey()
             }
