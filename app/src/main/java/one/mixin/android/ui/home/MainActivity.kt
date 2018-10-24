@@ -15,6 +15,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
@@ -80,7 +81,7 @@ class MainActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!Session.hasToken()) run {
+        if (!Session.checkToken()) run {
             startActivity(Intent(this, LandingActivity::class.java))
             finish()
             return
@@ -91,6 +92,7 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
+        MixinApplication.get().onlining.set(true)
         setContentView(R.layout.activity_main)
 
         if (savedInstanceState == null) {

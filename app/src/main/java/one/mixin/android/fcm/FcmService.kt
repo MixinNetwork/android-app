@@ -22,7 +22,7 @@ class FcmService : FirebaseMessagingService() {
     }
 
     override fun onNewToken(token: String?) {
-        if (Session.hasToken()) {
+        if (Session.checkToken()) {
             jobManager.addJobInBackground(RefreshFcmTokenJob(token))
         }
     }

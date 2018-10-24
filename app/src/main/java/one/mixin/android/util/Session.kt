@@ -39,7 +39,7 @@ class Session {
         } else {
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
             val json = preference.getString(Constants.Account.PREF_NAME_ACCOUNT, "")
-            if (json.isNotEmpty()) {
+            if (!json.isNullOrBlank()) {
                 Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type)
             } else {
                 null
@@ -82,17 +82,17 @@ class Session {
             return preference.getLong(Constants.Account.PREF_PIN_ITERATOR, 1)
         }
 
-        fun hasToken(): Boolean = !getToken().isNullOrBlank()
-
         @JvmStatic
         fun getAccountId(): String? {
             val account = Session.getAccount()
             return account?.userId
         }
 
+        fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
+
         fun signToken(acct: Account?, request: Request): String {
             val token = getToken()
-            if (acct == null || token == null || token.isEmpty()) {
+            if (acct == null || token == null || token.isBlank()) {
                 return ""
             }
             val key = getRSAPrivateKeyFromString(token)

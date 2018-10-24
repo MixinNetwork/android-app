@@ -130,7 +130,6 @@ open class ErrorHandler {
                     AUTHENTICATION -> {
                         toast(R.string.error_authentication)
                         Bugsnag.notify(IllegalStateException("Force logout error code."))
-                        MixinApplication.get().closeAndClear()
                     }
                     FORBIDDEN -> {
                         toast(R.string.error_forbidden)
