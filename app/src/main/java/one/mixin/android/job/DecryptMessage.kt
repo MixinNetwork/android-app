@@ -513,10 +513,8 @@ class DecryptMessage : Injector() {
             conversationDao.insert(conversation)
             refreshConversation(data.conversationId)
         }
-        if (jobManager.findJobById(data.conversationId) == null) {
-            if (conversation.status == ConversationStatus.START.ordinal) {
-                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
-            }
+        if (conversation.status == ConversationStatus.START.ordinal) {
+            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
         }
     }
 
