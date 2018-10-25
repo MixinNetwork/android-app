@@ -16,6 +16,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -547,7 +548,11 @@ class DecryptMessage : Injector() {
                     } else {
                         ConversationStatus.QUIT.ordinal
                     }
-                    conversationDao.updateConversation(conversationData.conversationId, conversationData.creatorId, conversationData.category, conversationData.name,
+                    var ownerId: String = conversationData.creatorId
+                    if (conversationData.category == ConversationCategory.CONTACT.name) {
+                        ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
+                    }
+                    conversationDao.updateConversation(conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
                         conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
                 }
             }
