@@ -88,6 +88,7 @@ internal class AppModule {
         builder.retryOnConnectionFailure(false)
 
         builder.addInterceptor { chain ->
+            val initTime = System.currentTimeMillis()
             val request = chain.request().newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
@@ -96,7 +97,14 @@ internal class AppModule {
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
                 val response = try {
-                    chain.proceed(request)
+                    chain.proceed(request).also { response ->
+                        val latency = response.sentRequestAtMillis() - initTime
+                        if (latency >= 300000) {
+                            val ise = IllegalStateException("Request latency. init at $initTime, sent at ${response.sentRequestAtMillis()}")
+                            Bugsnag.notify(ise)
+                            Crashlytics.logException(ise)
+                        }
+                    }
                 } catch (e: Exception) {
                     if (e.message?.contains("502") == true) {
                         throw ServerErrorException(502)
