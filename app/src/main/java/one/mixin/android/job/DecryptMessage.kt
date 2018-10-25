@@ -3,6 +3,8 @@ package one.mixin.android.job
 import android.util.Log
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
+import okio.Buffer
+import okio.Okio
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.SignalKeyCount
@@ -12,7 +14,9 @@ import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
+import one.mixin.android.extension.createRTCTemp
 import one.mixin.android.extension.findLastUrl
+import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
@@ -71,7 +75,9 @@ import one.mixin.android.websocket.invalidData
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
+import java.io.File
 import java.io.IOException
+import java.io.ObjectOutputStream
 import java.util.UUID
 
 class DecryptMessage : Injector() {
@@ -113,10 +119,6 @@ class DecryptMessage : Injector() {
 
         when (data.category) {
             MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
-                val message = createCallMessage(data.messageId, data.conversationId, data.userId, data.category,
-                    null, data.createdAt, MessageStatus.DELIVERED)
-                messageDao.insert(message)
-
                 val user = userDao.findUser(data.userId)!!
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_INCOMING) {
                     it.putExtra(ARGS_USER, user)
@@ -124,7 +126,6 @@ class DecryptMessage : Injector() {
                 }
             }
             MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
-                updateCallMessageCategory(data)
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_ANSWER) {
                     it.putExtra(CallService.EXTRA_BLAZE, data)
                 }
@@ -135,27 +136,35 @@ class DecryptMessage : Injector() {
                 }
             }
             MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
-                updateCallMessageCategory(data)
+                saveCallMessage(data)
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_CANCEL)
             }
             MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
-                updateCallMessageCategory(data)
+                saveCallMessage(data)
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_DECLINE)
             }
             MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
-                updateCallMessageCategory(data)
+                saveCallMessage(data)
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_BUSY)
             }
             MessageCategory.WEBRTC_AUDIO_END.name -> {
-                updateCallMessageCategory(data)
+                saveCallMessage(data)
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_REMOTE_END)
             }
             MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
-                updateCallMessageCategory(data)
+                saveCallMessage(data)
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_REMOTE_FAILED)
             }
         }
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+    }
+
+    private fun saveCallMessage(data: BlazeMessageData) {
+        if (data.quoteMessageId == null) return
+
+        val message = createCallMessage(data.quoteMessageId, data.conversationId, data.userId, data.category,
+            null, data.createdAt, MessageStatus.DELIVERED)
+        messageDao.insert(message)
     }
 
     private fun processAppButton(data: BlazeMessageData) {
@@ -268,18 +277,6 @@ class DecryptMessage : Injector() {
 
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
-
-                // TODO test
-//                if (message.content == "test::call") {
-//                    val msg = createMessage(UUID.randomUUID().toString(), message.conversationId,
-//                    Session.getAccountId()!!, MessageCategory.SIGNAL_TEXT.name, "test::answer", nowInUtc(), MessageStatus.SENDING)
-//                    val user = userDao.findUser(message.userId)!!
-//                    CallActivity.show(MixinApplication.appContext, user)
-//                    jobManager.addJobInBackground(SendMessageJob(msg))
-//                    CallService.startService(MixinApplication.appContext, ACTION_CALL_INCOMING)
-//                } else if (message.content == "test::answer") {
-//                    CallService.startService(MixinApplication.appContext, ACTION_CALL_OUTGOING)
-//                }
             }
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
@@ -674,14 +671,5 @@ class DecryptMessage : Injector() {
             return
         }
         jobManager.addJobInBackground(NotificationJob(message))
-    }
-
-    private fun updateCallMessageCategory(data: BlazeMessageData) {
-        if (data.quoteMessageId != null) {
-            val message = messageDao.findMessageById(data.quoteMessageId)
-            if (message != null) {
-                messageDao.updateMessageCategory(data.category, message.id)
-            }
-        }
     }
 }

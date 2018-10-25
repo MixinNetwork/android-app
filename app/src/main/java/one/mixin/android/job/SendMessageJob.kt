@@ -13,7 +13,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus.SENT
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.isCall
-import one.mixin.android.vo.isCallNotOffer
+import one.mixin.android.vo.isCallNotSave
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
 import one.mixin.android.websocket.BlazeMessage
@@ -45,7 +45,7 @@ open class SendMessageJob(
         if (chatWebSocket.connected) {
             jobManager.start()
         }
-        if (message.isCallNotOffer()) {
+        if (message.isCallNotSave()) {
             return
         }
         if (!alreadyExistMessage) {

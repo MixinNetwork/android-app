@@ -235,6 +235,10 @@ fun File.createAudioTemp(type: String, noMedia: Boolean = true): File {
     return newTempFile("Audio_$time", ".$type", noMedia)
 }
 
+fun File.createRTCTemp(conversationId: String, messageId: String): File {
+    return newTempFile("${conversationId}_$messageId", ".rtc", true)
+}
+
 private fun File.newTempFile(name: String, type: String, noMedia: Boolean): File {
     if (!this.exists()) {
         this.mkdirs()

@@ -800,13 +800,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         // TODO test
         action_bar.title_tv.setOnClickListener { _ ->
-            if (!isGroup && (recipient!!.identityNumber == "20012" || recipient!!.identityNumber == "20026") || recipient!!.identityNumber == "20004") {
-                CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
-                    intent.putExtra(ARGS_USER, recipient!!)
-                    intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
-                }
-                CallActivity.show(requireContext(), recipient!!, CallActivity.CallAction.CALL_OUTGOING.name)
+            CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
+                intent.putExtra(ARGS_USER, recipient!!)
+                intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
             }
+            CallActivity.show(requireContext(), recipient!!, CallActivity.CallAction.CALL_OUTGOING.name)
         }
 
         if (isGroup) {

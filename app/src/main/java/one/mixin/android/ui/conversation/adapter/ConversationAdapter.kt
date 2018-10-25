@@ -21,6 +21,7 @@ import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.BillHolder
+import one.mixin.android.ui.conversation.holder.CallHolder
 import one.mixin.android.ui.conversation.holder.CardHolder
 import one.mixin.android.ui.conversation.holder.ContactCardHolder
 import one.mixin.android.ui.conversation.holder.FileHolder
@@ -42,6 +43,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
+import one.mixin.android.vo.isCallNeedSave
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs
 
@@ -147,8 +149,7 @@ class ConversationAdapter(
                     (holder as UnknowHolder).bind()
                 }
                 STICKER_TYPE -> {
-                    (holder as StickerHolder).bind(it, isFirst(position),
-                        selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as StickerHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 LINK_TYPE -> {
                     (holder as HyperlinkHolder).bind(it, keyword, isLast(position),
@@ -166,6 +167,9 @@ class ConversationAdapter(
                 }
                 SECRET_TYPE -> {
                     (holder as SecretHolder).bind(onItemListener)
+                }
+                CALL_TYPE -> {
+                    (holder as CallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 else -> {
                 }
@@ -399,6 +403,10 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_secret, parent, false)
                 SecretHolder(item)
             }
+            CALL_TYPE -> {
+                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_call, parent, false)
+                CallHolder(item)
+            }
             else -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_transparent, parent, false)
                 TransparentHolder(item)
@@ -446,6 +454,7 @@ class ConversationAdapter(
                     item.type == MessageCategory.PLAIN_VIDEO.name -> VIDEO_TYPE
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
                     item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
+                item.isCallNeedSave() -> CALL_TYPE
                 else -> UNKNOWN_TYPE
             }
         }, NULL_TYPE)
@@ -472,6 +481,7 @@ class ConversationAdapter(
         const val CONTACT_CARD_TYPE = 15
         const val VIDEO_TYPE = 16
         const val AUDIO_TYPE = 17
+        const val CALL_TYPE = 18
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {

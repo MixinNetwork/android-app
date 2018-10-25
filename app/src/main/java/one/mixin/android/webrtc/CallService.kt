@@ -13,6 +13,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import dagger.android.AndroidInjection
 import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants.ARGS_USER
@@ -28,6 +29,7 @@ import one.mixin.android.ui.call.CallNotificationBuilder.Companion.TYPE_ESTABLIS
 import one.mixin.android.ui.call.CallNotificationBuilder.Companion.TYPE_INCOMING_RINGING
 import one.mixin.android.ui.call.CallNotificationBuilder.Companion.TYPE_OUTGOING_RINGING
 import one.mixin.android.util.Session
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sdp
@@ -117,7 +119,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callExecutor.execute {
             when (intent.action) {
                 ACTION_CALL_INCOMING -> handleCallIncoming(intent)
-                ACTION_CALL_OUTGOING -> if (isIdle()) handleCallOutgoing(intent)
+                ACTION_CALL_OUTGOING -> handleCallOutgoing(intent)
                 ACTION_CALL_ANSWER -> handleAnswerCall(intent)
                 ACTION_CANDIDATE -> handleCandidate(intent)
                 ACTION_CALL_CANCEL -> handleCallCancel()
@@ -163,7 +165,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         disposable?.dispose()
         CallService.stopService(this@CallService)
     }
-
 
     private fun handleCallIncoming(intent: Intent) {
         if (!isIdle() || isBusy()) {
@@ -337,6 +338,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun setRemoteSdp(json: ByteArray) {
         val sdp = gson.fromJson(String(json), Sdp::class.java)
         val sessionDescription = SessionDescription(getType(sdp.type), sdp.sdp)
+        Timber.d("setRemoteSdp: $sessionDescription")
         peerConnectionClient.setRemoteDescription(sessionDescription)
     }
 
@@ -390,7 +392,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             } else {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name
             }
-            sendCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.name)))
+            sendCallMessage(category, gson.toJson(Sdp(sdp.description, sdp.type.canonicalForm())))
         }
     }
 
@@ -426,7 +428,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callback?.onCameraSwitchDone(isFrontCamera)
     }
 
-    private fun sendCallMessage(category: String, content: String? = null) {
+    private fun sendCallMessage(category: String, content: String? = null): Message {
         val message = if (peerConnectionClient.isInitiator) {
             if (conversationId == null) {
                 throw IllegalStateException("Initiator's conversationId can not be null!")
@@ -467,6 +469,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         }
         Log.d("@@@", "category: $category, quoteMessageId: $quoteMessageId")
         jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
+        return message
     }
 
     private class TimeoutRunnable(private val context: Context) : Runnable {
