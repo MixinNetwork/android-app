@@ -92,17 +92,20 @@ class GiphyFragment : BaseFragment() {
                 }
             }
         })
+        sticker_progress.visibility = View.VISIBLE
         stickerViewModel.trendingGifs(26, 0)
             .autoDisposable(scopeProvider)
             .subscribe({ list ->
                 if (!isAdded) return@subscribe
                 giphyAdapter.data = list
                 giphyAdapter.notifyDataSetChanged()
+                sticker_progress.visibility = View.GONE
             }, { t ->
                 Timber.d("Trending gifs failed, t: ${t.printStackTrace()}")
                 if (t is HttpException && t.code() == 429) {
                     toast("Giphy API rate limit exceeded")
                 }
+                sticker_progress.visibility = View.GONE
             })
     }
 
