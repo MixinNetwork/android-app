@@ -3,6 +3,7 @@
     <item name="menu_transfer" type="id"/>
     <item name="menu_camera" type="id"/>
     <item name="menu_gallery" type="id"/>
+    <item name="menu_voice" type="id"/>
     <item name="menu_video" type="id"/>
     <item name="menu_document" type="id"/>
     <item name="menu_contact" type="id"/>

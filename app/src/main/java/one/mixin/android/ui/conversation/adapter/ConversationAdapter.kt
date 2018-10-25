@@ -533,6 +533,8 @@ class ConversationAdapter(
         open fun onTransferClick(userId: String) {}
 
         open fun onMessageClick(messageId: String?) {}
+
+        open fun onCallClick(messageItem: MessageItem) {}
     }
 
     fun addSelect(messageItem: MessageItem): Boolean {

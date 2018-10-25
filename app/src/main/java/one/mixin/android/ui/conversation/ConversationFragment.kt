@@ -336,6 +336,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                         hideMediaLayout()
                     }
+                    R.id.menu_voice -> {
+                        CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
+                            intent.putExtra(ARGS_USER, recipient!!)
+                            intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+                        }
+                        CallActivity.show(requireContext(), recipient!!, CallActivity.CallAction.CALL_OUTGOING.name)
+                    }
                 }
             }
         })
@@ -529,6 +536,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }, {
                     })
                 }
+            }
+
+            override fun onCallClick(messageItem: MessageItem) {
+                CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
+                    intent.putExtra(ARGS_USER, recipient!!)
+                    intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+                }
+                CallActivity.show(requireContext(), recipient!!, CallActivity.CallAction.CALL_OUTGOING.name)
             }
         }
     }
@@ -796,15 +811,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
         action_bar.left_ib.setOnClickListener {
             activity?.onBackPressed()
-        }
-
-        // TODO test
-        action_bar.title_tv.setOnClickListener { _ ->
-            CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
-                intent.putExtra(ARGS_USER, recipient!!)
-                intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
-            }
-            CallActivity.show(requireContext(), recipient!!, CallActivity.CallAction.CALL_OUTGOING.name)
         }
 
         if (isGroup) {
