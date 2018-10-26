@@ -49,8 +49,8 @@ import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
-import timber.log.Timber
 import org.jetbrains.anko.displayMetrics
+import timber.log.Timber
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
@@ -235,7 +235,7 @@ fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String) {
 inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> Unit) {
     val fragmentTransaction = beginTransaction()
     fragmentTransaction.func()
-    fragmentTransaction.commit()
+    fragmentTransaction.commitAllowingStateLoss()
 }
 
 fun Fragment.bottomShowFragment(fragment: Fragment, @IdRes id: Int, tag: String) {
