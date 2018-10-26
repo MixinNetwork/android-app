@@ -66,4 +66,11 @@ data class ConversationItem(
     fun isBot(): Boolean {
         return appId != null
     }
+
+    fun isCallMessage() =
+        contentType == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
+            contentType == MessageCategory.WEBRTC_AUDIO_DECLINE.name ||
+            contentType == MessageCategory.WEBRTC_AUDIO_END.name ||
+            contentType == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
+            contentType == MessageCategory.WEBRTC_AUDIO_FAILED.name
 }
