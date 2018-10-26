@@ -112,7 +112,10 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         contentView.sticker_rv.adapter = adapter
         contentView.sticker_rv.addOnScrollListener(onScrollListener)
         contentView.search_et.setOnEditorActionListener(onEditorActionListener)
-        contentView.cancel_tv.setOnClickListener { dismiss() }
+        contentView.cancel_tv.setOnClickListener {
+            contentView.hideKeyboard()
+            dismiss()
+        }
         performSearch()
     }
 
