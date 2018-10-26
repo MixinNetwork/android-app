@@ -324,6 +324,11 @@ public class AppRTCAudioManager {
     Log.d(TAG, "AudioManager stopped");
   }
 
+  public void setSavedIsSpeakerPhoneOn(boolean on) {
+    savedIsSpeakerPhoneOn = on;
+    setSpeakerphoneOn(on);
+  }
+
   /** Changes selection of the currently active audio device. */
   private void setAudioDeviceInternal(AudioDevice device) {
     Log.d(TAG, "setAudioDeviceInternal(device=" + device + ")");

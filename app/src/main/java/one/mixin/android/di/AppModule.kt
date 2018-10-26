@@ -47,8 +47,10 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
+import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
+import one.mixin.android.vo.CallState
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
@@ -325,9 +327,10 @@ internal class AppModule {
         offsetDao: OffsetDao,
         floodMessageDao: FloodMessageDao,
         jobManager: MixinJobManager,
-        linkState: LinkState
+        linkState: LinkState,
+        callState: CallState
     ): ChatWebSocket =
-        ChatWebSocket(okHttp, app, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState)
+        ChatWebSocket(okHttp, app, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState, callState)
 
     @Provides
     @Singleton
@@ -348,4 +351,8 @@ internal class AppModule {
             .build()
         return retrofit.create(GiphyService::class.java)
     }
+
+    @Provides
+    @Singleton
+    fun provideCallState() = CallState()
 }

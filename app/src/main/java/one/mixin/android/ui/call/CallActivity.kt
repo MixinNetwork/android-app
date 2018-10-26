@@ -11,12 +11,15 @@ import android.os.Bundle
 import android.os.IBinder
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_call.*
 import one.mixin.android.R
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.vo.CallState
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import org.webrtc.Camera1Enumerator
@@ -28,8 +31,9 @@ import org.webrtc.VideoCapturer
 import org.webrtc.VideoFrame
 import org.webrtc.VideoSink
 import timber.log.Timber
+import javax.inject.Inject
 
-class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
+class CallActivity : BaseActivity(), CallService.CallServiceCallback {
 
     private var bound = false
     private var disposable: Disposable? = null
@@ -41,6 +45,9 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
     private val remoteSink = ProxyVideoSink()
     private var swapFeed = false
     private var isFrontCamera = true
+
+    @Inject
+    lateinit var callState: CallState
 
     private var callService: CallService? = null
 
@@ -82,14 +89,7 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
             avatar.setInfo(answer.fullName, answer.avatarUrl, answer.identityNumber)
         }
         hangup_fab.setOnClickListener {
-            if (callService != null) {
-                when (callService!!.callState) {
-                    CallService.CallState.STATE_DIALING -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
-                    CallService.CallState.STATE_RINGING -> CallService.startService(this, CallService.ACTION_CALL_DECLINE)
-                    CallService.CallState.STATE_CONNECTED -> CallService.startService(this, CallService.ACTION_CALL_LOCAL_END)
-                    else -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
-                }
-            }
+            handleHangup()
             handleDisconnected()
         }
         answer_fab.setOnClickListener {
@@ -100,9 +100,44 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
                 it.putExtra(CallService.EXTRA_MUTE, isChecked)
             }
         }
+        voice_tb.setOnCheckedChangeListener { _, isChecked ->
+            CallService.startService(this, CallService.ACTION_SPEAKERPHONE) {
+                it.putExtra(CallService.EXTRA_SPEAKERPHONE, isChecked)
+            }
+        }
         front_tb.setOnClickListener {
             CallService.startService(this, CallService.ACTION_SWITCH_CAMERA)
         }
+
+        callState.observe(this, Observer { callInfo ->
+            when (callInfo.callState) {
+                CallService.CallState.STATE_DIALING -> {
+                    if (callInfo.dialingStatus != MessageStatus.READ) {
+                        handleDialingConnecting()
+                    } else {
+                        handleDialingWaiting()
+                    }
+                }
+                CallService.CallState.STATE_RINGING -> {
+                    handleRinging()
+                }
+                CallService.CallState.STATE_ANSWERING -> {
+                    handleAnswering()
+                }
+                CallService.CallState.STATE_CONNECTED -> {
+                    handleConnected()
+                }
+                CallService.CallState.STATE_BUSY -> {
+                    handleBusy()
+                }
+                CallService.CallState.STATE_DISCONNECTED -> {
+                    handleDisconnected()
+                }
+                else -> {
+                    handleDisconnected()
+                }
+            }
+        })
 
         videoEnable = intent.getBooleanExtra(ARGS_VIDEO, false)
         if (videoEnable) {
@@ -112,18 +147,11 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
         volumeControlStream = AudioManager.STREAM_VOICE_CALL
     }
 
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        setIntent(intent)
-        handleAction()
-    }
-
     override fun onStart() {
         super.onStart()
         Intent(this, CallService::class.java).run {
             bindService(this, connection, Context.BIND_AUTO_CREATE)
         }
-        handleAction()
     }
 
     override fun onStop() {
@@ -136,13 +164,17 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (callService != null && callService!!.callState != CallService.CallState.STATE_CONNECTED) {
-            CallService.stopService(this)
-        }
+
         disposable?.dispose()
         eglBase?.release()
         local_render?.release()
         remote_render?.release()
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        handleHangup()
+        handleDisconnected()
     }
 
     override fun onCameraSwitchDone(isFrontCamera: Boolean) {
@@ -152,26 +184,12 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
         }
     }
 
-    private fun handleAction() {
-        when (intent.action) {
-            CallAction.CALL_OUTGOING.name -> {
-                handleOutgoing()
-            }
-            CallAction.CALL_INCOMING.name -> {
-                handleIncoming()
-            }
-            CallAction.CALL_CONNECTING.name -> {
-                handleConnecting()
-            }
-            CallAction.CALL_CONNECTED.name -> {
-                handleConnected()
-            }
-            CallAction.CALL_DISCONNECTED.name -> {
-                handleDisconnected()
-            }
-            CallAction.CALL_BUSY.name -> {
-                handleBusy()
-            }
+    private fun handleHangup() {
+        when (callState.callInfo.callState) {
+            CallService.CallState.STATE_DIALING -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
+            CallService.CallState.STATE_RINGING -> CallService.startService(this, CallService.ACTION_CALL_DECLINE)
+            CallService.CallState.STATE_CONNECTED -> CallService.startService(this, CallService.ACTION_CALL_LOCAL_END)
+            else -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
         }
     }
 
@@ -268,7 +286,7 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
             rx.request(Manifest.permission.RECORD_AUDIO)
         }.subscribe { granted ->
             if (granted) {
-                handleConnecting()
+                handleAnswering()
                 CallService.startService(this@CallActivity, CallService.ACTION_CALL_ANSWER)
             } else {
                 CallService.startService(this, CallService.ACTION_CALL_CANCEL)
@@ -277,15 +295,7 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
         }
     }
 
-    private fun handleIncoming() {
-        voice_tb.visibility = INVISIBLE
-        mute_tb.visibility = INVISIBLE
-        answer_fab.visibility = VISIBLE
-        hangup_fab.visibility = INVISIBLE
-        action_tv.text = "来电"
-    }
-
-    private fun handleOutgoing() {
+    private fun handleDialingConnecting() {
         voice_tb.visibility = INVISIBLE
         mute_tb.visibility = INVISIBLE
         answer_fab.visibility = INVISIBLE
@@ -293,20 +303,28 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
         action_tv.text = "正在发起语音通话..."
     }
 
-    private fun handleConnecting() {
-        voice_tb.visibility = VISIBLE
-        mute_tb.visibility = VISIBLE
+    private fun handleDialingWaiting() {
+        voice_tb.visibility = INVISIBLE
+        mute_tb.visibility = INVISIBLE
         answer_fab.visibility = INVISIBLE
         hangup_fab.visibility = VISIBLE
-        action_tv.text = "正在连接..."
+        action_tv.text = "等待接听..."
     }
 
     private fun handleRinging() {
         voice_tb.visibility = INVISIBLE
         mute_tb.visibility = INVISIBLE
+        answer_fab.visibility = VISIBLE
+        hangup_fab.visibility = INVISIBLE
+        action_tv.text = "来电"
+    }
+
+    private fun handleAnswering() {
+        voice_tb.visibility = VISIBLE
+        mute_tb.visibility = VISIBLE
         answer_fab.visibility = INVISIBLE
         hangup_fab.visibility = VISIBLE
-        action_tv.text = "等待对方接听..."
+        action_tv.text = "正在连接..."
     }
 
     private fun handleConnected() {
@@ -336,40 +354,19 @@ class CallActivity : AppCompatActivity(), CallService.CallServiceCallback {
         }
     }
 
-    enum class CallAction {
-        // Normal states
-        CALL_INCOMING,
-        CALL_OUTGOING,
-        CALL_CONNECTING,
-        CALL_CONNECTED,
-        CALL_BUSY,
-        CALL_DISCONNECTED,
-
-        // Error states
-        NETWORK_FAILURE,
-        RECIPIENT_UNAVAILABLE,
-        NO_SUCH_USER,
-        UNTRUSTED_IDENTITY,
-    }
-
     companion object {
         const val TAG = "CallActivity"
 
         const val ARGS_ANSWER = "answer"
         const val ARGS_VIDEO = "video"
 
-        fun show(context: Context, answer: User? = null, action: String? = null, video: Boolean = false) {
+        fun show(context: Context, answer: User? = null, video: Boolean = false) {
             Intent(context, CallActivity::class.java).apply {
-                this.action = action
                 putExtra(ARGS_ANSWER, answer)
                 putExtra(ARGS_VIDEO, video)
             }.run {
                 context.startActivity(this)
             }
-        }
-
-        fun disconnected(context: Context) {
-            show(context, action = CallAction.CALL_DISCONNECTED.name)
         }
     }
 }

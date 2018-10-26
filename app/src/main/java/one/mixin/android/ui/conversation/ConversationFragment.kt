@@ -337,11 +337,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         hideMediaLayout()
                     }
                     R.id.menu_voice -> {
-                        CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
-                            intent.putExtra(ARGS_USER, recipient!!)
-                            intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+                        createConversation {
+                            CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
+                                intent.putExtra(ARGS_USER, recipient!!)
+                                intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+                            }
                         }
-                        CallActivity.show(requireContext(), recipient!!, CallActivity.CallAction.CALL_OUTGOING.name)
                     }
                 }
             }
@@ -543,7 +544,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     intent.putExtra(ARGS_USER, recipient!!)
                     intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
                 }
-                CallActivity.show(requireContext(), recipient!!, CallActivity.CallAction.CALL_OUTGOING.name)
             }
         }
     }

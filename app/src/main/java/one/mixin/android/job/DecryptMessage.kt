@@ -3,8 +3,6 @@ package one.mixin.android.job
 import android.util.Log
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
-import okio.Buffer
-import okio.Okio
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.SignalKeyCount
@@ -14,9 +12,7 @@ import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
-import one.mixin.android.extension.createRTCTemp
 import one.mixin.android.extension.findLastUrl
-import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
@@ -75,9 +71,7 @@ import one.mixin.android.websocket.invalidData
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
-import java.io.File
 import java.io.IOException
-import java.io.ObjectOutputStream
 import java.util.UUID
 
 class DecryptMessage : Injector() {
@@ -148,7 +142,6 @@ class DecryptMessage : Injector() {
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_BUSY)
             }
             MessageCategory.WEBRTC_AUDIO_END.name -> {
-                saveCallMessage(data)
                 CallService.startService(MixinApplication.appContext, ACTION_CALL_REMOTE_END)
             }
             MessageCategory.WEBRTC_AUDIO_FAILED.name -> {

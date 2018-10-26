@@ -29,6 +29,7 @@ import one.mixin.android.job.RefreshOffsetJob
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.Session
+import one.mixin.android.vo.CallState
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageStatus
@@ -47,7 +48,8 @@ class ChatWebSocket(
     private val offsetDao: OffsetDao,
     private val floodMessageDao: FloodMessageDao,
     val jobManager: MixinJobManager,
-    private val linkState: LinkState
+    private val linkState: LinkState,
+    private val callState: CallState
 ) : WebSocketListener() {
 
     private val failCode = 1000
@@ -237,6 +239,10 @@ class ChatWebSocket(
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
+
+            if (data.messageId == callState.callInfo.messageId && data.status == MessageStatus.READ.name) {
+                callState.setDialingStatus(MessageStatus.READ)
+            }
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL) {
             if (data.userId == accountId && data.category.isEmpty()) {
                 makeMessageStatus(data.status, data.messageId)

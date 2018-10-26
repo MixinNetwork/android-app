@@ -175,7 +175,8 @@
     <string name="chat_call_canceled_by_caller">对方已取消</string>
     <string name="chat_call_declined">已拒绝</string>
     <string name="chat_call_declined_other">对方已拒绝</string>
-    <string name="chat_call_busy">对方忙</string>
+    <string name="chat_call_local_busy">忙线未接听</string>
+    <string name="chat_call_remote_busy">忙线未接听</string>
     <string name="chat_call_failed">呼叫失败</string>
     <!--contact-->
     <string name="contact_other_add">添加联系人</string>
@@ -471,13 +472,15 @@
     <string name="pending">待入账</string>
     <string name="pending_confirmations">%1$d/%2$d 区块确认数</string>
     <!-- webrtc -->
-    <string name="CallNotificationBuilder_connecting">连接中...</string>
-    <!--- NotificationBarManager-->
-    <string name="NotificationBarManager_signal_call_in_progress">正在处理暗号呼叫</string>
-    <string name="NotificationBarManager__establishing_signal_call">正在建立暗号呼叫</string>
-    <string name="NotificationBarManager__incoming_signal_call">暗号呼叫来电</string>
-    <string name="NotificationBarManager__deny_call">拒绝接听</string>
-    <string name="NotificationBarManager__answer_call">接听</string>
-    <string name="NotificationBarManager__end_call">结束呼叫</string>
-    <string name="NotificationBarManager__cancel_call">取消呼叫</string>
+    <string name="call_notification_outgoing">正在呼叫...</string>
+    <string name="call_notification_ringing">响铃中...</string>
+    <string name="call_notification_incoming_voice">语音通话来电</string>
+    <string name="call_notification_missed_voice">未接语音通话</string>
+    <string name="call_notification_connected">正在进行语音通话</string>
+    <string name="call_notification_action_cancel">取消</string>
+    <string name="call_notification_action_decline">挂断</string>
+    <string name="call_notification_action_answer">接听</string>
+    <string name="call_notification_action_callback">回拨</string>
+    <string name="call_notification_action_reply">回复</string>
+    <string name="call_notification_action_hang_up">挂断</string>
 </resources>

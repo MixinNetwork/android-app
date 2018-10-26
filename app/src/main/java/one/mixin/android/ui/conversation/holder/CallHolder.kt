@@ -48,11 +48,15 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
                 }
             }
             MessageCategory.WEBRTC_AUDIO_END.name -> {
-                val duration = messageItem.mediaDuration!!.toLong().formatMillis()
+                val duration = messageItem.mediaDuration?.toLong()?.formatMillis()
                 ctx.getString(R.string.chat_call_duration, duration)
             }
             MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
-                ctx.getString(R.string.chat_call_busy)
+                if (isMe) {
+                    ctx.getString(R.string.chat_call_local_busy)
+                } else {
+                    ctx.getString(R.string.chat_call_remote_busy)
+                }
             }
             else -> {
                 ctx.getString(R.string.chat_call_failed)

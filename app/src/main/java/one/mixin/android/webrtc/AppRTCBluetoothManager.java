@@ -294,11 +294,11 @@ public class AppRTCBluetoothManager {
     }
     unregisterReceiver(bluetoothHeadsetReceiver);
     cancelTimer();
-    if (bluetoothHeadset != null) {
+    if (bluetoothAdapter != null) {
       bluetoothAdapter.closeProfileProxy(BluetoothProfile.HEADSET, bluetoothHeadset);
-      bluetoothHeadset = null;
+      bluetoothAdapter = null;
     }
-    bluetoothAdapter = null;
+    bluetoothHeadset = null;
     bluetoothDevice = null;
     bluetoothState = State.UNINITIALIZED;
     Log.d(TAG, "stop done: BT state=" + bluetoothState);
