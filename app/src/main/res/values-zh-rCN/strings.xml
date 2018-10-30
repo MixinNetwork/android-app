@@ -483,4 +483,10 @@
     <string name="call_notification_action_callback">回拨</string>
     <string name="call_notification_action_reply">回复</string>
     <string name="call_notification_action_hang_up">挂断</string>
+    <string name="call_connecting">正在连接...</string>
+    <string name="call_speaker">扬声器</string>
+    <string name="call_hang_up">挂断</string>
+    <string name="call_decline">挂断</string>
+    <string name="call_accept">接听</string>
+    <string name="call_mute">静音</string>
 </resources>

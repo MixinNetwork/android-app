@@ -178,6 +178,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         playRingtone()
         blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         user = intent.getParcelableExtra(ARGS_USER)
+        quoteMessageId = blazeMessageData!!.messageId
         updateNotification()
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         peerConnectionClient.isInitiator = false
@@ -207,7 +208,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             setRemoteSdp(Base64.decode(blazeMessageData!!.data))
         } else {
             if (blazeMessageData == null) return
-            quoteMessageId = blazeMessageData!!.messageId
             setRemoteSdp(Base64.decode(blazeMessageData!!.data))
             peerConnectionClient.createAnswer(videoCapturer, localSink, remoteSink)
         }
@@ -496,7 +496,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             else -> null
         }
         Log.d("@@@", "category: $category, quoteMessageId: $quoteMessageId")
-        jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
+        if (quoteMessageId != null || message.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
+            jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
+        }
         return message
     }
 

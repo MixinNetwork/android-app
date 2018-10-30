@@ -6,22 +6,37 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
+import android.graphics.drawable.BitmapDrawable
 import android.media.AudioManager
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
+import androidx.transition.AutoTransition
+import androidx.transition.Transition
+import androidx.transition.TransitionManager
+import com.bumptech.glide.Glide
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_call.*
+import kotlinx.android.synthetic.main.view_call_button.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.fastBlur
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
+import one.mixin.android.widget.CallButton
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import org.webrtc.Camera1Enumerator
 import org.webrtc.Camera2Enumerator
 import org.webrtc.CameraEnumerator
@@ -31,6 +46,8 @@ import org.webrtc.VideoCapturer
 import org.webrtc.VideoFrame
 import org.webrtc.VideoSink
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.inject.Inject
 
 class CallActivity : BaseActivity(), CallService.CallServiceCallback {
@@ -87,27 +104,32 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
         if (answer != null) {
             name_tv.text = answer.fullName
             avatar.setInfo(answer.fullName, answer.avatarUrl, answer.identityNumber)
+            avatar.setTextSize(22f)
+            if (answer.avatarUrl != null) {
+                setBlurBg(answer.avatarUrl)
+            }
         }
-        hangup_fab.setOnClickListener {
+        hangup_cb.setOnClickListener {
             handleHangup()
             handleDisconnected()
         }
-        answer_fab.setOnClickListener {
+        answer_cb.setOnClickListener {
             handleAnswer()
         }
-        mute_tb.setOnCheckedChangeListener { _, isChecked ->
-            CallService.startService(this, CallService.ACTION_MUTE_AUDIO) {
-                it.putExtra(CallService.EXTRA_MUTE, isChecked)
+        mute_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
+            override fun onCheckedChanged(id: Int, checked: Boolean) {
+                CallService.startService(this@CallActivity, CallService.ACTION_MUTE_AUDIO) {
+                    it.putExtra(CallService.EXTRA_MUTE, checked)
+                }
             }
-        }
-        voice_tb.setOnCheckedChangeListener { _, isChecked ->
-            CallService.startService(this, CallService.ACTION_SPEAKERPHONE) {
-                it.putExtra(CallService.EXTRA_SPEAKERPHONE, isChecked)
+        })
+        voice_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
+            override fun onCheckedChanged(id: Int, checked: Boolean) {
+                CallService.startService(this@CallActivity, CallService.ACTION_SPEAKERPHONE) {
+                    it.putExtra(CallService.EXTRA_SPEAKERPHONE, checked)
+                }
             }
-        }
-        front_tb.setOnClickListener {
-            CallService.startService(this, CallService.ACTION_SWITCH_CAMERA)
-        }
+        })
 
         callState.observe(this, Observer { callInfo ->
             when (callInfo.callState) {
@@ -190,6 +212,22 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
             CallService.CallState.STATE_RINGING -> CallService.startService(this, CallService.ACTION_CALL_DECLINE)
             CallService.CallState.STATE_CONNECTED -> CallService.startService(this, CallService.ACTION_CALL_LOCAL_END)
             else -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
+        }
+    }
+
+    private fun setBlurBg(url: String) {
+        doAsync {
+            try {
+                val bitmap = Glide.with(applicationContext)
+                    .asBitmap()
+                    .load(url)
+                    .submit()
+                    .get(10, TimeUnit.SECONDS)
+                uiThread {
+                    call_cl.background = BitmapDrawable(resources, bitmap.fastBlur(1f, 10))
+                }
+            } catch (timeoutException: TimeoutException) {
+            }
         }
     }
 
@@ -296,42 +334,54 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
     }
 
     private fun handleDialingConnecting() {
-        voice_tb.visibility = INVISIBLE
-        mute_tb.visibility = INVISIBLE
-        answer_fab.visibility = INVISIBLE
-        hangup_fab.visibility = VISIBLE
-        action_tv.text = "正在发起语音通话..."
+        voice_cb.visibility = INVISIBLE
+        mute_cb.visibility = INVISIBLE
+        answer_cb.visibility = INVISIBLE
+        moveHangup(true, 0)
+        action_tv.text = getString(R.string.call_notification_outgoing)
     }
 
     private fun handleDialingWaiting() {
-        voice_tb.visibility = INVISIBLE
-        mute_tb.visibility = INVISIBLE
-        answer_fab.visibility = INVISIBLE
-        hangup_fab.visibility = VISIBLE
-        action_tv.text = "等待接听..."
+        if (voice_cb.visibility != INVISIBLE) {
+            voice_cb.visibility = INVISIBLE
+        }
+        if (mute_cb.visibility != INVISIBLE) {
+            mute_cb.visibility = INVISIBLE
+        }
+        if (answer_cb.visibility != INVISIBLE) {
+            answer_cb.visibility = INVISIBLE
+        }
+        moveHangup(true, 0)
+        action_tv.text = getString(R.string.call_notification_ringing)
     }
 
     private fun handleRinging() {
-        voice_tb.visibility = INVISIBLE
-        mute_tb.visibility = INVISIBLE
-        answer_fab.visibility = VISIBLE
-        hangup_fab.visibility = INVISIBLE
-        action_tv.text = "来电"
+        voice_cb.visibility = INVISIBLE
+        mute_cb.visibility = INVISIBLE
+        answer_cb.visibility = VISIBLE
+        answer_cb.text.text = getString(R.string.call_accept)
+        hangup_cb.text.text = getString(R.string.call_decline)
+        moveHangup(false, 0)
+        action_tv.text = getString(R.string.call_notification_incoming_voice)
     }
 
     private fun handleAnswering() {
-        voice_tb.visibility = VISIBLE
-        mute_tb.visibility = VISIBLE
-        answer_fab.visibility = INVISIBLE
-        hangup_fab.visibility = VISIBLE
-        action_tv.text = "正在连接..."
+        voice_cb.fadeIn()
+        mute_cb.fadeIn()
+        answer_cb.fadeOut()
+        moveHangup(true, 250)
+        action_tv.text = getString(R.string.call_connecting)
     }
 
     private fun handleConnected() {
-        voice_tb.visibility = VISIBLE
-        mute_tb.visibility = VISIBLE
-        answer_fab.visibility = INVISIBLE
-        hangup_fab.visibility = VISIBLE
+        if (voice_cb.visibility == INVISIBLE) {
+            voice_cb.fadeIn()
+        }
+        if (mute_cb.visibility == INVISIBLE) {
+            mute_cb.fadeIn()
+        }
+        answer_cb.fadeOut()
+        moveHangup(true, 250)
         action_tv.text = 0L.formatMillis()
         action_tv.postDelayed(timeRunnable, 1000)
     }
@@ -344,6 +394,19 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
 
     private fun handleBusy() {
         handleDisconnected()
+    }
+
+    private fun moveHangup(center: Boolean, duration: Long) {
+        hangup_cb.visibility = VISIBLE
+        val constraintSet = ConstraintSet().apply {
+            clone(call_cl)
+            setHorizontalBias(hangup_cb.id, if (center) 0.5f else 0.0f)
+        }
+        val transition = AutoTransition().apply {
+            this.duration = duration
+        }
+        TransitionManager.beginDelayedTransition(call_cl, transition)
+        constraintSet.applyTo(call_cl)
     }
 
     private val timeRunnable: Runnable by lazy {

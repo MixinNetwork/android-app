@@ -82,4 +82,14 @@
         <attr name="android:text" format="string"/>
         <attr name="android:checked" format="boolean"/>
     </declare-styleable>
+
+    <declare-styleable name="CallButton">
+        <attr name="android:checkable" format="boolean"/>
+        <attr name="android:checked" format="boolean"/>
+        <attr name="bg_circle_checked" format="integer"/>
+        <attr name="bg_circle_unchecked" format="integer"/>
+        <attr name="ic_checked" format="integer"/>
+        <attr name="ic_unchecked" format="integer"/>
+        <attr name="android:text" format="string"/>
+    </declare-styleable>
 </resources>

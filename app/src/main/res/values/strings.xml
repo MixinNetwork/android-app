@@ -491,5 +491,12 @@
     <string name="call_notification_action_callback">CALL BACK</string>
     <string name="call_notification_action_reply">REPLY</string>
     <string name="call_notification_action_hang_up">HANG UP</string>
+    <string name="call_connecting">Connecting...</string>
+    <string name="call_speaker">speaker</string>
+    <string name="call_hang_up">hang up</string>
+    <string name="call_decline">decline</string>
+    <string name="call_accept">accept</string>
+    <string name="call_mute">mute</string>
+    <string name="call_type" translatable="false">Mixin Audio</string>
 </resources>
 

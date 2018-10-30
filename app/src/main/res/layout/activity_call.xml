@@ -1,139 +1,178 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/call_cl"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <View
+        android:id="@+id/cover"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:background="@color/call_bg"/>
 
     <org.webrtc.SurfaceViewRenderer
-            android:id="@+id/remote_render"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+        android:id="@+id/remote_render"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0"/>
 
     <org.webrtc.SurfaceViewRenderer
-            android:id="@+id/local_render"
-            android:layout_width="100dp"
-            android:layout_height="150dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+        android:id="@+id/local_render"
+        android:layout_width="100dp"
+        android:layout_height="150dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_start"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.2"/>
+        android:id="@+id/guideline_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.1"/>
 
     <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_end"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.8"/>
+        android:id="@+id/guideline_end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.9"/>
 
     <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_top"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.1"/>
+        android:id="@+id/guideline_top"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.1"/>
 
     <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/guideline_bottom"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            app:layout_constraintGuide_percent="0.9"/>
+        android:id="@+id/guideline_bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_percent="0.95"/>
 
     <TextView
-            android:id="@+id/action_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:text="正在发起通话..."
-            app:layout_constraintStart_toStartOf="@id/guideline_start"
-            app:layout_constraintEnd_toEndOf="@id/guideline_end"
-            app:layout_constraintTop_toTopOf="@id/guideline_top"
-            app:layout_constraintBottom_toTopOf="@+id/name_tv"/>
+        android:id="@+id/action_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/hangup_cb"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/name_tv"
+        app:layout_constraintVertical_bias="0.87"/>
 
     <TextView
-            android:id="@+id/name_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/white"
-            android:textSize="20sp"
-            android:text="Jake Wharton"
-            app:layout_constraintStart_toStartOf="@id/guideline_start"
-            app:layout_constraintEnd_toEndOf="@id/guideline_end"
-            app:layout_constraintTop_toBottomOf="@id/action_tv"/>
+        android:id="@+id/name_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/white"
+        android:textSize="22sp"
+        android:layout_marginTop="32dp"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintHorizontal_bias="0.508"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/avatar"/>
+
+    <TextView
+        android:id="@+id/type_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textColor="@color/call_gray"
+        android:textSize="12sp"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/call_type"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/guideline_bottom"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        app:layout_constraintTop_toBottomOf="@+id/name_tv"
+        app:layout_constraintVertical_bias="0.0"/>
 
     <one.mixin.android.widget.AvatarView
-            android:id="@+id/avatar"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
+        android:id="@+id/avatar"
+        android:layout_width="128dp"
+        android:layout_height="128dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.115"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/hangup_fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_call_end_white_24dp"
-            android:backgroundTint="@android:color/holo_red_light"
-            app:layout_constraintStart_toStartOf="@id/guideline_start"
-            app:layout_constraintEnd_toEndOf="@id/guideline_end"
-            app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
-            tools:ignore="ContentDescription"/>
+    <one.mixin.android.widget.CallButton
+        android:id="@+id/voice_cb"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="wrap_content"
+        android:checkable="true"
+        android:checked="false"
+        android:text="@string/call_speaker"
+        app:bg_circle_checked="@drawable/bg_call_btn_checked"
+        app:bg_circle_unchecked="@drawable/bg_call_btn_unchecked"
+        app:ic_checked="@drawable/ic_volume_up_checked_48dp"
+        app:ic_unchecked="@drawable/ic_volume_up_gray_48dp"
+        app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        tools:ignore="ContentDescription"/>
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/answer_fab"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_call_white_24dp"
-            android:backgroundTint="@android:color/holo_green_light"
-            app:layout_constraintStart_toStartOf="@id/guideline_start"
-            app:layout_constraintEnd_toEndOf="@id/guideline_end"
-            app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
-            tools:ignore="ContentDescription"/>
+    <one.mixin.android.widget.CallButton
+        android:id="@+id/mute_cb"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="wrap_content"
+        android:checkable="true"
+        android:checked="false"
+        android:text="@string/call_mute"
+        app:bg_circle_checked="@drawable/bg_call_btn_checked"
+        app:bg_circle_unchecked="@drawable/bg_call_btn_unchecked"
+        app:ic_checked="@drawable/ic_mic_off_checked_48dp"
+        app:ic_unchecked="@drawable/ic_mic_off_gray_48dp"
+        app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        tools:ignore="ContentDescription"/>
 
-    <ToggleButton
-            android:id="@+id/voice_tb"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:textOn="@null"
-            android:textOff="@null"
-            android:background="@drawable/bg_rtc_voice"
-            app:layout_constraintTop_toTopOf="@id/hangup_fab"
-            app:layout_constraintStart_toStartOf="@id/guideline_start"
-            app:layout_constraintBottom_toBottomOf="@id/hangup_fab"/>
+    <one.mixin.android.widget.CallButton
+        android:id="@+id/hangup_cb"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="100dp"
+        app:bg_circle_checked="@drawable/bg_call_hangup"
+        app:ic_checked="@drawable/ic_call_end_white_48dp"
+        android:text="@string/call_hang_up"
+        app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        tools:ignore="ContentDescription"/>
 
-    <ToggleButton
-            android:id="@+id/mute_tb"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:textOn="@null"
-            android:textOff="@null"
-            android:background="@drawable/bg_rtc_mute"
-            app:layout_constraintTop_toTopOf="@id/hangup_fab"
-            app:layout_constraintBottom_toBottomOf="@id/hangup_fab"
-            app:layout_constraintEnd_toEndOf="@id/guideline_end"/>
-
-    <ToggleButton
-            android:id="@+id/front_tb"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:textOn="@null"
-            android:textOff="@null"
-            android:background="@drawable/ic_switch_camera"
-            app:layout_constraintTop_toTopOf="@id/hangup_fab"
-            app:layout_constraintStart_toEndOf="@id/mute_tb"
-            app:layout_constraintBottom_toBottomOf="@id/hangup_fab"/>
+    <one.mixin.android.widget.CallButton
+        android:id="@+id/answer_cb"
+        android:layout_width="@dimen/call_button_size"
+        android:layout_height="100dp"
+        app:bg_circle_checked="@drawable/bg_call_answer"
+        app:ic_checked="@drawable/ic_call_white_48dp"
+        android:text="@string/call_accept"
+        app:layout_constraintBottom_toTopOf="@id/guideline_bottom"
+        app:layout_constraintEnd_toEndOf="@id/guideline_end"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="@id/guideline_start"
+        tools:ignore="ContentDescription"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
