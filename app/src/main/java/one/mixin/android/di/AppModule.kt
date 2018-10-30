@@ -6,11 +6,15 @@ import android.provider.Settings
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.SessionProvider
+import okhttp3.internal.http2.Header
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.API.GIPHY_URL
@@ -54,7 +58,6 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
-import com.crashlytics.android.Crashlytics
 
 @Module(includes = [(ViewModelModule::class)])
 internal class AppModule {
@@ -86,6 +89,15 @@ internal class AppModule {
         builder.readTimeout(10, TimeUnit.SECONDS)
         builder.pingInterval(15, TimeUnit.SECONDS)
         builder.retryOnConnectionFailure(false)
+        builder.sessionProvider(object : SessionProvider {
+            override fun getSession(request: Request): String {
+                return "Authorization: Bearer ${Session.signToken(Session.getAccount(), request)}"
+            }
+
+            override fun getSessionHeader(request: Request): Header {
+                return Header("Authorization", "Bearer ${Session.signToken(Session.getAccount(), request)}")
+            }
+        })
 
         builder.addInterceptor { chain ->
             val initTime = System.currentTimeMillis()
@@ -93,7 +105,6 @@ internal class AppModule {
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
                 .addHeader("Mixin-Device-Id", getDeviceId(resolver))
-                .addHeader("Authorization", "Bearer " + Session.signToken(Session.getAccount(), chain.request()))
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
                 val response = try {
