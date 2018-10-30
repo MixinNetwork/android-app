@@ -71,7 +71,7 @@ android {
             keyAlias 'AndroidDebugKey'
             keyPassword 'android'
         }
-        if(project.hasProperty("RELEASE_STORE_FILE")) {
+        if (project.hasProperty("RELEASE_STORE_FILE")) {
             release {
                 keyAlias "${RELEASE_KEY_ALIAS}"
                 keyPassword "${RELEASE_KEY_PASSWORD}"
@@ -144,7 +144,7 @@ dependencies {
     implementation "org.jsoup:jsoup:${jsoupVersion}"
 
     // retrofit
-    implementation "com.squareup.okhttp3:okhttp:${okhttpVersion}"
+    implementation "com.github.seniorzhai.okhttp:okhttp:3.11.2"
     implementation("com.squareup.retrofit2:retrofit:${retrofitVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
@@ -207,7 +207,9 @@ dependencies {
     implementation "com.uber.autodispose:autodispose-kotlin:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-android-archcomponents-kotlin:${autodisposeVersion}"
     implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
-    implementation "com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}"
+    implementation("com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "com.github.instacart.truetime-android:library:${truetimeVersion}"
