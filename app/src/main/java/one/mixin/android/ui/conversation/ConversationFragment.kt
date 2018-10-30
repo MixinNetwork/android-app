@@ -343,6 +343,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
                             }
                         }
+                        hideMediaLayout()
                     }
                 }
             }

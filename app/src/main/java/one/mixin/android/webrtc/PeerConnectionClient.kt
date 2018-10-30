@@ -43,12 +43,8 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         true, false, false, false)
     private val pcObserver = PCObserver()
     private val sdpObserverImp = SdpObserverImp()
-    val iceServers = arrayListOf<PeerConnection.IceServer>().apply {
-//        add(PeerConnection.IceServer("stun:stun1.l.google.com:19302"))
-        add(PeerConnection.IceServer.builder("turn:35.196.50.59:3478")
-            .setUsername("ling")
-            .setPassword("ling1234")
-            .createIceServer())
+    private val iceServers = arrayListOf<PeerConnection.IceServer>().apply {
+        //        add(PeerConnection.IceServer("stun:stun1.l.google.com:19302"))
     }
     var isInitiator = false
     var videoEnable = false
@@ -90,7 +86,13 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         executor.execute { createPeerConnectionFactoryInternal(options) }
     }
 
-    fun createOffer(videoCapturer: VideoCapturer?, localRender: VideoSink?, remoteRender: VideoSink?) {
+    fun createOffer(
+        iceServerList: List<PeerConnection.IceServer>,
+        videoCapturer: VideoCapturer?,
+        localRender: VideoSink?,
+        remoteRender: VideoSink?
+    ) {
+        iceServers.addAll(iceServerList)
         this.videoCapturer = videoCapturer
         localSink = localRender
         remoteSink = remoteRender
@@ -106,7 +108,13 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    fun createAnswer(videoCapturer: VideoCapturer?, localRender: VideoSink?, remoteRender: VideoSink?) {
+    fun createAnswer(
+        iceServerList: List<PeerConnection.IceServer>,
+        videoCapturer: VideoCapturer?,
+        localRender: VideoSink?,
+        remoteRender: VideoSink?
+    ) {
+        iceServers.addAll(iceServerList)
         this.videoCapturer = videoCapturer
         localSink = localRender
         remoteSink = remoteRender
@@ -286,7 +294,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
     private fun createAudioTrack(): AudioTrack {
         val audioConstraints = MediaConstraints().apply {
-//            optional.add(MediaConstraints.KeyValuePair(DTLS_SRTP_KEY_AGREEMENT_CONSTRAINT, "true"))
+            //            optional.add(MediaConstraints.KeyValuePair(DTLS_SRTP_KEY_AGREEMENT_CONSTRAINT, "true"))
 //            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_ECHO_CANCELLATION_CONSTRAINT, "false"))
 //            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_AUTO_GAIN_CONTROL_CONSTRAINT, "false"))
 //            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_HIGH_PASS_FILTER_CONSTRAINT, "false"))

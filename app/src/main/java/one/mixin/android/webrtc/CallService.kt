@@ -15,20 +15,29 @@ import androidx.core.content.getSystemService
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants.ARGS_USER
+import one.mixin.android.Constants.Call.INTERVAL_23_HOURS
+import one.mixin.android.Constants.Call.PREF_TURN
+import one.mixin.android.Constants.Call.PREF_TURN_FETCH
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MessageDao
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.supportsOreo
+import one.mixin.android.extension.putLong
+import one.mixin.android.extension.putString
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.CallNotificationBuilder
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sdp
+import one.mixin.android.vo.TurnServer
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.toUser
@@ -37,6 +46,7 @@ import one.mixin.android.webrtc.receiver.ScreenOffReceiver
 import one.mixin.android.websocket.BlazeMessageData
 import org.webrtc.EglBase
 import org.webrtc.IceCandidate
+import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
@@ -69,13 +79,16 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private val callBinder = CallBinder()
 
+    private val peerConnectionClient: PeerConnectionClient by lazy {
+        PeerConnectionClient(this, this)
+    }
+
     @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var messageDao: MessageDao
-    private val peerConnectionClient: PeerConnectionClient by lazy {
-        PeerConnectionClient(this, this)
-    }
+    @Inject
+    lateinit var accountService: AccountService
     @Inject
     lateinit var callState: one.mixin.android.vo.CallState
 
@@ -193,8 +206,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         updateNotification()
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         peerConnectionClient.isInitiator = true
-        peerConnectionClient.createOffer(videoCapturer, localSink, remoteSink)
         CallActivity.show(this, user)
+        getTurnServer { peerConnectionClient.createOffer(it, videoCapturer, localSink, remoteSink) }
     }
 
     private fun handleAnswerCall(intent: Intent) {
@@ -209,7 +222,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         } else {
             if (blazeMessageData == null) return
             setRemoteSdp(Base64.decode(blazeMessageData!!.data))
-            peerConnectionClient.createAnswer(videoCapturer, localSink, remoteSink)
+            getTurnServer {
+                peerConnectionClient.createAnswer(it, videoCapturer, localSink, remoteSink)
+            }
         }
     }
 
@@ -217,7 +232,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         Log.d("@@@", "handleCandidate callState: ${callState.callInfo.callState}")
         val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         val json = String(Base64.decode(blazeMessageData.data))
-        Log.d("@@@@", "json: $json")
         val ices = gson.fromJson(json, Array<IceCandidate>::class.java)
         ices.forEach {
             peerConnectionClient.addRemoteIceCandidate(it)
@@ -500,6 +514,52 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
         }
         return message
+    }
+
+    private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {
+        val lastTimeTurn = defaultSharedPreferences.getLong(PREF_TURN_FETCH, 0L)
+        val cur = System.currentTimeMillis()
+        if (cur - lastTimeTurn < INTERVAL_23_HOURS) {
+            val turn = defaultSharedPreferences.getString(PREF_TURN, null)
+            if (!turn.isNullOrBlank()) {
+                val turnList = gson.fromJson(turn, Array<TurnServer>::class.java)
+                action.invoke(genIceServerList(turnList))
+                return
+            }
+        }
+        disposable = accountService.getTurn().subscribeOn(Schedulers.io()).subscribe({
+            if (it.isSuccess) {
+                val array = it.data as Array<TurnServer>
+                val string = gson.toJson(array)
+                defaultSharedPreferences.putLong(PREF_TURN_FETCH, System.currentTimeMillis())
+                defaultSharedPreferences.putString(PREF_TURN, string)
+                action.invoke(genIceServerList(array))
+            } else {
+                handleFetchTurnError()
+            }
+        }, {
+            ErrorHandler.handleError(it)
+            handleFetchTurnError()
+        })
+    }
+
+    private fun handleFetchTurnError() {
+        if (peerConnectionClient.isInitiator) {
+            handleCallCancel()
+        } else {
+            handleCallDecline()
+        }
+    }
+
+    private fun genIceServerList(array: Array<TurnServer>): List<PeerConnection.IceServer> {
+        val iceServer = arrayListOf<PeerConnection.IceServer>()
+        array.forEach {
+            iceServer.add(PeerConnection.IceServer.builder(it.url)
+                .setUsername(it.username)
+                .setPassword(it.credential)
+                .createIceServer())
+        }
+        return iceServer
     }
 
     private class TimeoutRunnable(private val context: Context) : Runnable {
