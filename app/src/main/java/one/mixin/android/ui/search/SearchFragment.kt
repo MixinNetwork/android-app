@@ -11,13 +11,13 @@ import android.view.ViewGroup
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_search.*
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.cancelChildren
-import kotlinx.coroutines.experimental.channels.Channel
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.runBlocking
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.hideKeyboard
@@ -32,7 +32,7 @@ import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import org.jetbrains.anko.support.v4.onUiThread
 import javax.inject.Inject
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class SearchFragment : BaseFragment(), Injectable {
 

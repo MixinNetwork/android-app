@@ -25,7 +25,6 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
-import kotlinx.coroutines.experimental.timeunit.TimeUnit
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.R
 import one.mixin.android.extension.decodeQR
@@ -48,6 +47,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.net.URISyntaxException
+import java.util.concurrent.TimeUnit
 
 class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 

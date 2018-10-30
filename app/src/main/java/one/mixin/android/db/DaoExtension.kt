@@ -1,9 +1,9 @@
 package one.mixin.android.db
 
 import androidx.room.Transaction
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job

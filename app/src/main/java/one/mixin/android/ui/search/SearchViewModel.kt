@@ -4,9 +4,9 @@ import androidx.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.async
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -17,7 +17,7 @@ import one.mixin.android.vo.SearchDataPackage
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import javax.inject.Inject
-import kotlin.coroutines.experimental.CoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 class SearchViewModel @Inject
 internal constructor(
