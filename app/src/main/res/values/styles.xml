@@ -36,6 +36,7 @@
         <item name="windowNoTitle">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
         <item name="android:navigationBarColor">@android:color/black</item>
     </style>
 
@@ -44,6 +45,15 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowTranslucentStatus">true</item>
         <item name="android:navigationBarColor">@android:color/black</item>
+    </style>
+
+
+    <style name="AppTheme.Call" parent="AppTheme.NoActionBar">
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:navigationBarColor">@android:color/white</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
     <style name="MixinAlertDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
@@ -75,13 +85,16 @@
         <item name="android:textSize">14sp</item>
         <item name="android:textColor">@android:color/black</item>
     </style>
+
     <style name="DescTextStyle">
         <item name="android:textSize">12sp</item>
         <item name="android:textColor">@color/colorGray</item>
     </style>
+
     <style name="SwitchStyle">
         <item name="android:colorControlActivated">@color/colorBlue</item>
     </style>
+
     <style name="AppTheme.BlueAccent">
         <item name="android:colorAccent">@color/colorBlue</item>
     </style>
@@ -118,6 +131,7 @@
         <item name="android:colorBackgroundCacheHint">@null</item>
         <item name="bottomSheetStyle">@style/BottomSheetModal</item>
     </style>
+
     <style name="AppTheme.Transparent" parent="AppTheme.FullScreen">
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowNoTitle">true</item>
@@ -130,10 +144,12 @@
     </style>
 
     <style name="BottomSheet"/>
+
     <style name="BottomSheet.Animation">
         <item name="android:windowEnterAnimation">@anim/dock_bottom_enter</item>
         <item name="android:windowExitAnimation">@anim/dock_bottom_exit</item>
     </style>
+
     <style name="SeekBar">
         <item name="android:splitTrack">false</item>
         <item name="android:progressDrawable">@drawable/layer_progress</item>

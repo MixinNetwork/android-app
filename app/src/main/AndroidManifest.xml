@@ -197,7 +197,7 @@
             android:windowSoftInputMode="stateAlwaysHidden"/>
 
         <activity android:name=".ui.call.CallActivity"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme.Call"
             android:documentLaunchMode="intoExisting"
             android:launchMode="singleInstance"
             android:windowSoftInputMode="stateAlwaysHidden"/>
