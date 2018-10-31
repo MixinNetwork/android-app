@@ -1,8 +1,14 @@
 package one.mixin.android.job
 
 import android.util.Log
+import androidx.collection.ArrayMap
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
+import kotlinx.coroutines.experimental.GlobalScope
+import kotlinx.coroutines.experimental.Job
+import kotlinx.coroutines.experimental.delay
+import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.experimental.newSingleThreadContext
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.SignalKeyCount
@@ -12,6 +18,7 @@ import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
+import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
@@ -79,6 +86,10 @@ class DecryptMessage : Injector() {
     companion object {
         val TAG = DecryptMessage::class.java.simpleName
         const val GROUP = "DecryptMessage"
+
+        const val LIST_PENDING_CALL_DELAY = 2000L
+
+        var listPendingOfferHandled = false
     }
 
     private var refreshKeyMap = arrayMapOf<String, Long?>()
@@ -111,51 +122,117 @@ class DecryptMessage : Injector() {
             return
         }
 
-        when (data.category) {
-            MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
-                val user = userDao.findUser(data.userId)!!
-                CallService.startService(MixinApplication.appContext, ACTION_CALL_INCOMING) {
-                    it.putExtra(ARGS_USER, user)
-                    it.putExtra(CallService.EXTRA_BLAZE, data)
+        if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
+            val isExpired = try {
+                val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
+                offset > CallService.DEFAULT_TIMEOUT_MINUTES * 60 * 1000
+            } catch (e: NumberFormatException) {
+                true
+            }
+            if (!isExpired && !listPendingOfferHandled) {
+                listPendingJobMap[data.messageId] = Pair(GlobalScope.launch(newSingleThreadContext("Call")) {
+                    delay(LIST_PENDING_CALL_DELAY)
+                    listPendingOfferHandled = true
+                    listPendingJobMap.forEach {
+                        val pair = it.value
+                        val job = pair.first
+                        val d = pair.second
+                        if (it.key != data.messageId && !job.isCancelled){
+                            job.cancel()
+                            val m = createCallMessage(UUID.randomUUID().toString(), d.conversationId, Session.getAccountId()!!,
+                                MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING, d.messageId)
+                            jobManager.addJobInBackground(SendMessageJob(m))
+                        }
+                    }
+                    processNonListPendingCall(data)
+                    listPendingJobMap.clear()
+
+                }, data)
+            } else if (isExpired) {
+                saveCallMessage(data, MessageCategory.WEBRTC_AUDIO_CANCEL.name)
+            }
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            return
+        }
+
+        processNonListPendingCall(data)
+    }
+
+    private fun processNonListPendingCall(data: BlazeMessageData) {
+        val ctx = MixinApplication.appContext
+        if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
+            val user = userDao.findUser(data.userId)!!
+            CallService.startService(ctx, ACTION_CALL_INCOMING) {
+                it.putExtra(ARGS_USER, user)
+                it.putExtra(CallService.EXTRA_BLAZE, data)
+            }
+        } else {
+            val hasUnHandledOffer = listPendingJobMap.containsKey(data.quoteMessageId)
+            if (hasUnHandledOffer) {
+                listPendingJobMap[data.quoteMessageId]?.let { pair ->
+                    pair.first.let {
+                        if (!it.isCancelled) {
+                            it.cancel()
+                        }
+                    }
+                    listPendingJobMap.remove(data.quoteMessageId)
+                    saveCallMessage(data, data.category)
+                }
+                updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                return
+            } else {
+                if (data.quoteMessageId == null || messageDao.findMessageById(data.quoteMessageId) != null) {
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                    return
                 }
             }
-            MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
-                CallService.startService(MixinApplication.appContext, ACTION_CALL_ANSWER) {
-                    it.putExtra(CallService.EXTRA_BLAZE, data)
+
+            when (data.category) {
+                MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
+                    CallService.startService(ctx, ACTION_CALL_ANSWER) {
+                        it.putExtra(CallService.EXTRA_BLAZE, data)
+                    }
                 }
-            }
-            MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
-                CallService.startService(MixinApplication.appContext, ACTION_CANDIDATE) {
-                    it.putExtra(CallService.EXTRA_BLAZE, data)
+                MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
+                    CallService.startService(ctx, ACTION_CANDIDATE) {
+                        it.putExtra(CallService.EXTRA_BLAZE, data)
+                    }
                 }
-            }
-            MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
-                saveCallMessage(data)
-                CallService.startService(MixinApplication.appContext, ACTION_CALL_CANCEL)
-            }
-            MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
-                saveCallMessage(data)
-                CallService.startService(MixinApplication.appContext, ACTION_CALL_DECLINE)
-            }
-            MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
-                saveCallMessage(data)
-                CallService.startService(MixinApplication.appContext, ACTION_CALL_BUSY)
-            }
-            MessageCategory.WEBRTC_AUDIO_END.name -> {
-                CallService.startService(MixinApplication.appContext, ACTION_CALL_REMOTE_END)
-            }
-            MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
-                saveCallMessage(data)
-                CallService.startService(MixinApplication.appContext, ACTION_CALL_REMOTE_FAILED)
+                MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
+                    saveCallMessage(data)
+                    CallService.startService(ctx, ACTION_CALL_CANCEL)
+                }
+                MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
+                    saveCallMessage(data)
+                    CallService.startService(ctx, ACTION_CALL_DECLINE)
+                }
+                MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
+                    saveCallMessage(data)
+                    CallService.startService(ctx, ACTION_CALL_BUSY)
+                }
+                MessageCategory.WEBRTC_AUDIO_END.name -> {
+                    CallService.startService(ctx, ACTION_CALL_REMOTE_END)
+                }
+                MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
+                    saveCallMessage(data)
+                    CallService.startService(ctx, ACTION_CALL_REMOTE_FAILED)
+                }
             }
         }
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
-    private fun saveCallMessage(data: BlazeMessageData) {
-        if (data.quoteMessageId == null) return
+    private val listPendingJobMap = ArrayMap<String, Pair<Job, BlazeMessageData>>()
 
-        val message = createCallMessage(data.quoteMessageId, data.conversationId, data.userId, data.category,
+    private fun saveCallMessage(data: BlazeMessageData, category: String? = null) {
+        val messageId = if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
+            data.messageId
+        } else {
+            data.quoteMessageId ?: return
+        }
+
+        val realCategory = category ?: data.category
+        val message = createCallMessage(messageId, data.conversationId, data.userId, realCategory,
             null, data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
     }

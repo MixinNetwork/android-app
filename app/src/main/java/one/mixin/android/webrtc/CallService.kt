@@ -405,9 +405,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         ringtone!!.stop()
     }
 
-    private fun isIncomingMessageExpired(intent: Intent) =
-        System.currentTimeMillis() - intent.getLongExtra(EXTRA_TIMESTAMP, -1) > TimeUnit.MINUTES.toMillis(DEFAULT_TIMEOUT_MINUTES)
-
     private fun handleScreenOff(intent: Intent) {
     }
 
@@ -463,7 +460,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     override fun onPeerConnectionError(description: String) {
-        Timber.e(description)
+        handleCallLocalFailed()
     }
 
     override fun onCameraSwitchDone(isFrontCamera: Boolean) {
