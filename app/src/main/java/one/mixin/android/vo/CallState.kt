@@ -39,6 +39,11 @@ class CallState : LiveData<CallState.CallInfo>() {
         callInfo = CallInfo(callInfo.callState, callInfo.dialingStatus, callInfo.messageId, callInfo.user, connectedTime)
     }
 
+    fun reset() {
+        callInfo = CallInfo()
+        postValue(callInfo)
+    }
+
     fun isIdle() = callInfo.callState == CallService.CallState.STATE_IDLE
 
     class CallInfo(

@@ -99,7 +99,7 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_call)
-        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         val answer = intent.getParcelableExtra<User?>(ARGS_ANSWER)
         if (answer != null) {
             name_tv.text = answer.fullName
