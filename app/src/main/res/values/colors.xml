@@ -42,7 +42,7 @@
     <color name="call_green">#46d23c</color>
     <color name="call_red">#e7575c</color>
     <color name="call_gray">#616e80</color>
-    <color name="call_bg">#cc253447</color>
+    <color name="call_bg">#aa595959</color>
     <color name="call_btn_checked">#c6cdd8</color>
     <color name="call_btn_icon_checked">#182435</color>
 

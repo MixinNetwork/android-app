@@ -87,23 +87,6 @@
         app:layout_constraintStart_toStartOf="@id/guideline_start"
         app:layout_constraintTop_toBottomOf="@+id/avatar"/>
 
-    <TextView
-        android:id="@+id/type_tv"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:textColor="@color/call_gray"
-        android:textSize="12sp"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="@string/call_type"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/guideline_bottom"
-        app:layout_constraintEnd_toEndOf="@id/guideline_end"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="@id/guideline_start"
-        app:layout_constraintTop_toBottomOf="@+id/name_tv"
-        app:layout_constraintVertical_bias="0.0"/>
-
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
         android:layout_width="128dp"

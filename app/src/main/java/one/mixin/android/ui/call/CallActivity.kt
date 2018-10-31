@@ -12,12 +12,10 @@ import android.os.Bundle
 import android.os.IBinder
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
-import androidx.constraintlayout.widget.ConstraintLayout
+import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintSet
-import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.transition.AutoTransition
-import androidx.transition.Transition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -54,7 +52,6 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
 
     private var bound = false
     private var disposable: Disposable? = null
-    private var connectedTime = 0
 
     private var videoEnable = false
     private var eglBase: EglBase? = null
@@ -100,6 +97,7 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_call)
+        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         val answer = intent.getParcelableExtra<User?>(ARGS_ANSWER)
         if (answer != null) {
             name_tv.text = answer.fullName
@@ -152,10 +150,7 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
                 CallService.CallState.STATE_BUSY -> {
                     handleBusy()
                 }
-                CallService.CallState.STATE_DISCONNECTED -> {
-                    handleDisconnected()
-                }
-                else -> {
+                CallService.CallState.STATE_IDLE -> {
                     handleDisconnected()
                 }
             }
@@ -182,6 +177,7 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
             unbindService(connection)
             bound = false
         }
+        action_tv?.removeCallbacks(timeRunnable)
     }
 
     override fun onDestroy() {
@@ -195,7 +191,9 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
 
     override fun onBackPressed() {
         super.onBackPressed()
-        handleHangup()
+        if (callState.isIdle()) {
+            handleHangup()
+        }
         handleDisconnected()
     }
 
@@ -209,7 +207,7 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
     private fun handleHangup() {
         when (callState.callInfo.callState) {
             CallService.CallState.STATE_DIALING -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
-            CallService.CallState.STATE_RINGING -> CallService.startService(this, CallService.ACTION_CALL_DECLINE)
+            CallService.CallState.STATE_RINGING, CallService.CallState.STATE_ANSWERING -> CallService.startService(this, CallService.ACTION_CALL_DECLINE)
             CallService.CallState.STATE_CONNECTED -> CallService.startService(this, CallService.ACTION_CALL_LOCAL_END)
             else -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
         }
@@ -382,7 +380,6 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
         }
         answer_cb.fadeOut()
         moveHangup(true, 250)
-        action_tv.text = 0L.formatMillis()
         action_tv.postDelayed(timeRunnable, 1000)
     }
 
@@ -411,8 +408,10 @@ class CallActivity : BaseActivity(), CallService.CallServiceCallback {
 
     private val timeRunnable: Runnable by lazy {
         Runnable {
-            connectedTime++
-            action_tv.text = (connectedTime * 1000L).formatMillis()
+            if (callState.callInfo.connectedTime != null) {
+                val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                action_tv.text = duration.formatMillis()
+            }
             action_tv.postDelayed(timeRunnable, 1000)
         }
     }

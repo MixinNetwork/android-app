@@ -44,7 +44,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private val pcObserver = PCObserver()
     private val sdpObserverImp = SdpObserverImp()
     private val iceServers = arrayListOf<PeerConnection.IceServer>().apply {
-        //        add(PeerConnection.IceServer("stun:stun1.l.google.com:19302"))
+//                add(PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer())
     }
     var isInitiator = false
     var videoEnable = false
@@ -59,7 +59,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
     private var videoSource: VideoSource? = null
-    private var mediaStream: MediaStream? = null
     private var videoCapturer: VideoCapturer? = null
     private var localSink: VideoSink? = null
     private var remoteSink: VideoSink? = null
@@ -254,7 +253,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             peerConnection!!.setRemoteDescription(sdpObserverImp, remoteSdpCache)
         }
 
-        mediaStream = factory!!.createLocalMediaStream(STREAM_ID)
         peerConnection!!.addTrack(createAudioTrack())
         if (isVideoEnable()) {
             peerConnection!!.addTrack(createVideoTrack())
@@ -294,7 +292,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
     private fun createAudioTrack(): AudioTrack {
         val audioConstraints = MediaConstraints().apply {
-            //            optional.add(MediaConstraints.KeyValuePair(DTLS_SRTP_KEY_AGREEMENT_CONSTRAINT, "true"))
+//            optional.add(MediaConstraints.KeyValuePair(DTLS_SRTP_KEY_AGREEMENT_CONSTRAINT, "true"))
 //            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_ECHO_CANCELLATION_CONSTRAINT, "false"))
 //            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_AUTO_GAIN_CONTROL_CONSTRAINT, "false"))
 //            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_HIGH_PASS_FILTER_CONSTRAINT, "false"))
@@ -321,7 +319,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         remoteVideoTrack = track
         remoteVideoTrack?.setEnabled(true)
         remoteVideoTrack?.addSink(remoteSink)
-        mediaStream!!.addTrack(remoteVideoTrack)
     }
 
     private fun setVideoSender() {

@@ -296,6 +296,7 @@
     <string name="group_creating">Creating…</string>
     <string name="state_connecting">Connecting</string>
     <string name="state_syncing">Syncing messages</string>
+    <string name="state_calling">Tap to return to call</string>
     <string name="group_cant_send">You can\'t send messages to this group because you\'re no longer a participant.</string>
     <string name="empty_info">You can chat with contacts who have\nMixin install on their phone</string>
     <string name="empty_start">Start Messaging</string>
@@ -385,6 +386,7 @@
     <string name="alert_key_contact_audio_message">send a audio</string>
     <string name="alert_key_contact_sticker_message">send you a sticker</string>
     <string name="alert_key_contact_contact_message">shared a contact</string>
+    <string name="alert_key_contact_audio_call_message">ask you a audio call</string>
     <string name="unread">%1$d new messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
     <string name="notification_group">Group Notification</string>
