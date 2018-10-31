@@ -4,11 +4,11 @@ import android.util.Log
 import androidx.collection.ArrayMap
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.delay
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.newSingleThreadContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.SignalKeyCount
@@ -80,6 +80,7 @@ import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import java.io.IOException
 import java.util.UUID
+import java.util.concurrent.Executors
 
 class DecryptMessage : Injector() {
 
@@ -92,6 +93,9 @@ class DecryptMessage : Injector() {
         var listPendingOfferHandled = false
     }
 
+    private val listPendingDispatcher by lazy {
+        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+    }
     private var refreshKeyMap = arrayMapOf<String, Long?>()
     private val gson = Gson()
     private val customGson = GsonHelper.customGson
@@ -130,14 +134,14 @@ class DecryptMessage : Injector() {
                 true
             }
             if (!isExpired && !listPendingOfferHandled) {
-                listPendingJobMap[data.messageId] = Pair(GlobalScope.launch(newSingleThreadContext("Call")) {
+                listPendingJobMap[data.messageId] = Pair(GlobalScope.launch(listPendingDispatcher) {
                     delay(LIST_PENDING_CALL_DELAY)
                     listPendingOfferHandled = true
                     listPendingJobMap.forEach {
                         val pair = it.value
                         val job = pair.first
                         val d = pair.second
-                        if (it.key != data.messageId && !job.isCancelled){
+                        if (it.key != data.messageId && !job.isCancelled) {
                             job.cancel()
                             val m = createCallMessage(UUID.randomUUID().toString(), d.conversationId, Session.getAccountId()!!,
                                 MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING, d.messageId)
