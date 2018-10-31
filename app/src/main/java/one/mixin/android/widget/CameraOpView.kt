@@ -47,7 +47,7 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
     private val gestureDetector = GestureDetector(context, this)
     private var callback: CameraOpCallback? = null
 
-    private val mHandler by lazy {
+    private val mHandler =
         object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 if (msg.what == 1) {
@@ -64,16 +64,14 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
                 }
             }
         }
-    }
 
-    private val task by lazy {
+    private val task =
         object : Runnable {
             override fun run() {
                 mHandler.sendEmptyMessage(1)
                 mHandler.postDelayed(this, 100)
             }
         }
-    }
 
     private fun start() {
         task.run()

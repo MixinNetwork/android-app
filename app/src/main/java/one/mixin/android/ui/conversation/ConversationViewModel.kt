@@ -16,8 +16,8 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R

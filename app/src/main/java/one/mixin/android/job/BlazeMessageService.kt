@@ -6,20 +6,20 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import androidx.room.InvalidationTracker
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import com.google.gson.Gson
 import dagger.android.AndroidInjection
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.Job
-import kotlinx.coroutines.experimental.launch
-import kotlinx.coroutines.experimental.newSingleThreadContext
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newSingleThreadContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -177,13 +177,12 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
     }
 
-    private val ackObserver by lazy {
+    private val ackObserver =
         object : InvalidationTracker.Observer("jobs") {
             override fun onInvalidated(tables: MutableSet<String>) {
                 runAckJob()
             }
         }
-    }
 
     @Synchronized
     private fun runAckJob() {
@@ -234,13 +233,12 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
     }
 
-    private val floodObserver by lazy {
+    private val floodObserver =
         object : InvalidationTracker.Observer("flood_messages") {
             override fun onInvalidated(tables: MutableSet<String>) {
                 runFloodJob()
             }
         }
-    }
 
     @Synchronized
     private fun runFloodJob() {

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.ConversationRequest

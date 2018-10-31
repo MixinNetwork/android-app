@@ -3,8 +3,8 @@ package one.mixin.android.repository
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import io.reactivex.Observable
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.AppDao

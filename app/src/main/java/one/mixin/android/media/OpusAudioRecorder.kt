@@ -8,10 +8,9 @@ import android.media.MediaRecorder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.getSystemService
-import kotlinx.coroutines.experimental.Dispatchers
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.android.Main
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath

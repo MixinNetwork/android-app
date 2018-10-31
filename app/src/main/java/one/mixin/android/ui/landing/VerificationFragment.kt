@@ -17,8 +17,8 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.os.bundleOf
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_verification.*
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R

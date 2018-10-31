@@ -2,8 +2,8 @@ package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
 import io.reactivex.Observable
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.launch
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.service.UserService

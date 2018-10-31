@@ -194,7 +194,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private val chatAdapterDataObserver by lazy {
+    private val chatAdapterDataObserver =
         object : RecyclerView.AdapterDataObserver() {
             var oldSize = 0
 
@@ -240,7 +240,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         }
-    }
 
     private val appAdapter: AppAdapter by lazy {
         AppAdapter(if (isGroup) {

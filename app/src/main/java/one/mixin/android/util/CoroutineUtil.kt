@@ -1,12 +1,12 @@
 package one.mixin.android.util
 
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.GlobalScope
-import kotlinx.coroutines.experimental.channels.ReceiveChannel
-import kotlinx.coroutines.experimental.channels.produce
-import kotlinx.coroutines.experimental.isActive
-import kotlinx.coroutines.experimental.newSingleThreadContext
-import kotlinx.coroutines.experimental.selects.select
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.selects.select
 import one.mixin.android.Constants.SINGLE_DB
 
 val SINGLE_DB_THREAD by lazy {
