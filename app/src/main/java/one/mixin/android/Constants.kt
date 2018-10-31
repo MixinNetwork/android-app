@@ -52,12 +52,6 @@ object Constants {
 
     const val PAGE_SIZE = 20
 
-    const val FLOOD_THREAD = "flood_thread"
-
-    const val ACK_THREAD = "ack_thread"
-
-    const val SINGLE_DB = "single_db"
-
     const val BIOMETRICS_ALIAS = "biometrics_alias"
     const val BIOMETRICS_PIN = "biometrics_pin"
     const val BIOMETRICS_IV = "biometrics_iv"
