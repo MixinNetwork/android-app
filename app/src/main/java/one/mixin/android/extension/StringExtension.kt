@@ -249,3 +249,12 @@ fun String.toDot(): String {
     }
     return this
 }
+
+fun String.checkNumber(): Boolean {
+    return try {
+        this.toFloat()
+        true
+    } catch (e: NumberFormatException) {
+        false
+    }
+}
