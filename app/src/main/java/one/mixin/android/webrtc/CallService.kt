@@ -237,6 +237,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleCallCancel(intent: Intent? = null) {
         Log.d("@@@", "handleCallCancel callState: ${callState.callInfo.callState}")
+        if (callState.callInfo.callState == CallState.STATE_IDLE) return
+
         timeoutFuture?.cancel(true)
         if (peerConnectionClient.isInitiator) {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
@@ -254,6 +256,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleCallDecline() {
         Log.d("@@@", "handleCallDecline callState: ${callState.callInfo.callState}")
+        if (callState.callInfo.callState == CallState.STATE_IDLE) return
+
         timeoutFuture?.cancel(true)
         if (peerConnectionClient.isInitiator) {
             callState.setCallState(CallState.STATE_IDLE)
@@ -267,6 +271,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleCallLocalEnd(intent: Intent? = null) {
         Log.d("@@@", "handleCallLocalEnd callState: ${callState.callInfo.callState}")
+        if (callState.callInfo.callState == CallState.STATE_IDLE) return
+
         timeoutFuture?.cancel(true)
         val category = MessageCategory.WEBRTC_AUDIO_END.name
         sendCallMessage(category)
@@ -280,6 +286,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleCallRemoteEnd() {
         Log.d("@@@", "handleCallRemoteEnd blazeMessageData: $blazeMessageData")
+        if (callState.callInfo.callState == CallState.STATE_IDLE) return
+
         timeoutFuture?.cancel(true)
         if (blazeMessageData != null && quoteMessageId != null) {
             val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
@@ -311,7 +319,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleCallRemoteFailed() {
         Log.d("@@@", "handleCallRemoteFailed callState: ${callState.callInfo.callState}")
-//        if (isIdle()) return
 
         callState.setCallState(CallState.STATE_IDLE)
         updateNotification()

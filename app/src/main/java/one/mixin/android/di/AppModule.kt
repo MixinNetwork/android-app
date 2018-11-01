@@ -47,7 +47,6 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
-import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState

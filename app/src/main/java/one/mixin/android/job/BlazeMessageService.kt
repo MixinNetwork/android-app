@@ -36,6 +36,7 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.CallState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -80,6 +81,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     lateinit var jobDao: JobDao
     @Inject
     lateinit var jobManager: MixinJobManager
+    @Inject
+    lateinit var callState: CallState
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -220,7 +223,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 
-    private val messageDecrypt = DecryptMessage()
+    private val messageDecrypt by lazy { DecryptMessage(callState) }
 
     private fun startFloodJob() {
         database.invalidationTracker.addObserver(floodObserver)

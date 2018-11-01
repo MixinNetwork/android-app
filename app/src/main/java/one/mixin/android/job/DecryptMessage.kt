@@ -24,6 +24,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.vo.CallState
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
@@ -82,7 +83,7 @@ import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.Executors
 
-class DecryptMessage : Injector() {
+class DecryptMessage(private val callState: CallState) : Injector() {
 
     companion object {
         val TAG = DecryptMessage::class.java.simpleName
@@ -195,37 +196,51 @@ class DecryptMessage : Injector() {
             when (data.category) {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
                     Log.d("@@@", "DecryptMessage answer")
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
+
                     CallService.startService(ctx, ACTION_CALL_ANSWER) {
                         it.putExtra(CallService.EXTRA_BLAZE, data)
                     }
                 }
                 MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
                     Log.d("@@@", "DecryptMessage candidate")
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
+
                     CallService.startService(ctx, ACTION_CANDIDATE) {
                         it.putExtra(CallService.EXTRA_BLAZE, data)
                     }
                 }
                 MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                     Log.d("@@@", "DecryptMessage cancel")
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
+
                     saveCallMessage(data)
                     CallService.startService(ctx, ACTION_CALL_CANCEL)
                 }
                 MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                     Log.d("@@@", "DecryptMessage decline")
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
+
                     saveCallMessage(data)
                     CallService.startService(ctx, ACTION_CALL_DECLINE)
                 }
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
                     Log.d("@@@", "DecryptMessage busy")
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
+
                     saveCallMessage(data)
                     CallService.startService(ctx, ACTION_CALL_BUSY)
                 }
                 MessageCategory.WEBRTC_AUDIO_END.name -> {
                     Log.d("@@@", "DecryptMessage remote_end")
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
+
                     CallService.startService(ctx, ACTION_CALL_REMOTE_END)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                     Log.d("@@@", "DecryptMessage failed")
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
+
                     saveCallMessage(data)
                     CallService.startService(ctx, ACTION_CALL_REMOTE_FAILED)
                 }
