@@ -252,7 +252,7 @@ fun String.toDot(): String {
 
 fun String.checkNumber(): Boolean {
     return try {
-        this.toFloat()
+        BigDecimal(this)
         true
     } catch (e: NumberFormatException) {
         false
