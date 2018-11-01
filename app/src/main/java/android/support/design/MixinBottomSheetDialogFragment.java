@@ -16,16 +16,40 @@
 
 package android.support.design;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v7.app.MixinAppCompatDialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import java.util.List;
+import javax.annotation.Nullable;
+import one.mixin.android.ui.url.UrlInterpreterActivity;
 
 public class MixinBottomSheetDialogFragment extends MixinAppCompatDialogFragment {
 
     @Override
+    @Nullable
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        return new BottomSheetDialog(getContext(), getTheme());
+        return new BottomSheetDialog(requireContext(), getTheme());
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (getActivity() instanceof UrlInterpreterActivity) {
+            FragmentManager fragmentManager = getFragmentManager();
+            if (fragmentManager != null) {
+                List<Fragment> fragments = fragmentManager.getFragments();
+                if (fragments.size() <= 0) {
+                    Activity activity = getActivity();
+                    if (activity != null) {
+                        activity.finish();
+                    }
+                }
+            }
+        }
     }
 
 }

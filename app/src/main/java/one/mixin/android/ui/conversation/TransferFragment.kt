@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
+import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
@@ -267,7 +268,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         override fun afterTextChanged(s: Editable) {
             s.maxDecimal()
-            if (s.isNotEmpty() && contentView.asset_rl.isEnabled) {
+            if (s.isNotEmpty() && contentView.asset_rl.isEnabled && s.toString().checkNumber()) {
                 contentView.transfer_amount.textSize = 26f
                 contentView.continue_animator.visibility = VISIBLE
             } else {

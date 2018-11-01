@@ -18,8 +18,8 @@ import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.newSingleThreadContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -42,6 +42,7 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import org.jetbrains.anko.notificationManager
+import java.util.concurrent.Executors
 import javax.inject.Inject
 
 class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
@@ -161,7 +162,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     private val ackThread by lazy {
-        newSingleThreadContext(Constants.ACK_THREAD)
+        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 
     private fun startAckJob() {
@@ -215,7 +216,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     private val floodThread by lazy {
-        newSingleThreadContext(Constants.FLOOD_THREAD)
+        Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 
     private val messageDecrypt = DecryptMessage()

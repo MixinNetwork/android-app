@@ -81,9 +81,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
         contentView.left_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
-            user.avatarUrl?.let { url ->
-                AvatarActivity.show(requireActivity(), url, contentView.avatar)
-                dismiss()
+            user.avatarUrl.let { url ->
+                if (!url.isNullOrBlank()) {
+                    AvatarActivity.show(requireActivity(), url, contentView.avatar)
+                    dismiss()
+                }
             }
         }
 
