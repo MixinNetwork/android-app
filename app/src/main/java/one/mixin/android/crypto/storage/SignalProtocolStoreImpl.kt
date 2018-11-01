@@ -29,6 +29,10 @@ class SignalProtocolStoreImpl(context: Context) : SignalProtocolStore {
         this.sessionStore = MixinSessionStore(context)
     }
 
+    override fun getIdentity(address: SignalProtocolAddress): IdentityKey? {
+        return identityKeyStore.getIdentity(address)
+    }
+
     override fun getIdentityKeyPair(): IdentityKeyPair {
         return identityKeyStore.identityKeyPair
     }

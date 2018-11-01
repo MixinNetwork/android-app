@@ -13,7 +13,13 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.state.IdentityKeyStore
 
 class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
+
     private val dao: IdentityDao = SignalDatabase.getDatabase(context).identityDao()
+
+    override fun getIdentity(address: SignalProtocolAddress): IdentityKey? {
+        val identity = dao.getIdentity(address.toString())
+        return identity?.getIdentityKey()
+    }
 
     override fun getIdentityKeyPair(): IdentityKeyPair {
         return dao.getLocalIdentity().getIdentityKeyPair()
