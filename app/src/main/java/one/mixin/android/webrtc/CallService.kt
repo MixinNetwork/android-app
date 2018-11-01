@@ -4,9 +4,9 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.AudioManager
 import android.media.Ringtone
 import android.media.RingtoneManager
-import android.os.Binder
 import android.os.IBinder
 import android.telephony.TelephonyManager
 import android.util.Log
@@ -43,14 +43,11 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.receiver.IncomingCallReceiver
 import one.mixin.android.webrtc.receiver.ScreenOffReceiver
 import one.mixin.android.websocket.BlazeMessageData
-import org.webrtc.EglBase
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
-import org.webrtc.VideoCapturer
-import org.webrtc.VideoSink
 import timber.log.Timber
 import java.util.UUID
 import java.util.concurrent.Executors
@@ -64,19 +61,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private val timeoutExecutor = Executors.newScheduledThreadPool(1)
     private var timeoutFuture: ScheduledFuture<*>? = null
 
-    var callback: CallServiceCallback? = null
-    private var audioManager: AppRTCAudioManager? = null
+    private val audioManager: AudioManager? by lazy { getSystemService<AudioManager>() }
     private var audioEnable = true
-    private var eglBase: EglBase? = null
-    private var videoCapturer: VideoCapturer? = null
-    private var localSink: VideoSink? = null
-    private var remoteSink: VideoSink? = null
 
     private var callReceiver: IncomingCallReceiver? = null
     private var screenOffReceiver: ScreenOffReceiver? = null
     private var disposable: Disposable? = null
-
-    private val callBinder = CallBinder()
 
     private val peerConnectionClient: PeerConnectionClient by lazy {
         PeerConnectionClient(this, this)
@@ -100,25 +90,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private var ringtone: Ringtone? = null
     private val candidateCache = arrayListOf<IceCandidate>()
 
-    inner class CallBinder : Binder() {
-        fun getService(): CallService {
-            return this@CallService
-        }
-    }
-
-    override fun onBind(intent: Intent?): IBinder? {
-        return callBinder
-    }
-
     override fun onCreate() {
         AndroidInjection.inject(this)
         super.onCreate()
         peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
-
-        audioManager = AppRTCAudioManager.create(this)
-        audioManager!!.start { selectedAudioDevice, availableAudioDevices ->
-            Timber.d("onAudioManagerDevicesChanged  selectedAudioDevice: $selectedAudioDevice, availableAudioDevices: $availableAudioDevices")
-        }
 
         callReceiver = IncomingCallReceiver()
         registerReceiver(callReceiver, IntentFilter("android.intent.action.PHONE_STATE"))
@@ -145,28 +120,22 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 ACTION_SPEAKERPHONE -> handleSpeakerphone(intent)
                 ACTION_SCREEN_OFF -> handleScreenOff(intent)
                 ACTION_CHECK_TIMEOUT -> handleCheckTimeout()
-                ACTION_SWITCH_CAMERA -> handleSwitchCamera()
             }
         }
 
         return START_NOT_STICKY
     }
 
-    override fun onDestroy() {
-        callState.reset()
-        audioManager?.stop()
-        audioManager = null
-        unregisterScreenOffReceiver()
-        unregisterReceiver(callReceiver)
+    override fun onBind(intent: Intent?): IBinder? {
+        return null
     }
 
-    fun setVideo(eglBase: EglBase, videoCapturer: VideoCapturer?, localSink: VideoSink, remoteSink: VideoSink) {
-        peerConnectionClient.videoEnable = true
-        this.eglBase = eglBase
-        this.videoCapturer = videoCapturer
-        this.localSink = localSink
-        this.remoteSink = remoteSink
-        peerConnectionClient.eglBase = eglBase
+    override fun onDestroy() {
+        callState.reset()
+//        audioManager?.stop()
+//        audioManager = null
+        unregisterScreenOffReceiver()
+        unregisterReceiver(callReceiver)
     }
 
     private fun disconnect() {
@@ -175,11 +144,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         peerConnectionClient.close()
         disposable?.dispose()
         candidateCache.clear()
-        CallService.stopService(this)
     }
 
     private fun handleCallIncoming(intent: Intent) {
-        if (!isIdle() || isBusy()) {
+        if (!callState.isIdle() || isBusy()) {
             Log.d("@@@", "handleCallIncoming send busy callState: ${callState.callInfo.callState}")
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             sendCallMessage(category)
@@ -192,11 +160,13 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         playRingtone()
         blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         user = intent.getParcelableExtra(ARGS_USER)
+        Log.d("@@@", "blazeMessageData: $blazeMessageData, user: $user")
         callState.setUser(user)
         updateNotification()
         quoteMessageId = blazeMessageData!!.messageId
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         peerConnectionClient.isInitiator = false
+        callState.setIsInitiator(false)
         CallActivity.show(this, user)
     }
 
@@ -208,12 +178,14 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         playRingtone()
         conversationId = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         user = intent.getParcelableExtra(ARGS_USER)
+        Log.d("@@@", "conversationId: $conversationId, user: $user")
         callState.setUser(user)
         updateNotification()
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         peerConnectionClient.isInitiator = true
+        callState.setIsInitiator(true)
         CallActivity.show(this, user)
-        getTurnServer { peerConnectionClient.createOffer(it, videoCapturer, localSink, remoteSink) }
+        getTurnServer { peerConnectionClient.createOffer(it) }
     }
 
     private fun handleAnswerCall(intent: Intent) {
@@ -232,7 +204,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             if (blazeMessageData == null) return
             setRemoteSdp(Base64.decode(blazeMessageData!!.data))
             getTurnServer {
-                peerConnectionClient.createAnswer(it, videoCapturer, localSink, remoteSink)
+                peerConnectionClient.createAnswer(it)
             }
         }
     }
@@ -268,8 +240,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (peerConnectionClient.isInitiator) {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
             sendCallMessage(category)
-            val fromNotification = intent?.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false)
-            if (fromNotification != null && fromNotification) {
+            val toIdle = intent?.getBooleanExtra(EXTRA_TO_IDLE, false)
+            if (toIdle != null && toIdle) {
                 callState.setCallState(CallState.STATE_IDLE)
             }
         } else {
@@ -297,8 +269,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         timeoutFuture?.cancel(true)
         val category = MessageCategory.WEBRTC_AUDIO_END.name
         sendCallMessage(category)
-        val fromNotification = intent?.getBooleanExtra(EXTRA_FROM_NOTIFICATION, false)
-        if (fromNotification != null && fromNotification) {
+        val toIdle = intent?.getBooleanExtra(EXTRA_TO_IDLE, false)
+        if (toIdle != null && toIdle) {
             callState.setCallState(CallState.STATE_IDLE)
         }
         updateNotification()
@@ -306,11 +278,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallRemoteEnd() {
-        Log.d("@@@", "handleCallRemoteEnd callState: ${callState.callInfo.callState}")
+        Log.d("@@@", "handleCallRemoteEnd blazeMessageData: $blazeMessageData")
         timeoutFuture?.cancel(true)
-        if (blazeMessageData != null && blazeMessageData!!.quoteMessageId != null && conversationId != null) {
+        if (blazeMessageData != null && quoteMessageId != null) {
             val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-            val message = createCallMessage(blazeMessageData!!.quoteMessageId!!, conversationId!!,
+            val message = createCallMessage(quoteMessageId!!, blazeMessageData!!.conversationId,
                 self.userId, MessageCategory.WEBRTC_AUDIO_END.name, null,
                 nowInUtc(), MessageStatus.DELIVERED, quoteMessageId, duration.toString())
             messageDao.insert(message)
@@ -355,7 +327,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleSpeakerphone(intent: Intent) {
         Log.d("@@@", "handleSpeakerphone callState: ${callState.callInfo.callState}")
         val speakerphone = intent.extras.getBoolean(EXTRA_SPEAKERPHONE)
-        audioManager?.setSavedIsSpeakerPhoneOn(speakerphone)
+        audioManager?.isSpeakerphoneOn = speakerphone
         updateNotification()
     }
 
@@ -364,10 +336,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         updateNotification()
         handleCallCancel()
-    }
-
-    private fun handleSwitchCamera() {
-        peerConnectionClient.switchCamera()
     }
 
     private fun registerScreenOffReceiver() {
@@ -415,6 +383,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         } else if (ringtone!!.isPlaying) {
             return
         }
+        Log.d("@@@", "playRingtone ringtone: $ringtone")
         ringtone?.play()
     }
 
@@ -422,13 +391,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (ringtone == null || !ringtone!!.isPlaying) {
             return
         }
+        Log.d("@@@", "stopRingtone ringtone: $ringtone")
         ringtone!!.stop()
     }
 
     private fun handleScreenOff(intent: Intent) {
     }
-
-    private fun isIdle() = callState.callInfo.callState == CallState.STATE_IDLE
 
     private fun isBusy(): Boolean {
         val tm = getSystemService<TelephonyManager>()
@@ -470,21 +438,18 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     override fun onIceDisconnected() {
-        CallService.stopService(this)
     }
 
     override fun onPeerConnectionClosed() {
+        CallService.stopService(this)
     }
 
     override fun onPeerConnectionStatsReady(reports: Array<StatsReport>) {
     }
 
     override fun onPeerConnectionError(description: String) {
-        handleCallLocalFailed()
-    }
-
-    override fun onCameraSwitchDone(isFrontCamera: Boolean) {
-        callback?.onCameraSwitchDone(isFrontCamera)
+        Timber.d("onPeerConnectionError: $description")
+        //TODO
     }
 
     private fun sendCallMessage(category: String, content: String? = null) {
@@ -591,10 +556,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         STATE_IDLE, STATE_DIALING, STATE_RINGING, STATE_ANSWERING, STATE_CONNECTED, STATE_BUSY
     }
 
-    interface CallServiceCallback {
-        fun onCameraSwitchDone(isFrontCamera: Boolean)
-    }
-
     companion object {
         const val TAG = "CallService"
 
@@ -616,9 +577,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         const val ACTION_CHECK_TIMEOUT = "check_timeout"
         const val ACTION_MUTE_AUDIO = "mute_audio"
         const val ACTION_SPEAKERPHONE = "speakerphone"
-        const val ACTION_SWITCH_CAMERA = "switch_camera"
 
-        const val EXTRA_FROM_NOTIFICATION = "from_notification"
+        const val EXTRA_TO_IDLE = "from_notification"
         const val EXTRA_CONVERSATION_ID = "conversation_id"
         const val EXTRA_BLAZE = "blaze"
         const val EXTRA_MUTE = "mute"
