@@ -2,12 +2,14 @@ package one.mixin.android.ui.call
 
 import android.app.Notification
 import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Context
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 
 class CallNotificationBuilder {
@@ -17,16 +19,19 @@ class CallNotificationBuilder {
         const val WEBRTC_NOTIFICATION = 313388
         const val ACTION_EXIT = "action_exit"
 
-        fun getCallNotification(context: Context, state: CallState, name: String?): Notification {
+        fun getCallNotification(context: Context, state: CallState, user: User?): Notification {
             val callIntent = Intent(context, CallActivity::class.java)
             callIntent.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-            val pendingCallIntent = PendingIntent.getActivity(context, 0, callIntent, 0)
+            user?.let {
+                callIntent.putExtra(CallActivity.ARGS_ANSWER, it)
+            }
+            val pendingCallIntent = PendingIntent.getActivity(context, 0, callIntent, FLAG_UPDATE_CURRENT)
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
                 .setSmallIcon(R.drawable.ic_close_black_24dp)
                 .setContentIntent(pendingCallIntent)
                 .setOngoing(true)
-                .setContentTitle(name)
+                .setContentTitle(user?.fullName)
 
             when (state.callInfo.callState) {
                 CallService.CallState.STATE_DIALING -> {

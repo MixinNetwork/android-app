@@ -355,7 +355,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun updateNotification() {
         Timber.d("updateNotification")
         startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION,
-            CallNotificationBuilder.getCallNotification(this, callState, user?.fullName))
+            CallNotificationBuilder.getCallNotification(this, callState, user))
     }
 
     private fun setRemoteSdp(json: ByteArray) {
