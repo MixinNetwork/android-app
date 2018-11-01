@@ -22,7 +22,7 @@ class MenuAdapter(private val onMenuClickListener: OnMenuClickListener) : Recycl
         MixinApplication.appContext.dip(24)
     }
 
-    var showTransfer = true
+    var botOrGroup = true
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -35,8 +35,8 @@ class MenuAdapter(private val onMenuClickListener: OnMenuClickListener) : Recycl
             else -> holder.itemView.setPadding(dp24, 0, 0, 0)
         }
         val index = when {
-            showTransfer -> position
-            else -> position + 1
+            botOrGroup -> position
+            else -> position + 2
         }
         holder.itemView.menu_icon.setBackgroundResource(backgrounds[index])
         holder.itemView.menu_icon.setImageResource(icons[index])
@@ -60,10 +60,10 @@ class MenuAdapter(private val onMenuClickListener: OnMenuClickListener) : Recycl
     }
 
     override fun getItemCount(): Int {
-        return if (showTransfer) {
+        return if (botOrGroup) {
             icons.size
         } else {
-            icons.size - 1
+            icons.size - 2
         }
     }
 

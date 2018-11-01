@@ -88,7 +88,6 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
-import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -337,17 +336,31 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         hideMediaLayout()
                     }
                     R.id.menu_voice -> {
-                        createConversation {
-                            CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
-                                intent.putExtra(ARGS_USER, recipient!!)
-                                intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
-                            }
-                        }
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.CAMERA)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    callVoice()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                            })
                         hideMediaLayout()
                     }
                 }
             }
         })
+    }
+
+    private fun callVoice() {
+        createConversation {
+            CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
+                intent.putExtra(ARGS_USER, recipient!!)
+                intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+            }
+        }
+        hideMediaLayout()
     }
 
     private val onItemListener: ConversationAdapter.OnItemListener by lazy {
@@ -541,10 +554,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onCallClick(messageItem: MessageItem) {
-                CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
-                    intent.putExtra(ARGS_USER, recipient!!)
-                    intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
-                }
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.RECORD_AUDIO)
+                    .subscribe({ granted ->
+                        if (granted) {
+                            callVoice()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }, {
+                    })
             }
         }
     }
@@ -953,7 +972,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         if (isGroup || isBot) {
-            menuAdapter.showTransfer = false
+            menuAdapter.botOrGroup = false
         }
         bindData()
     }
@@ -1302,7 +1321,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 val app = chatViewModel.findAppById(user.appId!!)
                 if (app != null && app.creatorId == Session.getAccountId()) {
                     uiThread {
-                        menuAdapter.showTransfer = true
+                        menuAdapter.botOrGroup = true
                     }
                 }
             }
