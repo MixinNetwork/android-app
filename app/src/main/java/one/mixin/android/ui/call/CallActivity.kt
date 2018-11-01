@@ -6,13 +6,20 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
+import android.hardware.Sensor
+import android.hardware.Sensor.TYPE_PROXIMITY
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.media.AudioManager
 import android.os.Bundle
+import android.os.PowerManager
 import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.WindowManager
 import androidx.constraintlayout.widget.ConstraintSet
+import androidx.core.content.getSystemService
 import androidx.lifecycle.Observer
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
@@ -38,17 +45,25 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.inject.Inject
 
-class CallActivity : BaseActivity() {
+class CallActivity : BaseActivity(), SensorEventListener {
 
     private var disposable: Disposable? = null
 
     @Inject
     lateinit var callState: CallState
 
+    private var sensorManager: SensorManager? = null
+    private var powerManager: PowerManager? = null
+    private var wakeLock: PowerManager.WakeLock? = null
+
+    @SuppressLint("InvalidWakeLockTag")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_call)
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        sensorManager = getSystemService<SensorManager>()
+        powerManager = getSystemService<PowerManager>()
+        wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
         val answer = intent.getParcelableExtra<User?>(ARGS_ANSWER)
         if (answer != null) {
             name_tv.text = answer.fullName
@@ -112,9 +127,40 @@ class CallActivity : BaseActivity() {
         window.statusBarColor = Color.TRANSPARENT
     }
 
+    override fun onResume() {
+        sensorManager?.registerListener(this, sensorManager?.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_UI)
+        super.onResume()
+    }
+
+    override fun onPause() {
+        sensorManager?.unregisterListener(this)
+        if (wakeLock?.isHeld == true) {
+            wakeLock?.release()
+        }
+        super.onPause()
+    }
+
     override fun onStop() {
         super.onStop()
         action_tv?.removeCallbacks(timeRunnable)
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        val values = event?.values ?: return
+        if (event.sensor.type == TYPE_PROXIMITY) {
+            if (values[0] == 0.0f) {
+                if (wakeLock?.isHeld == false) {
+                    wakeLock?.acquire(10 * 60 * 1000L)
+                }
+            } else {
+                if (wakeLock?.isHeld == true) {
+                    wakeLock?.release()
+                }
+            }
+        }
     }
 
     override fun onDestroy() {
@@ -162,20 +208,19 @@ class CallActivity : BaseActivity() {
         }
     }
 
-
     @SuppressLint("CheckResult")
     private fun handleAnswer() {
         RxPermissions(this)
             .request(Manifest.permission.RECORD_AUDIO)
             .subscribe { granted ->
-            if (granted) {
-                handleAnswering()
-                CallService.startService(this@CallActivity, CallService.ACTION_CALL_ANSWER)
-            } else {
-                CallService.startService(this, CallService.ACTION_CALL_CANCEL)
-                handleDisconnected()
+                if (granted) {
+                    handleAnswering()
+                    CallService.startService(this@CallActivity, CallService.ACTION_CALL_ANSWER)
+                } else {
+                    CallService.startService(this, CallService.ACTION_CALL_CANCEL)
+                    handleDisconnected()
+                }
             }
-        }
     }
 
     private fun handleDialingConnecting() {
