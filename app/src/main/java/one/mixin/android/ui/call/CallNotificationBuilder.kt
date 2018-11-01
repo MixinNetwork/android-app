@@ -28,7 +28,7 @@ class CallNotificationBuilder {
             val pendingCallIntent = PendingIntent.getActivity(context, 0, callIntent, FLAG_UPDATE_CURRENT)
 
             val builder = NotificationCompat.Builder(context, CHANNEL_NODE)
-                .setSmallIcon(R.drawable.ic_close_black_24dp)
+                .setSmallIcon(R.drawable.ic_msg_default)
                 .setContentIntent(pendingCallIntent)
                 .setOngoing(true)
                 .setContentTitle(user?.fullName)

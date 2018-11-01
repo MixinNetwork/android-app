@@ -132,8 +132,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     override fun onDestroy() {
         callState.reset()
-//        audioManager?.stop()
-//        audioManager = null
         unregisterScreenOffReceiver()
         unregisterReceiver(callReceiver)
     }
@@ -150,7 +148,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (!callState.isIdle() || isBusy()) {
             Log.d("@@@", "handleCallIncoming send busy callState: ${callState.callInfo.callState}")
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
-            sendCallMessage(category)
+            val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
+            val m = createCallMessage(UUID.randomUUID().toString(), bmd.conversationId, self.userId, category, null,
+                nowInUtc(), MessageStatus.SENDING, bmd.messageId)
+            jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
             return
         }
         Log.d("@@@", "handleCallIncoming")

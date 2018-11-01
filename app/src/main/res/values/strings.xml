@@ -182,8 +182,8 @@
     <string name="chat_call_canceled_by_caller">Call Cancelled by caller</string>
     <string name="chat_call_declined">Declined</string>
     <string name="chat_call_declined_other">Call declined</string>
-    <string name="chat_call_local_busy">Call busy</string>
-    <string name="chat_call_remote_busy">Call busy</string>
+    <string name="chat_call_local_busy">Line busy</string>
+    <string name="chat_call_remote_busy">Line busy</string>
     <string name="chat_call_failed">Call failed</string>
     <string name="chat_call_warning_call">You cannot place a Mixin call if you\'re already on another call.</string>
     <string name="chat_call_warning_voice">Can\'t record voice messages during a Mixin call.</string>

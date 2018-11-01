@@ -176,7 +176,7 @@
     <string name="chat_call_declined">已拒绝</string>
     <string name="chat_call_declined_other">对方已拒绝</string>
     <string name="chat_call_local_busy">忙线未接听</string>
-    <string name="chat_call_remote_busy">忙线未接听</string>
+    <string name="chat_call_remote_busy">对方忙</string>
     <string name="chat_call_failed">呼叫失败</string>
     <string name="chat_call_warning_call">无法在 Mixin 通话时拨打电话</string>
     <string name="chat_call_warning_voice">无法在 Mixin 通话时录制语音消息</string>

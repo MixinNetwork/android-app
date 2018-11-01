@@ -19,8 +19,6 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
         itemView.chat_flag.visibility = GONE
     }
 
-    private var onItemListener: ConversationAdapter.OnItemListener? = null
-
     fun bind(
         messageItem: MessageItem,
         isLast: Boolean,
@@ -29,7 +27,11 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         val ctx = itemView.context
-        val isMe = meId == messageItem.userId
+        val isMe = if (messageItem.type == MessageCategory.WEBRTC_AUDIO_BUSY.name) {
+            meId != messageItem.userId
+        } else {
+            meId == messageItem.userId
+        }
         chatLayout(isMe, isLast)
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         itemView.call_tv.text = when (messageItem.type) {
@@ -53,9 +55,9 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
             MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
                 if (isMe) {
-                    ctx.getString(R.string.chat_call_local_busy)
-                } else {
                     ctx.getString(R.string.chat_call_remote_busy)
+                } else {
+                    ctx.getString(R.string.chat_call_local_busy)
                 }
             }
             else -> {
@@ -76,17 +78,10 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.setOnClickListener {
-            if (hasSelect) {
-                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-            }else{
-                onItemListener.onCallClick(messageItem)
-            }
-        }
         itemView.chat_layout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-            } else {
+            }else{
                 onItemListener.onCallClick(messageItem)
             }
         }
