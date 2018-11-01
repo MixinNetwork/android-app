@@ -336,16 +336,25 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         hideMediaLayout()
                     }
                     R.id.menu_voice -> {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.CAMERA)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    callVoice()
-                                } else {
-                                    context?.openPermissionSetting()
+                        if (!callState.isIdle()) {
+                            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                                .setMessage(getString(R.string.chat_call_warning_call))
+                                .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                                    dialog.dismiss()
                                 }
-                            }, {
-                            })
+                                .show()
+                        } else {
+                            RxPermissions(requireActivity())
+                                .request(Manifest.permission.RECORD_AUDIO)
+                                .subscribe({ granted ->
+                                    if (granted) {
+                                        callVoice()
+                                    } else {
+                                        context?.openPermissionSetting()
+                                    }
+                                }, {
+                                })
+                        }
                         hideMediaLayout()
                     }
                 }
@@ -553,6 +562,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
+            @SuppressLint("CheckResult")
             override fun onCallClick(messageItem: MessageItem) {
                 RxPermissions(requireActivity())
                     .request(Manifest.permission.RECORD_AUDIO)
@@ -665,8 +675,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         if (paused) {
             paused = false
-            chat_rv.adapter?.let {
-                it.notifyDataSetChanged()
+            chat_rv.adapter?.let { adapter ->
+                adapter.notifyDataSetChanged()
             }
         }
     }
@@ -806,7 +816,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         })
         chat_control.chat_more_ib.setOnClickListener { toggleMediaLayout() }
-        chat_rv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, true)
+        chat_rv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
         chat_rv.itemAnimator = null
 
@@ -974,6 +984,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (isGroup || isBot) {
             menuAdapter.botOrGroup = false
         }
+        callState.observe(this, Observer { info ->
+            chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
+        })
         bindData()
     }
 
@@ -1633,6 +1646,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         previewDialogFragment?.show(requireFragmentManager(), uri, action)
     }
 
+    private val voiceAlert by lazy {
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setMessage(getString(R.string.chat_call_warning_voice))
+            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                dialog.dismiss()
+            }.create()
+    }
+
+    private fun showVoiceWarning() {
+        if (!voiceAlert.isShowing) {
+            voiceAlert.show()
+        }
+    }
+
     private val chatControlCallback = object : ChatControlView.Callback {
         override fun onStickerClick() {
             clickSticker()
@@ -1677,6 +1704,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onDown() {
             updateSticker()
+        }
+
+        override fun onCalling() {
+            showVoiceWarning()
         }
     }
 }

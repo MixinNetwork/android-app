@@ -310,8 +310,13 @@ class ChatControlView : FrameLayout {
     private var hasStartRecord = false
     private var locked = false
     private var maxScrollX = context.dip(100f)
+    var calling = false
 
     private val sendOnTouchListener = OnTouchListener { _, event ->
+        if (calling) {
+            callback.onCalling()
+            return@OnTouchListener false
+        }
         chat_send_ib.onTouchEvent(event)
         when (event.action) {
             ACTION_DOWN -> {
@@ -521,5 +526,6 @@ class ChatControlView : FrameLayout {
         fun onRecordCancel()
         fun onUp()
         fun onDown()
+        fun onCalling()
     }
 }
