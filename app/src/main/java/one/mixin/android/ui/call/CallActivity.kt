@@ -28,6 +28,12 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_call.*
 import kotlinx.android.synthetic.main.view_call_button.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -129,6 +135,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     override fun onResume() {
         sensorManager?.registerListener(this, sensorManager?.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_UI)
+        if (callState.callInfo.connectedTime != null) {
+            startTimer()
+        }
         super.onResume()
     }
 
@@ -137,12 +146,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         if (wakeLock?.isHeld == true) {
             wakeLock?.release()
         }
+        stopTimber()
         super.onPause()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        action_tv?.removeCallbacks(timeRunnable)
     }
 
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
@@ -272,7 +277,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
         answer_cb.fadeOut()
         moveHangup(true, 250)
-        action_tv.postDelayed(timeRunnable, 1000)
+        startTimer()
     }
 
     private fun handleDisconnected() {
@@ -296,13 +301,27 @@ class CallActivity : BaseActivity(), SensorEventListener {
         constraintSet.applyTo(call_cl)
     }
 
-    private val timeRunnable: Runnable by lazy {
-        Runnable {
-            if (callState.callInfo.connectedTime != null) {
-                val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-                action_tv.text = duration.formatMillis()
+    private var timer: Job? = null
+    private fun startTimer() {
+        if (timer == null || timer?.isCancelled == true) {
+            timer = GlobalScope.launch {
+                while (true) {
+                    withContext(Dispatchers.Main) {
+                        if (callState.callInfo.connectedTime != null) {
+                            val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                            action_tv.text = duration.formatMillis()
+                        }
+                    }
+                    delay(1000)
+                }
             }
-            action_tv.postDelayed(timeRunnable, 1000)
+        }
+    }
+
+    private fun stopTimber() {
+        if (timer?.isCancelled == false) {
+            timer?.cancel()
+            timer = null
         }
     }
 

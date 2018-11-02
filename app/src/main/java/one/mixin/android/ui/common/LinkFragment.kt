@@ -6,6 +6,12 @@ import android.view.View.VISIBLE
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import kotlinx.android.synthetic.main.view_link_state.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.di.Injectable
@@ -44,8 +50,16 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     }
 
     override fun onStop() {
-        time_tv?.removeCallbacks(timeRunnable)
+        stopTimber()
         super.onStop()
+    }
+
+    override fun onResume() {
+        if (callState.callInfo.connectedTime != null) {
+            time_tv.visibility = VISIBLE
+            startTimer()
+        }
+        super.onResume()
     }
 
     @Synchronized
@@ -100,6 +114,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     private fun setConnecting() {
         progressBar.visibility = VISIBLE
         time_tv.visibility = GONE
+        stopTimber()
         state_layout.setBackgroundResource(R.color.colorBlue)
         state_tv.setText(R.string.state_connecting)
     }
@@ -107,6 +122,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     private fun setSyncing() {
         progressBar.visibility = VISIBLE
         time_tv.visibility = GONE
+        stopTimber()
         state_layout.setBackgroundResource(R.color.stateGreen)
         state_tv.setText(R.string.state_syncing)
     }
@@ -114,8 +130,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     private fun setCalling() {
         if (callState.callInfo.connectedTime != null) {
             time_tv.visibility = VISIBLE
-            time_tv.removeCallbacks(timeRunnable)
-            time_tv.post(timeRunnable)
+            startTimer()
         }
         state_layout.setBackgroundResource(R.color.stateGreen)
         progressBar.visibility = GONE
@@ -125,13 +140,27 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         }
     }
 
-    private val timeRunnable: Runnable by lazy {
-        Runnable {
-            if (callState.callInfo.connectedTime != null) {
-                val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-                time_tv?.text = duration.formatMillis()
+    private var timer: Job? = null
+    private fun startTimer() {
+        if (timer == null || timer?.isCancelled == true) {
+            timer = GlobalScope.launch {
+                while (true) {
+                    withContext(Dispatchers.Main) {
+                        if (callState.callInfo.connectedTime != null) {
+                            val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                            time_tv?.text = duration.formatMillis()
+                        }
+                    }
+                    delay(1000)
+                }
             }
-            time_tv?.postDelayed(timeRunnable, 1000)
+        }
+    }
+
+    private fun stopTimber() {
+        if (timer?.isCancelled == false) {
+            timer?.cancel()
+            timer = null
         }
     }
 }
