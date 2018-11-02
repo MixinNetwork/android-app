@@ -8,6 +8,7 @@ import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import android.graphics.Bitmap
 import android.net.Uri
+import android.util.Log
 import androidx.annotation.WorkerThread
 import androidx.collection.ArraySet
 import androidx.core.net.toUri

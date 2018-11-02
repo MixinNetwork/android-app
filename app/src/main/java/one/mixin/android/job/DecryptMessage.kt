@@ -157,6 +157,7 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                 saveCallMessage(data, MessageCategory.WEBRTC_AUDIO_CANCEL.name)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            messageHistoryDao.insert(MessageHistory(data.messageId))
             return
         }
 
@@ -185,10 +186,12 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                     saveCallMessage(data, data.category)
                 }
                 updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                messageHistoryDao.insert(MessageHistory(data.messageId))
                 return
             } else {
                 if (data.quoteMessageId == null || messageDao.findMessageById(data.quoteMessageId) != null) {
                     updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                    messageHistoryDao.insert(MessageHistory(data.messageId))
                     return
                 }
             }
@@ -249,6 +252,7 @@ class DecryptMessage(private val callState: CallState) : Injector() {
             }
         }
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        messageHistoryDao.insert(MessageHistory(data.messageId))
     }
 
     private val listPendingJobMap = ArrayMap<String, Pair<Job, BlazeMessageData>>()

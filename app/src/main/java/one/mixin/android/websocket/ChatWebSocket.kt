@@ -257,7 +257,7 @@ class ChatWebSocket(
     private fun makeMessageStatus(status: String, messageId: String) {
         val curStatus = messageDao.findMessageStatusById(messageId)
         if (curStatus != null && curStatus != MessageStatus.READ.name) {
-            messageDao.updateMessageStatus(status, messageId)
+            messageDao.updateMessageStatusTmp(status, messageId)
         }
     }
 

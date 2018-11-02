@@ -102,6 +102,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
+    @Query("UPDATE messages SET status = :status WHERE id = :id and user_id == :userId")
+    fun updateMessageStatusTmp(status: String, id: String, userId: String = Session.getAccountId()!!)
+
     @Query("UPDATE messages SET media_status = :status WHERE id = :id")
     fun updateMediaStatus(status: String, id: String)
 

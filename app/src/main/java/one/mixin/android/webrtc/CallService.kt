@@ -143,10 +143,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun handleCallIncoming(intent: Intent) {
         if (!callState.isIdle() || isBusy()) {
-            Log.d("@@@", "handleCallIncoming send busy callState: ${callState.callInfo.callState}")
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-            val m = createCallMessage(UUID.randomUUID().toString(), bmd.conversationId, self.userId, category, null,
+            val m = createCallMessage(UUID.randomUUID().toString(), bmd.conversationId, bmd.userId, category, null,
                 nowInUtc(), MessageStatus.SENDING, bmd.messageId)
             jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
             saveMessage(m)
