@@ -74,7 +74,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         if (answer != null) {
             name_tv.text = answer.fullName
             avatar.setInfo(answer.fullName, answer.avatarUrl, answer.identityNumber)
-            avatar.setTextSize(22f)
+            avatar.setTextSize(48f)
             if (answer.avatarUrl != null) {
                 setBlurBg(answer.avatarUrl)
             }
@@ -105,6 +105,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             when (callInfo.callState) {
                 CallService.CallState.STATE_DIALING -> {
                     if (callInfo.dialingStatus != MessageStatus.READ) {
+                        volumeControlStream = AudioManager.STREAM_VOICE_CALL
                         handleDialingConnecting()
                     } else {
                         handleDialingWaiting()

@@ -4,9 +4,6 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.media.AudioManager
-import android.media.Ringtone
-import android.media.RingtoneManager
 import android.os.IBinder
 import android.telephony.TelephonyManager
 import android.util.Log
@@ -61,7 +58,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private val timeoutExecutor = Executors.newScheduledThreadPool(1)
     private var timeoutFuture: ScheduledFuture<*>? = null
 
-    private val audioManager: AudioManager? by lazy { getSystemService<AudioManager>() }
+    private val audioManager: CallAudioManager by lazy {
+        CallAudioManager(this)
+    }
     private var audioEnable = true
 
     private var callReceiver: IncomingCallReceiver? = null
@@ -87,7 +86,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private var self = Session.getAccount()!!.toUser()
     private var user: User? = null
     private var conversationId: String? = null
-    private var ringtone: Ringtone? = null
     private val candidateCache = arrayListOf<IceCandidate>()
 
     override fun onCreate() {
@@ -138,7 +136,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     private fun disconnect() {
         stopForeground(true)
-        stopRingtone()
+        audioManager.stop()
         peerConnectionClient.close()
         disposable?.dispose()
         candidateCache.clear()
@@ -158,7 +156,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.callInfo.callState == CallState.STATE_RINGING) return
 
         callState.setCallState(CallState.STATE_RINGING)
-        playRingtone()
+        audioManager.start(false)
         blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         user = intent.getParcelableExtra(ARGS_USER)
         Log.d("@@@", "blazeMessageData: $blazeMessageData, user: $user")
@@ -176,7 +174,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.callInfo.callState == CallState.STATE_DIALING) return
 
         callState.setCallState(CallState.STATE_DIALING)
-        playRingtone()
+        audioManager.start(true)
         conversationId = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         user = intent.getParcelableExtra(ARGS_USER)
         Log.d("@@@", "conversationId: $conversationId, user: $user")
@@ -228,7 +226,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callState.setConnectedTime(System.currentTimeMillis())
         callState.setCallState(CallState.STATE_CONNECTED)
         updateNotification()
-        stopRingtone()
+        audioManager.stop()
         timeoutFuture?.cancel(true)
         peerConnectionClient.setAudioEnable(audioEnable)
         peerConnectionClient.enableCommunication()
@@ -335,7 +333,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleSpeakerphone(intent: Intent) {
         Log.d("@@@", "handleSpeakerphone callState: ${callState.callInfo.callState}")
         val speakerphone = intent.extras.getBoolean(EXTRA_SPEAKERPHONE)
-        audioManager?.isSpeakerphoneOn = speakerphone
+        audioManager.isSpeakerOn = speakerphone
         updateNotification()
     }
 
@@ -380,27 +378,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             SessionDescription.Type.PRANSWER.canonicalForm() -> SessionDescription.Type.PRANSWER
             else -> SessionDescription.Type.OFFER
         }
-    }
-
-    private fun playRingtone() {
-        if (ringtone == null) {
-            val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-            if (uri != null) {
-                ringtone = RingtoneManager.getRingtone(this, uri)
-            }
-        } else if (ringtone!!.isPlaying) {
-            return
-        }
-        Log.d("@@@", "playRingtone ringtone: $ringtone")
-        ringtone?.play()
-    }
-
-    private fun stopRingtone() {
-        if (ringtone == null || !ringtone!!.isPlaying) {
-            return
-        }
-        Log.d("@@@", "stopRingtone ringtone: $ringtone")
-        ringtone!!.stop()
     }
 
     private fun handleScreenOff(intent: Intent) {

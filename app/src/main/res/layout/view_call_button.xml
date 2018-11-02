@@ -20,6 +20,6 @@
         android:layout_marginTop="@dimen/padding8"
         android:singleLine="true"
         android:textSize="12sp"
-        android:textColor="#DFDFDF"
+        android:textColor="@color/white"
         android:maxWidth="64dp"/>
 </LinearLayout>

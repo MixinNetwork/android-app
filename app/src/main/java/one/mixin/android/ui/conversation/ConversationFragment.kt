@@ -564,16 +564,25 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             @SuppressLint("CheckResult")
             override fun onCallClick(messageItem: MessageItem) {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.RECORD_AUDIO)
-                    .subscribe({ granted ->
-                        if (granted) {
-                            callVoice()
-                        } else {
-                            context?.openPermissionSetting()
+                if (!callState.isIdle()) {
+                    AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                        .setMessage(getString(R.string.chat_call_warning_call))
+                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                            dialog.dismiss()
                         }
-                    }, {
-                    })
+                        .show()
+                } else {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.RECORD_AUDIO)
+                        .subscribe({ granted ->
+                            if (granted) {
+                                callVoice()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        }, {
+                        })
+                }
             }
         }
     }
