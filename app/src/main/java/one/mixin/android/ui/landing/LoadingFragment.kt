@@ -1,12 +1,13 @@
 package one.mixin.android.ui.landing
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.kotlin.autoDisposable
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
@@ -43,12 +44,17 @@ class LoadingFragment : BaseFragment() {
         if (count > 0) {
             count--
             loadingViewModel.pushAsyncSignalKeys().autoDisposable(scopeProvider).subscribe({
-                if (it?.isSuccess == true) {
-                    context!!.defaultSharedPreferences.putBoolean(IS_LOADED, true)
-                    MainActivity.show(context!!)
-                    activity?.finish()
-                } else {
-                    load()
+                when {
+                    it?.isSuccess == true -> {
+                        context!!.defaultSharedPreferences.putBoolean(IS_LOADED, true)
+                        MainActivity.show(context!!)
+                        activity?.finish()
+                    }
+                    it?.errorCode == ErrorHandler.AUTHENTICATION -> {
+                        MixinApplication.get().closeAndClear()
+                        activity?.finish()
+                    }
+                    else -> load()
                 }
             }, {
                 load()
