@@ -145,10 +145,13 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (!callState.isIdle() || isBusy()) {
             val category = MessageCategory.WEBRTC_AUDIO_BUSY.name
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
-            val m = createCallMessage(UUID.randomUUID().toString(), bmd.conversationId, bmd.userId, category, null,
+            val m = createCallMessage(UUID.randomUUID().toString(), bmd.conversationId, self.userId, category, null,
                 nowInUtc(), MessageStatus.SENDING, bmd.messageId)
             jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
-            saveMessage(m)
+
+            val savedMessage = createCallMessage(bmd.messageId, m.conversationId, bmd.userId, m.category, m.content,
+                m.createdAt, MessageStatus.DELIVERED, bmd.messageId)
+            messageDao.insert(savedMessage)
             return
         }
         Log.d("@@@", "handleCallIncoming")
@@ -466,10 +469,18 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         when {
             m.category == MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                 val status = if (declineTriggeredByUser) MessageStatus.READ else MessageStatus.DELIVERED
-                messageDao.insert(createNewReadMessage(m, callState.callInfo.user!!.userId, status))
+                val uId = if (callState.callInfo.isInitiator) {
+                    self.userId
+                } else {
+                    callState.callInfo.user!!.userId
+                }
+                messageDao.insert(createNewReadMessage(m, uId, status))
             }
-            m.category == MessageCategory.WEBRTC_AUDIO_CANCEL.name ->
-                messageDao.insert(createNewReadMessage(m, self.userId, MessageStatus.READ))
+            m.category == MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
+                val msg = createCallMessage(m.id, m.conversationId, self.userId, m.category, m.content,
+                    m.createdAt, MessageStatus.READ, m.quoteMessageId, m.mediaDuration)
+                messageDao.insert(msg)
+            }
             m.category == MessageCategory.WEBRTC_AUDIO_END.name || m.category == MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                 val msg = if (callState.callInfo.isInitiator) {
                     createNewReadMessage(m, self.userId, MessageStatus.READ)
@@ -478,13 +489,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 }
                 messageDao.insert(msg)
             }
-            m.category == MessageCategory.WEBRTC_AUDIO_BUSY.name ->
-                messageDao.insert(createNewReadMessage(m, callState.callInfo.user!!.userId, MessageStatus.DELIVERED))
         }
     }
 
     private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
-        createCallMessage(m.id, m.conversationId, userId, m.category, m.content, m.createdAt, status, m.quoteMessageId, m.mediaDuration)
+        createCallMessage(blazeMessageData!!.quoteMessageId!!, m.conversationId, userId, m.category, m.content,
+            m.createdAt, status, m.quoteMessageId, m.mediaDuration)
 
     private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {
         val lastTimeTurn = defaultSharedPreferences.getLong(PREF_TURN_FETCH, 0L)

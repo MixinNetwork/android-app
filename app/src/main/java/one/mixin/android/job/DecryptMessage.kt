@@ -141,34 +141,39 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                     listPendingJobMap.forEach {
                         val pair = it.value
                         val job = pair.first
-                        val d = pair.second
+                        val curData = pair.second
                         if (it.key != data.messageId && !job.isCancelled) {
                             job.cancel()
-                            val m = createCallMessage(UUID.randomUUID().toString(), d.conversationId, Session.getAccountId()!!,
-                                MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING, d.messageId)
+                            val m = createCallMessage(UUID.randomUUID().toString(), curData.conversationId, Session.getAccountId()!!,
+                                MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING, curData.messageId)
                             jobManager.addJobInBackground(SendMessageJob(m))
+
+                            val savedMessage = createCallMessage(curData.messageId, m.conversationId, curData.userId, m.category, m.content,
+                                m.createdAt, MessageStatus.DELIVERED, m.quoteMessageId)
+                            messageDao.insert(savedMessage)
                         }
                     }
-                    processNonListPendingCall(data)
+                    processCall(data)
                     listPendingJobMap.clear()
 
                 }, data)
             } else if (isExpired) {
-                saveCallMessage(data, MessageCategory.WEBRTC_AUDIO_CANCEL.name)
+                val message = createCallMessage(data.messageId, data.conversationId, data.userId, MessageCategory.WEBRTC_AUDIO_CANCEL.name,
+                    null, data.createdAt, MessageStatus.DELIVERED)
+                messageDao.insert(message)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
             return
         }
 
-        processNonListPendingCall(data)
+        processCall(data)
     }
 
-    private fun processNonListPendingCall(data: BlazeMessageData) {
+    private fun processCall(data: BlazeMessageData) {
         val ctx = MixinApplication.appContext
         if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             val user = userDao.findUser(data.userId)!!
-            Log.d("@@@", "DecryptMessage offer")
             CallService.startService(ctx, ACTION_CALL_INCOMING) {
                 it.putExtra(ARGS_USER, user)
                 it.putExtra(CallService.EXTRA_BLAZE, data)
@@ -183,17 +188,18 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                         }
                     }
                     listPendingJobMap.remove(data.quoteMessageId)
-                    saveCallMessage(data, data.category)
+
+                    val message = createCallMessage(data.quoteMessageId!!, data.conversationId, data.userId, MessageCategory.WEBRTC_AUDIO_CANCEL.name,
+                        null, data.createdAt, MessageStatus.DELIVERED)
+                    messageDao.insert(message)
                 }
                 updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
                 messageHistoryDao.insert(MessageHistory(data.messageId))
                 return
-            } else {
-                if (data.quoteMessageId == null || messageDao.findMessageById(data.quoteMessageId) != null) {
-                    updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-                    messageHistoryDao.insert(MessageHistory(data.messageId))
-                    return
-                }
+            } else if (data.quoteMessageId == null || messageDao.findMessageById(data.quoteMessageId) != null) {
+                updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                messageHistoryDao.insert(MessageHistory(data.messageId))
+                return
             }
 
             when (data.category) {
@@ -224,14 +230,23 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                     Log.d("@@@", "DecryptMessage decline")
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
 
-                    saveCallMessage(data)
+                    val uId = if (callState.callInfo.isInitiator) {
+                        Session.getAccountId()!!
+                    } else {
+                        callState.callInfo.user!!.userId
+                    }
+                    saveCallMessage(data, userId = uId)
                     CallService.startService(ctx, ACTION_CALL_DECLINE)
                 }
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
                     Log.d("@@@", "DecryptMessage busy")
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
+                        data.quoteMessageId != callState.callInfo.messageId ||
+                        callState.callInfo.user == null) {
+                        return
+                    }
 
-                    saveCallMessage(data)
+                    saveCallMessage(data, userId = Session.getAccountId()!!)
                     CallService.startService(ctx, ACTION_CALL_BUSY)
                 }
                 MessageCategory.WEBRTC_AUDIO_END.name -> {
@@ -239,14 +254,24 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
 
                     val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-                    saveCallMessage(data, duration = duration.toString())
+                    val uId = if (callState.callInfo.isInitiator) {
+                        Session.getAccountId()!!
+                    } else {
+                        callState.callInfo.user!!.userId
+                    }
+                    saveCallMessage(data, duration = duration.toString(), userId = uId, status = MessageStatus.READ)
                     CallService.startService(ctx, ACTION_CALL_REMOTE_END)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                     Log.d("@@@", "DecryptMessage failed")
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
 
-                    saveCallMessage(data)
+                    val uId = if (callState.callInfo.isInitiator) {
+                        Session.getAccountId()!!
+                    } else {
+                        callState.callInfo.user!!.userId
+                    }
+                    saveCallMessage(data, userId = uId)
                     CallService.startService(ctx, ACTION_CALL_REMOTE_FAILED)
                 }
             }
@@ -257,25 +282,18 @@ class DecryptMessage(private val callState: CallState) : Injector() {
 
     private val listPendingJobMap = ArrayMap<String, Pair<Job, BlazeMessageData>>()
 
-    private fun saveCallMessage(data: BlazeMessageData, category: String? = null, duration: String? = null) {
-        val messageId = if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
-            data.messageId
-        } else {
-            data.quoteMessageId ?: return
+    private fun saveCallMessage(
+        data: BlazeMessageData,
+        category: String? = null,
+        duration: String? = null,
+        userId: String = data.userId,
+        status: MessageStatus = MessageStatus.DELIVERED) {
+        if (data.userId == Session.getAccountId()!! ||
+            data.quoteMessageId == null) {
+            return
         }
-
         val realCategory = category ?: data.category
-        val userId = if (callState.callInfo.isInitiator) {
-            Session.getAccountId()!!
-        } else {
-            callState.callInfo.user!!.userId
-        }
-        val status = if (data.category == MessageCategory.WEBRTC_AUDIO_END.name) {
-            MessageStatus.READ
-        } else {
-            MessageStatus.DELIVERED
-        }
-        val message = createCallMessage(messageId, data.conversationId, userId, realCategory,
+        val message = createCallMessage(data.quoteMessageId, data.conversationId, userId, realCategory,
             null, data.createdAt, status, mediaDuration = duration)
         messageDao.insert(message)
     }
