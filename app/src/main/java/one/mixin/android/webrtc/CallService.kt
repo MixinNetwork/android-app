@@ -38,7 +38,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.receiver.IncomingCallReceiver
-import one.mixin.android.webrtc.receiver.ScreenOffReceiver
 import one.mixin.android.websocket.BlazeMessageData
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
@@ -64,7 +63,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private var audioEnable = true
 
     private var callReceiver: IncomingCallReceiver? = null
-    private var screenOffReceiver: ScreenOffReceiver? = null
     private var disposable: Disposable? = null
 
     private val peerConnectionClient: PeerConnectionClient by lazy {
@@ -116,7 +114,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
                 ACTION_MUTE_AUDIO -> handleMuteAudio(intent)
                 ACTION_SPEAKERPHONE -> handleSpeakerphone(intent)
-                ACTION_SCREEN_OFF -> handleScreenOff(intent)
                 ACTION_CHECK_TIMEOUT -> handleCheckTimeout()
             }
         }
@@ -130,7 +127,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     override fun onDestroy() {
         callState.reset()
-        unregisterScreenOffReceiver()
         unregisterReceiver(callReceiver)
     }
 
@@ -230,7 +226,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         timeoutFuture?.cancel(true)
         peerConnectionClient.setAudioEnable(audioEnable)
         peerConnectionClient.enableCommunication()
-        registerScreenOffReceiver()
     }
 
     private fun handleCallCancel(intent: Intent? = null) {
@@ -344,20 +339,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         handleCallCancel()
     }
 
-    private fun registerScreenOffReceiver() {
-        if (screenOffReceiver == null) {
-            screenOffReceiver = ScreenOffReceiver()
-            registerReceiver(screenOffReceiver, IntentFilter(Intent.ACTION_SCREEN_OFF))
-        }
-    }
-
-    private fun unregisterScreenOffReceiver() {
-        if (screenOffReceiver != null) {
-            unregisterReceiver(screenOffReceiver)
-            screenOffReceiver = null
-        }
-    }
-
     private fun updateNotification() {
         Timber.d("updateNotification")
         startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION,
@@ -378,9 +359,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             SessionDescription.Type.PRANSWER.canonicalForm() -> SessionDescription.Type.PRANSWER
             else -> SessionDescription.Type.OFFER
         }
-    }
-
-    private fun handleScreenOff(intent: Intent) {
     }
 
     private fun isBusy(): Boolean {
