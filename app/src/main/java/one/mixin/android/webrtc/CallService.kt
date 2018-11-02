@@ -24,6 +24,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
@@ -192,6 +193,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         callState.setCallState(CallState.STATE_ANSWERING)
         updateNotification()
+        audioManager.stop()
 
         if (peerConnectionClient.isInitiator) {
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
@@ -225,8 +227,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callState.setConnectedTime(System.currentTimeMillis())
         callState.setCallState(CallState.STATE_CONNECTED)
         updateNotification()
-        audioManager.stop()
         timeoutFuture?.cancel(true)
+        vibrate(longArrayOf(0, 30))
         peerConnectionClient.setAudioEnable(audioEnable)
         peerConnectionClient.enableCommunication()
     }
