@@ -27,7 +27,7 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         val ctx = itemView.context
-        val isMe = if (messageItem.type == MessageCategory.WEBRTC_AUDIO_BUSY.name) {
+        val isMe = if (messageItem.type == MessageCategory.WEBRTC_AUDIO_BUSY.name || messageItem.type == MessageCategory.WEBRTC_AUDIO_DECLINE.name) {
             meId != messageItem.userId
         } else {
             meId == messageItem.userId
@@ -44,9 +44,9 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
             }
             MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                 if (isMe) {
-                    ctx.getString(R.string.chat_call_declined)
-                } else {
                     ctx.getString(R.string.chat_call_declined_other)
+                } else {
+                    ctx.getString(R.string.chat_call_declined)
                 }
             }
             MessageCategory.WEBRTC_AUDIO_END.name -> {

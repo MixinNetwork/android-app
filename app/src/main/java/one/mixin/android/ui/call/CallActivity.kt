@@ -207,7 +207,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     .submit()
                     .get(10, TimeUnit.SECONDS)
                 uiThread {
-                    call_cl.background = BitmapDrawable(resources, bitmap.fastBlur(1f, 10))
+                    blur_iv.setImageBitmap(bitmap.fastBlur(1f, 10))
                 }
             } catch (timeoutException: TimeoutException) {
             }
