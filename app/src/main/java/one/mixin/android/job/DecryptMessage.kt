@@ -235,6 +235,8 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                     Log.d("@@@", "DecryptMessage remote_end")
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) return
 
+                    val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                    saveCallMessage(data, duration = duration.toString())
                     CallService.startService(ctx, ACTION_CALL_REMOTE_END)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
@@ -251,7 +253,7 @@ class DecryptMessage(private val callState: CallState) : Injector() {
 
     private val listPendingJobMap = ArrayMap<String, Pair<Job, BlazeMessageData>>()
 
-    private fun saveCallMessage(data: BlazeMessageData, category: String? = null) {
+    private fun saveCallMessage(data: BlazeMessageData, category: String? = null, duration: String? = null) {
         val messageId = if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             data.messageId
         } else {
@@ -259,8 +261,18 @@ class DecryptMessage(private val callState: CallState) : Injector() {
         }
 
         val realCategory = category ?: data.category
-        val message = createCallMessage(messageId, data.conversationId, data.userId, realCategory,
-            null, data.createdAt, MessageStatus.DELIVERED)
+        val userId = if (callState.callInfo.isInitiator) {
+            Session.getAccountId()!!
+        } else {
+            callState.callInfo.user!!.userId
+        }
+        val status = if (data.category == MessageCategory.WEBRTC_AUDIO_END.name) {
+            MessageStatus.READ
+        } else {
+            MessageStatus.DELIVERED
+        }
+        val message = createCallMessage(messageId, data.conversationId, userId, realCategory,
+            null, data.createdAt, status, mediaDuration = duration)
         messageDao.insert(message)
     }
 

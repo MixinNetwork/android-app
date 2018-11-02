@@ -160,11 +160,6 @@ fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
 
 fun Message.isCall() = category.startsWith("WEBRTC_")
 
-fun Message.isCallNotSave() =
-    category == MessageCategory.WEBRTC_AUDIO_OFFER.name ||
-        category == MessageCategory.WEBRTC_AUDIO_ANSWER.name ||
-        category == MessageCategory.WEBRTC_ICE_CANDIDATE.name
-
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,

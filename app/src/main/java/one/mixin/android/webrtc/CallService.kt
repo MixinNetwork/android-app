@@ -30,6 +30,7 @@ import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sdp
@@ -85,6 +86,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private var user: User? = null
     private var conversationId: String? = null
     private val candidateCache = arrayListOf<IceCandidate>()
+    private var declineTriggeredByUser: Boolean = true
 
     override fun onCreate() {
         AndroidInjection.inject(this)
@@ -146,6 +148,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             val m = createCallMessage(UUID.randomUUID().toString(), bmd.conversationId, self.userId, category, null,
                 nowInUtc(), MessageStatus.SENDING, bmd.messageId)
             jobManager.addJobInBackground(SendMessageJob(m, recipientId = bmd.userId))
+            saveMessage(m)
             return
         }
         Log.d("@@@", "handleCallIncoming")
@@ -282,13 +285,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
         timeoutFuture?.cancel(true)
-        if (blazeMessageData != null && quoteMessageId != null) {
-            val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-            val message = createCallMessage(quoteMessageId!!, blazeMessageData!!.conversationId,
-                self.userId, MessageCategory.WEBRTC_AUDIO_END.name, null,
-                nowInUtc(), MessageStatus.DELIVERED, quoteMessageId, duration.toString())
-            messageDao.insert(message)
-        }
         callState.setCallState(CallState.STATE_IDLE)
         updateNotification()
         disconnect()
@@ -461,7 +457,33 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (quoteMessageId != null || message.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
         }
+
+        saveMessage(message)
     }
+
+    private fun saveMessage(m: Message) {
+        when {
+            m.category == MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
+                val status = if (declineTriggeredByUser) MessageStatus.READ else MessageStatus.DELIVERED
+                messageDao.insert(createNewReadMessage(m, callState.callInfo.user!!.userId, status))
+            }
+            m.category == MessageCategory.WEBRTC_AUDIO_CANCEL.name ->
+                messageDao.insert(createNewReadMessage(m, self.userId, MessageStatus.READ))
+            m.category == MessageCategory.WEBRTC_AUDIO_END.name || m.category == MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
+                val msg = if (callState.callInfo.isInitiator) {
+                    createNewReadMessage(m, self.userId, MessageStatus.READ)
+                } else {
+                    createNewReadMessage(m, callState.callInfo.user!!.userId, MessageStatus.READ)
+                }
+                messageDao.insert(msg)
+            }
+            m.category == MessageCategory.WEBRTC_AUDIO_BUSY.name ->
+                messageDao.insert(createNewReadMessage(m, callState.callInfo.user!!.userId, MessageStatus.DELIVERED))
+        }
+    }
+
+    private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
+        createCallMessage(m.id, m.conversationId, userId, m.category, m.content, m.createdAt, status, m.quoteMessageId, m.mediaDuration)
 
     private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {
         val lastTimeTurn = defaultSharedPreferences.getLong(PREF_TURN_FETCH, 0L)
@@ -494,6 +516,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (peerConnectionClient.isInitiator) {
             handleCallCancel()
         } else {
+            declineTriggeredByUser = false
             handleCallDecline()
         }
     }
@@ -536,7 +559,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         const val ACTION_CALL_LOCAL_FAILED = "call_local_failed"
         const val ACTION_CALL_REMOTE_FAILED = "call_remote_failed"
 
-        const val ACTION_SCREEN_OFF = "screen_off"
         const val ACTION_CHECK_TIMEOUT = "check_timeout"
         const val ACTION_MUTE_AUDIO = "mute_audio"
         const val ACTION_SPEAKERPHONE = "speakerphone"

@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse

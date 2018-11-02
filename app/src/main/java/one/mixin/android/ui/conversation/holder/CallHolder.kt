@@ -27,11 +27,7 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
         onItemListener: ConversationAdapter.OnItemListener
     ) {
         val ctx = itemView.context
-        val isMe = if (messageItem.type == MessageCategory.WEBRTC_AUDIO_BUSY.name || messageItem.type == MessageCategory.WEBRTC_AUDIO_DECLINE.name) {
-            meId != messageItem.userId
-        } else {
-            meId == messageItem.userId
-        }
+        val isMe = meId == messageItem.userId
         chatLayout(isMe, isLast)
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         itemView.call_tv.text = when (messageItem.type) {
