@@ -128,7 +128,7 @@ open class ErrorHandler {
                     BAD_REQUEST -> {
                     }
                     AUTHENTICATION -> {
-                        toast(R.string.error_authentication)
+                        toast(R.string.error_authentication, AUTHENTICATION)
                         Bugsnag.notify(IllegalStateException("Force logout error code."))
                     }
                     FORBIDDEN -> {

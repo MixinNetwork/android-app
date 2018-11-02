@@ -55,8 +55,8 @@
     <string name="error_unknown">Error</string>
     <string name="error_unknown_with_code">Error: %1$d</string>
     <string name="error_forbidden">Access denied</string>
-    <string name="error_not_found">Not found</string>
-    <string name="error_too_many_request">Rate limit exceeded</string>
+    <string name="error_not_found">ERROR %1$d: Not found</string>
+    <string name="error_too_many_request">ERROR %1$d: Rate limit exceeded</string>
     <string name="error_authentication">ERROR %1$d: Sign in to continue</string>
     <string name="can_not_empty">Can not be empty</string>
     <string name="can_not_recognize">Can not recognize the QR code</string>
