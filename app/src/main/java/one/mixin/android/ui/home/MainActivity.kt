@@ -86,13 +86,13 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
-
+        MixinApplication.get().onlining.set(true)
         if (!defaultSharedPreferences.getBoolean(LoadingFragment.IS_LOADED, false)) {
             startActivity(SetupNameActivity.getIntent(this, false))
             finish()
             return
         }
-        MixinApplication.get().onlining.set(true)
+
         setContentView(R.layout.activity_main)
 
         if (savedInstanceState == null) {

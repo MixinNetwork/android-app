@@ -1,7 +1,5 @@
 package one.mixin.android.ui.landing
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
@@ -12,8 +10,11 @@ import android.view.View
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_setup_name.*
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -55,8 +56,14 @@ class SetupNameFragment : BaseFragment() {
                     name_fab?.hide()
                     name_cover?.visibility = INVISIBLE
                     if (!r.isSuccess) {
-                        ErrorHandler.handleMixinError(r.errorCode)
-                        return@subscribe
+                        if (r.errorCode == ErrorHandler.AUTHENTICATION) {
+                            MixinApplication.get().closeAndClear()
+                            activity?.finish()
+                            return@subscribe
+                        } else {
+                            ErrorHandler.handleMixinError(r.errorCode)
+                            return@subscribe
+                        }
                     }
                     r.data?.let { data ->
                         Session.storeAccount(data)

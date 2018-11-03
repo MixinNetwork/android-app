@@ -220,7 +220,7 @@ class VerificationFragment : BaseFragment() {
 
                 verification_keyboard.animate().translationY(300f).start()
                 mobileViewModel.insertUser(r.data!!.toUser())
-
+                MixinApplication.get().onlining.set(true)
                 val intent: Intent = if (account.full_name?.isBlank()!!) {
                     SetupNameActivity.getIntent(context!!, true)
                 } else {
