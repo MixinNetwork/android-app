@@ -238,15 +238,9 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun handleDialingWaiting() {
-        if (voice_cb.visibility != INVISIBLE) {
-            voice_cb.visibility = INVISIBLE
-        }
-        if (mute_cb.visibility != INVISIBLE) {
-            mute_cb.visibility = INVISIBLE
-        }
-        if (answer_cb.visibility != INVISIBLE) {
-            answer_cb.visibility = INVISIBLE
-        }
+        voice_cb.visibility = INVISIBLE
+        mute_cb.visibility = INVISIBLE
+        answer_cb.visibility = INVISIBLE
         moveHangup(true, 0)
         action_tv.text = getString(R.string.call_notification_ringing)
     }
@@ -270,12 +264,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun handleConnected() {
-        if (voice_cb.visibility == INVISIBLE) {
-            voice_cb.fadeIn()
-        }
-        if (mute_cb.visibility == INVISIBLE) {
-            mute_cb.fadeIn()
-        }
+        voice_cb.fadeIn()
+        mute_cb.fadeIn()
         answer_cb.fadeOut()
         moveHangup(true, 250)
         startTimer()

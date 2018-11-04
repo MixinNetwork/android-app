@@ -154,14 +154,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             messageDao.insert(savedMessage)
             return
         }
-        Log.d("@@@", "handleCallIncoming")
         if (callState.callInfo.callState == CallState.STATE_RINGING) return
 
         callState.setCallState(CallState.STATE_RINGING)
         audioManager.start(false)
         blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         user = intent.getParcelableExtra(ARGS_USER)
-        Log.d("@@@", "blazeMessageData: $blazeMessageData, user: $user")
         callState.setUser(user)
         updateNotification()
         quoteMessageId = blazeMessageData!!.messageId
@@ -172,14 +170,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallOutgoing(intent: Intent) {
-        Log.d("@@@", "handleCallOutgoing")
         if (callState.callInfo.callState == CallState.STATE_DIALING) return
 
         callState.setCallState(CallState.STATE_DIALING)
         audioManager.start(true)
         conversationId = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         user = intent.getParcelableExtra(ARGS_USER)
-        Log.d("@@@", "conversationId: $conversationId, user: $user")
         callState.setUser(user)
         updateNotification()
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
@@ -190,7 +186,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleAnswerCall(intent: Intent) {
-        Log.d("@@@", "handleAnswerCall  callState: ${callState.callInfo.callState}")
         if (callState.callInfo.callState == CallState.STATE_ANSWERING) return
 
         callState.setCallState(CallState.STATE_ANSWERING)
@@ -212,7 +207,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCandidate(intent: Intent) {
-        Log.d("@@@", "handleCandidate callState: ${callState.callInfo.callState}")
         val blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         val json = String(Base64.decode(blazeMessageData.data))
         val ices = gson.fromJson(json, Array<IceCandidate>::class.java)
@@ -223,7 +217,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleIceConnected() {
-        Log.d("@@@", "handleIceConnected  callState:${callState.callInfo.callState}")
         if (callState.callInfo.callState == CallState.STATE_CONNECTED) return
 
         callState.setConnectedTime(System.currentTimeMillis())
@@ -236,7 +229,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallCancel(intent: Intent? = null) {
-        Log.d("@@@", "handleCallCancel callState: ${callState.callInfo.callState}")
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
         timeoutFuture?.cancel(true)
@@ -255,7 +247,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallDecline() {
-        Log.d("@@@", "handleCallDecline callState: ${callState.callInfo.callState}")
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
         timeoutFuture?.cancel(true)
@@ -270,7 +261,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallLocalEnd(intent: Intent? = null) {
-        Log.d("@@@", "handleCallLocalEnd callState: ${callState.callInfo.callState}")
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
         timeoutFuture?.cancel(true)
@@ -285,7 +275,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallRemoteEnd() {
-        Log.d("@@@", "handleCallRemoteEnd blazeMessageData: $blazeMessageData")
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
         timeoutFuture?.cancel(true)
@@ -295,14 +284,12 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallBusy() {
-        Log.d("@@@", "handleCallBusy callState: ${callState.callInfo.callState}")
         callState.setCallState(CallState.STATE_BUSY)
         updateNotification()
         disconnect()
     }
 
     private fun handleCallLocalFailed() {
-        Log.d("@@@", "handleCallLocalFailed callState: ${callState.callInfo.callState}")
         val category = MessageCategory.WEBRTC_AUDIO_FAILED.name
         sendCallMessage(category)
         callState.setCallState(CallState.STATE_IDLE)
@@ -311,22 +298,18 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallRemoteFailed() {
-        Log.d("@@@", "handleCallRemoteFailed callState: ${callState.callInfo.callState}")
-
         callState.setCallState(CallState.STATE_IDLE)
         updateNotification()
         disconnect()
     }
 
     private fun handleMuteAudio(intent: Intent) {
-        Log.d("@@@", "handleMuteAudio  callState: ${callState.callInfo.callState}")
         audioEnable = !intent.extras.getBoolean(EXTRA_MUTE)
         peerConnectionClient.setAudioEnable(audioEnable)
         updateNotification()
     }
 
     private fun handleSpeakerphone(intent: Intent) {
-        Log.d("@@@", "handleSpeakerphone callState: ${callState.callInfo.callState}")
         val speakerphone = intent.extras.getBoolean(EXTRA_SPEAKERPHONE)
         audioManager.isSpeakerOn = speakerphone
         updateNotification()
@@ -340,7 +323,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun updateNotification() {
-        Timber.d("updateNotification")
         startForeground(CallNotificationBuilder.WEBRTC_NOTIFICATION,
             CallNotificationBuilder.getCallNotification(this, callState, user))
     }
@@ -348,7 +330,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun setRemoteSdp(json: ByteArray) {
         val sdp = gson.fromJson(String(json), Sdp::class.java)
         val sessionDescription = SessionDescription(getType(sdp.type), sdp.sdp)
-        Timber.d("setRemoteSdp: $sessionDescription")
         peerConnectionClient.setRemoteDescription(sessionDescription)
     }
 
@@ -368,7 +349,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     // PeerConnectionEvents
     override fun onLocalDescription(sdp: SessionDescription) {
-        Log.d("@@@", "onLocalDescription")
         callExecutor.execute {
             val category = if (peerConnectionClient.isInitiator) {
                 MessageCategory.WEBRTC_AUDIO_OFFER.name
@@ -380,7 +360,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     override fun onIceCandidate(candidate: IceCandidate) {
-        Log.d("@@@", "onIceCandidate")
         callExecutor.execute {
             if (callState.callInfo.callState == CallState.STATE_DIALING ||
                 callState.callInfo.callState == CallState.STATE_RINGING ||
@@ -457,7 +436,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             blazeMessageData != null -> blazeMessageData!!.userId
             else -> null
         }
-        Log.d("@@@", "category: $category, quoteMessageId: $quoteMessageId")
         if (quoteMessageId != null || message.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
         }

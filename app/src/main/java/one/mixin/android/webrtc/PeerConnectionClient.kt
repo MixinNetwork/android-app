@@ -86,10 +86,8 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     fun addRemoteIceCandidate(candidate: IceCandidate) {
         executor.execute {
             if (peerConnection != null && peerConnection!!.remoteDescription != null) {
-                Log.d("@@@", "peerConnection!!.addIceCandidate(candidate)")
                 peerConnection!!.addIceCandidate(candidate)
             } else {
-                Log.d("@@@", "remoteCandidateCache.add(candidate)")
                 remoteCandidateCache.add(candidate)
             }
         }
@@ -106,27 +104,25 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     fun setRemoteDescription(sdp: SessionDescription) {
         executor.execute {
             if (peerConnection != null) {
-                Timber.d("setRemoteDescription signalingState: ${peerConnection!!.signalingState()}")
                 peerConnection!!.setRemoteDescription(sdpObserverImp, sdp)
             } else {
-                Timber.d("remoteSdpCache = sdp")
                 remoteSdpCache = sdp
             }
         }
     }
 
     fun setAudioEnable(enable: Boolean) {
-        if (peerConnection == null || audioTrack == null || isError) return
         executor.execute {
-            Log.d("@@@", "setAudioEnable: $enable")
+            if (peerConnection == null || audioTrack == null || isError) return@execute
+
             audioTrack!!.setEnabled(enable)
         }
     }
 
     fun enableCommunication() {
-        if (peerConnection == null || isError) return
         executor.execute {
-            Log.d("@@@", "enableCommunication")
+            if (peerConnection == null || isError) return@execute
+
             peerConnection!!.setAudioPlayout(true)
             peerConnection!!.setAudioRecording(true)
         }
@@ -134,16 +130,12 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
 
     fun close() {
         executor.execute {
-            Timber.d("Closing peer connection")
             peerConnection?.dispose()
             peerConnection = null
-            Timber.d("Closing audio source")
             audioSource?.dispose()
             audioSource = null
-            Timber.d("closing surfaceTextHelper")
             surfaceTextureHelper?.dispose()
             surfaceTextureHelper = null
-            Timber.d("Closing peer connection factory")
             factory?.dispose()
             factory = null
             events.onPeerConnectionClosed()
@@ -178,7 +170,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         peerConnection!!.setAudioRecording(false)
 
         if (remoteSdpCache != null) {
-            Timber.d("createPeerConnectionInternal setRemoteDescription  signalingState: ${peerConnection!!.signalingState()}")
             peerConnection!!.setRemoteDescription(sdpObserverImp, remoteSdpCache)
         }
 
@@ -195,7 +186,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private fun drainCandidatesAndSdp() {
         if (peerConnection == null) return
 
-        Log.d("@@@", "drainCandidatesAndSdp remoteCandidateCache size: ${remoteCandidateCache.size}, remoteSdpCache is null: ${remoteSdpCache == null}")
         remoteCandidateCache.forEach {
             peerConnection!!.addIceCandidate(it)
             remoteCandidateCache.clear()
@@ -239,9 +229,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onSetSuccess() {
-            if (localSdp == null || peerConnection == null || isError) return
-
             executor.execute {
+                if (localSdp == null || peerConnection == null || isError) return@execute
+
                 if (isInitiator) {
                     if (peerConnection!!.remoteDescription == null) {
                         Timber.d("Local SDP set successfully")
