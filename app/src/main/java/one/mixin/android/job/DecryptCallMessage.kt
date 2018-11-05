@@ -42,6 +42,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
     fun onRun(data: BlazeMessageData) {
         if (data.category.startsWith("WEBRTC_") && !isExistMessage(data.messageId)) {
             try {
+                syncConversation(data)
                 processWebRTC(data)
             } catch (e: Exception) {
                 Timber.e("DecryptCallMessage failure, $e")

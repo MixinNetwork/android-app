@@ -256,8 +256,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun handleAnswering() {
-        voice_cb.fadeIn()
-        mute_cb.fadeIn()
+        voice_cb.visibility = INVISIBLE
+        mute_cb.visibility = INVISIBLE
         answer_cb.fadeOut()
         moveHangup(true, 250)
         action_tv.text = getString(R.string.call_connecting)

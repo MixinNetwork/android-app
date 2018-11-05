@@ -6,7 +6,6 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.IBinder
 import android.telephony.TelephonyManager
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import com.google.gson.Gson
@@ -27,6 +26,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendMessageJob
+import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.util.ErrorHandler
@@ -79,6 +79,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     lateinit var accountService: AccountService
     @Inject
     lateinit var callState: one.mixin.android.vo.CallState
+    @Inject
+    lateinit var conversationRepo: ConversationRepository
 
     private val gson = Gson()
     private var blazeMessageData: BlazeMessageData? = null
@@ -151,7 +153,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
             val savedMessage = createCallMessage(bmd.messageId, m.conversationId, bmd.userId, m.category, m.content,
                 m.createdAt, MessageStatus.DELIVERED, bmd.messageId)
-            messageDao.insert(savedMessage)
+            if (checkConversation(m)) {
+                messageDao.insert(savedMessage)
+            }
             return
         }
         if (callState.callInfo.callState == CallState.STATE_RINGING) return
@@ -402,7 +406,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun sendCallMessage(category: String, content: String? = null) {
         val message = if (peerConnectionClient.isInitiator) {
             if (conversationId == null) {
-                Log.e("@@@", "Initiator's conversationId can not be null!")
+                Timber.e("Initiator's conversationId can not be null!")
                 return
             }
             val messageId = UUID.randomUUID().toString()
@@ -423,7 +427,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             }
         } else {
             if (blazeMessageData == null) {
-                Log.e("@@@", "Answer's blazeMessageData can not be null!")
+                Timber.e("Answer's blazeMessageData can not be null!")
                 return
             }
             if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
@@ -449,27 +453,25 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun saveMessage(m: Message) {
+        if (!checkConversation(m)) return
+
+        val uId = if (callState.callInfo.isInitiator) {
+            self.userId
+        } else {
+            callState.callInfo.user!!.userId
+        }
         when {
             m.category == MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                 val status = if (declineTriggeredByUser) MessageStatus.READ else MessageStatus.DELIVERED
-                val uId = if (callState.callInfo.isInitiator) {
-                    self.userId
-                } else {
-                    callState.callInfo.user!!.userId
-                }
                 messageDao.insert(createNewReadMessage(m, uId, status))
             }
             m.category == MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
-                val msg = createCallMessage(m.id, m.conversationId, self.userId, m.category, m.content,
+                val msg = createCallMessage(m.id, m.conversationId, uId, m.category, m.content,
                     m.createdAt, MessageStatus.READ, m.quoteMessageId, m.mediaDuration)
                 messageDao.insert(msg)
             }
             m.category == MessageCategory.WEBRTC_AUDIO_END.name || m.category == MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
-                val msg = if (callState.callInfo.isInitiator) {
-                    createNewReadMessage(m, self.userId, MessageStatus.READ)
-                } else {
-                    createNewReadMessage(m, callState.callInfo.user!!.userId, MessageStatus.READ)
-                }
+                val msg = createNewReadMessage(m, uId, MessageStatus.READ)
                 messageDao.insert(msg)
             }
         }
@@ -478,6 +480,18 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
         createCallMessage(blazeMessageData!!.quoteMessageId!!, m.conversationId, userId, m.category, m.content,
             m.createdAt, status, m.quoteMessageId, m.mediaDuration)
+
+    private fun checkConversation(message: Message): Boolean {
+        val conversation =  conversationRepo.getConversation(message.conversationId)
+        if (conversation != null) return true
+
+        return try {
+            conversationRepo.refreshConversation(message.conversationId)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
 
     private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {
         val lastTimeTurn = defaultSharedPreferences.getLong(PREF_TURN_FETCH, 0L)

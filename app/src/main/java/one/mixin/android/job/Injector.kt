@@ -3,7 +3,6 @@ package one.mixin.android.job
 import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
@@ -18,8 +17,12 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.di.Injectable
+import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
+import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
 import javax.inject.Inject
 
@@ -53,9 +56,9 @@ open class Injector : Injectable {
     @Inject
     lateinit var resendMessageDao: ResendMessageDao
     @Inject
-    lateinit var conversationApi: ConversationService
-    @Inject
     lateinit var userApi: UserService
+    @Inject
+    lateinit var conversationRepo: ConversationRepository
 
     init {
         MixinApplication.get().appComponent.inject(this)
@@ -75,5 +78,17 @@ open class Injector : Injectable {
             }
         }
         return bm.data
+    }
+
+    protected fun syncConversation(data: BlazeMessageData) {
+        var conversation = conversationDao.getConversation(data.conversationId)
+        if (conversation == null) {
+            conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
+            conversationDao.insert(conversation)
+            conversationRepo.refreshConversation(data.conversationId)
+        }
+        if (conversation.status == ConversationStatus.START.ordinal) {
+            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+        }
     }
 }

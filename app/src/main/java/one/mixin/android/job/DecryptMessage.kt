@@ -16,7 +16,6 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
-import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -32,7 +31,6 @@ import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
-import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createReplyMessage
@@ -509,18 +507,6 @@ class DecryptMessage : Injector() {
         jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
-    private fun syncConversation(data: BlazeMessageData) {
-        var conversation = conversationDao.getConversation(data.conversationId)
-        if (conversation == null) {
-            conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
-            conversationDao.insert(conversation)
-            refreshConversation(data.conversationId)
-        }
-        if (conversation.status == ConversationStatus.START.ordinal) {
-            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
-        }
-    }
-
     private fun syncUser(userId: String) {
         val user = userDao.findUser(userId)
         if (user == null) {
@@ -535,29 +521,6 @@ class DecryptMessage : Injector() {
             } catch (e: IOException) {
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
             }
-        }
-    }
-
-    private fun refreshConversation(conversationId: String) {
-        try {
-            val call = conversationApi.getConversation(conversationId).execute()
-            val response = call.body()
-            if (response != null && response.isSuccess) {
-                response.data?.let { conversationData ->
-                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
-                        ConversationStatus.SUCCESS.ordinal
-                    } else {
-                        ConversationStatus.QUIT.ordinal
-                    }
-                    var ownerId: String = conversationData.creatorId
-                    if (conversationData.category == ConversationCategory.CONTACT.name) {
-                        ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
-                    }
-                    conversationDao.updateConversation(conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
-                        conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
-                }
-            }
-        } catch (e: IOException) {
         }
     }
 

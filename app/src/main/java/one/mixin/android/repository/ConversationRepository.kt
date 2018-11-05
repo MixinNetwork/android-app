@@ -16,14 +16,18 @@ import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.insertConversation
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationItemMinimal
+import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SearchMessageItem
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -165,5 +169,28 @@ internal constructor(
 
     fun insertList(it: List<Job>) {
         jobDao.insertList(it)
+    }
+
+    fun refreshConversation(conversationId: String) {
+        try {
+            val call = conversationService.getConversation(conversationId).execute()
+            val response = call.body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { conversationData ->
+                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
+                        ConversationStatus.SUCCESS.ordinal
+                    } else {
+                        ConversationStatus.QUIT.ordinal
+                    }
+                    var ownerId: String = conversationData.creatorId
+                    if (conversationData.category == ConversationCategory.CONTACT.name) {
+                        ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
+                    }
+                    conversationDao.updateConversation(conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
+                        conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
+                }
+            }
+        } catch (e: IOException) {
+        }
     }
 }
