@@ -55,7 +55,7 @@ internal constructor(
         if (keyword.isNullOrBlank()) {
             SearchDataPackage(contactList(), null, null, null, null)
         } else {
-            val assetList = fuzzySearchAsset(coroutineContext, keyword!!).await()
+            val assetList = fuzzySearchAsset(coroutineContext, keyword).await()
             val userList = fuzzySearchUser(coroutineContext, keyword).await()
             val groupList = fuzzySearchGroup(coroutineContext, keyword).await()
             val messageList = fuzzySearchMessage(coroutineContext, keyword).await()

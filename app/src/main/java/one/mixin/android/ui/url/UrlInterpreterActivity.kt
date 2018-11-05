@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
@@ -12,7 +13,6 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.util.Session
-import one.mixin.android.Constants.Scheme
 
 class UrlInterpreterActivity : BaseActivity() {
     companion object {
@@ -49,7 +49,9 @@ class UrlInterpreterActivity : BaseActivity() {
                 bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
             TRANSFER -> {
-                TransferFragment.newInstance(uri.lastPathSegment).showNow(supportFragmentManager, TransferFragment.TAG)
+                uri.lastPathSegment?.let { lastPathSegment ->
+                    TransferFragment.newInstance(lastPathSegment).showNow(supportFragmentManager, TransferFragment.TAG)
+                }
             }
         }
     }

@@ -77,7 +77,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        user = arguments!!.getParcelable(ARGS_USER)
+        user = arguments!!.getParcelable(ARGS_USER)!!
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
         contentView.left_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
@@ -276,13 +276,13 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (context == null) {
             return
         }
-        val editText = EditText(context!!)
+        val editText = EditText(requireContext())
         editText.hint = getString(R.string.profile_modify_name_hint)
         editText.setText(name)
         if (name != null) {
             editText.setSelection(name.length)
         }
-        val frameLayout = FrameLayout(context)
+        val frameLayout = FrameLayout(requireContext())
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
         params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
@@ -298,9 +298,9 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             .show()
         nameDialog.setOnDismissListener { dismiss() }
-        nameDialog.window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+        nameDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-        nameDialog.window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        nameDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     }
 
     private fun showMuteDialog() {

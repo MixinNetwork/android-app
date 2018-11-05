@@ -1,11 +1,11 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
+import androidx.core.content.ContextCompat
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.view_avatar.view.*
@@ -40,7 +40,7 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
 
         fun checkEmoji(fullName: String?): String {
             if (fullName.isNullOrEmpty()) return ""
-            val name = fullName!!
+            val name: String = fullName
             if (name.length == 1) return name
 
             val builder = StringBuilder()

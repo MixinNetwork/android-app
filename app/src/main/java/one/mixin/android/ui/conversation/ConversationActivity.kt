@@ -45,7 +45,7 @@ class ConversationActivity : BlazeBaseActivity() {
     private fun showConversation(intent: Intent) {
         val bundle = intent.extras ?: return
         if (bundle.getString(CONVERSATION_ID) == null) {
-            val userId = bundle.getString(RECIPIENT_ID)
+            val userId = bundle.getString(RECIPIENT_ID)!!
             Observable.just(userId).map {
                 userRepository.getUserById(userId)!!
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider)
@@ -56,7 +56,7 @@ class ConversationActivity : BlazeBaseActivity() {
                     bundle.putParcelable(RECIPIENT, it)
                     replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
                 }, {
-                    replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container, ConversationFragment.TAG)
+                    replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG)
                 })
         } else {
             Observable.just(bundle.getString(CONVERSATION_ID)).map {
@@ -69,7 +69,7 @@ class ConversationActivity : BlazeBaseActivity() {
                     bundle.putParcelable(RECIPIENT, it)
                     replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
                 }, {
-                    replaceFragment(ConversationFragment.newInstance(intent.extras), R.id.container, ConversationFragment.TAG)
+                    replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG)
                 })
         }
     }

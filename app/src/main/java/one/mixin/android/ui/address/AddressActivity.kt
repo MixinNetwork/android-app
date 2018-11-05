@@ -28,10 +28,10 @@ class AddressActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
         if (intent.hasExtra(ARGS_SHOW_ADD) && intent.getBooleanExtra(ARGS_SHOW_ADD, false)) {
-            replaceFragment(AddressAddFragment.newInstance(intent.extras.getParcelable(ARGS_ASSET), fromManagement = false),
+            replaceFragment(AddressAddFragment.newInstance(intent.extras!!.getParcelable(ARGS_ASSET)!!, fromManagement = false),
                 R.id.container, AddressAddFragment.TAG)
         } else {
-            replaceFragment(AddressManagementFragment.newInstance(intent.extras.getParcelable(ARGS_ASSET)),
+            replaceFragment(AddressManagementFragment.newInstance(intent.extras!!.getParcelable(ARGS_ASSET)!!),
                 R.id.container, AddressManagementFragment.TAG)
         }
     }

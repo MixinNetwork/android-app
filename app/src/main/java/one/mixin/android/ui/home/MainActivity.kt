@@ -156,10 +156,10 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
             TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
-        } else if (intent.extras != null && intent.extras.getString("conversation_id", null) != null) {
+        } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()
-            val conversationId = intent.extras.getString("conversation_id")
+            val conversationId = intent.extras!!.getString("conversation_id")!!
             Maybe.just(conversationId).map {
                 val innerIntent: Intent?
                 var conversation = conversationDao.findConversationById(conversationId)

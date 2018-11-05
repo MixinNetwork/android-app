@@ -1,7 +1,7 @@
 package one.mixin.android.ui.search.holder
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_contact.view.*
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.ConversationItemMinimal
