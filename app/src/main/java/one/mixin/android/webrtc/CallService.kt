@@ -305,13 +305,17 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleMuteAudio(intent: Intent) {
-        audioEnable = !intent.extras.getBoolean(EXTRA_MUTE)
+        val extras = intent.extras ?: return
+
+        audioEnable = !extras.getBoolean(EXTRA_MUTE)
         peerConnectionClient.setAudioEnable(audioEnable)
         updateNotification()
     }
 
     private fun handleSpeakerphone(intent: Intent) {
-        val speakerphone = intent.extras.getBoolean(EXTRA_SPEAKERPHONE)
+        val extras = intent.extras ?: return
+
+        val speakerphone = extras.getBoolean(EXTRA_SPEAKERPHONE)
         audioManager.isSpeakerOn = speakerphone
         updateNotification()
     }

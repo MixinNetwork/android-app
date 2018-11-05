@@ -223,7 +223,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 
-    private val messageDecrypt by lazy { DecryptMessage(callState) }
+    private val messageDecrypt by lazy { DecryptMessage() }
+    private val callMessageDecrypt by lazy { DecryptCallMessage(callState) }
 
     private fun startFloodJob() {
         database.invalidationTracker.addObserver(floodObserver)
@@ -261,7 +262,12 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         floodMessageDao.findFloodMessageDeferred().await()?.let { list ->
             try {
                 list.forEach { message ->
-                    messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
+                    val data = Gson().fromJson(message.data, BlazeMessageData::class.java)
+                    if (data.category.startsWith("WEBRTC_")) {
+                        callMessageDecrypt.onRun(data)
+                    } else {
+                        messageDecrypt.onRun(data)
+                    }
                     floodMessageDao.delete(message)
                 }
             } catch (e: Exception) {

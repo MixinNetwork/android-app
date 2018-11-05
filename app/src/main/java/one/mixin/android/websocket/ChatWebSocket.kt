@@ -24,7 +24,7 @@ import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.ungzip
-import one.mixin.android.job.DecryptMessage
+import one.mixin.android.job.DecryptCallMessage.Companion.listPendingOfferHandled
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
@@ -122,7 +122,7 @@ class ChatWebSocket(
         val transaction = WebSocketTransaction(blazeMessage.id,
             object : TransactionCallbackSuccess {
                 override fun success(data: BlazeMessage) {
-                    DecryptMessage.listPendingOfferHandled = false
+                    listPendingOfferHandled = false
                 }
             },
             object : TransactionCallbackError {
