@@ -163,6 +163,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callState.setUser(user)
         updateNotification()
         quoteMessageId = blazeMessageData!!.messageId
+        callState.setMessageId(quoteMessageId!!)
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         peerConnectionClient.isInitiator = false
         callState.setIsInitiator(false)

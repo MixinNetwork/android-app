@@ -20,6 +20,6 @@
         android:layout_marginTop="@dimen/padding8"
         android:singleLine="true"
         android:textSize="12sp"
-        android:textColor="@color/white"
+        android:textColor="@color/call_btn_bg_unchecked"
         android:maxWidth="64dp"/>
 </LinearLayout>

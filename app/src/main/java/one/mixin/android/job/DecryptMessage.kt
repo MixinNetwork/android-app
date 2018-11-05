@@ -201,7 +201,8 @@ class DecryptMessage(private val callState: CallState) : Injector() {
 
             when (data.category) {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
+                        data.quoteMessageId != callState.callInfo.messageId) {
                         notifyServer(data)
                         return
                     }
@@ -211,7 +212,8 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                     }
                 }
                 MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
-                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
+                    if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
+                        data.quoteMessageId != callState.callInfo.messageId) {
                         notifyServer(data)
                         return
                     }
@@ -225,8 +227,10 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                         notifyServer(data)
                         return
                     }
-
                     saveCallMessage(data)
+                    if (data.quoteMessageId != callState.callInfo.messageId) {
+                        return
+                    }
                     CallService.startService(ctx, ACTION_CALL_CANCEL)
                 }
                 MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
@@ -241,6 +245,9 @@ class DecryptMessage(private val callState: CallState) : Injector() {
                         callState.callInfo.user!!.userId
                     }
                     saveCallMessage(data, userId = uId)
+                    if (data.quoteMessageId != callState.callInfo.messageId) {
+                        return
+                    }
                     CallService.startService(ctx, ACTION_CALL_DECLINE)
                 }
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
