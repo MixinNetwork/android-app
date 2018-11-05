@@ -144,6 +144,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
             .setSound(null)
             .setDefaults(0)
             .setOnlyAlertOnce(true)
+            .setColor(ContextCompat.getColor(this, R.color.gray_light))
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black_24dp, getString(R.string.exit), exitPendingIntent)
 
