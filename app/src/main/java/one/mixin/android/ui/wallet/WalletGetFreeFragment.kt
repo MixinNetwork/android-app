@@ -61,15 +61,15 @@ class WalletGetFreeFragment : BaseFragment() {
         if (context == null) {
             return
         }
-        val editText = EditText(context!!)
+        val editText = EditText(requireContext())
         editText.hint = getString(R.string.wallet_redeem)
         editText.inputType = InputType.TYPE_CLASS_NUMBER
-        val frameLayout = FrameLayout(context)
+        val frameLayout = FrameLayout(requireContext())
         frameLayout.addView(editText)
         val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
+        params.margin = requireContext().dimen(R.dimen.activity_horizontal_margin)
         editText.layoutParams = params
-        dialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+        dialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setTitle(R.string.wallet_get_free_redeem)
             .setView(frameLayout)
             .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }

@@ -229,7 +229,7 @@
             android:resource="@drawable/ic_msg_default" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
-            android:resource="@color/colorAccent" />
+            android:resource="@color/gray_light" />
 
         <meta-data
             android:name="android.max_aspect"

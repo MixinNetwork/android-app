@@ -75,7 +75,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         if (Build.VERSION.SDK_INT >= 26) {
-            dialog.window.decorView.systemUiVisibility =
+            dialog.window?.decorView?.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
                 View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
@@ -87,8 +87,8 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         if (behavior != null && behavior is BottomSheetBehavior<*>) {
             behavior.peekHeight = context!!.dpToPx(300f)
             behavior.setBottomSheetCallback(mBottomSheetBehaviorCallback)
-            dialog.window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, context!!.dpToPx(300f))
-            dialog.window.setGravity(Gravity.BOTTOM)
+            dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, context!!.dpToPx(300f))
+            dialog.window?.setGravity(Gravity.BOTTOM)
         }
     }
 

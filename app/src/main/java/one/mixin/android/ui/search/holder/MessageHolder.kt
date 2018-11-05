@@ -1,10 +1,10 @@
 package one.mixin.android.ui.search.holder
 
 import android.graphics.drawable.Drawable
-import androidx.core.widget.TextViewCompat
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.widget.TextViewCompat
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_message.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.timeAgo

@@ -95,9 +95,9 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
     override fun onStart() {
         super.onStart()
         val displaySize = context!!.displaySize()
-        dialog.window.setLayout(displaySize.x, MATCH_PARENT)
-        dialog.window.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
-        dialog.window.setGravity(Gravity.BOTTOM)
+        dialog.window?.setLayout(displaySize.x, MATCH_PARENT)
+        dialog.window?.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
+        dialog.window?.setGravity(Gravity.BOTTOM)
 
         // reset top layout position
         contentView.post {

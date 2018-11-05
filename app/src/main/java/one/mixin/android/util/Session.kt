@@ -1,6 +1,7 @@
 package one.mixin.android.util
 
 import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.instacart.library.truetime.TrueTime
@@ -103,9 +104,16 @@ class Session {
                 val now = TrueTime.now().time / 1000
                 val diff = now - iat
                 if (diff > 60 * 30) {
-                    Bugsnag.notify(IllegalArgumentException("Mobile time different to NTP more than half an hour!"))
+                    IllegalArgumentException("Mobile time different to NTP more than half an hour!").let { exception ->
+                        Bugsnag.notify(exception)
+                        Crashlytics.logException(exception)
+
+                    }
                 } else if (diff > 60) {
-                    Bugsnag.notify(IllegalArgumentException("Mobile time different to NTP more than one minute!"))
+                    IllegalArgumentException("Mobile time different to NTP more than one minute!").let { exception ->
+                        Bugsnag.notify(exception)
+                        Crashlytics.logException(exception)
+                    }
                 }
             }
 

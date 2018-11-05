@@ -1,8 +1,6 @@
 package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
@@ -15,6 +13,8 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.os.bundleOf
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.GlobalScope
@@ -147,7 +147,7 @@ class VerificationFragment : BaseFragment() {
 
     private fun handlePhoneModification() {
         showLoading()
-        mobileViewModel.changePhone(arguments!!.getString(ARGS_ID), pin_verification_view.code(), pin = pin!!)
+        mobileViewModel.changePhone(arguments!!.getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
                 verification_next_fab.hide()
                 verification_cover.visibility = GONE
@@ -158,7 +158,7 @@ class VerificationFragment : BaseFragment() {
                 doAsync {
                     val a = Session.getAccount()
                     a?.let {
-                        val phone = arguments!!.getString(ARGS_PHONE_NUM)
+                        val phone = arguments!!.getString(ARGS_PHONE_NUM)?:return@doAsync
                         mobileViewModel.updatePhone(a.userId, phone)
                         a.phone = phone
                         Session.storeAccount(a)
@@ -190,7 +190,7 @@ class VerificationFragment : BaseFragment() {
             purpose = VerificationPurpose.SESSION.name,
             pin = pin,
             session_secret = sessionSecret)
-        mobileViewModel.create(arguments!!.getString(ARGS_ID), accountRequest)
+        mobileViewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
                 if (!isAdded) {
                     return@subscribe

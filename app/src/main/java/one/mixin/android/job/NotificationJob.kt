@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.RemoteInput
+import androidx.core.content.ContextCompat
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -214,6 +215,7 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
             }
         }
         notificationBuilder.setSmallIcon(R.drawable.ic_msg_default)
+        notificationBuilder.color = ContextCompat.getColor(context, R.color.gray_light)
         notificationBuilder.setWhen(System.currentTimeMillis())
 
         notificationBuilder.setSound(Uri.parse("android.resource://" + context.packageName + "/" + R.raw.mixin))

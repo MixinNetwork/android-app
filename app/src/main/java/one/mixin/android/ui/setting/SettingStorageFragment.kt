@@ -120,7 +120,7 @@ class SettingStorageFragment : BaseFragment() {
                     val colors = intArrayOf(Color.RED, Color.GRAY)
                     getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(ColorStateList(states, colors))
                 }
-                this.window.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
+                this.window?.setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT)
             }
     }
 

@@ -36,7 +36,7 @@ class SendService : IntentService("SendService") {
     override fun onHandleIntent(intent: Intent) {
         val bundle = RemoteInput.getResultsFromIntent(intent)
         if (bundle != null) {
-            val content = bundle.getCharSequence(KEY_REPLY)
+            val content = bundle.getCharSequence(KEY_REPLY) ?: return
             val conversationId = intent.getStringExtra(CONVERSATION_ID)
             val category = if (intent.getBooleanExtra(IS_PLAIN, false)) {
                 MessageCategory.PLAIN_TEXT.name
@@ -48,11 +48,11 @@ class SendService : IntentService("SendService") {
             val message = createMessage(UUID.randomUUID().toString(), conversationId,
                 Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING)
             jobManager.addJobInBackground(SendMessageJob(message))
-            messageDao.findUnreadMessagesSync(conversationId)?.let {
-                if (it.isNotEmpty()) {
-                    messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, it.last().created_at)
-                    it.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {
-                        val chunkList = it.chunked(100)
+            messageDao.findUnreadMessagesSync(conversationId)?.let { list ->
+                if (list.isNotEmpty()) {
+                    messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
+                    list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
+                        val chunkList = messages.chunked(100)
                         for (item in chunkList) {
                             jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))
                         }

@@ -1,11 +1,13 @@
 package one.mixin.android.ui.home
 
 import android.app.AlertDialog
+import android.app.NotificationManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
+import androidx.core.content.getSystemService
 import androidx.fragment.app.DialogFragment
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
@@ -109,6 +111,9 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshAssetsJob())
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
+
+        getSystemService<NotificationManager>()?.cancelAll()
+
         rotateSignalPreKey()
         checkRoot()
 
@@ -156,10 +161,10 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
             TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
-        } else if (intent.extras != null && intent.extras.getString("conversation_id", null) != null) {
+        } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()
-            val conversationId = intent.extras.getString("conversation_id")
+            val conversationId = intent.extras!!.getString("conversation_id")!!
             Maybe.just(conversationId).map {
                 val innerIntent: Intent?
                 var conversation = conversationDao.findConversationById(conversationId)

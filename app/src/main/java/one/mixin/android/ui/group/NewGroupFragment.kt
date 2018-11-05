@@ -85,7 +85,7 @@ class NewGroupFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        val users: List<User> = arguments!!.getParcelableArrayList(ARGS_USERS)
+        val users: List<User> = arguments!!.getParcelableArrayList(ARGS_USERS)!!
         title_view.left_ib.setOnClickListener {
             name_desc_et.hideKeyboard()
             activity?.onBackPressed()

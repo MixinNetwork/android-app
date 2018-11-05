@@ -133,7 +133,9 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
         } else {
             canvas.drawCircle(midX, midY, radius, ringPaint)
             ringPaint.color = circleColor
-            canvas.drawArc(progressRect, progressStartAngle, curSweepAngle, false, ringPaint)
+            progressRect?.let { progressRect ->
+                canvas.drawArc(progressRect, progressStartAngle, curSweepAngle, false, ringPaint)
+            }
             canvas.drawCircle(midX, midY, maxCircleWidth, circlePaint)
         }
     }

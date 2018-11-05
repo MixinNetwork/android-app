@@ -1,19 +1,19 @@
 package one.mixin.android.ui.wallet
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_hidden_assets.*
 import kotlinx.android.synthetic.main.view_title.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
+import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
@@ -21,7 +21,7 @@ import javax.inject.Inject
 class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     companion object {
-        val TAG = HiddenAssetsFragment::class.java.simpleName!!
+        val TAG = HiddenAssetsFragment::class.java.simpleName
         fun newInstance() = HiddenAssetsFragment()
 
         const val POS_ASSET = 0
