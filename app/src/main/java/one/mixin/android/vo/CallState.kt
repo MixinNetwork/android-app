@@ -1,5 +1,6 @@
 package one.mixin.android.vo
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import one.mixin.android.webrtc.CallService
 
@@ -51,6 +52,22 @@ class CallState : LiveData<CallState.CallInfo>() {
     }
 
     fun isIdle() = callInfo.callState == CallService.CallState.STATE_IDLE
+    
+    fun handleHangup(ctx: Context) {
+        when (callInfo.callState) {
+            CallService.CallState.STATE_DIALING -> CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
+            CallService.CallState.STATE_RINGING -> CallService.startService(ctx, CallService.ACTION_CALL_DECLINE)
+            CallService.CallState.STATE_ANSWERING -> {
+                if (callInfo.isInitiator) {
+                    CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
+                } else {
+                    CallService.startService(ctx, CallService.ACTION_CALL_DECLINE)
+                }
+            }
+            CallService.CallState.STATE_CONNECTED -> CallService.startService(ctx, CallService.ACTION_CALL_LOCAL_END)
+            else -> CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
+        }
+    }
 
     class CallInfo(
         val callState: CallService.CallState = CallService.CallState.STATE_IDLE,

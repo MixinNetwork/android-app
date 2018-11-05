@@ -5,7 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.drawable.BitmapDrawable
 import android.hardware.Sensor
 import android.hardware.Sensor.TYPE_PROXIMITY
 import android.hardware.SensorEvent
@@ -183,19 +182,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun handleHangup() {
-        when (callState.callInfo.callState) {
-            CallService.CallState.STATE_DIALING -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
-            CallService.CallState.STATE_RINGING -> CallService.startService(this, CallService.ACTION_CALL_DECLINE)
-            CallService.CallState.STATE_ANSWERING -> {
-                if (callState.callInfo.isInitiator) {
-                    CallService.startService(this, CallService.ACTION_CALL_CANCEL)
-                } else {
-                    CallService.startService(this, CallService.ACTION_CALL_DECLINE)
-                }
-            }
-            CallService.CallState.STATE_CONNECTED -> CallService.startService(this, CallService.ACTION_CALL_LOCAL_END)
-            else -> CallService.startService(this, CallService.ACTION_CALL_CANCEL)
-        }
+        callState.handleHangup(this)
     }
 
     private fun setBlurBg(url: String) {
@@ -223,7 +210,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
                     handleAnswering()
                     CallService.startService(this@CallActivity, CallService.ACTION_CALL_ANSWER)
                 } else {
-                    CallService.startService(this, CallService.ACTION_CALL_CANCEL)
+                    callState.handleHangup(this@CallActivity)
                     handleDisconnected()
                 }
             }
