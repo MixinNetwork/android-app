@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import android.content.Context
 import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
@@ -128,17 +129,21 @@ open class ErrorHandler {
                     BAD_REQUEST -> {
                     }
                     AUTHENTICATION -> {
-                        toast(R.string.error_authentication, AUTHENTICATION)
-                        Bugsnag.notify(IllegalStateException("Force logout error code."))
+                        toast(getString(R.string.error_authentication, AUTHENTICATION))
+                        IllegalStateException("Force logout error code.").let { exception ->
+                            Bugsnag.notify(exception)
+                            Crashlytics.logException(exception)
+                        }
+                        MixinApplication.get().closeAndClear()
                     }
                     FORBIDDEN -> {
                         toast(R.string.error_forbidden)
                     }
                     NOT_FOUND -> {
-                        toast(R.string.error_not_found)
+                        toast(getString(R.string.error_not_found, NOT_FOUND))
                     }
                     TOO_MANY_REQUEST -> {
-                        toast(R.string.error_too_many_request)
+                        toast(getString(R.string.error_too_many_request, TOO_MANY_REQUEST))
                     }
                     SERVER -> {
                         toast(R.string.error_server_5xx)
