@@ -1,7 +1,6 @@
 package one.mixin.android.webrtc
 
 import android.content.Context
-import android.util.Log
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
@@ -38,9 +37,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         add(PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer())
     }
     var isInitiator = false
-    private val sdpConstraint = MediaConstraints().apply {
-        mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
-    }
     private var surfaceTextureHelper: SurfaceTextureHelper? = null
     private var remoteCandidateCache = arrayListOf<IceCandidate>()
     private var remoteSdpCache: SessionDescription? = null
@@ -61,8 +57,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             try {
                 val peerConnection = createPeerConnectionInternal()
                 isInitiator = true
-                sdpConstraint.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
-                peerConnection.createOffer(sdpObserverImp, sdpConstraint)
+                peerConnection.createOffer(sdpObserverImp, MediaConstraints())
             } catch (e: Exception) {
                 reportError("Failed to create offer: ${e.message}")
             }
@@ -75,8 +70,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             try {
                 val peerConnection = createPeerConnectionInternal()
                 isInitiator = false
-                sdpConstraint.mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
-                peerConnection.createAnswer(sdpObserverImp, sdpConstraint)
+                peerConnection.createAnswer(sdpObserverImp, MediaConstraints())
             } catch (e: Exception) {
                 reportError("Failed to create answer: ${e.message}")
             }
