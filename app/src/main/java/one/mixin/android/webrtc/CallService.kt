@@ -12,16 +12,10 @@ import dagger.android.AndroidInjection
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants.ARGS_USER
-import one.mixin.android.Constants.Call.INTERVAL_23_HOURS
-import one.mixin.android.Constants.Call.PREF_TURN
-import one.mixin.android.Constants.Call.PREF_TURN_FETCH
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MessageDao
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.putLong
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendMessageJob
@@ -39,7 +33,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.BlazeMessageData
-import one.mixin.android.websocket.createCallMessage
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
@@ -191,17 +184,14 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         callState.setCallState(CallState.STATE_ANSWERING)
         updateNotification()
         audioManager.stop()
-
         if (peerConnectionClient.isInitiator) {
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
             blazeMessageData = bmd as BlazeMessageData
             sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(candidateCache))
-            setRemoteSdp(Base64.decode(blazeMessageData!!.data))
+            peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(blazeMessageData!!.data)))
         } else {
-            if (blazeMessageData == null) return
-            setRemoteSdp(Base64.decode(blazeMessageData!!.data))
             getTurnServer {
-                peerConnectionClient.createAnswer(it)
+                peerConnectionClient.createAnswer(it, getRemoteSdp(Base64.decode(blazeMessageData!!.data)))
             }
         }
     }
@@ -290,11 +280,20 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCallLocalFailed() {
-        val category = MessageCategory.WEBRTC_AUDIO_FAILED.name
-        sendCallMessage(category)
-        callState.setCallState(CallState.STATE_IDLE)
+        val state = callState.callInfo.callState
+        if (state == CallState.STATE_DIALING && peerConnectionClient.hasLocalSdp()) {
+            val mId = UUID.randomUUID().toString()
+            val m = createCallMessage(mId, conversationId!!, self!!.userId, MessageCategory.WEBRTC_AUDIO_FAILED.name,
+                null, nowInUtc(), MessageStatus.READ, mId)
+            messageDao.insert(m)
+            callState.setCallState(CallState.STATE_IDLE)
+            disconnect()
+        } else if (state != CallState.STATE_CONNECTED) {
+            sendCallMessage(MessageCategory.WEBRTC_AUDIO_FAILED.name)
+            callState.setCallState(CallState.STATE_IDLE)
+            disconnect()
+        }
         updateNotification()
-        disconnect()
     }
 
     private fun handleCallRemoteFailed() {
@@ -331,10 +330,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
             CallNotificationBuilder.getCallNotification(this, callState, user))
     }
 
-    private fun setRemoteSdp(json: ByteArray) {
+    private fun getRemoteSdp(json: ByteArray): SessionDescription {
         val sdp = gson.fromJson(String(json), Sdp::class.java)
-        val sessionDescription = SessionDescription(getType(sdp.type), sdp.sdp)
-        peerConnectionClient.setRemoteDescription(sessionDescription)
+        return SessionDescription(getType(sdp.type), sdp.sdp)
     }
 
     private fun getType(type: String): SessionDescription.Type {
@@ -394,14 +392,14 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     override fun onPeerConnectionError(description: String) {
-        Timber.d("onPeerConnectionError: $description")
-        //TODO
+        callExecutor.execute { handleCallLocalFailed() }
     }
 
     private fun sendCallMessage(category: String, content: String? = null) {
         val message = if (peerConnectionClient.isInitiator) {
             if (conversationId == null) {
                 Timber.e("Initiator's conversationId can not be null!")
+                handleCallLocalFailed()
                 return
             }
             val messageId = UUID.randomUUID().toString()
@@ -423,6 +421,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         } else {
             if (blazeMessageData == null) {
                 Timber.e("Answer's blazeMessageData can not be null!")
+                handleCallLocalFailed()
                 return
             }
             if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
@@ -489,22 +488,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun getTurnServer(action: (List<PeerConnection.IceServer>) -> Unit) {
-        val lastTimeTurn = defaultSharedPreferences.getLong(PREF_TURN_FETCH, 0L)
-        val cur = System.currentTimeMillis()
-        if (cur - lastTimeTurn < INTERVAL_23_HOURS) {
-            val turn = defaultSharedPreferences.getString(PREF_TURN, null)
-            if (!turn.isNullOrBlank()) {
-                val turnList = gson.fromJson(turn, Array<TurnServer>::class.java)
-                action.invoke(genIceServerList(turnList))
-                return
-            }
-        }
         disposable = accountService.getTurn().subscribeOn(Schedulers.io()).subscribe({
             if (it.isSuccess) {
                 val array = it.data as Array<TurnServer>
-                val string = gson.toJson(array)
-                defaultSharedPreferences.putLong(PREF_TURN_FETCH, System.currentTimeMillis())
-                defaultSharedPreferences.putString(PREF_TURN, string)
                 action.invoke(genIceServerList(array))
             } else {
                 handleFetchTurnError()
@@ -516,12 +502,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleFetchTurnError() {
-        if (peerConnectionClient.isInitiator) {
-            handleCallCancel()
-        } else {
-            declineTriggeredByUser = false
-            handleCallDecline()
-        }
+        callExecutor.execute { handleCallLocalFailed() }
     }
 
     private fun genIceServerList(array: Array<TurnServer>): List<PeerConnection.IceServer> {
