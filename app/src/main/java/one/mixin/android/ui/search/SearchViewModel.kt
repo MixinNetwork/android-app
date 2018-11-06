@@ -39,7 +39,7 @@ internal constructor(
 
     private fun fuzzySearchMessage(context: CoroutineContext, query: String): Deferred<List<SearchMessageItem>> =
         GlobalScope.async(context) {
-            conversationRepository.fuzzySearchMessage("%${query.trim()}%")
+            conversationRepository.fuzzySearchMessage("${query.trim()}*")
         }
 
     private fun fuzzySearchAsset(context: CoroutineContext, query: String): Deferred<List<AssetItem>> = GlobalScope.async(context) {

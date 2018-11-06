@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.RoomMasterTable.TABLE_NAME
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.vo.Address
@@ -14,6 +15,7 @@ import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Hyperlink
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageFts
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.Participant
@@ -24,6 +26,7 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
+import timber.log.Timber
 
 @Database(entities = [
     (User::class),
@@ -43,7 +46,8 @@ import one.mixin.android.vo.User
     (Address::class),
     (ResendMessage::class),
     (StickerRelationship::class),
-    (Job::class)], version = 19)
+    (Job::class),
+    (MessageFts::class)], version = 20)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -183,6 +187,74 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
+        private val MIGRATION_15_20: Migration = object : Migration(15, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE IF EXISTS assets")
+                database.execSQL("CREATE TABLE IF NOT EXISTS assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
+                    "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
+                    "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ")
+                database.execSQL("DROP TABLE IF EXISTS addresses")
+                database.execSQL("CREATE TABLE IF NOT EXISTS addresses(address_id TEXT PRIMARY KEY NOT NULL, type TEXT NOT NULL, asset_id TEXT NOT NULL, " +
+                    "public_key TEXT, label TEXT, updated_at TEXT NOT NULL, reserve TEXT NOT NULL, fee TEXT NOT NULL, account_name TEXT, account_tag TEXT)")
+                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
+                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
+                    "(job_id))")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
+                    "status, created_at)")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
+                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
+            }
+        }
+
+        private val MIGRATION_16_20: Migration = object : Migration(16, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS jobs (job_id TEXT NOT NULL, action TEXT NOT NULL, created_at TEXT NOT NULL, order_id INTEGER, priority " +
+                    "INTEGER NOT NULL, user_id TEXT, blaze_message TEXT, conversation_id TEXT, resend_message_id TEXT, run_count INTEGER NOT NULL, PRIMARY KEY" +
+                    "(job_id))")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_messages_conversation_id_user_id_status_created_at ON messages (conversation_id, user_id, " +
+                    "status, created_at)")
+                database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
+                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
+            }
+        }
+
+        private val MIGRATION_17_20: Migration = object : Migration(17, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
+                database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
+            }
+        }
+
+        private val MIGRATION_18_20: Migration = object : Migration(18, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
+            }
+        }
+
+        private val MIGRATION_19_20: Migration = object : Migration(19, 20) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
+            }
+        }
+
+        private val MIGRATION_20_19: Migration = object : Migration(20, 19) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE IF EXISTS messages_fts")
+            }
+        }
+
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
@@ -190,6 +262,8 @@ abstract class MixinDatabase : RoomDatabase() {
                         .addMigrations(MIGRATION_15_17, MIGRATION_16_17)
                         .addMigrations(MIGRATION_15_18, MIGRATION_16_18, MIGRATION_17_18)
                         .addMigrations(MIGRATION_15_19, MIGRATION_16_19, MIGRATION_17_19, MIGRATION_18_19)
+                        .addMigrations(MIGRATION_15_20, MIGRATION_16_20, MIGRATION_17_20, MIGRATION_18_20, MIGRATION_19_20)
+                        .addMigrations(MIGRATION_20_19)
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                         .build()
@@ -205,6 +279,8 @@ abstract class MixinDatabase : RoomDatabase() {
                         .addMigrations(MIGRATION_15_17, MIGRATION_16_17)
                         .addMigrations(MIGRATION_15_18, MIGRATION_16_18, MIGRATION_17_18)
                         .addMigrations(MIGRATION_15_19, MIGRATION_16_19, MIGRATION_17_19, MIGRATION_18_19)
+                        .addMigrations(MIGRATION_15_20, MIGRATION_16_20, MIGRATION_17_20, MIGRATION_18_20, MIGRATION_19_20)
+                        .addMigrations(MIGRATION_20_19)
                         .enableMultiInstanceInvalidation()
                         .build()
                 }

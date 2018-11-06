@@ -86,11 +86,12 @@ interface MessageDao : BaseDao<Message> {
         "u1.avatar_url AS botAvatarUrl, u1.full_name AS botFullName, u1.user_id AS botUserId," +
         "m.content AS content, m.created_at AS createdAt, m.name AS mediaName, " +
         "c.icon_url AS conversationAvatarUrl, c.name AS conversationName, c.category AS conversationCategory " +
-        "FROM messages m INNER JOIN users u ON m.user_id = u.user_id " +
+        "FROM messages m JOIN messages_fts m_fts ON m.rowid = m_fts.rowid " +
+        "INNER JOIN users u ON m.user_id = u.user_id " +
         "LEFT JOIN conversations c ON c.conversation_id = m.conversation_id " +
         "LEFT JOIN users u1 ON c.owner_id = u1.user_id " +
-        "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
-        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) ORDER BY m.created_at DESC LIMIT 200")
+        "WHERE  (messages_fts MATCH :query AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED') " +
+        "ORDER BY m.created_at DESC LIMIT 200")
     fun fuzzySearchMessage(query: String): List<SearchMessageItem>
 
     @Query("DELETE FROM messages WHERE id = :id")
