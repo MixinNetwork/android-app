@@ -39,6 +39,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.BlazeMessageData
+import one.mixin.android.websocket.createCallMessage
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
 import org.webrtc.PeerConnectionFactory
@@ -472,11 +473,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
-        createCallMessage(blazeMessageData!!.quoteMessageId!!, m.conversationId, userId, m.category, m.content,
+        createCallMessage(quoteMessageId!!, m.conversationId, userId, m.category, m.content,
             m.createdAt, status, m.quoteMessageId, m.mediaDuration)
 
     private fun checkConversation(message: Message): Boolean {
-        val conversation =  conversationRepo.getConversation(message.conversationId)
+        val conversation = conversationRepo.getConversation(message.conversationId)
         if (conversation != null) return true
 
         return try {
