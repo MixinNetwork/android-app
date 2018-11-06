@@ -472,8 +472,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun createNewReadMessage(m: Message, userId: String, status: MessageStatus) =
-        createCallMessage(quoteMessageId!!, m.conversationId, userId, m.category, m.content,
-            m.createdAt, status, m.quoteMessageId, m.mediaDuration)
+        createCallMessage(quoteMessageId ?: blazeMessageData?.quoteMessageId ?: blazeMessageData?.messageId ?: UUID.randomUUID().toString(),
+            m.conversationId, userId, m.category, m.content, m.createdAt, status, m.quoteMessageId, m.mediaDuration)
 
     private fun checkConversation(message: Message): Boolean {
         val conversation = conversationRepo.getConversation(message.conversationId)

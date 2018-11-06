@@ -83,13 +83,13 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    fun createAnswer(iceServerList: List<PeerConnection.IceServer>, sdp: SessionDescription) {
+    fun createAnswer(iceServerList: List<PeerConnection.IceServer>, remoteSdp: SessionDescription) {
         iceServers.addAll(iceServerList)
         iceServers.add(googleStunServer)
         executor.execute {
             try {
                 val peerConnection = createPeerConnectionInternal()
-                peerConnection?.setRemoteDescription(remoteSdpObserver, sdp)
+                peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
                 isInitiator = false
                 val answerSdpObserver = object : SdpObserverWrapper() {
                     override fun onCreateSuccess(sdp: SessionDescription) {
