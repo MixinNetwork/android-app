@@ -101,7 +101,7 @@ open class Injector : Injectable {
         return id != null || messageHistory != null
     }
 
-    fun refreshConversation(conversationId: String) {
+    private fun refreshConversation(conversationId: String) {
         try {
             val call = conversationService.getConversation(conversationId).execute()
             val response = call.body()

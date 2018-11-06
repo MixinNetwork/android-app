@@ -19,6 +19,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
+import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.gzip
@@ -30,12 +31,12 @@ import one.mixin.android.job.RefreshOffsetJob
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.Session
-import one.mixin.android.vo.CallState
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
+import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -49,7 +50,8 @@ class ChatWebSocket(
     private val offsetDao: OffsetDao,
     private val floodMessageDao: FloodMessageDao,
     val jobManager: MixinJobManager,
-    private val linkState: LinkState
+    private val linkState: LinkState,
+    private val jobDao: JobDao
 ) : WebSocketListener() {
 
     private val failCode = 1000
@@ -246,6 +248,8 @@ class ChatWebSocket(
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
+        } else {
+            jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
         }
     }
 

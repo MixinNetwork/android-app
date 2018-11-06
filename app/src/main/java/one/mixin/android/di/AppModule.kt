@@ -37,6 +37,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
+import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
@@ -326,9 +327,10 @@ internal class AppModule {
         offsetDao: OffsetDao,
         floodMessageDao: FloodMessageDao,
         jobManager: MixinJobManager,
-        linkState: LinkState
+        linkState: LinkState,
+        jobDao: JobDao
     ): ChatWebSocket =
-        ChatWebSocket(okHttp, app, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState)
+        ChatWebSocket(okHttp, app, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState, jobDao)
 
     @Provides
     @Singleton

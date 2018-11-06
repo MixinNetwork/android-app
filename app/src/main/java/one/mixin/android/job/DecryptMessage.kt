@@ -72,6 +72,7 @@ class DecryptMessage : Injector() {
     private var refreshKeyMap = arrayMapOf<String, Long?>()
     private val gson = Gson()
     private val customGson = GsonHelper.customGson
+    private var handled = false
 
     fun onRun(data: BlazeMessageData) {
         if (!isExistMessage(data.messageId)) {
@@ -81,12 +82,18 @@ class DecryptMessage : Injector() {
 
     private fun processMessage(data: BlazeMessageData) {
         try {
+            handled = false
+
             syncConversation(data)
             processSystemMessage(data)
             processPlainMessage(data)
             processSignalMessage(data)
             processAppButton(data)
             processAppCard(data)
+
+            if (!handled) {
+                updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            }
         } catch (e: Exception) {
             Timber.e("Process error: $e")
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -101,6 +108,7 @@ class DecryptMessage : Injector() {
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        handled = true
     }
 
     private fun processAppCard(data: BlazeMessageData) {
@@ -111,6 +119,7 @@ class DecryptMessage : Injector() {
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        handled = true
     }
 
     private fun processSystemMessage(data: BlazeMessageData) {
@@ -128,6 +137,7 @@ class DecryptMessage : Injector() {
         }
 
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        handled = true
     }
 
     private fun processPlainMessage(data: BlazeMessageData) {
@@ -177,6 +187,7 @@ class DecryptMessage : Injector() {
             processDecryptSuccess(data, data.data)
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
+        handled = true
     }
 
     private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
@@ -423,6 +434,7 @@ class DecryptMessage : Injector() {
                 }
             }
         }
+        handled = true
     }
 
     private fun insertFailedMessage(data: BlazeMessageData) {
