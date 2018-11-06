@@ -5,7 +5,6 @@ import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
 import org.webrtc.IceCandidate
-import org.webrtc.Logging
 import org.webrtc.MediaConstraints
 import org.webrtc.MediaStream
 import org.webrtc.PeerConnection
@@ -184,7 +183,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         if (factory == null || isError) {
             throw IllegalStateException("PeerConnectionFactory is not created")
         }
-        Logging.enableLogToDebugOutput(Logging.Severity.LS_INFO)
         remoteCandidateCache = arrayListOf()
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
