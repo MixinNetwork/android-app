@@ -33,7 +33,7 @@ class CallState : LiveData<CallState.CallInfo>() {
     }
 
     fun isIdle() = callInfo.callState == CallService.CallState.STATE_IDLE
-    
+
     fun handleHangup(ctx: Context) {
         when (callInfo.callState) {
             CallService.CallState.STATE_DIALING -> CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)

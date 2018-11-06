@@ -88,6 +88,7 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
+import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -337,12 +338,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     R.id.menu_voice -> {
                         if (!callState.isIdle()) {
-                            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-                                .setMessage(getString(R.string.chat_call_warning_call))
-                                .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                                .show()
+                            if (recipient != null && callState.user?.userId == recipient?.userId) {
+                                CallActivity.show(requireContext(), recipient)
+                            } else {
+                                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                                    .setMessage(getString(R.string.chat_call_warning_call))
+                                    .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                    .show()
+                            }
                         } else {
                             RxPermissions(requireActivity())
                                 .request(Manifest.permission.RECORD_AUDIO)
@@ -565,12 +570,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             @SuppressLint("CheckResult")
             override fun onCallClick(messageItem: MessageItem) {
                 if (!callState.isIdle()) {
-                    AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-                        .setMessage(getString(R.string.chat_call_warning_call))
-                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .show()
+                    if (recipient != null && callState.user?.userId == recipient?.userId) {
+                        CallActivity.show(requireContext(), recipient)
+                    } else {
+                        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                            .setMessage(getString(R.string.chat_call_warning_call))
+                            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .show()
+                    }
                 } else {
                     RxPermissions(requireActivity())
                         .request(Manifest.permission.RECORD_AUDIO)

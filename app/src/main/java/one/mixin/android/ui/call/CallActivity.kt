@@ -34,6 +34,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.BarEvent
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.fastBlur
@@ -99,7 +101,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
                 }
             }
         })
-
         callState.observe(this, Observer { callInfo ->
             when (callInfo.callState) {
                 CallService.CallState.STATE_DIALING -> {
@@ -142,6 +143,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
             startTimer()
         }
         super.onResume()
+        call_cl.postDelayed({
+            if (!isFinishing) {
+                shown = true
+                RxBus.publish(BarEvent())
+            }
+        }, (resources.getInteger(android.R.integer.config_longAnimTime)).toLong())
     }
 
     override fun onPause() {
@@ -262,6 +269,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private fun handleDisconnected() {
         finishAndRemoveTask()
+        shown = false
     }
 
     private fun handleBusy() {
@@ -309,7 +317,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
         const val ARGS_ANSWER = "answer"
 
+        var shown = false
+
         fun show(context: Context, answer: User? = null) {
+            this.shown = false
             Intent(context, CallActivity::class.java).apply {
                 putExtra(ARGS_ANSWER, answer)
             }.run {
