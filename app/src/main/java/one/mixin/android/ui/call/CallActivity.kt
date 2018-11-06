@@ -23,14 +23,13 @@ import androidx.lifecycle.Observer
 import androidx.transition.AutoTransition
 import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.GlideException
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_call.*
 import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
@@ -44,8 +43,10 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.CallButton
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
+import timber.log.Timber
+import java.util.Timer
+import java.util.TimerTask
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.inject.Inject
@@ -186,17 +187,24 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun setBlurBg(url: String) {
-        doAsync {
+        GlobalScope.launch {
+            if (url.isBlank()) return@launch
             try {
                 val bitmap = Glide.with(applicationContext)
                     .asBitmap()
                     .load(url)
                     .submit()
                     .get(10, TimeUnit.SECONDS)
-                uiThread {
-                    blur_iv.setImageBitmap(bitmap.fastBlur(1f, 10))
+                    .fastBlur(1f, 10)
+                withContext(Dispatchers.Main) {
+                    bitmap?.let { bitmap ->
+                        blur_iv.setImageBitmap(bitmap)
+                    }
                 }
-            } catch (timeoutException: TimeoutException) {
+            } catch (e: TimeoutException) {
+                Timber.e(e)
+            } catch (e: GlideException) {
+                Timber.e(e)
             }
         }
     }
@@ -279,28 +287,25 @@ class CallActivity : BaseActivity(), SensorEventListener {
         constraintSet.applyTo(call_cl)
     }
 
-    private var timer: Job? = null
+    private var timer: Timer? = null
+
     private fun startTimer() {
-        if (timer == null || timer?.isCancelled == true) {
-            timer = GlobalScope.launch {
-                while (true) {
-                    withContext(Dispatchers.Main) {
-                        if (callState.callInfo.connectedTime != null) {
-                            val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-                            action_tv.text = duration.formatMillis()
-                        }
-                    }
-                    delay(1000)
+        timer = Timer(true)
+        val timerTask = object : TimerTask() {
+            override fun run() {
+                if (callState.callInfo.connectedTime != null) {
+                    val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                    action_tv.text = duration.formatMillis()
                 }
             }
         }
+        timer?.schedule(timerTask, 0, 1000)
     }
 
     private fun stopTimber() {
-        if (timer?.isCancelled == false) {
-            timer?.cancel()
-            timer = null
-        }
+        timer?.cancel()
+        timer?.purge()
+        timer = null
     }
 
     companion object {

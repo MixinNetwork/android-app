@@ -6,12 +6,6 @@ import android.view.View.VISIBLE
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import kotlinx.android.synthetic.main.view_link_state.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.di.Injectable
@@ -23,6 +17,9 @@ import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.LinkState
 import one.mixin.android.webrtc.CallService
+import org.jetbrains.anko.runOnUiThread
+import java.util.Timer
+import java.util.TimerTask
 import javax.inject.Inject
 
 open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
@@ -140,27 +137,26 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         }
     }
 
-    private var timer: Job? = null
+    private var timer: Timer? = null
+
     private fun startTimer() {
-        if (timer == null || timer?.isCancelled == true) {
-            timer = GlobalScope.launch {
-                while (true) {
-                    withContext(Dispatchers.Main) {
-                        if (callState.callInfo.connectedTime != null) {
-                            val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-                            time_tv?.text = duration.formatMillis()
-                        }
+        timer = Timer(true)
+        val timerTask = object : TimerTask() {
+            override fun run() {
+                if (isAdded && callState.callInfo.connectedTime != null) {
+                    requireContext().runOnUiThread {
+                        val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                        time_tv?.text = duration.formatMillis()
                     }
-                    delay(1000)
                 }
             }
         }
+        timer?.schedule(timerTask, 0, 1000)
     }
 
     private fun stopTimber() {
-        if (timer?.isCancelled == false) {
-            timer?.cancel()
-            timer = null
-        }
+        timer?.cancel()
+        timer?.purge()
+        timer = null
     }
 }
