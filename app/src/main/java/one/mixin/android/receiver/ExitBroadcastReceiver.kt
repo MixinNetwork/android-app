@@ -5,11 +5,17 @@ import android.content.Context
 import android.content.Intent
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.BlazeMessageService.Companion.ACTION_TO_BACKGROUND
+import one.mixin.android.webrtc.CallService
+import one.mixin.android.ui.call.CallNotificationBuilder
 
 class ExitBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        if (intent != null && intent.action == ACTION_TO_BACKGROUND) {
+        if (intent == null) return
+
+        if (intent.action == ACTION_TO_BACKGROUND) {
             BlazeMessageService.startService(context, ACTION_TO_BACKGROUND)
+        } else if (intent.action == CallNotificationBuilder.ACTION_EXIT) {
+            CallService.stopService(context)
         }
     }
 }

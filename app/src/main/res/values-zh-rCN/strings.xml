@@ -170,6 +170,16 @@
     <string name="save_success">保存成功</string>
     <string name="save_failure">保存失败</string>
     <string name="hold_to_record_audio">长按说话，松手发送</string>
+    <string name="chat_call_duration">聊天时长 %1$s</string>
+    <string name="chat_call_canceled">已取消</string>
+    <string name="chat_call_canceled_by_caller">对方已取消</string>
+    <string name="chat_call_declined">已拒绝</string>
+    <string name="chat_call_declined_other">对方已拒绝</string>
+    <string name="chat_call_local_busy">忙线未接听</string>
+    <string name="chat_call_remote_busy">对方忙</string>
+    <string name="chat_call_failed">呼叫失败</string>
+    <string name="chat_call_warning_call">无法在 Mixin 通话时拨打电话</string>
+    <string name="chat_call_warning_voice">无法在 Mixin 通话时录制语音消息</string>
     <!--contact-->
     <string name="contact_other_add">添加联系人</string>
     <string name="contact_other_send">发消息</string>
@@ -281,6 +291,7 @@
     <string name="group_creating">正在创建…</string>
     <string name="state_connecting">正在连接</string>
     <string name="state_syncing">正在同步消息</string>
+    <string name="state_calling">点击返回通话</string>
     <string name="group_cant_send">您不能发送消息，因为您已经不再是此群组成员。</string>
     <string name="empty_info">你可以与你的 Mixin 好友一起聊天。</string>
     <string name="empty_start">开始聊天</string>
@@ -311,6 +322,7 @@
     <string name="conversation_status_video">视频</string>
     <string name="conversation_status_file">文件</string>
     <string name="conversation_status_audio">语音</string>
+    <string name="conversation_status_voice">语音电话</string>
     <string name="conversation_status_transfer">转账</string>
     <string name="conversation_status_sticker">贴纸</string>
     <string name="conversation_status_unknown">未知</string>
@@ -369,6 +381,7 @@
     <string name="alert_key_contact_audio_message">发送一条语音</string>
     <string name="alert_key_contact_sticker_message">发送一张贴纸</string>
     <string name="alert_key_contact_contact_message">分享了一个联系人</string>
+    <string name="alert_key_contact_audio_call_message">发起了语音通话</string>
 
     <string name="unread">%1$d 条新消息</string>
     <string name="stranger_from">他/她不是你的联系人</string>
@@ -392,6 +405,7 @@
 
     <string name="extensions">小程序</string>
     <string name="camera">相机</string>
+    <string name="voice">语音电话</string>
     <string name="document">文件</string>
     <string name="gallery">相册</string>
     <string name="contact">联系人</string>
@@ -461,4 +475,21 @@
     <!--Pending-->
     <string name="pending">待入账</string>
     <string name="pending_confirmations">%1$d/%2$d 区块确认数</string>
+    <!-- webrtc -->
+    <string name="call_notification_outgoing">正在呼叫&#8230;</string>
+    <string name="call_notification_incoming_voice">语音通话来电</string>
+    <string name="call_notification_missed_voice">未接语音通话</string>
+    <string name="call_notification_connected">正在进行语音通话</string>
+    <string name="call_notification_action_cancel">取消</string>
+    <string name="call_notification_action_decline">挂断</string>
+    <string name="call_notification_action_answer">接听</string>
+    <string name="call_notification_action_callback">回拨</string>
+    <string name="call_notification_action_reply">回复</string>
+    <string name="call_notification_action_hang_up">挂断</string>
+    <string name="call_connecting">正在连接&#8230;</string>
+    <string name="call_speaker">扬声器</string>
+    <string name="call_hang_up">挂断</string>
+    <string name="call_decline">挂断</string>
+    <string name="call_accept">接听</string>
+    <string name="call_mute">静音</string>
 </resources>

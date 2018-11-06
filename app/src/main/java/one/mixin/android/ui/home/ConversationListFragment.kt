@@ -2,22 +2,22 @@ package one.mixin.android.ui.home
 
 import android.Manifest
 import android.annotation.SuppressLint
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.Context
 import android.os.Bundle
-import androidx.core.widget.TextViewCompat
-import androidx.appcompat.content.res.AppCompatResources
-import androidx.recyclerview.widget.DiffUtil
-import androidx.appcompat.view.ContextThemeWrapper
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewConfiguration
 import android.view.ViewGroup
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.widget.TextViewCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.google.zxing.integration.android.IntentIntegrator
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -328,6 +328,11 @@ class ConversationListFragment : LinkFragment() {
                     itemView.msg_tv.setText(R.string.contact_less_title)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_contact)
                 }
+                conversationItem.isCallMessage() -> {
+                    setConversationName(conversationItem)
+                    itemView.msg_tv.setText(R.string.conversation_status_voice)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_voice)
+                }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
                     when (conversationItem.actionName) {
                         SystemConversationAction.CREATE.name -> {
@@ -404,7 +409,8 @@ class ConversationListFragment : LinkFragment() {
             }
 
             if (conversationItem.senderId == Session.getAccountId() &&
-                conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name) {
+                conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
+                !conversationItem.isCallMessage()) {
                 when (conversationItem.messageStatus) {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(itemView.context,
                         R.drawable.ic_status_sending)

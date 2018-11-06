@@ -36,6 +36,7 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.CallState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -80,6 +81,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     lateinit var jobDao: JobDao
     @Inject
     lateinit var jobManager: MixinJobManager
+    @Inject
+    lateinit var callState: CallState
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -220,7 +223,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 
-    private val messageDecrypt = DecryptMessage()
+    private val messageDecrypt by lazy { DecryptMessage() }
+    private val callMessageDecrypt by lazy { DecryptCallMessage(callState) }
 
     private fun startFloodJob() {
         database.invalidationTracker.addObserver(floodObserver)
@@ -258,7 +262,12 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         floodMessageDao.findFloodMessageDeferred().await()?.let { list ->
             try {
                 list.forEach { message ->
-                    messageDecrypt.onRun(Gson().fromJson(message.data, BlazeMessageData::class.java))
+                    val data = Gson().fromJson(message.data, BlazeMessageData::class.java)
+                    if (data.category.startsWith("WEBRTC_")) {
+                        callMessageDecrypt.onRun(data)
+                    } else {
+                        messageDecrypt.onRun(data)
+                    }
                     floodMessageDao.delete(message)
                 }
             } catch (e: Exception) {

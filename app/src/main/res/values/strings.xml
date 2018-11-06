@@ -177,6 +177,16 @@
     <string name="save_success">Save success</string>
     <string name="save_failure">Save failure</string>
     <string name="hold_to_record_audio">Hold to record, release to send</string>
+    <string name="chat_call_duration">Duration: %1$s</string>
+    <string name="chat_call_canceled">Cancelled</string>
+    <string name="chat_call_canceled_by_caller">Call Cancelled by caller</string>
+    <string name="chat_call_declined">Declined</string>
+    <string name="chat_call_declined_other">Call declined</string>
+    <string name="chat_call_local_busy">Line busy</string>
+    <string name="chat_call_remote_busy">Line busy</string>
+    <string name="chat_call_failed">Call failed</string>
+    <string name="chat_call_warning_call">You cannot place a Mixin call if you\'re already on another call.</string>
+    <string name="chat_call_warning_voice">Can\'t record voice messages during a Mixin call.</string>
     <!--contact-->
     <string name="contact_other_add">Add Contact</string>
     <string name="contact_other_send">Send Message</string>
@@ -288,6 +298,7 @@
     <string name="group_creating">Creating…</string>
     <string name="state_connecting">Connecting</string>
     <string name="state_syncing">Syncing messages</string>
+    <string name="state_calling">Tap to return to call</string>
     <string name="group_cant_send">You can\'t send messages to this group because you\'re no longer a participant.</string>
     <string name="empty_info">You can chat with contacts who have\nMixin install on their phone</string>
     <string name="empty_start">Start Messaging</string>
@@ -318,6 +329,7 @@
     <string name="conversation_status_video">Video</string>
     <string name="conversation_status_file">File</string>
     <string name="conversation_status_audio">Audio</string>
+    <string name="conversation_status_voice">Voice call</string>
     <string name="conversation_status_unknown">Unknown</string>
     <string name="conversation_status_transfer">Transfer</string>
     <string name="conversation_status_sticker">Sticker</string>
@@ -376,6 +388,7 @@
     <string name="alert_key_contact_audio_message">send a audio</string>
     <string name="alert_key_contact_sticker_message">send you a sticker</string>
     <string name="alert_key_contact_contact_message">shared a contact</string>
+    <string name="alert_key_contact_audio_call_message">ask you a audio call</string>
     <string name="unread">%1$d new messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
     <string name="notification_group">Group Notification</string>
@@ -399,6 +412,7 @@
     <string name="extensions">Extensions</string>
     <string name="camera">Camera</string>
     <string name="document">File</string>
+    <string name="voice">Voice</string>
     <string name="gallery">Gallery</string>
     <string name="contact">Contact</string>
     <string name="sticker">Sticker</string>
@@ -468,6 +482,23 @@
     <string name="filters_by">Filter by</string>
     <!--Pending-->
     <string name="pending">Pending</string>
-    <string name="pending_confirmations">%1$d/%2$d confimations</string>
+    <string name="pending_confirmations">%1$d/%2$d confirmations</string>
+    <!-- webrtc -->
+    <string name="call_notification_outgoing">Calling&#8230;</string>
+    <string name="call_notification_incoming_voice">Incoming voice call</string>
+    <string name="call_notification_missed_voice">Missed voice call</string>
+    <string name="call_notification_connected">Ongoing voice call</string>
+    <string name="call_notification_action_cancel">CANCEL</string>
+    <string name="call_notification_action_decline">DECLINE</string>
+    <string name="call_notification_action_answer">ANSWER</string>
+    <string name="call_notification_action_callback">CALL BACK</string>
+    <string name="call_notification_action_reply">REPLY</string>
+    <string name="call_notification_action_hang_up">HANG UP</string>
+    <string name="call_connecting">Connecting&#8230;</string>
+    <string name="call_speaker">Speaker</string>
+    <string name="call_hang_up">Hang up</string>
+    <string name="call_decline">Decline</string>
+    <string name="call_accept">Accept</string>
+    <string name="call_mute">Mute</string>
 </resources>
 

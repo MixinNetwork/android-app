@@ -17,6 +17,7 @@ import one.mixin.android.di.module.SetupNameActivityModule
 import one.mixin.android.di.module.UrlInterpreterActivityModule
 import one.mixin.android.di.module.WalletActivityModule
 import one.mixin.android.ui.address.AddressActivity
+import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.media.DragMediaActivity
@@ -78,4 +79,7 @@ abstract class ActivityModule {
 
     @ContributesAndroidInjector(modules = [(AddressActivityModule::class)])
     internal abstract fun contributeAddress(): AddressActivity
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeCall(): CallActivity
 }

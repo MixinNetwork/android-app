@@ -13,6 +13,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
+import one.mixin.android.vo.TurnServer
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -71,4 +72,7 @@ interface AccountService {
 
     @POST("stickers/favorite/remove")
     fun removeSticker(@Body ids: List<String>): Call<MixinResponse<Sticker>>
+
+    @GET("turn")
+    fun getTurn(): Observable<MixinResponse<Array<TurnServer>>>
 }

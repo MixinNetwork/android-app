@@ -26,6 +26,7 @@ import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
+import one.mixin.android.webrtc.CallService
 import org.jetbrains.anko.ctx
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.notificationManager
@@ -87,6 +88,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
     fun closeAndClear(toLanding: Boolean = true) {
         if (onlining.compareAndSet(true, false)) {
             BlazeMessageService.stopService(ctx)
+            CallService.startService(ctx, CallService.ACTION_CALL_DISCONNECT)
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()

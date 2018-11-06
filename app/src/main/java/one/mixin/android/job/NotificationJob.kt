@@ -209,6 +209,10 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
             MessageCategory.SYSTEM_CONVERSATION.name -> {
                 notificationBuilder.setContentTitle(context.getString(R.string.app_name))
             }
+            MessageCategory.WEBRTC_AUDIO_OFFER.name -> {
+                notificationBuilder.setContentTitle(user.fullName)
+                notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_audio_call_message))
+            }
             else -> {
                 // No support
                 return

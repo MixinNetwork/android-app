@@ -19,8 +19,14 @@ import one.mixin.android.db.StickerDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.di.Injectable
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.Session
+import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
+import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
+import java.io.IOException
 import javax.inject.Inject
 
 open class Injector : Injectable {
@@ -53,9 +59,9 @@ open class Injector : Injectable {
     @Inject
     lateinit var resendMessageDao: ResendMessageDao
     @Inject
-    lateinit var conversationApi: ConversationService
-    @Inject
     lateinit var userApi: UserService
+    @Inject
+    lateinit var conversationService: ConversationService
 
     init {
         MixinApplication.get().appComponent.inject(this)
@@ -75,5 +81,46 @@ open class Injector : Injectable {
             }
         }
         return bm.data
+    }
+
+    protected fun syncConversation(data: BlazeMessageData) {
+        var conversation = conversationDao.getConversation(data.conversationId)
+        if (conversation == null) {
+            conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)
+            conversationDao.insert(conversation)
+            refreshConversation(data.conversationId)
+        }
+        if (conversation.status == ConversationStatus.START.ordinal) {
+            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+        }
+    }
+
+    protected fun isExistMessage(messageId: String): Boolean {
+        val id = messageDao.findMessageIdById(messageId)
+        val messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
+        return id != null || messageHistory != null
+    }
+
+    private fun refreshConversation(conversationId: String) {
+        try {
+            val call = conversationService.getConversation(conversationId).execute()
+            val response = call.body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { conversationData ->
+                    val status = if (conversationData.participants.find { Session.getAccountId() == it.userId } != null) {
+                        ConversationStatus.SUCCESS.ordinal
+                    } else {
+                        ConversationStatus.QUIT.ordinal
+                    }
+                    var ownerId: String = conversationData.creatorId
+                    if (conversationData.category == ConversationCategory.CONTACT.name) {
+                        ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
+                    }
+                    conversationDao.updateConversation(conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
+                        conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
+                }
+            }
+        } catch (e: IOException) {
+        }
     }
 }

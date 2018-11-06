@@ -1,3 +1,26 @@
-<vector android:height="24dp" android:viewportHeight="1024" android:viewportWidth="1024" android:width="24dp" xmlns:android="http://schemas.android.com/apk/res/android">
-    <path android:fillColor="#9B9B9B" android:pathData="M575 236.4c-2.3 0-4.6 0.5-6.9 1.5-0.3 0.1-0.6 0.3-0.9 0.5L354.5 361.8H250.4c-9 0-16.3 7.3-16.3 16.3v267.8c0 9 7.3 16.3 16.3 16.3h104.8l212 123.5c0.3 0.2 0.6 0.3 0.9 0.5 2.2 1 4.6 1.5 6.8 1.5 8.5 0 16.3-6.9 16.3-16.3V252.7c0.1-9.4-7.7-16.3-16.2-16.3zm-47.7 451.1L387.8 607l-15.1-8.9h-74.6V425.8h73.7l15-8.9 140.3-80.6v351.2zM829.7 480h-115c-6.6 0-12 5.4-12 12v40c0 6.6 5.4 12 12 12h115c6.6 0 12-5.4 12-12v-40c0-6.6-5.4-12-12-12zM795 666l-99.6-57.5c-5.7-3.3-13.1-1.3-16.4 4.4l-20 34.6c-3.3 5.7-1.3 13.1 4.4 16.4l99.6 57.5c5.7 3.3 13.1 1.3 16.4-4.4l20-34.6c3.3-5.7 1.3-13-4.4-16.4zM680 411.1c3.3 5.7 10.7 7.7 16.4 4.4L796 358c5.7-3.3 7.7-10.7 4.4-16.4l-20-34.6c-3.3-5.7-10.7-7.7-16.4-4.4L664.4 360c-5.7 3.3-7.7 10.7-4.4 16.4l20 34.7z"/>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <path
+      android:pathData="M12,19L14.9907,19L23.8912,13.0709C24.8105,12.4586 26.0521,12.7073 26.6645,13.6266C26.8833,13.955 27,14.3408 27,14.7354L27,34.2572C27,35.3617 26.1046,36.2572 25,36.2572C24.6043,36.2572 24.2174,36.1398 23.8885,35.9198L15.0334,30L12,30C10.8954,30 10,29.1046 10,28L10,21C10,19.8954 10.8954,19 12,19Z"
+      android:strokeWidth="1"
+      android:fillColor="@color/call_btn_bg_unchecked"
+      android:fillType="evenOdd"
+      android:strokeColor="#00000000"/>
+  <path
+      android:pathData="M31.4329,17C33.0959,18.7858 34.1132,21.1808 34.1132,23.8135C34.1132,26.6675 32.9176,29.2423 31,31.0642"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="@color/call_btn_bg_unchecked"
+      android:fillType="evenOdd"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M30.5868,10C35.4503,12.4805 38.781,17.5367 38.781,23.3708C38.781,29.4366 35.1805,34.6615 30,37.0248"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="@color/call_btn_bg_unchecked"
+      android:fillType="evenOdd"
+      android:strokeLineCap="round"/>
 </vector>

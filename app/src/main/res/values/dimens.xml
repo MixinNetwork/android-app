@@ -37,4 +37,6 @@
     <dimen name="btn_min_height">48dp</dimen>
 
     <dimen name="album_item_height">72dp</dimen>
+    <dimen name="call_button_size">74dp</dimen>
+    <dimen name="call_button_icon_size">48dp</dimen>
 </resources>

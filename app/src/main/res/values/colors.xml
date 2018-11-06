@@ -39,6 +39,13 @@
     <color name="progress_gary">#F2F2F6</color>
     <color name="color_record_circle_bg">#EE1987FF</color>
     <color name="text_default">#767676</color>
+    <color name="call_green">#46d23c</color>
+    <color name="call_red">#e7575c</color>
+    <color name="call_gray">#595959</color>
+    <color name="call_bg">#aa595959</color>
+    <color name="call_btn_bg_unchecked">#80FFFFFF</color>
+    <color name="call_btn_checked">@color/white</color>
+    <color name="call_btn_icon_checked">#182435</color>
 
     <array name="name_colors">
         <item>#AA4848</item>

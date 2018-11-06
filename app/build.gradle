@@ -43,6 +43,10 @@ android {
             exclude 'META-INF/*.version'
         }
 
+        kotlinOptions {
+            jvmTarget = '1.8'
+        }
+
         vectorDrawables.useSupportLibrary = true
     }
 
@@ -213,6 +217,7 @@ dependencies {
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "com.github.instacart.truetime-android:library:${truetimeVersion}"
     implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"
+    implementation "org.webrtc:google-webrtc:${webrtcVersion}"
 }
 
 task ktlint(type: JavaExec, group: "verification") {

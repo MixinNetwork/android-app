@@ -158,6 +158,8 @@ fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
     return conversation.category == ConversationCategory.CONTACT.name && conversation.ownerId != userId
 }
 
+fun Message.isCall() = category.startsWith("WEBRTC_")
+
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,
@@ -181,7 +183,20 @@ enum class MessageCategory {
     SYSTEM_ACCOUNT_SNAPSHOT,
     APP_BUTTON_GROUP,
     APP_CARD,
-    UNKNOWN
+    WEBRTC_AUDIO_OFFER,
+    WEBRTC_AUDIO_ANSWER,
+    WEBRTC_ICE_CANDIDATE,
+    WEBRTC_AUDIO_CANCEL,
+    WEBRTC_AUDIO_DECLINE,
+    WEBRTC_AUDIO_END,
+    WEBRTC_AUDIO_BUSY,
+    WEBRTC_AUDIO_FAILED
+}
+
+fun String.isIllegalMessageCategory(): Boolean {
+    val list = arrayListOf<String>()
+    MessageCategory.values().mapTo(list) { it.name }
+    return !list.contains(this)
 }
 
 enum class MessageStatus { SENDING, SENT, DELIVERED, READ, FAILED }
@@ -205,6 +220,26 @@ fun createMessage(
     .setParticipantId(participantId)
     .setSnapshotId(snapshotId)
     .build()
+
+fun createCallMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String?,
+    createdAt: String,
+    status: MessageStatus,
+    quoteMessageId: String? = null,
+    mediaDuration: String? = null
+): Message {
+    val builder = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+        .setContent(content)
+        .setQuoteMessageId(quoteMessageId)
+    if (mediaDuration != null) {
+        builder.setMediaDuration(mediaDuration)
+    }
+    return builder.build()
+}
 
 fun createReplyMessage(
     messageId: String,

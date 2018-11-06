@@ -19,11 +19,13 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
+import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.gzip
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.ungzip
+import one.mixin.android.job.DecryptCallMessage.Companion.listPendingOfferHandled
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
@@ -34,6 +36,7 @@ import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
+import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.CountDownLatch
@@ -47,7 +50,8 @@ class ChatWebSocket(
     private val offsetDao: OffsetDao,
     private val floodMessageDao: FloodMessageDao,
     val jobManager: MixinJobManager,
-    private val linkState: LinkState
+    private val linkState: LinkState,
+    private val jobDao: JobDao
 ) : WebSocketListener() {
 
     private val failCode = 1000
@@ -119,6 +123,7 @@ class ChatWebSocket(
         val transaction = WebSocketTransaction(blazeMessage.id,
             object : TransactionCallbackSuccess {
                 override fun success(data: BlazeMessage) {
+                    listPendingOfferHandled = false
                 }
             },
             object : TransactionCallbackError {
@@ -237,12 +242,14 @@ class ChatWebSocket(
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
-        } else if (blazeMessage.action == CREATE_MESSAGE) {
+        } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL) {
             if (data.userId == accountId && data.category.isEmpty()) {
                 makeMessageStatus(data.status, data.messageId)
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
+        } else {
+            jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(data.messageId, MessageStatus.READ.name)))
         }
     }
 
