@@ -10,40 +10,33 @@ class CallState : LiveData<CallState.CallInfo>() {
     fun setCallState(callState: CallService.CallState) {
         if (callInfo.callState == callState) return
 
-        callInfo = CallInfo(callState, callInfo.dialingStatus, callInfo.messageId, callInfo.user, callInfo.connectedTime, callInfo.isInitiator)
-        postValue(callInfo)
-    }
-
-    fun setDialingStatus(dialingStatus: MessageStatus) {
-        if (callInfo.dialingStatus == dialingStatus) return
-
-        callInfo = CallInfo(callInfo.callState, dialingStatus, callInfo.messageId, callInfo.user, callInfo.connectedTime, callInfo.isInitiator)
+        callInfo = CallInfo(callState, callInfo.messageId, callInfo.user, callInfo.connectedTime, callInfo.isInitiator)
         postValue(callInfo)
     }
 
     fun setMessageId(messageId: String) {
         if (callInfo.messageId == messageId) return
 
-        callInfo = CallInfo(callInfo.callState, callInfo.dialingStatus, messageId, callInfo.user, callInfo.connectedTime, callInfo.isInitiator)
+        callInfo = CallInfo(callInfo.callState, messageId, callInfo.user, callInfo.connectedTime, callInfo.isInitiator)
         postValue(callInfo)
     }
 
     fun setUser(user: User?) {
         if (callInfo.user == user) return
 
-        callInfo = CallInfo(callInfo.callState, callInfo.dialingStatus, callInfo.messageId, user, callInfo.connectedTime, callInfo.isInitiator)
+        callInfo = CallInfo(callInfo.callState, callInfo.messageId, user, callInfo.connectedTime, callInfo.isInitiator)
     }
 
     fun setConnectedTime(connectedTime: Long?) {
         if (callInfo.connectedTime == connectedTime) return
 
-        callInfo = CallInfo(callInfo.callState, callInfo.dialingStatus, callInfo.messageId, callInfo.user, connectedTime, callInfo.isInitiator)
+        callInfo = CallInfo(callInfo.callState, callInfo.messageId, callInfo.user, connectedTime, callInfo.isInitiator)
     }
 
     fun setIsInitiator(isInitiator: Boolean) {
         if (callInfo.isInitiator == isInitiator) return
 
-        callInfo = CallInfo(callInfo.callState, callInfo.dialingStatus, callInfo.messageId, callInfo.user, callInfo.connectedTime, isInitiator)
+        callInfo = CallInfo(callInfo.callState, callInfo.messageId, callInfo.user, callInfo.connectedTime, isInitiator)
     }
 
     fun reset() {
@@ -71,7 +64,6 @@ class CallState : LiveData<CallState.CallInfo>() {
 
     class CallInfo(
         val callState: CallService.CallState = CallService.CallState.STATE_IDLE,
-        val dialingStatus: MessageStatus = MessageStatus.SENDING,
         val messageId: String? = null,
         val user: User? = null,
         val connectedTime: Long? = null,

@@ -41,7 +41,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         linkState.observe(this, Observer { state ->
             check(state)
         })
-        callState.observe(this, Observer { _ ->
+        callState.observe(this, Observer {
             check(linkState.state)
         })
     }
@@ -128,6 +128,8 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         if (callState.callInfo.connectedTime != null) {
             time_tv.visibility = VISIBLE
             startTimer()
+        } else {
+            time_tv.visibility = GONE
         }
         state_layout.setBackgroundResource(R.color.stateGreen)
         progressBar.visibility = GONE
@@ -143,10 +145,12 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         timer = Timer(true)
         val timerTask = object : TimerTask() {
             override fun run() {
-                if (isAdded && callState.callInfo.connectedTime != null) {
+                if (isAdded) {
                     requireContext().runOnUiThread {
-                        val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-                        time_tv?.text = duration.formatMillis()
+                        if (callState.callInfo.connectedTime != null) {
+                            val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                            time_tv?.text = duration.formatMillis()
+                        }
                     }
                 }
             }

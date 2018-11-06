@@ -35,11 +35,7 @@ class CallNotificationBuilder {
 
             when (state.callInfo.callState) {
                 CallService.CallState.STATE_DIALING -> {
-                    if (state.callInfo.dialingStatus != MessageStatus.READ) {
-                        builder.setContentText(context.getString(R.string.call_notification_outgoing))
-                    } else {
-                        builder.setContentText(context.getString(R.string.call_notification_ringing))
-                    }
+                    builder.setContentText(context.getString(R.string.call_notification_outgoing))
                     builder.addAction(getAction(context, CallService.ACTION_CALL_CANCEL, R.drawable.ic_close_black_24dp, R.string
                         .call_notification_action_cancel) {
                         it.putExtra(CallService.EXTRA_TO_IDLE, true)

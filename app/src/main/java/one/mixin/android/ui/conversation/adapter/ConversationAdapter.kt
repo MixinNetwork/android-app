@@ -43,7 +43,7 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
-import one.mixin.android.vo.isCallNeedSave
+import one.mixin.android.vo.isCallMessage
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs
 
@@ -454,7 +454,7 @@ class ConversationAdapter(
                     item.type == MessageCategory.PLAIN_VIDEO.name -> VIDEO_TYPE
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
                     item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
-                item.isCallNeedSave() -> CALL_TYPE
+                item.isCallMessage() -> CALL_TYPE
                 else -> UNKNOWN_TYPE
             }
         }, NULL_TYPE)

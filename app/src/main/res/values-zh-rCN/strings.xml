@@ -477,7 +477,6 @@
     <string name="pending_confirmations">%1$d/%2$d 区块确认数</string>
     <!-- webrtc -->
     <string name="call_notification_outgoing">正在呼叫...</string>
-    <string name="call_notification_ringing">响铃中...</string>
     <string name="call_notification_incoming_voice">语音通话来电</string>
     <string name="call_notification_missed_voice">未接语音通话</string>
     <string name="call_notification_connected">正在进行语音通话</string>

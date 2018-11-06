@@ -102,9 +102,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET status = :status WHERE id = :id and user_id == :userId")
-    fun updateMessageStatusTmp(status: String, id: String, userId: String = Session.getAccountId()!!)
-
     @Query("UPDATE messages SET media_status = :status WHERE id = :id")
     fun updateMediaStatus(status: String, id: String)
 
@@ -150,9 +147,6 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("UPDATE messages SET content = :content WHERE id = :id")
     fun updateMessageContent(content: String, id: String)
-
-    @Query("UPDATE messages SET category = :category WHERE id = :id")
-    fun updateMessageCategory(category: String, id: String)
 
     @Transaction
     @Query("SELECT * FROM messages WHERE id = :messageId")

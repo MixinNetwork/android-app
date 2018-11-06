@@ -98,7 +98,7 @@ fun MessageItem.canNotReply() =
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name || (this.mediaStatus != MediaStatus.DONE.name && this.isMedia())
 
-fun MessageItem.isCallNeedSave() =
+fun MessageItem.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
         type == MessageCategory.WEBRTC_AUDIO_DECLINE.name ||
         type == MessageCategory.WEBRTC_AUDIO_END.name ||

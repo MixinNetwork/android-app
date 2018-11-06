@@ -60,8 +60,6 @@ object Constants {
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
 
     object Call {
-        const val PREF_SPEAKERPHONE = "pref_speakerphone"
-        const val PREF_SPEAKERPHONE_DEFAULT = "auto"
         const val PREF_TURN_FETCH = "pref_turn_fetch"
         const val PREF_TURN = "pref_turn"
 

@@ -244,10 +244,4 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
             null, data.createdAt, status, mediaDuration = duration)
         messageDao.insert(message)
     }
-
-    private fun isExistMessage(messageId: String): Boolean {
-        val id = messageDao.findMessageIdById(messageId)
-        val messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
-        return id != null || messageHistory != null
-    }
 }

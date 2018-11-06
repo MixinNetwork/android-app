@@ -548,12 +548,6 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun isExistMessage(messageId: String): Boolean {
-        val id = messageDao.findMessageIdById(messageId)
-        val messageHistory = messageHistoryDao.findMessageHistoryById(messageId)
-        return id != null || messageHistory != null
-    }
-
     private fun sendNotificationJob(message: Message, source: String) {
         if (source == LIST_PENDING_MESSAGES) {
             return

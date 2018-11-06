@@ -326,10 +326,9 @@ internal class AppModule {
         offsetDao: OffsetDao,
         floodMessageDao: FloodMessageDao,
         jobManager: MixinJobManager,
-        linkState: LinkState,
-        callState: CallState
+        linkState: LinkState
     ): ChatWebSocket =
-        ChatWebSocket(okHttp, app, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState, callState)
+        ChatWebSocket(okHttp, app, conversationDao, messageDao, offsetDao, floodMessageDao, jobManager, linkState)
 
     @Provides
     @Singleton

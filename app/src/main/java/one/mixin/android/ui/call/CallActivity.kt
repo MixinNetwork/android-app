@@ -39,14 +39,12 @@ import one.mixin.android.extension.fastBlur
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.CallState
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.CallButton
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import javax.inject.Inject
@@ -104,12 +102,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         callState.observe(this, Observer { callInfo ->
             when (callInfo.callState) {
                 CallService.CallState.STATE_DIALING -> {
-                    if (callInfo.dialingStatus != MessageStatus.READ) {
-                        volumeControlStream = AudioManager.STREAM_VOICE_CALL
-                        handleDialingConnecting()
-                    } else {
-                        handleDialingWaiting()
-                    }
+                    volumeControlStream = AudioManager.STREAM_VOICE_CALL
+                    handleDialingConnecting()
                 }
                 CallService.CallState.STATE_RINGING -> {
                     handleRinging()
@@ -232,14 +226,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
         action_tv.text = getString(R.string.call_notification_outgoing)
     }
 
-    private fun handleDialingWaiting() {
-        voice_cb.visibility = INVISIBLE
-        mute_cb.visibility = INVISIBLE
-        answer_cb.visibility = INVISIBLE
-        moveHangup(true, 0)
-        action_tv.text = getString(R.string.call_notification_ringing)
-    }
-
     private fun handleRinging() {
         voice_cb.visibility = INVISIBLE
         mute_cb.visibility = INVISIBLE
@@ -293,9 +279,11 @@ class CallActivity : BaseActivity(), SensorEventListener {
         timer = Timer(true)
         val timerTask = object : TimerTask() {
             override fun run() {
-                if (callState.callInfo.connectedTime != null) {
-                    val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-                    action_tv.text = duration.formatMillis()
+                runOnUiThread {
+                    if (callState.callInfo.connectedTime != null) {
+                        val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                        action_tv.text = duration.formatMillis()
+                    }
                 }
             }
         }

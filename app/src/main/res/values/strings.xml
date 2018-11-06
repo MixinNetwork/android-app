@@ -485,7 +485,6 @@
     <string name="pending_confirmations">%1$d/%2$d confimations</string>
     <!-- webrtc -->
     <string name="call_notification_outgoing">Calling...</string>
-    <string name="call_notification_ringing">Ringing...</string>
     <string name="call_notification_incoming_voice">Incoming voice call</string>
     <string name="call_notification_missed_voice">Missed voice call</string>
     <string name="call_notification_connected">Ongoing voice call</string>
