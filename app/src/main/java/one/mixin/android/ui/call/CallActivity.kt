@@ -261,7 +261,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     private fun handleDisconnected() {
-        finish()
+        finishAndRemoveTask()
     }
 
     private fun handleBusy() {

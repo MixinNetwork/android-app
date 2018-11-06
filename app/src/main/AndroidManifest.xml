@@ -197,7 +197,8 @@
 
         <activity android:name=".ui.call.CallActivity"
             android:theme="@style/AppTheme.Call"
-            android:launchMode="singleTop"
+            android:launchMode="singleInstance"
+            android:documentLaunchMode="intoExisting"
             android:windowSoftInputMode="stateAlwaysHidden"/>
 
         <provider
