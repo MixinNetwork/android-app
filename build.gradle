@@ -60,7 +60,7 @@ buildscript {
         ext.largeImageViewVersion = '1.1.1'
         ext.truetimeVersion = '3.4'
         ext.biometricpromptVersion = '1.0.6'
-        ext.webrtcVersion = '1.0.24465'
+        ext.webrtcVersion = '1.0.25331'
     }
 
     repositories {

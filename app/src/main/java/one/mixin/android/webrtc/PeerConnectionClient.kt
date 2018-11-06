@@ -14,7 +14,6 @@ import org.webrtc.RtpReceiver
 import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
-import org.webrtc.SurfaceTextureHelper
 import timber.log.Timber
 import java.util.concurrent.Executors
 
@@ -32,16 +31,17 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     }
 
     private val pcObserver = PCObserver()
-    private val iceServers = arrayListOf<PeerConnection.IceServer>().apply {
-        add(PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer())
-    }
+    private val iceServers = arrayListOf<PeerConnection.IceServer>()
     var isInitiator = false
-    private var surfaceTextureHelper: SurfaceTextureHelper? = null
     private var remoteCandidateCache = arrayListOf<IceCandidate>()
     private var remoteSdpCache: SessionDescription? = null
     private var peerConnection: PeerConnection? = null
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
+    private val sdpConstraint = MediaConstraints().apply {
+        mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
+        mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
+    }
 
     fun createPeerConnectionFactory(options: PeerConnectionFactory.Options) {
         if (factory != null) {
@@ -74,7 +74,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
                         Timber.d("createOffer onCreateFailure error: $error")
                     }
                 }
-                peerConnection.createOffer(offerSdpObserver, MediaConstraints())
+                peerConnection.createOffer(offerSdpObserver, sdpConstraint)
             } catch (e: Exception) {
                 reportError("Failed to create offer: ${e.message}")
             }
@@ -105,7 +105,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
                         Timber.d("createAnswer onCreateFailure error: $error")
                     }
                 }
-                peerConnection.createAnswer(answerSdpObserver, MediaConstraints())
+                peerConnection.createAnswer(answerSdpObserver, sdpConstraint)
             } catch (e: Exception) {
                 reportError("Failed to create answer: ${e.message}")
             }
@@ -163,8 +163,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             peerConnection = null
             audioSource?.dispose()
             audioSource = null
-            surfaceTextureHelper?.dispose()
-            surfaceTextureHelper = null
             factory?.dispose()
             factory = null
             events.onPeerConnectionClosed()
@@ -192,6 +190,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
+            continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
         }
         peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)
             ?: throw IllegalStateException("PeerConnection is not created")
