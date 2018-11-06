@@ -88,10 +88,9 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 messageDao.insert(message)
             }
             notifyServer(data)
-            return
+        } else {
+            processCall(data)
         }
-
-        processCall(data)
     }
 
     private fun processCall(data: BlazeMessageData) {
@@ -119,7 +118,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 }
                 notifyServer(data)
                 return
-            } else if (data.quoteMessageId == null || messageDao.findMessageById(data.quoteMessageId) != null) {
+            } else if (data.quoteMessageId == null || messageDao.findMessageIdById(data.quoteMessageId) != null) {
                 notifyServer(data)
                 return
             }
@@ -164,10 +163,10 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         return
                     }
 
-                    val uId = if (callState.callInfo.isInitiator) {
+                    val uId = if (callState.isInitiator) {
                         Session.getAccountId()!!
                     } else {
-                        callState.callInfo.user!!.userId
+                        callState.user!!.userId
                     }
                     saveCallMessage(data, userId = uId)
                     if (data.quoteMessageId != callState.callInfo.messageId) {
@@ -178,7 +177,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
                         data.quoteMessageId != callState.callInfo.messageId ||
-                        callState.callInfo.user == null) {
+                        callState.user == null) {
                         notifyServer(data)
                         return
                     }
@@ -192,11 +191,11 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         return
                     }
 
-                    val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
-                    val uId = if (callState.callInfo.isInitiator) {
+                    val duration = System.currentTimeMillis() - callState.connectedTime!!
+                    val uId = if (callState.isInitiator) {
                         Session.getAccountId()!!
                     } else {
-                        callState.callInfo.user!!.userId
+                        callState.user!!.userId
                     }
                     saveCallMessage(data, duration = duration.toString(), userId = uId, status = MessageStatus.READ)
                     CallService.startService(ctx, CallService.ACTION_CALL_REMOTE_END)
@@ -207,10 +206,10 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         return
                     }
 
-                    val uId = if (callState.callInfo.isInitiator) {
+                    val uId = if (callState.isInitiator) {
                         Session.getAccountId()!!
                     } else {
-                        callState.callInfo.user!!.userId
+                        callState.user!!.userId
                     }
                     saveCallMessage(data, userId = uId)
                     CallService.startService(ctx, CallService.ACTION_CALL_REMOTE_FAILED)

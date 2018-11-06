@@ -6,41 +6,29 @@ import one.mixin.android.webrtc.CallService
 
 class CallState : LiveData<CallState.CallInfo>() {
     var callInfo: CallInfo = CallInfo()
+    var user: User? = null
+    var connectedTime: Long? = null
+    var isInitiator: Boolean = true
 
     fun setCallState(callState: CallService.CallState) {
         if (callInfo.callState == callState) return
 
-        callInfo = CallInfo(callState, callInfo.messageId, callInfo.user, callInfo.connectedTime, callInfo.isInitiator)
+        callInfo = CallInfo(callState, callInfo.messageId)
         postValue(callInfo)
     }
 
     fun setMessageId(messageId: String) {
         if (callInfo.messageId == messageId) return
 
-        callInfo = CallInfo(callInfo.callState, messageId, callInfo.user, callInfo.connectedTime, callInfo.isInitiator)
+        callInfo = CallInfo(callInfo.callState, messageId)
         postValue(callInfo)
-    }
-
-    fun setUser(user: User?) {
-        if (callInfo.user == user) return
-
-        callInfo = CallInfo(callInfo.callState, callInfo.messageId, user, callInfo.connectedTime, callInfo.isInitiator)
-    }
-
-    fun setConnectedTime(connectedTime: Long?) {
-        if (callInfo.connectedTime == connectedTime) return
-
-        callInfo = CallInfo(callInfo.callState, callInfo.messageId, callInfo.user, connectedTime, callInfo.isInitiator)
-    }
-
-    fun setIsInitiator(isInitiator: Boolean) {
-        if (callInfo.isInitiator == isInitiator) return
-
-        callInfo = CallInfo(callInfo.callState, callInfo.messageId, callInfo.user, callInfo.connectedTime, isInitiator)
     }
 
     fun reset() {
         callInfo = CallInfo()
+        user = null
+        connectedTime = null
+        isInitiator = true
         postValue(callInfo)
     }
 
@@ -51,7 +39,7 @@ class CallState : LiveData<CallState.CallInfo>() {
             CallService.CallState.STATE_DIALING -> CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
             CallService.CallState.STATE_RINGING -> CallService.startService(ctx, CallService.ACTION_CALL_DECLINE)
             CallService.CallState.STATE_ANSWERING -> {
-                if (callInfo.isInitiator) {
+                if (isInitiator) {
                     CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
                 } else {
                     CallService.startService(ctx, CallService.ACTION_CALL_DECLINE)
@@ -64,9 +52,6 @@ class CallState : LiveData<CallState.CallInfo>() {
 
     class CallInfo(
         val callState: CallService.CallState = CallService.CallState.STATE_IDLE,
-        val messageId: String? = null,
-        val user: User? = null,
-        val connectedTime: Long? = null,
-        val isInitiator: Boolean = true
+        val messageId: String? = null
     )
 }

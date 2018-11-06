@@ -190,8 +190,13 @@ enum class MessageCategory {
     WEBRTC_AUDIO_DECLINE,
     WEBRTC_AUDIO_END,
     WEBRTC_AUDIO_BUSY,
-    WEBRTC_AUDIO_FAILED,
-    UNKNOWN
+    WEBRTC_AUDIO_FAILED
+}
+
+fun String.isIllegalMessageCategory(): Boolean {
+    val list = arrayListOf<String>()
+    MessageCategory.values().mapTo(list) { it.name }
+    return !list.contains(this)
 }
 
 enum class MessageStatus { SENDING, SENT, DELIVERED, READ, FAILED }

@@ -3,7 +3,6 @@ package one.mixin.android.webrtc
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.os.IBinder
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
@@ -39,7 +38,6 @@ import one.mixin.android.vo.TurnServer
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.vo.toUser
-import one.mixin.android.webrtc.receiver.IncomingCallReceiver
 import one.mixin.android.websocket.BlazeMessageData
 import org.webrtc.IceCandidate
 import org.webrtc.PeerConnection
@@ -64,7 +62,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
     private var audioEnable = true
 
-    private var callReceiver: IncomingCallReceiver? = null
     private var disposable: Disposable? = null
 
     private val peerConnectionClient: PeerConnectionClient by lazy {
@@ -95,9 +92,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         AndroidInjection.inject(this)
         super.onCreate()
         peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
-
-        callReceiver = IncomingCallReceiver()
-        registerReceiver(callReceiver, IntentFilter("android.intent.action.PHONE_STATE"))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -133,7 +127,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     override fun onDestroy() {
         callState.reset()
-        unregisterReceiver(callReceiver)
     }
 
     private fun disconnect() {
@@ -165,13 +158,13 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         audioManager.start(false)
         blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         user = intent.getParcelableExtra(ARGS_USER)
-        callState.setUser(user)
+        callState.user = user
         updateNotification()
         quoteMessageId = blazeMessageData!!.messageId
         callState.setMessageId(quoteMessageId!!)
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         peerConnectionClient.isInitiator = false
-        callState.setIsInitiator(false)
+        callState.isInitiator = false
         CallActivity.show(this, user)
     }
 
@@ -182,11 +175,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         audioManager.start(true)
         conversationId = intent.getStringExtra(EXTRA_CONVERSATION_ID)
         user = intent.getParcelableExtra(ARGS_USER)
-        callState.setUser(user)
+        callState.user = user
         updateNotification()
         timeoutFuture = timeoutExecutor.schedule(TimeoutRunnable(this), DEFAULT_TIMEOUT_MINUTES, TimeUnit.MINUTES)
         peerConnectionClient.isInitiator = true
-        callState.setIsInitiator(true)
+        callState.isInitiator = true
         CallActivity.show(this, user)
         getTurnServer { peerConnectionClient.createOffer(it) }
     }
@@ -225,7 +218,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleIceConnected() {
         if (callState.callInfo.callState == CallState.STATE_CONNECTED) return
 
-        callState.setConnectedTime(System.currentTimeMillis())
+        callState.connectedTime = System.currentTimeMillis()
         callState.setCallState(CallState.STATE_CONNECTED)
         updateNotification()
         timeoutFuture?.cancel(true)
@@ -418,7 +411,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                     nowInUtc(), MessageStatus.SENDING)
             } else {
                 if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
-                    val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                    val duration = System.currentTimeMillis() - callState.connectedTime!!
                     createCallMessage(messageId, conversationId!!, self!!.userId, category, content,
                         nowInUtc(), MessageStatus.SENDING, quoteMessageId, duration.toString())
                 } else {
@@ -432,7 +425,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 return
             }
             if (category == MessageCategory.WEBRTC_AUDIO_END.name) {
-                val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                val duration = System.currentTimeMillis() - callState.connectedTime!!
                 createCallMessage(UUID.randomUUID().toString(), blazeMessageData!!.conversationId,
                     self!!.userId, category, content, nowInUtc(), MessageStatus.SENDING, quoteMessageId,
                     duration.toString())
@@ -456,10 +449,10 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun saveMessage(m: Message) {
         if (!checkConversation(m)) return
 
-        val uId = if (callState.callInfo.isInitiator) {
+        val uId = if (callState.isInitiator) {
             self!!.userId
         } else {
-            callState.callInfo.user!!.userId
+            callState.user!!.userId
         }
         when {
             m.category == MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {

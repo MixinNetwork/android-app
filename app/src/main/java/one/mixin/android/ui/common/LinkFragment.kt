@@ -52,7 +52,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     }
 
     override fun onResume() {
-        if (callState.callInfo.connectedTime != null) {
+        if (callState.connectedTime != null) {
             time_tv.visibility = VISIBLE
             startTimer()
         }
@@ -68,14 +68,12 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         }
 
         if (LinkState.isOnline(state)) {
-            state_layout.animateHeight(context!!.dpToPx(26f), 0)
             floodMessageCount.observe(this, this)
-            barShown = false
+            hiddenBar()
         } else {
             floodMessageCount.removeObserver(this)
-            barShown = false
             setConnecting()
-            state_layout.animateHeight(0, context!!.dpToPx(26f))
+            showBar()
         }
     }
 
@@ -125,7 +123,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     }
 
     private fun setCalling() {
-        if (callState.callInfo.connectedTime != null) {
+        if (callState.connectedTime != null) {
             time_tv.visibility = VISIBLE
             startTimer()
         } else {
@@ -135,7 +133,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         progressBar.visibility = GONE
         state_tv.setText(R.string.state_calling)
         state_layout.setOnClickListener {
-            CallActivity.show(requireContext(), callState.callInfo.user)
+            CallActivity.show(requireContext(), callState.user)
         }
     }
 
@@ -147,8 +145,8 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
             override fun run() {
                 if (isAdded) {
                     requireContext().runOnUiThread {
-                        if (callState.callInfo.connectedTime != null) {
-                            val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                        if (callState.connectedTime != null) {
+                            val duration = System.currentTimeMillis() - callState.connectedTime!!
                             time_tv?.text = duration.formatMillis()
                         }
                     }

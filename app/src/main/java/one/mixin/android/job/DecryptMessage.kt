@@ -37,6 +37,7 @@ import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
+import one.mixin.android.vo.isIllegalMessageCategory
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -82,7 +83,10 @@ class DecryptMessage : Injector() {
 
     private fun processMessage(data: BlazeMessageData) {
         try {
-            handled = false
+            if (data.category.isIllegalMessageCategory()) {
+                updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                return
+            }
 
             syncConversation(data)
             processSystemMessage(data)
@@ -90,10 +94,6 @@ class DecryptMessage : Injector() {
             processSignalMessage(data)
             processAppButton(data)
             processAppCard(data)
-
-            if (!handled) {
-                updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
-            }
         } catch (e: Exception) {
             Timber.e("Process error: $e")
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)

@@ -8,7 +8,6 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import one.mixin.android.R
 import one.mixin.android.vo.CallState
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 
@@ -57,7 +56,7 @@ class CallNotificationBuilder {
                 }
                 else -> {
                     builder.setContentText(context.getString(R.string.call_connecting))
-                    val action = if (state.callInfo.isInitiator) CallService.ACTION_CALL_CANCEL else CallService.ACTION_CALL_DECLINE
+                    val action = if (state.isInitiator) CallService.ACTION_CALL_CANCEL else CallService.ACTION_CALL_DECLINE
                     builder.addAction(getAction(context, action, R.drawable.ic_close_black_24dp, R.string
                         .call_notification_action_hang_up) {
                         it.putExtra(CallService.EXTRA_TO_IDLE, true)

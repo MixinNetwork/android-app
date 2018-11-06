@@ -130,7 +130,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     override fun onResume() {
         sensorManager?.registerListener(this, sensorManager?.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_UI)
-        if (callState.callInfo.connectedTime != null) {
+        if (callState.connectedTime != null) {
             startTimer()
         }
         super.onResume()
@@ -280,8 +280,8 @@ class CallActivity : BaseActivity(), SensorEventListener {
         val timerTask = object : TimerTask() {
             override fun run() {
                 runOnUiThread {
-                    if (callState.callInfo.connectedTime != null) {
-                        val duration = System.currentTimeMillis() - callState.callInfo.connectedTime!!
+                    if (callState.connectedTime != null) {
+                        val duration = System.currentTimeMillis() - callState.connectedTime!!
                         action_tv.text = duration.formatMillis()
                     }
                 }

@@ -476,7 +476,7 @@
     <string name="pending">待入账</string>
     <string name="pending_confirmations">%1$d/%2$d 区块确认数</string>
     <!-- webrtc -->
-    <string name="call_notification_outgoing">正在呼叫...</string>
+    <string name="call_notification_outgoing">正在呼叫&#8230;</string>
     <string name="call_notification_incoming_voice">语音通话来电</string>
     <string name="call_notification_missed_voice">未接语音通话</string>
     <string name="call_notification_connected">正在进行语音通话</string>
@@ -486,7 +486,7 @@
     <string name="call_notification_action_callback">回拨</string>
     <string name="call_notification_action_reply">回复</string>
     <string name="call_notification_action_hang_up">挂断</string>
-    <string name="call_connecting">正在连接...</string>
+    <string name="call_connecting">正在连接&#8230;</string>
     <string name="call_speaker">扬声器</string>
     <string name="call_hang_up">挂断</string>
     <string name="call_decline">挂断</string>

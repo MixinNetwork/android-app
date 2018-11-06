@@ -48,10 +48,10 @@ class MenuAdapter(private val onMenuClickListener: OnMenuClickListener) : Recycl
 
     companion object {
         val icons = intArrayOf(R.drawable.ic_selector_transfer, R.drawable.ic_selector_voice,
-            R.drawable.ic_selector_gallery, R.drawable.ic_selector_camera,
+            R.drawable.ic_selector_camera, R.drawable.ic_selector_gallery,
             R.drawable.ic_selector_document, R.drawable.ic_selector_contact)
         val backgrounds = intArrayOf(R.drawable.bg_selector_contact, R.drawable.bg_selector_voice,
-            R.drawable.bg_selector_gallery, R.drawable.bg_selector_camera,
+            R.drawable.bg_selector_camera, R.drawable.bg_selector_gallery,
             R.drawable.bg_selector_document, R.drawable.bg_selector_contact)
         val titles = intArrayOf(R.string.transfer, R.string.voice, R.string.camera, R.string.gallery,
             R.string.document, R.string.contact)

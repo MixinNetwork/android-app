@@ -226,14 +226,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     }
 
     private fun createAudioTrack(): AudioTrack {
-        val audioConstraints = MediaConstraints().apply {
-//            optional.add(MediaConstraints.KeyValuePair(DTLS_SRTP_KEY_AGREEMENT_CONSTRAINT, "true"))
-//            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_ECHO_CANCELLATION_CONSTRAINT, "false"))
-//            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_AUTO_GAIN_CONTROL_CONSTRAINT, "false"))
-//            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_HIGH_PASS_FILTER_CONSTRAINT, "false"))
-//            mandatory.add(MediaConstraints.KeyValuePair(AUDIO_NOISE_SUPPRESSION_CONSTRAINT, "false"))
-        }
-        audioSource = factory!!.createAudioSource(audioConstraints)
+        audioSource = factory!!.createAudioSource(MediaConstraints())
         audioTrack = factory!!.createAudioTrack(AUDIO_TRACK_ID, audioSource)
         audioTrack!!.setEnabled(true)
         return audioTrack!!
@@ -367,14 +360,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     companion object {
         const val TAG = "PeerConnectionClient"
 
-        private const val DTLS_SRTP_KEY_AGREEMENT_CONSTRAINT = "DtlsSrtpKeyAgreement"
-        private const val STREAM_ID = "ARDAMS"
-        private const val VIDEO_TRACK_ID = "ARDAMSv0"
         private const val AUDIO_TRACK_ID = "ARDAMSa0"
-
-        private const val AUDIO_ECHO_CANCELLATION_CONSTRAINT = "googEchoCancellation"
-        private const val AUDIO_AUTO_GAIN_CONTROL_CONSTRAINT = "googAutoGainControl"
-        private const val AUDIO_HIGH_PASS_FILTER_CONSTRAINT = "googHighpassFilter"
-        private const val AUDIO_NOISE_SUPPRESSION_CONSTRAINT = "googNoiseSuppression"
     }
 }
