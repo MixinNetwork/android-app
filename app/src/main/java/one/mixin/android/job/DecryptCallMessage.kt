@@ -55,7 +55,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
         if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             val isExpired = try {
                 val offset = System.currentTimeMillis() - data.createdAt.createAtToLong()
-                offset > CallService.DEFAULT_TIMEOUT_MINUTES * 60 * 1000
+                offset > CallService.DEFAULT_TIMEOUT_MINUTES * 58 * 1000
             } catch (e: NumberFormatException) {
                 true
             }
