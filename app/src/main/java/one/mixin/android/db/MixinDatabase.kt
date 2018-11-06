@@ -30,6 +30,7 @@ import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Hyperlink
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.MessageFts
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.Participant
@@ -67,7 +68,9 @@ import one.mixin.android.vo.User
     (StickerRelationship::class),
     (TopAsset::class),
     (FavoriteApp::class),
-    (Job::class)], version = CURRENT_VERSION)
+    (Job::class),
+    (MessageFts::class)],
+    version = CURRENT_VERSION)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao

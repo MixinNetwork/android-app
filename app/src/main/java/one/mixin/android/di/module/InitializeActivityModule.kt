@@ -5,6 +5,7 @@ import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.landing.LoadingFragment
 import one.mixin.android.ui.landing.SetupNameFragment
 import one.mixin.android.ui.landing.TimeFragment
+import one.mixin.android.ui.landing.UpgradeFragment
 
 @Module
 abstract class InitializeActivityModule {
@@ -16,4 +17,7 @@ abstract class InitializeActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeTimeFragment(): TimeFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeUpgradeFragment(): UpgradeFragment
 }

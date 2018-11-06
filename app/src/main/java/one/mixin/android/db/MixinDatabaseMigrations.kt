@@ -147,6 +147,9 @@ class MixinDatabaseMigrations private constructor() {
                 """)
                 database.execSQL("DROP TABLE IF EXISTS apps")
                 database.execSQL("ALTER TABLE new_apps RENAME TO apps")
+                database.execSQL("""
+                    CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, content=`messages`)
+                """)
             }
         }
     }

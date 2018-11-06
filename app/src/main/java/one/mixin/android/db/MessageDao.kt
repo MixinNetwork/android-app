@@ -4,7 +4,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.util.Session
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
@@ -171,29 +170,31 @@ interface MessageDao : BaseDao<Message> {
     fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
 
     @Query(
-        "SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl, " +
-            "c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount, " +
-            "u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName " +
-            "FROM messages m " +
-            "INNER JOIN users u ON c.owner_id = u.user_id " +
-            "INNER JOIN conversations c ON c.conversation_id = m.conversation_id " +
-            "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query " + ESCAPE_SUFFIX + ") " +
-            "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query" + ESCAPE_SUFFIX + ") " +
-            "GROUP BY m.conversation_id " +
-            "ORDER BY m.created_at DESC " +
-            "LIMIT :limit"
+        """
+            SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl,
+            c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount,
+            u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName
+            FROM messages m INNER JOIN users u ON c.owner_id = u.user_id
+            INNER JOIN conversations c ON c.conversation_id = m.conversation_id
+            WHERE m.rowid in (SELECT rowid FROM messages_fts m_fts  WHERE m_fts.content MATCH :query) 
+            AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' 
+            GROUP BY m.conversation_id
+            ORDER BY m.created_at DESC
+            LIMIT :limit
+            """
     )
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
 
     @Query(
-        "SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, " +
-            "m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName " +
-            "FROM messages m " +
-            "INNER JOIN users u ON m.user_id = u.user_id " +
-            "WHERE m.conversation_id = :conversationId " +
-            "AND (((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query" + ESCAPE_SUFFIX + ") " +
-            "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query" + ESCAPE_SUFFIX + ")) " +
-            "ORDER BY m.created_at DESC"
+        """
+            SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName,
+            m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName 
+            FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+            WHERE m.rowid in (SELECT rowid FROM messages_fts m_fts  WHERE m_fts.content MATCH :query) 
+            AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED'
+            AND  m.conversation_id = :conversationId
+            ORDER BY m.created_at DESC
+            """
     )
     fun fuzzySearchMessageByConversationId(
         query: String,
@@ -389,4 +390,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT * FROM messages WHERE id IN (:messageIds) ORDER BY created_at, rowid")
     suspend fun getSortMessagesByIds(messageIds: List<String>): List<Message>
+
+    @Query("INSERT INTO `messages_fts` (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
+    suspend fun upgradeFtsMessage()
 }

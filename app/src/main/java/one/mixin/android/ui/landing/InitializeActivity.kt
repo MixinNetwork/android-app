@@ -17,9 +17,11 @@ class InitializeActivity : BaseActivity() {
         setContentView(R.layout.activity_landing)
         val setName = intent.getBooleanExtra(SET_NAME, false)
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
+        val ftsUpgrade = intent.getBooleanExtra(FTS_UPGRADE, false)
         when {
             setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
             wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
+            ftsUpgrade -> replaceFragment(LoadingFragment.newInstance(), R.id.container)
             else -> replaceFragment(
                 LoadingFragment.newInstance(),
                 R.id.container,
@@ -34,14 +36,17 @@ class InitializeActivity : BaseActivity() {
     companion object {
         const val SET_NAME = "set_name"
         const val WRONG_TIME = "wrong_time"
+        const val FTS_UPGRADE = "fts_upgrade"
         private fun getIntent(
             context: Context,
             setName: Boolean,
-            wrongTime: Boolean = false
+            wrongTime: Boolean = false,
+            ftsUpgrade: Boolean = false
         ): Intent {
             return Intent(context, InitializeActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)
                 this.putExtra(WRONG_TIME, wrongTime)
+                this.putExtra(FTS_UPGRADE, ftsUpgrade)
             }
         }
 
@@ -65,6 +70,17 @@ class InitializeActivity : BaseActivity() {
 
         fun showSetupName(context: Context) {
             context.startActivity(getIntent(context, setName = true, wrongTime = false))
+        }
+
+        fun showFts(context: Context) {
+            context.startActivity(
+                getIntent(
+                    context,
+                    setName = false,
+                    wrongTime = false,
+                    ftsUpgrade = true
+                )
+            )
         }
     }
 }
