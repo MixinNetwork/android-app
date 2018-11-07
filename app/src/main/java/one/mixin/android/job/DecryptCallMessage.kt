@@ -14,6 +14,7 @@ import one.mixin.android.vo.CallState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.User
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.webrtc.CallService
@@ -22,6 +23,7 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import timber.log.Timber
+import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.Executors
 
@@ -40,6 +42,14 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
 
     fun onRun(data: BlazeMessageData) {
         if (data.category.startsWith("WEBRTC_") && !isExistMessage(data.messageId)) {
+            if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name && messageDao.findMessageIdById(data.messageId) != null) {
+                notifyServer(data)
+                return
+            } else if (data.category != MessageCategory.WEBRTC_AUDIO_OFFER.name && (data.quoteMessageId == null
+                    || messageDao.findMessageIdById(data.quoteMessageId) != null)) {
+                notifyServer(data)
+                return
+            }
             try {
                 syncConversation(data)
                 processWebRTC(data)
@@ -62,11 +72,11 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 listPendingJobMap[data.messageId] = Pair(GlobalScope.launch(listPendingDispatcher) {
                     delay(LIST_PENDING_CALL_DELAY)
                     listPendingOfferHandled = true
-                    listPendingJobMap.forEach {
-                        val pair = it.value
+                    listPendingJobMap.forEach { entry ->
+                        val pair = entry.value
                         val job = pair.first
                         val curData = pair.second
-                        if (it.key != data.messageId && !job.isCancelled) {
+                        if (entry.key != data.messageId && !job.isCancelled) {
                             job.cancel()
                             val m = createCallMessage(UUID.randomUUID().toString(), curData.conversationId, Session.getAccountId()!!,
                                 MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING, curData.messageId)
@@ -95,30 +105,24 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
     private fun processCall(data: BlazeMessageData) {
         val ctx = MixinApplication.appContext
         if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
-            val user = userDao.findUser(data.userId)!!
-            CallService.incoming(ctx, user, data)
-        } else {
-            val hasUnHandledOffer = listPendingJobMap.containsKey(data.quoteMessageId)
-            if (hasUnHandledOffer) {
-                listPendingJobMap[data.quoteMessageId]?.let { pair ->
-                    pair.first.let {
-                        if (!it.isCancelled) {
-                            it.cancel()
-                        }
-                    }
-                    listPendingJobMap.remove(data.quoteMessageId)
-
-                    val message = createCallMessage(data.quoteMessageId!!, data.conversationId, data.userId,
-                        MessageCategory.WEBRTC_AUDIO_CANCEL.name, null, data.createdAt, MessageStatus.DELIVERED)
-                    messageDao.insert(message)
-                }
-                notifyServer(data)
-                return
-            } else if (data.quoteMessageId == null || messageDao.findMessageIdById(data.quoteMessageId) != null) {
-                notifyServer(data)
-                return
+            syncUser(data.userId)?.let { user ->
+                CallService.incoming(ctx, user, data)
             }
+        } else if (listPendingJobMap.containsKey(data.quoteMessageId)) {
+            listPendingJobMap[data.quoteMessageId]?.let { pair ->
+                pair.first.let {
+                    if (!it.isCancelled) {
+                        it.cancel()
+                    }
+                }
+                listPendingJobMap.remove(data.quoteMessageId)
 
+                val message = createCallMessage(data.quoteMessageId!!, data.conversationId, data.userId,
+                    MessageCategory.WEBRTC_AUDIO_CANCEL.name, null, data.createdAt, MessageStatus.DELIVERED)
+                messageDao.insert(message)
+            }
+            notifyServer(data)
+        } else {
             when (data.category) {
                 MessageCategory.WEBRTC_AUDIO_ANSWER.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
@@ -205,8 +209,8 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                     CallService.remoteFailed(ctx)
                 }
             }
+            notifyServer(data)
         }
-        notifyServer(data)
     }
 
     private fun notifyServer(data: BlazeMessageData) {
@@ -232,5 +236,21 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
         val message = createCallMessage(data.quoteMessageId, data.conversationId, userId, realCategory,
             null, data.createdAt, status, mediaDuration = duration)
         messageDao.insert(message)
+    }
+
+    private fun syncUser(userId: String): User? {
+        return userDao.findUser(userId) ?: try {
+            val call = userApi.getUserById(userId).execute()
+            val response = call.body()
+            if (response != null && response.isSuccess && response.data != null) {
+                userDao.insert(response.data!!)
+                response.data
+            } else {
+                null
+            }
+        } catch (e: IOException) {
+            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+            null
+        }
     }
 }
