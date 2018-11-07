@@ -313,7 +313,7 @@ class ChatControlView : FrameLayout {
     var calling = false
 
     private val sendOnTouchListener = OnTouchListener { _, event ->
-        if (calling) {
+        if (calling && sendStatus == AUDIO) {
             callback.onCalling()
             return@OnTouchListener false
         }
