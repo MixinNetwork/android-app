@@ -327,7 +327,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCheckTimeout() {
-        if (callState.callInfo.callState == CallState.STATE_IDLE&& callState.callInfo.callState == CallState.STATE_CONNECTED) return
+        if (callState.callInfo.callState == CallState.STATE_IDLE && callState.callInfo.callState == CallState.STATE_CONNECTED) return
 
         updateNotification()
         handleCallCancel()

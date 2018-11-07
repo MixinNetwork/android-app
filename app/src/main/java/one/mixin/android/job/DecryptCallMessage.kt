@@ -80,7 +80,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                             job.cancel()
                             val m = createCallMessage(UUID.randomUUID().toString(), curData.conversationId, Session.getAccountId()!!,
                                 MessageCategory.WEBRTC_AUDIO_BUSY.name, null, nowInUtc(), MessageStatus.SENDING, curData.messageId)
-                            jobManager.addJobInBackground(SendMessageJob(m))
+                            jobManager.addJobInBackground(SendMessageJob(m, recipientId = curData.userId))
 
                             val savedMessage = createCallMessage(curData.messageId, m.conversationId, curData.userId, m.category, m.content,
                                 m.createdAt, MessageStatus.DELIVERED, m.quoteMessageId)
