@@ -115,6 +115,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.Sticker
@@ -368,11 +369,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun callVoice() {
-        createConversation {
-            CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
-                intent.putExtra(ARGS_USER, recipient!!)
-                intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+        if (LinkState.isOnline(linkState.state)) {
+            createConversation {
+                CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
+                    intent.putExtra(ARGS_USER, recipient!!)
+                    intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+                }
             }
+        } else {
+            toast(R.string.error_no_connection)
         }
         hideMediaLayout()
     }

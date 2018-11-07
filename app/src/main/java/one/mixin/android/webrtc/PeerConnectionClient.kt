@@ -55,31 +55,27 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         iceServers.addAll(iceServerList)
         iceServers.add(googleStunServer)
         executor.execute {
-            try {
-                val peerConnection = createPeerConnectionInternal()
-                isInitiator = true
-                val offerSdpObserver = object : SdpObserverWrapper() {
-                    override fun onCreateSuccess(sdp: SessionDescription) {
-                        peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
-                            override fun onSetFailure(error: String?) {
-                                reportError("createOffer setLocalSdp onSetFailure error: $error")
-                            }
+            val peerConnection = createPeerConnectionInternal()
+            isInitiator = true
+            val offerSdpObserver = object : SdpObserverWrapper() {
+                override fun onCreateSuccess(sdp: SessionDescription) {
+                    peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
+                        override fun onSetFailure(error: String?) {
+                            reportError("createOffer setLocalSdp onSetFailure error: $error")
+                        }
 
-                            override fun onSetSuccess() {
-                                Timber.d("createOffer setLocalSdp onSetSuccess")
-                                events.onLocalDescription(sdp)
-                            }
-                        }, sdp)
-                    }
-
-                    override fun onCreateFailure(error: String?) {
-                        reportError("createOffer onCreateFailure error: $error")
-                    }
+                        override fun onSetSuccess() {
+                            Timber.d("createOffer setLocalSdp onSetSuccess")
+                            events.onLocalDescription(sdp)
+                        }
+                    }, sdp)
                 }
-                peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
-            } catch (e: Exception) {
-                reportError("Failed to create offer: ${e.message}")
+
+                override fun onCreateFailure(error: String?) {
+                    reportError("createOffer onCreateFailure error: $error")
+                }
             }
+            peerConnection?.createOffer(offerSdpObserver, sdpConstraint)
         }
     }
 
@@ -87,32 +83,28 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         iceServers.addAll(iceServerList)
         iceServers.add(googleStunServer)
         executor.execute {
-            try {
-                val peerConnection = createPeerConnectionInternal()
-                peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
-                isInitiator = false
-                val answerSdpObserver = object : SdpObserverWrapper() {
-                    override fun onCreateSuccess(sdp: SessionDescription) {
-                        peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
-                            override fun onSetFailure(error: String?) {
-                                reportError("createAnswer setLocalSdp onSetFailure error: $error")
-                            }
+            val peerConnection = createPeerConnectionInternal()
+            peerConnection?.setRemoteDescription(remoteSdpObserver, remoteSdp)
+            isInitiator = false
+            val answerSdpObserver = object : SdpObserverWrapper() {
+                override fun onCreateSuccess(sdp: SessionDescription) {
+                    peerConnection?.setLocalDescription(object : SdpObserverWrapper() {
+                        override fun onSetFailure(error: String?) {
+                            reportError("createAnswer setLocalSdp onSetFailure error: $error")
+                        }
 
-                            override fun onSetSuccess() {
-                                Timber.d("createAnswer setLocalSdp onSetSuccess")
-                                events.onLocalDescription(sdp)
-                            }
-                        }, sdp)
-                    }
-
-                    override fun onCreateFailure(error: String?) {
-                        reportError("createAnswer onCreateFailure error: $error")
-                    }
+                        override fun onSetSuccess() {
+                            Timber.d("createAnswer setLocalSdp onSetSuccess")
+                            events.onLocalDescription(sdp)
+                        }
+                    }, sdp)
                 }
-                peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
-            } catch (e: Exception) {
-                reportError("Failed to create answer: ${e.message}")
+
+                override fun onCreateFailure(error: String?) {
+                    reportError("createAnswer onCreateFailure error: $error")
+                }
             }
+            peerConnection?.createAnswer(answerSdpObserver, sdpConstraint)
         }
     }
 
@@ -127,8 +119,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     }
 
     fun removeRemoteIcetCandidate(candidates: Array<IceCandidate>) {
-        if (peerConnection == null || isError) return
         executor.execute {
+            if (peerConnection == null || isError) return@execute
+
             drainCandidatesAndSdp()
             peerConnection!!.removeIceCandidates(candidates)
         }
@@ -174,8 +167,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             factory?.dispose()
             factory = null
             events.onPeerConnectionClosed()
-            PeerConnectionFactory.stopInternalTracingCapture()
-            PeerConnectionFactory.shutdownInternalTracer()
         }
     }
 
@@ -302,7 +293,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
     }
 
-    private open class SdpObserverWrapper: SdpObserver {
+    private open class SdpObserverWrapper : SdpObserver {
         override fun onSetFailure(error: String?) {
         }
 
