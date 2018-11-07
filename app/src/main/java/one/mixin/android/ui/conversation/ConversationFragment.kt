@@ -1004,9 +1004,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideMediaLayout()
         }
 
-        if (isGroup || isBot) {
-            menuAdapter.botOrGroup = false
-        }
+        menuAdapter.isGroup = isGroup
+        menuAdapter.isBot = isBot
+
         callState.observe(this, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
@@ -1357,7 +1357,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 val app = chatViewModel.findAppById(user.appId!!)
                 if (app != null && app.creatorId == Session.getAccountId()) {
                     uiThread {
-                        menuAdapter.botOrGroup = true
+                        menuAdapter.isSelfCreatedBot = true
                     }
                 }
             }

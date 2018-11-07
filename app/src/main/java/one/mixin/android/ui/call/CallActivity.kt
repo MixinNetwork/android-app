@@ -104,22 +104,22 @@ class CallActivity : BaseActivity(), SensorEventListener {
             when (callInfo.callState) {
                 CallService.CallState.STATE_DIALING -> {
                     volumeControlStream = AudioManager.STREAM_VOICE_CALL
-                    handleDialingConnecting()
+                    call_cl.post { handleDialingConnecting() }
                 }
                 CallService.CallState.STATE_RINGING -> {
-                    handleRinging()
+                    call_cl.post { handleRinging() }
                 }
                 CallService.CallState.STATE_ANSWERING -> {
-                    handleAnswering()
+                    call_cl.post { handleAnswering() }
                 }
                 CallService.CallState.STATE_CONNECTED -> {
-                    handleConnected()
+                    call_cl.post { handleConnected() }
                 }
                 CallService.CallState.STATE_BUSY -> {
-                    handleBusy()
+                    call_cl.post { handleBusy() }
                 }
                 CallService.CallState.STATE_IDLE -> {
-                    handleDisconnected()
+                    call_cl.post { handleDisconnected() }
                 }
             }
         })

@@ -22,7 +22,19 @@ class MenuAdapter(private val onMenuClickListener: OnMenuClickListener) : Recycl
         MixinApplication.appContext.dip(24)
     }
 
-    var botOrGroup = true
+    var isGroup = true
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    var isBot = true
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+
+    var isSelfCreatedBot = false
         set(value) {
             field = value
             notifyDataSetChanged()
@@ -34,10 +46,17 @@ class MenuAdapter(private val onMenuClickListener: OnMenuClickListener) : Recycl
             itemCount - 1 -> holder.itemView.setPadding(dp24, 0, dp16, 0)
             else -> holder.itemView.setPadding(dp24, 0, 0, 0)
         }
-        val index = when {
-            botOrGroup -> position
-            else -> position + 2
+        var index = when {
+            isGroup -> position + 2
+            isBot && !isSelfCreatedBot -> position + 2
+            isBot && isSelfCreatedBot -> position + 1
+            else -> position
         }
+
+        if (isSelfCreatedBot && position == 0) {
+            index -= 1
+        }
+
         holder.itemView.menu_icon.setBackgroundResource(backgrounds[index])
         holder.itemView.menu_icon.setImageResource(icons[index])
         holder.itemView.menu_title.setText(titles[index])
@@ -60,10 +79,14 @@ class MenuAdapter(private val onMenuClickListener: OnMenuClickListener) : Recycl
     }
 
     override fun getItemCount(): Int {
-        return if (botOrGroup) {
-            icons.size
-        } else {
+        return if (isGroup) {
             icons.size - 2
+        } else if (isBot && !isSelfCreatedBot) {
+            icons.size - 2
+        } else if (isBot && isSelfCreatedBot) {
+            icons.size - 1
+        } else {
+            icons.size
         }
     }
 
