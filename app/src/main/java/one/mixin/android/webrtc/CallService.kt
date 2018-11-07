@@ -140,6 +140,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         peerConnectionClient.close()
         disposable?.dispose()
         candidateCache.clear()
+        timeoutFuture?.cancel(true)
     }
 
     private fun handleCallIncoming(intent: Intent) {
@@ -232,7 +233,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleCallCancel(intent: Intent? = null) {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
-        timeoutFuture?.cancel(true)
         if (peerConnectionClient.isInitiator) {
             val category = MessageCategory.WEBRTC_AUDIO_CANCEL.name
             sendCallMessage(category)
@@ -250,7 +250,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleCallDecline() {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
-        timeoutFuture?.cancel(true)
         if (peerConnectionClient.isInitiator) {
             callState.setCallState(CallState.STATE_IDLE)
         } else {
@@ -264,7 +263,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleCallLocalEnd(intent: Intent? = null) {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
-        timeoutFuture?.cancel(true)
         val category = MessageCategory.WEBRTC_AUDIO_END.name
         sendCallMessage(category)
         val toIdle = intent?.getBooleanExtra(EXTRA_TO_IDLE, false)
@@ -278,7 +276,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private fun handleCallRemoteEnd() {
         if (callState.callInfo.callState == CallState.STATE_IDLE) return
 
-        timeoutFuture?.cancel(true)
         callState.setCallState(CallState.STATE_IDLE)
         updateNotification()
         disconnect()
@@ -330,7 +327,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     private fun handleCheckTimeout() {
-        if (callState.callInfo.callState == CallState.STATE_CONNECTED) return
+        if (callState.callInfo.callState == CallState.STATE_IDLE&& callState.callInfo.callState == CallState.STATE_CONNECTED) return
 
         updateNotification()
         handleCallCancel()
