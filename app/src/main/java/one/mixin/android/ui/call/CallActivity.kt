@@ -87,16 +87,12 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
         mute_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
-                CallService.startService(this@CallActivity, CallService.ACTION_MUTE_AUDIO) {
-                    it.putExtra(CallService.EXTRA_MUTE, checked)
-                }
+                CallService.muteAudio(this@CallActivity, checked)
             }
         })
         voice_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
-                CallService.startService(this@CallActivity, CallService.ACTION_SPEAKERPHONE) {
-                    it.putExtra(CallService.EXTRA_SPEAKERPHONE, checked)
-                }
+                CallService.speakerPhone(this@CallActivity, checked)
             }
         })
 
@@ -218,7 +214,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             .subscribe { granted ->
                 if (granted) {
                     handleAnswering()
-                    CallService.startService(this@CallActivity, CallService.ACTION_CALL_ANSWER)
+                    CallService.answer(this@CallActivity)
                 } else {
                     callState.handleHangup(this@CallActivity)
                     handleDisconnected()

@@ -6,7 +6,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
@@ -97,10 +96,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
         val ctx = MixinApplication.appContext
         if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             val user = userDao.findUser(data.userId)!!
-            CallService.startService(ctx, CallService.ACTION_CALL_INCOMING) {
-                it.putExtra(Constants.ARGS_USER, user)
-                it.putExtra(CallService.EXTRA_BLAZE, data)
-            }
+            CallService.incoming(ctx, user, data)
         } else {
             val hasUnHandledOffer = listPendingJobMap.containsKey(data.quoteMessageId)
             if (hasUnHandledOffer) {
@@ -130,10 +126,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         notifyServer(data)
                         return
                     }
-
-                    CallService.startService(ctx, CallService.ACTION_CALL_ANSWER) {
-                        it.putExtra(CallService.EXTRA_BLAZE, data)
-                    }
+                    CallService.answer(ctx, data)
                 }
                 MessageCategory.WEBRTC_ICE_CANDIDATE.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
@@ -141,10 +134,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         notifyServer(data)
                         return
                     }
-
-                    CallService.startService(ctx, CallService.ACTION_CANDIDATE) {
-                        it.putExtra(CallService.EXTRA_BLAZE, data)
-                    }
+                    CallService.candidate(ctx, data)
                 }
                 MessageCategory.WEBRTC_AUDIO_CANCEL.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
@@ -155,7 +145,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                     if (data.quoteMessageId != callState.callInfo.messageId) {
                         return
                     }
-                    CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
+                    CallService.cancel(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_DECLINE.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
@@ -172,7 +162,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                     if (data.quoteMessageId != callState.callInfo.messageId) {
                         return
                     }
-                    CallService.startService(ctx, CallService.ACTION_CALL_DECLINE)
+                    CallService.decline(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_BUSY.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE ||
@@ -183,7 +173,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                     }
 
                     saveCallMessage(data, userId = Session.getAccountId()!!)
-                    CallService.startService(ctx, CallService.ACTION_CALL_BUSY)
+                    CallService.busy(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_END.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
@@ -198,7 +188,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         callState.user!!.userId
                     }
                     saveCallMessage(data, duration = duration.toString(), userId = uId, status = MessageStatus.READ)
-                    CallService.startService(ctx, CallService.ACTION_CALL_REMOTE_END)
+                    CallService.remoteEnd(ctx)
                 }
                 MessageCategory.WEBRTC_AUDIO_FAILED.name -> {
                     if (callState.callInfo.callState == CallService.CallState.STATE_IDLE) {
@@ -212,7 +202,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         callState.user!!.userId
                     }
                     saveCallMessage(data, userId = uId)
-                    CallService.startService(ctx, CallService.ACTION_CALL_REMOTE_FAILED)
+                    CallService.remoteFailed(ctx)
                 }
             }
         }
