@@ -9,7 +9,14 @@ import one.mixin.android.R
 import timber.log.Timber
 
 class CallAudioManager(context: Context) {
-    private val audioManager: AudioManager = context.getSystemService<AudioManager>()!!
+    private val savedSpeakerOn: Boolean
+    private val saveMode: Int
+    private val savedMicrophoneMute: Boolean
+    private val audioManager: AudioManager = context.getSystemService<AudioManager>()!!.apply {
+        savedSpeakerOn = isSpeakerphoneOn
+        saveMode = mode
+        savedMicrophoneMute = isMicrophoneMute
+    }
 
     private var mediaPlayer: MediaPlayer? = MediaPlayer.create(context, R.raw.call_ring).apply {
         isLooping = true
@@ -35,12 +42,9 @@ class CallAudioManager(context: Context) {
                 if (isInitiator) AudioManager.STREAM_VOICE_CALL else AudioManager.STREAM_MUSIC)
             .build()
         mediaPlayer?.setAudioAttributes(audioAttributes)
-        if (isInitiator) {
-            audioManager.isSpeakerphoneOn = false
-            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
-        } else {
-            audioManager.isSpeakerphoneOn = true
-        }
+        audioManager.isSpeakerphoneOn = !isInitiator
+        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        audioManager.isMicrophoneMute = false
         try {
             mediaPlayer?.start()
         } catch (e: Exception) {
@@ -56,5 +60,11 @@ class CallAudioManager(context: Context) {
         if (!isInitiator && !changedByUser) {
             audioManager.isSpeakerphoneOn = false
         }
+    }
+
+    fun release() {
+        audioManager.isSpeakerphoneOn = savedSpeakerOn
+        audioManager.mode = saveMode
+        audioManager.isMicrophoneMute = savedMicrophoneMute
     }
 }

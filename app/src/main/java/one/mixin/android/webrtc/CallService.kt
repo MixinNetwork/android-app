@@ -120,6 +120,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     }
 
     override fun onDestroy() {
+        audioManager.release()
         callState.reset()
     }
 
