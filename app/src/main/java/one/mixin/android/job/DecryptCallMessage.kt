@@ -45,8 +45,8 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
             if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name && messageDao.findMessageIdById(data.messageId) != null) {
                 notifyServer(data)
                 return
-            } else if (data.category != MessageCategory.WEBRTC_AUDIO_OFFER.name && (data.quoteMessageId == null
-                    || messageDao.findMessageIdById(data.quoteMessageId) != null)) {
+            } else if (data.category != MessageCategory.WEBRTC_AUDIO_OFFER.name && (data.quoteMessageId == null ||
+                    messageDao.findMessageIdById(data.quoteMessageId) != null)) {
                 notifyServer(data)
                 return
             }
@@ -89,7 +89,6 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                     }
                     processCall(data)
                     listPendingJobMap.clear()
-
                 }, data)
             } else if (isExpired) {
                 val message = createCallMessage(data.messageId, data.conversationId, data.userId, MessageCategory.WEBRTC_AUDIO_CANCEL.name,
@@ -107,6 +106,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
         if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             syncUser(data.userId)?.let { user ->
                 CallService.incoming(ctx, user, data)
+                notifyServer(data)
             }
         } else if (listPendingJobMap.containsKey(data.quoteMessageId)) {
             listPendingJobMap[data.quoteMessageId]?.let { pair ->
@@ -227,7 +227,8 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
         category: String? = null,
         duration: String? = null,
         userId: String = data.userId,
-        status: MessageStatus = MessageStatus.DELIVERED) {
+        status: MessageStatus = MessageStatus.DELIVERED
+    ) {
         if (data.userId == Session.getAccountId()!! ||
             data.quoteMessageId == null) {
             return
@@ -246,6 +247,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 userDao.insert(response.data!!)
                 response.data
             } else {
+                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
                 null
             }
         } catch (e: IOException) {

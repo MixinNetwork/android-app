@@ -77,7 +77,7 @@ class CallHolder constructor(containerView: View) : BaseViewHolder(containerView
         itemView.chat_layout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-            }else{
+            } else {
                 onItemListener.onCallClick(messageItem)
             }
         }
