@@ -34,8 +34,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
-import one.mixin.android.RxBus
-import one.mixin.android.event.BarEvent
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.fastBlur
@@ -89,38 +87,35 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
         mute_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
-                CallService.startService(this@CallActivity, CallService.ACTION_MUTE_AUDIO) {
-                    it.putExtra(CallService.EXTRA_MUTE, checked)
-                }
+                CallService.muteAudio(this@CallActivity, checked)
             }
         })
         voice_cb.setOnCheckedChangeListener(object : CallButton.OnCheckedChangeListener {
             override fun onCheckedChanged(id: Int, checked: Boolean) {
-                CallService.startService(this@CallActivity, CallService.ACTION_SPEAKERPHONE) {
-                    it.putExtra(CallService.EXTRA_SPEAKERPHONE, checked)
-                }
+                CallService.speakerPhone(this@CallActivity, checked)
             }
         })
+
         callState.observe(this, Observer { callInfo ->
             when (callInfo.callState) {
                 CallService.CallState.STATE_DIALING -> {
                     volumeControlStream = AudioManager.STREAM_VOICE_CALL
-                    handleDialingConnecting()
+                    call_cl.post { handleDialingConnecting() }
                 }
                 CallService.CallState.STATE_RINGING -> {
-                    handleRinging()
+                    call_cl.post { handleRinging() }
                 }
                 CallService.CallState.STATE_ANSWERING -> {
-                    handleAnswering()
+                    call_cl.post { handleAnswering() }
                 }
                 CallService.CallState.STATE_CONNECTED -> {
-                    handleConnected()
+                    call_cl.post { handleConnected() }
                 }
                 CallService.CallState.STATE_BUSY -> {
-                    handleBusy()
+                    call_cl.post { handleBusy() }
                 }
                 CallService.CallState.STATE_IDLE -> {
-                    handleDisconnected()
+                    call_cl.post { handleDisconnected() }
                 }
             }
         })
@@ -143,12 +138,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
             startTimer()
         }
         super.onResume()
-        call_cl.postDelayed({
-            if (!isFinishing) {
-                shown = true
-                RxBus.publish(BarEvent())
-            }
-        }, (resources.getInteger(android.R.integer.config_longAnimTime)).toLong())
     }
 
     override fun onPause() {
@@ -225,7 +214,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
             .subscribe { granted ->
                 if (granted) {
                     handleAnswering()
-                    CallService.startService(this@CallActivity, CallService.ACTION_CALL_ANSWER)
+                    CallService.answer(this@CallActivity)
                 } else {
                     callState.handleHangup(this@CallActivity)
                     handleDisconnected()
@@ -269,7 +258,6 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
     private fun handleDisconnected() {
         finishAndRemoveTask()
-        shown = false
     }
 
     private fun handleBusy() {
@@ -317,10 +305,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
         const val ARGS_ANSWER = "answer"
 
-        var shown = false
-
         fun show(context: Context, answer: User? = null) {
-            this.shown = false
             Intent(context, CallActivity::class.java).apply {
                 putExtra(ARGS_ANSWER, answer)
             }.run {

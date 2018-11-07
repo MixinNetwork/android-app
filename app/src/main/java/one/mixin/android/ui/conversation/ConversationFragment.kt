@@ -44,7 +44,6 @@ import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
-import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -115,6 +114,7 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.Sticker
@@ -126,8 +126,6 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
-import one.mixin.android.webrtc.CallService.Companion.ACTION_CALL_OUTGOING
-import one.mixin.android.webrtc.CallService.Companion.EXTRA_CONVERSATION_ID
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.ChatControlView
@@ -368,11 +366,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun callVoice() {
-        createConversation {
-            CallService.startService(requireContext(), ACTION_CALL_OUTGOING) { intent ->
-                intent.putExtra(ARGS_USER, recipient!!)
-                intent.putExtra(EXTRA_CONVERSATION_ID, conversationId)
+        if (LinkState.isOnline(linkState.state)) {
+            createConversation {
+                CallService.outgoing(requireContext(), recipient!!, conversationId)
             }
+        } else {
+            toast(R.string.error_no_connection)
         }
         hideMediaLayout()
     }
@@ -999,9 +998,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideMediaLayout()
         }
 
-        if (isGroup || isBot) {
-            menuAdapter.botOrGroup = false
-        }
+        menuAdapter.isGroup = isGroup
+        menuAdapter.isBot = isBot
+
         callState.observe(this, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
@@ -1352,7 +1351,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 val app = chatViewModel.findAppById(user.appId!!)
                 if (app != null && app.creatorId == Session.getAccountId()) {
                     uiThread {
-                        menuAdapter.botOrGroup = true
+                        menuAdapter.isSelfCreatedBot = true
                     }
                 }
             }

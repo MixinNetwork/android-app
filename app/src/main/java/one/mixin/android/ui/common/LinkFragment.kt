@@ -5,14 +5,10 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.view_link_state.*
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.di.Injectable
-import one.mixin.android.event.BarEvent
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
@@ -48,34 +44,11 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
         callState.observe(this, Observer {
             check(linkState.state)
         })
-        startListen()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        stopListen()
-    }
-
-    private var disposable: Disposable? = null
-
-    private fun startListen() {
-        if (disposable == null) {
-            disposable = RxBus.listen(BarEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    check(linkState.state)
-                }
-        }
-    }
-
-    private fun stopListen() {
-        disposable?.dispose()
-        disposable = null
-    }
-
-    override fun onPause() {
+    override fun onStop() {
         stopTimber()
-        super.onPause()
+        super.onStop()
     }
 
     override fun onResume() {
@@ -89,10 +62,8 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     @Synchronized
     private fun check(state: Int?) {
         if (callState.callInfo.callState != CallService.CallState.STATE_IDLE) {
-            if (CallActivity.shown) {
-                setCalling()
-                showBar()
-            }
+            setCalling()
+            showBar()
             return
         }
 

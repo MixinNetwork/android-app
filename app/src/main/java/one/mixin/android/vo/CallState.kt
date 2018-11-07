@@ -36,17 +36,17 @@ class CallState : LiveData<CallState.CallInfo>() {
 
     fun handleHangup(ctx: Context) {
         when (callInfo.callState) {
-            CallService.CallState.STATE_DIALING -> CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
-            CallService.CallState.STATE_RINGING -> CallService.startService(ctx, CallService.ACTION_CALL_DECLINE)
+            CallService.CallState.STATE_DIALING -> CallService.cancel(ctx)
+            CallService.CallState.STATE_RINGING -> CallService.decline(ctx)
             CallService.CallState.STATE_ANSWERING -> {
                 if (isInitiator) {
-                    CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
+                    CallService.cancel(ctx)
                 } else {
-                    CallService.startService(ctx, CallService.ACTION_CALL_DECLINE)
+                    CallService.decline(ctx)
                 }
             }
-            CallService.CallState.STATE_CONNECTED -> CallService.startService(ctx, CallService.ACTION_CALL_LOCAL_END)
-            else -> CallService.startService(ctx, CallService.ACTION_CALL_CANCEL)
+            CallService.CallState.STATE_CONNECTED -> CallService.localEnd(ctx)
+            else -> CallService.cancel(ctx)
         }
     }
 
