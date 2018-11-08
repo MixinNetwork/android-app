@@ -18,7 +18,7 @@ class CallAudioManager(context: Context) {
         savedMicrophoneMute = isMicrophoneMute
     }
 
-    private var mediaPlayer: MediaPlayer? = MediaPlayer.create(context, R.raw.call_ring).apply {
+    private var mediaPlayer: MediaPlayer? = MediaPlayer.create(context, R.raw.call).apply {
         isLooping = true
     }
 
