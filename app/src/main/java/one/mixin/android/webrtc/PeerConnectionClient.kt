@@ -37,10 +37,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
     private var peerConnection: PeerConnection? = null
     private var audioTrack: AudioTrack? = null
     private var audioSource: AudioSource? = null
-    private val sdpConstraint = MediaConstraints().apply {
-        mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveAudio", "true"))
-        mandatory.add(MediaConstraints.KeyValuePair("OfferToReceiveVideo", "false"))
-    }
+    private val sdpConstraint = MediaConstraints()
     private val googleStunServer = PeerConnection.IceServer.builder("stun:stun1.l.google.com:19302").createIceServer()
 
     fun createPeerConnectionFactory(options: PeerConnectionFactory.Options) {
