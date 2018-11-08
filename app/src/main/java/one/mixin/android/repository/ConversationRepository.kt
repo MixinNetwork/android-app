@@ -16,6 +16,8 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.db.insertConversation
+import one.mixin.android.di.type.DatabaseCategory
+import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -36,17 +38,20 @@ import javax.inject.Singleton
 class ConversationRepository
 @Inject
 internal constructor(
+    @DatabaseCategory(DatabaseCategoryEnum.BASE)
+    private val appDatabase: MixinDatabase,
+    @DatabaseCategory(DatabaseCategoryEnum.READ)
+    private val readAppDatabase: MixinDatabase,
     private val messageDao: MessageDao,
     private val conversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
     private val appDao: AppDao,
-    private val appDatabase: MixinDatabase,
     private val jobDao: JobDao,
     private val conversationService: ConversationService
 ) {
 
     @SuppressLint("RestrictedApi")
-    fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, appDatabase)
+    fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, readAppDatabase)
 
     fun conversation(): LiveData<List<ConversationItem>> = conversationDao.conversationList()
 
