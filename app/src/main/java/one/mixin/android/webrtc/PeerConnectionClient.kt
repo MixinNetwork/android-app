@@ -254,7 +254,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
                 when (newState) {
                     PeerConnection.IceConnectionState.CONNECTED -> events.onIceConnected()
                     PeerConnection.IceConnectionState.DISCONNECTED -> events.onIceDisconnected()
-                    PeerConnection.IceConnectionState.FAILED -> Timber.e("ICE connection failed")
+                    PeerConnection.IceConnectionState.FAILED -> events.onIceConnectedFailed()
                     else -> {
                     }
                 }
@@ -334,6 +334,12 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
          * DISCONNECTED).
          */
         fun onIceDisconnected()
+
+        /**
+         * Callback fired once connection is closed (IceConnectionState is
+         * FAILED).
+         */
+        fun onIceConnectedFailed()
 
         /**
          * Callback fired once peer connection is closed.
