@@ -14,6 +14,7 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.HasServiceInjector
+import io.reactivex.plugins.RxJavaPlugins
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
@@ -65,6 +66,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         MixinApplication.appContext = applicationContext
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
+        RxJavaPlugins.setErrorHandler {}
         doAsync { TrueTime.build().initialize() }
     }
 
