@@ -1,7 +1,7 @@
 package one.mixin.android.repository
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
 import io.reactivex.Observable
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -11,6 +11,7 @@ import one.mixin.android.db.AppDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
+import one.mixin.android.db.MessageProvider
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.batchMarkReadAndTake
@@ -43,6 +44,9 @@ internal constructor(
     private val jobDao: JobDao,
     private val conversationService: ConversationService
 ) {
+
+    @SuppressLint("RestrictedApi")
+    fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, appDatabase)
 
     fun conversation(): LiveData<List<ConversationItem>> = conversationDao.conversationList()
 
@@ -84,9 +88,6 @@ internal constructor(
     fun fuzzySearchMessage(query: String): List<SearchMessageItem> = messageDao.fuzzySearchMessage(query)
 
     fun fuzzySearchGroup(query: String): List<ConversationItemMinimal> = conversationDao.fuzzySearchGroup(query)
-
-    fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem> =
-        messageDao.getMessages(conversationId)
 
     fun indexUnread(conversationId: String) = conversationDao.indexUnread(conversationId)
 
