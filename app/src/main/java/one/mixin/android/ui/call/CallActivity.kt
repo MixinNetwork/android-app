@@ -307,6 +307,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
 
         fun show(context: Context, answer: User? = null) {
             Intent(context, CallActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 putExtra(ARGS_ANSWER, answer)
             }.run {
                 context.startActivity(this)
