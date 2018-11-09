@@ -4,11 +4,12 @@ import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioManager
 import android.media.MediaPlayer
+import android.net.Uri
 import androidx.core.content.getSystemService
 import one.mixin.android.R
 import timber.log.Timber
 
-class CallAudioManager(context: Context) {
+class CallAudioManager(private val context: Context) {
     private val savedSpeakerOn: Boolean
     private val saveMode: Int
     private val savedMicrophoneMute: Boolean
@@ -18,7 +19,7 @@ class CallAudioManager(context: Context) {
         savedMicrophoneMute = isMicrophoneMute
     }
 
-    private var mediaPlayer: MediaPlayer? = MediaPlayer.create(context, R.raw.call).apply {
+    private var mediaPlayer: MediaPlayer? = MediaPlayer().apply {
         isLooping = true
     }
 
@@ -45,7 +46,10 @@ class CallAudioManager(context: Context) {
         audioManager.isSpeakerphoneOn = !isInitiator
         audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
         audioManager.isMicrophoneMute = false
+        val uri = Uri.parse("android.resource://${context.packageName}/${R.raw.call}")
         try {
+            mediaPlayer?.setDataSource(context, uri)
+            mediaPlayer?.prepare()
             mediaPlayer?.start()
         } catch (e: Exception) {
             Timber.w("mediaPlayer start, $e")
