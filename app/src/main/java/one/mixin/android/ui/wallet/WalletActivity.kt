@@ -3,12 +3,14 @@ package one.mixin.android.ui.wallet
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.navigation.NavController
+import androidx.navigation.findNavController
 import one.mixin.android.R
 import one.mixin.android.extension.notNullElse
-import one.mixin.android.extension.replaceFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
@@ -18,26 +20,29 @@ class WalletActivity : BlazeBaseActivity() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    private lateinit var navController: NavController
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_contact)
+        setContentView(R.layout.activity_wallet)
         val account = Session.getAccount()
         if (account == null) {
             finish()
             return
         }
+        navController = findNavController(R.id.wallet_nav_fragment)
+        val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
         notNullElse(asset, {
-            val fragment = TransactionsFragment.newInstance(it)
-            replaceFragment(fragment, R.id.container, TransactionsFragment.TAG)
+            navGraph.startDestination = R.id.transactions_fragment
+            navGraph.setDefaultArguments(Bundle().apply { putParcelable(ARGS_ASSET, it) })
         }, {
             if (account.hasPin) {
-                val fragment = WalletFragment.newInstance()
-                replaceFragment(fragment, R.id.container, WalletFragment.TAG)
+                navGraph.startDestination = R.id.wallet_fragment
             } else {
-                val fragment = WalletPasswordFragment.newInstance()
-                replaceFragment(fragment, R.id.container, WalletPasswordFragment.TAG)
+                navGraph.startDestination = R.id.wallet_password_fragment
             }
         })
+        navController.graph = navGraph
         jobManager.addJobInBackground(RefreshAssetsJob())
     }
 

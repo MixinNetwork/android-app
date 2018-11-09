@@ -31,14 +31,6 @@ import one.mixin.android.vo.toUser
 class DepositPublicKeyFragment : Fragment() {
     companion object {
         const val TAG = "DepositPublicKeyFragment"
-
-        fun newInstance(asset: AssetItem): DepositPublicKeyFragment {
-            val f = DepositPublicKeyFragment()
-            val b = Bundle()
-            b.putParcelable(ARGS_ASSET, asset)
-            f.arguments = b
-            return f
-        }
     }
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }

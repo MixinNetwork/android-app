@@ -6,17 +6,19 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_old_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_CHANGE
+import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_OLD_PASSWORD
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.widget.Keyboard
@@ -76,8 +78,11 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             if (r.isSuccess) {
                 context?.updatePinCheck()
                 r.data?.let {
-                    activity?.addFragment(this@OldPasswordFragment,
-                        WalletPasswordFragment.newInstance(true, pin.code()), WalletPasswordFragment.TAG)
+                    view?.findNavController()?.navigate(R.id.action_old_password_to_password,
+                        Bundle().apply {
+                            putBoolean(ARGS_CHANGE, true)
+                            putString(ARGS_OLD_PASSWORD, pin.code())
+                        })
                 }
             } else {
                 pin.clear()

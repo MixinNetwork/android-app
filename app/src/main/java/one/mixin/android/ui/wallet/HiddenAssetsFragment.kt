@@ -7,10 +7,10 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import kotlinx.android.synthetic.main.fragment_hidden_assets.*
 import kotlinx.android.synthetic.main.view_title.*
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
@@ -57,7 +57,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        activity?.addFragment(this@HiddenAssetsFragment,
-            TransactionsFragment.newInstance(item as AssetItem), TransactionsFragment.TAG)
+        view!!.findNavController().navigate(R.id.action_hidden_assets_to_transactions,
+            Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, item as AssetItem) })
     }
 }

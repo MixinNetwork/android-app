@@ -102,7 +102,7 @@ class CaptureFragment : BaseFragment() {
 
     private var callback: Callback? = null
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         if (context !is Callback) {
             throw IllegalArgumentException("")

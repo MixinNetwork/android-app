@@ -17,14 +17,10 @@ import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 
-class DespositAccountFragment : Fragment() {
+class DepositAccountFragment : Fragment() {
 
     companion object {
-        const val TAG = "DespositAccountFragment"
-
-        fun newInstance(asset: AssetItem) = DespositAccountFragment().apply {
-            arguments = bundleOf(ARGS_ASSET to asset)
-        }
+        const val TAG = "DepositAccountFragment"
     }
 
     private val asset: AssetItem by lazy { arguments!!.getParcelable<AssetItem>(ARGS_ASSET) }

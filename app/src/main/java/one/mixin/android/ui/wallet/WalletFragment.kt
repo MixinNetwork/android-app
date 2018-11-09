@@ -10,6 +10,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.SimpleItemAnimator
 import kotlinx.android.synthetic.main.fragment_wallet.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -17,16 +18,15 @@ import kotlinx.android.synthetic.main.view_wallet_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_fragment_header.view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
+import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
@@ -49,6 +49,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private val walletViewModel: WalletViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
+
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { AssetAdapter(coins_rv) }
     private lateinit var header: View
@@ -180,21 +181,17 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        val rootView = this.view!!
         view.hide.setOnClickListener {
-            activity?.addFragment(this@WalletFragment, HiddenAssetsFragment.newInstance(), HiddenAssetsFragment.TAG)
+            rootView.findNavController().navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
             bottomSheet.dismiss()
         }
         view.setting.setOnClickListener {
-            activity?.supportFragmentManager?.inTransaction {
-                setCustomAnimations(R.anim.slide_in_bottom,
-                    R.anim.slide_out_bottom, R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                    .add(R.id.container, WalletSettingFragment.newInstance(), WalletSettingFragment.TAG)
-                    .addToBackStack(null)
-            }
+            rootView.findNavController().navigate(R.id.action_wallet_fragment_to_wallet_setting_fragment)
             bottomSheet.dismiss()
         }
         view.transactions_tv.setOnClickListener {
-            activity?.addFragment(this@WalletFragment, AllTransactionsFragment.newInstance(), AllTransactionsFragment.TAG)
+            rootView.findNavController().navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
             bottomSheet.dismiss()
         }
         view.cancel.setOnClickListener { bottomSheet.dismiss() }
@@ -203,6 +200,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        activity?.addFragment(this@WalletFragment, TransactionsFragment.newInstance(item as AssetItem), TransactionsFragment.TAG)
+        view!!.findNavController().navigate(R.id.action_wallet_fragment_to_transactions_fragment,
+            Bundle().apply { putParcelable(ARGS_ASSET, item as AssetItem) })
     }
 }

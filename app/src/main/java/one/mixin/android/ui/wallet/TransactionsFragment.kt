@@ -12,6 +12,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import androidx.room.Transaction
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
@@ -21,14 +22,18 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_transactions_fragment_header.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.*
+import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.numberFormat
+import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
+import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
@@ -74,7 +79,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     private lateinit var adapter: TransactionsAdapter
     private lateinit var asset: AssetItem
 
-    private val headerView by lazy { layoutInflater.inflate(R.layout.view_transactions_fragment_header, recycler_view, false) }
+    private lateinit var headerView: View
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_transactions, container, false)
 
@@ -87,6 +92,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             showBottom()
         }
 
+        headerView = layoutInflater.inflate(R.layout.view_transactions_fragment_header, recycler_view, false)
         headerView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         headerView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         headerView.group_info_member_title_sort.setOnClickListener {
@@ -95,9 +101,11 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         updateHeader(headerView, asset)
         headerView.deposit_tv.setOnClickListener {
             asset.differentProcess({
-                activity?.addFragment(this@TransactionsFragment, DepositPublicKeyFragment.newInstance(asset), DepositPublicKeyFragment.TAG)
+                view!!.findNavController().navigate(R.id.action_transactions_to_deposit_public_key,
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) })
             }, {
-                activity?.addFragment(this@TransactionsFragment, DespositAccountFragment.newInstance(asset), DespositAccountFragment.TAG)
+                view!!.findNavController().navigate(R.id.action_transactions_to_deposit_account,
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) })
             }, {
                 toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
             })
@@ -205,8 +213,8 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         val bottomSheet = builder.create()
         view.withdrawal.setOnClickListener {
             bottomSheet.dismiss()
-            activity?.addFragment(this@TransactionsFragment,
-                WithdrawalFragment.newInstance(asset), WithdrawalFragment.TAG)
+            this@TransactionsFragment.view!!.findNavController().navigate(R.id.action_transactions_to_withdrawal,
+                Bundle().apply { putParcelable(ARGS_ASSET, asset) })
         }
         view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
         view.hide.setOnClickListener {
@@ -222,8 +230,11 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        val fragment = TransactionFragment.newInstance(item as SnapshotItem, asset)
-        activity?.addFragment(this@TransactionsFragment, fragment, TransactionFragment.TAG)
+        view!!.findNavController().navigate(R.id.action_transactions_fragment_to_transaction_fragment,
+            Bundle().apply {
+                putParcelable(TransactionFragment.ARGS_SNAPSHOT, item as SnapshotItem)
+                putParcelable(ARGS_ASSET, asset)
+            })
     }
 
     private fun showFiltersSheet() {

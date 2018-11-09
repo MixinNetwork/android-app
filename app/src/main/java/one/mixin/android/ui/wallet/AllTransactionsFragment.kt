@@ -1,21 +1,23 @@
 package one.mixin.android.ui.wallet
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
+import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.SnapshotAdapter
 import one.mixin.android.vo.SnapshotItem
 import org.jetbrains.anko.doAsync
@@ -69,8 +71,13 @@ class AllTransactionsFragment : BaseFragment(), SnapshotAdapter.TransactionsList
         doAsync {
             val a = walletViewModel.simpleAssetItem(snapshot.assetId)
             a?.let {
-                val fragment = TransactionFragment.newInstance(snapshot, it)
-                activity?.addFragment(this@AllTransactionsFragment, fragment, TransactionFragment.TAG)
+                if (!isAdded) return@doAsync
+
+                view!!.findNavController().navigate(R.id.action_all_transactions_fragment_to_transaction_fragment,
+                    Bundle().apply {
+                        putParcelable(ARGS_SNAPSHOT, snapshot)
+                        putParcelable(ARGS_ASSET, it)
+                    })
             }
         }
     }
