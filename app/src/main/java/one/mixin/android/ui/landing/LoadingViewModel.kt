@@ -5,14 +5,22 @@ import androidx.lifecycle.ViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SignalKeyRequest
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import javax.inject.Inject
 
 class LoadingViewModel @Inject internal
-constructor(private val signalKeyService: SignalKeyService, private val app: Application) : ViewModel() {
+constructor(private val signalKeyService: SignalKeyService,
+    private val accountService: AccountService,
+    private val app: Application) : ViewModel() {
 
     fun pushAsyncSignalKeys(): Observable<MixinResponse<Void>?> {
         val start = System.currentTimeMillis()
@@ -30,5 +38,29 @@ constructor(private val signalKeyService: SignalKeyService, private val app: App
             }
             Observable.just(response)
         }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+    }
+
+    fun pingServer(callback: () -> Unit, elseCallBack: (e: Exception?) -> Unit): Job {
+        return GlobalScope.launch {
+            try {
+                val response = accountService.ping().execute()
+
+                response.headers()["X-Server-Time"]?.toLong()?.let { serverTime ->
+                    if (Math.abs(serverTime / 1000000 - System.currentTimeMillis()) < 600000L) { // 10 minutes
+                        withContext(Dispatchers.Main) {
+                            callback.invoke()
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            elseCallBack.invoke(null)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    elseCallBack.invoke(e)
+                }
+            }
+        }
     }
 }

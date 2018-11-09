@@ -366,6 +366,7 @@
     <string name="transfer_from">转账来自%1$s</string>
     <string name="loading_init">初始化…</string>
     <string name="loading_wait">请稍等</string>
+    <string name="loading_time">检测到系统时间异常，请校正后再继续使用</string>
     <!-- notification -->
     <string name="alert_key_group_text_message">%1$s 发送一条消息</string>
     <string name="alert_key_group_image_message">%1$s 发送一张照片</string>

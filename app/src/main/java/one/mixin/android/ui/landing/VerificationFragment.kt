@@ -1,7 +1,6 @@
 package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.graphics.Point
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -158,7 +157,7 @@ class VerificationFragment : BaseFragment() {
                 doAsync {
                     val a = Session.getAccount()
                     a?.let {
-                        val phone = arguments!!.getString(ARGS_PHONE_NUM)?:return@doAsync
+                        val phone = arguments!!.getString(ARGS_PHONE_NUM) ?: return@doAsync
                         mobileViewModel.updatePhone(a.userId, phone)
                         a.phone = phone
                         Session.storeAccount(a)
@@ -221,12 +220,11 @@ class VerificationFragment : BaseFragment() {
                 verification_keyboard.animate().translationY(300f).start()
                 mobileViewModel.insertUser(r.data!!.toUser())
                 MixinApplication.get().onlining.set(true)
-                val intent: Intent = if (account.full_name?.isBlank()!!) {
-                    SetupNameActivity.getIntent(context!!, true)
+                if (account.full_name?.isBlank()!!) {
+                    InitializeActivity.showSetupName(context!!)
                 } else {
-                    SetupNameActivity.getIntent(context!!, false)
+                    InitializeActivity.showLoading(context!!)
                 }
-                startActivity(Intent(intent))
                 activity?.finish()
             }, { t: Throwable ->
                 handleError(t)

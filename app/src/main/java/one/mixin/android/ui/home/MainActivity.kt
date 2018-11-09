@@ -43,9 +43,9 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
+import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.LoadingFragment
-import one.mixin.android.ui.landing.SetupNameActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -88,9 +88,16 @@ class MainActivity : BlazeBaseActivity() {
             finish()
             return
         }
+
+        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_WRONG_TIME, false)) {
+            InitializeActivity.showWongTime(this)
+            finish()
+            return
+        }
+
         MixinApplication.get().onlining.set(true)
         if (!defaultSharedPreferences.getBoolean(LoadingFragment.IS_LOADED, false)) {
-            startActivity(SetupNameActivity.getIntent(this, false))
+            InitializeActivity.showLoading(this)
             finish()
             return
         }

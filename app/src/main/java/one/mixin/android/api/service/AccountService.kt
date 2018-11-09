@@ -75,4 +75,7 @@ interface AccountService {
 
     @GET("turn")
     fun getTurn(): Observable<MixinResponse<Array<TurnServer>>>
+
+    @GET("/")
+    fun ping(): Call<MixinResponse<Void>>
 }

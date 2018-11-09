@@ -25,6 +25,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
 import one.mixin.android.webrtc.CallService
@@ -87,12 +88,22 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
 
     var onlining = AtomicBoolean(false)
 
+    fun gotoTimeWrong() {
+        if (onlining.compareAndSet(true, false)) {
+            BlazeMessageService.stopService(ctx)
+            CallService.disconnect(ctx)
+            notificationManager.cancelAll()
+            jobManager.cancelAllJob()
+            jobManager.clear()
+            defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, true)
+            InitializeActivity.showWongTimeTop(ctx)
+        }
+    }
+
     fun closeAndClear(toLanding: Boolean = true) {
         if (onlining.compareAndSet(true, false)) {
             BlazeMessageService.stopService(ctx)
-            if (CallService.isRunning) {
-                CallService.disconnect(ctx)
-            }
+            CallService.disconnect(ctx)
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()

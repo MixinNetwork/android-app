@@ -1,0 +1,56 @@
+package one.mixin.android.ui.landing
+
+import android.content.Context
+import android.content.Intent
+import android.os.Bundle
+import one.mixin.android.R
+import one.mixin.android.extension.replaceFragment
+import one.mixin.android.ui.common.BaseActivity
+
+class InitializeActivity : BaseActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_landing)
+        val setName = intent.getBooleanExtra(SET_NAME, false)
+        val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
+        when {
+            setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
+            wrongTime -> replaceFragment(TimeFragment.newInstance(), R.id.container)
+            else -> replaceFragment(LoadingFragment.newInstance(), R.id.container, LoadingFragment.TAG)
+        }
+    }
+
+    override fun onBackPressed() {
+    }
+
+    companion object {
+        const val SET_NAME = "set_name"
+        const val WRONG_TIME = "wrong_time"
+        private fun getIntent(context: Context, setName: Boolean, wrongTime: Boolean = false): Intent {
+            return Intent(context, InitializeActivity::class.java).apply {
+                this.putExtra(SET_NAME, setName)
+                this.putExtra(WRONG_TIME, wrongTime)
+            }
+        }
+
+        fun showWongTime(context: Context) {
+            context.startActivity(getIntent(context, false, true))
+        }
+
+        fun showWongTimeTop(context: Context) {
+            context.startActivity(getIntent(context, false, true).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            })
+        }
+
+        fun showLoading(context: Context) {
+            context.startActivity(getIntent(context, false, false))
+        }
+
+        fun showSetupName(context: Context) {
+            context.startActivity(getIntent(context, false, false))
+        }
+    }
+}

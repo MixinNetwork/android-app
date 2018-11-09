@@ -373,6 +373,7 @@
     <string name="transfer_from">From %1$s</string>
     <string name="loading_init">Initializing…</string>
     <string name="loading_wait">Please wait a moment</string>
+    <string name="loading_time">System time is unusual, please continue to use again after correction</string>
     <!-- notification -->
     <string name="alert_key_group_text_message">%1$s send a message</string>
     <string name="alert_key_group_image_message">%1$s send a photo</string>
