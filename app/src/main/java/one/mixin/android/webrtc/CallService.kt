@@ -82,7 +82,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private lateinit var user: User
     private lateinit var conversationId: String
 
-    private val candidateCache = arrayListOf<IceCandidate>()
     private var declineTriggeredByUser: Boolean = true
 
     override fun onCreate() {
@@ -139,7 +138,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         audioManager.stop()
         peerConnectionClient.close()
         disposable?.dispose()
-        candidateCache.clear()
         timeoutFuture?.cancel(true)
     }
 
@@ -199,7 +197,6 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         if (peerConnectionClient.isInitiator) {
             val bmd = intent.getSerializableExtra(EXTRA_BLAZE) ?: return
             blazeMessageData = bmd as BlazeMessageData
-            sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(candidateCache))
             peerConnectionClient.setAnswerSdp(getRemoteSdp(Base64.decode(blazeMessageData!!.data)))
         } else {
             getTurnServer {
@@ -371,14 +368,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
     override fun onIceCandidate(candidate: IceCandidate) {
         callExecutor.execute {
-            if (callState.callInfo.callState == CallState.STATE_DIALING ||
-                callState.callInfo.callState == CallState.STATE_RINGING ||
-                callState.callInfo.callState == CallState.STATE_ANSWERING) {
-                candidateCache.add(candidate)
-            } else {
-                val arr = arrayListOf(candidate)
-                sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))
-            }
+            val arr = arrayListOf(candidate)
+            sendCallMessage(MessageCategory.WEBRTC_ICE_CANDIDATE.name, gson.toJson(arr))
         }
     }
 
