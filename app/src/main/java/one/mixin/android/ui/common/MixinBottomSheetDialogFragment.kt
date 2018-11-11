@@ -2,7 +2,7 @@ package one.mixin.android.ui.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.core.app.MixinDialogFragment
+import androidx.fragment.app.MixinDialogFragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider

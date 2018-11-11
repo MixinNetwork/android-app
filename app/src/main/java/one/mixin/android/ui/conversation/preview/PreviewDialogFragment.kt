@@ -3,13 +3,13 @@ package one.mixin.android.ui.conversation.preview
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.FragmentManager
-import androidx.core.app.MixinDialogFragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.MixinDialogFragment
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_preview.view.*

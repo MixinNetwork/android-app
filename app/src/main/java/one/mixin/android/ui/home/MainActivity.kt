@@ -8,7 +8,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.getSystemService
-import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.MixinDialogFragment
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import com.uber.autodispose.kotlin.autoDisposable
@@ -144,7 +144,7 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
     }
 
-    private var bottomSheet: DialogFragment? = null
+    private var bottomSheet: MixinDialogFragment? = null
     private var alertDialog: AlertDialog? = null
 
     private fun handlerCode(intent: Intent) {

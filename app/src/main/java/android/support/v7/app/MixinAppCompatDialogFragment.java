@@ -23,7 +23,7 @@ import android.view.Window;
 import android.view.WindowManager;
 import androidx.annotation.RestrictTo;
 import androidx.appcompat.app.AppCompatDialog;
-import androidx.core.app.MixinDialogFragment;
+import androidx.fragment.app.MixinDialogFragment;
 
 
 import static androidx.annotation.RestrictTo.Scope.LIBRARY_GROUP;
