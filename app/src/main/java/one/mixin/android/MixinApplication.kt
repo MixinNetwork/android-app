@@ -90,7 +90,9 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
     fun closeAndClear(toLanding: Boolean = true) {
         if (onlining.compareAndSet(true, false)) {
             BlazeMessageService.stopService(ctx)
-            CallService.disconnect(ctx)
+            if (CallService.isRunning) {
+                CallService.disconnect(ctx)
+            }
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()
