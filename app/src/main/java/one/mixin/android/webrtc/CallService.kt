@@ -87,6 +87,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     override fun onCreate() {
         AndroidInjection.inject(this)
         super.onCreate()
+        isRunning = true
         peerConnectionClient.createPeerConnectionFactory(PeerConnectionFactory.Options())
         Session.getAccount()?.toUser().let { user ->
             if (user == null) {
@@ -131,6 +132,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     override fun onDestroy() {
         audioManager.release()
         callState.reset()
+        isRunning = false
     }
 
     private fun disconnect() {
@@ -548,6 +550,8 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         private const val EXTRA_BLAZE = "blaze"
         private const val EXTRA_MUTE = "mute"
         private const val EXTRA_SPEAKERPHONE = "speakerphone"
+
+        var isRunning = false
 
         fun incoming(ctx: Context, user: User, data: BlazeMessageData) = startService(ctx, ACTION_CALL_INCOMING) {
             it.putExtra(Constants.ARGS_USER, user)
