@@ -181,7 +181,6 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             reportError("PeerConnectionFactory is not created")
             return null
         }
-        remoteCandidateCache = arrayListOf()
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
@@ -232,6 +231,9 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
         }
 
         override fun onSetSuccess() {
+            remoteCandidateCache.forEach {
+                peerConnection?.addIceCandidate(it)
+            }
             Timber.d("setRemoteSdp onSetSuccess")
         }
     }

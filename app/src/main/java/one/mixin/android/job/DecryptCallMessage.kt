@@ -157,11 +157,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         return
                     }
 
-                    val uId = if (callState.isInitiator) {
-                        Session.getAccountId()!!
-                    } else {
-                        callState.user!!.userId
-                    }
+                    val uId = getUserId()
                     saveCallMessage(data, userId = uId)
                     if (data.quoteMessageId != callState.callInfo.messageId) {
                         return
@@ -186,11 +182,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                     }
 
                     val duration = System.currentTimeMillis() - callState.connectedTime!!
-                    val uId = if (callState.isInitiator) {
-                        Session.getAccountId()!!
-                    } else {
-                        callState.user!!.userId
-                    }
+                    val uId = getUserId()
                     saveCallMessage(data, duration = duration.toString(), userId = uId, status = MessageStatus.READ)
                     CallService.remoteEnd(ctx)
                 }
@@ -200,16 +192,20 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                         return
                     }
 
-                    val uId = if (callState.isInitiator) {
-                        Session.getAccountId()!!
-                    } else {
-                        callState.user!!.userId
-                    }
+                    val uId = getUserId()
                     saveCallMessage(data, userId = uId)
                     CallService.remoteFailed(ctx)
                 }
             }
             notifyServer(data)
+        }
+    }
+
+    private fun getUserId(): String {
+        return if (callState.isInitiator) {
+            Session.getAccountId()!!
+        } else {
+            callState.user!!.userId
         }
     }
 
