@@ -2,10 +2,10 @@ package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
-import androidx.core.widget.TextViewCompat
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_sticker.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -25,8 +25,8 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         itemView.chat_sticker.round(radius)
     }
 
-    private val dp160 by lazy {
-        itemView.context.dpToPx(160f)
+    private val dp120 by lazy {
+        itemView.context.dpToPx(120f)
     }
 
     private val dp48 by lazy {
@@ -61,36 +61,36 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
             }
         }
         if (messageItem.assetWidth == null || messageItem.assetHeight == null) {
-            itemView.chat_sticker.layoutParams.width = dp160
-            itemView.chat_time.layoutParams.width = dp160
-            itemView.chat_sticker.layoutParams.height = dp160
+            itemView.chat_sticker.layoutParams.width = dp120
+            itemView.chat_time.layoutParams.width = dp120
+            itemView.chat_sticker.layoutParams.height = dp120
             itemView.chat_sticker.setImageDrawable(ColorDrawable(Color.TRANSPARENT))
         } else if (messageItem.assetWidth * 2 < dp48 || messageItem.assetHeight * 2 < dp48) {
             if (messageItem.assetWidth < messageItem.assetHeight) {
-                if (dp48 * messageItem.assetHeight / messageItem.assetWidth > dp160) {
-                    itemView.chat_sticker.layoutParams.width = dp160 * messageItem.assetWidth / messageItem.assetHeight
-                    itemView.chat_sticker.layoutParams.height = dp160
+                if (dp48 * messageItem.assetHeight / messageItem.assetWidth > dp120) {
+                    itemView.chat_sticker.layoutParams.width = dp120 * messageItem.assetWidth / messageItem.assetHeight
+                    itemView.chat_sticker.layoutParams.height = dp120
                 } else {
                     itemView.chat_sticker.layoutParams.width = dp48
                     itemView.chat_sticker.layoutParams.height = dp48 * messageItem.assetHeight / messageItem.assetWidth
                 }
             } else {
-                if (dp48 * messageItem.assetWidth / messageItem.assetHeight > dp160) {
-                    itemView.chat_sticker.layoutParams.height = dp160 * messageItem.assetHeight / messageItem.assetWidth
-                    itemView.chat_sticker.layoutParams.width = dp160
+                if (dp48 * messageItem.assetWidth / messageItem.assetHeight > dp120) {
+                    itemView.chat_sticker.layoutParams.height = dp120 * messageItem.assetHeight / messageItem.assetWidth
+                    itemView.chat_sticker.layoutParams.width = dp120
                 } else {
                     itemView.chat_sticker.layoutParams.height = dp48
                     itemView.chat_sticker.layoutParams.width = dp48 * messageItem.assetWidth / messageItem.assetHeight
                 }
             }
             itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
-        } else if (messageItem.assetWidth * 2 > dp160 || messageItem.assetHeight * 2 > dp160) {
+        } else if (messageItem.assetWidth * 2 > dp120 || messageItem.assetHeight * 2 > dp120) {
             if (messageItem.assetWidth > messageItem.assetHeight) {
-                itemView.chat_sticker.layoutParams.width = dp160
-                itemView.chat_sticker.layoutParams.height = dp160 * messageItem.assetHeight / messageItem.assetWidth
+                itemView.chat_sticker.layoutParams.width = dp120
+                itemView.chat_sticker.layoutParams.height = dp120 * messageItem.assetHeight / messageItem.assetWidth
             } else {
-                itemView.chat_sticker.layoutParams.height = dp160
-                itemView.chat_sticker.layoutParams.width = dp160 * messageItem.assetWidth / messageItem.assetHeight
+                itemView.chat_sticker.layoutParams.height = dp120
+                itemView.chat_sticker.layoutParams.width = dp120 * messageItem.assetWidth / messageItem.assetHeight
             }
             itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
         } else {
