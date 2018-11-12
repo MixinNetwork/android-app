@@ -5,12 +5,13 @@ import android.animation.ObjectAnimator
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.View
 import android.view.animation.DecelerateInterpolator
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.animation.doOnEnd
 import androidx.core.view.doOnPreDraw
 import com.bumptech.glide.Glide
@@ -20,6 +21,8 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.activity_avatar.*
 import one.mixin.android.R
+import one.mixin.android.extension.belowOreo
+import one.mixin.android.extension.supportsOreo
 import one.mixin.android.widget.AvatarTransform
 
 class AvatarActivity : AppCompatActivity() {
@@ -42,6 +45,9 @@ class AvatarActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        belowOreo {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
         postponeEnterTransition()
         window.statusBarColor = Color.TRANSPARENT
         setContentView(R.layout.activity_avatar)

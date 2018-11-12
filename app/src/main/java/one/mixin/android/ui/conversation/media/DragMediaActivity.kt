@@ -7,6 +7,7 @@ import android.app.Activity
 import android.app.ActivityOptions
 import android.content.ContentResolver
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.SurfaceTexture
 import android.graphics.drawable.BitmapDrawable
@@ -15,10 +16,6 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import androidx.viewpager.widget.PagerAdapter
-import androidx.core.view.ViewCompat
-import androidx.viewpager.widget.ViewPager
-import androidx.appcompat.view.ContextThemeWrapper
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
@@ -33,9 +30,13 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
+import androidx.viewpager.widget.PagerAdapter
+import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
@@ -54,6 +55,7 @@ import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
@@ -126,6 +128,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     override fun onCreate(savedInstanceState: Bundle?) {
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
+        belowOreo {
+            requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+        }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_drag_media)
         colorDrawable = ColorDrawable(Color.BLACK)

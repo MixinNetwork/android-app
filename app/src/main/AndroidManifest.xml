@@ -156,7 +156,6 @@
         <activity
             android:name=".ui.conversation.media.DragMediaActivity"
             android:theme="@style/AppTheme.Photo"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
 
         </activity>
@@ -196,14 +195,12 @@
 
         <activity android:name=".ui.common.AvatarActivity"
             android:theme="@style/AppTheme.Avatar"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden"/>
 
         <activity android:name=".ui.call.CallActivity"
             android:theme="@style/AppTheme.Call"
             android:launchMode="singleInstance"
             android:documentLaunchMode="intoExisting"
-            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden"/>
 
         <provider
