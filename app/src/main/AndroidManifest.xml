@@ -99,6 +99,7 @@
 
         <activity-alias
             android:name="one.mixin.messenger.ShareActivity"
+            android:screenOrientation="portrait"
             android:targetActivity=".ui.forward.ForwardActivity"
             android:exported="true">
             <intent-filter>
@@ -155,6 +156,7 @@
         <activity
             android:name=".ui.conversation.media.DragMediaActivity"
             android:theme="@style/AppTheme.Photo"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
 
         </activity>
@@ -189,16 +191,19 @@
 
         <activity
             android:name=".widget.gallery.ui.GalleryActivity"
+            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"/>
 
         <activity android:name=".ui.common.AvatarActivity"
             android:theme="@style/AppTheme.Avatar"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden"/>
 
         <activity android:name=".ui.call.CallActivity"
             android:theme="@style/AppTheme.Call"
             android:launchMode="singleInstance"
             android:documentLaunchMode="intoExisting"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateAlwaysHidden"/>
 
         <provider
