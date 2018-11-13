@@ -339,6 +339,7 @@
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>
+    <string name="about_help_center">Help center</string>
     <string name="about_version">Version %1$s</string>
     <string name="conversation_delete">Delete</string>
     <string name="chat_group_create">%1$s created group \"%2$s\"</string>
