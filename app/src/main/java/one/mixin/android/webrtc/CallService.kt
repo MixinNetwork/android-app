@@ -17,6 +17,7 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MessageDao
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendMessageJob
@@ -79,7 +80,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     private var blazeMessageData: BlazeMessageData? = null
     private var quoteMessageId: String? = null
     private lateinit var self: User
-    private lateinit var user: User
+    private var user: User? = null
     private lateinit var conversationId: String
 
     private var declineTriggeredByUser: Boolean = true
@@ -120,6 +121,9 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 ACTION_SPEAKERPHONE -> handleSpeakerphone(intent)
                 ACTION_CHECK_TIMEOUT -> handleCheckTimeout()
             }
+        }
+        supportsOreo {
+            updateNotification()
         }
 
         return START_NOT_STICKY
@@ -434,7 +438,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                     self.userId, category, content, nowInUtc(), MessageStatus.SENDING, quoteMessageId)
             }
         }
-        val recipientId = user.userId
+        val recipientId = user?.userId
         if (quoteMessageId != null || message.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             jobManager.addJobInBackground(SendMessageJob(message, recipientId = recipientId))
         }
