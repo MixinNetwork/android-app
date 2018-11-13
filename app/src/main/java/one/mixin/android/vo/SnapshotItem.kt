@@ -57,5 +57,6 @@ data class SnapshotItem(
     val assetSymbol: String?,
     @SerializedName("confirmations")
     @ColumnInfo(name = "confirmations")
-    val confirmations: Int?
+    val confirmations: Int?,
+    val avatarUrl: String?
 ) : Parcelable

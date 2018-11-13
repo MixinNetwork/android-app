@@ -1,258 +1,292 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:tools="http://schemas.android.com/tools"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@color/bg_gray"
-              android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
-            android:id="@+id/title_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintTop_toTopOf="parent"
-            app:titleText="@string/wallet_transaction_title"/>
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toTopOf="parent"
+        app:need_divider="false"
+        app:titleText="@string/wallet_transaction_title"/>
 
     <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
         <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/top_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/white"
+                android:background="@drawable/bg_wallet_card">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    tools:ignore="UselessParent">
+
+                    <one.mixin.android.widget.BadgeCircleImageView
+                        android:id="@+id/avatar"
+                        android:layout_width="66dp"
+                        android:layout_height="66dp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginTop="32dp"
+                        android:layout_marginBottom="32dp"
+                        tools:ignore="ContentDescription"/>
+
+                    <one.mixin.android.widget.BalanceLayout
+                        android:id="@+id/value_rl"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@+id/avatar"
+                        android:layout_alignTop="@+id/avatar"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin">
+
+                        <TextView
+                            android:id="@+id/value_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/mixin_condensed"
+                            android:textColor="@color/wallet_text_dark"
+                            android:textSize="40sp"
+                            tools:text="1234812304812045.8321498123749812348"/>
+
+                        <TextView
+                            android:id="@+id/symbol_tv"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:paddingStart="2dp"
+                            android:paddingEnd="2dp"
+                            android:layout_marginStart="@dimen/padding8"
+                            android:background="@drawable/bg_wallet_symbol"
+                            android:textColor="@color/wallet_text_gray"
+                            android:textSize="12sp"
+                            tools:ignore="HardcodedText"/>
+                    </one.mixin.android.widget.BalanceLayout>
+
+                    <TextView
+                        android:id="@+id/value_as_tv"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@id/avatar"
+                        android:layout_below="@+id/value_rl"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:layout_marginTop="2dp"
+                        android:textColor="@color/wallet_text_gray"/>
+                </RelativeLayout>
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_wallet_card"
                 android:orientation="vertical">
 
-            <one.mixin.android.widget.BadgeCircleImageView
-                    android:id="@+id/avatar"
-                    android:layout_width="46dp"
-                    android:layout_height="46dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_margin="@dimen/activity_vertical_margin"
-                    tools:ignore="ContentDescription"/>
-
-            <TextView
-                    android:id="@+id/value_tv"
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:textColor="@android:color/black"
-                    android:textSize="@dimen/wallet_balance_text"/>
+                    android:layout_height="wrap_content">
 
-            <TextView
-                    android:id="@+id/value_as_tv"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="@dimen/activity_vertical_margin"
-                    android:textColor="@color/text_gray"
-                    android:textSize="@dimen/wallet_balance_as_text"/>
-
-            <View
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/item_divider"
-                    android:background="@color/bg_gray"/>
-
-            <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-
-                <TextView
+                    <TextView
+                        android:id="@+id/transaction_id_title_tv"
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginTop="@dimen/activity_vertical_margin"
                         android:layout_marginBottom="4dp"
-                        android:text="@string/transactions_id"
-                        android:textColor="@color/text_gray"
-                        android:textSize="12sp"/>
+                        android:text="@string/transactions_id"/>
 
-                <TextView
+                    <TextView
                         android:id="@+id/transaction_id_tv"
+                        style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_below="@+id/transaction_id_title_tv"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        android:layout_marginEnd="@dimen/margin16"
                         android:layout_marginBottom="@dimen/activity_vertical_margin"
-                        android:textIsSelectable="true"
-                        android:textColor="@android:color/black"/>
+                        android:textIsSelectable="true"/>
 
-                <View
+                    <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
-                        android:background="@color/divider"/>
-            </LinearLayout>
+                        android:layout_marginStart="@dimen/margin12"
+                        android:layout_alignParentBottom="true"
+                        android:background="@color/wallet_divider"/>
+                </RelativeLayout>
 
-            <LinearLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                <TextView
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginTop="@dimen/activity_vertical_margin"
                         android:layout_marginBottom="4dp"
-                        android:text="@string/transactions_type"
-                        android:textColor="@color/text_gray"
-                        android:textSize="12sp"/>
+                        android:text="@string/transactions_type"/>
 
-                <TextView
+                    <TextView
                         android:id="@+id/transaction_type_tv"
+                        style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginBottom="@dimen/activity_vertical_margin"
-                        android:textIsSelectable="true"
-                        android:textColor="@android:color/black"/>
+                        android:textIsSelectable="true"/>
 
-                <View
+                    <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
-                        android:background="@color/divider"/>
-            </LinearLayout>
+                        android:layout_marginStart="@dimen/margin12"
+                        android:background="@color/wallet_divider"/>
+                </LinearLayout>
 
-            <LinearLayout
+                <LinearLayout
                     android:id="@+id/sender_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                <TextView
+                    <TextView
                         android:id="@+id/sender_title"
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginTop="@dimen/activity_vertical_margin"
                         android:layout_marginBottom="4dp"
-                        android:text="@string/sender"
-                        android:textColor="@color/text_gray"
-                        android:textSize="12sp"/>
+                        android:text="@string/sender"/>
 
-                <TextView
+                    <TextView
                         android:id="@+id/sender_tv"
+                        style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginBottom="@dimen/activity_vertical_margin"
-                        android:textIsSelectable="true"
-                        android:textColor="@android:color/black"/>
+                        android:textIsSelectable="true"/>
 
-                <View
+                    <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
-                        android:background="@color/divider"/>
-            </LinearLayout>
+                        android:layout_marginStart="@dimen/margin12"
+                        android:background="@color/wallet_divider"/>
+                </LinearLayout>
 
-            <LinearLayout
+                <LinearLayout
                     android:id="@+id/receiver_ll"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                <TextView
+                    <TextView
                         android:id="@+id/receiver_title"
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginTop="@dimen/activity_vertical_margin"
                         android:layout_marginBottom="4dp"
-                        android:text="@string/receiver"
-                        android:textColor="@color/text_gray"
-                        android:textSize="12sp"/>
+                        android:text="@string/receiver"/>
 
-                <TextView
+                    <TextView
                         android:id="@+id/receiver_tv"
+                        style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginBottom="@dimen/activity_vertical_margin"
-                        android:textIsSelectable="true"
-                        android:textColor="@android:color/black"/>
+                        android:textIsSelectable="true"/>
 
-                <View
+                    <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
-                        android:background="@color/divider"/>
-            </LinearLayout>
+                        android:layout_marginStart="@dimen/margin12"
+                        android:background="@color/wallet_divider"/>
+                </LinearLayout>
 
-            <LinearLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
 
-                <TextView
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginTop="@dimen/activity_vertical_margin"
                         android:layout_marginBottom="4dp"
-                        android:text="@string/memo"
-                        android:textColor="@color/text_gray"
-                        android:textSize="12sp"/>
+                        android:text="@string/memo"/>
 
-                <TextView
+                    <TextView
                         android:id="@+id/memo_tv"
+                        style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginBottom="@dimen/activity_vertical_margin"
-                        android:textIsSelectable="true"
-                        android:textColor="@android:color/black"/>
+                        android:textIsSelectable="true"/>
 
-                <View
+                    <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
-                        android:background="@color/divider"/>
-            </LinearLayout>
+                        android:layout_marginStart="@dimen/margin12"
+                        android:background="@color/wallet_divider"/>
+                </LinearLayout>
 
-            <LinearLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/margin16"
                     android:orientation="vertical">
 
-                <TextView
+                    <TextView
+                        style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginTop="@dimen/activity_vertical_margin"
                         android:layout_marginBottom="4dp"
-                        android:text="@string/date"
-                        android:textColor="@color/text_gray"
-                        android:textSize="12sp"/>
+                        android:text="@string/date"/>
 
-                <TextView
+                    <TextView
                         android:id="@+id/date_tv"
+                        style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginBottom="@dimen/activity_vertical_margin"
-                        android:textIsSelectable="true"
-                        android:textColor="@android:color/black"/>
-
-                <View
-                        android:layout_width="match_parent"
-                        android:layout_height=".5dp"
-                        android:background="@color/divider"/>
+                        android:textIsSelectable="true"/>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>

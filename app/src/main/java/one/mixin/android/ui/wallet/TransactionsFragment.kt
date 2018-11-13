@@ -8,12 +8,14 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.room.Transaction
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
 import kotlinx.android.synthetic.main.fragment_transactions.*
@@ -21,19 +23,25 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_transactions_fragment_header.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
-import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
@@ -49,14 +57,11 @@ import org.jetbrains.anko.doAsync
 import timber.log.Timber
 import javax.inject.Inject
 
-class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
+class TransactionsFragment : BaseFragment(), TransactionsAdapter.OnTransactionsListener {
 
     companion object {
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
-
-        const val POS_PB = 0
-        const val POS_TEXT = 1
 
         fun newInstance(asset: AssetItem): TransactionsFragment {
             val f = TransactionsFragment()
@@ -99,6 +104,10 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             showFiltersSheet()
         }
         updateHeader(headerView, asset)
+        headerView.tranfer_tv.setOnClickListener {
+            defaultSharedPreferences.putString(TransferFragment.ASSERT_PREFERENCE, asset.assetId)
+            view!!.findNavController().navigate(R.id.action_transactions_to_single_friend_select)
+        }
         headerView.deposit_tv.setOnClickListener {
             asset.differentProcess({
                 view!!.findNavController().navigate(R.id.action_transactions_to_deposit_public_key,
@@ -112,10 +121,18 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         }
 
         adapter = TransactionsAdapter(asset).apply { data = snapshots }
-        adapter.onItemListener = this
+        adapter.listener = this
         adapter.headerView = headerView
-        recycler_view.addItemDecoration(SpaceItemDecoration(1))
+        recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         recycler_view.adapter = adapter
+        headerView.post {
+            if (!isAdded) return@post
+
+            headerView.bottom_rl.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = requireContext().displayHeight() - title_view.height - headerView.top_ll.height - headerView.group_info_member_title_layout.height
+            }
+        }
+
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
         doAsync {
             asset.assetId.let { it ->
@@ -143,17 +160,9 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     @SuppressLint("SetTextI18n")
     private fun updateHeader(header: View, asset: AssetItem) {
-        header.balance.text = asset.balance.numberFormat() + " " + asset.symbol
-        header.balance_as.text = getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
-        if (showPB(asset)) {
-            if (header.deposit_animator.displayedChild != POS_PB) {
-                header.deposit_animator.displayedChild = POS_PB
-            }
-        } else {
-            if (header.deposit_animator.displayedChild != POS_TEXT) {
-                header.deposit_animator.displayedChild = POS_TEXT
-            }
-        }
+        header.balance.text = asset.balance.numberFormat()
+        header.symbol_tv.text = asset.symbol
+        header.balance_as.text = "≈ $${asset.usd().numberFormat2()}"
     }
 
     private fun refreshPendingDeposits(asset: AssetItem) {
@@ -237,6 +246,14 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             })
     }
 
+    override fun onUserClick(userId: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            walletViewModel.getUser(userId)?.let {
+                UserBottomSheetDialogFragment.newInstance(it).show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+            }
+        }
+    }
+
     private fun showFiltersSheet() {
         filtersView.filters_radio_group.setCheckedById(currentType)
         filtersSheet.show()
@@ -259,32 +276,32 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     R.id.filters_radio_all -> {
                         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
                         headerView.group_info_member_title.setText(R.string.wallet_transactions_title)
-                        wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
+                        headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
                     }
                     R.id.filters_radio_transfer -> {
                         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name))
                         headerView.group_info_member_title.setText(R.string.filters_transfer)
-                        wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
+                        headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
                     }
                     R.id.filters_radio_deposit -> {
                         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name))
                         headerView.group_info_member_title.setText(R.string.filters_deposit)
-                        wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
+                        headerView.wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
                     }
                     R.id.filters_radio_withdrawal -> {
                         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name))
                         headerView.group_info_member_title.setText(R.string.filters_withdrawal)
-                        wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
+                        headerView.wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
                     }
                     R.id.filters_radio_fee -> {
                         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name))
                         headerView.group_info_member_title.setText(R.string.filters_fee)
-                        wallet_transactions_empty.setText(R.string.wallet_fees_empty)
+                        headerView.wallet_transactions_empty.setText(R.string.wallet_fees_empty)
                     }
                     R.id.filters_radio_rebate -> {
                         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name))
                         headerView.group_info_member_title.setText(R.string.filters_rebate)
-                        wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
+                        headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
                     }
                 }
                 filtersSheet.dismiss()
@@ -304,8 +321,7 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         Observer<List<SnapshotItem>> { list ->
             if (currentType == R.id.filters_radio_all) {
                 if (list != null && list.isNotEmpty()) {
-                    headerView.group_info_member_title_layout.visibility = VISIBLE
-                    bottom_fl.visibility = GONE
+                    updateHeaderBottomLayout(false)
                     snapshots = list
                     doAsync {
                         for (s in snapshots) {
@@ -318,19 +334,22 @@ class TransactionsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                         }
                     }
                 } else {
-                    headerView.group_info_member_title_layout.visibility = GONE
-                    bottom_fl.visibility = VISIBLE
+                    updateHeaderBottomLayout(true)
                 }
             } else {
                 if (list != null && list.isNotEmpty()) {
-                    bottom_fl.visibility = GONE
+                    updateHeaderBottomLayout(false)
                 } else {
-                    bottom_fl.visibility = VISIBLE
+                    updateHeaderBottomLayout(true)
                 }
             }
             adapter.data = list
             adapter.notifyDataSetChanged()
         }
+    }
+
+    private fun updateHeaderBottomLayout(expand: Boolean) {
+        headerView.bottom_rl.visibility = if (expand) VISIBLE else GONE
     }
 
     private var currentType = R.id.filters_radio_all

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="34dp">
+
+    <View
+        android:id="@+id/shadow_left"
+        android:layout_width="16dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_wallet_transactions_left"/>
+
+    <TextView
+        android:id="@+id/date_tv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:background="@color/wallet_header_gray"
+        android:layout_toEndOf="@+id/shadow_left"
+        android:layout_toStartOf="@+id/shadow_right"
+        android:layout_centerVertical="true"
+        android:paddingStart="@dimen/margin16"
+        android:paddingEnd="@dimen/margin16"
+        android:textColor="@color/wallet_text_gray"
+        android:textSize="13sp" />
+
+    <View
+        android:id="@+id/shadow_right"
+        android:layout_width="16dp"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:background="@drawable/bg_wallet_transactions_right"/>
+</RelativeLayout>

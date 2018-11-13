@@ -1,0 +1,7 @@
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@android:color/transparent" android:state_checked="true" android:state_pressed="true"/>
+    <item android:drawable="@drawable/ic_asset_add_checked" android:state_pressed="true"/>
+    <item android:drawable="@drawable/ic_asset_add_checked" android:state_checked="true"/>
+    <item android:drawable="@drawable/ic_asset_add_disable" android:state_enabled="false"/>
+    <item android:drawable="@drawable/ic_asset_add_unchecked"/>
+</selector>

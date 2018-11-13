@@ -57,4 +57,10 @@ interface UserDao : BaseDao<User> {
 
     @Query("UPDATE users SET phone = :phone WHERE user_id = :id")
     fun updatePhone(id: String, phone: String)
+
+    @Query("SELECT * FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
+    fun findContactUsers(): LiveData<List<User>>
+
+    @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL")
+    fun findFriendsNotBot(): LiveData<List<User>>
 }

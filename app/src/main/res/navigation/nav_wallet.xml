@@ -33,6 +33,12 @@
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_wallet_to_asset_add"
+            app:destination="@id/asset_add_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
 
     <fragment
@@ -64,6 +70,12 @@
         <action
             android:id="@+id/action_transactions_to_withdrawal"
             app:destination="@id/withdrawal_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_transactions_to_single_friend_select"
+            app:destination="@id/single_friend_select_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
@@ -214,4 +226,14 @@
             android:name="args_asset"
             app:argType="one.mixin.android.vo.AssetItem"/>
     </fragment>
+
+    <fragment
+        android:id="@+id/single_friend_select_fragment"
+        android:name="one.mixin.android.ui.wallet.SingleFriendSelectFragment"
+        tools:layout="@layout/fragment_single_friend_select"/>
+
+    <fragment
+        android:id="@+id/asset_add_fragment"
+        android:name="one.mixin.android.ui.wallet.AssetAddFragment"
+        tools:layout="@layout/fragment_asset_add"/>
 </navigation>

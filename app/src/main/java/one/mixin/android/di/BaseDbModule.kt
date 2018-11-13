@@ -98,4 +98,8 @@ internal class BaseDbModule {
     @Singleton
     @Provides
     fun providesStickerRelationshipDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.stickerRelationshipDao()
+
+    @Singleton
+    @Provides
+    fun providesHotAssetDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.hotAssetDao()
 }

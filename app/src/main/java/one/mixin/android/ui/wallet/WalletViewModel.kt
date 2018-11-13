@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.util.ArraySet
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.LivePagedListBuilder
@@ -12,16 +13,21 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
+import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshHotAssetsJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.HotAsset
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.toHotAsset
 import javax.inject.Inject
 
 class WalletViewModel @Inject
@@ -89,4 +95,39 @@ internal constructor(
     fun getAsset(assetId: String) = Flowable.just(assetId).map {
         assetRepository.asset(assetId).execute().body()
     }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+
+    fun refreshHotAssets() {
+        jobManager.addJobInBackground(RefreshHotAssetsJob())
+    }
+
+    fun queryAsset(query: String): Pair<List<HotAsset>?, ArraySet<String>?> {
+        val response = assetRepository.queryAssets(query).execute().body()
+        if (response != null && response.isSuccess && response.data != null) {
+            val assetList = response.data as List<Asset>
+            val hotAssetList = arrayListOf<HotAsset>()
+            assetList.mapTo(hotAssetList, { asset ->
+                val chainIconUrl = assetRepository.getIconUrl(asset.chainId)
+                asset.toHotAsset(chainIconUrl)
+            })
+            val existsSet = ArraySet<String>()
+            hotAssetList.forEach {
+                val exists = assetRepository.checkExists(it.assetId)
+                if (exists != null) {
+                    existsSet.add(it.assetId)
+                }
+            }
+            return Pair(hotAssetList, existsSet)
+        }
+        return Pair(null, null)
+    }
+
+    fun saveAssets(hotAssetList: List<HotAsset>) {
+        hotAssetList.forEach {
+            jobManager.addJobInBackground(RefreshAssetsJob(it.assetId))
+        }
+    }
+
+    fun observeHotAssets() = assetRepository.hotAssets()
+
+    fun getUser(userId: String) = userRepository.getUserById(userId)
 }

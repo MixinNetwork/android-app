@@ -3,58 +3,86 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white"
+    android:background="@drawable/bg_wallet_card"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/total_tv"
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin">
+
+        <TextView
+            android:id="@+id/symbol"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/total_tv"
+            android:layout_alignTop="@+id/total_tv"
+            android:layout_marginEnd="@dimen/padding8"
+            android:textColor="@color/wallet_text_gray"
+            android:text="$"
+            tools:ignore="HardcodedText"/>
+
+        <TextView
+            android:id="@+id/total_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:fontFamily="@font/mixin_condensed"
+            android:gravity="center"
+            android:textColor="@android:color/black"
+            android:textSize="40sp"
+            tools:text="12345.8"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/btc_rl"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:gravity="center"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        tools:text="0 BTC"
-        android:textColor="@android:color/black"
-        android:textSize="@dimen/wallet_balance_text" />
+        android:layout_marginBottom="@dimen/margin16"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin">
 
-    <TextView
-        android:id="@+id/total_as_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="8dp"
-        tools:text="≈ 0 CNY"
-        android:textSize="@dimen/wallet_balance_as_text" />
+        <TextView
+            android:id="@+id/total_as_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/mixin_condensed"
+            android:textColor="@color/wallet_text_dark"
+            android:textSize="18sp"
+            tools:text="0.123"/>
 
-    <one.mixin.android.widget.PieView
-        android:id="@+id/pie_view"
-        android:layout_width="130dp"
-        android:layout_height="130dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="32dp"
-        android:layout_marginTop="32dp" />
+        <TextView
+            android:id="@+id/btc_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/total_as_tv"
+            android:layout_alignBaseline="@+id/total_as_tv"
+            android:layout_marginStart="@dimen/padding8"
+            android:textColor="@color/wallet_text_gray"
+            android:text="BTC"
+            tools:ignore="HardcodedText"/>
+    </RelativeLayout>
+
+    <one.mixin.android.widget.PercentView
+        android:id="@+id/percent_view"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_marginStart="@dimen/margin12"
+        android:layout_marginEnd="@dimen/margin12"
+        android:layout_marginBottom="8dp"/>
 
     <LinearLayout
         android:id="@+id/pie_item_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:layout_marginBottom="32dp"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:orientation="horizontal"
-        android:visibility="gone" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_divider"
-        android:background="@color/bg_gray" />
+        android:visibility="gone"/>
 </LinearLayout>

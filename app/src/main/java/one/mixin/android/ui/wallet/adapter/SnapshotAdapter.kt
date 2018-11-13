@@ -6,7 +6,7 @@ import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
+import kotlinx.android.synthetic.main.item_wallet_all_transactions.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.date
 import one.mixin.android.extension.formatPublicKey
@@ -35,7 +35,7 @@ class SnapshotAdapter : PagedListAdapter<SnapshotItem, SnapshotAdapter.NormalHol
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): NormalHolder {
         return NormalHolder(LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_wallet_transactions, parent, false))
+            .inflate(R.layout.item_wallet_all_transactions, parent, false))
     }
 
     class NormalHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

@@ -58,3 +58,5 @@ data class Asset(
 
 fun Asset.toAssetItem(): AssetItem = AssetItem(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden,
     confirmations, null, null, accountName, accountTag)
+
+fun Asset.toHotAsset(chainIconUrl: String): HotAsset = HotAsset(assetId, symbol, name, iconUrl, chainId, chainIconUrl)

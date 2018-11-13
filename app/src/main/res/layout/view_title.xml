@@ -65,6 +65,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
+        android:layout_marginStart="56dp"
+        android:layout_marginEnd="56dp"
         android:gravity="center"
         android:orientation="vertical">
 
@@ -73,7 +75,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:maxLines="1"
             android:maxWidth="240dp"
             android:singleLine="true"
             android:textColor="@android:color/black"
@@ -85,9 +86,11 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:singleLine="true"
+            android:ellipsize="middle"
+            android:visibility="gone"
             android:textColor="@color/text_gray"
             android:textSize="10sp"
-            android:visibility="gone" />
+            tools:ignore="SmallSp"/>
 
     </LinearLayout>
 

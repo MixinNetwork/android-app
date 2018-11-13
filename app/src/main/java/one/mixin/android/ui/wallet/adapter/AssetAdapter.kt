@@ -55,7 +55,6 @@ class AssetAdapter(private val rv: RecyclerView) : HeaderAdapter<AssetItem>() {
             rv.layoutManager?.onRestoreInstanceState(recyclerViewState)
         }
     }
-
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is NormalHolder) {
@@ -82,7 +81,6 @@ class AssetAdapter(private val rv: RecyclerView) : HeaderAdapter<AssetItem>() {
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
         }
     }
-
     override fun getNormalViewHolder(context: Context, parent: ViewGroup): NormalHolder =
-        NormalHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_asset, parent, false))
+        NormalHolder(LayoutInflater.from(context).inflate(R.layout.item_asset, parent, false))
 }

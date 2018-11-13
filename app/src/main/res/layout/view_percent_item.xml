@@ -7,8 +7,8 @@
 
     <ImageView
         android:id="@+id/color"
-        android:layout_width="12dp"
-        android:layout_height="12dp"
+        android:layout_width="4dp"
+        android:layout_height="10dp"
         android:layout_gravity="center_vertical"
         tools:ignore="ContentDescription" />
 
@@ -17,7 +17,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="4dp"
-        android:textColor="@android:color/black"
+        android:textColor="@color/wallet_text_gray"
         tools:text="BTC"/>
 
     <TextView
@@ -25,6 +25,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:textColor="@color/text_gray"
+        android:textColor="@color/wallet_text_gray"
         tools:text="60%"/>
 </merge>

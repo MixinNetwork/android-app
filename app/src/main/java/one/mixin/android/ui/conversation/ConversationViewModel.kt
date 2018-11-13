@@ -405,7 +405,11 @@ internal constructor(
 
     fun getFriends() = userRepository.findFriends()
 
+    fun finFriendsNotBot() = userRepository.findFriendsNotBot()
+
     fun getConversations() = conversationRepository.conversation()
+
+    fun findContactUsers() = userRepository.findContactUsers()
 
     private val notificationManager: NotificationManager by lazy {
         MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager

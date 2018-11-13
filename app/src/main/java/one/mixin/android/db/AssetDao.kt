@@ -18,8 +18,8 @@ interface AssetDao : BaseDao<Asset> {
             "FROM assets a1 " +
             "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id "
         const val POSTFIX = " ORDER BY balance * price_usd DESC, price_usd DESC, cast(balance AS REAL) DESC, name DESC"
-        const val POSTFIX_ASSET_ITEM = "NOT (a1.balance = 0 AND a1.asset_id != a1.chain_id) " +
-            "ORDER BY a1.balance * a1.price_usd DESC, a1.price_usd DESC, cast(a1.balance AS REAL) DESC, a1.name DESC"
+        const val POSTFIX_ASSET_ITEM = " ORDER BY a1.balance * a1.price_usd DESC, a1.price_usd DESC, cast(a1.balance AS REAL) DESC, a1.name DESC"
+        const val POSTFIX_ASSET_ITEM_NOT_HIDDEN = " WHERE a1.hidden ISNULL OR NOT a1.hidden" + POSTFIX_ASSET_ITEM
     }
 
     @Query("SELECT * FROM assets $POSTFIX")
@@ -31,7 +31,7 @@ interface AssetDao : BaseDao<Asset> {
     @Query("SELECT * FROM assets WHERE balance > 0 $POSTFIX")
     fun simpleAssetsWithBalance(): List<Asset>
 
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' AND $POSTFIX_ASSET_ITEM limit 1")
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.symbol = 'XIN' $POSTFIX_ASSET_ITEM limit 1")
     fun getXIN(): AssetItem?
 
     @Query("SELECT * FROM assets WHERE asset_id = :id")
@@ -44,12 +44,12 @@ interface AssetDao : BaseDao<Asset> {
     fun updateHidden(id: String, hidden: Boolean)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.hidden = 1 AND $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.hidden = 1 $POSTFIX_ASSET_ITEM")
     fun hiddenAssetItems(): LiveData<List<AssetItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE $POSTFIX_ASSET_ITEM")
-    fun assetItems(): LiveData<List<AssetItem>>
+    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
+    fun assetItemsNotHidden(): LiveData<List<AssetItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.name LIKE :name OR a1.symbol LIKE :symbol " +
@@ -65,6 +65,12 @@ interface AssetDao : BaseDao<Asset> {
     fun simpleAssetItem(id: String): AssetItem?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 AND $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(): LiveData<List<AssetItem>>
+
+    @Query("SELECT icon_url FROM assets WHERE asset_id = :id")
+    fun getIconUrl(id: String): String
+
+    @Query("SELECT asset_id FROM assets WHERE asset_id = :id")
+    fun checkExists(id: String): String?
 }

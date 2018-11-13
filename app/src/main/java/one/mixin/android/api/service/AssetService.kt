@@ -8,6 +8,7 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
+import one.mixin.android.vo.HotAsset
 import one.mixin.android.vo.PendingDeposit
 import one.mixin.android.vo.Snapshot
 import retrofit2.Call
@@ -52,4 +53,10 @@ interface AssetService {
     @GET("external/transactions")
     fun pendingDeposits(@Query("asset") asset: String, @Query("public_key") key: String? = null,
         @Query("account_name") name: String? = null, @Query("account_tag") tag: String? = null): Observable<MixinResponse<List<PendingDeposit>>>
+
+    @GET("network/assets/search/{query}")
+    fun queryAssets(@Path("query") query: String): Call<MixinResponse<List<Asset>>>
+
+    @GET("network/assets/top")
+    fun topAssets(): Call<MixinResponse<List<Asset>>>
 }

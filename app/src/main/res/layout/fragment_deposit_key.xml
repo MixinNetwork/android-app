@@ -4,121 +4,97 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="@color/white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        app:need_divider="false"/>
 
-    <RelativeLayout
-        android:id="@+id/address_layout"
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="@dimen/activity_vertical_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:background="@drawable/bg_round_white">
+        android:background="@drawable/bg_wallet_card_single">
 
         <RelativeLayout
-            android:id="@+id/top"
+            android:id="@+id/address_layout"
             android:layout_width="match_parent"
-            android:layout_height="72dp">
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/margin16"
+            tools:ignore="UselessParent">
 
-            <androidx.legacy.widget.Space
-                android:id="@+id/center_place_holder"
-                android:layout_width="1dp"
-                android:layout_height="1dp"
-                android:layout_centerVertical="true" />
+            <TextView
+                android:id="@+id/address_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginTop="32dp"
+                android:textColor="@color/wallet_text_gray"
+                android:text="@string/address"/>
 
-            <one.mixin.android.widget.AvatarView
-                android:id="@+id/avatar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+            <one.mixin.android.widget.MiddleMultilineTextView
+                android:id="@+id/key_code"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/address_title"
+                android:maxLines="4"
+                android:layout_marginTop="@dimen/margin16"
+                android:layout_toStartOf="@+id/qr_fl"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:textColor="@color/wallet_text_dark"/>
+
+            <TextView
+                android:id="@+id/copy_tv"
+                android:layout_width="75dp"
+                android:layout_height="50dp"
+                android:gravity="center"
+                android:layout_alignBottom="@+id/qr_fl"
+                android:background="@drawable/bg_wallet_blue_btn"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginBottom="8dp"
+                android:textColor="@color/white"
+                android:text="@string/copy"/>
+
+            <FrameLayout
+                android:id="@+id/qr_fl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin16"
+                android:layout_marginBottom="@dimen/margin16"
                 android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginStart="@dimen/activity_horizontal_margin" />
+                android:layout_alignParentEnd="true">
 
-            <TextView
-                android:id="@+id/name"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_above="@+id/center_place_holder"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_toEndOf="@+id/avatar"
-                android:ellipsize="end"
-                android:singleLine="true" />
+                <ImageView
+                    android:id="@+id/qr"
+                    android:layout_width="200dp"
+                    android:layout_height="200dp"
+                    tools:ignore="ContentDescription"/>
 
-            <TextView
-                android:id="@+id/user_id"
-                style="@style/DescTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@id/center_place_holder"
-                android:layout_toEndOf="@+id/avatar" />
+                <one.mixin.android.widget.BadgeCircleImageView
+                    android:id="@+id/qr_avatar"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="center"/>
+            </FrameLayout>
         </RelativeLayout>
-
-        <FrameLayout
-            android:id="@+id/qr_fl"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/top"
-            android:layout_centerHorizontal="true">
-
-            <ImageView
-                android:id="@+id/qr"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                tools:ignore="ContentDescription" />
-
-            <one.mixin.android.widget.AvatarView
-                android:id="@+id/qr_avatar"
-                android:layout_width="70dp"
-                android:layout_height="70dp"
-                android:layout_gravity="center"
-                app:border_color="@color/white"
-                app:border_width="2dp" />
-        </FrameLayout>
-
-        <TextView
-            android:id="@+id/key_code"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/qr_fl"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="12dp"
-            android:gravity="center"
-            android:background="@drawable/bg_code"
-            android:paddingBottom="6dp"
-            android:paddingTop="6dp"
-            android:ellipsize="middle"
-            android:singleLine="true"
-            android:textColor="@color/text_black"
-            android:textSize="12sp" />
-
-    </RelativeLayout>
+    </FrameLayout>
 
     <TextView
-            android:id="@+id/confirm_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="8dp"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:gravity="center"
-            android:background="@drawable/bg_code"
-            android:paddingBottom="3dp"
-            android:paddingEnd="8dp"
-            android:paddingStart="8dp"
-            android:paddingTop="3dp"
-            android:ellipsize="middle"
-            android:singleLine="true"
-            android:textColor="@color/text_black"
-            android:textSize="12sp" />
+        android:id="@+id/confirm_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:gravity="start"
+        android:paddingBottom="3dp"
+        android:paddingEnd="8dp"
+        android:paddingStart="8dp"
+        android:paddingTop="3dp"
+        android:textColor="@color/wallet_text_gray"
+        android:textSize="12sp"/>
 </LinearLayout>

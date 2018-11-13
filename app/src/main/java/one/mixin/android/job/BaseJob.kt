@@ -24,6 +24,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.HotAssetDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
@@ -129,6 +130,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Inject
     @Transient
     lateinit var addressDao: AddressDao
+    @Inject
+    @Transient
+    lateinit var hotAssetDao: HotAssetDao
     @Inject
     @Transient
     lateinit var signalProtocol: SignalProtocol

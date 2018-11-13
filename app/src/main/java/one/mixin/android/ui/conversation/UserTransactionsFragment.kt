@@ -111,7 +111,7 @@ class UserTransactionsFragment : BaseFragment() {
     class TransactionHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(snapshot: SnapshotItem, action: (SnapshotItem) -> Unit) {
             val isPositive = snapshot.amount.toFloat() > 0
-            itemView.date.text = snapshot.createdAt.date()
+//            itemView.date.text = snapshot.createdAt.date()
             when {
                 snapshot.type == SnapshotType.deposit.name -> {
                     snapshot.transactionHash?.let {
