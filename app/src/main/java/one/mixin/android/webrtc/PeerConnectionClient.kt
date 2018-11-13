@@ -234,6 +234,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             remoteCandidateCache.forEach {
                 peerConnection?.addIceCandidate(it)
             }
+            remoteCandidateCache.clear()
             Timber.d("setRemoteSdp onSetSuccess")
         }
     }

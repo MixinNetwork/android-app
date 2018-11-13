@@ -1,12 +1,14 @@
 package one.mixin.android.job
 
 import androidx.collection.ArrayMap
+import com.google.gson.Gson
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
+import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.Session
@@ -22,6 +24,7 @@ import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
+import org.webrtc.IceCandidate
 import timber.log.Timber
 import java.io.IOException
 import java.util.UUID
@@ -33,12 +36,14 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
 
         var listPendingOfferHandled = false
     }
-
+    private val gson = Gson()
     private val listPendingDispatcher by lazy {
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
 
     private val listPendingJobMap = ArrayMap<String, Pair<Job, BlazeMessageData>>()
+
+    private val listPendingCandidateMap = ArrayMap<String, ArrayList<IceCandidate>>()
 
     fun onRun(data: BlazeMessageData) {
         if (data.category.startsWith("WEBRTC_") && !isExistMessage(data.messageId)) {
@@ -105,11 +110,30 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
         val ctx = MixinApplication.appContext
         if (data.category == MessageCategory.WEBRTC_AUDIO_OFFER.name) {
             syncUser(data.userId)?.let { user ->
-                CallService.incoming(ctx, user, data)
+                val pendingCandidateList = listPendingCandidateMap[data.messageId]
+                if (pendingCandidateList == null || pendingCandidateList.isEmpty()) {
+                    CallService.incoming(ctx, user, data)
+                } else {
+                    CallService.incoming(ctx, user, data, gson.toJson(pendingCandidateList.toArray()))
+                    pendingCandidateList.clear()
+                    listPendingCandidateMap.remove(data.messageId, pendingCandidateList)
+                }
                 notifyServer(data)
             }
         } else if (listPendingJobMap.containsKey(data.quoteMessageId)) {
             listPendingJobMap[data.quoteMessageId]?.let { pair ->
+                if (data.source == LIST_PENDING_MESSAGES && data.category == MessageCategory.WEBRTC_ICE_CANDIDATE.name) {
+                    val json = String(Base64.decode(data.data))
+                    val ices = gson.fromJson(json, Array<IceCandidate>::class.java)
+                    var list = listPendingCandidateMap[data.quoteMessageId]
+                    if (list == null) {
+                        list = arrayListOf()
+                    }
+                    list.addAll(ices)
+                    listPendingCandidateMap[data.quoteMessageId] = list
+                    return@let
+                }
+
                 pair.first.let {
                     if (!it.isCancelled) {
                         it.cancel()

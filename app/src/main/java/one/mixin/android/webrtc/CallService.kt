@@ -168,6 +168,15 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         audioManager.start(false)
         blazeMessageData = intent.getSerializableExtra(EXTRA_BLAZE) as BlazeMessageData
         user = intent.getParcelableExtra(ARGS_USER)
+
+        val pendingCandidateData = intent.getStringExtra(EXTRA_PENDING_CANDIDATES)
+        if (pendingCandidateData != null && pendingCandidateData.isNotEmpty()) {
+            val list = gson.fromJson(pendingCandidateData, Array<IceCandidate>::class.java)
+            list.forEach {
+                peerConnectionClient.addRemoteIceCandidate(it)
+            }
+        }
+
         callState.user = user
         updateNotification()
         quoteMessageId = blazeMessageData!!.messageId
@@ -554,12 +563,16 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
         private const val EXTRA_BLAZE = "blaze"
         private const val EXTRA_MUTE = "mute"
         private const val EXTRA_SPEAKERPHONE = "speakerphone"
+        private const val EXTRA_PENDING_CANDIDATES = "pending_candidates"
 
         var isRunning = false
 
-        fun incoming(ctx: Context, user: User, data: BlazeMessageData) = startService(ctx, ACTION_CALL_INCOMING) {
+        fun incoming(ctx: Context, user: User, data: BlazeMessageData, pendingCandidateData: String? = null) = startService(ctx, ACTION_CALL_INCOMING) {
             it.putExtra(Constants.ARGS_USER, user)
             it.putExtra(CallService.EXTRA_BLAZE, data)
+            if (pendingCandidateData != null) {
+                it.putExtra(EXTRA_PENDING_CANDIDATES, pendingCandidateData)
+            }
         }
 
         fun outgoing(ctx: Context, user: User, conversationId: String) = startService(ctx, ACTION_CALL_OUTGOING) {
