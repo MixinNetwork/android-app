@@ -39,6 +39,8 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
+import one.mixin.android.di.type.DatabaseCategory
+import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.show
 import one.mixin.android.job.BaseJob
@@ -237,6 +239,7 @@ internal class AppModule {
         okHttp: OkHttpClient,
         app: Application,
         conversationDao: ConversationDao,
+        @DatabaseCategory(DatabaseCategoryEnum.BASE)
         messageDao: MessageDao,
         offsetDao: OffsetDao,
         floodMessageDao: FloodMessageDao,

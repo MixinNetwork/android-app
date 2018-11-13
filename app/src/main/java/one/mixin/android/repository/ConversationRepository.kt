@@ -41,7 +41,10 @@ internal constructor(
     private val appDatabase: MixinDatabase,
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readAppDatabase: MixinDatabase,
+    @DatabaseCategory(DatabaseCategoryEnum.BASE)
     private val messageDao: MessageDao,
+    @DatabaseCategory(DatabaseCategoryEnum.READ)
+    private val readMessageDao: MessageDao,
     private val conversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
     private val jobDao: JobDao,
@@ -88,19 +91,19 @@ internal constructor(
 
     fun getConversation(conversationId: String) = readAppDatabase.conversationDao().getConversation(conversationId)
 
-    fun fuzzySearchMessage(query: String): List<SearchMessageItem> = readAppDatabase.messageDao().fuzzySearchMessage(query)
+    fun fuzzySearchMessage(query: String): List<SearchMessageItem> = readMessageDao.fuzzySearchMessage(query)
 
     fun fuzzySearchGroup(query: String): List<ConversationItemMinimal> = readAppDatabase.conversationDao().fuzzySearchGroup(query)
 
     fun indexUnread(conversationId: String) = readAppDatabase.conversationDao().indexUnread(conversationId)
 
     fun getMediaMessages(conversationId: String): List<MessageItem> =
-        readAppDatabase.messageDao().getMediaMessages(conversationId)
+        readMessageDao.getMediaMessages(conversationId)
 
     fun getConversationIdIfExistsSync(recipientId: String) = readAppDatabase.conversationDao().getConversationIdIfExistsSync(recipientId)
 
     fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal>? {
-        return readAppDatabase.messageDao().getUnreadMessage(conversationId, accountId)
+        return readMessageDao.getUnreadMessage(conversationId, accountId)
     }
 
     fun updateCodeUrl(conversationId: String, codeUrl: String) {
@@ -161,12 +164,12 @@ internal constructor(
 
     fun getConversationStorageUsage() = readAppDatabase.conversationDao().getConversationStorageUsage()
 
-    fun getMediaByConversationIdAndCategory(conversationId: String, category: String) = readAppDatabase.messageDao()
+    fun getMediaByConversationIdAndCategory(conversationId: String, category: String) = readMessageDao
         .getMediaByConversationIdAndCategory(conversationId, category)
 
-    fun findMessageIndex(conversationId: String, messageId: String) = readAppDatabase.messageDao().findMessageIndex(conversationId, messageId)
+    fun findMessageIndex(conversationId: String, messageId: String) = readMessageDao.findMessageIndex(conversationId, messageId)
 
-    fun findUnreadMessagesSync(conversationId: String) = readAppDatabase.messageDao().findUnreadMessagesSync(conversationId)
+    fun findUnreadMessagesSync(conversationId: String) = readMessageDao.findUnreadMessagesSync(conversationId)
 
     fun batchMarkReadAndTake(conversationId: String, userId: String, createdAt: String) {
         messageDao.batchMarkReadAndTake(conversationId, userId, createdAt)

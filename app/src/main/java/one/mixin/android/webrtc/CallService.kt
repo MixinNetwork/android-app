@@ -16,6 +16,8 @@ import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.db.MessageDao
+import one.mixin.android.di.type.DatabaseCategory
+import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.extension.vibrate
@@ -67,6 +69,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     @Inject
     lateinit var jobManager: MixinJobManager
     @Inject
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var messageDao: MessageDao
     @Inject
     lateinit var accountService: AccountService

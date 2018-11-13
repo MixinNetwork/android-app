@@ -16,4 +16,8 @@ internal class ReadDbModule {
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     fun provideReadDb(app: Application) = MixinDatabase.getReadDatabase(app)
 
+    @Singleton
+    @Provides
+    @DatabaseCategory(DatabaseCategoryEnum.READ)
+    fun provideMessageDao(@DatabaseCategory(DatabaseCategoryEnum.READ) db: MixinDatabase) = db.messageDao()
 }

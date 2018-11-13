@@ -35,6 +35,7 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
+    @DatabaseCategory(DatabaseCategoryEnum.BASE)
     fun provideMessageDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.messageDao()
 
     @Singleton
