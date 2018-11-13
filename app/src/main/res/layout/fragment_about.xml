@@ -70,6 +70,22 @@
                 android:background="@color/divider" />
 
             <TextView
+                android:id="@+id/help_center"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:gravity="center_vertical"
+                android:text="@string/about_help_center"
+                android:textColor="@color/colorBlue"
+                android:textSize="16sp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height=".5dp"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:background="@color/divider" />
+
+            <TextView
                     android:id="@+id/terms"
                     android:layout_width="match_parent"
                     android:layout_height="@dimen/bottom_button_height"

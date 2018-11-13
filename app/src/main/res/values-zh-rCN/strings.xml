@@ -332,6 +332,7 @@
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>
+    <string name="about_help_center">帮助中心</string>
     <string name="about_version">版本 %1$s</string>
     <string name="conversation_delete">删除</string>
     <string name="chat_group_create">%1$s创建了群组\"%2$s\"</string>
