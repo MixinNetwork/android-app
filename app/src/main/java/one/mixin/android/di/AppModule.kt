@@ -59,7 +59,7 @@ import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
-@Module(includes = [(ViewModelModule::class), (DbModule::class)])
+@Module(includes = [(ViewModelModule::class), (BaseDbModule::class), (ReadDbModule::class)])
 internal class AppModule {
 
     private val LOCALE = Locale.getDefault().language + "-" + Locale.getDefault().country
@@ -192,7 +192,6 @@ internal class AppModule {
     @Singleton
     @Provides
     fun provideAddressService(retrofit: Retrofit) = retrofit.create(AddressService::class.java) as AddressService
-
 
     @Singleton
     @Provides

@@ -10,17 +10,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import javax.inject.Singleton
 
 @Module
-internal class DbModule {
-
-    @Singleton
-    @Provides
-    @DatabaseCategory(DatabaseCategoryEnum.BASE)
-    fun provideDb(app: Application) = MixinDatabase.getDatabase(app)
-
-    @Singleton
-    @Provides
-    @DatabaseCategory(DatabaseCategoryEnum.READ)
-    fun provideReadDb(app: Application) = MixinDatabase.getReadDatabase(app)
+internal class BaseDbModule {
 
     @Singleton
     @Provides
@@ -29,6 +19,11 @@ internal class DbModule {
     @Singleton
     @Provides
     fun provideRatchetSenderKeyDao(db: SignalDatabase) = db.ratchetSenderKeyDao()
+
+    @Singleton
+    @Provides
+    @DatabaseCategory(DatabaseCategoryEnum.BASE)
+    fun provideDb(app: Application) = MixinDatabase.getDatabase(app)
 
     @Singleton
     @Provides
