@@ -90,6 +90,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                             val savedMessage = createCallMessage(curData.messageId, m.conversationId, curData.userId, m.category, m.content,
                                 m.createdAt, MessageStatus.DELIVERED, m.quoteMessageId)
                             messageDao.insert(savedMessage)
+                            listPendingCandidateMap.remove(curData.messageId, listPendingCandidateMap[curData.messageId])
                         }
                     }
                     processCall(data)
