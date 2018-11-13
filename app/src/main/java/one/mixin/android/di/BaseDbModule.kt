@@ -31,6 +31,7 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
+    @DatabaseCategory(DatabaseCategoryEnum.BASE)
     fun provideConversationDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.conversationDao()
 
     @Singleton

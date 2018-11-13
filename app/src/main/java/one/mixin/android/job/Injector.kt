@@ -44,6 +44,7 @@ open class Injector : Injectable {
     @Inject
     lateinit var jobDao: JobDao
     @Inject
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
     @Inject
     lateinit var participantDao: ParticipantDao

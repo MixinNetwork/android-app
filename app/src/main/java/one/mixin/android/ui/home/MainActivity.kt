@@ -25,6 +25,8 @@ import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertConversation
+import one.mixin.android.di.type.DatabaseCategory
+import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
@@ -72,6 +74,7 @@ class MainActivity : BlazeBaseActivity() {
     @Inject
     lateinit var userService: UserService
     @Inject
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
     @Inject
     lateinit var userDao: UserDao

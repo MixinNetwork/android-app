@@ -45,7 +45,10 @@ internal constructor(
     private val messageDao: MessageDao,
     @DatabaseCategory(DatabaseCategoryEnum.READ)
     private val readMessageDao: MessageDao,
+    @DatabaseCategory(DatabaseCategoryEnum.BASE)
     private val conversationDao: ConversationDao,
+    @DatabaseCategory(DatabaseCategoryEnum.READ)
+    private val readConversationDao: ConversationDao,
     private val participantDao: ParticipantDao,
     private val jobDao: JobDao,
     private val conversationService: ConversationService
@@ -54,7 +57,7 @@ internal constructor(
     @SuppressLint("RestrictedApi")
     fun getMessages(conversationId: String) = MessageProvider.getMessages(conversationId, readAppDatabase)
 
-    fun conversation(): LiveData<List<ConversationItem>> = readAppDatabase.conversationDao().conversationList()
+    fun conversation(): LiveData<List<ConversationItem>> = readConversationDao.conversationList()
 
     fun insertConversation(conversation: Conversation, participants: List<Participant>) {
         GlobalScope.launch(SINGLE_DB_THREAD) {
@@ -73,13 +76,13 @@ internal constructor(
     }
 
     fun getConversationById(conversationId: String): LiveData<Conversation> =
-        readAppDatabase.conversationDao().getConversationById(conversationId)
+        readConversationDao.getConversationById(conversationId)
 
     fun findConversationById(conversationId: String): Observable<Conversation> = Observable.just(conversationId).map {
-        readAppDatabase.conversationDao().findConversationById(conversationId)
+        readConversationDao.findConversationById(conversationId)
     }
 
-    fun searchConversationById(conversationId: String) = readAppDatabase.conversationDao().searchConversationById(conversationId)
+    fun searchConversationById(conversationId: String) = readConversationDao.searchConversationById(conversationId)
 
     fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
@@ -89,18 +92,18 @@ internal constructor(
         }
     }
 
-    fun getConversation(conversationId: String) = readAppDatabase.conversationDao().getConversation(conversationId)
+    fun getConversation(conversationId: String) = readConversationDao.getConversation(conversationId)
 
     fun fuzzySearchMessage(query: String): List<SearchMessageItem> = readMessageDao.fuzzySearchMessage(query)
 
-    fun fuzzySearchGroup(query: String): List<ConversationItemMinimal> = readAppDatabase.conversationDao().fuzzySearchGroup(query)
+    fun fuzzySearchGroup(query: String): List<ConversationItemMinimal> = readConversationDao.fuzzySearchGroup(query)
 
-    fun indexUnread(conversationId: String) = readAppDatabase.conversationDao().indexUnread(conversationId)
+    fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
 
     fun getMediaMessages(conversationId: String): List<MessageItem> =
         readMessageDao.getMediaMessages(conversationId)
 
-    fun getConversationIdIfExistsSync(recipientId: String) = readAppDatabase.conversationDao().getConversationIdIfExistsSync(recipientId)
+    fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
 
     fun getUnreadMessage(conversationId: String, accountId: String): List<MessageMinimal>? {
         return readMessageDao.getUnreadMessage(conversationId, accountId)
@@ -160,9 +163,9 @@ internal constructor(
 
     fun getParticipantsCount(conversationId: String) = readAppDatabase.participantDao().getParticipantsCount(conversationId)
 
-    fun getStorageUsage(conversationId: String) = readAppDatabase.conversationDao().getStorageUsage(conversationId)
+    fun getStorageUsage(conversationId: String) = readConversationDao.getStorageUsage(conversationId)
 
-    fun getConversationStorageUsage() = readAppDatabase.conversationDao().getConversationStorageUsage()
+    fun getConversationStorageUsage() = readConversationDao.getConversationStorageUsage()
 
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String) = readMessageDao
         .getMediaByConversationIdAndCategory(conversationId, category)

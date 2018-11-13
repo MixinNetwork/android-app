@@ -88,6 +88,7 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     lateinit var userDao: UserDao
     @Inject
     @Transient
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var conversationDao: ConversationDao
     @Inject
     @Transient

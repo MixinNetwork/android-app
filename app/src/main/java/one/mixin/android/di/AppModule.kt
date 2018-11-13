@@ -238,6 +238,7 @@ internal class AppModule {
     fun provideChatWebSocket(
         okHttp: OkHttpClient,
         app: Application,
+        @DatabaseCategory(DatabaseCategoryEnum.BASE)
         conversationDao: ConversationDao,
         @DatabaseCategory(DatabaseCategoryEnum.BASE)
         messageDao: MessageDao,
