@@ -16,6 +16,11 @@ class RefreshUserSnapshotsJob(private val userId: String)
         if (response != null && response.isSuccess && response.data != null) {
             val list = response.data as List<Snapshot>
             snapshotDao.insertList(list)
+            list.forEach { item ->
+                if (assetDao.simpleAsset(item.assetId) == null) {
+                    jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
+                }
+            }
         }
     }
 }
