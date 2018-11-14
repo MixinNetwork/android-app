@@ -3,7 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.vo.Snapshot
 
-class RefreshSnapshotsJob(private val snapshotId: String? = null)
+class RefreshSnapshotsJob(private val assetId: String? = null)
     : BaseJob(Params(PRIORITY_BACKGROUND).addTags(RefreshSnapshotsJob.GROUP).requireNetwork()) {
 
     companion object {
@@ -12,19 +12,17 @@ class RefreshSnapshotsJob(private val snapshotId: String? = null)
     }
 
     override fun onRun() {
-        val response = if (snapshotId == null) {
+        val response = if (assetId == null) {
             assetService.allSnapshots().execute().body()
         } else {
-            assetService.snapshots(snapshotId).execute().body()
+            assetService.snapshots(assetId).execute().body()
         }
         if (response != null && response.isSuccess && response.data != null) {
             val list = response.data as List<Snapshot>
             snapshotDao.insertList(list)
             list.forEach { item ->
-                assetDao.simpleAsset(item.assetId).run {
-                    if (this == null) {
-                        jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
-                    }
+                if (assetDao.simpleAsset(item.assetId) == null) {
+                    jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
                 }
             }
         }
