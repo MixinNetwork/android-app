@@ -15,14 +15,10 @@ import okhttp3.Request
 import okhttp3.SessionProvider
 import okhttp3.internal.http2.Header
 import okhttp3.logging.HttpLoggingInterceptor
-import okio.Buffer
-import okio.GzipSource
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.ClientErrorException
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.service.AccountService
@@ -49,8 +45,6 @@ import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.MyJobService
-import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
-import one.mixin.android.util.ErrorHandler.Companion.TIME_INACCURATE
 import one.mixin.android.util.LiveDataCallAdapterFactory
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
@@ -59,7 +53,6 @@ import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
-import java.nio.charset.Charset
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -123,33 +116,9 @@ internal class AppModule {
                 }
 
                 if (MixinApplication.get().onlining.get()) {
-                    response.body()?.let { responseBody ->
-                        response.header("X-Server-Time")?.toLong()?.let { serverTime ->
-                            if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= 600000L) {
-                                if (response.code() == 101) {
-                                    MixinApplication.get().gotoTimeWrong(serverTime)
-                                } else {
-                                    val source = responseBody.source()
-                                    source.request(Long.MAX_VALUE)
-                                    var buffer = source.buffer()
-                                    if ("gzip".equals(response.header("Content-Encoding"), ignoreCase = true)) {
-                                        var gzippedResponseBody: GzipSource? = null
-                                        try {
-                                            gzippedResponseBody = GzipSource(buffer.clone())
-                                            buffer = Buffer()
-                                            buffer.writeAll(gzippedResponseBody)
-                                        } finally {
-                                            gzippedResponseBody?.close()
-                                        }
-                                    }
-                                    val mixinResponse = gson.fromJson(buffer.clone().readString(Charset.forName("UTF-8")),
-                                        MixinResponse::class.java)
-                                    if (mixinResponse.errorCode == AUTHENTICATION) {
-                                        MixinApplication.get().gotoTimeWrong(serverTime)
-                                        throw ClientErrorException(TIME_INACCURATE)
-                                    }
-                                }
-                            }
+                    response.header("X-Server-Time")?.toLong()?.let { serverTime ->
+                        if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= 600000L) {
+                            MixinApplication.get().gotoTimeWrong(serverTime)
                         }
                     }
                 }

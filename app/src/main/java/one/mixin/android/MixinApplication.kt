@@ -94,8 +94,6 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
             BlazeMessageService.stopService(ctx)
             CallService.disconnect(ctx)
             notificationManager.cancelAll()
-            jobManager.cancelAllJob()
-            jobManager.clear()
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, true)
             InitializeActivity.showWongTimeTop(ctx)
         }
