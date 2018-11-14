@@ -40,11 +40,15 @@ class CallAudioManager(private val context: Context) {
         this.isInitiator = isInitiator
         val audioAttributes = AudioAttributes.Builder()
             .setLegacyStreamType(
-                if (isInitiator) AudioManager.STREAM_VOICE_CALL else AudioManager.STREAM_MUSIC)
+                if (isInitiator) AudioManager.STREAM_VOICE_CALL else AudioManager.STREAM_RING)
             .build()
+        if (isInitiator) {
+            audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        } else {
+            audioManager.mode = AudioManager.MODE_RINGTONE
+        }
         mediaPlayer?.setAudioAttributes(audioAttributes)
         audioManager.isSpeakerphoneOn = !isInitiator
-        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
         audioManager.isMicrophoneMute = false
         val uri = Uri.parse("android.resource://${context.packageName}/${R.raw.call}")
         try {
@@ -57,6 +61,7 @@ class CallAudioManager(private val context: Context) {
     }
 
     fun stop() {
+        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
         if (mediaPlayer != null) {
             mediaPlayer?.release()
             mediaPlayer = null
