@@ -2,6 +2,7 @@ package one.mixin.android.extension
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Outline
@@ -11,8 +12,6 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
-import android.view.animation.Animation
-import android.view.animation.TranslateAnimation
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
@@ -103,12 +102,11 @@ fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = n
 }
 
 fun View.shaking() {
-    val delta = dip(8).toFloat()
-    val animation = TranslateAnimation(-delta, delta, 0f, 0f)
-    animation.duration = 100
-    animation.repeatCount = 3
-    animation.repeatMode = Animation.REVERSE
-    startAnimation(animation)
+    val dp20 = dip(20).toFloat()
+    val dp10 = dip(10).toFloat()
+    val dp5 = dip(5).toFloat()
+    ObjectAnimator.ofFloat(this, "translationX", -dp20, dp20, -dp20, dp20, -dp10, dp10, -dp5, dp5, 0f)
+        .setDuration(600).start()
 }
 
 fun View.animateWidth(form: Int, to: Int) {
