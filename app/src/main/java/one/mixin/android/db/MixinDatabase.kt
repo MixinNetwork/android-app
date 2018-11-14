@@ -66,8 +66,10 @@ abstract class MixinDatabase : RoomDatabase() {
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
+        private var READINSTANCE: MixinDatabase? = null
 
         private val lock = Any()
+        private val readlock = Any()
 
         private val MIGRATION_15_17: Migration = object : Migration(15, 17) {
             override fun migrate(database: SupportSQLiteDatabase) {
@@ -188,10 +190,22 @@ abstract class MixinDatabase : RoomDatabase() {
                         .addMigrations(MIGRATION_15_17, MIGRATION_16_17)
                         .addMigrations(MIGRATION_15_18, MIGRATION_16_18, MIGRATION_17_18)
                         .addMigrations(MIGRATION_15_19, MIGRATION_16_19, MIGRATION_17_19, MIGRATION_18_19)
+                        .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                         .build()
                 }
                 return INSTANCE as MixinDatabase
+            }
+        }
+
+        fun getReadDatabase(context: Context): MixinDatabase {
+            synchronized(readlock) {
+                if (READINSTANCE == null) {
+                    READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, "mixin.db")
+                        .enableMultiInstanceInvalidation()
+                        .build()
+                }
+                return READINSTANCE as MixinDatabase
             }
         }
 

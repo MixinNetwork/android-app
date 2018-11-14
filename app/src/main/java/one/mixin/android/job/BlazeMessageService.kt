@@ -30,6 +30,8 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.findAckJobsDeferred
 import one.mixin.android.db.findFloodMessageDeferred
+import one.mixin.android.di.type.DatabaseCategory
+import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.receiver.ExitBroadcastReceiver
@@ -72,6 +74,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     @Inject
     lateinit var networkUtil: JobNetworkUtil
     @Inject
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
     lateinit var database: MixinDatabase
     @Inject
     lateinit var webSocket: ChatWebSocket

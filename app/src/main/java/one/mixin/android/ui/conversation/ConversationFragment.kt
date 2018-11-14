@@ -44,6 +44,12 @@ import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -139,6 +145,7 @@ import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
+import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -185,6 +192,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
+
+    private lateinit var conversationContext: CoroutineContext
 
     private val chatViewModel: ConversationViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
@@ -660,6 +669,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        conversationContext = Job()
         val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
         if (messages != null) {
             sendForwardMessages(messages)
@@ -802,6 +812,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onDestroy() {
         super.onDestroy()
         AudioPlayer.release()
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        conversationContext.cancelChildren()
     }
 
     private var firstPosition = 0
@@ -1042,16 +1057,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var unreadCount = 0
     private fun bindData() {
-        doAsync {
+        GlobalScope.launch(conversationContext) {
             unreadCount = if (!messageId.isNullOrEmpty()) {
                 chatViewModel.findMessageIndexSync(conversationId, messageId!!)
             } else {
                 chatViewModel.indexUnread(conversationId)
             }
-
-            uiThread {
+            withContext(Dispatchers.Main) {
                 if (!isAdded) {
-                    return@uiThread
+                    return@withContext
                 }
                 liveDataMessage(unreadCount)
             }
