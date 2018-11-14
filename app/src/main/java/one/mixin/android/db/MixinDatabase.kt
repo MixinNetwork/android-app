@@ -202,6 +202,9 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(readlock) {
                 if (READINSTANCE == null) {
                     READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, "mixin.db")
+                        .addMigrations(MIGRATION_15_17, MIGRATION_16_17)
+                        .addMigrations(MIGRATION_15_18, MIGRATION_16_18, MIGRATION_17_18)
+                        .addMigrations(MIGRATION_15_19, MIGRATION_16_19, MIGRATION_17_19, MIGRATION_18_19)
                         .enableMultiInstanceInvalidation()
                         .build()
                 }
