@@ -215,7 +215,6 @@ dependencies {
     }
     implementation "com.googlecode.mp4parser:isoparser:${isoparserVersion}"
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
-    implementation "com.github.instacart.truetime-android:library:${truetimeVersion}"
     implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"
     implementation "org.webrtc:google-webrtc:${webrtcVersion}"
 }

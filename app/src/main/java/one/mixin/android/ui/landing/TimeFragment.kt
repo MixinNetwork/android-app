@@ -12,6 +12,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.shaking
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
@@ -63,8 +64,10 @@ class TimeFragment : BaseFragment() {
                 if (isAdded) {
                     everybody_pb.visibility = View.INVISIBLE
                     continue_tv.visibility = View.VISIBLE
-                    exception?.let {
-                        ErrorHandler.handleError(it)
+                    if (exception == null) {
+                        info.shaking()
+                    } else {
+                        ErrorHandler.handleError(exception)
                     }
                 }
             })

@@ -148,6 +148,7 @@ open class ErrorHandler {
                     SERVER -> {
                         toast(R.string.error_server_5xx)
                     }
+                    TIME_INACCURATE->{ }
                     else -> {
                         toast(getString(R.string.error_unknown_with_code, code))
                     }

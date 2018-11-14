@@ -5,19 +5,22 @@ import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Outline
-import androidx.annotation.LayoutRes
-import androidx.core.view.ViewCompat
-import androidx.core.view.ViewPropertyAnimatorListener
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.animation.Animation
+import android.view.animation.TranslateAnimation
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
 import android.widget.TextView
+import androidx.annotation.LayoutRes
+import androidx.core.view.ViewCompat
+import androidx.core.view.ViewPropertyAnimatorListener
+import org.jetbrains.anko.dip
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 
@@ -97,6 +100,15 @@ fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = n
             override fun onAnimationStart(view: View?) {}
         })
         .start()
+}
+
+fun View.shaking() {
+    val delta = dip(8).toFloat()
+    val animation = TranslateAnimation(-delta, delta, 0f, 0f)
+    animation.duration = 100
+    animation.repeatCount = 3
+    animation.repeatMode = Animation.REVERSE
+    startAnimation(animation)
 }
 
 fun View.animateWidth(form: Int, to: Int) {

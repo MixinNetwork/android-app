@@ -7,9 +7,9 @@ import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
-import com.instacart.library.truetime.TrueTime
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
@@ -68,7 +68,6 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
-        doAsync { TrueTime.build().initialize() }
     }
 
     private fun init() {
@@ -88,8 +87,10 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
 
     var onlining = AtomicBoolean(false)
 
-    fun gotoTimeWrong() {
+    fun gotoTimeWrong(serverTime: Long) {
         if (onlining.compareAndSet(true, false)) {
+            val ise = IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
+            Crashlytics.logException(ise)
             BlazeMessageService.stopService(ctx)
             CallService.disconnect(ctx)
             notificationManager.cancelAll()

@@ -5,8 +5,6 @@ import android.content.ContentResolver
 import android.provider.Settings
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
-import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
 import com.google.gson.Gson
@@ -46,7 +44,6 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.show
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
@@ -111,7 +108,6 @@ internal class AppModule {
         })
 
         builder.addInterceptor { chain ->
-            val initTime = System.currentTimeMillis()
             val request = chain.request().newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
@@ -119,14 +115,7 @@ internal class AppModule {
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
                 val response = try {
-                    chain.proceed(request).also { response ->
-                        val latency = response.sentRequestAtMillis() - initTime
-                        if (latency >= 300000) {
-                            val ise = IllegalStateException("Request latency. init at $initTime, sent at ${response.sentRequestAtMillis()}")
-                            Bugsnag.notify(ise)
-                            Crashlytics.logException(ise)
-                        }
-                    }
+                    chain.proceed(request)
                 } catch (e: Exception) {
                     if (e.message?.contains("502") == true) {
                         throw ServerErrorException(502)
@@ -137,24 +126,28 @@ internal class AppModule {
                     response.body()?.let { responseBody ->
                         response.header("X-Server-Time")?.toLong()?.let { serverTime ->
                             if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= 600000L) {
-                                val source = responseBody.source()
-                                source.request(Long.MAX_VALUE)
-                                var buffer = source.buffer()
-                                if ("gzip".equals(response.header("Content-Encoding"), ignoreCase = true)) {
-                                    var gzippedResponseBody: GzipSource? = null
-                                    try {
-                                        gzippedResponseBody = GzipSource(buffer.clone())
-                                        buffer = Buffer()
-                                        buffer.writeAll(gzippedResponseBody)
-                                    } finally {
-                                        gzippedResponseBody?.close()
+                                if (response.code() == 101) {
+                                    MixinApplication.get().gotoTimeWrong(serverTime)
+                                } else {
+                                    val source = responseBody.source()
+                                    source.request(Long.MAX_VALUE)
+                                    var buffer = source.buffer()
+                                    if ("gzip".equals(response.header("Content-Encoding"), ignoreCase = true)) {
+                                        var gzippedResponseBody: GzipSource? = null
+                                        try {
+                                            gzippedResponseBody = GzipSource(buffer.clone())
+                                            buffer = Buffer()
+                                            buffer.writeAll(gzippedResponseBody)
+                                        } finally {
+                                            gzippedResponseBody?.close()
+                                        }
                                     }
-                                }
-                                val mixinResponse = gson.fromJson(buffer.clone().readString(Charset.forName("UTF-8")),
-                                    MixinResponse::class.java)
-                                if (mixinResponse.errorCode == AUTHENTICATION) {
-                                    MixinApplication.get().gotoTimeWrong()
-                                    throw ClientErrorException(TIME_INACCURATE)
+                                    val mixinResponse = gson.fromJson(buffer.clone().readString(Charset.forName("UTF-8")),
+                                        MixinResponse::class.java)
+                                    if (mixinResponse.errorCode == AUTHENTICATION) {
+                                        MixinApplication.get().gotoTimeWrong(serverTime)
+                                        throw ClientErrorException(TIME_INACCURATE)
+                                    }
                                 }
                             }
                         }
@@ -165,14 +158,6 @@ internal class AppModule {
                     val code = response.code()
                     if (code in 500..599) {
                         throw ServerErrorException(code)
-                    } else if (code in 400..499) {
-                        if (code == 401) {
-                            val ise = IllegalStateException("Force logout. request: ${request.show()}, response: ${response.show()}")
-                            Bugsnag.notify(ise)
-                            Crashlytics.logException(ise)
-                            MixinApplication.get().closeAndClear()
-                        }
-                        throw ClientErrorException(code)
                     }
                 }
                 return@addInterceptor response
