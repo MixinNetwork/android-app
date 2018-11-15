@@ -16,6 +16,7 @@ import one.mixin.android.vo.ConversationItemMinimal
 import one.mixin.android.vo.SearchDataPackage
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -39,7 +40,11 @@ internal constructor(
 
     private fun fuzzySearchMessage(context: CoroutineContext, query: String): Deferred<List<SearchMessageItem>> =
         GlobalScope.async(context) {
-            conversationRepository.fuzzySearchMessage("${query.trim()}*")
+            Timber.d("fuzzySearchMessage start")
+            conversationRepository.fuzzySearchMessage("${query.trim()}*").apply {
+                Timber.d("fuzzySearchMessage end")
+            }
+
         }
 
     private fun fuzzySearchAsset(context: CoroutineContext, query: String): Deferred<List<AssetItem>> = GlobalScope.async(context) {

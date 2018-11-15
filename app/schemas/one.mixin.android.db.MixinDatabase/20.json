@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 20,
-    "identityHash": "62f7a9fd5b99a3c2865773f336d60726",
+    "identityHash": "597eb1d1519e3228868497852fe4dcc4",
     "entities": [
       {
         "tableName": "users",
@@ -1307,7 +1307,7 @@
       {
         "ftsVersion": "FTS4",
         "ftsOptions": {
-          "tokenizer": "SIMPLE",
+          "tokenizer": "UNICODE61",
           "tokenizerArgs": [],
           "contentTable": "messages",
           "languageIdColumnName": "",
@@ -1323,7 +1323,7 @@
           "CREATE TRIGGER IF NOT EXISTS room_fts_content_sync_messages_fts_AFTER_INSERT AFTER INSERT ON `messages` BEGIN INSERT INTO `messages_fts`(`docid`, `content`, `name`) VALUES (NEW.`rowid`, NEW.`content`, NEW.`name`); END"
         ],
         "tableName": "messages_fts",
-        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)",
+        "createSql": "CREATE VIRTUAL TABLE IF NOT EXISTS `${TABLE_NAME}` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, content=`messages`)",
         "fields": [
           {
             "fieldPath": "content",
@@ -1349,7 +1349,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"62f7a9fd5b99a3c2865773f336d60726\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"597eb1d1519e3228868497852fe4dcc4\")"
     ]
   }
 }

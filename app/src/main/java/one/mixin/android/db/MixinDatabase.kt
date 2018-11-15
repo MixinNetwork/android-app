@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.RoomMasterTable.TABLE_NAME
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.vo.Address
@@ -26,7 +25,6 @@ import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
-import timber.log.Timber
 
 @Database(entities = [
     (User::class),
@@ -204,7 +202,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
-                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, " +
+                    "content=`messages`)")
                 database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
             }
         }
@@ -219,7 +218,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
-                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, " +
+                    "content=`messages`)")
                 database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
             }
         }
@@ -229,7 +229,8 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
-                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, " +
+                    "content=`messages`)")
                 database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
             }
         }
@@ -237,14 +238,16 @@ abstract class MixinDatabase : RoomDatabase() {
         private val MIGRATION_18_20: Migration = object : Migration(18, 20) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
-                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, " +
+                    "content=`messages`)")
                 database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
             }
         }
 
         private val MIGRATION_19_20: Migration = object : Migration(19, 20) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, content=`messages`)")
+                database.execSQL("CREATE VIRTUAL TABLE IF NOT EXISTS `messages_fts` USING FTS4(`content` TEXT, `name` TEXT, tokenize=unicode61, " +
+                    "content=`messages`)")
                 database.execSQL("INSERT INTO messages_fts (`rowid`, `content`, `name`) SELECT `rowid`, `content`, `name` FROM messages")
             }
         }
