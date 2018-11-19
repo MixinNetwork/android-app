@@ -21,6 +21,7 @@ object Constants {
         const val PREF_CAMERA_TIP = "pref_camera_tip"
         const val PREF_LOGOUT_COMPLETE = "pref_logout_complete"
         const val PREF_BIOMETRICS = "pref_biometrics"
+        const val PREF_WRONG_TIME = "pref_wrong_time"
     }
 
     object Scheme {

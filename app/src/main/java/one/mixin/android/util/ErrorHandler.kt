@@ -148,6 +148,7 @@ open class ErrorHandler {
                     SERVER -> {
                         toast(R.string.error_server_5xx)
                     }
+                    TIME_INACCURATE->{ }
                     else -> {
                         toast(getString(R.string.error_unknown_with_code, code))
                     }
@@ -161,6 +162,7 @@ open class ErrorHandler {
         const val NOT_FOUND = 404
         const val TOO_MANY_REQUEST = 429
         private const val SERVER = 500
+        const val TIME_INACCURATE = 911
 
         private const val TRANSACTION = 10001
         const val BAD_DATA = 10002

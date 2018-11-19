@@ -605,7 +605,11 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
         fun remoteFailed(ctx: Context) = startService(ctx, CallService.ACTION_CALL_REMOTE_FAILED)
 
-        fun disconnect(ctx: Context) = startService(ctx, ACTION_CALL_DISCONNECT)
+        fun disconnect(ctx: Context) {
+            if (isRunning) {
+                startService(ctx, ACTION_CALL_DISCONNECT)
+            }
+        }
 
         fun muteAudio(ctx: Context, checked: Boolean) = startService(ctx, CallService.ACTION_MUTE_AUDIO) {
             it.putExtra(CallService.EXTRA_MUTE, checked)

@@ -2,12 +2,10 @@ package one.mixin.android.extension
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Outline
-import androidx.annotation.LayoutRes
-import androidx.core.view.ViewCompat
-import androidx.core.view.ViewPropertyAnimatorListener
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -18,6 +16,10 @@ import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
 import android.widget.TextView
+import androidx.annotation.LayoutRes
+import androidx.core.view.ViewCompat
+import androidx.core.view.ViewPropertyAnimatorListener
+import org.jetbrains.anko.dip
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 
@@ -97,6 +99,14 @@ fun View.translationY(value: Float, duration: Long, endAction: (() -> Unit)? = n
             override fun onAnimationStart(view: View?) {}
         })
         .start()
+}
+
+fun View.shaking() {
+    val dp20 = dip(20).toFloat()
+    val dp10 = dip(10).toFloat()
+    val dp5 = dip(5).toFloat()
+    ObjectAnimator.ofFloat(this, "translationX", -dp20, dp20, -dp20, dp20, -dp10, dp10, -dp5, dp5, 0f)
+        .setDuration(600).start()
 }
 
 fun View.animateWidth(form: Int, to: Int) {

@@ -13,7 +13,7 @@ import one.mixin.android.di.module.InviteActivityModule
 import one.mixin.android.di.module.LandingActivityModule
 import one.mixin.android.di.module.MainActivityModule
 import one.mixin.android.di.module.SettingActivityModule
-import one.mixin.android.di.module.SetupNameActivityModule
+import one.mixin.android.di.module.InitializeActivityModule
 import one.mixin.android.di.module.UrlInterpreterActivityModule
 import one.mixin.android.di.module.WalletActivityModule
 import one.mixin.android.ui.address.AddressActivity
@@ -26,7 +26,7 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.InviteActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.LandingActivity
-import one.mixin.android.ui.landing.SetupNameActivity
+import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.sticker.StickerActivity
@@ -47,8 +47,8 @@ abstract class ActivityModule {
     @ContributesAndroidInjector(modules = [(CommonModule::class), (GroupActivityModule::class)])
     internal abstract fun contributeGroup(): GroupActivity
 
-    @ContributesAndroidInjector(modules = [(SetupNameActivityModule::class)])
-    internal abstract fun contributeSetupName(): SetupNameActivity
+    @ContributesAndroidInjector(modules = [(InitializeActivityModule::class)])
+    internal abstract fun contributeSetupName(): InitializeActivity
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (ContactActivityModule::class)])
     internal abstract fun contributeContacts(): ContactsActivity

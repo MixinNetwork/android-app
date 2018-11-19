@@ -1,10 +1,7 @@
 package one.mixin.android.util
 
-import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
-import com.instacart.library.truetime.TrueTime
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -99,23 +96,6 @@ class Session {
             val key = getRSAPrivateKeyFromString(token)
             val expire = System.currentTimeMillis() / 1000 + 1800
             val iat = System.currentTimeMillis() / 1000
-
-            if (TrueTime.isInitialized()) {
-                val now = TrueTime.now().time / 1000
-                val diff = now - iat
-                if (diff > 60 * 30) {
-                    IllegalArgumentException("Mobile time different to NTP more than half an hour!").let { exception ->
-                        Bugsnag.notify(exception)
-                        Crashlytics.logException(exception)
-
-                    }
-                } else if (diff > 60) {
-                    IllegalArgumentException("Mobile time different to NTP more than one minute!").let { exception ->
-                        Bugsnag.notify(exception)
-                        Crashlytics.logException(exception)
-                    }
-                }
-            }
 
             var content = "${request.method()}${request.url().cutOut()}"
             if (request.body() != null && request.body()!!.contentLength() > 0) {

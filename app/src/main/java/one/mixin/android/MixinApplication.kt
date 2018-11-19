@@ -7,9 +7,9 @@ import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
-import com.instacart.library.truetime.TrueTime
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
@@ -25,6 +25,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
 import one.mixin.android.webrtc.CallService
@@ -67,7 +68,6 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
-        doAsync { TrueTime.build().initialize() }
     }
 
     private fun init() {
@@ -87,12 +87,22 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
 
     var onlining = AtomicBoolean(false)
 
+    fun gotoTimeWrong(serverTime: Long) {
+        if (onlining.compareAndSet(true, false)) {
+            val ise = IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
+            Crashlytics.logException(ise)
+            BlazeMessageService.stopService(ctx)
+            CallService.disconnect(ctx)
+            notificationManager.cancelAll()
+            defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, true)
+            InitializeActivity.showWongTimeTop(ctx)
+        }
+    }
+
     fun closeAndClear(toLanding: Boolean = true) {
         if (onlining.compareAndSet(true, false)) {
             BlazeMessageService.stopService(ctx)
-            if (CallService.isRunning) {
-                CallService.disconnect(ctx)
-            }
+            CallService.disconnect(ctx)
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()

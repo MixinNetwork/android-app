@@ -5,10 +5,9 @@ import android.content.ContentResolver
 import android.provider.Settings
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
-import com.bugsnag.android.Bugsnag
-import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
+import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
@@ -20,7 +19,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.URL
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.service.AccountService
@@ -42,7 +40,6 @@ import one.mixin.android.db.OffsetDao
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.networkConnected
-import one.mixin.android.extension.show
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
 import one.mixin.android.job.JobNetworkUtil
@@ -60,6 +57,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
+import kotlin.math.abs
 
 @Module(includes = [(ViewModelModule::class), (BaseDbModule::class), (ReadDbModule::class)])
 internal class AppModule {
@@ -80,6 +78,7 @@ internal class AppModule {
     @Provides
     fun provideOkHttp(resolver: ContentResolver): OkHttpClient {
         val builder = OkHttpClient.Builder()
+        val gson = Gson()
         if (BuildConfig.DEBUG) {
             val logging = HttpLoggingInterceptor()
             logging.level = HttpLoggingInterceptor.Level.BODY
@@ -102,7 +101,6 @@ internal class AppModule {
         })
 
         builder.addInterceptor { chain ->
-            val initTime = System.currentTimeMillis()
             val request = chain.request().newBuilder()
                 .addHeader("User-Agent", API_UA)
                 .addHeader("Accept-Language", Locale.getDefault().language)
@@ -110,31 +108,25 @@ internal class AppModule {
                 .build()
             if (MixinApplication.appContext.networkConnected()) {
                 val response = try {
-                    chain.proceed(request).also { response ->
-                        val latency = response.sentRequestAtMillis() - initTime
-                        if (latency >= 300000) {
-                            val ise = IllegalStateException("Request latency. init at $initTime, sent at ${response.sentRequestAtMillis()}")
-                            Bugsnag.notify(ise)
-                            Crashlytics.logException(ise)
-                        }
-                    }
+                    chain.proceed(request)
                 } catch (e: Exception) {
                     if (e.message?.contains("502") == true) {
                         throw ServerErrorException(502)
                     } else throw e
                 }
+
+                if (MixinApplication.get().onlining.get()) {
+                    response.header("X-Server-Time")?.toLong()?.let { serverTime ->
+                        if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= 600000L) {
+                            MixinApplication.get().gotoTimeWrong(serverTime)
+                        }
+                    }
+                }
+
                 if (!response.isSuccessful) {
                     val code = response.code()
                     if (code in 500..599) {
                         throw ServerErrorException(code)
-                    } else if (code in 400..499) {
-                        if (code == 401) {
-                            val ise = IllegalStateException("Force logout. request: ${request.show()}, response: ${response.show()}")
-                            Bugsnag.notify(ise)
-                            Crashlytics.logException(ise)
-                            MixinApplication.get().closeAndClear()
-                        }
-                        throw ClientErrorException(code)
                     }
                 }
                 return@addInterceptor response
