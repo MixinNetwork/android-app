@@ -17,7 +17,7 @@ buildscript {
         ext.okhttpVersion = '3.11.0'
         ext.rxJavaVersion = '2.2.3'
         ext.rxAndroidVersion = '2.1.0'
-        ext.retrofitVersion = '2.4.0'
+        ext.retrofitVersion = '2.5.0'
         ext.stethoVersion = '1.5.0'
         ext.loggerVersion = '2.2.0'
         ext.kotlin_version = '1.3.10'
@@ -44,7 +44,7 @@ buildscript {
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.29.0'
-        ext.exoplayerVersion = '2.9.0'
+        ext.exoplayerVersion = '2.9.1'
 
         ext.junitVersion = '4.12'
         ext.leakcanaryVerison = '1.5.1'
