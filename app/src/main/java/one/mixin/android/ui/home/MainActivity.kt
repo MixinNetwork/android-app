@@ -9,6 +9,8 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.getSystemService
 import androidx.fragment.app.MixinDialogFragment
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import com.uber.autodispose.kotlin.autoDisposable
@@ -30,9 +32,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.job.RefreshAssetsJob
-import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.RefreshFcmTokenJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -60,6 +60,8 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
 import one.mixin.android.widget.MaterialSearchView
+import one.mixin.android.work.RefreshAccountWorker
+import one.mixin.android.work.RefreshContactWorker
 import org.jetbrains.anko.alert
 import javax.inject.Inject
 
@@ -116,9 +118,9 @@ class MainActivity : BlazeBaseActivity() {
         Crashlytics.setUserIdentifier(account?.userId)
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        jobManager.addJobInBackground(RefreshAccountJob())
+        WorkManager.getInstance().enqueue(OneTimeWorkRequestBuilder<RefreshAccountWorker>().build())
+        WorkManager.getInstance().enqueue(OneTimeWorkRequestBuilder<RefreshContactWorker>().build())
         jobManager.addJobInBackground(RefreshFcmTokenJob())
-        jobManager.addJobInBackground(RefreshContactJob())
         jobManager.addJobInBackground(RefreshAssetsJob())
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
 

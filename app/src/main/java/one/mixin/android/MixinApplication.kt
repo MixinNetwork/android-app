@@ -6,6 +6,7 @@ import android.app.Service
 import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebStorage
+import androidx.work.Worker
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.Stetho
@@ -20,6 +21,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppComponent
 import one.mixin.android.di.AppInjector
+import one.mixin.android.di.worker.HasWorkerInjector
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
@@ -38,13 +40,16 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 
-class MixinApplication : Application(), HasActivityInjector, HasServiceInjector {
+class MixinApplication : Application(), HasActivityInjector, HasServiceInjector, HasWorkerInjector {
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
 
     @Inject
     lateinit var dispatchingServiceInjector: DispatchingAndroidInjector<Service>
+
+    @Inject
+    lateinit var workerInjector: DispatchingAndroidInjector<Worker>
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -84,6 +89,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
 
     override fun activityInjector(): DispatchingAndroidInjector<Activity>? = dispatchingAndroidInjector
     override fun serviceInjector(): DispatchingAndroidInjector<Service>? = dispatchingServiceInjector
+    override fun workerInjector(): DispatchingAndroidInjector<Worker>? = workerInjector
 
     var onlining = AtomicBoolean(false)
 
