@@ -28,7 +28,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.wallet.adapter.AssetAdapter
-import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.BottomSheet

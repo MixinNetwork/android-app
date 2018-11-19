@@ -22,7 +22,6 @@ import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.activity_avatar.*
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
-import one.mixin.android.extension.supportsOreo
 import one.mixin.android.widget.AvatarTransform
 
 class AvatarActivity : AppCompatActivity() {

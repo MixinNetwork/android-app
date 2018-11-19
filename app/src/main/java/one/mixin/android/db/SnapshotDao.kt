@@ -31,6 +31,6 @@ interface SnapshotDao : BaseDao<Snapshot> {
     @Query("DELETE FROM snapshots WHERE type = 'pending' AND asset_id = :assetId")
     fun clearPendingDepositsByAssetId(assetId: String)
 
-    @Query("DELETE FROM snapshots WHERE transaction_hash = :transactionHash")
-    fun deleteSnapshotByHash(transactionHash: String)
+    @Query("DELETE FROM snapshots WHERE type = 'pending' AND transaction_hash = :transactionHash")
+    fun deletePendingSnapshotByHash(transactionHash: String)
 }

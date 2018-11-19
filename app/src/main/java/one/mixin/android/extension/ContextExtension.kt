@@ -479,7 +479,7 @@ inline fun supportsNougat(code: () -> Unit) {
     }
 }
 
-inline fun belowOreo(code: () -> Unit){
+inline fun belowOreo(code: () -> Unit) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
         code()
     }

@@ -9,4 +9,3 @@ import javax.inject.Qualifier
 @Documented
 @Retention(RUNTIME)
 annotation class DatabaseCategory(val value: DatabaseCategoryEnum)
-
