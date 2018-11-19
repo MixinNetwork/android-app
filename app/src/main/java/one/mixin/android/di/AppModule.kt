@@ -7,7 +7,6 @@ import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
-import com.google.gson.Gson
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
@@ -78,7 +77,6 @@ internal class AppModule {
     @Provides
     fun provideOkHttp(resolver: ContentResolver): OkHttpClient {
         val builder = OkHttpClient.Builder()
-        val gson = Gson()
         if (BuildConfig.DEBUG) {
             val logging = HttpLoggingInterceptor()
             logging.level = HttpLoggingInterceptor.Level.BODY

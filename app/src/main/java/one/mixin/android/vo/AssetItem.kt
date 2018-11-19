@@ -49,7 +49,7 @@ data class AssetItem(
 fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
     if (isPublicKeyAsset()) {
         keyAction()
-    }  else if (isAccountTagAsset()) {
+    } else if (isAccountTagAsset()) {
         memoAction()
     } else {
         errorAction()
