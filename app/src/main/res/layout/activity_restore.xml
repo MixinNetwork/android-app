@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/restore_icon"
+        android:layout_marginTop="80dp"
+        android:src="@drawable/ic_backup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <TextView
+        android:id="@+id/restore_title"
+        android:layout_marginTop="32dp"
+        android:textSize="18sp"
+        android:textColor="@color/colorDarkBlue"
+        android:text="@string/restore_found"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/restore_icon"/>
+
+    <TextView
+        android:id="@+id/restore_time"
+        android:layout_marginTop="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/restore_title"
+        tools:text="1 mnute age"/>
+
+    <TextView
+        android:id="@+id/restore_size"
+        android:text="@string/restore_found"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="3dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/restore_time"
+        tools:text="Size: 100kB"/>
+
+    <TextView
+        android:id="@+id/restore_name"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="3dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/restore_size"
+        tools:text="Accont: **@gmail.com"/>
+
+    <TextView
+        android:layout_marginTop="@dimen/margin16"
+        android:textColor="@color/text_black"
+        android:gravity="center"
+        android:layout_marginStart="28dp"
+        android:layout_marginEnd="28dp"
+        android:text="@string/restore_info"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/restore_name"/>
+
+
+    <TextView
+        android:id="@+id/restore_alert"
+        android:layout_marginBottom="32dp"
+        android:layout_alignParentBottom="true"
+        android:gravity="center_horizontal"
+        android:text="@string/restore_alert"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="28dp"
+        android:layout_marginEnd="28dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <Button
+        android:id="@+id/restore_restore"
+        android:text="@string/restore_restore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:backgroundTint="@color/colorDarkBlue"
+        android:textColor="@color/white"
+        android:layout_marginBottom="32dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintBottom_toTopOf="@id/restore_alert"
+        app:layout_constraintEnd_toStartOf="@id/restore_skip"
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <Button
+        android:id="@+id/restore_skip"
+        android:text="@string/restore_skip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:backgroundTint="#EFEFEF"
+        android:layout_marginBottom="32dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:textColor="@color/text_black"
+        app:layout_constraintBottom_toTopOf="@id/restore_alert"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/restore_restore"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

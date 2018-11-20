@@ -76,6 +76,15 @@
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
+        <activity
+            android:name=".ui.landing.RestoreActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden">
+
+        </activity>
+
         <activity
             android:name=".ui.conversation.ConversationActivity"
             android:launchMode="singleTask"
