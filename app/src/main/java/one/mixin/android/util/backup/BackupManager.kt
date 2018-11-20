@@ -14,6 +14,9 @@ import com.google.android.gms.drive.query.Query
 import com.google.android.gms.drive.query.SearchableField
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -21,11 +24,11 @@ import java.util.concurrent.ExecutionException
 
 open class BackupManager(val resourceClient: DriveResourceClient) {
 
-    fun uploadBackup(driveId: DriveId, file: File, version: Int? = null): Task<DriveFile> {
+    fun uploadBackup(driveId: DriveId, file: File, title: String): Task<DriveFile> {
         val rootFolder = resourceClient.appFolder
         val createContents = resourceClient.createContents()
         return Tasks.whenAll(rootFolder, createContents)
-            .continueWithTask<DriveFile> { _ ->
+            .continueWithTask<DriveFile> {
                 val parent = driveId.asDriveFolder()
                 val contents = createContents.result!!
                 val outputStream = contents.outputStream
@@ -42,11 +45,7 @@ open class BackupManager(val resourceClient: DriveResourceClient) {
                 outputStream.close()
                 fis.close()
                 val changeSet = MetadataChangeSet.Builder()
-                    .setTitle(if (version != null) {
-                        "${file.name}_$version"
-                    } else {
-                        file.name
-                    })
+                    .setTitle(title)
                     .setStarred(false)
                     .build()
                 resourceClient.createFile(parent, changeSet, contents)
@@ -73,9 +72,13 @@ open class BackupManager(val resourceClient: DriveResourceClient) {
             fis.close()
             resourceClient.discardContents(contents)
         }.addOnSuccessListener {
-            callback(SUCCESS)
+            GlobalScope.launch(Dispatchers.Main) {
+                callback(SUCCESS)
+            }
         }.addOnFailureListener {
-            callback(FAILURE)
+            GlobalScope.launch(Dispatchers.Main) {
+                callback(FAILURE)
+            }
         }
         Tasks.await(discard)
     }

@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.drive.demo.backup.Result
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
@@ -16,10 +15,12 @@ import com.google.android.gms.drive.Drive
 import com.google.android.gms.drive.DriveResourceClient
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.backup.DataBaseBackupManager
 import timber.log.Timber
@@ -34,9 +35,6 @@ class BackUpFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val settingViewModel: SettingViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(SettingViewModel::class.java)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_backup, container, false)
@@ -67,7 +65,7 @@ class BackUpFragment : BaseFragment() {
             // todo
             dp.show()
             DataBaseBackupManager.getManager(driveResourceClient!!, "mixin.db",
-                Session.getAccount()!!.identity_number, { requireContext().getDatabasePath("mixin.db") }, 15, 19)
+                Session.getAccount()!!.identity_number, { requireContext().getDatabasePath("mixin.db") }, Constants.DataBase.MINI_VERSION, Constants.DataBase.CURRENT_VERSION)
                 .backup { result ->
                     when (result) {
                         Result.NOT_FOUND -> {
@@ -86,6 +84,27 @@ class BackUpFragment : BaseFragment() {
                     dp.dismiss()
                 }
         }
+        findBackup.setOnClickListener { it ->
+            DataBaseBackupManager.getManager(driveResourceClient!!, "mixin.db",
+                Session.getAccount()!!.identity_number, { requireContext().getDatabasePath("mixin.db") }, Constants.DataBase.MINI_VERSION, Constants.DataBase.CURRENT_VERSION)
+                .findBackup { result, metaData ->
+                    when (result) {
+                        Result.NOT_FOUND -> {
+                            toast("file not found")
+                        }
+                        Result.FAILURE -> {
+                            toast("failure")
+                        }
+                        Result.SUCCESS -> {
+                            toast("find ${metaData?.title}")
+                            RestoreActivity.show(requireContext())
+                        }
+                        else -> {
+                            toast("???")
+                        }
+                    }
+                }
+        }
     }
 
     private val dp by lazy {
@@ -99,11 +118,13 @@ class BackUpFragment : BaseFragment() {
         if (account != null && account.displayName != null) {
             backup.visibility = View.VISIBLE
             sign_out.visibility = View.VISIBLE
+            findBackup.visibility = View.VISIBLE
             sign_in.visibility = View.GONE
             if (isAdded) driveResourceClient = Drive.getDriveResourceClient(requireActivity(), account)
         } else {
             backup.visibility = View.GONE
             sign_out.visibility = View.GONE
+            findBackup.visibility = View.GONE
             sign_in.visibility = View.VISIBLE
         }
     }
@@ -111,9 +132,13 @@ class BackUpFragment : BaseFragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            val account = task.getResult(ApiException::class.java)
-            updateUI(account)
+            try {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+                val account = task.getResult(ApiException::class.java)
+                updateUI(account)
+            } catch (e: ApiException) {
+
+            }
         }
     }
 }
