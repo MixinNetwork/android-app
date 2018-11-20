@@ -37,6 +37,11 @@ object Constants {
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"
     }
 
+    object DataBase {
+        const val MINI_VERSION = 15
+        const val CURRENT_VERSION = 19
+    }
+
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48

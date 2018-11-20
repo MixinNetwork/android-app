@@ -518,5 +518,15 @@
     <string name="call_decline">Decline</string>
     <string name="call_accept">Accept</string>
     <string name="call_mute">Mute</string>
+
+    <string name="restore_info">Restore your messages from Google Drive.\nIf you don\'t restore new, you won\'t be able to restore later.</string>
+    <string name="restore_found">Backup found</string>
+    <string name="restore_alert">About %1$s will be downloaded. To reduce data usage, connect your phone to Wi-Fi.</string>
+    <string name="restore_skip">SKIP</string>
+    <string name="restore_restore">RESTORE</string>
+    <string name="restore_authorization">authorization</string>
+    <string name="restore_message">如果您之前曾备份到 Google 云端硬盘并且现在想要还原备份，请给与 Mixin 相应权限以检查您 Google账户里的备份。</string>
+    <string name="restore_account">Accont: %1$s</string>
+    <string name="restore_size">Size: %1$s</string>
 </resources>
 
