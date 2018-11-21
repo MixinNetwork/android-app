@@ -18,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.backup.DataBaseBackupManager
 import java.util.Date
@@ -86,6 +87,11 @@ class RestoreActivity : BaseActivity() {
                         restore_size.text = getString(R.string.restore_size, data.fileSize.fileSize())
                         restore_name.text = getString(R.string.restore_account, account.email)
                         restore_alert.text = getString(R.string.restore_alert, data.fileSize.fileSize())
+                    }
+                    restore_skip.setOnClickListener {
+                        // InitializeActivity.showLoading(this)
+                        MainActivity.show(this)
+                        finish()
                     }
                 }
                 Result.FAILURE -> {
