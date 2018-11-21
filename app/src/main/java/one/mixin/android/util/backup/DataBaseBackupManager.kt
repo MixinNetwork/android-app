@@ -18,6 +18,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.util.ZipUtil
 import java.io.File
 import java.util.concurrent.ExecutionException
 import kotlin.coroutines.CoroutineContext
@@ -61,6 +63,7 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
             val dbFile = getDbFile() ?: return@launch callback(NOT_FOUND)
             val metadata = isFolderExists(folderName)
             if (metadata != null) {
+                MixinDatabase.checkPoint()
                 uploadDatabase(this.coroutineContext, metadata.driveId, dbFile, currentVersion, callback)
             } else {
                 withContext(Dispatchers.Main) {
@@ -128,8 +131,17 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
             }
             if (metaData != null) {
                 val file = getDbFile() ?: return@launch withContext(Dispatchers.Main) { callback(NOT_FOUND) }
-                file.deleteOnExit()
-                restore(metaData.driveId.asDriveFile(), file.toString(), callback)
+                val zip = File("${file.parent}${File.separator}${file.name}.zip")
+                restore(metaData.driveId.asDriveFile(), zip.absolutePath, callback)
+                if (zip.exists()) {
+                    file.delete()
+                    File("${file.absolutePath}-wal").delete()
+                    File("${file.absolutePath}-shm").delete()
+                    ZipUtil.unZipFolder(zip.absolutePath, zip.parent)
+                    zip.delete()
+                } else {
+                    callback(FAILURE)
+                }
             } else {
                 withContext(Dispatchers.Main) {
                     callback(NOT_FOUND)
@@ -186,7 +198,9 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
             } else {
                 file.name
             }
-            val uploadTask = uploadBackup(driveId, file, title)
+            val zip = File("${file.parent}${File.separator}${file.name}.zip")
+            ZipUtil.zipFolder(file.absolutePath, zip.absolutePath)
+            val uploadTask = uploadBackup(driveId, zip, title)
             val driveFile = Tasks.await(uploadTask)
             if (driveFile != null && uploadTask.isSuccessful) {
                 withContext(Dispatchers.Main) {
@@ -198,6 +212,7 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
                     callback(FAILURE)
                 }
             }
+            zip.delete()
             return@async driveFile
         }
         return d.await()
