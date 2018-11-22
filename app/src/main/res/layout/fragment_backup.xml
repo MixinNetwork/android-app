@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_gray"
@@ -13,10 +14,83 @@
         app:titleText="@string/setting_authentications"/>
 
 
-    <LinearLayout
-        android:orientation="vertical"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/restore_icon"
+            android:src="@drawable/ic_backup"
+            android:layout_margin="16dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
+
+        <TextView
+            android:id="@+id/backup_title"
+            android:text="@string/backup_title"
+            android:layout_marginStart="@dimen/margin16"
+            android:textSize="16sp"
+            android:textColor="@color/colorDarkBlue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/restore_icon"
+            app:layout_constraintStart_toEndOf="@id/restore_icon"
+            app:layout_constraintTop_toTopOf="@id/restore_icon"/>
+
+        <TextView
+            android:id="@+id/backup_info"
+            android:layout_marginTop="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/backup_title"
+            app:layout_constraintTop_toBottomOf="@id/backup_title"
+            tools:text="Google远端备份: 从未备份"/>
+
+        <TextView
+            android:id="@+id/backup_des"
+            android:layout_marginTop="16dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:text="@string/backup_des"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/backup_title"
+            app:layout_constraintTop_toBottomOf="@id/backup_info"/>
+
+        <TextView
+            android:id="@+id/backup_check"
+            android:layout_marginTop="16dp"
+            android:text="@string/backup_include"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintStart_toStartOf="@id/backup_title"
+            app:layout_constraintTop_toBottomOf="@id/backup_des"/>
+
+        <CheckBox
+            android:id="@+id/backup_check_box"
+            android:layout_marginEnd="16dp"
+            android:buttonTint="@color/colorDarkBlue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/backup_check"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/backup_check"/>
+
+        <Button
+            android:id="@+id/backup_bn"
+            android:text="@string/backup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorDarkBlue"
+            android:textColor="@color/white"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="@id/backup_title"
+            app:layout_constraintTop_toBottomOf="@id/backup_check_box"/>
+
 
         <TextView
             android:id="@+id/sign_in"
@@ -27,28 +101,11 @@
             android:layout_width="match_parent"
             android:visibility="gone"
             android:layout_marginTop="@dimen/margin16"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/backup_bn"/>
 
-        <TextView
-            android:id="@+id/backup"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="16dp"
-            android:background="@color/white"
-            android:text="@string/setting_backup"
-            android:layout_marginTop="@dimen/margin16"
-            android:layout_width="match_parent"
-            android:visibility="gone"
-            android:layout_height="wrap_content"/>
-
-        <TextView
-            android:id="@+id/findBackup"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="16dp"
-            android:text="find backup"
-            android:background="@color/white"
-            android:layout_marginTop="@dimen/margin16"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
 
         <TextView
             android:id="@+id/sign_out"
@@ -59,8 +116,11 @@
             android:layout_marginTop="@dimen/margin16"
             android:visibility="gone"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/backup_bn"/>
 
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </LinearLayout>

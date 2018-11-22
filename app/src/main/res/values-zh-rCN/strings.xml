@@ -520,4 +520,12 @@
     <string name="restore_message">如果您之前曾备份到 Google 云端硬盘并且现在想要还原备份，请给与 Mixin 相应权限以检查您 Google账户里的备份。</string>
     <string name="restore_account">账户: %1$s</string>
     <string name="restore_size">备份大小: %1$s</string>
+    <string name="restore_failure">错误</string>
+    <string name="restore_not_found">未找到</string>
+    <string name="restore_not_support">不支持备份</string>
+    <string name="backup_title">上次备份</string>
+    <string name="backup_des">备份对话记录到 Google 云端硬盘以便在重新安装 Mixin 时还原对话记录，备份到 Google 云端硬盘的对话不会进行加密处理。</string>
+    <string name="backup_google_drive">Google 云端硬盘: %1$s</string>
+    <string name="backup">备份</string>
+    <string name="backup_include">包括图片、语音</string>
 </resources>

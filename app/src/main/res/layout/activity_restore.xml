@@ -119,4 +119,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/restore_restore"/>
 
+    <ProgressBar
+        android:id="@+id/restore_progress"
+        android:layout_width="56dp"
+        android:layout_height="56dp"
+        android:visibility="gone"
+        android:theme="@style/AppTheme.BlueProgress"
+        android:layout_gravity="center"
+        android:layout_marginBottom="30dp"
+        app:layout_constraintBottom_toTopOf="@id/restore_alert"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

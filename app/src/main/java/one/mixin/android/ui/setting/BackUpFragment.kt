@@ -1,7 +1,9 @@
 package one.mixin.android.ui.setting
 
+import android.Manifest
 import android.content.Intent
 import android.os.Bundle
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,17 +15,20 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.drive.Drive
 import com.google.android.gms.drive.DriveResourceClient
+import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
+import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.R
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.backup.DataBaseBackupManager
 import timber.log.Timber
+import java.util.Date
 import javax.inject.Inject
 
 class BackUpFragment : BaseFragment() {
@@ -47,6 +52,7 @@ class BackUpFragment : BaseFragment() {
             .requestEmail()
             .build()
 
+        backup_info.text = getString(R.string.backup_google_drive, "")
         val account = GoogleSignIn.getAccountForScopes(requireContext(), Drive.SCOPE_FILE, Drive.SCOPE_APPFOLDER)
         val googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
         // Todo maybe have other funcation
@@ -57,15 +63,29 @@ class BackUpFragment : BaseFragment() {
                 updateUI(null)
             }
         }
+        backup_check_box.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .subscribe({ granted ->
+                        if (!granted) {
+                            backup_check_box.isChecked = false
+                            context?.openPermissionSetting()
+                        }
+                    }, {
+                        backup_check_box.isChecked = false
+                    })
+            }
+        }
         sign_in.setOnClickListener {
             startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
         }
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        backup.setOnClickListener {
+        backup_bn.setOnClickListener {
             // todo
             dp.show()
-            DataBaseBackupManager.getManager(driveResourceClient!!, "mixin.db",
-                Session.getAccount()!!.identity_number, { requireContext().getDatabasePath("mixin.db") }, Constants.DataBase.MINI_VERSION, Constants.DataBase.CURRENT_VERSION)
+            DataBaseBackupManager.getManager(driveResourceClient!!, DB_NAME,
+                Session.getAccount()!!.identity_number, { requireContext().getDatabasePath(DB_NAME) }, Constants.DataBase.MINI_VERSION, Constants.DataBase.CURRENT_VERSION)
                 .backup { result ->
                     when (result) {
                         Result.NOT_FOUND -> {
@@ -76,33 +96,13 @@ class BackUpFragment : BaseFragment() {
                         }
                         Result.SUCCESS -> {
                             toast("backup success")
+                            findBackUp()
                         }
                         else -> {
                             toast("???")
                         }
                     }
                     dp.dismiss()
-                }
-        }
-        findBackup.setOnClickListener { it ->
-            DataBaseBackupManager.getManager(driveResourceClient!!, "mixin.db",
-                Session.getAccount()!!.identity_number, { requireContext().getDatabasePath("mixin.db") }, Constants.DataBase.MINI_VERSION, Constants.DataBase.CURRENT_VERSION)
-                .findBackup { result, metaData ->
-                    when (result) {
-                        Result.NOT_FOUND -> {
-                            toast("file not found")
-                        }
-                        Result.FAILURE -> {
-                            toast("failure")
-                        }
-                        Result.SUCCESS -> {
-                            toast("find ${metaData?.title}")
-                            RestoreActivity.show(requireContext())
-                        }
-                        else -> {
-                            toast("???")
-                        }
-                    }
                 }
         }
     }
@@ -116,17 +116,48 @@ class BackUpFragment : BaseFragment() {
     private var driveResourceClient: DriveResourceClient? = null
     private fun updateUI(account: GoogleSignInAccount?) {
         if (account != null && account.displayName != null) {
-            backup.visibility = View.VISIBLE
+            backup_bn.visibility = View.VISIBLE
+            sign_out.text = "sign out: ${account.displayName} ${account.email}"
             sign_out.visibility = View.VISIBLE
-            findBackup.visibility = View.VISIBLE
             sign_in.visibility = View.GONE
             if (isAdded) driveResourceClient = Drive.getDriveResourceClient(requireActivity(), account)
+            findBackUp()
         } else {
-            backup.visibility = View.GONE
+            backup_bn.visibility = View.GONE
             sign_out.visibility = View.GONE
-            findBackup.visibility = View.GONE
             sign_in.visibility = View.VISIBLE
         }
+    }
+
+    private fun findBackUp() {
+        DataBaseBackupManager.getManager(driveResourceClient!!, DB_NAME,
+            Session.getAccount()!!.identity_number, { requireContext().getDatabasePath(DB_NAME) }, Constants.DataBase.MINI_VERSION, Constants.DataBase.CURRENT_VERSION)
+            .findBackup { result, metaData ->
+                when (result) {
+                    Result.NOT_FOUND -> {
+                        backup_info.text = getString(R.string.backup_google_drive, "从未备份")
+                    }
+                    Result.FAILURE -> {
+                        backup_info.text = getString(R.string.backup_google_drive, "错误")
+                    }
+                    Result.SUCCESS -> {
+                        val time = metaData!!.createdDate.run {
+                            val now = Date().time
+                            val createTime = metaData.createdDate.time
+                            DateUtils.getRelativeTimeSpanString(createTime, now, when {
+                                ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
+                                ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
+                                ((now - createTime) < 86400000L) -> DateUtils.HOUR_IN_MILLIS
+                                else -> DateUtils.DAY_IN_MILLIS
+                            })
+                        }
+                        backup_info.text = getString(R.string.backup_google_drive, time)
+                    }
+                    Result.NOT_SUPPORT -> {
+                        backup_info.text = getString(R.string.backup_google_drive, "不支持版本")
+                    }
+                }
+            }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

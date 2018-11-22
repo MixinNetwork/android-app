@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -262,7 +263,7 @@ abstract class MixinDatabase : RoomDatabase() {
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, "mixin.db")
+                    INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
                         .addMigrations(MIGRATION_15_17, MIGRATION_16_17)
                         .addMigrations(MIGRATION_15_18, MIGRATION_16_18, MIGRATION_17_18)
                         .addMigrations(MIGRATION_15_19, MIGRATION_16_19, MIGRATION_17_19, MIGRATION_18_19)
@@ -282,7 +283,7 @@ abstract class MixinDatabase : RoomDatabase() {
         fun getReadDatabase(context: Context): MixinDatabase {
             synchronized(readlock) {
                 if (READINSTANCE == null) {
-                    READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, "mixin.db")
+                    READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
                         .addMigrations(MIGRATION_15_17, MIGRATION_16_17)
                         .addMigrations(MIGRATION_15_18, MIGRATION_16_18, MIGRATION_17_18)
                         .addMigrations(MIGRATION_15_19, MIGRATION_16_19, MIGRATION_17_19, MIGRATION_18_19)
