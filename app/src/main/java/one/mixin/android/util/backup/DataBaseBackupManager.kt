@@ -39,7 +39,7 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
             folderName: String, getDbFile: () -> File?, minVersion: Int? = null,
             currentVersion: Int? = null): DataBaseBackupManager {
             synchronized(lock) {
-                if (INSTANCE == null) {
+                if (INSTANCE == null || INSTANCE?.getFolderName() != folderName) {
                     INSTANCE = DataBaseBackupManager(driveResourceClient, dbName, folderName, getDbFile,
                         minVersion,
                         currentVersion)
@@ -48,6 +48,8 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
             }
         }
     }
+
+    fun getFolderName() = folderName
 
     private fun createDirectory() {
         val metaData = isFolderExists(folderName)

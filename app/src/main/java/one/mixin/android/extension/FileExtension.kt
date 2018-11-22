@@ -21,8 +21,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.EnvironmentCompat
 import androidx.exifinterface.media.ExifInterface
+import kotlinx.coroutines.NonCancellable.children
 import one.mixin.android.MixinApplication
 import one.mixin.android.widget.gallery.MimeType
+import org.spongycastle.asn1.cmc.CMCStatus.success
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -32,6 +34,7 @@ import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Stack
 
 private fun isAvailable(): Boolean {
     val state = Environment.getExternalStorageState()
@@ -51,14 +54,14 @@ private fun Context.getAppPath(): File {
         getBestAvailableCacheRoot()
     } else if (isAvailable()) {
         File(
-            "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}Media${File.separator}"
+            "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
         )
     } else {
         var externalFile: Array<File>? = ContextCompat.getExternalFilesDirs(this, null)
         if (externalFile == null) {
             externalFile = arrayOf(this.getExternalFilesDir(null))
         }
-        val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}Media${File.separator}")
+        val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}")
         root.mkdirs()
         return if (root.exists()) {
             root
@@ -66,6 +69,10 @@ private fun Context.getAppPath(): File {
             getBestAvailableCacheRoot()
         }
     }
+}
+
+fun Context.getMediaPath(): File {
+    return File("${getAppPath().absolutePath}${File.separator}Media${File.separator}")
 }
 
 fun getMimeType(uri: Uri): String? {
@@ -138,23 +145,28 @@ private fun Context.getBestAvailableCacheRoot(): File {
 }
 
 fun Context.getImagePath(): File {
-    val root = getAppPath()
+    val root = getMediaPath()
     return File("$root${File.separator}Images")
 }
 
 fun Context.getDocumentPath(): File {
-    val root = getAppPath()
+    val root = getMediaPath()
     return File("$root${File.separator}Files")
 }
 
 fun Context.getVideoPath(): File {
-    val root = getAppPath()
+    val root = getMediaPath()
     return File("$root${File.separator}Video")
 }
 
 fun Context.getAudioPath(): File {
-    val root = getAppPath()
+    val root = getMediaPath()
     return File("$root${File.separator}Audio")
+}
+
+fun Context.getBackupPath(): File {
+    val root = getAppPath()
+    return File("$root${File.separator}Backup")
 }
 
 fun Context.getPublicPictyresPath(): File {
@@ -332,6 +344,52 @@ fun File.blurThumbnail(size: Size): Bitmap? {
         }
     } while (true)
     return blurThumbnail(size.width / scale, size.height / scale)
+}
+
+fun File.dirSize(): Long? {
+    return if (isDirectory) {
+        var result = 0L
+        val dirList = Stack<File>()
+        dirList.clear()
+        dirList.push(this)
+        while (!dirList.isEmpty()) {
+            val dirCurrent = dirList.pop()
+            val fileList = dirCurrent.listFiles()
+            for (f in fileList) {
+                if (f.isDirectory) {
+                    dirList.push(f)
+                } else {
+                    result += f.length()
+                }
+            }
+        }
+        return result
+    } else {
+        null
+    }
+}
+
+fun File.moveChileFileToDir(dir: File) {
+    if (!dir.exists()) {
+        dir.mkdirs()
+    }
+    if (isDirectory && dir.isDirectory) {
+        for (chile in listFiles()) {
+            if (chile.length() > 0 && chile.isFile) {
+                chile.renameTo(File("${dir.absolutePath}${File.separator}${chile.name}"))
+            }
+        }
+    }
+}
+
+fun File.deleteDir() {
+    if (isDirectory()) {
+        val children = listFiles()
+        for (child in children) {
+            child.deleteDir()
+        }
+    }
+    delete()
 }
 
 fun Bitmap.rotate(angle: String): Bitmap? {

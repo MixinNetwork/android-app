@@ -77,6 +77,16 @@ public class ZipUtil {
         outZip.close();
     }
 
+    public static void zipFolders(String zipFileString, String... srcFiles) throws Exception {
+        ZipOutputStream outZip = new ZipOutputStream(new FileOutputStream(zipFileString));
+        for (String src : srcFiles) {
+            File file = new File(src);
+            zipFiles(file.getParent() + File.separator, file.getName(), outZip);
+        }
+        outZip.finish();
+        outZip.close();
+    }
+
     private static void zipFiles(String folderString, String fileString, ZipOutputStream zipOutputSteam) throws Exception {
         if (zipOutputSteam == null)
             return;
