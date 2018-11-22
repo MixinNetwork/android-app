@@ -45,6 +45,10 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
         }
     }
 
+    private val mediaProgress = MediaProgress()
+
+    fun getMediaProgress() = mediaProgress
+
     fun getFolderName() = folderName
 
     private fun createDirectory() {
@@ -57,6 +61,7 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
 
     fun backup(callback: (Result) -> Unit) {
         GlobalScope.launch {
+            mediaProgress.progress = 0
             val zip = File("${MixinApplication.appContext.getBackupPath().apply {
                 mkdirs()
             }.absolutePath}${File.separator}$backupName")
@@ -70,7 +75,7 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
             createDirectory()
             val metadata = isFolderExists(folderName)
             if (metadata != null) {
-                uploadDatabase(this.coroutineContext, metadata.driveId, zip, callback)
+                upload(this.coroutineContext, metadata.driveId, zip, callback)
             } else {
                 withContext(Dispatchers.Main) {
                     callback(Result.FAILURE)
@@ -187,20 +192,24 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
         }
     }
 
-    private suspend fun uploadDatabase(context: CoroutineContext, driveId: DriveId, file: File, callback: (Result) -> Unit): DriveFile? {
+    private suspend fun upload(context: CoroutineContext, driveId: DriveId, file: File, callback: (Result) -> Unit): DriveFile? {
         val d = GlobalScope.async(context) {
             val title = backupName
-            val uploadTask = uploadBackup(driveId, file, title)
+            val uploadTask = uploadBackup(driveId, file, title) { progress ->
+                mediaProgress.progress = progress
+            }
             val driveFile = Tasks.await(uploadTask)
             if (driveFile != null && uploadTask.isSuccessful) {
                 withContext(Dispatchers.Main) {
                     callback(Result.SUCCESS)
                 }
+                mediaProgress.progress = null
                 clearOtherBackup(driveFile)
             } else {
                 withContext(Dispatchers.Main) {
                     callback(Result.FAILURE)
                 }
+                mediaProgress.progress = null
             }
             file.delete()
             return@async driveFile
