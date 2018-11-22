@@ -7,6 +7,7 @@ import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.drive.demo.backup.Result
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -18,9 +19,16 @@ import com.google.android.gms.drive.DriveResourceClient
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.R
+import one.mixin.android.extension.dirSize
+import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toast
@@ -63,6 +71,14 @@ class BackUpFragment : BaseFragment() {
                 updateUI(null)
             }
         }
+        GlobalScope.launch {
+            context?.getMediaPath()?.dirSize()?.let {
+                withContext(Dispatchers.Main) {
+                    backup_check.text = "${getString(R.string.backup_include)} ${it.fileSize()}"
+                }
+            }
+        }
+
         backup_check_box.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
                 RxPermissions(requireActivity())
@@ -110,6 +126,17 @@ class BackUpFragment : BaseFragment() {
                     dp.dismiss()
                 }
         }
+        FileBackupManager.getManager(driveResourceClient!!,
+            Session.getAccount()!!.identity_number).getMediaProgress().observe(this, Observer {
+            if (it == null) {
+                progressBar.visibility = View.GONE
+                backup_bn.visibility = View.VISIBLE
+            } else {
+                progressBar.visibility = View.VISIBLE
+                backup_bn.visibility = View.INVISIBLE
+                progressBar.progress = it
+            }
+        })
     }
 
     private val dp by lazy {
