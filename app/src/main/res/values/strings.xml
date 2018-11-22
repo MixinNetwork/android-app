@@ -528,5 +528,13 @@
     <string name="restore_message">如果您之前曾备份到 Google 云端硬盘并且现在想要还原备份，请给与 Mixin 相应权限以检查您 Google账户里的备份。</string>
     <string name="restore_account">Accont: %1$s</string>
     <string name="restore_size">Size: %1$s</string>
+    <string name="restore_failure">Failure</string>
+    <string name="restore_not_found">Not found</string>
+    <string name="restore_not_support">Not support</string>
+    <string name="backup_title">Last Backup</string>
+    <string name="backup_des">Back up your messages to Google Drive. You can restore them when you reinstall Mixin. Messages you back up are not protected while in Google Drive.</string>
+    <string name="backup_google_drive">Google Drive: %1$s</string>
+    <string name="backup">Backup</string>
+    <string name="backup_include">Include image and audio</string>
 </resources>
 
