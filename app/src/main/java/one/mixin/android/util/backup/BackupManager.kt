@@ -21,10 +21,11 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.util.concurrent.ExecutionException
+import kotlin.math.min
 
 open class BackupManager(val resourceClient: DriveResourceClient) {
 
-    fun uploadBackup(driveId: DriveId, file: File, title: String): Task<DriveFile> {
+    fun uploadBackup(driveId: DriveId, file: File, title: String, callback: ((Int) -> Unit)? = null): Task<DriveFile> {
         val rootFolder = resourceClient.appFolder
         val createContents = resourceClient.createContents()
         return Tasks.whenAll(rootFolder, createContents)
@@ -34,11 +35,15 @@ open class BackupManager(val resourceClient: DriveResourceClient) {
                 val outputStream = contents.outputStream
                 val fis = FileInputStream(file)
                 val buffer = ByteArray(1024)
+                val total = file.length()
+                var currentSize = 0L
                 var length: Int
                 do {
                     length = fis.read(buffer)
                     if (length > 0) {
                         outputStream.write(buffer, 0, length)
+                        currentSize += length
+                        callback?.invoke(min((100f * currentSize / total).toInt(), 100))
                     } else break
                 } while (true)
                 outputStream.flush()
