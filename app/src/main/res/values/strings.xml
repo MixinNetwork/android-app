@@ -535,6 +535,6 @@
     <string name="backup_des">Back up your messages to Google Drive. You can restore them when you reinstall Mixin. Messages you back up are not protected while in Google Drive.</string>
     <string name="backup_google_drive">Google Drive: %1$s</string>
     <string name="backup">Backup</string>
-    <string name="backup_include">Include image and audio</string>
+    <string name="backup_include">Include media</string>
 </resources>
 

@@ -527,5 +527,5 @@
     <string name="backup_des">备份对话记录到 Google 云端硬盘以便在重新安装 Mixin 时还原对话记录，备份到 Google 云端硬盘的对话不会进行加密处理。</string>
     <string name="backup_google_drive">Google 云端硬盘: %1$s</string>
     <string name="backup">备份</string>
-    <string name="backup_include">包括图片、语音</string>
+    <string name="backup_include">包括媒体文件</string>
 </resources>

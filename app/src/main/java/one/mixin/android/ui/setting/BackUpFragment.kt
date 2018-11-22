@@ -27,6 +27,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.Session
 import one.mixin.android.util.backup.DataBaseBackupManager
+import one.mixin.android.util.backup.FileBackupManager
 import timber.log.Timber
 import java.util.Date
 import javax.inject.Inject
@@ -59,7 +60,6 @@ class BackUpFragment : BaseFragment() {
         updateUI(account)
         sign_out.setOnClickListener {
             googleSignInClient.revokeAccess().addOnSuccessListener {
-                Timber.d("sign out success")
                 updateUI(null)
             }
         }
@@ -96,6 +96,11 @@ class BackUpFragment : BaseFragment() {
                         }
                         Result.SUCCESS -> {
                             toast("backup success")
+                            if (backup_check_box.isChecked) {
+                                FileBackupManager.getManager(driveResourceClient!!, Session.getAccount()!!.identity_number).backup { result ->
+                                    Timber.d("上传媒体文件结果：$result")
+                                }
+                            }
                             findBackUp()
                         }
                         else -> {
@@ -117,7 +122,7 @@ class BackUpFragment : BaseFragment() {
     private fun updateUI(account: GoogleSignInAccount?) {
         if (account != null && account.displayName != null) {
             backup_bn.visibility = View.VISIBLE
-            sign_out.text = "sign out: ${account.displayName} ${account.email}"
+            sign_out.text = "sign out: ${account.email}"
             sign_out.visibility = View.VISIBLE
             sign_in.visibility = View.GONE
             if (isAdded) driveResourceClient = Drive.getDriveResourceClient(requireActivity(), account)

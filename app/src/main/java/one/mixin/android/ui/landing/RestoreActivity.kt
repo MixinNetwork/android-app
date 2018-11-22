@@ -26,6 +26,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.backup.DataBaseBackupManager
+import one.mixin.android.util.backup.FileBackupManager
 import java.util.Date
 
 class RestoreActivity : BaseActivity() {
@@ -69,6 +70,11 @@ class RestoreActivity : BaseActivity() {
             when (result) {
                 Result.SUCCESS -> {
                     metadata?.let { data ->
+                        FileBackupManager.getManager(driveResourceClient!!, Session.getAccount()!!.identity_number).findBackup { result, metadata ->
+                            if (result == Result.SUCCESS) {
+                                toast("找到媒体文件${metadata?.fileSize?.fileSize()}")
+                            }
+                        }
                         initUI(manager, account, data)
                     }
                 }
@@ -101,6 +107,13 @@ class RestoreActivity : BaseActivity() {
             showProgress()
             manager.restoreDatabase { result ->
                 if (result == Result.SUCCESS) {
+                    FileBackupManager.getManager(driveResourceClient!!, Session.getAccount()!!.identity_number).restore { result ->
+                        if (result == Result.SUCCESS) {
+                            toast("媒体文件备份成功")
+                        } else {
+                            toast("$result")
+                        }
+                    }
                     InitializeActivity.showLoading(this)
                     defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                     finish()
