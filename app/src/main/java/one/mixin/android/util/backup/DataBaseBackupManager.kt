@@ -52,10 +52,9 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
     fun getFolderName() = folderName
 
     private fun createDirectory() {
-        val metaData = isFolderExists(folderName)
+        val metaData = isRootFolderExists(folderName)
         if (metaData == null) {
-            val parentFolderCreateTask = createFolder(folderName)
-            Tasks.await(parentFolderCreateTask)
+            createRootFolder(folderName)
         }
     }
 
@@ -63,7 +62,7 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
         GlobalScope.launch {
             createDirectory()
             val dbFile = getDbFile() ?: return@launch callback(NOT_FOUND)
-            val metadata = isFolderExists(folderName)
+            val metadata = isRootFolderExists(folderName)
             if (metadata != null) {
                 MixinDatabase.checkPoint()
                 uploadDatabase(this.coroutineContext, metadata.driveId, dbFile, currentVersion, callback)
@@ -77,7 +76,7 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
 
     fun findBackup(callback: (Result, Metadata?) -> Unit) {
         GlobalScope.launch {
-            val parentMetadata = isFolderExists(folderName)
+            val parentMetadata = isRootFolderExists(folderName)
             if (parentMetadata == null) {
                 withContext(Dispatchers.Main) {
                     callback(NOT_FOUND, null)
@@ -111,7 +110,7 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
 
     fun restoreDatabase(callback: (Result) -> Unit) {
         GlobalScope.launch {
-            val parentMetadata = isFolderExists(folderName)
+            val parentMetadata = isRootFolderExists(folderName)
             if (parentMetadata == null) {
                 withContext(Dispatchers.Main) {
                     callback(NOT_FOUND)
@@ -185,7 +184,7 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
         val metadataBuffer = Tasks.await(queryTask)
         for (b in metadataBuffer) {
             if (b.title != title) {
-                val deleteTask = deleteExistingFile(b.driveId.asDriveFile())
+                val deleteTask = deleteDriveFile(b.driveId.asDriveFile())
                 Tasks.await(deleteTask)
             }
         }
@@ -202,8 +201,8 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
             }
             val zip = File("${file.parent}${File.separator}${file.name}.zip")
             ZipUtil.zipFolder(file.absolutePath, zip.absolutePath)
-            val uploadTask = uploadBackup(driveId, zip, title)
-            val driveFile = Tasks.await(uploadTask)
+            val uploadTask = uploadToAppFolder(driveId, zip, title)
+            val driveFile = Tasks.await(uploadTask!!)
             if (driveFile != null && uploadTask.isSuccessful) {
                 withContext(Dispatchers.Main) {
                     callback(SUCCESS)

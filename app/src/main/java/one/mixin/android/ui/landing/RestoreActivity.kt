@@ -72,7 +72,7 @@ class RestoreActivity : BaseActivity() {
                     metadata?.let { data ->
                         FileBackupManager.getManager(driveResourceClient!!, Session.getAccount()!!.identity_number).findBackup { result, metadata ->
                             if (result == Result.SUCCESS) {
-                                toast("找到媒体文件${metadata?.fileSize?.fileSize()}")
+
                             }
                         }
                         initUI(manager, account, data)
@@ -107,7 +107,7 @@ class RestoreActivity : BaseActivity() {
             showProgress()
             manager.restoreDatabase { result ->
                 if (result == Result.SUCCESS) {
-                    FileBackupManager.getManager(driveResourceClient!!, Session.getAccount()!!.identity_number).restore { result ->
+                    FileBackupManager.getManager(driveResourceClient, Session.getAccount()!!.identity_number).restore { result ->
                         if (result == Result.SUCCESS) {
                             toast("媒体文件备份成功")
                         } else {
