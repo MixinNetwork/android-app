@@ -7,7 +7,6 @@ import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.drive.demo.backup.Result
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -64,7 +63,7 @@ class BackUpFragment : BaseFragment() {
         backup_info.text = getString(R.string.backup_google_drive, "")
         val account = GoogleSignIn.getAccountForScopes(requireContext(), Drive.SCOPE_FILE, Drive.SCOPE_APPFOLDER)
         val googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
-        // Todo maybe have other funcation
+        // Todo maybe have other functions
         updateUI(account)
         sign_out.setOnClickListener {
             googleSignInClient.revokeAccess().addOnSuccessListener {
@@ -126,17 +125,6 @@ class BackUpFragment : BaseFragment() {
                     dp.dismiss()
                 }
         }
-        FileBackupManager.getManager(driveResourceClient!!,
-            Session.getAccount()!!.identity_number).getMediaProgress().observe(this, Observer {
-            if (it == null) {
-                progressBar.visibility = View.GONE
-                backup_bn.visibility = View.VISIBLE
-            } else {
-                progressBar.visibility = View.VISIBLE
-                backup_bn.visibility = View.INVISIBLE
-                progressBar.progress = it
-            }
-        })
     }
 
     private val dp by lazy {
