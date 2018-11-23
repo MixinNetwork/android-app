@@ -164,11 +164,6 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audio")
 }
 
-fun Context.getBackupPath(): File {
-    val root = getAppPath()
-    return File("$root${File.separator}Backup")
-}
-
 fun Context.getPublicPictyresPath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mixin")
 }
