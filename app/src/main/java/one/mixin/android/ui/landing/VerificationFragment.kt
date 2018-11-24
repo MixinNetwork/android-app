@@ -38,13 +38,14 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
-import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -226,10 +227,11 @@ class VerificationFragment : BaseFragment() {
                     defaultSharedPreferences.putBoolean(Constants.Account.PREF_SET_NAME, true)
                     mobileViewModel.insertUser(r.data!!.toUser())
                     InitializeActivity.showSetupName(context!!)
-                } else {
-                    // InitializeActivity.showLoading(context!!)
+                } else if (requireContext().isGooglePlayServicesAvailable()) {
                     // Todo
-                     RestoreActivity.show(context!!)
+                    RestoreActivity.show(context!!)
+                } else {
+                    InitializeActivity.showLoading(context!!)
                 }
                 activity?.finish()
             }, { t: Throwable ->

@@ -1,9 +1,5 @@
 package one.mixin.android.util.backup
 
-import com.drive.demo.backup.Result
-import com.drive.demo.backup.Result.FAILURE
-import com.drive.demo.backup.Result.NOT_FOUND
-import com.drive.demo.backup.Result.SUCCESS
 import com.google.android.gms.drive.DriveFile
 import com.google.android.gms.drive.DriveFolder
 import com.google.android.gms.drive.DriveId
@@ -20,6 +16,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.util.ZipUtil
+import one.mixin.android.util.backup.Result.FAILURE
+import one.mixin.android.util.backup.Result.NOT_FOUND
+import one.mixin.android.util.backup.Result.SUCCESS
 import java.io.File
 import java.util.concurrent.ExecutionException
 import kotlin.coroutines.CoroutineContext
@@ -60,13 +59,19 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
 
     fun backup(callback: (Result) -> Unit) {
         GlobalScope.launch {
-            createDirectory()
-            val dbFile = getDbFile() ?: return@launch callback(NOT_FOUND)
-            val metadata = isRootFolderExists(folderName)
-            if (metadata != null) {
-                MixinDatabase.checkPoint()
-                uploadDatabase(this.coroutineContext, metadata.driveId, dbFile, currentVersion, callback)
-            } else {
+            try {
+                createDirectory()
+                val dbFile = getDbFile() ?: return@launch callback(NOT_FOUND)
+                val metadata = isRootFolderExists(folderName)
+                if (metadata != null) {
+                    MixinDatabase.checkPoint()
+                    uploadDatabase(this.coroutineContext, metadata.driveId, dbFile, currentVersion, callback)
+                } else {
+                    withContext(Dispatchers.Main) {
+                        callback(FAILURE)
+                    }
+                }
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     callback(FAILURE)
                 }
@@ -76,33 +81,40 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
 
     fun findBackup(callback: (Result, Metadata?) -> Unit) {
         GlobalScope.launch {
-            val parentMetadata = isRootFolderExists(folderName)
-            if (parentMetadata == null) {
-                withContext(Dispatchers.Main) {
-                    callback(NOT_FOUND, null)
+            try {
+                val parentMetadata = isRootFolderExists(folderName)
+                if (parentMetadata == null) {
+                    withContext(Dispatchers.Main) {
+                        callback(NOT_FOUND, null)
+                    }
+                    return@launch
                 }
-            }
-            val metaData = findDbFiles(parentMetadata!!.driveId.asDriveFolder(), dbName) { title ->
-                if (currentVersion != null && minVersion != null) {
-                    val version = title.split("_")[1].toInt()
-                    version <= currentVersion && version >= minVersion
+                val metaData = findDbFiles(parentMetadata.driveId.asDriveFolder(), dbName) { title ->
+                    if (currentVersion != null && minVersion != null) {
+                        val version = title.split("_")[1].toInt()
+                        version <= currentVersion && version >= minVersion
+                    } else {
+                        title.contentEquals(dbName)
+                    }
+                }?.run {
+                    if (!this.isEmpty()) {
+                        this[0]
+                    } else {
+                        null
+                    }
+                }
+                if (metaData != null) {
+                    withContext(Dispatchers.Main) {
+                        callback(SUCCESS, metaData)
+                    }
                 } else {
-                    title.contentEquals(dbName)
+                    withContext(Dispatchers.Main) {
+                        callback(NOT_FOUND, null)
+                    }
                 }
-            }?.run {
-                if (!this.isEmpty()) {
-                    this[0]
-                } else {
-                    null
-                }
-            }
-            if (metaData != null) {
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    callback(SUCCESS, metaData)
-                }
-            } else {
-                withContext(Dispatchers.Main) {
-                    callback(NOT_FOUND, null)
+                    callback(FAILURE, null)
                 }
             }
         }
@@ -110,42 +122,49 @@ class DataBaseBackupManager private constructor(driveResourceClient: DriveResour
 
     fun restoreDatabase(callback: (Result) -> Unit) {
         GlobalScope.launch {
-            val parentMetadata = isRootFolderExists(folderName)
-            if (parentMetadata == null) {
+            try {
+                val parentMetadata = isRootFolderExists(folderName)
+                if (parentMetadata == null) {
+                    withContext(Dispatchers.Main) {
+                        callback(NOT_FOUND)
+                    }
+                    return@launch
+                }
+                val metaData = findDbFiles(parentMetadata.driveId.asDriveFolder(), dbName) { title ->
+                    if (currentVersion != null && minVersion != null) {
+                        val version = title.split("_")[1].toInt()
+                        version <= currentVersion && version >= minVersion
+                    } else {
+                        title.contentEquals(dbName)
+                    }
+                }?.run {
+                    if (!this.isEmpty()) {
+                        this[0]
+                    } else {
+                        null
+                    }
+                }
+                if (metaData != null) {
+                    val file = getDbFile() ?: return@launch withContext(Dispatchers.Main) { callback(NOT_FOUND) }
+                    val zip = File("${file.parent}${File.separator}${file.name}.zip")
+                    restore(metaData.driveId.asDriveFile(), zip.absolutePath, callback)
+                    if (zip.exists()) {
+                        file.delete()
+                        File("${file.absolutePath}-wal").delete()
+                        File("${file.absolutePath}-shm").delete()
+                        ZipUtil.unZipFolder(zip.absolutePath, zip.parent)
+                        zip.delete()
+                    } else {
+                        callback(FAILURE)
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
+                        callback(NOT_FOUND)
+                    }
+                }
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    callback(NOT_FOUND)
-                }
-            }
-            val metaData = findDbFiles(parentMetadata!!.driveId.asDriveFolder(), dbName) { title ->
-                if (currentVersion != null && minVersion != null) {
-                    val version = title.split("_")[1].toInt()
-                    version <= currentVersion && version >= minVersion
-                } else {
-                    title.contentEquals(dbName)
-                }
-            }?.run {
-                if (!this.isEmpty()) {
-                    this[0]
-                } else {
-                    null
-                }
-            }
-            if (metaData != null) {
-                val file = getDbFile() ?: return@launch withContext(Dispatchers.Main) { callback(NOT_FOUND) }
-                val zip = File("${file.parent}${File.separator}${file.name}.zip")
-                restore(metaData.driveId.asDriveFile(), zip.absolutePath, callback)
-                if (zip.exists()) {
-                    file.delete()
-                    File("${file.absolutePath}-wal").delete()
-                    File("${file.absolutePath}-shm").delete()
-                    ZipUtil.unZipFolder(zip.absolutePath, zip.parent)
-                    zip.delete()
-                } else {
                     callback(FAILURE)
-                }
-            } else {
-                withContext(Dispatchers.Main) {
-                    callback(NOT_FOUND)
                 }
             }
         }

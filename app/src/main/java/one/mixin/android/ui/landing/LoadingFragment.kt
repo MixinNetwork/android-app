@@ -37,6 +37,7 @@ class LoadingFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         requireContext().defaultSharedPreferences.putBoolean(IS_LOADED, false)
+        MixinApplication.get().onlining.set(true)
         load()
     }
 
