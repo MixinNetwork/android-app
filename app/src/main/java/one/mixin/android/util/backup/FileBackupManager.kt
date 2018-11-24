@@ -1,6 +1,5 @@
 package one.mixin.android.util.backup
 
-import com.drive.demo.backup.Result
 import com.google.android.gms.drive.DriveFolder
 import com.google.android.gms.drive.DriveResourceClient
 import com.google.android.gms.drive.Metadata
@@ -48,20 +47,29 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
 
     fun backup(callback: (Result) -> Unit) {
         GlobalScope.launch {
-            val root = createDirectory()
-            if (root == null) {
-                callback(Result.FAILURE)
-                return@launch
-            }
-            var mediaFolder = queryChildren(root, madieName)?.find {
-                it.title == madieName && it.isFolder
-            }?.driveId?.asDriveFolder()
-            if (mediaFolder == null) {
-                mediaFolder = createChildrenFolder(root, madieName)
-            }
-            mediaFolder?.let { mediaFolder ->
-                contrastUpload(MixinApplication.appContext.getMediaPath(), mediaFolder)
-                contrastDelete(MixinApplication.appContext.getMediaPath(), mediaFolder)
+            try {
+                val root = createDirectory()
+                if (root == null) {
+                    callback(Result.FAILURE)
+                    return@launch
+                }
+                var mediaFolder = queryChildren(root, madieName)?.find {
+                    it.title == madieName && it.isFolder
+                }?.driveId?.asDriveFolder()
+                if (mediaFolder == null) {
+                    mediaFolder = createChildrenFolder(root, madieName)
+                }
+                mediaFolder?.let { mediaFolder ->
+                    contrastUpload(MixinApplication.appContext.getMediaPath(), mediaFolder)
+                    contrastDelete(MixinApplication.appContext.getMediaPath(), mediaFolder)
+                }
+                withContext(Dispatchers.Main) {
+                    callback(Result.SUCCESS)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    callback(Result.FAILURE)
+                }
             }
         }
     }
@@ -104,26 +112,32 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
 
     fun findBackup(callback: (Result, Metadata?) -> Unit) {
         GlobalScope.launch {
-            val parentMetadata = isRootFolderExists(folderName)
-            if (parentMetadata == null) {
-                withContext(Dispatchers.Main) {
-                    callback(Result.NOT_FOUND, null)
+            try {
+                val parentMetadata = isRootFolderExists(folderName)
+                if (parentMetadata == null) {
+                    withContext(Dispatchers.Main) {
+                        callback(Result.NOT_FOUND, null)
+                    }
                 }
-            }
-            val metaData = findBackupFiles(parentMetadata!!.driveId.asDriveFolder(), madieName).run {
-                if (this.isNullOrEmpty()) {
-                    null
+                val metaData = findBackupFiles(parentMetadata!!.driveId.asDriveFolder(), madieName).run {
+                    if (this.isNullOrEmpty()) {
+                        null
+                    } else {
+                        this[0]
+                    }
+                }
+                if (metaData != null) {
+                    withContext(Dispatchers.Main) {
+                        callback(Result.SUCCESS, metaData)
+                    }
                 } else {
-                    this[0]
+                    withContext(Dispatchers.Main) {
+                        callback(Result.NOT_FOUND, null)
+                    }
                 }
-            }
-            if (metaData != null) {
+            } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    callback(Result.SUCCESS, metaData)
-                }
-            } else {
-                withContext(Dispatchers.Main) {
-                    callback(Result.NOT_FOUND, null)
+                    callback(Result.FAILURE, null)
                 }
             }
         }
@@ -153,19 +167,25 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
 
     fun restore(callback: (Result) -> Unit) {
         GlobalScope.launch {
-            val root = createDirectory()
-            if (root == null) {
-                callback(Result.FAILURE)
-                return@launch
+            try {
+                val root = createDirectory()
+                if (root == null) {
+                    callback(Result.FAILURE)
+                    return@launch
+                }
+                val mediaFolder = queryChildren(root, madieName)?.find {
+                    it.title == madieName && it.isFolder
+                }?.driveId?.asDriveFolder()
+                if (mediaFolder == null) {
+                    callback(Result.NOT_FOUND)
+                    return@launch
+                }
+                restoreToLocal(MixinApplication.appContext.getMediaPath(), mediaFolder, callback)
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    callback(Result.FAILURE)
+                }
             }
-            val mediaFolder = queryChildren(root, madieName)?.find {
-                it.title == madieName && it.isFolder
-            }?.driveId?.asDriveFolder()
-            if (mediaFolder == null) {
-                callback(Result.NOT_FOUND)
-                return@launch
-            }
-            restoreToLocal(MixinApplication.appContext.getMediaPath(), mediaFolder, callback)
         }
     }
 

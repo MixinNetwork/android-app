@@ -1,5 +1,6 @@
 package one.mixin.android.extension
 
+import android.app.Activity
 import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
@@ -40,6 +41,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.receiver.ShareBroadcastReceiver
@@ -502,3 +505,9 @@ inline fun belowOreo(code: () -> Unit) {
 
 inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
     this.apply { arguments = Bundle().apply(argsBuilder) }
+
+fun Context.isGooglePlayServicesAvailable(): Boolean {
+    val googleApiAvailability = GoogleApiAvailability.getInstance()
+    val status = googleApiAvailability.isGooglePlayServicesAvailable(this)
+    return status == ConnectionResult.SUCCESS
+}

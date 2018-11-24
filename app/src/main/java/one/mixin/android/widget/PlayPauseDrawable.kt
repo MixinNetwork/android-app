@@ -135,7 +135,7 @@ class PlayPauseDrawable : Drawable() {
 
     companion object {
 
-        private val PROGRESS = object : Property<PlayPauseDrawable, Float>(Float::class.java, "progress") {
+        private val PROGRESS = object : Property<PlayPauseDrawable, Float>(Float::class.java, "isUploading") {
             override fun get(d: PlayPauseDrawable): Float {
                 return d.progress
             }

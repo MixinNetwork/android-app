@@ -44,6 +44,12 @@ object Constants {
         const val CURRENT_VERSION = 19
     }
 
+    object BackUp {
+        const val BACKUP_MEDIA = "backup_media"
+        const val BACKUP_PERIOD = "backup_period"
+        const val BACKUP_LAST_TIME = "backup_last_time"
+    }
+
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48

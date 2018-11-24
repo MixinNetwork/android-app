@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.View
 import androidx.appcompat.app.AlertDialog
-import com.drive.demo.backup.Result
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -21,17 +20,22 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.toast
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RestoreJob
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.backup.DataBaseBackupManager
 import one.mixin.android.util.backup.FileBackupManager
+import one.mixin.android.util.backup.Result
 import java.util.Date
+import javax.inject.Inject
 
 class RestoreActivity : BaseActivity() {
 
     private lateinit var driveResourceClient: DriveResourceClient
+
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,7 +46,7 @@ class RestoreActivity : BaseActivity() {
             .build()
         val googleSignInClient = GoogleSignIn.getClient(this, gso)
         val account = GoogleSignIn.getAccountForScopes(this, Drive.SCOPE_FILE, Drive.SCOPE_APPFOLDER)
-        if (account.displayName == null) {
+        if (account.isExpired) {
             AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
                 .setMessage(R.string.restore_message)
                 .setNegativeButton(R.string.restore_skip) { dialog, _ ->
@@ -54,8 +58,10 @@ class RestoreActivity : BaseActivity() {
                 .setPositiveButton(R.string.restore_authorization) { dialog, _ ->
                     startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
                     dialog.dismiss()
+                }.create().run {
+                    this.setCanceledOnTouchOutside(false)
+                    this.show()
                 }
-                .show()
         } else {
             initialize(account)
         }
@@ -65,7 +71,10 @@ class RestoreActivity : BaseActivity() {
         driveResourceClient = Drive.getDriveResourceClient(this, account)
         val manager = DataBaseBackupManager.getManager(driveResourceClient, DB_NAME,
             Session.getAccount()!!.identity_number, { this.getDatabasePath(DB_NAME) }, Constants.DataBase.MINI_VERSION, Constants.DataBase.CURRENT_VERSION)
+        findBackup(manager, account)
+    }
 
+    private fun findBackup(manager: DataBaseBackupManager, account: GoogleSignInAccount) {
         manager.findBackup { result, metadata ->
             when (result) {
                 Result.SUCCESS -> {
@@ -78,17 +87,36 @@ class RestoreActivity : BaseActivity() {
                         initUI(manager, account, data)
                     }
                 }
-                Result.FAILURE -> {
-                    toast(R.string.restore_failure)
-                }
-                Result.NOT_FOUND -> {
-                    toast(R.string.restore_not_found)
-                }
-                Result.NOT_SUPPORT -> {
-                    toast(R.string.restore_not_support)
-                }
+                else -> showErrorAlert(manager, account, result)
             }
         }
+    }
+
+    private fun showErrorAlert(manager: DataBaseBackupManager, account: GoogleSignInAccount, error: Result) {
+        AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
+            .setMessage(when (error) {
+                Result.FAILURE -> {
+                    R.string.restore_failure
+                }
+                Result.NOT_FOUND -> {
+                    R.string.restore_not_found
+                }
+                else -> {
+                    R.string.restore_not_support
+                }
+            })
+            .setNegativeButton(R.string.restore_retry) { dialog, _ ->
+                findBackup(manager, account)
+                dialog.dismiss()
+            }
+            .setPositiveButton(R.string.restore_skip) { dialog, _ ->
+                dialog.dismiss()
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
+                InitializeActivity.showLoading(this)
+            }.create().run {
+                this.setCanceledOnTouchOutside(false)
+                this.show()
+            }
     }
 
     private fun initUI(manager: DataBaseBackupManager, account: GoogleSignInAccount, data: Metadata) {
@@ -107,13 +135,7 @@ class RestoreActivity : BaseActivity() {
             showProgress()
             manager.restoreDatabase { result ->
                 if (result == Result.SUCCESS) {
-                    FileBackupManager.getManager(driveResourceClient, Session.getAccount()!!.identity_number).restore { result ->
-                        if (result == Result.SUCCESS) {
-                            toast("媒体文件备份成功")
-                        } else {
-                            toast("$result")
-                        }
-                    }
+                    jobManager.addJobInBackground(RestoreJob())
                     InitializeActivity.showLoading(this)
                     defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                     finish()
@@ -126,9 +148,7 @@ class RestoreActivity : BaseActivity() {
         restore_name.text = getString(R.string.restore_account, account.email)
         restore_alert.text = getString(R.string.restore_alert, data.fileSize.fileSize())
         restore_skip.setOnClickListener {
-            // Todo
-            // InitializeActivity.showLoading(this)
-            MainActivity.show(this)
+            InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
             finish()
         }
@@ -153,14 +173,14 @@ class RestoreActivity : BaseActivity() {
                 val task = GoogleSignIn.getSignedInAccountFromIntent(data)
                 val account = task.getResult(ApiException::class.java)
                 if (account == null) {
-                    // Todo
+                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                     InitializeActivity.showLoading(this)
                     finish()
                 } else {
                     initialize(account)
                 }
             } catch (e: ApiException) {
-                // Todo
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 InitializeActivity.showLoading(this)
                 finish()
             }

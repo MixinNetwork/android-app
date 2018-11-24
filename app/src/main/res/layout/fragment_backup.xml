@@ -11,8 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_authentications"/>
-
+        app:titleText="@string/backup"/>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
@@ -78,6 +77,71 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/backup_check"/>
 
+        <LinearLayout
+            android:id="@+id/backup_account"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="56dp"
+            android:paddingEnd="56dp"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:layout_constraintTop_toBottomOf="@id/backup_check_box">
+
+
+            <TextView
+                android:layout_marginTop="3dp"
+                android:text="@string/backup_account"
+                android:textSize="16sp"
+                android:textColor="@color/text_black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/backup_account_email"
+                android:text="@string/backup_account_none"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="3dp"
+                android:textSize="14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="**@mixin.one"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/backup_auto"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="56dp"
+            android:paddingEnd="56dp"
+            android:foreground="?android:attr/selectableItemBackground"
+            app:layout_constraintTop_toBottomOf="@id/backup_account">
+
+
+            <TextView
+                android:layout_marginTop="3dp"
+                android:text="@string/backup_dialog_title"
+                android:textSize="16sp"
+                android:textColor="@color/text_black"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+
+            <TextView
+                android:id="@+id/backup_auto_tv"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="3dp"
+                android:textSize="14sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="**@mixin.one"/>
+
+        </LinearLayout>
+
         <Button
             android:id="@+id/backup_bn"
             android:text="@string/backup"
@@ -89,36 +153,42 @@
             android:paddingEnd="24dp"
             android:layout_marginTop="16dp"
             app:layout_constraintStart_toStartOf="@id/backup_title"
-            app:layout_constraintTop_toBottomOf="@id/backup_check_box"/>
+            app:layout_constraintTop_toBottomOf="@id/backup_auto"/>
+
+        <androidx.constraintlayout.widget.Group
+            android:id="@+id/progressGroup"
+            android:visibility="gone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:constraint_referenced_ids="progressTv,progressBar"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            style="@style/ProgressTheme"
+            android:indeterminate="true"
+            android:indeterminateTint="@color/colorDarkBlue"
+            android:layout_marginTop="16dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="16dp"
+            android:secondaryProgressTint="@color/colorDarkBlue"
+            app:layout_constraintBottom_toTopOf="@id/progressTv"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="@id/backup_title"
+            app:layout_constraintTop_toTopOf="@id/backup_bn"
+            app:layout_constraintVertical_chainStyle="packed"/>
 
         <TextView
-            android:id="@+id/sign_in"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:background="@color/white"
-            android:padding="16dp"
-            android:text="sign in"
-            android:layout_width="match_parent"
-            android:visibility="gone"
-            android:layout_marginTop="@dimen/margin16"
+            android:id="@+id/progressTv"
+            android:layout_marginTop="3dp"
+            android:text="@string/backup_ing"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@id/backup_bn"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/backup_bn"/>
-
-
-        <TextView
-            android:id="@+id/sign_out"
-            android:foreground="?android:attr/selectableItemBackground"
-            android:padding="16dp"
-            android:text="sign out"
-            android:background="@color/white"
-            android:layout_marginTop="@dimen/margin16"
-            android:visibility="gone"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/backup_bn"/>
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="@id/backup_title"
+            app:layout_constraintTop_toBottomOf="@id/progressBar"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
