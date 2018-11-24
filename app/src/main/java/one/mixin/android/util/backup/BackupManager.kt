@@ -1,8 +1,7 @@
 package one.mixin.android.util.backup
 
-import com.drive.demo.backup.Result
-import com.drive.demo.backup.Result.FAILURE
-import com.drive.demo.backup.Result.SUCCESS
+import one.mixin.android.util.backup.Result.FAILURE
+import one.mixin.android.util.backup.Result.SUCCESS
 import com.google.android.gms.drive.DriveFile
 import com.google.android.gms.drive.DriveFolder
 import com.google.android.gms.drive.DriveId

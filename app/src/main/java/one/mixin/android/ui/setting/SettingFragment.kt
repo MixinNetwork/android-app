@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.ui.common.BaseFragment
 import javax.inject.Inject
 
@@ -61,9 +62,15 @@ class SettingFragment : BaseFragment() {
             activity?.addFragment(this@SettingFragment,
                 AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
         }
-        backup_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                BackUpFragment.newInstance(), BackUpFragment.TAG)
+
+        if (requireContext().isGooglePlayServicesAvailable()) {
+            backup_layout.visibility = View.VISIBLE
+            backup_rl.setOnClickListener {
+                activity?.addFragment(this@SettingFragment,
+                    BackUpFragment.newInstance(), BackUpFragment.TAG)
+            }
+        } else {
+            backup_layout.visibility = View.GONE
         }
     }
 }

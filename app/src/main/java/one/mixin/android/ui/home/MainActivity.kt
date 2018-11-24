@@ -31,6 +31,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putLong
+import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -100,7 +101,7 @@ class MainActivity : BlazeBaseActivity() {
             InitializeActivity.showSetupName(this)
         }
 
-        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
+        if (isGooglePlayServicesAvailable() && defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
             RestoreActivity.show(this)
             finish()
             return
@@ -131,6 +132,8 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
+        jobManager.addJobInBackground(BackupJob())
+
         doAsync {
             WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
             WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
