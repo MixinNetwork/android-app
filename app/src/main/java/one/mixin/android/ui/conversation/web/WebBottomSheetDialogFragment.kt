@@ -1,5 +1,6 @@
 package one.mixin.android.ui.conversation.web
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ActivityNotFoundException
@@ -8,8 +9,6 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
-import androidx.fragment.app.FragmentManager
-import androidx.appcompat.view.ContextThemeWrapper
 import android.view.ContextMenu
 import android.view.MenuItem
 import android.view.View
@@ -20,18 +19,26 @@ import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
+import androidx.appcompat.view.ContextThemeWrapper
+import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displaySize
+import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
@@ -46,6 +53,7 @@ import one.mixin.android.widget.DragWebView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.FileInputStream
 import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 
@@ -57,6 +65,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val FILE_CHOOSER = 0x01
 
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
+        private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
 
         private const val URL = "url"
         private const val CONVERSATION_ID = "conversation_id"
@@ -93,8 +102,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             when (it.type) {
                 WebView.HitTestResult.IMAGE_TYPE, WebView.HitTestResult.SRC_IMAGE_ANCHOR_TYPE -> {
                     menu.add(0, CONTEXT_MENU_ID_SCAN_IMAGE, 0, R.string.contact_sq_scan_title)
-                    menu.getItem(0).setOnMenuItemClickListener {
-                        onContextItemSelected(it)
+                    menu.getItem(0).setOnMenuItemClickListener { menu ->
+                        onContextItemSelected(menu)
+                        return@setOnMenuItemClickListener true
+                    }
+                    menu.add(0, CONTEXT_MENU_ID_SAVE_IMAGE, 1, R.string.contact_save_image)
+                    menu.getItem(1).setOnMenuItemClickListener { menu ->
+                        onContextItemSelected(menu)
                         return@setOnMenuItemClickListener true
                     }
                 }
@@ -133,6 +147,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
                 return true
+            } else if (item.itemId == CONTEXT_MENU_ID_SAVE_IMAGE) {
+                saveImageFromUrl(url)
             }
         }
         return super.onContextItemSelected(item)
@@ -288,6 +304,31 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         view.cancel_tv.setOnClickListener { bottomSheet.dismiss() }
         bottomSheet.show()
+    }
+
+    @SuppressLint("CheckResult")
+    private fun saveImageFromUrl(url: String?) {
+        if (isAdded) {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe { granted ->
+                    if (granted) {
+                        doAsync {
+                            val file = Glide.with(MixinApplication.appContext)
+                                .asFile()
+                                .load(url)
+                                .submit()
+                                .get(10, TimeUnit.SECONDS)
+                            val outFile = requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
+                            outFile.copyFromInputStream(FileInputStream(file))
+                            requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+                            uiThread { toast(R.string.save_success) }
+                        }
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+        }
     }
 
     class WebViewClientImpl(
