@@ -74,8 +74,8 @@ internal constructor(
 
     fun addresses(id: String) = assetRepository.addresses(id)
 
-    fun allSnapshots(): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.allSnapshots(), PagedList.Config.Builder()
+    fun allSnapshots(type: String? = null, otherType: String? = null): LiveData<PagedList<SnapshotItem>> =
+        LivePagedListBuilder(assetRepository.allSnapshots(type, otherType), PagedList.Config.Builder()
             .setPageSize(10).build()).build()
 
     fun refreshAddressesByAssetId(assetId: String) {

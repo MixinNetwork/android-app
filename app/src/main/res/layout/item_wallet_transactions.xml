@@ -9,7 +9,7 @@
         android:id="@+id/transaction_shadow_left"
         android:layout_width="16dp"
         android:layout_height="76dp"
-        android:background="@drawable/bg_wallet_transactions_left"/>
+        android:background="@drawable/bg_wallet_transactions_left_white"/>
 
     <one.mixin.android.widget.ConfirmationBgView
         android:id="@+id/bg"
@@ -58,5 +58,5 @@
         android:layout_width="16dp"
         android:layout_height="76dp"
         android:layout_alignParentEnd="true"
-        android:background="@drawable/bg_wallet_transactions_right"/>
+        android:background="@drawable/bg_wallet_transactions_right_white"/>
 </RelativeLayout>

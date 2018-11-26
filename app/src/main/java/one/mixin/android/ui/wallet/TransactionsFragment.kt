@@ -9,10 +9,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.room.Transaction
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
@@ -35,13 +32,12 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
-import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
@@ -55,9 +51,8 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RadioGroup
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
-import javax.inject.Inject
 
-class TransactionsFragment : BaseFragment(), TransactionsAdapter.OnTransactionsListener {
+class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnSnapshotListener {
 
     companion object {
         const val TAG = "TransactionsFragment"
@@ -70,14 +65,6 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.OnTransactionsL
             f.arguments = b
             return f
         }
-    }
-
-    @Inject
-    lateinit var jobManager: MixinJobManager
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
     private var snapshots = listOf<SnapshotItem>()
@@ -120,7 +107,7 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.OnTransactionsL
             })
         }
 
-        adapter = TransactionsAdapter(asset).apply { data = snapshots }
+        adapter = TransactionsAdapter().apply { data = snapshots }
         adapter.listener = this
         adapter.headerView = headerView
         recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
@@ -133,6 +120,34 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.OnTransactionsL
             }
         }
 
+        dataObserver = Observer { list ->
+            if (currentType == R.id.filters_radio_all) {
+                if (list != null && list.isNotEmpty()) {
+                    updateHeaderBottomLayout(false)
+                    snapshots = list
+                    doAsync {
+                        for (s in snapshots) {
+                            s.opponentId?.let {
+                                val u = walletViewModel.getUserById(it)
+                                if (u == null) {
+                                    jobManager.addJobInBackground(RefreshUserJob(arrayListOf(it)))
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    updateHeaderBottomLayout(true)
+                }
+            } else {
+                if (list != null && list.isNotEmpty()) {
+                    updateHeaderBottomLayout(false)
+                } else {
+                    updateHeaderBottomLayout(true)
+                }
+            }
+            adapter.data = list
+            adapter.notifyDataSetChanged()
+        }
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
         doAsync {
             asset.assetId.let { it ->
@@ -241,21 +256,7 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.OnTransactionsL
         }
     }
 
-    private fun showFiltersSheet() {
-        filtersView.filters_radio_group.setCheckedById(currentType)
-        filtersSheet.show()
-    }
-
-    private val filtersSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(requireActivity())
-        val bottomSheet = builder.create()
-        builder.setCustomView(filtersView)
-        bottomSheet
-    }
-
-    private val filtersView: View by lazy {
-        val view = View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null)
-        view.filters_title.left_ib.setOnClickListener { filtersSheet.dismiss() }
+    override fun setRadioGroupListener(view: View) {
         view.filters_radio_group.setOnCheckedListener(object : RadioGroup.OnCheckedListener {
             override fun onChecked(id: Int) {
                 currentType = id
@@ -294,50 +295,9 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.OnTransactionsL
                 filtersSheet.dismiss()
             }
         })
-        view
-    }
-
-    private var currentLiveData: LiveData<List<SnapshotItem>>? = null
-    private fun bindLiveData(liveData: LiveData<List<SnapshotItem>>) {
-        currentLiveData?.removeObserver(dataObserver)
-        currentLiveData = liveData
-        currentLiveData?.observe(this, dataObserver)
-    }
-
-    private val dataObserver by lazy {
-        Observer<List<SnapshotItem>> { list ->
-            if (currentType == R.id.filters_radio_all) {
-                if (list != null && list.isNotEmpty()) {
-                    updateHeaderBottomLayout(false)
-                    snapshots = list
-                    doAsync {
-                        for (s in snapshots) {
-                            s.opponentId?.let {
-                                val u = walletViewModel.getUserById(it)
-                                if (u == null) {
-                                    jobManager.addJobInBackground(RefreshUserJob(arrayListOf(it)))
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    updateHeaderBottomLayout(true)
-                }
-            } else {
-                if (list != null && list.isNotEmpty()) {
-                    updateHeaderBottomLayout(false)
-                } else {
-                    updateHeaderBottomLayout(true)
-                }
-            }
-            adapter.data = list
-            adapter.notifyDataSetChanged()
-        }
     }
 
     private fun updateHeaderBottomLayout(expand: Boolean) {
         headerView.bottom_rl.visibility = if (expand) VISIBLE else GONE
     }
-
-    private var currentType = R.id.filters_radio_all
 }

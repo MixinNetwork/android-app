@@ -192,3 +192,7 @@ fun TextView.timeAgoClock(str: String) {
 fun TextView.timeAgoDate(str: String) {
     text = str.timeAgoDate(context)
 }
+
+fun TextView.timeAgoDay(str: String) {
+    text = str.timeAgoDay(context)
+}

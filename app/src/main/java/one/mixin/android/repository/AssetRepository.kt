@@ -93,7 +93,11 @@ constructor(
 
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
 
-    fun allSnapshots() = snapshotDao.allSnapshots()
+    fun allSnapshots(type: String? = null, otherType: String? = null) = if (type == null) {
+        snapshotDao.allSnapshots()
+    } else {
+        snapshotDao.allSnapshotsByType(type, otherType)
+    }
 
     fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
 

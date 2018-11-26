@@ -2,6 +2,7 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
+import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -58,5 +59,18 @@ data class SnapshotItem(
     @SerializedName("confirmations")
     @ColumnInfo(name = "confirmations")
     val confirmations: Int?,
-    val avatarUrl: String?
-) : Parcelable
+    val avatarUrl: String?,
+    @SerializedName("asset_confirmations")
+    @ColumnInfo(name = "asset_confirmations")
+    val assetConfirmations: Int
+) : Parcelable {
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<SnapshotItem>() {
+            override fun areItemsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
+                oldItem.snapshotId == newItem.snapshotId
+
+            override fun areContentsTheSame(oldItem: SnapshotItem, newItem: SnapshotItem) =
+                oldItem == newItem
+        }
+    }
+}
