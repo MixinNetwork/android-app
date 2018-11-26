@@ -136,7 +136,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         colorDrawable = ColorDrawable(Color.BLACK)
         view_pager.backgroundDrawable = colorDrawable
         Observable.just(conversationId).observeOn(Schedulers.io())
-            .map { conversationRepository.getMediaMessages(it).reversed() }
+            .map {
+                conversationRepository.getMediaMessages(it).filter { item ->
+                    val file = File(item.mediaUrl?.toUri()?.getFilePath())
+                    file.exists()
+                }.reversed()
+            }
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { list ->
                 index = list.indexOfFirst { item -> messageId == item.messageId }
