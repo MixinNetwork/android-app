@@ -99,7 +99,7 @@ class TransactionFragment : BaseFragment() {
         value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()}"
             else snapshot.amount.numberFormat()
         symbol_tv.text = asset.symbol
-        value_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
+        value_tv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
         val amount = (BigDecimal(snapshot.amount) * BigDecimal(asset.priceUsd)).numberFormat2()
         value_as_tv.text = "≈ $$amount"
         transaction_id_tv.text = snapshot.snapshotId

@@ -962,7 +962,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         .autoDisposable(scopeProvider)
                         .subscribe({
                             closeTool()
-                            requireContext().toast(R.string.sticker_add_success)
+                            requireContext().toast(R.string.add_success)
                         }, {
                             ErrorHandler.handleError(it)
                             requireContext().toast(R.string.sticker_add_failed)

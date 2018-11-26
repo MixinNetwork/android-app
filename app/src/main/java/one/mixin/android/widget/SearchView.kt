@@ -76,7 +76,14 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
         setOnEditorActionListener(onEditorActionListener)
         setOnTouchListener(onTouchListener)
         setOnFocusChangeListener(onFocusChangeListener)
-        post { clearFocus() }
+
+        // remove focus but remain focusable
+        post {
+            isFocusableInTouchMode = false
+            isFocusable = false
+            isFocusableInTouchMode = true
+            isFocusable = true
+        }
     }
 
     private fun checkDrawables() {

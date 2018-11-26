@@ -47,6 +47,7 @@
         android:layout_marginEnd="4dp"
         android:clickable="false"
         android:button="@drawable/selector_item_asset_add"
+        android:background="@null"
         tools:ignore="ContentDescription"/>
 
     <View

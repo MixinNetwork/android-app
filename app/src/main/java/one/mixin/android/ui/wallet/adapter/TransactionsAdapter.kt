@@ -11,11 +11,12 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_transaction_header.view.*
 import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.timeAgoDate
+import one.mixin.android.extension.timeAgo
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
@@ -57,6 +58,8 @@ class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>(),
         TransactionsHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_transactions, parent, false))
 
     class TransactionsHolder(itemView: View) : HeaderAdapter.NormalHolder(itemView) {
+        private val padding = itemView.context.dpToPx(16f)
+
         fun bind(snapshot: SnapshotItem, asset: AssetItem, listener: OnTransactionsListener?, isLast: Boolean) {
             val isPositive = snapshot.amount.toFloat() > 0
             when {
@@ -97,11 +100,13 @@ class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>(),
 
             if (isLast) {
                 itemView.root.backgroundResource = R.drawable.bg_wallet_transactions_bottom
+                itemView.root.setPadding(padding, 0, padding, padding)
                 itemView.bg.roundBottom(true)
                 itemView.transaction_shadow_left.visibility = GONE
                 itemView.transaction_shadow_right.visibility = GONE
             } else {
                 itemView.root.backgroundResource = R.color.white
+                itemView.root.setPadding(0, 0, 0, 0)
                 itemView.bg.roundBottom(false)
                 itemView.transaction_shadow_left.visibility = VISIBLE
                 itemView.transaction_shadow_right.visibility = VISIBLE
@@ -125,7 +130,7 @@ class TransactionsAdapter(var asset: AssetItem) : HeaderAdapter<SnapshotItem>(),
 
     class TransactionHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(time: String) {
-            itemView.date_tv.timeAgoDate(time)
+            itemView.date_tv.timeAgo(time)
         }
     }
 

@@ -52,6 +52,7 @@
     <string name="shown">Shown</string>
     <string name="undo_capital">UNDO</string>
     <string name="searching">Searching</string>
+    <string name="add_success">Add success</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -477,7 +478,6 @@
     <string name="sticker_add_failed">Add sticker failed</string>
     <string name="sticker_add_invalid_size">Requires stickers file size larger than 1KB and less than 800KB, width and height between 64px and 512px.</string>
     <string name="sticker_add_invalid_format">Invalid sticker format</string>
-    <string name="sticker_add_success">Add success</string>
     <string name="sticker_search_giphy">Search GIPHY</string>
     <string name="sticker_no_result">No result</string>
     <!--avatar-->

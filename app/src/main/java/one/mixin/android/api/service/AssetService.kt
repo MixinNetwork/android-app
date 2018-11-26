@@ -8,7 +8,6 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
-import one.mixin.android.vo.HotAsset
 import one.mixin.android.vo.PendingDeposit
 import one.mixin.android.vo.Snapshot
 import retrofit2.Call

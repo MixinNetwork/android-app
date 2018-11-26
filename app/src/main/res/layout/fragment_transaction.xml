@@ -28,7 +28,7 @@
                 android:id="@+id/top_ll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_wallet_card">
+                android:background="@drawable/bg_wallet_card_single">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -37,8 +37,8 @@
 
                     <one.mixin.android.widget.BadgeCircleImageView
                         android:id="@+id/avatar"
-                        android:layout_width="66dp"
-                        android:layout_height="66dp"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
                         android:layout_marginStart="32dp"
                         android:layout_marginTop="32dp"
                         android:layout_marginBottom="32dp"
@@ -84,7 +84,7 @@
                         android:layout_below="@+id/value_rl"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="2dp"
+                        android:layout_marginTop="4dp"
                         android:textColor="@color/wallet_text_gray"/>
                 </RelativeLayout>
             </FrameLayout>
@@ -92,7 +92,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_wallet_card"
+                android:background="@drawable/bg_wallet_card_single"
                 android:orientation="vertical">
 
                 <RelativeLayout

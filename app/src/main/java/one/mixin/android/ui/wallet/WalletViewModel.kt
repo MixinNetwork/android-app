@@ -92,7 +92,7 @@ internal constructor(
 
     fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 
-    fun getAsset(assetId: String) = Flowable.just(assetId).map {
+    fun getAsset(assetId: String): Flowable<MixinResponse<Asset>?> = Flowable.just(assetId).map {
         assetRepository.asset(assetId).execute().body()
     }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
@@ -105,10 +105,10 @@ internal constructor(
         if (response != null && response.isSuccess && response.data != null) {
             val assetList = response.data as List<Asset>
             val hotAssetList = arrayListOf<HotAsset>()
-            assetList.mapTo(hotAssetList, { asset ->
+            assetList.mapTo(hotAssetList) { asset ->
                 val chainIconUrl = assetRepository.getIconUrl(asset.chainId)
                 asset.toHotAsset(chainIconUrl)
-            })
+            }
             val existsSet = ArraySet<String>()
             hotAssetList.forEach {
                 val exists = assetRepository.checkExists(it.assetId)

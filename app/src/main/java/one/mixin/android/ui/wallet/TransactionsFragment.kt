@@ -201,19 +201,6 @@ class TransactionsFragment : BaseFragment(), TransactionsAdapter.OnTransactionsL
         })
     }
 
-    private fun showPB(asset: AssetItem): Boolean {
-        if (asset.publicKey.isNullOrEmpty()) {
-            if (asset.accountName.isNullOrEmpty() || asset.accountTag.isNullOrEmpty()) {
-                return true
-            }
-        } else {
-            if (!asset.accountName.isNullOrEmpty() || !asset.accountTag.isNullOrEmpty()) {
-                return true
-            }
-        }
-        return false
-    }
-
     @SuppressLint("InflateParams")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
