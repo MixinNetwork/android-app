@@ -478,7 +478,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onImageClick(messageItem: MessageItem, view: View) {
                 starTransition = true
-                DragMediaActivity.show(requireActivity(), view, messageItem)
+                val file = File(messageItem.mediaUrl?.toUri()?.getFilePath())
+                if (file.exists()) {
+                    DragMediaActivity.show(requireActivity(), view, messageItem)
+                } else {
+                    toast(R.string.error_file_exists)
+                }
             }
 
             @TargetApi(Build.VERSION_CODES.O)
