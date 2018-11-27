@@ -5,8 +5,8 @@ import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
 import com.bugsnag.android.Bugsnag
 import moe.feng.support.biometricprompt.BiometricPromptCompat
-import one.mixin.android.R
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat2
@@ -16,7 +16,6 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
 import org.jetbrains.anko.getStackTraceString
-import java.lang.IllegalStateException
 import java.math.BigDecimal
 import java.nio.charset.Charset
 
@@ -66,7 +65,7 @@ class BiometricDialog(
 
     private val biometricCallback = object : BiometricPromptCompat.IAuthenticationCallback {
         override fun onAuthenticationError(errorCode: Int, errString: CharSequence?) {
-            if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_CANCELED) {
+            if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_CANCELED || errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_USER_CANCELED) {
                 callback?.onCancel()
             } else if (errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT ||
                 errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT) {
