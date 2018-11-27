@@ -117,7 +117,18 @@ class BackUpFragment : BaseFragment() {
         backup_auto_tv.text = options[defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)]
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         backup_bn.setOnClickListener {
-            jobManager.addJobInBackground(BackupJob(true))
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        jobManager.addJobInBackground(BackupJob(true))
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                    context?.openPermissionSetting()
+                })
+
         }
     }
 

@@ -1,8 +1,12 @@
 package one.mixin.android.job
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.text.format.DateUtils.DAY_IN_MILLIS
 import android.text.format.DateUtils.WEEK_IN_MILLIS
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.drive.Drive
@@ -12,6 +16,9 @@ import one.mixin.android.Constants.BackUp.BACKUP_MEDIA
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getCacheMediaPath
+import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.moveChileFileToDir
 import one.mixin.android.extension.putLong
 import one.mixin.android.util.Session
 import one.mixin.android.util.backup.BackupLiveData
@@ -19,6 +26,7 @@ import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.DataBaseBackupManager
 import one.mixin.android.util.backup.FileBackupManager
 import one.mixin.android.util.backup.Result
+import java.io.File
 
 class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) {
     PRIORITY_UI_HIGH
@@ -34,6 +42,9 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
 
     override fun onRun() {
         val context = MixinApplication.appContext
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            return
+        }
         if (force) {
             backup(context)
         } else {
@@ -54,12 +65,26 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
         }
     }
 
+    private fun cleanMedia() {
+        val mediaCachePath = MixinApplication.appContext.getCacheMediaPath()
+        val mediaPath = MixinApplication.appContext.getMediaPath().absolutePath
+        for (mediaCacheChild in mediaCachePath.listFiles()) {
+            if (mediaCacheChild.isDirectory) {
+                val local = File("$mediaPath${File.separator}${mediaCacheChild.name}${File.separator}")
+                mediaCacheChild.moveChileFileToDir(local) { newFile, oldFile ->
+                    messageDao.updateMediaUrl(newFile.toUri().toString(), oldFile.toUri().toString())
+                }
+            }
+        }
+    }
+
     private fun backup(context: Context) {
         val account = GoogleSignIn.getAccountForScopes(context, Drive.SCOPE_FILE, Drive.SCOPE_APPFOLDER)
         if (!account.isExpired && !backupLiveData.ing) {
             val driveResourceClient = Drive.getDriveResourceClient(context, account)
             backupLiveData.start()
             BackupNotification.show()
+            cleanMedia()
             DataBaseBackupManager.getManager(driveResourceClient!!, Constants.DataBase.DB_NAME,
                 Session.getAccount()!!.identity_number, { context.getDatabasePath(Constants.DataBase.DB_NAME) }, Constants.DataBase.MINI_VERSION,
                 Constants.DataBase.CURRENT_VERSION)

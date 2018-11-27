@@ -108,6 +108,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET media_url = :mediaUrl WHERE id = :id")
     fun updateMediaMessageUrl(mediaUrl: String, id: String)
 
+    @Query("UPDATE messages SET media_url = :mediaUrl WHERE media_url = :oldMediaUrl")
+    fun updateMediaUrl(mediaUrl: String, oldMediaUrl: String)
+
     @Query("UPDATE messages SET hyperlink = :hyperlink WHERE id = :id")
     fun updateHyperlink(hyperlink: String, id: String)
 

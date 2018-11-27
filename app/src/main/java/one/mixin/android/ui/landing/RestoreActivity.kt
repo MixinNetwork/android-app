@@ -1,5 +1,6 @@
 package one.mixin.android.ui.landing
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -13,12 +14,14 @@ import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.drive.Drive
 import com.google.android.gms.drive.DriveResourceClient
 import com.google.android.gms.drive.Metadata
+import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_restore.*
 import one.mixin.android.Constants
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RestoreJob
@@ -132,17 +135,28 @@ class RestoreActivity : BaseActivity() {
             })
         }
         restore_restore.setOnClickListener {
-            showProgress()
-            manager.restoreDatabase { result ->
-                if (result == Result.SUCCESS) {
-                    jobManager.addJobInBackground(RestoreJob())
-                    InitializeActivity.showLoading(this)
-                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                    finish()
-                } else {
-                    hideProgress()
-                }
-            }
+            RxPermissions(this)
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (!granted) {
+                        openPermissionSetting()
+                    } else {
+                        showProgress()
+                        manager.restoreDatabase { result ->
+                            if (result == Result.SUCCESS) {
+                                jobManager.addJobInBackground(RestoreJob())
+                                InitializeActivity.showLoading(this)
+                                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
+                                finish()
+                            } else {
+                                hideProgress()
+                            }
+                        }
+                    }
+                }, {
+
+                })
+
         }
         restore_size.text = getString(R.string.restore_size, data.fileSize.fileSize())
         restore_name.text = getString(R.string.restore_account, account.email)
