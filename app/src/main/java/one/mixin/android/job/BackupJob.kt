@@ -68,6 +68,9 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
     private fun cleanMedia() {
         val mediaCachePath = MixinApplication.appContext.getCacheMediaPath()
         val mediaPath = MixinApplication.appContext.getMediaPath().absolutePath
+        if (!mediaCachePath.exists()){
+            return
+        }
         for (mediaCacheChild in mediaCachePath.listFiles()) {
             if (mediaCacheChild.isDirectory) {
                 val local = File("$mediaPath${File.separator}${mediaCacheChild.name}${File.separator}")
