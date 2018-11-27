@@ -171,6 +171,21 @@ fun Context.displayWitdh(): Int {
     return displaySize().x
 }
 
+fun Context.screenHeight(): Int {
+    return screenSize().y
+}
+
+fun Context.screenWidth(): Int {
+    return screenSize().x
+}
+
+fun Context.screenSize(): Point {
+    val size = Point()
+    val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    manager.defaultDisplay.getRealSize(size)
+    return size
+}
+
 fun Context.displayRatio(): Float {
     val size = displaySize()
     return size.y.toFloat() / size.x
