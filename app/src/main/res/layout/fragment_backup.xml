@@ -58,24 +58,34 @@
             app:layout_constraintStart_toStartOf="@id/backup_title"
             app:layout_constraintTop_toBottomOf="@id/backup_info"/>
 
-        <TextView
-            android:id="@+id/backup_check"
-            android:layout_marginTop="16dp"
-            android:text="@string/backup_include"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/backup_check_layout"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="8dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintStart_toStartOf="@id/backup_title"
-            app:layout_constraintTop_toBottomOf="@id/backup_des"/>
-
-        <CheckBox
-            android:id="@+id/backup_check_box"
-            android:layout_marginEnd="16dp"
-            android:buttonTint="@color/colorDarkBlue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:layout_constraintBottom_toBottomOf="@id/backup_check"
+            android:foreground="?android:attr/selectableItemBackground"
+            android:paddingStart="56dp"
+            android:paddingEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/backup_check"/>
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/backup_des">
+
+            <TextView
+                android:id="@+id/backup_check"
+                android:layout_weight="1"
+                android:text="@string/backup_include"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"/>
+
+            <CheckBox
+                android:id="@+id/backup_check_box"
+                android:buttonTint="@color/colorDarkBlue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
+        </LinearLayout>
 
         <LinearLayout
             android:id="@+id/backup_account"
@@ -87,7 +97,7 @@
             android:paddingStart="56dp"
             android:paddingEnd="56dp"
             android:foreground="?android:attr/selectableItemBackground"
-            app:layout_constraintTop_toBottomOf="@id/backup_check_box">
+            app:layout_constraintTop_toBottomOf="@id/backup_check_layout">
 
 
             <TextView

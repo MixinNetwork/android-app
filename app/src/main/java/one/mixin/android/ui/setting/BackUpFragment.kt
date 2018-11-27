@@ -18,6 +18,7 @@ import com.google.android.gms.drive.Drive
 import com.google.android.gms.drive.DriveResourceClient
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_backup.*
+import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -32,6 +33,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dirSize
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.getMediaPath
+import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
@@ -73,16 +75,26 @@ class BackUpFragment : BaseFragment() {
         backup_info.text = getString(R.string.backup_google_drive, "")
         account = GoogleSignIn.getAccountForScopes(requireContext(), Drive.SCOPE_FILE, Drive.SCOPE_APPFOLDER)
         val googleSignInClient = GoogleSignIn.getClient(requireActivity(), gso)
-        // Todo maybe have other functions
+        if (account == null || account?.isExpired == true) {
+            googleSignInClient.signOut()
+        }
         updateUI()
         GlobalScope.launch {
-            context?.getMediaPath()?.dirSize()?.let {
+            notNullElse(context?.getMediaPath()?.dirSize(), {
                 withContext(Dispatchers.Main) {
                     backup_check.text = "${getString(R.string.backup_include)} ${it.fileSize()}"
                 }
-            }
+            }, {
+                withContext(Dispatchers.Main) {
+                    backup_check.text = "${getString(R.string.backup_include)} 0.0 KB"
+                }
+            })
         }
+
         backup_check_box.isChecked = defaultSharedPreferences.getBoolean(BACKUP_MEDIA, false)
+        backup_check_layout.setOnClickListener{
+            backup_check_box.isChecked = !backup_check_box.isChecked
+        }
         backup_check_box.setOnCheckedChangeListener { _, isChecked ->
             defaultSharedPreferences.putBoolean(BACKUP_MEDIA, isChecked)
             if (isChecked) {
