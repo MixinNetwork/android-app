@@ -11,8 +11,8 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.cancelRunOnUIThread
-import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.runOnUIThread
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import java.nio.charset.Charset
 
@@ -65,7 +65,7 @@ class RecaptchaView(private val context: Context, private val callback: Callback
     fun isVisible() = webView.translationY == 0f
 
     fun hide() {
-        webView.animate().translationY(context.displayHeight().toFloat())
+        webView.animate().translationY(context.screenHeight().toFloat())
     }
 
     @JavascriptInterface

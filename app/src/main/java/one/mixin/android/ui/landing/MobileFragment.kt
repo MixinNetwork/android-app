@@ -1,10 +1,7 @@
 package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -14,6 +11,9 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -28,9 +28,9 @@ import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
@@ -84,7 +84,7 @@ class MobileFragment : BaseFragment() {
             }
         })
         parent.addView(recaptchaView.webView, MATCH_PARENT, MATCH_PARENT)
-        recaptchaView.webView.translationY = requireContext().displayHeight().toFloat()
+        recaptchaView.webView.translationY = requireContext().screenHeight().toFloat()
         return parent
     }
 
