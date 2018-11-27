@@ -21,10 +21,8 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.EnvironmentCompat
 import androidx.exifinterface.media.ExifInterface
-import kotlinx.coroutines.NonCancellable.children
 import one.mixin.android.MixinApplication
 import one.mixin.android.widget.gallery.MimeType
-import org.spongycastle.asn1.cmc.CMCStatus.success
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -73,6 +71,10 @@ private fun Context.getAppPath(): File {
 
 fun Context.getMediaPath(): File {
     return File("${getAppPath().absolutePath}${File.separator}Media${File.separator}")
+}
+
+fun Context.getCacheMediaPath(): File {
+    return File("${getBestAvailableCacheRoot().absolutePath}${File.separator}Media${File.separator}")
 }
 
 fun getMimeType(uri: Uri): String? {
@@ -364,14 +366,18 @@ fun File.dirSize(): Long? {
     }
 }
 
-fun File.moveChileFileToDir(dir: File) {
+fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: File) -> Unit)? = null) {
     if (!dir.exists()) {
         dir.mkdirs()
     }
     if (isDirectory && dir.isDirectory) {
         for (chile in listFiles()) {
             if (chile.length() > 0 && chile.isFile) {
-                chile.renameTo(File("${dir.absolutePath}${File.separator}${chile.name}"))
+                val newFile = File("${dir.absolutePath}${File.separator}${chile.name}")
+                chile.renameTo(newFile)
+                eachCallback?.let {
+                    it.invoke(newFile, chile)
+                }
             }
         }
     }
