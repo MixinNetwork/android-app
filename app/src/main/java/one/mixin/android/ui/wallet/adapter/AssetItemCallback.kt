@@ -1,8 +1,10 @@
 package one.mixin.android.ui.wallet.adapter
 
 import android.graphics.Canvas
-import androidx.recyclerview.widget.RecyclerView
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_wallet_asset.view.*
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 
@@ -24,6 +26,9 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
 
     override fun onSelectedChanged(viewHolder: RecyclerView.ViewHolder?, actionState: Int) {
         viewHolder?.let {
+            if (actionState != ItemTouchHelper.ACTION_STATE_IDLE && it.itemView.background_rl.visibility != VISIBLE) {
+                it.itemView.background_rl.visibility = VISIBLE
+            }
             ItemTouchHelper.Callback.getDefaultUIUtil().onSelected(it.itemView.foreground_rl)
         }
     }
@@ -61,6 +66,7 @@ class AssetItemCallback(private val listener: ItemCallbackListener) :
     }
 
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+        viewHolder.itemView.background_rl.visibility = GONE
         listener.onSwiped(viewHolder)
     }
 

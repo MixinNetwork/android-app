@@ -43,6 +43,7 @@
             android:id="@+id/value"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:maxWidth="200dp"
             android:fontFamily="@font/mixin_condensed"
             android:layout_marginEnd="@dimen/margin16"
             android:layout_alignParentEnd="true"

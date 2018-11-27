@@ -8,18 +8,16 @@ import android.widget.TextView
 import one.mixin.android.extension.dpToPx
 
 class BalanceLayout : ViewGroup {
+    companion object {
+        const val MIN_LINE_CHAR_COUNT = 3
+    }
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     private val symbolOffset by lazy { context.dpToPx(8f) }
-    private var wordWidth: Int? = null
-
-    private var changedWidth: Int? = null
-    private var changedHeight: Int? = null
-
-    var listener: BalanceLayout.OnBalanceLayoutListener? = null
+    private var balanceWordWidth: Int? = null
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -28,32 +26,29 @@ class BalanceLayout : ViewGroup {
         val symbolTv = getChildAt(1) as TextView
         val symbolMeasureWidth = symbolTv.measuredWidth + symbolTv.paddingStart + symbolTv.paddingEnd
         val balanceMeasureWidth = balanceTv.measuredWidth
-        val preBalanceHeight = balanceTv.measuredHeight
 
-        if (changedWidth != null && changedHeight != null) {
-            measureChild(balanceTv, MeasureSpec.makeMeasureSpec(changedWidth!!, MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(changedHeight!!, MeasureSpec.EXACTLY))
+        val lines = balanceTv.layout.lineCount
+        val lastLineText = getLastLineText(balanceTv.layout, lines)
+        if (balanceWordWidth == null) {
+            // only for mono fonts
+            balanceWordWidth = balanceTv.layout.paint.measureText(balanceTv.text[0].toString()).toInt()
         }
-
-        val balanceLayout = balanceTv.layout
-        val lines = balanceLayout.lineCount
-        val maxBalanceWidth = if ((lines <= 1 && measuredWidth < balanceMeasureWidth + symbolMeasureWidth + symbolOffset)
-            || lines > 1) {
-            val lastLineText = getLastLineText(balanceLayout, lines)
-            if (lastLineText.length < 3) {
-                // if lines > 2, every line reduce 1 word, the last line over 2 words.
+        val maxBalanceWidth = if (lines <= 1 && measuredWidth < balanceMeasureWidth + symbolMeasureWidth + symbolOffset) {
+            // add MIN_LINE_CHAR_COUNT chars to a new line
+            Math.min(measuredWidth - symbolMeasureWidth - symbolOffset, balanceTv.layout.width - balanceWordWidth!! * MIN_LINE_CHAR_COUNT)
+        } else if (lines > 1) {
+            if (lastLineText.length < MIN_LINE_CHAR_COUNT) {
+                // if lines > 2, every line reduce 1 char, the last line over 2 chars.
                 val reduceCount = if (lines > 2) 1 else 2
-                val balancePaint = balanceTv.layout.paint
-                // only for mono fonts
-                wordWidth = balancePaint.measureText(lastLineText.get(0).toString()).toInt()
-                balanceTv.layout.width - wordWidth!! * reduceCount
+                balanceTv.layout.width - balanceWordWidth!! * reduceCount
             } else {
-                changedWidth = measuredWidth - symbolMeasureWidth - symbolOffset
-                measureChild(balanceTv, MeasureSpec.makeMeasureSpec(changedWidth!!, MeasureSpec.EXACTLY),
-                    MeasureSpec.makeMeasureSpec(balanceTv.layout.height, MeasureSpec.UNSPECIFIED))
-                changedHeight = balanceTv.measuredHeight
-                listener?.onBalanceHeightChange(changedHeight!! - preBalanceHeight)
-                return
+                val lastLineTextWidth = balanceTv.layout.paint.measureText(lastLineText.toString()).toInt()
+                if (measuredWidth < lastLineTextWidth + symbolMeasureWidth + symbolOffset) {
+                    // every line decrease one char's width is enough
+                    balanceTv.layout.width - balanceWordWidth!!
+                } else {
+                    balanceTv.layout.width
+                }
             }
         } else {
             balanceTv.layout.width
@@ -85,11 +80,6 @@ class BalanceLayout : ViewGroup {
     private fun getLastLineText(balanceLayout: Layout, lines: Int): CharSequence {
         val lastLineStart = balanceLayout.getLineStart(lines - 1)
         val lastLineEnd = balanceLayout.getLineEnd(lines - 1)
-        val lastLineText = balanceLayout.text.subSequence(lastLineStart, lastLineEnd)
-        return lastLineText
-    }
-
-    interface OnBalanceLayoutListener {
-        fun onBalanceHeightChange(diffHeight: Int)
+        return balanceLayout.text.subSequence(lastLineStart, lastLineEnd)
     }
 }

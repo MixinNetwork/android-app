@@ -24,7 +24,6 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.widget.BalanceLayout
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColorResource
 import org.jetbrains.anko.uiThread
@@ -71,10 +70,6 @@ class TransactionFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener { view!!.findNavController().navigateUp() }
         title_view.right_animator.visibility = View.GONE
-        value_rl.listener = object : BalanceLayout.OnBalanceLayoutListener {
-            override fun onBalanceHeightChange(diffHeight: Int) {
-            }
-        }
         if (snapshot == null || asset == null) {
             doAsync {
                 val asset = walletViewModel.simpleAssetItem(assetId!!)
