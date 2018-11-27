@@ -9,6 +9,7 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
@@ -74,9 +75,14 @@ internal constructor(
 
     fun addresses(id: String) = assetRepository.addresses(id)
 
-    fun allSnapshots(type: String? = null, otherType: String? = null): LiveData<PagedList<SnapshotItem>> =
+    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(assetRepository.allSnapshots(type, otherType), PagedList.Config.Builder()
-            .setPageSize(10).build()).build()
+            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
+            .setPageSize(Constants.PAGE_SIZE)
+            .setEnablePlaceholders(true)
+            .build())
+            .setInitialLoadKey(initialLoadKey)
+            .build()
 
     fun refreshAddressesByAssetId(assetId: String) {
         jobManager.addJobInBackground(RefreshAddressJob(assetId))

@@ -98,7 +98,7 @@ fun String.timeAgoDate(context: Context): String {
     return timeAgoDate as String
 }
 
-fun String.timeAgoDay(context: Context): String {
+fun String.timeAgoDay(): String {
     val today = ZonedDateTime.of(ZonedDateTime.now().toLocalDate(),
         LocalTime.MIN, LocaleZone.normalized()).toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)

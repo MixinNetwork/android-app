@@ -8,29 +8,27 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.RecyclerView
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
-import kotlinx.android.synthetic.main.item_wallet_transactions.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.date
-import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.extension.notNullElse
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserSnapshotsJob
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
+import one.mixin.android.ui.wallet.adapter.SnapshotListAdapter
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.vo.SnapshotType
-import org.jetbrains.anko.textColorResource
 import javax.inject.Inject
 
-class UserTransactionsFragment : BaseFragment() {
+class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
 
     companion object {
         const val TAG = "UserTransactionsFragment"
@@ -59,7 +57,7 @@ class UserTransactionsFragment : BaseFragment() {
         }
 
     private val adapter by lazy {
-        TransactionsAdapter(snapshotClick)
+        SnapshotListAdapter()
     }
 
     private val userId by lazy {
@@ -69,72 +67,32 @@ class UserTransactionsFragment : BaseFragment() {
     @SuppressLint("CheckResult")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        recycler_view.addItemDecoration(SpaceItemDecoration())
+        recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         title_view.right_animator.visibility = View.GONE
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         jobManager.addJobInBackground(RefreshUserSnapshotsJob(userId))
-        walletViewModel.snapshotsByUserId(userId)
-            .observe(this, Observer {
-                if (recycler_view.adapter == null) {
-                    recycler_view.adapter = adapter
-                }
-                adapter.list = it
-                adapter.notifyDataSetChanged()
-            })
+        adapter.listener = this
+        recycler_view.adapter = adapter
+        walletViewModel.snapshotsByUserId(userId).observe(this, Observer {
+            adapter.submitList(it)
+        })
     }
 
-    private val snapshotClick: (SnapshotItem) -> Unit = { snapshot ->
-        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({
-            it.let {
+    override fun <T> onNormalItemClick(item: T) {
+        val snapshot = item as SnapshotItem
+        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({ assetItem ->
+            assetItem.let {
                 val fragment = TransactionFragment.newInstance(snapshot, it)
                 activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
             }
         }, {})
     }
 
-    class TransactionsAdapter(val action: (SnapshotItem) -> Unit) : RecyclerView.Adapter<TransactionHolder>() {
-        var list: List<SnapshotItem>? = null
-
-        override fun onCreateViewHolder(vg: ViewGroup, position: Int): TransactionHolder {
-            return TransactionHolder(LayoutInflater.from(vg.context).inflate(R.layout.item_wallet_transactions, vg, false))
-        }
-
-        override fun getItemCount(): Int = notNullElse(list, { it.size }, 0)
-
-        override fun onBindViewHolder(holder: TransactionHolder, position: Int) {
-            list?.let {
-                holder.bind(it[position], action)
+    override fun onUserClick(userId: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            walletViewModel.getUser(userId)?.let {
+                UserBottomSheetDialogFragment.newInstance(it).show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
             }
-        }
-    }
-
-    class TransactionHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(snapshot: SnapshotItem, action: (SnapshotItem) -> Unit) {
-            val isPositive = snapshot.amount.toFloat() > 0
-//            itemView.date.text = snapshot.createdAt.date()
-            when {
-                snapshot.type == SnapshotType.deposit.name -> {
-                    snapshot.transactionHash?.let {
-                        if (it.length > 10) {
-                            val start = it.substring(0, 6)
-                            val end = it.substring(it.length - 4, it.length)
-                            itemView.name.text = itemView.context.getString(R.string.wallet_transactions_hash, start, end)
-                        } else {
-                            itemView.name.text = it
-                        }
-                    }
-                }
-                snapshot.type == SnapshotType.transfer.name -> itemView.name.text = if (isPositive) {
-                    itemView.context.getString(R.string.transfer_from, snapshot.opponentFullName)
-                } else {
-                    itemView.context.getString(R.string.transfer_to, snapshot.opponentFullName)
-                }
-                else -> itemView.name.text = snapshot.receiver!!.formatPublicKey()
-            }
-            itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat()} ${snapshot.assetSymbol}"
-            else "${snapshot.amount.numberFormat()} ${snapshot.assetSymbol}"
-            itemView.value.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
-            itemView.setOnClickListener { action(snapshot) }
         }
     }
 }

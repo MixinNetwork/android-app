@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -68,7 +69,7 @@ class TransactionFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.left_ib.setOnClickListener { view!!.findNavController().navigateUp() }
         title_view.right_animator.visibility = View.GONE
         value_rl.listener = object : BalanceLayout.OnBalanceLayoutListener {
             override fun onBalanceHeightChange(diffHeight: Int) {

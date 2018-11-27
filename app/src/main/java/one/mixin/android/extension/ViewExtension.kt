@@ -194,5 +194,5 @@ fun TextView.timeAgoDate(str: String) {
 }
 
 fun TextView.timeAgoDay(str: String) {
-    text = str.timeAgoDay(context)
+    text = str.timeAgoDay()
 }

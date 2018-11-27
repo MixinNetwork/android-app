@@ -10,7 +10,7 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotItem.Companion.DIFF_CALLBACK
 
-class SnapshotAdapter : PagedListAdapter<SnapshotItem, SnapshotHolder>(DIFF_CALLBACK),
+class SnapshotPagedAdapter : PagedListAdapter<SnapshotItem, SnapshotHolder>(DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
     var listener: OnSnapshotListener? = null
