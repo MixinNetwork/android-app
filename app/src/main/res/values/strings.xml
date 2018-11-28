@@ -282,8 +282,8 @@
     <string name="deposit_capital">DEPOSIT</string>
     <string name="wallet_add_asset">Add assets</string>
     <string name="wallet_add_asset_symbol">+ Add assets</string>
-    <string name="wallet_already_hidden">An asset has been hidden</string>
-    <string name="wallet_already_shown">An asset has been shown</string>
+    <string name="wallet_already_hidden">%1$s has been hidden</string>
+    <string name="wallet_already_shown">%1$s has been shown</string>
     <string name="wallet_add_asset_search_hint">Enter the token name</string>
     <string name="wallet_add_asset_hot">Hot assets</string>
     <!--group-->
