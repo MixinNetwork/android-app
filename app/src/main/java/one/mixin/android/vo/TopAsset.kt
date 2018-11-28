@@ -1,17 +1,17 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@Entity(tableName = "assets")
-data class Asset(
+@Entity(tableName = "top_assets")
+data class TopAsset(
     @PrimaryKey
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
@@ -56,5 +56,5 @@ data class Asset(
     val accountTag: String?
 ) : Parcelable
 
-fun Asset.toAssetItem(): AssetItem = AssetItem(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden,
-    confirmations, null, null, accountName, accountTag)
+
+fun Asset.toTopAssetItem(chainIconUrl: String) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl)

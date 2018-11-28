@@ -10,6 +10,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PendingDeposit
 import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.TopAsset
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -57,5 +58,5 @@ interface AssetService {
     fun queryAssets(@Path("query") query: String): Call<MixinResponse<List<Asset>>>
 
     @GET("network/assets/top")
-    fun topAssets(): Call<MixinResponse<List<Asset>>>
+    fun topAssets(): Call<MixinResponse<List<TopAsset>>>
 }

@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Outline
 import android.graphics.Paint
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.RippleDrawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewOutlineProvider
@@ -13,6 +15,11 @@ import one.mixin.android.extension.dpToPx
 
 class ConfirmationBgView : RelativeLayout {
 
+    private val rippleDrawable by lazy {
+        context.getDrawable(R.drawable.bg_ripple_wallet_blue)?.apply {
+            callback = this@ConfirmationBgView
+        } as RippleDrawable
+    }
     private val colorWhite by lazy { context.getColor(R.color.white) }
     private val colorBlue by lazy { context.getColor(R.color.wallet_blue_light) }
 
@@ -22,7 +29,23 @@ class ConfirmationBgView : RelativeLayout {
     private var cur = 0
 
     constructor(context: Context) : this(context, null)
-    constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet)
+    constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet) {
+        setWillNotDraw(false)
+    }
+
+    override fun verifyDrawable(who: Drawable): Boolean {
+        return super.verifyDrawable(who) || who == rippleDrawable
+    }
+
+    override fun drawableStateChanged() {
+        super.drawableStateChanged()
+        rippleDrawable.state = drawableState
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        rippleDrawable.setBounds(0, 0, measuredWidth, measuredHeight)
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -38,6 +61,7 @@ class ConfirmationBgView : RelativeLayout {
             paint.color = colorBlue
             canvas.drawRect(w - blueWidth, 0f, w, h, paint)
         }
+        rippleDrawable.draw(canvas)
     }
 
     fun setConfirmation(all: Int, cur: Int) {

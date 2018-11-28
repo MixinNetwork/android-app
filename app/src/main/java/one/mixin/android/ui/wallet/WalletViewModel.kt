@@ -15,7 +15,7 @@ import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.RefreshAssetsJob
-import one.mixin.android.job.RefreshHotAssetsJob
+import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
@@ -24,11 +24,11 @@ import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.HotAsset
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
-import one.mixin.android.vo.toHotAsset
+import one.mixin.android.vo.toTopAssetItem
 import javax.inject.Inject
 
 class WalletViewModel @Inject
@@ -103,37 +103,37 @@ internal constructor(
     }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
     fun refreshHotAssets() {
-        jobManager.addJobInBackground(RefreshHotAssetsJob())
+        jobManager.addJobInBackground(RefreshTopAssetsJob())
     }
 
-    fun queryAsset(query: String): Pair<List<HotAsset>?, ArraySet<String>?> {
+    fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> {
         val response = assetRepository.queryAssets(query).execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val assetList = response.data as List<Asset>
-            val hotAssetList = arrayListOf<HotAsset>()
-            assetList.mapTo(hotAssetList) { asset ->
+            val topAssetList = arrayListOf<TopAssetItem>()
+            assetList.mapTo(topAssetList) { asset ->
                 val chainIconUrl = assetRepository.getIconUrl(asset.chainId)
-                asset.toHotAsset(chainIconUrl)
+                asset.toTopAssetItem(chainIconUrl)
             }
             val existsSet = ArraySet<String>()
-            hotAssetList.forEach {
+            topAssetList.forEach {
                 val exists = assetRepository.checkExists(it.assetId)
                 if (exists != null) {
                     existsSet.add(it.assetId)
                 }
             }
-            return Pair(hotAssetList, existsSet)
+            return Pair(topAssetList, existsSet)
         }
         return Pair(null, null)
     }
 
-    fun saveAssets(hotAssetList: List<HotAsset>) {
+    fun saveAssets(hotAssetList: List<TopAssetItem>) {
         hotAssetList.forEach {
             jobManager.addJobInBackground(RefreshAssetsJob(it.assetId))
         }
     }
 
-    fun observeHotAssets() = assetRepository.hotAssets()
+    fun observeTopAssets() = assetRepository.observeTopAssets()
 
     fun getUser(userId: String) = userRepository.getUserById(userId)
 }

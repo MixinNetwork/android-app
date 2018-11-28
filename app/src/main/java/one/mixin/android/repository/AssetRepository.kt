@@ -8,11 +8,10 @@ import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
-import one.mixin.android.db.HotAssetDao
 import one.mixin.android.db.SnapshotDao
+import one.mixin.android.db.TopAssetDao
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
-import one.mixin.android.vo.HotAsset
 import one.mixin.android.vo.Snapshot
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -26,7 +25,7 @@ constructor(
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
     private val addressService: AddressService,
-    private val hotAssetDao: HotAssetDao
+    private val hotAssetDao: TopAssetDao
 ) {
 
     fun assets() = assetService.assets()
@@ -107,13 +106,9 @@ constructor(
 
     fun queryAssets(query: String) = assetService.queryAssets(query)
 
-    fun topAssets() = assetService.topAssets()
-
     fun getIconUrl(id: String) = assetDao.getIconUrl(id)
 
-    fun hotAssets() = hotAssetDao.hotAssets()
-
-    fun insertHotAssets(list: List<HotAsset>) = hotAssetDao.insertList(list)
+    fun observeTopAssets() = hotAssetDao.topAssets()
 
     fun checkExists(id: String) = assetDao.checkExists(id)
 }

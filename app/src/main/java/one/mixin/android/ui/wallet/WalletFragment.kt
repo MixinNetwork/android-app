@@ -72,6 +72,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     ): View? =
         inflater.inflate(R.layout.fragment_wallet, container, false)
 
+    @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title_view.right_animator.setOnClickListener { activity?.onBackPressed() }
@@ -115,8 +116,8 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 header.pie_item_container.visibility = GONE
                 header.percent_view.visibility = GONE
                 assetsAdapter.setAssetList(emptyList())
-                header.total_as_tv.text = "0"
-                header.total_tv.text = "0"
+                header.total_as_tv.text = "0.00"
+                header.total_tv.text = "0.00"
             } else {
                 assets = r
                 assetsAdapter.setAssetList(r)
@@ -128,8 +129,24 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     totalUSD += it.usd()
                 }
 
-                header.total_as_tv.text = totalBTC.numberFormat8()
-                header.total_tv.text = totalUSD.numberFormat2()
+                header.total_as_tv.text = try {
+                    if (totalBTC.numberFormat8().toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        totalBTC.numberFormat8()
+                    }
+                } finally {
+                    totalBTC.numberFormat8()
+                }
+                header.total_tv.text = try {
+                    if (totalUSD.numberFormat2().toFloat() == 0f) {
+                        "0.00"
+                    } else {
+                        totalUSD.numberFormat2()
+                    }
+                } finally {
+                    totalUSD.numberFormat2()
+                }
 
                 if (totalUSD.compareTo(BigDecimal.ZERO) == 0) {
                     header.pie_item_container.visibility = GONE

@@ -11,7 +11,6 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.FloodMessage
-import one.mixin.android.vo.HotAsset
 import one.mixin.android.vo.Hyperlink
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
@@ -24,6 +23,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
+import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.User
 
 @Database(entities = [
@@ -44,7 +44,7 @@ import one.mixin.android.vo.User
     (Address::class),
     (ResendMessage::class),
     (StickerRelationship::class),
-    (HotAsset::class),
+    (TopAsset::class),
     (Job::class)], version = 20)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
@@ -65,7 +65,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun addressDao(): AddressDao
     abstract fun resendMessageDao(): ResendMessageDao
     abstract fun stickerRelationshipDao(): StickerRelationshipDao
-    abstract fun hotAssetDao(): HotAssetDao
+    abstract fun topAssetDao(): TopAssetDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -203,9 +203,10 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
-                database.execSQL("DROP TABLE IF EXISTS hot_assets")
-                database.execSQL("CREATE TABLE IF NOT EXISTS hot_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
-                    "icon_url TEXT NOT NULL, chain_id TEXT NOT NULL, chain_icon_url TEXT NOT NULL) ")
+                database.execSQL("DROP TABLE IF EXISTS top_assets")
+                database.execSQL("CREATE TABLE IF NOT EXISTS top_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
+                    "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
+                    "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ")
             }
         }
 
@@ -219,9 +220,10 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
-                database.execSQL("DROP TABLE IF EXISTS hot_assets")
-                database.execSQL("CREATE TABLE IF NOT EXISTS hot_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
-                    "icon_url TEXT NOT NULL, chain_id TEXT NOT NULL, chain_icon_url TEXT NOT NULL) ")
+                database.execSQL("DROP TABLE IF EXISTS top_assets")
+                database.execSQL("CREATE TABLE IF NOT EXISTS top_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
+                    "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
+                    "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ")
             }
         }
 
@@ -230,26 +232,29 @@ abstract class MixinDatabase : RoomDatabase() {
                 database.execSQL("ALTER TABLE addresses ADD COLUMN dust TEXT")
                 database.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_update")
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
-                database.execSQL("DROP TABLE IF EXISTS hot_assets")
-                database.execSQL("CREATE TABLE IF NOT EXISTS hot_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
-                    "icon_url TEXT NOT NULL, chain_id TEXT NOT NULL, chain_icon_url TEXT NOT NULL) ")
+                database.execSQL("DROP TABLE IF EXISTS top_assets")
+                database.execSQL("CREATE TABLE IF NOT EXISTS top_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
+                    "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
+                    "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ")
             }
         }
 
         private val MIGRATION_18_20: Migration = object : Migration(18, 20) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE snapshots ADD COLUMN confirmations INTEGER")
-                database.execSQL("DROP TABLE IF EXISTS hot_assets")
-                database.execSQL("CREATE TABLE IF NOT EXISTS hot_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
-                    "icon_url TEXT NOT NULL, chain_id TEXT NOT NULL, chain_icon_url TEXT NOT NULL) ")
+                database.execSQL("DROP TABLE IF EXISTS top_assets")
+                database.execSQL("CREATE TABLE IF NOT EXISTS top_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
+                    "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
+                    "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ")
             }
         }
 
         private val MIGRATION_19_20: Migration = object : Migration(19, 20) {
             override fun migrate(database: SupportSQLiteDatabase) {
-                database.execSQL("DROP TABLE IF EXISTS hot_assets")
-                database.execSQL("CREATE TABLE IF NOT EXISTS hot_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
-                    "icon_url TEXT NOT NULL, chain_id TEXT NOT NULL, chain_icon_url TEXT NOT NULL) ")
+                database.execSQL("DROP TABLE IF EXISTS top_assets")
+                database.execSQL("CREATE TABLE IF NOT EXISTS top_assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
+                    "icon_url TEXT NOT NULL, balance TEXT NOT NULL, public_key TEXT, price_btc TEXT NOT NULL, price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, " +
+                    "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, hidden INTEGER, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT) ")
             }
         }
 

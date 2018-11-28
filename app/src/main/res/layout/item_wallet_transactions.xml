@@ -8,14 +8,13 @@
     <View
         android:id="@+id/transaction_shadow_left"
         android:layout_width="16dp"
-        android:layout_height="76dp"
+        android:layout_height="60dp"
         android:background="@drawable/bg_wallet_transactions_left_white"/>
 
     <one.mixin.android.widget.ConfirmationBgView
         android:id="@+id/bg"
         android:layout_width="match_parent"
-        android:layout_height="76dp"
-        android:foreground="?attr/selectableItemBackground"
+        android:layout_height="60dp"
         android:layout_toEndOf="@+id/transaction_shadow_left"
         android:layout_toStartOf="@+id/transaction_shadow_right">
 
@@ -52,12 +51,18 @@
             android:singleLine="true"
             android:textSize="22sp"
             android:textColor="@color/wallet_pink"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:layout_marginStart="68dp"
+            android:background="@color/wallet_divider"/>
     </one.mixin.android.widget.ConfirmationBgView>
 
     <View
         android:id="@+id/transaction_shadow_right"
         android:layout_width="16dp"
-        android:layout_height="76dp"
+        android:layout_height="60dp"
         android:layout_alignParentEnd="true"
         android:background="@drawable/bg_wallet_transactions_right_white"/>
 </RelativeLayout>

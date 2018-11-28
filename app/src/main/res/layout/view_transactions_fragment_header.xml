@@ -21,8 +21,8 @@
                 android:id="@+id/avatar"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
-                android:layout_marginStart="32dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="28dp"
                 android:layout_marginBottom="16dp"
                 tools:ignore="ContentDescription"/>
 
@@ -32,8 +32,8 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@+id/avatar"
                 android:layout_alignTop="@+id/avatar"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin">
+                android:layout_marginStart="@dimen/margin12"
+                android:layout_marginEnd="42dp">
 
                 <TextView
                     android:id="@+id/balance"
@@ -61,10 +61,10 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@id/avatar"
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/margin12"
                 android:layout_marginBottom="@dimen/margin16"
                 android:layout_below="@+id/balance_rl"
-                android:layout_marginTop="4dp"
+                android:layout_marginTop="@dimen/margin12"
                 android:textColor="@color/wallet_text_gray"/>
         </RelativeLayout>
 

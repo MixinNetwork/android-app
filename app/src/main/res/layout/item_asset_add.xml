@@ -3,8 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="70dp"
-    android:background="@color/white"
-    android:foreground="?attr/selectableItemBackground">
+    android:background="@drawable/bg_ripple_rect">
 
     <one.mixin.android.widget.BadgeCircleImageView
         android:id="@+id/badge_circle_iv"

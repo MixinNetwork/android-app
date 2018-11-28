@@ -21,7 +21,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.adapter.AssetAddAdapter
-import one.mixin.android.vo.HotAsset
+import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
@@ -38,15 +38,15 @@ class AssetAddFragment : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
-    private val onHotAssetListener = object : AssetAddAdapter.OnHotAssetListener {
-        override fun onItemClick(hotAsset: HotAsset, isChecked: Boolean) {
+    private val onTopAssetListener = object : AssetAddAdapter.OnTopAssetListener {
+        override fun onItemClick(topAsset: TopAssetItem, isChecked: Boolean) {
             if (isChecked) {
-                adapter.checkedAssets[hotAsset.assetId] = hotAsset
+                adapter.checkedAssets[topAsset.assetId] = topAsset
                 if (!search_et.text.isNullOrBlank()) {
-                    searchCheckedAssetIds.add(hotAsset.assetId)
+                    searchCheckedAssetIds.add(topAsset.assetId)
                 }
             } else {
-                adapter.checkedAssets.remove(hotAsset.assetId, hotAsset)
+                adapter.checkedAssets.remove(topAsset.assetId, topAsset)
             }
             checkTitle()
         }
@@ -54,7 +54,7 @@ class AssetAddFragment : BaseFragment() {
     private val adapter = AssetAddAdapter()
 
     private val searchCheckedAssetIds = ArraySet<String>()
-    private var hopAssets: List<HotAsset>? = null
+    private var topAssets: List<TopAssetItem>? = null
     private var currentSearch: Job? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -73,7 +73,7 @@ class AssetAddFragment : BaseFragment() {
             search_et?.hideKeyboard()
             view!!.findNavController().navigateUp()
         }
-        adapter.onHotAssetListener = onHotAssetListener
+        adapter.onTopAssetListener = onTopAssetListener
         assets_rv.adapter = adapter
         search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
@@ -95,8 +95,8 @@ class AssetAddFragment : BaseFragment() {
             }
         }
 
-        walletViewModel.observeHotAssets().observe(this, Observer {
-            hopAssets = it
+        walletViewModel.observeTopAssets().observe(this, Observer {
+            topAssets = it
             showHot()
         })
         walletViewModel.refreshHotAssets()
@@ -118,7 +118,7 @@ class AssetAddFragment : BaseFragment() {
     }
 
     private fun showHot() {
-        adapter.submitList(hopAssets)
+        adapter.submitList(topAssets)
         va.displayedChild = POS_RV
     }
 

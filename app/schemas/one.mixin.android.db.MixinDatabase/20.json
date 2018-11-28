@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 20,
-    "identityHash": "8aa87d42b7709a6f0d49cfb167a4a489",
+    "identityHash": "2ea4031d8d52f41288a65d14ce12d2ff",
     "entities": [
       {
         "tableName": "users",
@@ -1231,8 +1231,8 @@
         "foreignKeys": []
       },
       {
-        "tableName": "hot_assets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `chain_icon_url` TEXT NOT NULL, PRIMARY KEY(`asset_id`))",
+        "tableName": "top_assets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `public_key` TEXT, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `hidden` INTEGER, `confirmations` INTEGER NOT NULL, `account_name` TEXT, `account_tag` TEXT, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -1259,16 +1259,70 @@
             "notNull": true
           },
           {
+            "fieldPath": "balance",
+            "columnName": "balance",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "publicKey",
+            "columnName": "public_key",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "priceBtc",
+            "columnName": "price_btc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceUsd",
+            "columnName": "price_usd",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
             "fieldPath": "chainId",
             "columnName": "chain_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "chainIconUrl",
-            "columnName": "chain_icon_url",
+            "fieldPath": "changeUsd",
+            "columnName": "change_usd",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "changeBtc",
+            "columnName": "change_btc",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hidden",
+            "columnName": "hidden",
+            "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "confirmations",
+            "columnName": "confirmations",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "accountName",
+            "columnName": "account_name",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "accountTag",
+            "columnName": "account_tag",
+            "affinity": "TEXT",
+            "notNull": false
           }
         ],
         "primaryKey": {
@@ -1358,7 +1412,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"8aa87d42b7709a6f0d49cfb167a4a489\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2ea4031d8d52f41288a65d14ce12d2ff\")"
     ]
   }
 }

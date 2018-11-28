@@ -4,15 +4,13 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
-import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.android.parcel.Parcelize
 
 @SuppressLint("ParcelCreator")
 @Parcelize
-@Entity(tableName = "hot_assets")
-data class HotAsset(
+data class TopAssetItem(
     @PrimaryKey
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
@@ -32,11 +30,11 @@ data class HotAsset(
     val chainIconUrl: String
 ) : Parcelable {
     companion object {
-        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<HotAsset>() {
-            override fun areItemsTheSame(oldItem: HotAsset, newItem: HotAsset) =
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<TopAssetItem>() {
+            override fun areItemsTheSame(oldItem: TopAssetItem, newItem: TopAssetItem) =
                 oldItem.assetId == newItem.assetId
 
-            override fun areContentsTheSame(oldItem: HotAsset, newItem: HotAsset) =
+            override fun areContentsTheSame(oldItem: TopAssetItem, newItem: TopAssetItem) =
                 oldItem == newItem
         }
     }

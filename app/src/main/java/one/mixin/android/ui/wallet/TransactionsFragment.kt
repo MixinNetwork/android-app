@@ -175,9 +175,25 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
 
     @SuppressLint("SetTextI18n")
     private fun updateHeader(header: View, asset: AssetItem) {
-        header.balance.text = asset.balance.numberFormat()
+        header.balance.text = try {
+            if (asset.balance.toFloat() == 0f) {
+                "0.00"
+            } else {
+                asset.balance.numberFormat()
+            }
+        } finally {
+             asset.balance.numberFormat()
+        }
         header.symbol_tv.text = asset.symbol
-        header.balance_as.text = "≈ $${asset.usd().numberFormat2()}"
+        header.balance_as.text = try {
+            if (asset.usd().toFloat() == 0f) {
+                "≈ $0.00"
+            } else {
+                "≈ $${asset.usd().numberFormat2()}"
+            }
+        } finally {
+            "≈ $${asset.usd().numberFormat2()}"
+        }
     }
 
     private fun refreshPendingDeposits(asset: AssetItem) {
