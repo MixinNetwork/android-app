@@ -11,6 +11,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.kotlin.autoDisposable
@@ -22,9 +23,9 @@ import kotlinx.android.synthetic.main.fragment_contacts.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshContactJob
 import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
@@ -35,6 +36,7 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.work.RefreshContactWorker
 import java.util.Collections
 import javax.inject.Inject
 
@@ -130,9 +132,10 @@ class ContactsFragment : BaseFragment() {
             .subscribe({ contacts ->
                 val mutableList = mutableListOf<User>()
                 for (item in contacts) {
-                    item.phoneNumbers.mapTo(mutableList) { User("",
-                        "", "contact", item.displayName,
-                        "", it, false, "", null)
+                    item.phoneNumbers.mapTo(mutableList) {
+                        User("",
+                            "", "contact", item.displayName,
+                            "", it, false, "", null)
                     }
                 }
                 mutableList.addAll(0, contactAdapter.users)
@@ -165,7 +168,7 @@ class ContactsFragment : BaseFragment() {
                         contactAdapter.removeFooter()
                         jobManager.addJobInBackground(UploadContactsJob())
                         fetchContacts()
-                        jobManager.addJobInBackground(RefreshContactJob())
+                        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
                     } else {
                         context?.openPermissionSetting()
                     }

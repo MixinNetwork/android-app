@@ -7,7 +7,7 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.request.SessionRequest
 
 class RefreshFcmTokenJob(private val token: String? = null)
-    : BaseJob(Params(PRIORITY_BACKGROUND).addTags(RefreshAccountJob.GROUP).requireNetwork()) {
+    : BaseJob(Params(PRIORITY_BACKGROUND).addTags("RefreshFcmTokenJob").requireNetwork()) {
 
     companion object {
         private const val serialVersionUID = 1L
