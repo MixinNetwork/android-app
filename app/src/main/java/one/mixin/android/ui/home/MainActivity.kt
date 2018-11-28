@@ -9,7 +9,6 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.getSystemService
 import androidx.fragment.app.MixinDialogFragment
-import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
@@ -30,9 +29,9 @@ import one.mixin.android.db.insertConversation
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshFcmTokenJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -61,6 +60,7 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
 import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.work.RefreshAccountWorker
+import one.mixin.android.work.RefreshAssetsWorker
 import one.mixin.android.work.RefreshContactWorker
 import org.jetbrains.anko.alert
 import javax.inject.Inject
@@ -118,10 +118,11 @@ class MainActivity : BlazeBaseActivity() {
         Crashlytics.setUserIdentifier(account?.userId)
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        WorkManager.getInstance().enqueue(OneTimeWorkRequestBuilder<RefreshAccountWorker>().build())
-        WorkManager.getInstance().enqueue(OneTimeWorkRequestBuilder<RefreshContactWorker>().build())
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+
         jobManager.addJobInBackground(RefreshFcmTokenJob())
-        jobManager.addJobInBackground(RefreshAssetsJob())
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
 
         getSystemService<NotificationManager>()?.cancelAll()

@@ -1,6 +1,8 @@
 package one.mixin.android.job
 
 import android.util.Log
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
@@ -11,6 +13,7 @@ import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
@@ -56,6 +59,7 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
+import one.mixin.android.work.RefreshAssetsWorker
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -309,7 +313,8 @@ class DecryptMessage : Injector() {
         snapshotDao.insert(snapshot)
         messageDao.insert(message)
         if (assetDao.simpleAsset(snapshot.assetId) == null) {
-            jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>(
+                workDataOf(RefreshAssetsWorker.ASSET_ID to snapshot.assetId))
         }
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             sendNotificationJob(message, data.source)

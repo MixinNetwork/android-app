@@ -13,6 +13,8 @@ import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.room.Transaction
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
 import kotlinx.android.synthetic.main.fragment_transactions.*
@@ -26,13 +28,13 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.displayHeight
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
-import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -49,6 +51,7 @@ import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RadioGroup
+import one.mixin.android.work.RefreshAssetsWorker
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 
@@ -162,7 +165,8 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
         })
 
         refreshPendingDeposits(asset)
-        jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>(
+            workDataOf(RefreshAssetsWorker.ASSET_ID to asset.assetId))
         jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId))
     }
 

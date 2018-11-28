@@ -6,10 +6,11 @@ import dagger.Module
 import dagger.android.AndroidInjector
 import dagger.multibindings.IntoMap
 import one.mixin.android.work.RefreshAccountWorker
+import one.mixin.android.work.RefreshAssetsWorker
 import one.mixin.android.work.RefreshContactWorker
 
 @Module(
-    subcomponents = [RefreshAccountWorkerSubcomponent::class, RefreshContactWorkerSubcomponent::class]
+    subcomponents = [RefreshAccountWorkerSubcomponent::class, RefreshContactWorkerSubcomponent::class, RefreshAssetsWorkerSubcomponent::class]
 )
 abstract class WorkerModule {
     @Binds
@@ -21,4 +22,9 @@ abstract class WorkerModule {
     @IntoMap
     @WorkerKey(RefreshContactWorker::class)
     abstract fun bindRefreshContactWorker(builder: RefreshContactWorkerSubcomponent.Builder): AndroidInjector.Factory<out Worker>
+
+    @Binds
+    @IntoMap
+    @WorkerKey(RefreshAssetsWorker::class)
+    abstract fun bindRefreshAssertsWorker(builder: RefreshAssetsWorkerSubcomponent.Builder): AndroidInjector.Factory<out Worker>
 }

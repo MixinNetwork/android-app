@@ -1,7 +1,11 @@
 package one.mixin.android.job
 
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.birbit.android.jobqueue.Params
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.vo.Snapshot
+import one.mixin.android.work.RefreshAssetsWorker
 
 class RefreshUserSnapshotsJob(private val userId: String)
     : BaseJob(Params(PRIORITY_BACKGROUND).addTags(RefreshSnapshotsJob.GROUP).requireNetwork()) {
@@ -18,7 +22,9 @@ class RefreshUserSnapshotsJob(private val userId: String)
             snapshotDao.insertList(list)
             list.forEach { item ->
                 if (assetDao.simpleAsset(item.assetId) == null) {
-                    jobManager.addJobInBackground(RefreshAssetsJob(item.assetId))
+                    WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>(
+                        workDataOf(RefreshAssetsWorker.ASSET_ID to item.assetId)
+                    )
                 }
             }
         }
