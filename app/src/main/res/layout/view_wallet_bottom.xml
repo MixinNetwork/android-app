@@ -3,12 +3,27 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:orientation="vertical">
+    <TextView
+        android:id="@+id/add"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_upper_round"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:text="@string/wallet_add_asset" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider" />
 
     <TextView
             android:id="@+id/hide"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@drawable/bg_upper_round"
+        android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:paddingEnd="16dp"

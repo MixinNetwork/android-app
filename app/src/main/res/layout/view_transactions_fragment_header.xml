@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
@@ -9,97 +9,162 @@
         android:id="@+id/top_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
+        android:background="@drawable/bg_wallet_card"
         android:orientation="vertical">
 
-        <one.mixin.android.widget.BadgeCircleImageView
-            android:id="@+id/avatar"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_margin="@dimen/activity_vertical_margin"
-            tools:ignore="ContentDescription"/>
-
-        <TextView
-            android:id="@+id/balance"
+        <RelativeLayout
+            android:id="@+id/top_rl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:textColor="@android:color/black"
-            android:textSize="@dimen/wallet_balance_text"/>
+            android:layout_height="wrap_content">
 
-        <TextView
-            android:id="@+id/balance_as"
+            <one.mixin.android.widget.BadgeCircleImageView
+                android:id="@+id/avatar"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginTop="28dp"
+                android:layout_marginBottom="16dp"
+                tools:ignore="ContentDescription"/>
+
+            <one.mixin.android.widget.BalanceLayout
+                android:id="@+id/balance_rl"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/avatar"
+                android:layout_alignTop="@+id/avatar"
+                android:layout_marginStart="@dimen/margin12"
+                android:layout_marginEnd="42dp">
+
+                <TextView
+                    android:id="@+id/balance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/mixin_condensed"
+                    android:textColor="@color/wallet_text_dark"
+                    android:textSize="40sp"
+                    tools:text="123902813409182345.5518390518"/>
+
+                <TextView
+                    android:id="@+id/symbol_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:paddingStart="2dp"
+                    android:paddingEnd="2dp"
+                    android:textColor="@color/wallet_text_gray"
+                    android:background="@drawable/bg_wallet_symbol"/>
+            </one.mixin.android.widget.BalanceLayout>
+
+            <TextView
+                android:id="@+id/balance_as"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/avatar"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="@dimen/margin12"
+                android:layout_marginBottom="@dimen/margin16"
+                android:layout_below="@+id/balance_rl"
+                android:layout_marginTop="@dimen/margin12"
+                android:textColor="@color/wallet_text_gray"/>
+        </RelativeLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/text_gray"
-            android:textSize="@dimen/wallet_balance_as_text"/>
+            android:layout_height="60dp"
+            android:layout_marginBottom="16dp"
+            android:weightSum="2">
 
-        <ViewAnimator
-            android:id="@+id/deposit_animator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="8dp"
-            android:layout_marginTop="8dp">
+            <TextView
+                android:id="@+id/tranfer_tv"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/wallet_blue_secondary"
+                android:text="@string/transfer_capital"/>
 
-            <ProgressBar
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:layout_gravity="center"
-                android:theme="@style/AppTheme.BlueProgress"/>
+            <View
+                android:layout_width="1dp"
+                android:layout_height="18dp"
+                android:layout_gravity="center_vertical"
+                android:background="#f3f3f3"/>
 
             <TextView
                 android:id="@+id/deposit_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:padding="@dimen/activity_horizontal_margin"
-                android:text="@string/wallet_bottom_deposit"
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp"/>
-        </ViewAnimator>
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:textColor="@color/wallet_blue_secondary"
+                android:text="@string/deposit_capital"/>
+        </LinearLayout>
     </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider"/>
 
     <RelativeLayout
         android:id="@+id/group_info_member_title_layout"
-        android:background="@color/bg_gray"
         android:layout_width="match_parent"
-        android:visibility="gone"
-        android:layout_height="wrap_content">
+        android:layout_height="48dp"
+        android:layout_below="@+id/top_ll"
+        android:background="@drawable/bg_wallet_transactions_no_shadow_top">
 
         <ImageView
             android:id="@+id/group_info_member_title_sort"
             android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"
+            android:layout_centerVertical="true"
             android:padding="8dp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/mixin_ripple_small"
             android:src="@drawable/ic_sort"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_width="32dp"
+            android:layout_height="32dp"/>
 
         <TextView
             android:id="@+id/group_info_member_title"
             android:layout_toStartOf="@id/group_info_member_title_sort"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="40dp"
             android:gravity="bottom"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="8dp"
             android:text="@string/wallet_transactions_title"/>
     </RelativeLayout>
-</LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/bottom_rl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="240dp"
+        android:layout_below="@+id/group_info_member_title_layout"
+        android:background="@drawable/bg_wallet_card_bottom">
+
+        <Space
+            android:id="@+id/center"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height=".5dp"
+            android:background="@color/wallet_divider"/>
+
+        <ImageView
+            android:id="@+id/bottom_iv"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@+id/center"
+            android:src="@drawable/ic_transactions_empty"/>
+
+        <TextView
+            android:id="@+id/wallet_transactions_empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/bottom_iv"
+            android:layout_marginTop="@dimen/margin16"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/wallet_text_gray"
+            android:text="@string/wallet_transactions_empty"/>
+    </RelativeLayout>
+</RelativeLayout>

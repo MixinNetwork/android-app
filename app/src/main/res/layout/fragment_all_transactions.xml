@@ -1,19 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent" android:layout_height="match_parent"
-              android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
-            android:id="@+id/title_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:titleText="@string/wallet_all_transactions"/>
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:rightIcon="@drawable/ic_wallet_filter"
+        app:titleText="@string/wallet_all_transactions"/>
 
     <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/transaction_rv"
+        android:id="@+id/transaction_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+
+    <RelativeLayout
+        android:id="@+id/empty_rl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_wallet_card_single">
+
+        <Space
+            android:id="@+id/center"
+            android:layout_width="1dp"
+            android:layout_height="1dp"
+            android:layout_centerInParent="true"/>
+
+        <View
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scrollbars="vertical"
-            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+            android:layout_height=".5dp"
+            android:background="@color/wallet_divider"/>
+
+        <ImageView
+            android:id="@+id/bottom_iv"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
+            android:layout_centerHorizontal="true"
+            android:layout_above="@+id/center"
+            android:src="@drawable/ic_transactions_empty"/>
+
+        <TextView
+            android:id="@+id/wallet_transactions_empty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/bottom_iv"
+            android:layout_marginTop="@dimen/margin16"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/wallet_text_gray"
+            android:text="@string/wallet_transactions_empty"/>
+    </RelativeLayout>
 </LinearLayout>

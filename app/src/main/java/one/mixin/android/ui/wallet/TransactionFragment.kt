@@ -1,11 +1,13 @@
 package one.mixin.android.ui.wallet
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -66,7 +68,7 @@ class TransactionFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.left_ib.setOnClickListener { view!!.findNavController().navigateUp() }
         title_view.right_animator.visibility = View.GONE
         if (snapshot == null || asset == null) {
             doAsync {
@@ -85,15 +87,17 @@ class TransactionFragment : BaseFragment() {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private fun updateUI(asset: AssetItem, snapshot: SnapshotItem) {
         val isPositive = snapshot.amount.toFloat() > 0
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()} ${asset.symbol}"
-        else "${snapshot.amount.numberFormat()} ${asset.symbol}"
-        value_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
+        value_tv.text = if (isPositive) "+${snapshot.amount.numberFormat()}"
+            else snapshot.amount.numberFormat()
+        symbol_tv.text = asset.symbol
+        value_tv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
         val amount = (BigDecimal(snapshot.amount) * BigDecimal(asset.priceUsd)).numberFormat2()
-        value_as_tv.text = getString(R.string.wallet_unit_usd, "≈ $amount")
+        value_as_tv.text = "≈ $$amount"
         transaction_id_tv.text = snapshot.snapshotId
         transaction_type_tv.text = getSnapshotType(snapshot.type)
         memo_tv.text = snapshot.memo

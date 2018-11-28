@@ -53,7 +53,7 @@ abstract class ActivityModule {
     @ContributesAndroidInjector(modules = [(CommonModule::class), (ContactActivityModule::class)])
     internal abstract fun contributeContacts(): ContactsActivity
 
-    @ContributesAndroidInjector(modules = [(WalletActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (WalletActivityModule::class)])
     internal abstract fun contributeWallet(): WalletActivity
 
     @ContributesAndroidInjector(modules = [(CommonModule::class), (SettingActivityModule::class)])

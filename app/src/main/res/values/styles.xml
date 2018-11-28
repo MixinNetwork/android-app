@@ -103,6 +103,12 @@
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 
+    <style name="AppTheme.WalletBlue">
+        <item name="android:indeterminateTint">@color/wallet_blue_secondary</item>
+        <item name="android:indeterminate">true</item>
+        <item name="android:indeterminateTintMode">src_atop</item>
+    </style>
+
     <style name="AppTheme.WhiteAccent">
         <item name="android:indeterminateTint">@android:color/white</item>
         <item name="android:indeterminate">true</item>
@@ -154,5 +160,21 @@
         <item name="android:thumb">@drawable/ic_seek_bar</item>
         <item name="android:minHeight">2dp</item>
         <item name="android:maxHeight">2dp</item>
+    </style>
+    <style name="TransactionTitleTextStyle">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/wallet_text_gray</item>
+        <item name="android:layout_marginStart">20dp</item>
+        <item name="android:layout_marginEnd">20dp</item>
+        <item name="android:layout_marginTop">18dp</item>
+        <item name="android:layout_marginBottom">5dp</item>
+    </style>
+    <style name="TransactionDescTextStyle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:textColor">@color/wallet_text_dark</item>
+        <item name="android:layout_marginStart">20dp</item>
+        <item name="android:layout_marginEnd">20dp</item>
+        <item name="android:layout_marginTop">5dp</item>
+        <item name="android:layout_marginBottom">18dp</item>
     </style>
 </resources>

@@ -47,6 +47,23 @@
     <color name="call_btn_checked">@color/white</color>
     <color name="call_btn_icon_checked">#182435</color>
 
+    <color name="wallet_text_dark">#333333</color>
+    <color name="wallet_text_gray">#bbbec3</color>
+    <color name="wallet_blue">#46a1ff</color>
+    <color name="wallet_blue_dark">#234afe</color>
+    <color name="wallet_purple">#9c62ff</color>
+    <color name="wallet_purple_dark">#5b24fc</color>
+    <color name="wallet_yellow">#ffb952</color>
+    <color name="wallet_yellow_dark">#ffa02e</color>
+    <color name="wallet_pink">#f78181</color>
+    <color name="wallet_green">#29be73</color>
+    <color name="wallet_blue_secondary">#397ee4</color>
+    <color name="wallet_header_gray">#fcfcfc</color>
+    <color name="wallet_blue_light">#f2faff</color>
+    <color name="wallet_divider">#F8F8F8</color>
+    <color name="wallet_bg_gray">#F4F6F9</color>
+    <color name="wallet_ripple">#F6F8FC</color>
+
     <array name="name_colors">
         <item>#AA4848</item>
         <item>#B0665E</item>

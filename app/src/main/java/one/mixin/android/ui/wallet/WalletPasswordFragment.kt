@@ -1,12 +1,13 @@
 package one.mixin.android.ui.wallet
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.fragment.findNavController
+import androidx.navigation.navOptions
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_wallet_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -17,14 +18,13 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.util.BiometricUtil
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
@@ -231,24 +231,26 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                     BiometricUtil.savePin(requireContext(), pin.code(), this@WalletPasswordFragment)
                                 }
 
-                                activity?.let {
-                                    if (it is ConversationActivity) {
+                                activity?.let { activity ->
+                                    if (activity is ConversationActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
-                                        it.onBackPressed()
-                                    } else if (it is MainActivity) {
+                                        activity.onBackPressed()
+                                    } else if (activity is MainActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
-                                        it.onBackPressed()
+                                        activity.onBackPressed()
                                         WalletActivity.show(requireActivity())
                                     } else {
                                         if (change) {
-                                            it.supportFragmentManager.popBackStackImmediate()
-                                            it.supportFragmentManager.popBackStackImmediate()
                                             context?.toast(R.string.wallet_change_password_success)
                                         } else {
                                             context?.toast(R.string.wallet_set_password_success)
                                         }
-                                        (it as AppCompatActivity).replaceFragment(WalletFragment.newInstance(),
-                                            R.id.container, WalletFragment.TAG)
+                                        val navOptions = navOptions {
+                                            popUpTo(R.id.nav_root) {
+                                                inclusive = true
+                                            }
+                                        }
+                                        findNavController().navigate(R.id.action_wallet_password_to_wallet, null, navOptions)
                                     }
                                 }
                             }

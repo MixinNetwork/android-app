@@ -217,7 +217,7 @@ class StickerAddFragment : BaseFragment() {
                             override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
                                 dialog?.dismiss()
                                 uiThread {
-                                    requireContext().toast(R.string.sticker_add_success)
+                                    requireContext().toast(R.string.add_success)
                                     handleBack()
                                 }
                                 return true
@@ -232,7 +232,7 @@ class StickerAddFragment : BaseFragment() {
                             ): Boolean {
                                 dialog?.dismiss()
                                 uiThread {
-                                    requireContext().toast(R.string.sticker_add_success)
+                                    requireContext().toast(R.string.add_success)
                                     handleBack()
                                 }
                                 return true

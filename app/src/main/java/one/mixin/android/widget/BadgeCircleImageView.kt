@@ -1,11 +1,13 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.graphics.Color
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 
 open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) : FrameLayout(context, attrs) {
     init {
@@ -28,6 +30,11 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) : FrameL
         } else if (pos == END_BOTTOM) {
             badge.layout(5 * i, 5 * i, 7 * i, 7 * i)
         }
+    }
+
+    fun setBorder(width: Float = 2f, color: Int = Color.WHITE) {
+        bg.borderWidth = context.dpToPx(width)
+        bg.borderColor = color
     }
 
     companion object {

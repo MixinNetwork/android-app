@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.util.ArraySet
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.LivePagedListBuilder
@@ -8,20 +9,26 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
+import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.toTopAssetItem
 import javax.inject.Inject
 
 class WalletViewModel @Inject
@@ -68,9 +75,14 @@ internal constructor(
 
     fun addresses(id: String) = assetRepository.addresses(id)
 
-    fun allSnapshots(): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.allSnapshots(), PagedList.Config.Builder()
-            .setPageSize(10).build()).build()
+    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0): LiveData<PagedList<SnapshotItem>> =
+        LivePagedListBuilder(assetRepository.allSnapshots(type, otherType), PagedList.Config.Builder()
+            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
+            .setPageSize(Constants.PAGE_SIZE)
+            .setEnablePlaceholders(true)
+            .build())
+            .setInitialLoadKey(initialLoadKey)
+            .build()
 
     fun refreshAddressesByAssetId(assetId: String) {
         jobManager.addJobInBackground(RefreshAddressJob(assetId))
@@ -86,7 +98,42 @@ internal constructor(
 
     fun clearPendingDepositsByAssetId(assetId: String) = assetRepository.clearPendingDepositsByAssetId(assetId)
 
-    fun getAsset(assetId: String) = Flowable.just(assetId).map {
+    fun getAsset(assetId: String): Flowable<MixinResponse<Asset>?> = Flowable.just(assetId).map {
         assetRepository.asset(assetId).execute().body()
     }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+
+    fun refreshHotAssets() {
+        jobManager.addJobInBackground(RefreshTopAssetsJob())
+    }
+
+    fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> {
+        val response = assetRepository.queryAssets(query).execute().body()
+        if (response != null && response.isSuccess && response.data != null) {
+            val assetList = response.data as List<Asset>
+            val topAssetList = arrayListOf<TopAssetItem>()
+            assetList.mapTo(topAssetList) { asset ->
+                val chainIconUrl = assetRepository.getIconUrl(asset.chainId)
+                asset.toTopAssetItem(chainIconUrl)
+            }
+            val existsSet = ArraySet<String>()
+            topAssetList.forEach {
+                val exists = assetRepository.checkExists(it.assetId)
+                if (exists != null) {
+                    existsSet.add(it.assetId)
+                }
+            }
+            return Pair(topAssetList, existsSet)
+        }
+        return Pair(null, null)
+    }
+
+    fun saveAssets(hotAssetList: List<TopAssetItem>) {
+        hotAssetList.forEach {
+            jobManager.addJobInBackground(RefreshAssetsJob(it.assetId))
+        }
+    }
+
+    fun observeTopAssets() = assetRepository.observeTopAssets()
+
+    fun getUser(userId: String) = userRepository.getUserById(userId)
 }

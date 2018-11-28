@@ -9,6 +9,7 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.SnapshotDao
+import one.mixin.android.db.TopAssetDao
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Snapshot
@@ -23,7 +24,8 @@ constructor(
     private val assetDao: AssetDao,
     private val snapshotDao: SnapshotDao,
     private val addressDao: AddressDao,
-    private val addressService: AddressService
+    private val addressService: AddressService,
+    private val hotAssetDao: TopAssetDao
 ) {
 
     fun assets() = assetService.assets()
@@ -80,7 +82,7 @@ constructor(
 
     fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
 
-    fun assetItems() = assetDao.assetItems()
+    fun assetItems() = assetDao.assetItemsNotHidden()
 
     fun fuzzySearchAsset(query: String) = assetDao.fuzzySearchAsset(query, query)
 
@@ -90,11 +92,23 @@ constructor(
 
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
 
-    fun allSnapshots() = snapshotDao.allSnapshots()
+    fun allSnapshots(type: String? = null, otherType: String? = null) = if (type == null) {
+        snapshotDao.allSnapshots()
+    } else {
+        snapshotDao.allSnapshotsByType(type, otherType)
+    }
 
     fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)
 
     fun pendingDeposits(asset: String, key: String? = null, name: String? = null, tag: String? = null) = assetService.pendingDeposits(asset, key, name, tag)
 
     fun clearPendingDepositsByAssetId(assetId: String) = snapshotDao.clearPendingDepositsByAssetId(assetId)
+
+    fun queryAssets(query: String) = assetService.queryAssets(query)
+
+    fun getIconUrl(id: String) = assetDao.getIconUrl(id)
+
+    fun observeTopAssets() = hotAssetDao.topAssets()
+
+    fun checkExists(id: String) = assetDao.checkExists(id)
 }

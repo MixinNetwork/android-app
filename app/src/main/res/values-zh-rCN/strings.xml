@@ -44,6 +44,12 @@
     <string name="rebate">退款</string>
     <string name="select">选择</string>
     <string name="changing">正在修改…</string>
+    <string name="transfer_to_">转账给</string>
+    <string name="hidden">隐藏</string>
+    <string name="shown">显示</string>
+    <string name="undo_capital">撤销</string>
+    <string name="searching">搜索中</string>
+    <string name="add_success">添加成功</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -216,7 +222,7 @@
     <string name="wallet_password_confirm_2">请再次确认您的 6 位钱包密码。 很少看到第三次确认吧！所以请牢记，钱包密码丢失是无法找回的。</string>
     <string name="wallet_password_confirm_3">这是最后一次确认钱包密码，记住：钱包密码丢失将永远无法找回！</string>
     <string name="wallet_password_unsafe">钱包密码过于简单不安全</string>
-    <string name="wallet_bottom_show_hidden">显示所有隐藏的资产</string>
+    <string name="wallet_bottom_show_hidden">所有隐藏的资产</string>
     <string name="wallet_hidden_assets">隐藏资产</string>
     <string name="wallet_bottom_password">修改钱包密码</string>
     <string name="wallet_bottom_deposit">充值</string>
@@ -265,6 +271,14 @@
     <string name="wallet_withdrawals_empty">暂无提现记录</string>
     <string name="wallet_fees_empty">暂无手续费记录</string>
     <string name="wallet_rebates_empty">暂无退款记录</string>
+    <string name="transfer_capital">转账</string>
+    <string name="deposit_capital">充值</string>
+    <string name="wallet_add_asset">添加资产</string>
+    <string name="wallet_add_asset_symbol">+ 添加资产</string>
+    <string name="wallet_already_hidden">已经隐藏了一种资产</string>
+    <string name="wallet_already_shown">已经显示了一种资产</string>
+    <string name="wallet_add_asset_search_hint">输入一种资产的名字</string>
+    <string name="wallet_add_asset_hot">热门资产</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>
@@ -457,7 +471,6 @@
     <string name="sticker_add_failed">添加贴纸失败</string>
     <string name="sticker_add_invalid_size">贴纸要求大于 1KB 且小于 800KB，宽高大于 64 像素且小于 512 像素。</string>
     <string name="sticker_add_invalid_format">贴纸格式不支持</string>
-    <string name="sticker_add_success">添加成功</string>
     <string name="sticker_search_giphy">搜索 GIPHY</string>
     <string name="sticker_no_result">未找到相关结果</string>
     <!--auth-->

@@ -47,13 +47,6 @@ class WithdrawalFragment : BaseFragment() {
 
         const val POS_ADD = 0
         const val POS_RV = 1
-
-        fun newInstance(asset: AssetItem) = WithdrawalFragment().apply {
-            val b = Bundle().apply {
-                putParcelable(ARGS_ASSET, asset)
-            }
-            arguments = b
-        }
     }
 
     @Inject
