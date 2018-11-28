@@ -41,7 +41,7 @@
                         android:layout_height="56dp"
                         android:layout_marginStart="20dp"
                         android:layout_marginTop="28dp"
-                        android:layout_marginBottom="16dp"
+                        android:layout_marginBottom="28dp"
                         tools:ignore="ContentDescription"/>
 
                     <one.mixin.android.widget.BalanceLayout
@@ -104,10 +104,6 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        android:layout_marginBottom="4dp"
                         android:text="@string/transactions_id"/>
 
                     <TextView
@@ -116,9 +112,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/transaction_id_title_tv"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/margin16"
-                        android:layout_marginBottom="@dimen/activity_vertical_margin"
                         android:textIsSelectable="true"/>
 
                     <View
@@ -138,10 +131,6 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        android:layout_marginBottom="4dp"
                         android:text="@string/transactions_type"/>
 
                     <TextView
@@ -149,9 +138,6 @@
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginBottom="@dimen/activity_vertical_margin"
                         android:textIsSelectable="true"/>
 
                     <View
@@ -172,10 +158,6 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        android:layout_marginBottom="4dp"
                         android:text="@string/sender"/>
 
                     <TextView
@@ -183,9 +165,6 @@
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginBottom="@dimen/activity_vertical_margin"
                         android:textIsSelectable="true"/>
 
                     <View
@@ -206,10 +185,6 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        android:layout_marginBottom="4dp"
                         android:text="@string/receiver"/>
 
                     <TextView
@@ -217,9 +192,6 @@
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginBottom="@dimen/activity_vertical_margin"
                         android:textIsSelectable="true"/>
 
                     <View
@@ -238,10 +210,6 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        android:layout_marginBottom="4dp"
                         android:text="@string/memo"/>
 
                     <TextView
@@ -249,9 +217,6 @@
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginBottom="@dimen/activity_vertical_margin"
                         android:textIsSelectable="true"/>
 
                     <View
@@ -271,10 +236,6 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        android:layout_marginBottom="4dp"
                         android:text="@string/date"/>
 
                     <TextView
@@ -282,9 +243,6 @@
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginBottom="@dimen/activity_vertical_margin"
                         android:textIsSelectable="true"/>
                 </LinearLayout>
             </LinearLayout>
