@@ -1,11 +1,14 @@
 package one.mixin.android.fcm
 
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import dagger.android.AndroidInjection
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshFcmTokenJob
 import one.mixin.android.util.Session
+import one.mixin.android.work.RefreshFcmWorker
 import javax.inject.Inject
 
 class FcmService : FirebaseMessagingService() {
@@ -23,7 +26,9 @@ class FcmService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String?) {
         if (Session.checkToken()) {
-            jobManager.addJobInBackground(RefreshFcmTokenJob(token))
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>(
+                workDataOf(RefreshFcmWorker.TOKEN to token)
+            )
         }
     }
 }

@@ -32,7 +32,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshFcmTokenJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshUserJob
@@ -62,6 +61,7 @@ import one.mixin.android.widget.MaterialSearchView
 import one.mixin.android.work.RefreshAccountWorker
 import one.mixin.android.work.RefreshAssetsWorker
 import one.mixin.android.work.RefreshContactWorker
+import one.mixin.android.work.RefreshFcmWorker
 import org.jetbrains.anko.alert
 import javax.inject.Inject
 
@@ -121,8 +121,7 @@ class MainActivity : BlazeBaseActivity() {
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
-
-        jobManager.addJobInBackground(RefreshFcmTokenJob())
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
 
         getSystemService<NotificationManager>()?.cancelAll()
