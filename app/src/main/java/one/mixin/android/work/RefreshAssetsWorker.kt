@@ -23,27 +23,31 @@ class RefreshAssetsWorker(context: Context, parameters: WorkerParameters) : Work
     override fun doWork(): Result {
         AndroidWorkerInjector.inject(this)
         val assetId = inputData.getString(ASSET_ID)
-        if (assetId != null) {
-            val response = assetService.asset(assetId).execute().body()
-            return if (response != null && response.isSuccess && response.data != null) {
-                response.data.let {
-                    assetRepo.upsert(it!!)
+        return try {
+            if (assetId != null) {
+                val response = assetService.asset(assetId).execute().body()
+                return if (response != null && response.isSuccess && response.data != null) {
+                    response.data.let {
+                        assetRepo.upsert(it!!)
+                    }
+                    Result.SUCCESS
+                } else {
+                    Result.FAILURE
                 }
-                Result.SUCCESS
             } else {
-                Result.FAILURE
-            }
-        } else {
-            val response = assetService.assets().execute().body()
-            return if (response != null && response.isSuccess && response.data != null) {
-                val list = response.data as List<Asset>
-                for (item in list) {
-                    assetRepo.upsert(item)
+                val response = assetService.assets().execute().body()
+                return if (response != null && response.isSuccess && response.data != null) {
+                    val list = response.data as List<Asset>
+                    for (item in list) {
+                        assetRepo.upsert(item)
+                    }
+                    Result.SUCCESS
+                } else {
+                    Result.FAILURE
                 }
-                Result.SUCCESS
-            } else {
-                Result.FAILURE
             }
+        } catch (e: Exception) {
+            Result.FAILURE
         }
     }
 }

@@ -18,18 +18,22 @@ class RefreshContactWorker(context: Context, parameters: WorkerParameters) : Wor
 
     override fun doWork(): Result {
         AndroidWorkerInjector.inject(this)
-        val response = contactService.friends().execute().body()
-        return if (response != null && response.isSuccess && response.data != null) {
-            val users = response.data as List<User>
-            users.forEach {
-                if (it.app != null) {
-                    it.appId = it.app!!.appId
-                    userRepo.insertApp(it.app!!)
+        return try {
+            val response = contactService.friends().execute().body()
+            return if (response != null && response.isSuccess && response.data != null) {
+                val users = response.data as List<User>
+                users.forEach {
+                    if (it.app != null) {
+                        it.appId = it.app!!.appId
+                        userRepo.insertApp(it.app!!)
+                    }
+                    userRepo.upsert(it)
                 }
-                userRepo.upsert(it)
+                Result.SUCCESS
+            } else {
+                Result.FAILURE
             }
-            Result.SUCCESS
-        } else {
+        } catch (e: Exception) {
             Result.FAILURE
         }
     }

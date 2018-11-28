@@ -32,27 +32,33 @@ class RefreshStickerAlbumWorker(context: Context, parameters: WorkerParameters) 
 
     override fun doWork(): Result {
         AndroidWorkerInjector.inject(this)
-        val response = accountService.getStickerAlbums().execute().body()
-        if (response != null && response.isSuccess && response.data != null) {
-            val albums = response.data as List<StickerAlbum>
-            for (a in albums) {
-                stickerAlbumDao.insert(a)
+        return try {
+            val response = accountService.getStickerAlbums().execute().body()
+            if (response != null && response.isSuccess && response.data != null) {
+                val albums = response.data as List<StickerAlbum>
+                for (a in albums) {
+                    stickerAlbumDao.insert(a)
 
-                val r = accountService.getStickersByAlbumId(a.albumId).execute().body()
-                if (r != null && r.isSuccess && r.data != null) {
-                    val stickers = r.data as List<Sticker>
-                    for (s in stickers) {
-                        stickerDao.insertUpdate(s)
-                        stickerRelationshipDao.insert(StickerRelationship(a.albumId, s.stickerId))
+                    val r = accountService.getStickersByAlbumId(a.albumId).execute().body()
+                    if (r != null && r.isSuccess && r.data != null) {
+                        val stickers = r.data as List<Sticker>
+                        for (s in stickers) {
+                            stickerDao.insertUpdate(s)
+                            stickerRelationshipDao.insert(StickerRelationship(a.albumId, s.stickerId))
+                        }
                     }
                 }
+                val sp = applicationContext.defaultSharedPreferences
+                if (!sp.getBoolean("UpgradeMessageSticker", false)) {
+                    stickerRelationshipDao.updateMessageStickerId()
+                    sp.putBoolean("UpgradeMessageSticker", true)
+                }
+                return Result.SUCCESS
+            } else {
+                return Result.FAILURE
             }
-            val sp = applicationContext.defaultSharedPreferences
-            if (!sp.getBoolean("UpgradeMessageSticker", false)) {
-                stickerRelationshipDao.updateMessageStickerId()
-                sp.putBoolean("UpgradeMessageSticker", true)
-            }
+        } catch (e: Exception) {
+            return Result.FAILURE
         }
-        return Result.SUCCESS
     }
 }
