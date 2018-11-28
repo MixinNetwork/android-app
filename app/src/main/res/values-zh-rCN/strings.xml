@@ -275,8 +275,8 @@
     <string name="deposit_capital">充值</string>
     <string name="wallet_add_asset">添加资产</string>
     <string name="wallet_add_asset_symbol">+ 添加资产</string>
-    <string name="wallet_already_hidden">已经隐藏了一种资产</string>
-    <string name="wallet_already_shown">已经显示了一种资产</string>
+    <string name="wallet_already_hidden">已隐藏 %1$s</string>
+    <string name="wallet_already_shown">已显示 %1$s</string>
     <string name="wallet_add_asset_search_hint">输入一种资产的名字</string>
     <string name="wallet_add_asset_hot">热门资产</string>
     <!--group-->

@@ -95,7 +95,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 doAsync {
                     walletViewModel.updateAssetHidden(asset.assetId, true)
                 }
-                Snackbar.make(coins_rv, R.string.wallet_already_hidden, Snackbar.LENGTH_LONG)
+                Snackbar.make(coins_rv, getString(R.string.wallet_already_hidden, asset.symbol), Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo_capital) {
                         assetsAdapter.restoreItem(deleteItem, hiddenPos)
                         doAsync {
