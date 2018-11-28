@@ -181,8 +181,8 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
             } else {
                 asset.balance.numberFormat()
             }
-        } finally {
-             asset.balance.numberFormat()
+        } catch (ignored: NumberFormatException) {
+            asset.balance.numberFormat()
         }
         header.symbol_tv.text = asset.symbol
         header.balance_as.text = try {
@@ -191,7 +191,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
             } else {
                 "≈ $${asset.usd().numberFormat2()}"
             }
-        } finally {
+        } catch (ignored: NumberFormatException) {
             "≈ $${asset.usd().numberFormat2()}"
         }
     }

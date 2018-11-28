@@ -135,7 +135,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     } else {
                         totalBTC.numberFormat8()
                     }
-                } finally {
+                } catch (ignored: NumberFormatException) {
                     totalBTC.numberFormat8()
                 }
                 header.total_tv.text = try {
@@ -144,7 +144,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     } else {
                         totalUSD.numberFormat2()
                     }
-                } finally {
+                } catch (ignored: NumberFormatException) {
                     totalUSD.numberFormat2()
                 }
 

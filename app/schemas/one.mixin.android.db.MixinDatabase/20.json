@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 20,
-    "identityHash": "2ea4031d8d52f41288a65d14ce12d2ff",
+    "identityHash": "c08fa0d306346f1fe3b367e69b7574a2",
     "entities": [
       {
         "tableName": "users",
@@ -1232,7 +1232,7 @@
       },
       {
         "tableName": "top_assets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `public_key` TEXT, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `hidden` INTEGER, `confirmations` INTEGER NOT NULL, `account_name` TEXT, `account_tag` TEXT, PRIMARY KEY(`asset_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`asset_id` TEXT NOT NULL, `symbol` TEXT NOT NULL, `name` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `balance` TEXT NOT NULL, `public_key` TEXT, `price_btc` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `change_btc` TEXT NOT NULL, `confirmations` INTEGER NOT NULL, `account_name` TEXT, `account_tag` TEXT, `capitalization` REAL, PRIMARY KEY(`asset_id`))",
         "fields": [
           {
             "fieldPath": "assetId",
@@ -1301,12 +1301,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "hidden",
-            "columnName": "hidden",
-            "affinity": "INTEGER",
-            "notNull": false
-          },
-          {
             "fieldPath": "confirmations",
             "columnName": "confirmations",
             "affinity": "INTEGER",
@@ -1322,6 +1316,12 @@
             "fieldPath": "accountTag",
             "columnName": "account_tag",
             "affinity": "TEXT",
+            "notNull": false
+          },
+          {
+            "fieldPath": "capitalization",
+            "columnName": "capitalization",
+            "affinity": "REAL",
             "notNull": false
           }
         ],
@@ -1412,7 +1412,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"2ea4031d8d52f41288a65d14ce12d2ff\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"c08fa0d306346f1fe3b367e69b7574a2\")"
     ]
   }
 }

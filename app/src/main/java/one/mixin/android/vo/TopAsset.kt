@@ -43,9 +43,6 @@ data class TopAsset(
     @SerializedName("change_btc")
     @ColumnInfo(name = "change_btc")
     val changeBtc: String,
-    @SerializedName("hidden")
-    @ColumnInfo(name = "hidden")
-    var hidden: Boolean?,
     @ColumnInfo(name = "confirmations")
     val confirmations: Int,
     @SerializedName("account_name")
@@ -53,8 +50,7 @@ data class TopAsset(
     val accountName: String?,
     @SerializedName("account_tag")
     @ColumnInfo(name = "account_tag")
-    val accountTag: String?
+    val accountTag: String?,
+    @ColumnInfo(name = "capitalization")
+    val capitalization: Float?
 ) : Parcelable
-
-
-fun Asset.toTopAssetItem(chainIconUrl: String) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl)
