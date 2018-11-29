@@ -16,7 +16,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
