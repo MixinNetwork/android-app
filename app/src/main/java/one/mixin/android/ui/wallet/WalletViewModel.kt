@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import androidx.work.WorkManager
-import androidx.work.impl.WorkDatabase
 import androidx.work.workDataOf
 import io.reactivex.Flowable
 import io.reactivex.Observable
@@ -17,7 +16,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -32,6 +30,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toTopAssetItem
+import one.mixin.android.work.RefreshAddressWorker
 import one.mixin.android.work.RefreshAssetsWorker
 import javax.inject.Inject
 
@@ -89,7 +88,9 @@ internal constructor(
             .build()
 
     fun refreshAddressesByAssetId(assetId: String) {
-        jobManager.addJobInBackground(RefreshAddressJob(assetId))
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAddressWorker>(
+            workDataOf(RefreshAddressWorker.ASSET_ID to assetId)
+        )
     }
 
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
