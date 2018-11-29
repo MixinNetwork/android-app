@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
@@ -17,8 +19,8 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshUserSnapshotsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
@@ -26,6 +28,7 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotListAdapter
 import one.mixin.android.vo.SnapshotItem
+import one.mixin.android.work.RefreshUserSnapshotsWorker
 import javax.inject.Inject
 
 class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
@@ -70,7 +73,8 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         title_view.right_animator.visibility = View.GONE
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        jobManager.addJobInBackground(RefreshUserSnapshotsJob(userId))
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserSnapshotsWorker>(
+            workDataOf(RefreshUserSnapshotsWorker.USER_ID to userId))
         adapter.listener = this
         recycler_view.adapter = adapter
         walletViewModel.snapshotsByUserId(userId).observe(this, Observer {
