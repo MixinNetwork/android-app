@@ -19,3 +19,12 @@ inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeNetworkWorkR
             .build())
         .build())
 }
+
+inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeRequest(inputData: Data? = null) {
+    enqueue(OneTimeWorkRequestBuilder<W>()
+        .apply {
+            if (inputData != null) {
+                setInputData(inputData)
+            }
+        }.build())
+}

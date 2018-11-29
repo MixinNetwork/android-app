@@ -16,9 +16,9 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.di.worker.AndroidWorkerInjector
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.enqueueOneTimeRequest
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationBuilder
@@ -117,7 +117,8 @@ class RefreshConversationWorker(context: Context, parameters: WorkerParameters) 
                             workDataOf(RefreshUserWorker.USER_IDS to userIdList.toTypedArray(),
                                 RefreshUserWorker.CONVERSATION_ID to conversationId))
                     } else {
-                        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+                        WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
+                            workDataOf(GenerateAvatarWorker.GROUP_ID to conversationId))
                     }
                 }
                 Result.SUCCESS

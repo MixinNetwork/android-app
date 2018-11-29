@@ -1,5 +1,6 @@
-package one.mixin.android.job
+package one.mixin.android.worker
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
@@ -13,10 +14,16 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import android.util.ArrayMap
-import com.birbit.android.jobqueue.Params
+import androidx.work.Worker
+import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import one.mixin.android.R
 import one.mixin.android.api.LocalJobException
+import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ParticipantDao
+import one.mixin.android.di.type.DatabaseCategory
+import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.di.worker.AndroidWorkerInjector
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
@@ -25,27 +32,28 @@ import one.mixin.android.widget.AvatarView
 import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
-class GenerateAvatarJob(private val groupId: String, val list: List<User>? = null) : BaseJob(Params(
-    PRIORITY_BACKGROUND).addTags(TAG)) {
+class GenerateAvatarWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
     companion object {
-        const val TAG = "GenerateAvatarJob"
-        private const val serialVersionUID = 1L
+        const val GROUP_ID = "group_id"
     }
 
-    @Transient
     private lateinit var texts: ArrayMap<Int, String>
+
+    @Inject
+    lateinit var participantDao: ParticipantDao
+    @Inject
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
+    lateinit var conversationDao: ConversationDao
 
     private val size = 256
 
-    override fun onRun() {
+    override fun onRun(): Result {
+        val groupId = inputData.getString(GROUP_ID) ?: return Result.FAILURE
         val users = mutableListOf<User>()
         texts = ArrayMap()
-        if (list == null) {
-            users.addAll(participantDao.getParticipantsAvatar(groupId))
-        } else {
-            users.addAll(list)
-        }
+        users.addAll(participantDao.getParticipantsAvatar(groupId))
         val sb = StringBuilder()
         for (u in users) {
             sb.append(u.avatarUrl).append("-")
@@ -58,7 +66,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
             if (f.absolutePath != name) {
                 conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
             }
-            return
+            return Result.SUCCESS
         }
 
         val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
@@ -78,6 +86,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
             }
         }
         conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+        return Result.SUCCESS
     }
 
     private fun drawInternal(canvas: Canvas, bitmaps: List<Bitmap>) {

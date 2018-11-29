@@ -1,5 +1,7 @@
 package one.mixin.android.job
 
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -9,11 +11,13 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.db.insertConversation
 import one.mixin.android.event.ConversationEvent
+import one.mixin.android.extension.enqueueOneTimeRequest
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
+import one.mixin.android.work.GenerateAvatarWorker
 import timber.log.Timber
 import java.util.UUID
 
@@ -94,7 +98,8 @@ class ConversationJob(
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) { Participant(cr.conversationId, it.userId, it.role, cr.createdAt) }
                 participantDao.insertList(participants)
-                jobManager.addJobInBackground(GenerateAvatarJob(cr.conversationId))
+                WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
+                    workDataOf(GenerateAvatarWorker.GROUP_ID to cr.conversationId))
             } else if (type == TYPE_MUTE) {
                 if (cr.category == ConversationCategory.CONTACT.name) {
                     recipientId?.let { userDao.updateDuration(it, cr.muteUntil) }

@@ -18,6 +18,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.google.zxing.integration.android.IntentIntegrator
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -28,6 +30,7 @@ import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
 import one.mixin.android.extension.bottomShowFragment
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.enqueueOneTimeRequest
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyOrElse
 import one.mixin.android.extension.notNullElse
@@ -35,7 +38,6 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
-import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
@@ -52,6 +54,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.work.GenerateAvatarWorker
 import org.jetbrains.anko.doAsync
 import java.io.File
 import javax.inject.Inject
@@ -161,7 +164,10 @@ class ConversationListFragment : LinkFragment() {
                 empty_view.visibility = GONE
                 messageAdapter.setConversationList(r)
                 r.filter { it.isGroup() && (it.iconUrl() == null || !File(it.iconUrl()).exists()) }
-                    .forEach { jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId)) }
+                    .forEach {
+                        WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
+                            workDataOf(GenerateAvatarWorker.GROUP_ID to it.conversationId))
+                    }
             }
             firstEnter = false
         })

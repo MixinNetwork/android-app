@@ -15,6 +15,7 @@ import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.enqueueOneTimeRequest
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
@@ -60,6 +61,7 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
+import one.mixin.android.work.GenerateAvatarWorker
 import one.mixin.android.work.RefreshAssetsWorker
 import one.mixin.android.work.RefreshConversationWorker
 import one.mixin.android.work.RefreshStickerWorker
@@ -360,7 +362,8 @@ class DecryptMessage : Injector() {
             if (systemMessage.participantId == accountId) {
                 conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
             } else {
-                jobManager.addJobInBackground(GenerateAvatarJob(data.conversationId))
+                WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
+                    workDataOf(GenerateAvatarWorker.GROUP_ID to data.conversationId))
             }
             syncUser(systemMessage.participantId!!)
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))

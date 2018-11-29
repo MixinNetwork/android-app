@@ -1,11 +1,13 @@
 package one.mixin.android.work
 
 import android.content.Context
+import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import one.mixin.android.api.service.UserService
 import one.mixin.android.di.worker.AndroidWorkerInjector
-import one.mixin.android.job.GenerateAvatarJob
+import one.mixin.android.extension.enqueueOneTimeRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.UserRepository
 import javax.inject.Inject
@@ -38,7 +40,8 @@ class RefreshUserWorker(context: Context, parameters: WorkerParameters) : Worker
                     }
 
                     conversationId?.let {
-                        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+                        WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
+                            workDataOf(GenerateAvatarWorker.GROUP_ID to conversationId))
                     }
                 }
                 Result.SUCCESS

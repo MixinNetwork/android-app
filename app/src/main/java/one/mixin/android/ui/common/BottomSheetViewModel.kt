@@ -21,8 +21,8 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentResponse
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.enqueueOneTimeRequest
 import one.mixin.android.job.ConversationJob
-import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
@@ -39,6 +39,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.work.GenerateAvatarWorker
 import one.mixin.android.work.RefreshConversationWorker
 import one.mixin.android.work.RefreshUserWorker
 import org.jetbrains.anko.doAsync
@@ -143,7 +144,8 @@ class BottomSheetViewModel @Inject internal constructor(
     fun getUser(id: String) = userRepository.getUser(id)
 
     fun startGenerateAvatar(conversationId: String) {
-        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+        WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
+            workDataOf(GenerateAvatarWorker.GROUP_ID to conversationId))
     }
 
     fun deleteMessageByConversationId(conversationId: String) {
