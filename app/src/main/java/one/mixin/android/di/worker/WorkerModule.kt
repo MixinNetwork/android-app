@@ -9,6 +9,7 @@ import one.mixin.android.work.RefreshAccountWorker
 import one.mixin.android.work.RefreshAddressWorker
 import one.mixin.android.work.RefreshAssetsWorker
 import one.mixin.android.work.RefreshContactWorker
+import one.mixin.android.work.RefreshConversationWorker
 import one.mixin.android.work.RefreshFcmWorker
 import one.mixin.android.work.RefreshSnapshotsWorker
 import one.mixin.android.work.RefreshStickerAlbumWorker
@@ -24,7 +25,8 @@ import one.mixin.android.work.RefreshUserSnapshotsWorker
         RefreshSnapshotsWorkerSubcomponent::class,
         RefreshUserSnapshotsWorkerSubcomponent::class,
         RefreshAddressWorkerSubcomponent::class,
-        RefreshStickerWorkerSubcomponent::class]
+        RefreshStickerWorkerSubcomponent::class,
+        RefreshConversationWorkerSubcomponent::class]
 )
 abstract class WorkerModule {
     @Binds
@@ -71,4 +73,9 @@ abstract class WorkerModule {
     @IntoMap
     @WorkerKey(RefreshStickerWorker::class)
     abstract fun bindRefreshStickerWorker(builder: RefreshStickerWorkerSubcomponent.Builder): AndroidInjector.Factory<out Worker>
+
+    @Binds
+    @IntoMap
+    @WorkerKey(RefreshConversationWorker::class)
+    abstract fun bindRefreshConversationWorker(builder: RefreshConversationWorkerSubcomponent.Builder): AndroidInjector.Factory<out Worker>
 }

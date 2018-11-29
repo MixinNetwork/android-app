@@ -1,8 +1,11 @@
 package one.mixin.android.job
 
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
+import one.mixin.android.MixinApplication.Companion.conversationId
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
@@ -20,6 +23,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.di.Injectable
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationCategory
@@ -28,6 +32,7 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
+import one.mixin.android.work.RefreshConversationWorker
 import java.io.IOException
 import javax.inject.Inject
 
@@ -95,7 +100,8 @@ open class Injector : Injectable {
             refreshConversation(data.conversationId)
         }
         if (conversation.status == ConversationStatus.START.ordinal) {
-            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
+                workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
         }
     }
 

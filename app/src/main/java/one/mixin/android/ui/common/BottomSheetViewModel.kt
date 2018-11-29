@@ -2,6 +2,8 @@ package one.mixin.android.ui.common
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -18,10 +20,10 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentResponse
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
@@ -38,6 +40,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.work.RefreshConversationWorker
 import org.jetbrains.anko.doAsync
 import javax.inject.Inject
 
@@ -56,7 +59,8 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.join(code).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun refreshConversation(conversationId: String) {
-        jobManager.addJobInBackground(RefreshConversationJob(conversationId))
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
+            workDataOf(RefreshConversationWorker.CONVERSATION_ID to conversationId))
     }
 
     fun simpleAssetsWithBalance() = assetRepository.simpleAssetsWithBalance()

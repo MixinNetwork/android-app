@@ -6,6 +6,7 @@ import androidx.work.workDataOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
+import one.mixin.android.MixinApplication.Companion.conversationId
 import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
@@ -60,6 +61,7 @@ import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
 import one.mixin.android.work.RefreshAssetsWorker
+import one.mixin.android.work.RefreshConversationWorker
 import one.mixin.android.work.RefreshStickerWorker
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
@@ -339,7 +341,8 @@ class DecryptMessage : Injector() {
             systemMessage.action == SystemConversationAction.JOIN.name) {
             participantDao.insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
             if (systemMessage.participantId == accountId) {
-                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
+                    workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
             } else {
                 jobManager.addJobInBackground(
                     RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
@@ -361,7 +364,8 @@ class DecryptMessage : Injector() {
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
-            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
+                workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
             participantDao.updateParticipantRole(data.conversationId,

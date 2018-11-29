@@ -89,7 +89,6 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
-import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
@@ -140,6 +139,7 @@ import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
+import one.mixin.android.work.RefreshConversationWorker
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -220,7 +220,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 when {
                     isFirstLoad -> {
                         isFirstLoad = false
-                        if (context?.sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                        if (context?.sharedPreferences(RefreshConversationWorker.PREFERENCES_CONVERSATION)
                                 ?.getBoolean(conversationId, false) == true) {
                             showGroupNotification = true
                             showAlert(0)
@@ -1285,7 +1285,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         group_flag.setOnClickListener {
             showGroupNotification = false
-            requireContext().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+            requireContext().sharedPreferences(RefreshConversationWorker.PREFERENCES_CONVERSATION)
                 .putBoolean(conversationId, false)
             hideAlert()
             showGroupBottomSheet(true)
