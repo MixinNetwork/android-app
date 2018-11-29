@@ -60,6 +60,7 @@ import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
 import one.mixin.android.work.RefreshAssetsWorker
+import one.mixin.android.work.RefreshStickerWorker
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -284,7 +285,8 @@ class DecryptMessage : Injector() {
                 } else {
                     val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
                     if (sticker == null) {
-                        jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
+                        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerWorker>(
+                            workDataOf(RefreshStickerWorker.STICKER_ID to mediaData.stickerId))
                     }
                     createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
                         mediaData.albumId, mediaData.stickerId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
@@ -479,7 +481,8 @@ class DecryptMessage : Injector() {
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
                 if (sticker == null) {
-                    jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
+                    WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerWorker>(
+                        workDataOf(RefreshStickerWorker.STICKER_ID to stickerData.stickerId))
                 }
             }
             stickerData.stickerId?.let { messageDao.updateStickerMessage(it, MessageStatus.DELIVERED.name, messageId) }
