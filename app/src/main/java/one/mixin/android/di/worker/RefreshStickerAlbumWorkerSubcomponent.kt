@@ -2,7 +2,7 @@ package one.mixin.android.di.worker
 
 import dagger.Subcomponent
 import dagger.android.AndroidInjector
-import one.mixin.android.work.RefreshStickerAlbumWorker
+import one.mixin.android.worker.RefreshStickerAlbumWorker
 
 @Subcomponent
 interface RefreshStickerAlbumWorkerSubcomponent : AndroidInjector<RefreshStickerAlbumWorker> {

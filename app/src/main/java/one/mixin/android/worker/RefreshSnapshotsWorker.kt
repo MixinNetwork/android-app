@@ -1,4 +1,4 @@
-package one.mixin.android.work
+package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkManager
@@ -13,11 +13,7 @@ import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.vo.Snapshot
 import javax.inject.Inject
 
-class RefreshUserSnapshotsWorker(context: Context, parameters: WorkerParameters) : Worker(context, parameters) {
-
-    companion object {
-        const val USER_ID = "user_id"
-    }
+class RefreshSnapshotsWorker(context: Context, parameters: WorkerParameters) : Worker(context, parameters) {
 
     @Inject
     lateinit var assetService: AssetService
@@ -28,11 +24,19 @@ class RefreshUserSnapshotsWorker(context: Context, parameters: WorkerParameters)
     @Inject
     lateinit var assetDao: AssetDao
 
+    companion object {
+        const val ASSET_ID = "asset_id"
+    }
+
     override fun doWork(): Result {
         AndroidWorkerInjector.inject(this)
-        val userId = inputData.getString(USER_ID) ?: return Result.FAILURE
+        val assetId = inputData.getString(ASSET_ID)
         return try {
-            val response = assetService.mutualSnapshots(userId).execute().body()
+            val response = if (assetId == null) {
+                assetService.allSnapshots().execute().body()
+            } else {
+                assetService.snapshots(assetId).execute().body()
+            }
             return if (response != null && response.isSuccess && response.data != null) {
                 val list = response.data as List<Snapshot>
                 snapshotDao.insertList(list)

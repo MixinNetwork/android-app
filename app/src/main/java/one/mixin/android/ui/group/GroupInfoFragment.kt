@@ -48,7 +48,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
-import one.mixin.android.work.RefreshConversationWorker
+import one.mixin.android.worker.RefreshConversationWorker
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import javax.inject.Inject

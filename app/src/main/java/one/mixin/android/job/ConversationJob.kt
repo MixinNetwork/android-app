@@ -17,7 +17,7 @@ import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
-import one.mixin.android.work.GenerateAvatarWorker
+import one.mixin.android.worker.GenerateAvatarWorker
 import timber.log.Timber
 import java.util.UUID
 

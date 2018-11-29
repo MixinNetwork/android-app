@@ -99,8 +99,8 @@ import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
-import one.mixin.android.work.RefreshStickerAlbumWorker
-import one.mixin.android.work.RemoveStickersWorker
+import one.mixin.android.worker.RefreshStickerAlbumWorker
+import one.mixin.android.worker.RemoveStickersWorker
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber

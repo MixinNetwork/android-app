@@ -1,4 +1,4 @@
-package one.mixin.android.work
+package one.mixin.android.worker
 
 import android.annotation.SuppressLint
 import android.content.Context

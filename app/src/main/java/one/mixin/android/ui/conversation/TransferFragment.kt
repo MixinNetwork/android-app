@@ -51,8 +51,8 @@ import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.work.RefreshAssetsWorker
-import one.mixin.android.work.RefreshUserWorker
+import one.mixin.android.worker.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshUserWorker
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread

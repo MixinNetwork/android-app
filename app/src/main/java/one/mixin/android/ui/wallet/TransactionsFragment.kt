@@ -49,9 +49,9 @@ import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RadioGroup
-import one.mixin.android.work.RefreshAssetsWorker
-import one.mixin.android.work.RefreshSnapshotsWorker
-import one.mixin.android.work.RefreshUserWorker
+import one.mixin.android.worker.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshSnapshotsWorker
+import one.mixin.android.worker.RefreshUserWorker
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 

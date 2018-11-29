@@ -27,7 +27,7 @@ import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
-import one.mixin.android.work.RefreshUserWorker
+import one.mixin.android.worker.RefreshUserWorker
 import org.webrtc.IceCandidate
 import timber.log.Timber
 import java.io.IOException

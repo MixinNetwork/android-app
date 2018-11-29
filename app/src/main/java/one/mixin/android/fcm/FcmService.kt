@@ -8,7 +8,7 @@ import dagger.android.AndroidInjection
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.util.Session
-import one.mixin.android.work.RefreshFcmWorker
+import one.mixin.android.worker.RefreshFcmWorker
 import javax.inject.Inject
 
 class FcmService : FirebaseMessagingService() {

@@ -28,7 +28,7 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotListAdapter
 import one.mixin.android.vo.SnapshotItem
-import one.mixin.android.work.RefreshUserSnapshotsWorker
+import one.mixin.android.worker.RefreshUserSnapshotsWorker
 import javax.inject.Inject
 
 class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {

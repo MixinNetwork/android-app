@@ -2,7 +2,7 @@ package one.mixin.android.di.worker
 
 import dagger.Subcomponent
 import dagger.android.AndroidInjector
-import one.mixin.android.work.RefreshTopAssetsWorker
+import one.mixin.android.worker.RefreshTopAssetsWorker
 
 @Subcomponent
 interface RefreshTopAssetsWorkerSubcomponent : AndroidInjector<RefreshTopAssetsWorker> {

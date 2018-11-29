@@ -6,7 +6,6 @@ import androidx.work.workDataOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
-import one.mixin.android.MixinApplication.Companion.conversationId
 import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
@@ -61,11 +60,11 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
-import one.mixin.android.work.GenerateAvatarWorker
-import one.mixin.android.work.RefreshAssetsWorker
-import one.mixin.android.work.RefreshConversationWorker
-import one.mixin.android.work.RefreshStickerWorker
-import one.mixin.android.work.RefreshUserWorker
+import one.mixin.android.worker.GenerateAvatarWorker
+import one.mixin.android.worker.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshConversationWorker
+import one.mixin.android.worker.RefreshStickerWorker
+import one.mixin.android.worker.RefreshUserWorker
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress

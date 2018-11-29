@@ -5,7 +5,6 @@ import androidx.work.workDataOf
 import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
-import one.mixin.android.MixinApplication.Companion.conversationId
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
@@ -32,7 +31,7 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
-import one.mixin.android.work.RefreshConversationWorker
+import one.mixin.android.worker.RefreshConversationWorker
 import java.io.IOException
 import javax.inject.Inject
 

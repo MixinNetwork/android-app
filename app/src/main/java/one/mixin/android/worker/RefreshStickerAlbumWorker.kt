@@ -1,4 +1,4 @@
-package one.mixin.android.work
+package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.Worker

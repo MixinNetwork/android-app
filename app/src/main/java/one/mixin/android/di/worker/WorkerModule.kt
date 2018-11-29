@@ -5,20 +5,20 @@ import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjector
 import dagger.multibindings.IntoMap
-import one.mixin.android.work.GenerateAvatarWorker
-import one.mixin.android.work.RefreshAccountWorker
-import one.mixin.android.work.RefreshAddressWorker
-import one.mixin.android.work.RefreshAssetsWorker
-import one.mixin.android.work.RefreshContactWorker
-import one.mixin.android.work.RefreshConversationWorker
-import one.mixin.android.work.RefreshFcmWorker
-import one.mixin.android.work.RefreshSnapshotsWorker
-import one.mixin.android.work.RefreshStickerAlbumWorker
-import one.mixin.android.work.RefreshStickerWorker
-import one.mixin.android.work.RefreshTopAssetsWorker
-import one.mixin.android.work.RefreshUserSnapshotsWorker
-import one.mixin.android.work.RefreshUserWorker
-import one.mixin.android.work.RemoveStickersWorker
+import one.mixin.android.worker.GenerateAvatarWorker
+import one.mixin.android.worker.RefreshAccountWorker
+import one.mixin.android.worker.RefreshAddressWorker
+import one.mixin.android.worker.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshContactWorker
+import one.mixin.android.worker.RefreshConversationWorker
+import one.mixin.android.worker.RefreshFcmWorker
+import one.mixin.android.worker.RefreshSnapshotsWorker
+import one.mixin.android.worker.RefreshStickerAlbumWorker
+import one.mixin.android.worker.RefreshStickerWorker
+import one.mixin.android.worker.RefreshTopAssetsWorker
+import one.mixin.android.worker.RefreshUserSnapshotsWorker
+import one.mixin.android.worker.RefreshUserWorker
+import one.mixin.android.worker.RemoveStickersWorker
 
 @Module(
     subcomponents = [

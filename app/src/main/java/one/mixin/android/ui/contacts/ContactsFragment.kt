@@ -36,7 +36,7 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import one.mixin.android.work.RefreshContactWorker
+import one.mixin.android.worker.RefreshContactWorker
 import java.util.Collections
 import javax.inject.Inject
 

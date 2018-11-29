@@ -29,9 +29,9 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toTopAssetItem
-import one.mixin.android.work.RefreshAddressWorker
-import one.mixin.android.work.RefreshAssetsWorker
-import one.mixin.android.work.RefreshTopAssetsWorker
+import one.mixin.android.worker.RefreshAddressWorker
+import one.mixin.android.worker.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshTopAssetsWorker
 import javax.inject.Inject
 
 class WalletViewModel @Inject

@@ -14,7 +14,7 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.work.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshAssetsWorker
 import javax.inject.Inject
 
 class WalletActivity : BlazeBaseActivity() {

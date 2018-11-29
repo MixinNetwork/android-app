@@ -2,7 +2,7 @@ package one.mixin.android.di.worker
 
 import dagger.Subcomponent
 import dagger.android.AndroidInjector
-import one.mixin.android.work.RefreshAccountWorker
+import one.mixin.android.worker.RefreshAccountWorker
 
 @Subcomponent
 interface RefreshAccountWorkerSubcomponent : AndroidInjector<RefreshAccountWorker> {
