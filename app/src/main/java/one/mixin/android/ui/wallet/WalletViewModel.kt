@@ -32,6 +32,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toTopAssetItem
 import one.mixin.android.work.RefreshAddressWorker
 import one.mixin.android.work.RefreshAssetsWorker
+import one.mixin.android.work.RefreshTopAssetsWorker
 import javax.inject.Inject
 
 class WalletViewModel @Inject
@@ -108,7 +109,7 @@ internal constructor(
     }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
     fun refreshHotAssets() {
-        jobManager.addJobInBackground(RefreshTopAssetsJob())
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshTopAssetsWorker>()
     }
 
     fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> {
