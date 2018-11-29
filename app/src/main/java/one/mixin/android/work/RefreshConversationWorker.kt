@@ -1,8 +1,10 @@
 package one.mixin.android.work
 
 import android.content.Context
+import androidx.work.WorkManager
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import androidx.work.workDataOf
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
@@ -13,11 +15,11 @@ import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.di.worker.AndroidWorkerInjector
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
@@ -111,7 +113,9 @@ class RefreshConversationWorker(context: Context, parameters: WorkerParameters) 
                     }
                     participantDao.insertList(participants)
                     if (userIdList.isNotEmpty()) {
-                        jobManager.addJobInBackground(RefreshUserJob(userIdList, conversationId))
+                        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                            workDataOf(RefreshUserWorker.USER_IDS to userIdList.toTypedArray(),
+                                RefreshUserWorker.CONVERSATION_ID to conversationId))
                     } else {
                         jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
                     }

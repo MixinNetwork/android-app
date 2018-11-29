@@ -63,6 +63,7 @@ import one.mixin.android.websocket.invalidData
 import one.mixin.android.work.RefreshAssetsWorker
 import one.mixin.android.work.RefreshConversationWorker
 import one.mixin.android.work.RefreshStickerWorker
+import one.mixin.android.work.RefreshUserWorker
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -344,8 +345,9 @@ class DecryptMessage : Injector() {
                 WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
                     workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
             } else {
-                jobManager.addJobInBackground(
-                    RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
+                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(systemMessage.participantId),
+                        RefreshUserWorker.CONVERSATION_ID to data.conversationId))
             }
             if (systemMessage.participantId != accountId &&
                 signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
@@ -543,7 +545,8 @@ class DecryptMessage : Injector() {
                     }
                 }
             } catch (e: IOException) {
-                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
             }
         }
     }

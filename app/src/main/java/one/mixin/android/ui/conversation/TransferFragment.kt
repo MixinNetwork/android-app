@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
@@ -39,7 +40,6 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toDot
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BiometricDialog
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
@@ -52,6 +52,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.work.RefreshAssetsWorker
+import one.mixin.android.work.RefreshUserWorker
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -164,7 +165,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         chatViewModel.findUserById(userId).observe(this, Observer { u ->
             if (u == null) {
-                jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
+                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
             } else {
                 user = u
 

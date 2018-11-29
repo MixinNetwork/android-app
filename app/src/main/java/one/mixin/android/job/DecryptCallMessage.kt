@@ -1,6 +1,8 @@
 package one.mixin.android.job
 
 import androidx.collection.ArrayMap
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.gson.Gson
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -10,6 +12,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.createAtToLong
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
@@ -24,6 +27,7 @@ import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
+import one.mixin.android.work.RefreshUserWorker
 import org.webrtc.IceCandidate
 import timber.log.Timber
 import java.io.IOException
@@ -36,6 +40,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
 
         var listPendingOfferHandled = false
     }
+
     private val gson = Gson()
     private val listPendingDispatcher by lazy {
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
@@ -268,11 +273,13 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 userDao.insert(response.data!!)
                 response.data
             } else {
-                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
                 null
             }
         } catch (e: IOException) {
-            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
             null
         }
     }

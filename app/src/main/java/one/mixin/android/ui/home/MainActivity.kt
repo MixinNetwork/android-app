@@ -10,6 +10,7 @@ import android.view.View
 import androidx.core.content.getSystemService
 import androidx.fragment.app.MixinDialogFragment
 import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import com.uber.autodispose.kotlin.autoDisposable
@@ -33,7 +34,6 @@ import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOneTimePreKeysJob
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RotateSignedPreKeyJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -62,6 +62,7 @@ import one.mixin.android.work.RefreshAssetsWorker
 import one.mixin.android.work.RefreshContactWorker
 import one.mixin.android.work.RefreshFcmWorker
 import one.mixin.android.work.RefreshStickerAlbumWorker
+import one.mixin.android.work.RefreshUserWorker
 import org.jetbrains.anko.alert
 import javax.inject.Inject
 
@@ -231,7 +232,8 @@ class MainActivity : BlazeBaseActivity() {
                                 }
                             }
                             if (userIdList.isNotEmpty()) {
-                                jobManager.addJobInBackground(RefreshUserJob(userIdList))
+                                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                                    workDataOf(RefreshUserWorker.USER_IDS to userIdList.toTypedArray()))
                             }
                             participantDao.insertList(participants)
                         }

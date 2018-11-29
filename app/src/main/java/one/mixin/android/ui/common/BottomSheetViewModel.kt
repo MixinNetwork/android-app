@@ -24,7 +24,6 @@ import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
@@ -41,6 +40,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.work.RefreshConversationWorker
+import one.mixin.android.work.RefreshUserWorker
 import org.jetbrains.anko.doAsync
 import javax.inject.Inject
 
@@ -171,7 +171,8 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     fun refreshUser(userId: String) {
-        jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+            workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
     }
 
     fun verifyPin(code: String): Observable<MixinResponse<Account>> = accountRepository.verifyPin(code)
