@@ -8,7 +8,7 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.work.RefreshAssetsWorker
 
 class RefreshUserSnapshotsJob(private val userId: String)
-    : BaseJob(Params(PRIORITY_BACKGROUND).addTags(RefreshSnapshotsJob.GROUP).requireNetwork()) {
+    : BaseJob(Params(PRIORITY_BACKGROUND).addTags(GROUP).requireNetwork()) {
 
     companion object {
         private const val serialVersionUID = 1L

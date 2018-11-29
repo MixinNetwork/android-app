@@ -35,7 +35,6 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
-import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
@@ -52,6 +51,7 @@ import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RadioGroup
 import one.mixin.android.work.RefreshAssetsWorker
+import one.mixin.android.work.RefreshSnapshotsWorker
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 
@@ -167,7 +167,8 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
         refreshPendingDeposits(asset)
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>(
             workDataOf(RefreshAssetsWorker.ASSET_ID to asset.assetId))
-        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId))
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshSnapshotsWorker>(
+            workDataOf(RefreshSnapshotsWorker.ASSET_ID to asset.assetId))
     }
 
     @Transaction
