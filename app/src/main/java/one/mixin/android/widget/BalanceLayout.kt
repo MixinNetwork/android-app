@@ -23,6 +23,9 @@ class BalanceLayout : ViewGroup {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         measureChildren(widthMeasureSpec, heightMeasureSpec)
         val balanceTv = getChildAt(0) as TextView
+        val balanceText = balanceTv.text
+        if (balanceText.isNullOrBlank()) return
+
         val symbolTv = getChildAt(1) as TextView
         val symbolMeasureWidth = symbolTv.measuredWidth + symbolTv.paddingStart + symbolTv.paddingEnd
         val balanceMeasureWidth = balanceTv.measuredWidth
@@ -31,7 +34,7 @@ class BalanceLayout : ViewGroup {
         val lastLineText = getLastLineText(balanceTv.layout, lines)
         if (balanceWordWidth == null) {
             // only for mono fonts
-            balanceWordWidth = balanceTv.layout.paint.measureText(balanceTv.text[0].toString()).toInt()
+            balanceWordWidth = balanceTv.layout.paint.measureText(balanceText[0].toString()).toInt()
         }
         val maxBalanceWidth = if (lines <= 1 && measuredWidth < balanceMeasureWidth + symbolMeasureWidth + symbolOffset) {
             // add MIN_LINE_CHAR_COUNT chars to a new line
