@@ -2,16 +2,14 @@ package one.mixin.android.worker
 
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.google.firebase.iid.FirebaseInstanceId
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
-import one.mixin.android.di.worker.AndroidWorkerInjector
 import javax.inject.Inject
 
-class RefreshFcmWorker(context: Context, parameters: WorkerParameters) : Worker(context, parameters) {
+class RefreshFcmWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
 
     @Inject
     lateinit var accountService: AccountService
@@ -21,8 +19,7 @@ class RefreshFcmWorker(context: Context, parameters: WorkerParameters) : Worker(
     }
 
     @SuppressLint("CheckResult")
-    override fun doWork(): Result {
-        AndroidWorkerInjector.inject(this)
+    override fun onRun(): Result {
         val token = inputData.getString(TOKEN)
         if (token != null) {
             accountService.updateSession(SessionRequest(notificationToken = token))

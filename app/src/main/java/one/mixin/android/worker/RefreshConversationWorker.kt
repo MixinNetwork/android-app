@@ -28,7 +28,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import javax.inject.Inject
 
-class RefreshConversationWorker(context: Context, parameters: WorkerParameters) : Worker(context, parameters) {
+class RefreshConversationWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
 
     @Inject
     lateinit var conversationApi: ConversationService
@@ -47,86 +47,81 @@ class RefreshConversationWorker(context: Context, parameters: WorkerParameters) 
         const val PREFERENCES_CONVERSATION = "preferences_conversation"
     }
 
-    override fun doWork(): Result {
-        AndroidWorkerInjector.inject(this)
+    override fun onRun(): Result {
         val conversationId = inputData.getString(CONVERSATION_ID) ?: return Result.FAILURE
-        return try {
-            val call = conversationApi.getConversation(conversationId).execute()
-            val response = call.body()
-            if (response != null && response.isSuccess) {
-                response.data?.let { data ->
-                    var ownerId: String = data.creatorId
-                    if (data.category == ConversationCategory.CONTACT.name) {
-                        ownerId = data.participants.find { it.userId != Session.getAccountId() }!!.userId
+        val call = conversationApi.getConversation(conversationId).execute()
+        val response = call.body()
+        if (response != null && response.isSuccess) {
+            response.data?.let { data ->
+                var ownerId: String = data.creatorId
+                if (data.category == ConversationCategory.CONTACT.name) {
+                    ownerId = data.participants.find { it.userId != Session.getAccountId() }!!.userId
+                }
+                var c = conversationDao.findConversationById(data.conversationId)
+                if (c == null) {
+                    val builder = ConversationBuilder(data.conversationId,
+                        data.createdAt, ConversationStatus.SUCCESS.ordinal)
+                    c = builder.setOwnerId(ownerId)
+                        .setCategory(data.category)
+                        .setName(data.name)
+                        .setIconUrl(data.iconUrl)
+                        .setAnnouncement(data.announcement)
+                        .setCodeUrl(data.codeUrl).build()
+                    if (c.announcement.isNullOrBlank()) {
+                        RxBus.publish(GroupEvent(data.conversationId))
+                        applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
+                            .putBoolean(data.conversationId, true)
                     }
-                    var c = conversationDao.findConversationById(data.conversationId)
-                    if (c == null) {
-                        val builder = ConversationBuilder(data.conversationId,
-                            data.createdAt, ConversationStatus.SUCCESS.ordinal)
-                        c = builder.setOwnerId(ownerId)
-                            .setCategory(data.category)
-                            .setName(data.name)
-                            .setIconUrl(data.iconUrl)
-                            .setAnnouncement(data.announcement)
-                            .setCodeUrl(data.codeUrl).build()
-                        if (c.announcement.isNullOrBlank()) {
-                            RxBus.publish(GroupEvent(data.conversationId))
-                            applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
-                                .putBoolean(data.conversationId, true)
-                        }
-                        conversationDao.insertConversation(c)
+                    conversationDao.insertConversation(c)
+                } else {
+                    val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
+                        ConversationStatus.SUCCESS.ordinal
                     } else {
-                        val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
-                            ConversationStatus.SUCCESS.ordinal
-                        } else {
-                            ConversationStatus.QUIT.ordinal
-                        }
-                        if (!data.announcement.isNullOrBlank() && c.announcement != data.announcement) {
-                            RxBus.publish(GroupEvent(data.conversationId))
-                            applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
-                                .putBoolean(data.conversationId, true)
-                        }
-                        conversationDao.updateConversation(data.conversationId, ownerId, data.category, data.name,
-                            data.announcement, data.muteUntil, data.createdAt, status)
+                        ConversationStatus.QUIT.ordinal
+                    }
+                    if (!data.announcement.isNullOrBlank() && c.announcement != data.announcement) {
+                        RxBus.publish(GroupEvent(data.conversationId))
+                        applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
+                            .putBoolean(data.conversationId, true)
+                    }
+                    conversationDao.updateConversation(data.conversationId, ownerId, data.category, data.name,
+                        data.announcement, data.muteUntil, data.createdAt, status)
+                }
+
+                val participants = mutableListOf<Participant>()
+                val userIdList = mutableListOf<String>()
+                for (p in data.participants) {
+                    val item = Participant(conversationId, p.userId, p.role, p.createdAt!!)
+                    if (p.role == ParticipantRole.OWNER.name) {
+                        participants.add(0, item)
+                    } else {
+                        participants.add(item)
                     }
 
-                    val participants = mutableListOf<Participant>()
-                    val userIdList = mutableListOf<String>()
-                    for (p in data.participants) {
-                        val item = Participant(conversationId, p.userId, p.role, p.createdAt!!)
-                        if (p.role == ParticipantRole.OWNER.name) {
-                            participants.add(0, item)
-                        } else {
-                            participants.add(item)
-                        }
-
-                        val u = userDao.findUser(p.userId)
-                        if (u == null) {
-                            userIdList.add(p.userId)
-                        }
-                    }
-                    val local = participantDao.getRealParticipants(data.conversationId)
-                    val remoteIds = participants.map { it.userId }
-                    val needRemove = local.filter { !remoteIds.contains(it.userId) }
-                    if (needRemove.isNotEmpty()) {
-                        participantDao.deleteList(needRemove)
-                    }
-                    participantDao.insertList(participants)
-                    if (userIdList.isNotEmpty()) {
-                        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
-                            workDataOf(RefreshUserWorker.USER_IDS to userIdList.toTypedArray(),
-                                RefreshUserWorker.CONVERSATION_ID to conversationId))
-                    } else {
-                        WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
-                            workDataOf(GenerateAvatarWorker.GROUP_ID to conversationId))
+                    val u = userDao.findUser(p.userId)
+                    if (u == null) {
+                        userIdList.add(p.userId)
                     }
                 }
-                Result.SUCCESS
-            } else {
-                Result.FAILURE
+                val local = participantDao.getRealParticipants(data.conversationId)
+                val remoteIds = participants.map { it.userId }
+                val needRemove = local.filter { !remoteIds.contains(it.userId) }
+                if (needRemove.isNotEmpty()) {
+                    participantDao.deleteList(needRemove)
+                }
+                participantDao.insertList(participants)
+                if (userIdList.isNotEmpty()) {
+                    WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                        workDataOf(RefreshUserWorker.USER_IDS to userIdList.toTypedArray(),
+                            RefreshUserWorker.CONVERSATION_ID to conversationId))
+                } else {
+                    WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
+                        workDataOf(GenerateAvatarWorker.GROUP_ID to conversationId))
+                }
             }
-        } catch (e: Exception) {
-            Result.FAILURE
+            return Result.SUCCESS
+        } else {
+            return Result.FAILURE
         }
     }
 }

@@ -64,6 +64,7 @@ import one.mixin.android.worker.RefreshFcmWorker
 import one.mixin.android.worker.RefreshStickerAlbumWorker
 import one.mixin.android.worker.RefreshUserWorker
 import org.jetbrains.anko.alert
+import org.jetbrains.anko.doAsync
 import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
@@ -119,11 +120,14 @@ class MainActivity : BlazeBaseActivity() {
         Crashlytics.setUserIdentifier(account?.userId)
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerAlbumWorker>()
+
+        doAsync {
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerAlbumWorker>()
+        }
 
         getSystemService<NotificationManager>()?.cancelAll()
 
