@@ -69,11 +69,8 @@
                             android:gravity="center"
                             android:paddingStart="2dp"
                             android:paddingEnd="2dp"
-                            android:layout_marginStart="@dimen/padding8"
                             android:background="@drawable/bg_wallet_symbol"
-                            android:textColor="@color/wallet_text_gray"
-                            android:textSize="12sp"
-                            tools:ignore="HardcodedText"/>
+                            android:textColor="@color/wallet_text_gray"/>
                     </one.mixin.android.widget.BalanceLayout>
 
                     <TextView
