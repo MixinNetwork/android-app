@@ -27,7 +27,7 @@ class BalanceLayout : ViewGroup {
         if (balanceText.isNullOrBlank()) return
 
         val symbolTv = getChildAt(1) as TextView
-        val symbolMeasureWidth = symbolTv.measuredWidth + symbolTv.paddingStart + symbolTv.paddingEnd
+        val symbolMeasureWidth = symbolTv.measuredWidth
         val balanceMeasureWidth = balanceTv.measuredWidth
 
         val lines = balanceTv.layout.lineCount
@@ -76,8 +76,7 @@ class BalanceLayout : ViewGroup {
             balanceTv.layout.paint.measureText(lastLineText.toString()).toInt()
         }
         val symbolLeft = balanceWidth + symbolOffset
-        symbolTv.layout(symbolLeft, symbolTop, symbolLeft + symbolTv.measuredWidth +
-            symbolTv.paddingStart + symbolTv.paddingEnd, symbolTop + symbolTv.measuredHeight)
+        symbolTv.layout(symbolLeft, symbolTop, symbolLeft + symbolTv.measuredWidth, symbolTop + symbolTv.measuredHeight)
     }
 
     private fun getLastLineText(balanceLayout: Layout, lines: Int): CharSequence {

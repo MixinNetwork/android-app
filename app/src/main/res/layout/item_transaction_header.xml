@@ -7,7 +7,7 @@
         android:id="@+id/shadow_left"
         android:layout_width="16dp"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_wallet_transactions_left_white"/>
+        android:background="@drawable/bg_wallet_shadow_left"/>
 
     <TextView
         android:id="@+id/date_tv"
@@ -28,5 +28,5 @@
         android:layout_width="16dp"
         android:layout_height="match_parent"
         android:layout_alignParentEnd="true"
-        android:background="@drawable/bg_wallet_transactions_right_white"/>
+        android:background="@drawable/bg_wallet_shadow_right"/>
 </RelativeLayout>

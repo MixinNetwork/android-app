@@ -49,7 +49,7 @@
             android:layout_height="wrap_content"
             android:maxWidth="200dp"
             android:fontFamily="@font/mixin_condensed"
-            android:textSize="22sp"
+            android:textSize="19sp"
             android:layout_alignTop="@+id/avatar"
             android:layout_marginEnd="4dp"
             android:layout_marginStart="@dimen/margin16"
@@ -65,7 +65,6 @@
             android:minWidth="30dp"
             android:maxWidth="200dp"
             android:layout_marginBottom="4dp"
-            android:textSize="14sp"
             android:layout_toEndOf="@+id/balance"
             android:layout_alignBaseline="@+id/balance"
             android:textColor="@color/wallet_text_dark"/>
