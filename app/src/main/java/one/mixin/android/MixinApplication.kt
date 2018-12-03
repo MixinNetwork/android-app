@@ -6,6 +6,7 @@ import android.app.Service
 import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebStorage
+import androidx.work.WorkManager
 import androidx.work.Worker
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
@@ -73,6 +74,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector,
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
         RxJavaPlugins.setErrorHandler {}
+        WorkManager.getInstance().pruneWork()
     }
 
     private fun init() {
