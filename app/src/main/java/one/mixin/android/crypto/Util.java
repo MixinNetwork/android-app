@@ -54,14 +54,15 @@ public class Util {
         return value == null || value.trim().length() == 0;
     }
 
+    public static String getSecret(int size) {
+        byte[] secret = getSecretBytes(size);
+        return Base64.encodeBytes(secret);
+    }
+
     public static byte[] getSecretBytes(int size) {
-        try {
-            byte[] secret = new byte[size];
-            SecureRandom.getInstance("SHA1PRNG").nextBytes(secret);
-            return secret;
-        } catch (NoSuchAlgorithmException e) {
-            throw new AssertionError(e);
-        }
+        byte[] secret = new byte[size];
+        new SecureRandom().nextBytes(secret);
+        return secret;
     }
 
     public static byte[] getRandomLengthBytes(int maxSize) {

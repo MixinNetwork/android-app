@@ -11,6 +11,7 @@ object CryptoPreference {
     private const val NEXT_PRE_KEY_ID = "pref_next_pre_key_id"
     private const val NEXT_PRE_SIGNED_PRE_KEY_ID = "pref_next_signed_pre_key_id"
     private const val ACTIVE_SIGNED_PRE_KEY_ID = "active_signed_pre_key_id"
+    private const val PROFILE_KEY_PREF = "pref_profile_key"
 
     fun getLocalRegistrationId(context: Context): Int {
         val pref = context.getSharedPreferences(CRYPTO_PREF_NAME, Context.MODE_PRIVATE)
@@ -50,5 +51,14 @@ object CryptoPreference {
     fun getActiveSignedPreKeyId(context: Context): Int {
         val pref = context.getSharedPreferences(CRYPTO_PREF_NAME, Context.MODE_PRIVATE)
         return pref.getInt(ACTIVE_SIGNED_PRE_KEY_ID, -1)
+    }
+    fun setProfileKey(context: Context, key: String?) {
+        val pref = context.getSharedPreferences(CRYPTO_PREF_NAME, Context.MODE_PRIVATE)
+        pref.edit().putString(PROFILE_KEY_PREF, key).apply()
+    }
+
+    fun getProfileKey(context: Context): String? {
+        val pref = context.getSharedPreferences(CRYPTO_PREF_NAME, Context.MODE_PRIVATE)
+        return pref.getString(PROFILE_KEY_PREF, null)
     }
 }
