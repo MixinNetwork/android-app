@@ -2,6 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="100dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/bg_wallet_card">
 
     <RelativeLayout
@@ -43,13 +44,14 @@
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"/>
 
-        <TextView
+        <one.mixin.android.widget.KerningTextView
             android:id="@+id/balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:maxWidth="200dp"
             android:fontFamily="@font/mixin_condensed"
-            android:textSize="19sp"
+            app:kv_spacing="0.7"
+            android:textSize="24sp"
             android:layout_alignTop="@+id/avatar"
             android:layout_marginEnd="4dp"
             android:layout_marginStart="@dimen/margin16"
@@ -95,8 +97,7 @@
             android:layout_alignParentEnd="true"
             android:gravity="end"
             android:maxLines="1"
-            android:textColor="@color/wallet_green"
-            android:textSize="12sp"/>
+            android:textColor="@color/wallet_green"/>
 
         <TextView
             android:id="@+id/price_tv"
