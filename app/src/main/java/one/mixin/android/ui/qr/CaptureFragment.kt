@@ -171,9 +171,10 @@ class CaptureFragment : BaseFragment() {
                 chronometer.base = SystemClock.elapsedRealtime()
                 chronometer.start()
                 videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
-                if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
+                try {
                     oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
                     audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
+                } catch (ignored: SecurityException) {
                 }
                 mCaptureManager.record(videoFile, MAX_DURATION)
                 mode = Mode.RECORD
