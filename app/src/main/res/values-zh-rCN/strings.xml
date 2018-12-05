@@ -279,6 +279,7 @@
     <string name="wallet_already_shown">已显示 %1$s</string>
     <string name="wallet_add_asset_search_hint">输入一种资产的名字</string>
     <string name="wallet_add_asset_hot">热门资产</string>
+    <string name="wallet_add_asset_already">已添加过此资产</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>

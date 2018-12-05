@@ -286,6 +286,7 @@
     <string name="wallet_already_shown">%1$s has been shown</string>
     <string name="wallet_add_asset_search_hint">Enter the token name</string>
     <string name="wallet_add_asset_hot">Hot assets</string>
+    <string name="wallet_add_asset_already">Asset already added</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
