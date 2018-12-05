@@ -77,8 +77,16 @@ class WalletAssetAdapter(private val rv: RecyclerView, private val slideShow: Bo
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is NormalHolder) {
             val asset = data!![getPos(position)]
-            holder.itemView.balance.text = asset.balance.numberFormat8()
-            holder.itemView.symbol_tv.text =  asset.symbol
+            holder.itemView.balance.text = try {
+                if (asset.balance.numberFormat8().toFloat() == 0f) {
+                    "0.00"
+                } else {
+                    asset.balance.numberFormat8()
+                }
+            } catch (ignored: NumberFormatException) {
+                asset.balance.numberFormat8()
+            }
+            holder.itemView.symbol_tv.text = asset.symbol
             holder.itemView.balance_as.text = "≈ $${asset.usd().numberFormat2()}"
             if (asset.priceUsd == "0") {
                 holder.itemView.price_tv.setText(R.string.asset_none)
