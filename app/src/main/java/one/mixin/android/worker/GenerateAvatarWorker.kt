@@ -14,71 +14,36 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import android.util.ArrayMap
-import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import one.mixin.android.R
-import one.mixin.android.api.LocalJobException
-import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.ParticipantDao
-import one.mixin.android.di.type.DatabaseCategory
-import one.mixin.android.di.type.DatabaseCategoryEnum
-import one.mixin.android.di.worker.AndroidWorkerInjector
-import one.mixin.android.extension.getGroupAvatarPath
-import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
 import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
-class GenerateAvatarWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
-    companion object {
-        const val GROUP_ID = "group_id"
-    }
+class GenerateAvatarWorker(context: Context, parameters: WorkerParameters) : AvatarWorker(context, parameters) {
 
     private lateinit var texts: ArrayMap<Int, String>
-
-    @Inject
-    lateinit var participantDao: ParticipantDao
-    @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
-    lateinit var conversationDao: ConversationDao
-
     private val size = 256
 
     override fun onRun(): Result {
         val groupId = inputData.getString(GROUP_ID) ?: return Result.FAILURE
-        val users = mutableListOf<User>()
-        texts = ArrayMap()
-        users.addAll(participantDao.getParticipantsAvatar(groupId))
-        val sb = StringBuilder()
-        for (u in users) {
-            sb.append(u.avatarUrl).append("-")
-        }
-        sb.append(groupId)
-        val name = sb.toString().md5()
-        val f = applicationContext.getGroupAvatarPath(name, false)
-        val icon = conversationDao.getGroupIconUrl(groupId)
-        if (f.exists()) {
-            if (f.absolutePath != name) {
-                conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
-            }
+        val triple = checkGroupAvatar(groupId)
+        if (triple.first) {
             return Result.SUCCESS
         }
-
+        val f = triple.third
+        val icon = conversationDao.getGroupIconUrl(groupId)
+        texts = ArrayMap()
         val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val c = Canvas(result)
         val bitmaps = mutableListOf<Bitmap>()
-        try {
-            getBitmaps(bitmaps, users)
-        } catch (e: Exception) {
-            throw LocalJobException()
-        }
+        getBitmaps(bitmaps, users)
         drawInternal(c, bitmaps)
-        result.saveGroupAvatar(applicationContext, name)
+        result.saveGroupAvatar(applicationContext, triple.second)
         if (icon != null && icon != f.absolutePath) {
             try {
                 File(icon).delete()

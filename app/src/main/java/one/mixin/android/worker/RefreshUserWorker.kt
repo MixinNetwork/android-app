@@ -5,9 +5,10 @@ import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import one.mixin.android.api.service.UserService
-import one.mixin.android.extension.enqueueOneTimeRequest
+import one.mixin.android.extension.enqueueAvatarWorkRequest
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
 import javax.inject.Inject
 
 class RefreshUserWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
@@ -36,8 +37,8 @@ class RefreshUserWorker(context: Context, parameters: WorkerParameters) : BaseWo
                 }
 
                 conversationId?.let {
-                    WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
-                        workDataOf(GenerateAvatarWorker.GROUP_ID to conversationId))
+                    WorkManager.getInstance().enqueueAvatarWorkRequest(
+                        workDataOf(GROUP_ID to conversationId))
                 }
             }
             Result.SUCCESS

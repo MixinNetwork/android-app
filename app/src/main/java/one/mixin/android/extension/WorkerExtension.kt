@@ -8,28 +8,31 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest.MIN_BACKOFF_MILLIS
+import one.mixin.android.worker.DownloadAvatarWorker
+import one.mixin.android.worker.GenerateAvatarWorker
 import java.util.concurrent.TimeUnit
 
 inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeNetworkWorkRequest(inputData: Data? = null) {
-    enqueue(OneTimeWorkRequestBuilder<W>()
+    enqueue(buildNetworkRequest<W>(inputData).build())
+}
+
+inline fun <reified W : ListenableWorker> buildRequest(inputData: Data? = null) =
+    OneTimeWorkRequestBuilder<W>()
+        .setBackoffCriteria(BackoffPolicy.LINEAR, MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
         .apply {
             if (inputData != null) {
                 setInputData(inputData)
             }
         }
-        .setBackoffCriteria(BackoffPolicy.LINEAR, MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
+
+inline fun <reified W : ListenableWorker> buildNetworkRequest(inputData: Data? = null) =
+    buildRequest<W>(inputData)
         .setConstraints(Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build())
-        .build())
-}
 
-inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeRequest(inputData: Data? = null) {
-    enqueue(OneTimeWorkRequestBuilder<W>()
-        .setBackoffCriteria(BackoffPolicy.LINEAR, MIN_BACKOFF_MILLIS, TimeUnit.MILLISECONDS)
-        .apply {
-            if (inputData != null) {
-                setInputData(inputData)
-            }
-        }.build())
+fun WorkManager.enqueueAvatarWorkRequest(inputData: Data? = null) {
+    beginWith(buildNetworkRequest<DownloadAvatarWorker>(inputData).build())
+        .then(buildRequest<GenerateAvatarWorker>(inputData).build())
+        .enqueue()
 }

@@ -30,7 +30,7 @@ import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
 import one.mixin.android.extension.bottomShowFragment
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.enqueueOneTimeRequest
+import one.mixin.android.extension.enqueueAvatarWorkRequest
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyOrElse
 import one.mixin.android.extension.notNullElse
@@ -54,6 +54,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
 import one.mixin.android.worker.GenerateAvatarWorker
 import org.jetbrains.anko.doAsync
 import java.io.File
@@ -165,8 +166,8 @@ class ConversationListFragment : LinkFragment() {
                 messageAdapter.setConversationList(r)
                 r.filter { it.isGroup() && (it.iconUrl() == null || !File(it.iconUrl()).exists()) }
                     .forEach {
-                        WorkManager.getInstance().enqueueOneTimeRequest<GenerateAvatarWorker>(
-                            workDataOf(GenerateAvatarWorker.GROUP_ID to it.conversationId))
+                        WorkManager.getInstance().enqueueAvatarWorkRequest(
+                            workDataOf(GROUP_ID to it.conversationId))
                     }
             }
             firstEnter = false

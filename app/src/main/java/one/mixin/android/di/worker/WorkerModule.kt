@@ -5,6 +5,7 @@ import dagger.Binds
 import dagger.Module
 import dagger.android.AndroidInjector
 import dagger.multibindings.IntoMap
+import one.mixin.android.worker.DownloadAvatarWorker
 import one.mixin.android.worker.GenerateAvatarWorker
 import one.mixin.android.worker.RefreshAccountWorker
 import one.mixin.android.worker.RefreshAddressWorker
@@ -23,6 +24,7 @@ import one.mixin.android.worker.RemoveStickersWorker
 @Module(
     subcomponents = [
         GenerateAvatarWorkerSubcomponent::class,
+        DownloadAvatarWorkerSubcomponent::class,
         RefreshAccountWorkerSubcomponent::class,
         RefreshContactWorkerSubcomponent::class,
         RefreshAssetsWorkerSubcomponent::class,
@@ -42,6 +44,11 @@ abstract class WorkerModule {
     @IntoMap
     @WorkerKey(GenerateAvatarWorker::class)
     abstract fun bindGenerateAvatarWorker(builder: GenerateAvatarWorkerSubcomponent.Builder): AndroidInjector.Factory<out Worker>
+
+    @Binds
+    @IntoMap
+    @WorkerKey(DownloadAvatarWorker::class)
+    abstract fun bindDowloadAvatarWorkder(builder: DownloadAvatarWorkerSubcomponent.Builder): AndroidInjector.Factory<out Worker>
 
     @Binds
     @IntoMap
