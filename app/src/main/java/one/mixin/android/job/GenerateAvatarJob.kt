@@ -66,10 +66,10 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
         val bitmaps = mutableListOf<Bitmap>()
         try {
             getBitmaps(bitmaps, users)
-            drawInternal(c, bitmaps)
         } catch (e: Exception) {
             throw LocalJobException()
         }
+        drawInternal(c, bitmaps)
         result.saveGroupAvatar(applicationContext, name)
         if (icon != null && icon != f.absolutePath) {
             try {
