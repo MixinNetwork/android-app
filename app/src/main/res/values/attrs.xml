@@ -92,4 +92,7 @@
         <attr name="ic_unchecked" format="integer"/>
         <attr name="android:text" format="string"/>
     </declare-styleable>
+    <declare-styleable name="KerningTextView">
+        <attr name="kv_spacing" format="float" />
+    </declare-styleable>
 </resources>
