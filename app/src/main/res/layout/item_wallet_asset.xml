@@ -39,10 +39,10 @@
 
         <one.mixin.android.widget.BadgeCircleImageView
             android:id="@+id/avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"/>
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:layout_marginTop="22dp"
+            android:layout_marginStart="20dp"/>
 
         <one.mixin.android.widget.KerningTextView
             android:id="@+id/balance"
@@ -53,8 +53,8 @@
             app:kv_spacing="0.7"
             android:textSize="24sp"
             android:layout_alignTop="@+id/avatar"
-            android:layout_marginEnd="4dp"
-            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginEnd="2dp"
+            android:layout_marginStart="10dp"
             android:maxLines="1"
             android:ellipsize="end"
             android:layout_toEndOf="@id/avatar"
@@ -66,9 +66,10 @@
             android:layout_height="wrap_content"
             android:minWidth="30dp"
             android:maxWidth="200dp"
-            android:layout_marginBottom="4dp"
             android:layout_toEndOf="@+id/balance"
             android:layout_alignBaseline="@+id/balance"
+            android:translationY="-1dp"
+            android:textSize="12sp"
             android:textColor="@color/wallet_text_dark"/>
 
         <TextView
@@ -79,7 +80,7 @@
             android:maxWidth="200dp"
             android:layout_below="@+id/balance"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginStart="10dp"
             android:layout_marginTop="6dp"
             android:maxLines="1"
             android:ellipsize="end"
@@ -91,7 +92,7 @@
             android:id="@+id/change_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="18dp"
             android:layout_toEndOf="@id/symbol_tv"
             android:layout_alignBaseline="@id/balance"
             android:layout_alignParentEnd="true"
@@ -103,8 +104,8 @@
             android:id="@+id/price_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="4dp"
+            android:layout_marginEnd="18dp"
+            android:layout_marginTop="2dp"
             android:layout_toEndOf="@id/balance_as"
             android:layout_alignBaseline="@+id/balance_as"
             android:layout_alignParentEnd="true"
