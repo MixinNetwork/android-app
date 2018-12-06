@@ -3,6 +3,7 @@ package one.mixin.android.worker
 import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import androidx.work.workDataOf
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AssetDao
@@ -27,7 +28,7 @@ class RefreshUserSnapshotsWorker(context: Context, parameters: WorkerParameters)
     lateinit var assetDao: AssetDao
 
     override fun onRun(): Result {
-        val userId = inputData.getString(USER_ID) ?: return Result.FAILURE
+        val userId = inputData.getString(USER_ID) ?: return Result.failure()
         val response = assetService.mutualSnapshots(userId).execute().body()
         return if (response != null && response.isSuccess && response.data != null) {
             val list = response.data as List<Snapshot>
@@ -39,9 +40,9 @@ class RefreshUserSnapshotsWorker(context: Context, parameters: WorkerParameters)
                     )
                 }
             }
-            Result.SUCCESS
+            Result.success()
         } else {
-            Result.FAILURE
+            Result.failure()
         }
     }
 }

@@ -3,6 +3,7 @@ package one.mixin.android.worker
 import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import androidx.work.workDataOf
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AssetDao
@@ -43,9 +44,9 @@ class RefreshSnapshotsWorker(context: Context, parameters: WorkerParameters) : B
                     )
                 }
             }
-            Result.SUCCESS
+            Result.success()
         } else {
-            Result.FAILURE
+            Result.failure()
         }
     }
 }

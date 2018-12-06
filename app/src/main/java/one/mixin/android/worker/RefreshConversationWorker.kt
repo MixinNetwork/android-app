@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import androidx.work.Result
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
@@ -47,7 +48,7 @@ class RefreshConversationWorker(context: Context, parameters: WorkerParameters) 
     }
 
     override fun onRun(): Result {
-        val conversationId = inputData.getString(CONVERSATION_ID) ?: return Result.FAILURE
+        val conversationId = inputData.getString(CONVERSATION_ID) ?: return Result.failure()
         val call = conversationApi.getConversation(conversationId).execute()
         val response = call.body()
         if (response != null && response.isSuccess) {
@@ -118,9 +119,9 @@ class RefreshConversationWorker(context: Context, parameters: WorkerParameters) 
                         workDataOf(GROUP_ID to conversationId))
                 }
             }
-            return Result.SUCCESS
+            return Result.success()
         } else {
-            return Result.FAILURE
+            return Result.failure()
         }
     }
 }

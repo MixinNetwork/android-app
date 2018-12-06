@@ -2,6 +2,7 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import com.bumptech.glide.Glide
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerDao
@@ -22,7 +23,7 @@ class RefreshStickerWorker(context: Context, parameters: WorkerParameters) : Bas
     lateinit var stickerDao: StickerDao
 
     override fun onRun(): Result {
-        val stickerId = inputData.getString(STICKER_ID) ?: return Result.FAILURE
+        val stickerId = inputData.getString(STICKER_ID) ?: return Result.failure()
         val response = accountService.getStickerById(stickerId).execute().body()
         return if (response != null && response.isSuccess && response.data != null) {
             val s = response.data as Sticker
@@ -31,9 +32,9 @@ class RefreshStickerWorker(context: Context, parameters: WorkerParameters) : Bas
                 Glide.with(applicationContext).load(s.assetUrl).submit(s.assetWidth, s.assetHeight)
             } catch (e: Exception) {
             }
-            Result.SUCCESS
+            Result.success()
         } else {
-            Result.FAILURE
+            Result.failure()
         }
     }
 }

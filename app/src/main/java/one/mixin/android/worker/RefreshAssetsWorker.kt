@@ -2,6 +2,7 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.vo.Asset
@@ -26,9 +27,9 @@ class RefreshAssetsWorker(context: Context, parameters: WorkerParameters) : Base
                 response.data.let {
                     assetRepo.upsert(it!!)
                 }
-                Result.SUCCESS
+                Result.success()
             } else {
-                Result.FAILURE
+                Result.failure()
             }
         } else {
             val response = assetService.assets().execute().body()
@@ -37,9 +38,9 @@ class RefreshAssetsWorker(context: Context, parameters: WorkerParameters) : Base
                 for (item in list) {
                     assetRepo.upsert(item)
                 }
-                Result.SUCCESS
+                Result.success()
             } else {
-                Result.FAILURE
+                Result.failure()
             }
         }
     }

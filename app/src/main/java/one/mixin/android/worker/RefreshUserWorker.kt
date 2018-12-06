@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import androidx.work.Result
 import one.mixin.android.api.service.UserService
 import one.mixin.android.extension.enqueueAvatarWorkRequest
 import one.mixin.android.job.MixinJobManager
@@ -26,7 +27,7 @@ class RefreshUserWorker(context: Context, parameters: WorkerParameters) : BaseWo
     lateinit var jobManager: MixinJobManager
 
     override fun onRun(): Result {
-        val userIds = inputData.getStringArray(USER_IDS) ?: return Result.FAILURE
+        val userIds = inputData.getStringArray(USER_IDS) ?: return Result.failure()
         val conversationId = inputData.getString(CONVERSATION_ID)
         val call = userService.getUsers(userIds.toList()).execute()
         val response = call.body()
@@ -41,9 +42,9 @@ class RefreshUserWorker(context: Context, parameters: WorkerParameters) : BaseWo
                         workDataOf(GROUP_ID to conversationId))
                 }
             }
-            Result.SUCCESS
+            Result.success()
         } else {
-            Result.FAILURE
+            Result.failure()
         }
     }
 }

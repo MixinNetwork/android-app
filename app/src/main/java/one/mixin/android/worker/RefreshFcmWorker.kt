@@ -3,6 +3,7 @@ package one.mixin.android.worker
 import android.annotation.SuppressLint
 import android.content.Context
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import com.google.firebase.iid.FirebaseInstanceId
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.request.SessionRequest
@@ -30,6 +31,6 @@ class RefreshFcmWorker(context: Context, parameters: WorkerParameters) : BaseWor
                     .observeOn(Schedulers.io()).subscribe({}, {})
             }
         }
-        return Result.SUCCESS
+        return Result.success()
     }
 }

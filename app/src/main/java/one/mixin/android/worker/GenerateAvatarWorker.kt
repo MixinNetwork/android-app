@@ -15,6 +15,7 @@ import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import android.util.ArrayMap
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import com.bumptech.glide.Glide
 import one.mixin.android.R
 import one.mixin.android.extension.saveGroupAvatar
@@ -30,10 +31,10 @@ class GenerateAvatarWorker(context: Context, parameters: WorkerParameters) : Ava
     private val size = 256
 
     override fun onRun(): Result {
-        val groupId = inputData.getString(GROUP_ID) ?: return Result.FAILURE
+        val groupId = inputData.getString(GROUP_ID) ?: return Result.failure()
         val triple = checkGroupAvatar(groupId)
         if (triple.first) {
-            return Result.SUCCESS
+            return Result.success()
         }
         val f = triple.third
         val icon = conversationDao.getGroupIconUrl(groupId)
@@ -51,7 +52,7 @@ class GenerateAvatarWorker(context: Context, parameters: WorkerParameters) : Ava
             }
         }
         conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
-        return Result.SUCCESS
+        return Result.success()
     }
 
     private fun drawInternal(canvas: Canvas, bitmaps: List<Bitmap>) {

@@ -2,6 +2,7 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
@@ -49,9 +50,9 @@ class RefreshStickerAlbumWorker(context: Context, parameters: WorkerParameters) 
                 stickerRelationshipDao.updateMessageStickerId()
                 sp.putBoolean("UpgradeMessageSticker", true)
             }
-            return Result.SUCCESS
+            return Result.success()
         } else {
-            return Result.FAILURE
+            return Result.failure()
         }
     }
 }

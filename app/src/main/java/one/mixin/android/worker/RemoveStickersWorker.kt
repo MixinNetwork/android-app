@@ -2,6 +2,7 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerRelationshipDao
 import javax.inject.Inject
@@ -19,11 +20,11 @@ class RemoveStickersWorker(context: Context, parameters: WorkerParameters) : Bas
 
     override fun onRun(): Result {
         val stickerIds = inputData.getStringArray(STICKER_IDS)?.toList()
-        if (stickerIds.isNullOrEmpty()) return Result.FAILURE
+        if (stickerIds.isNullOrEmpty()) return Result.failure()
         for (i in stickerIds) {
             stickerRelationshipDao.deleteByStickerId(i)
         }
         accountService.removeSticker(stickerIds).execute()
-        return Result.SUCCESS
+        return Result.success()
     }
 }

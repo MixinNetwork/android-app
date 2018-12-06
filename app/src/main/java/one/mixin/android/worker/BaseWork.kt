@@ -1,6 +1,7 @@
 package one.mixin.android.worker
 
 import android.content.Context
+import androidx.work.Result
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import okhttp3.OkHttpClient
@@ -27,9 +28,9 @@ abstract class BaseWork(context: Context, parameters: WorkerParameters) : Worker
             onRun()
         } catch (e: Exception) {
             if (shouldRetry(e)) {
-                Result.RETRY
+                Result.retry()
             } else {
-                Result.FAILURE
+                Result.failure()
             }
         }
     }

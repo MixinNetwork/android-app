@@ -2,6 +2,7 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.TopAssetDao
 import one.mixin.android.vo.TopAsset
@@ -19,9 +20,9 @@ class RefreshTopAssetsWorker(context: Context, parameters: WorkerParameters) : B
         return if (response != null && response.isSuccess && response.data != null) {
             val assetList = response.data as List<TopAsset>
             topAssetDao.insertList(assetList)
-            Result.SUCCESS
+            Result.success()
         } else {
-            Result.FAILURE
+            Result.failure()
         }
     }
 }

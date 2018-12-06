@@ -3,6 +3,7 @@ package one.mixin.android.worker
 import android.content.Context
 import android.graphics.Point
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
@@ -61,9 +62,9 @@ class RefreshAccountWorker(context: Context, parameters: WorkerParameters) : Bas
                 MixinApplication.appContext.defaultSharedPreferences
                     .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
             }
-            return Result.SUCCESS
+            return Result.success()
         } else {
-            return Result.FAILURE
+            return Result.failure()
         }
     }
 }

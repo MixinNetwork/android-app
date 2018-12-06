@@ -2,6 +2,7 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import androidx.work.Result
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.User
@@ -25,9 +26,9 @@ class RefreshContactWorker(context: Context, parameters: WorkerParameters) : Bas
                 }
                 userRepo.upsert(it)
             }
-            Result.SUCCESS
+            Result.success()
         } else {
-            Result.FAILURE
+            Result.failure()
         }
     }
 }
