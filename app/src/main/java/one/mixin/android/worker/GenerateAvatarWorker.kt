@@ -1,5 +1,6 @@
-package one.mixin.android.job
+package one.mixin.android.worker
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
@@ -13,12 +14,10 @@ import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import android.util.ArrayMap
-import com.birbit.android.jobqueue.Params
+import androidx.work.WorkerParameters
+import androidx.work.Result
 import com.bumptech.glide.Glide
 import one.mixin.android.R
-import one.mixin.android.api.LocalJobException
-import one.mixin.android.extension.getGroupAvatarPath
-import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
@@ -26,51 +25,26 @@ import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class GenerateAvatarJob(private val groupId: String, val list: List<User>? = null) : BaseJob(Params(
-    PRIORITY_BACKGROUND).addTags(TAG)) {
-    companion object {
-        const val TAG = "GenerateAvatarJob"
-        private const val serialVersionUID = 1L
-    }
+class GenerateAvatarWorker(context: Context, parameters: WorkerParameters) : AvatarWorker(context, parameters) {
 
-    @Transient
     private lateinit var texts: ArrayMap<Int, String>
-
     private val size = 256
 
-    override fun onRun() {
-        val users = mutableListOf<User>()
-        texts = ArrayMap()
-        if (list == null) {
-            users.addAll(participantDao.getParticipantsAvatar(groupId))
-        } else {
-            users.addAll(list)
+    override fun onRun(): Result {
+        val groupId = inputData.getString(GROUP_ID) ?: return Result.failure()
+        val triple = checkGroupAvatar(groupId)
+        if (triple.first) {
+            return Result.success()
         }
-        val sb = StringBuilder()
-        for (u in users) {
-            sb.append(u.avatarUrl).append("-")
-        }
-        sb.append(groupId)
-        val name = sb.toString().md5()
-        val f = applicationContext.getGroupAvatarPath(name, false)
+        val f = triple.third
         val icon = conversationDao.getGroupIconUrl(groupId)
-        if (f.exists()) {
-            if (f.absolutePath != name) {
-                conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
-            }
-            return
-        }
-
+        texts = ArrayMap()
         val result = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
         val c = Canvas(result)
         val bitmaps = mutableListOf<Bitmap>()
-        try {
-            getBitmaps(bitmaps, users)
-        } catch (e: Exception) {
-            throw LocalJobException()
-        }
+        getBitmaps(bitmaps, users)
         drawInternal(c, bitmaps)
-        result.saveGroupAvatar(applicationContext, name)
+        result.saveGroupAvatar(applicationContext, triple.second)
         if (icon != null && icon != f.absolutePath) {
             try {
                 File(icon).delete()
@@ -78,6 +52,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
             }
         }
         conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+        return Result.success()
     }
 
     private fun drawInternal(canvas: Canvas, bitmaps: List<Bitmap>) {

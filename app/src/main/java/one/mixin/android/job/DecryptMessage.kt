@@ -1,6 +1,8 @@
 package one.mixin.android.job
 
 import android.util.Log
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
@@ -11,6 +13,8 @@ import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
+import one.mixin.android.extension.enqueueAvatarWorkRequest
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
@@ -56,6 +60,11 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
+import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
+import one.mixin.android.worker.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshConversationWorker
+import one.mixin.android.worker.RefreshStickerWorker
+import one.mixin.android.worker.RefreshUserWorker
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -280,7 +289,8 @@ class DecryptMessage : Injector() {
                 } else {
                     val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
                     if (sticker == null) {
-                        jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
+                        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerWorker>(
+                            workDataOf(RefreshStickerWorker.STICKER_ID to mediaData.stickerId))
                     }
                     createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
                         mediaData.albumId, mediaData.stickerId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
@@ -309,7 +319,8 @@ class DecryptMessage : Injector() {
         snapshotDao.insert(snapshot)
         messageDao.insert(message)
         if (assetDao.simpleAsset(snapshot.assetId) == null) {
-            jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>(
+                workDataOf(RefreshAssetsWorker.ASSET_ID to snapshot.assetId))
         }
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             sendNotificationJob(message, data.source)
@@ -332,10 +343,12 @@ class DecryptMessage : Injector() {
             systemMessage.action == SystemConversationAction.JOIN.name) {
             participantDao.insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
             if (systemMessage.participantId == accountId) {
-                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
+                    workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
             } else {
-                jobManager.addJobInBackground(
-                    RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
+                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(systemMessage.participantId),
+                        RefreshUserWorker.CONVERSATION_ID to data.conversationId))
             }
             if (systemMessage.participantId != accountId &&
                 signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
@@ -348,13 +361,15 @@ class DecryptMessage : Injector() {
             if (systemMessage.participantId == accountId) {
                 conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
             } else {
-                jobManager.addJobInBackground(GenerateAvatarJob(data.conversationId))
+                WorkManager.getInstance().enqueueAvatarWorkRequest(
+                    workDataOf(GROUP_ID to data.conversationId))
             }
             syncUser(systemMessage.participantId!!)
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
-            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
+                workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
             participantDao.updateParticipantRole(data.conversationId,
@@ -474,7 +489,8 @@ class DecryptMessage : Injector() {
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
                 if (sticker == null) {
-                    jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
+                    WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerWorker>(
+                        workDataOf(RefreshStickerWorker.STICKER_ID to stickerData.stickerId))
                 }
             }
             stickerData.stickerId?.let { messageDao.updateStickerMessage(it, MessageStatus.DELIVERED.name, messageId) }
@@ -531,7 +547,8 @@ class DecryptMessage : Injector() {
                     }
                 }
             } catch (e: IOException) {
-                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
             }
         }
     }

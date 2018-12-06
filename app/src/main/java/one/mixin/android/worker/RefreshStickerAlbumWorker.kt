@@ -1,22 +1,35 @@
-package one.mixin.android.job
+package one.mixin.android.worker
 
-import com.birbit.android.jobqueue.Params
+import android.content.Context
+import androidx.work.WorkerParameters
+import androidx.work.Result
+import one.mixin.android.api.service.AccountService
+import one.mixin.android.db.StickerAlbumDao
+import one.mixin.android.db.StickerDao
+import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
+import javax.inject.Inject
 
-class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
-    .addTags(RefreshStickerAlbumJob.GROUP).requireNetwork()) {
+class RefreshStickerAlbumWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
 
-    companion object {
-        private const val serialVersionUID = 1L
-        const val GROUP = "RefreshStickerAlbumJob"
-    }
+    @Inject
+    lateinit var accountService: AccountService
 
-    override fun onRun() {
+    @Inject
+    lateinit var stickerAlbumDao: StickerAlbumDao
+
+    @Inject
+    lateinit var stickerDao: StickerDao
+
+    @Inject
+    lateinit var stickerRelationshipDao: StickerRelationshipDao
+
+    override fun onRun(): Result {
         val response = accountService.getStickerAlbums().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val albums = response.data as List<StickerAlbum>
@@ -37,6 +50,9 @@ class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
                 stickerRelationshipDao.updateMessageStickerId()
                 sp.putBoolean("UpgradeMessageSticker", true)
             }
+            return Result.success()
+        } else {
+            return Result.failure()
         }
     }
 }

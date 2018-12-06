@@ -124,6 +124,8 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:${constraintLayoutVersion}"
     implementation "androidx.core:core-ktx:${ktxVersion}"
 
+    implementation "android.arch.work:work-runtime-ktx:${workManagerVersion}"
+
     // Architecture components
     implementation "androidx.paging:paging-runtime:${pagingVersion}"
     implementation "androidx.lifecycle:lifecycle-extensions:${lifecycleVersion}"

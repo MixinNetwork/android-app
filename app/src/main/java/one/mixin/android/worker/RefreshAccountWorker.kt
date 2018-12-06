@@ -1,27 +1,31 @@
-package one.mixin.android.job
+package one.mixin.android.worker
 
+import android.content.Context
 import android.graphics.Point
-import com.birbit.android.jobqueue.Params
+import androidx.work.WorkerParameters
+import androidx.work.Result
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.saveQRCode
-import one.mixin.android.ui.setting.SettingConversationFragment.Companion.CONVERSATION_GROUP_KEY
-import one.mixin.android.ui.setting.SettingConversationFragment.Companion.CONVERSATION_KEY
+import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.windowManager
+import javax.inject.Inject
 
-class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(RefreshAccountJob.GROUP).requireNetwork()) {
+class RefreshAccountWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
 
-    companion object {
-        private const val serialVersionUID = 1L
-        const val GROUP = "RefreshAccountJob"
-    }
+    @Inject
+    lateinit var accountService: AccountService
+    @Inject
+    lateinit var userRepo: UserRepository
 
-    override fun onRun() {
+    override fun onRun(): Result {
         val response = accountService.getMe().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val account = response.data
@@ -36,28 +40,31 @@ class RefreshAccountJob : BaseJob(Params(PRIORITY_UI_HIGH).addTags(RefreshAccoun
             }
 
             val receive = MixinApplication.appContext.defaultSharedPreferences
-                .getInt(CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
+                .getInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
             if (response.data!!.receive_message_source == MessageSource.EVERYBODY.name &&
                 receive != MessageSource.EVERYBODY.ordinal) {
                 MixinApplication.appContext.defaultSharedPreferences
-                    .putInt(CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
+                    .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.EVERYBODY.ordinal)
             } else if (response.data!!.receive_message_source == MessageSource.CONTACTS.name &&
                 receive != MessageSource.CONTACTS.ordinal) {
                 MixinApplication.appContext.defaultSharedPreferences
-                    .putInt(CONVERSATION_KEY, MessageSource.CONTACTS.ordinal)
+                    .putInt(SettingConversationFragment.CONVERSATION_KEY, MessageSource.CONTACTS.ordinal)
             }
 
             val receiveGroup = MixinApplication.appContext.defaultSharedPreferences
-                .getInt(CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
+                .getInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
             if (response.data!!.accept_conversation_source == MessageSource.EVERYBODY.name &&
                 receiveGroup != MessageSource.EVERYBODY.ordinal) {
                 MixinApplication.appContext.defaultSharedPreferences
-                    .putInt(CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
+                    .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.EVERYBODY.ordinal)
             } else if (response.data!!.accept_conversation_source == MessageSource.CONTACTS.name &&
                 receiveGroup != MessageSource.CONTACTS.ordinal) {
                 MixinApplication.appContext.defaultSharedPreferences
-                    .putInt(CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
+                    .putInt(SettingConversationFragment.CONVERSATION_GROUP_KEY, MessageSource.CONTACTS.ordinal)
             }
+            return Result.success()
+        } else {
+            return Result.failure()
         }
     }
 }

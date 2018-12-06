@@ -9,6 +9,8 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.getSystemService
 import androidx.fragment.app.MixinDialogFragment
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import com.uber.autodispose.kotlin.autoDisposable
@@ -28,15 +30,10 @@ import one.mixin.android.db.insertConversation
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAccountJob
-import one.mixin.android.job.RefreshAssetsJob
-import one.mixin.android.job.RefreshContactJob
-import one.mixin.android.job.RefreshFcmTokenJob
 import one.mixin.android.job.RefreshOneTimePreKeysJob
-import one.mixin.android.job.RefreshStickerAlbumJob
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RotateSignedPreKeyJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
@@ -60,7 +57,14 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
 import one.mixin.android.widget.MaterialSearchView
+import one.mixin.android.worker.RefreshAccountWorker
+import one.mixin.android.worker.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshContactWorker
+import one.mixin.android.worker.RefreshFcmWorker
+import one.mixin.android.worker.RefreshStickerAlbumWorker
+import one.mixin.android.worker.RefreshUserWorker
 import org.jetbrains.anko.alert
+import org.jetbrains.anko.doAsync
 import javax.inject.Inject
 
 class MainActivity : BlazeBaseActivity() {
@@ -116,11 +120,14 @@ class MainActivity : BlazeBaseActivity() {
         Crashlytics.setUserIdentifier(account?.userId)
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        jobManager.addJobInBackground(RefreshAccountJob())
-        jobManager.addJobInBackground(RefreshFcmTokenJob())
-        jobManager.addJobInBackground(RefreshContactJob())
-        jobManager.addJobInBackground(RefreshAssetsJob())
-        jobManager.addJobInBackground(RefreshStickerAlbumJob())
+
+        doAsync {
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerAlbumWorker>()
+        }
 
         getSystemService<NotificationManager>()?.cancelAll()
 
@@ -229,7 +236,8 @@ class MainActivity : BlazeBaseActivity() {
                                 }
                             }
                             if (userIdList.isNotEmpty()) {
-                                jobManager.addJobInBackground(RefreshUserJob(userIdList))
+                                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                                    workDataOf(RefreshUserWorker.USER_IDS to userIdList.toTypedArray()))
                             }
                             participantDao.insertList(participants)
                         }

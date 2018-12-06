@@ -1,36 +1,54 @@
-package one.mixin.android.job
+package one.mixin.android.worker
 
-import com.birbit.android.jobqueue.Params
+import android.content.Context
+import androidx.work.WorkManager
+import androidx.work.WorkerParameters
+import androidx.work.workDataOf
+import androidx.work.Result
 import one.mixin.android.RxBus
+import one.mixin.android.api.service.ConversationService
+import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.ParticipantDao
+import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertConversation
+import one.mixin.android.di.type.DatabaseCategory
+import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.extension.enqueueAvatarWorkRequest
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
+import javax.inject.Inject
 
-class RefreshConversationJob(val conversationId: String)
-    : MixinJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("refresh_conversation")
-    .requireNetwork().persist(), conversationId) {
+class RefreshConversationWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
 
-    override fun cancel() {
-    }
+    @Inject
+    lateinit var conversationApi: ConversationService
+    @Inject
+    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
+    lateinit var conversationDao: ConversationDao
+    @Inject
+    lateinit var userDao: UserDao
+    @Inject
+    lateinit var participantDao: ParticipantDao
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     companion object {
-        private const val serialVersionUID = 1L
-        const val GROUP = "RefreshConversationJob"
+        const val CONVERSATION_ID = "conversation_id"
         const val PREFERENCES_CONVERSATION = "preferences_conversation"
     }
 
-    override fun onAdded() {
-        jobManager.saveJob(this)
-    }
-
-    override fun onRun() {
+    override fun onRun(): Result {
+        val conversationId = inputData.getString(CONVERSATION_ID) ?: return Result.failure()
         val call = conversationApi.getConversation(conversationId).execute()
         val response = call.body()
         if (response != null && response.isSuccess) {
@@ -93,13 +111,17 @@ class RefreshConversationJob(val conversationId: String)
                 }
                 participantDao.insertList(participants)
                 if (userIdList.isNotEmpty()) {
-                    jobManager.addJobInBackground(RefreshUserJob(userIdList, conversationId))
+                    WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                        workDataOf(RefreshUserWorker.USER_IDS to userIdList.toTypedArray(),
+                            RefreshUserWorker.CONVERSATION_ID to conversationId))
                 } else {
-                    jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+                    WorkManager.getInstance().enqueueAvatarWorkRequest(
+                        workDataOf(GROUP_ID to conversationId))
                 }
             }
+            return Result.success()
+        } else {
+            return Result.failure()
         }
-
-        removeJob()
     }
 }

@@ -5,6 +5,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -12,10 +14,8 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAddressJob
-import one.mixin.android.job.RefreshAssetsJob
-import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
@@ -29,6 +29,9 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toTopAssetItem
+import one.mixin.android.worker.RefreshAddressWorker
+import one.mixin.android.worker.RefreshAssetsWorker
+import one.mixin.android.worker.RefreshTopAssetsWorker
 import javax.inject.Inject
 
 class WalletViewModel @Inject
@@ -85,7 +88,9 @@ internal constructor(
             .build()
 
     fun refreshAddressesByAssetId(assetId: String) {
-        jobManager.addJobInBackground(RefreshAddressJob(assetId))
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAddressWorker>(
+            workDataOf(RefreshAddressWorker.ASSET_ID to assetId)
+        )
     }
 
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
@@ -103,7 +108,7 @@ internal constructor(
     }.observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
     fun refreshHotAssets() {
-        jobManager.addJobInBackground(RefreshTopAssetsJob())
+        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshTopAssetsWorker>()
     }
 
     fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> {
@@ -129,7 +134,9 @@ internal constructor(
 
     fun saveAssets(hotAssetList: List<TopAssetItem>) {
         hotAssetList.forEach {
-            jobManager.addJobInBackground(RefreshAssetsJob(it.assetId))
+            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>(
+                workDataOf(RefreshAssetsWorker.ASSET_ID to it.assetId)
+            )
         }
     }
 
