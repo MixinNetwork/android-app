@@ -12,12 +12,14 @@ interface GiphyService {
     fun trendingGifs(
         @Query("limit") limit: Int,
         @Query("offset") offset: Int,
-        @Query("api_key") apiKey: String = BuildConfig.GIPHY_KEY): Observable<SearchData>
+        @Query("api_key") apiKey: String = BuildConfig.GIPHY_KEY
+    ): Observable<SearchData>
 
     @GET("gifs/search")
     fun searchGifs(
         @Query("q") query: String,
         @Query("limit") limit: Int,
         @Query("offset") offset: Int,
-        @Query("api_key") apiKey: String = BuildConfig.GIPHY_KEY): Observable<SearchData>
+        @Query("api_key") apiKey: String = BuildConfig.GIPHY_KEY
+    ): Observable<SearchData>
 }

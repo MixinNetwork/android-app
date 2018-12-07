@@ -76,7 +76,6 @@ class DepositAccountFragment : Fragment() {
         asset.accountTag?.let {
             showQR(account_memo_qr, "${BuildConfig.VERSION_CODE}-${asset.accountTag}", it)
         }
-
     }
 
     private fun showQR(qr: ImageView, name: String, code: String) {

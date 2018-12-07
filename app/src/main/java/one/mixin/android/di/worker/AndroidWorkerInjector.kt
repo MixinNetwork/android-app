@@ -1,4 +1,4 @@
-package one.mixin.android.di.worker;
+package one.mixin.android.di.worker
 
 import androidx.work.Worker
 import dagger.MapKey

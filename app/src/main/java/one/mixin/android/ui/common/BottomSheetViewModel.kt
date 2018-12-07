@@ -40,7 +40,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
-import one.mixin.android.worker.GenerateAvatarWorker
 import one.mixin.android.worker.RefreshConversationWorker
 import one.mixin.android.worker.RefreshUserWorker
 import org.jetbrains.anko.doAsync

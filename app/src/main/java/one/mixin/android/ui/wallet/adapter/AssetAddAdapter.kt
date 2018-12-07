@@ -31,7 +31,8 @@ internal class AssetAddAdapter : ListAdapter<TopAssetItem, AssetAddAdapter.ItemH
         ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_asset_add, parent, false))
 
     internal class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(asset: TopAssetItem,
+        fun bind(
+            asset: TopAssetItem,
             listener: OnTopAssetListener? = null,
             checkedAssets: ArrayMap<String, TopAssetItem>,
             exists: Boolean

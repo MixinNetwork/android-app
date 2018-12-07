@@ -8,7 +8,7 @@ import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.TopAssetItem
 
 @Dao
-interface TopAssetDao: BaseDao<TopAsset> {
+interface TopAssetDao : BaseDao<TopAsset> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT ta.asset_id as asset_id, ta.symbol as symbol, ta.name as name, ta.icon_url as icon_url, ta.chain_id as chain_id, a.icon_url as chain_icon_url " +

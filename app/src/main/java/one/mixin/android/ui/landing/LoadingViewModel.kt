@@ -18,9 +18,11 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import javax.inject.Inject
 
 class LoadingViewModel @Inject internal
-constructor(private val signalKeyService: SignalKeyService,
+constructor(
+    private val signalKeyService: SignalKeyService,
     private val accountService: AccountService,
-    private val app: Application) : ViewModel() {
+    private val app: Application
+) : ViewModel() {
 
     fun pushAsyncSignalKeys(): Observable<MixinResponse<Void>?> {
         val start = System.currentTimeMillis()

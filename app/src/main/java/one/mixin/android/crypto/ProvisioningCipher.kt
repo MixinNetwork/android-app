@@ -27,9 +27,7 @@ class ProvisioningCipher(private val theirPublicKey: ECPublicKey) {
         val ciphertext = getCiphertext(parts[0], message.toByteArray())
         val mac = getMac(parts[1], Util.join(version, ciphertext))
         val body = Util.join(version, ciphertext, mac)
-
-        return ProvisionEnvelope(ourKeyPair.publicKey.serialize(), body)
-                .toByteArray()
+        return ProvisionEnvelope(ourKeyPair.publicKey.serialize(), body).toByteArray()
     }
 
     private fun getCiphertext(key: ByteArray, message: ByteArray): ByteArray {

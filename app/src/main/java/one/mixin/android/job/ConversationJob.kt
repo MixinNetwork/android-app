@@ -18,7 +18,6 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
-import one.mixin.android.worker.GenerateAvatarWorker
 import timber.log.Timber
 import java.util.UUID
 

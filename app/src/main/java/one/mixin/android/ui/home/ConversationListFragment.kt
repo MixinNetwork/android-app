@@ -55,7 +55,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
-import one.mixin.android.worker.GenerateAvatarWorker
 import org.jetbrains.anko.doAsync
 import java.io.File
 import javax.inject.Inject

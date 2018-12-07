@@ -18,7 +18,7 @@ class DownloadAvatarWorker(context: Context, parameters: WorkerParameters) : Ava
         }
         try {
             downloadBitmaps(users)
-        }  catch (e: Exception) {
+        } catch (e: Exception) {
             throw LocalJobException()
         }
         return Result.success()
