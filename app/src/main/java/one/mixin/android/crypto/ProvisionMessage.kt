@@ -10,6 +10,8 @@ class ProvisionMessage(
     val identityKeyPrivate: ByteArray,
     @SerializedName("user_id")
     val userId: String,
+    @SerializedName("session_id")
+    val sessionId: String,
     @SerializedName("provisioning_code")
     val provisioningCode: String,
     @SerializedName("profile_key")
