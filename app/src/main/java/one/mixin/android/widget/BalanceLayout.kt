@@ -33,8 +33,12 @@ class BalanceLayout : ViewGroup {
         val lines = balanceTv.layout.lineCount
         val lastLineText = getLastLineText(balanceTv.layout, lines)
         if (balanceWordWidth == null) {
-            // only for mono fonts
-            balanceWordWidth = balanceTv.layout.paint.measureText(balanceText[0].toString()).toInt()
+            // fix bug caused by mixin_condensed.otf '+' and '-' too wide
+            var char = balanceText[0]
+            if (char == '+' || char == '-') {
+                char = balanceText[1]
+            }
+            balanceWordWidth = balanceTv.layout.paint.measureText(char.toString()).toInt()
         }
         val maxBalanceWidth = if (lines <= 1 && measuredWidth < balanceMeasureWidth + symbolMeasureWidth + symbolOffset) {
             // add MIN_LINE_CHAR_COUNT chars to a new line
