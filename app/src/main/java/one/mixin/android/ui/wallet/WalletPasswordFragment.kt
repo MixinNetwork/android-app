@@ -60,6 +60,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
     private val walletViewModel: WalletViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
+
     private val change: Boolean by lazy {
         arguments!!.getBoolean(ARGS_CHANGE)
     }
@@ -245,6 +246,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                         } else {
                                             context?.toast(R.string.wallet_set_password_success)
                                         }
+
                                         val navOptions = navOptions {
                                             popUpTo(R.id.nav_root) {
                                                 inclusive = true

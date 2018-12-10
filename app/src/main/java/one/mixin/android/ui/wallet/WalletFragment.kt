@@ -72,7 +72,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     ): View? =
         inflater.inflate(R.layout.fragment_wallet, container, false)
 
-    @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title_view.right_animator.setOnClickListener { activity?.onBackPressed() }
@@ -111,13 +110,10 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.onItemListener = this
         coins_rv.adapter = assetsAdapter
 
+        setEmpty()
         walletViewModel.assetItems().observe(this, Observer { r: List<AssetItem>? ->
             if (r == null || r.isEmpty()) {
-                header.pie_item_container.visibility = GONE
-                header.percent_view.visibility = GONE
-                assetsAdapter.setAssetList(emptyList())
-                header.total_as_tv.text = "0.00"
-                header.total_tv.text = "0.00"
+                setEmpty()
             } else {
                 assets = r
                 assetsAdapter.setAssetList(r)
@@ -167,6 +163,15 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         })
 
         checkPin()
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun setEmpty() {
+        header.pie_item_container.visibility = GONE
+        header.percent_view.visibility = GONE
+        assetsAdapter.setAssetList(emptyList())
+        header.total_as_tv.text = "0.00"
+        header.total_tv.text = "0.00"
     }
 
     private fun setPieView(r: List<AssetItem>, totalUSD: BigDecimal) {

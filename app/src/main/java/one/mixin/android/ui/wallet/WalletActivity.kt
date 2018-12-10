@@ -42,6 +42,7 @@ class WalletActivity : BlazeBaseActivity() {
                 navGraph.startDestination = R.id.wallet_fragment
             } else {
                 navGraph.startDestination = R.id.wallet_password_fragment
+                navGraph.setDefaultArguments(Bundle().apply { putBoolean(WalletPasswordFragment.ARGS_CHANGE, false) })
             }
         })
         navController.graph = navGraph

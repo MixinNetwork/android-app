@@ -151,13 +151,7 @@ class ConversationListFragment : LinkFragment() {
         messagesViewModel.conversations.observe(this, Observer { r ->
             if (r == null || r.isEmpty()) {
                 if (firstEnter) {
-                    val account = Session.getAccount()!!
-                    if (account.hasPin) {
-                        WalletActivity.show(requireActivity())
-                    } else {
-                        val fragment = WalletPasswordFragment.newInstance()
-                        bottomShowFragment(fragment, R.id.container_password, WalletPasswordFragment.TAG)
-                    }
+                    WalletActivity.show(requireActivity())
                 }
                 empty_view.visibility = VISIBLE
             } else {
