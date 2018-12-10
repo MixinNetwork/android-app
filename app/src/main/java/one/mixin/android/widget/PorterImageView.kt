@@ -15,7 +15,11 @@ import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.displayWitdh
 import timber.log.Timber
 
-abstract class PorterImageView : AppCompatImageView {
+abstract class PorterImageView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : AppCompatImageView(context, attrs, defStyleAttr) {
 
     private var maskCanvas: Canvas? = null
     private var maskBitmap: Bitmap? = null
@@ -28,15 +32,7 @@ abstract class PorterImageView : AppCompatImageView {
 
     private var invalidated = true
 
-    constructor(context: Context) : super(context) {
-        setup()
-    }
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        setup()
-    }
-
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
+    init {
         setup()
     }
 

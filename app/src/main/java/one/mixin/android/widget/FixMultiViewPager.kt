@@ -1,15 +1,14 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import androidx.viewpager.widget.ViewPager
 import android.util.AttributeSet
 import android.view.MotionEvent
+import androidx.viewpager.widget.ViewPager
 
-class FixMultiViewPager : ViewPager {
-
-    constructor(context: Context) : super(context)
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
+class FixMultiViewPager @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null
+) : ViewPager(context, attrs) {
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         return try {

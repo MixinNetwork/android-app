@@ -21,7 +21,11 @@ import org.jetbrains.anko.dip
 import org.jetbrains.anko.hintTextColor
 import org.jetbrains.anko.textColor
 
-class PinView : LinearLayout {
+class PinView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : LinearLayout(context, attrs, defStyleAttr) {
 
     companion object {
         const val DEFAULT_COUNT = 6
@@ -41,9 +45,7 @@ class PinView : LinearLayout {
     private val textSize = 26f
     private val starSize = 18f
 
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    init {
         LayoutInflater.from(context).inflate(R.layout.layout_pin, this, true) as LinearLayout
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PinView)
         ta?.let {

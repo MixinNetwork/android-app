@@ -14,7 +14,11 @@ import one.mixin.android.ui.url.isMixinUrl
 import org.jetbrains.anko.backgroundResource
 import org.jetbrains.anko.dip
 
-class PseudoNotificationView : RelativeLayout {
+class PseudoNotificationView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : RelativeLayout(context, attrs, defStyleAttr) {
 
     var currContent: String? = null
 
@@ -23,9 +27,7 @@ class PseudoNotificationView : RelativeLayout {
 
     lateinit var callback: Callback
 
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    init {
         LayoutInflater.from(context).inflate(R.layout.view_pseudo_notification, this, true)
         val d = resources.getDrawable(R.drawable.ic_qr_code_preview, null)
         val size = context.dip(12)

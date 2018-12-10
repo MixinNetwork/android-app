@@ -3,13 +3,17 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 
-class PasswordView : View {
+class PasswordView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
     companion object {
         private const val RING_WIDTH = 2
@@ -38,9 +42,7 @@ class PasswordView : View {
         color = circleColor
     }
 
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.PasswordView)
         ta?.let {
             if (ta.hasValue(R.styleable.PasswordView_circleColor)) {

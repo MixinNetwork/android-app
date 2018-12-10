@@ -1,17 +1,15 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import androidx.appcompat.widget.AppCompatSeekBar
 import android.util.AttributeSet
 import android.view.MotionEvent
+import androidx.appcompat.widget.AppCompatSeekBar
 
-class PagerSeekBar : AppCompatSeekBar {
-
-    constructor(context: Context) : super(context)
-
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
-
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+class PagerSeekBar @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : AppCompatSeekBar(context, attrs, defStyleAttr) {
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {

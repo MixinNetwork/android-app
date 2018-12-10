@@ -10,18 +10,17 @@ import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.dip
 import kotlin.math.max
 
-class MessageLayout : ViewGroup {
-    private val offset: Int
+class MessageLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : ViewGroup(context, attrs, defStyleAttr) {
+    private val offset: Int = context.dpToPx(8f)
     private var lastLineWidth: Float = 0.toFloat()
     private var maxWidth: Int = 0
     private var contentPadding: Int = 0
 
-    constructor(context: Context) : this(context, null)
-
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        offset = context.dpToPx(8f)
+    init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.MessageLayout, defStyleAttr, 0)
         ta?.let {
             maxWidth = ta.getDimensionPixelSize(R.styleable.MessageLayout_max_width, dip(300))

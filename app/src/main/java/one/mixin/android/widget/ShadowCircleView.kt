@@ -8,16 +8,20 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.qr.CaptureFragment
 import org.jetbrains.anko.dip
 
-class ShadowCircleView : View {
+class ShadowCircleView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
     private val shadowHeight = dip(20).toFloat()
     private var radius = dip(20).toFloat()
@@ -35,10 +39,6 @@ class ShadowCircleView : View {
     private val framePaint = Paint()
 
     private val icon = ContextCompat.getDrawable(context, R.drawable.ic_qrcode)
-
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {

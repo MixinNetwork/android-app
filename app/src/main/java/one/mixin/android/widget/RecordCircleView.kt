@@ -9,13 +9,17 @@ import android.graphics.PorterDuffColorFilter
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.drawable.Drawable
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat
 import one.mixin.android.R
 
-class RecordCircleView : View {
+class RecordCircleView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
     private val colorCircle: Int by lazy { ContextCompat.getColor(context, R.color.color_record_circle_bg) }
     private val colorLock: Int by lazy { ContextCompat.getColor(context, R.color.text_gray) }
@@ -84,10 +88,6 @@ class RecordCircleView : View {
             colorFilter = PorterDuffColorFilter(colorCircle, PorterDuff.Mode.MULTIPLY)
         }
     }
-
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
 
     fun setAmplitude(value: Double) {
         animateToAmplitude = Math.min(100.0, value).toFloat() / 100.0f

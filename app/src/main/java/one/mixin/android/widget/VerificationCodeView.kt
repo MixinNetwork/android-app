@@ -3,9 +3,6 @@ package one.mixin.android.widget
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
-import android.os.Build
-import androidx.annotation.MainThread
-import androidx.annotation.RequiresApi
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.View
@@ -15,12 +12,17 @@ import android.view.animation.OvershootInterpolator
 import android.view.animation.TranslateAnimation
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.annotation.MainThread
 import kotlinx.android.synthetic.main.view_verification_code.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.backgroundColor
 
-class VerificationCodeView : LinearLayout {
+class VerificationCodeView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : LinearLayout(context, attrs, defStyleAttr) {
 
     companion object {
         const val DEFAULT_COUNT = 4
@@ -35,21 +37,7 @@ class VerificationCodeView : LinearLayout {
     var count = DEFAULT_COUNT
     private var isError = false
 
-    constructor(context: Context) : super(context) {
-        initialize(context, null)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        initialize(context, attrs)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        initialize(context, attrs)
-    }
-
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    constructor(context: Context, attrs: AttributeSet, defStyleAttr: Int, defStyleRes: Int)
-        : super(context, attrs, defStyleAttr, defStyleRes) {
+    init {
         initialize(context, attrs)
     }
 
@@ -65,8 +53,10 @@ class VerificationCodeView : LinearLayout {
                 addView(item)
             }
 
-            spaces.forEach { view -> view.setBackgroundColor(
-                typedArray.getColor(R.styleable.VerificationCodeView_vcv_inputColor, Color.BLACK)) }
+            spaces.forEach { view ->
+                view.setBackgroundColor(
+                    typedArray.getColor(R.styleable.VerificationCodeView_vcv_inputColor, Color.BLACK))
+            }
             spaces.forEach { view ->
                 view.layoutParams = LinearLayout.LayoutParams(
                     typedArray.getDimensionPixelSize(
@@ -74,10 +64,14 @@ class VerificationCodeView : LinearLayout {
                     typedArray.getDimensionPixelSize(
                         R.styleable.VerificationCodeView_vcv_inputHeight, context.dpToPx(1f)))
             }
-            codes.forEach { textView -> textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
-                typedArray.getDimension(R.styleable.VerificationCodeView_vcv_textSize, 30f)) }
-            codes.forEach { textView -> textView.setTextColor(
-                typedArray.getColor(R.styleable.VerificationCodeView_vcv_textColor, Color.GRAY)) }
+            codes.forEach { textView ->
+                textView.setTextSize(TypedValue.COMPLEX_UNIT_SP,
+                    typedArray.getDimension(R.styleable.VerificationCodeView_vcv_textSize, 30f))
+            }
+            codes.forEach { textView ->
+                textView.setTextColor(
+                    typedArray.getColor(R.styleable.VerificationCodeView_vcv_textColor, Color.GRAY))
+            }
 
             containers.forEach { view ->
                 val params = view.layoutParams as LinearLayout.LayoutParams

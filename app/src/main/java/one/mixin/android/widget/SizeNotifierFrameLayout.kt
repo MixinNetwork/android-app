@@ -16,7 +16,11 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.statusBarHeight
 import java.lang.reflect.Field
 
-class SizeNotifierFrameLayout : FrameLayout {
+class SizeNotifierFrameLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     private val rect = Rect()
     var backgroundImage: Drawable? = null
@@ -27,15 +31,7 @@ class SizeNotifierFrameLayout : FrameLayout {
     private var keyboardHeight: Int = 0
     private var bottomClip: Int = 0
 
-    constructor(context: Context) : super(context) {
-        setWillNotDraw(false)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs) {
-        setWillNotDraw(false)
-    }
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+    init {
         setWillNotDraw(false)
     }
 
