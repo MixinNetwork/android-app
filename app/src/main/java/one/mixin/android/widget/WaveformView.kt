@@ -16,12 +16,11 @@ import org.jetbrains.anko.dip
 import kotlin.experimental.and
 import kotlin.experimental.or
 
-class WaveformView : View {
-    constructor(context: Context) : super(context)
-
-    constructor(context: Context, attrs: AttributeSet?) : super(context, attrs)
-
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+class WaveformView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
     fun setWaveform(waveform: ByteArray) {
         waveformBytes = waveform

@@ -19,28 +19,34 @@ import one.mixin.android.R
  * You can use the `#setKerningFactor()` method to adjust the kerning programmatically,
  * but the more common approach would be to use `ktv_spacing` attribute in xml.
  */
-class KerningTextView : AppCompatTextView {
-
+class KerningTextView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : AppCompatTextView(context, attrs, defStyleAttr) {
     private val TAG = javaClass.simpleName
 
     private var kerningFactor = NO_KERNING
     private var originalText: CharSequence? = null
 
-    constructor(context: Context) : super(context) {
-        init(null, 0)
+    /**
+     * Programmatically get the value of the `kerningFactor`
+     */
+    fun getKerningFactor(): Float {
+        return kerningFactor
     }
 
-    constructor(context: Context, attrs: AttributeSet) : super(context, attrs) {
-        init(attrs, 0)
+    /**
+     * Programmatically set the value of the `kerningFactor`
+     */
+    fun setKerningFactor(kerningFactor: Float) {
+        this.kerningFactor = kerningFactor
+        applyKerning()
     }
 
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
-        init(attrs, defStyle)
-    }
-
-    private fun init(attrs: AttributeSet?, defStyle: Int) {
+    init {
         val originalTypedArray = context.obtainStyledAttributes(attrs, intArrayOf(android.R.attr.text))
-        val currentTypedArray = context.obtainStyledAttributes(attrs, R.styleable.KerningTextView, 0, defStyle)
+        val currentTypedArray = context.obtainStyledAttributes(attrs, R.styleable.KerningTextView, 0, defStyleAttr)
 
         try {
             kerningFactor = currentTypedArray.getFloat(R.styleable.KerningTextView_kv_spacing, NO_KERNING)
@@ -55,21 +61,6 @@ class KerningTextView : AppCompatTextView {
             Log.d(TAG, String.format("Original Text: %s", originalText))
         }
 
-        applyKerning()
-    }
-
-    /**
-     * Programmatically get the value of the `kerningFactor`
-     */
-    fun getKerningFactor(): Float {
-        return kerningFactor
-    }
-
-    /**
-     * Programmatically set the value of the `kerningFactor`
-     */
-    fun setKerningFactor(kerningFactor: Float) {
-        this.kerningFactor = kerningFactor
         applyKerning()
     }
 

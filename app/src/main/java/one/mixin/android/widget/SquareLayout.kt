@@ -11,11 +11,11 @@ import android.widget.FrameLayout
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 
-class SquareLayout : FrameLayout {
-
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+class SquareLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     private val paint: Paint by lazy {
         Paint(Paint.ANTI_ALIAS_FLAG).apply {

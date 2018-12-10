@@ -19,7 +19,11 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import org.jetbrains.anko.collections.forEachWithIndex
 
-class PercentView : View {
+class PercentView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : View(context, attrs, defStyleAttr) {
 
     private val colorBlue by lazy { context.getColor(R.color.wallet_blue) }
     private val colorBlueDark by lazy { context.getColor(R.color.wallet_blue_dark) }
@@ -41,9 +45,6 @@ class PercentView : View {
     private var blueGradient: GradientDrawable? = null
     private var purpleGradient: GradientDrawable? = null
     private var yellowGradient: GradientDrawable? = null
-
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attributeSet: AttributeSet?) : super(context, attributeSet)
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -173,6 +174,7 @@ class PercentView : View {
             }
             return rs!!
         }
+
         private var blur: ScriptIntrinsicBlur? = null
         fun getBlur(context: Context): ScriptIntrinsicBlur {
             if (blur == null) {

@@ -51,18 +51,16 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
         false
     }
 
-    private val onTouchListener = object : OnTouchListener {
-        override fun onTouch(v: View, event: MotionEvent): Boolean {
-            if (event.action == MotionEvent.ACTION_UP) {
-                val rightDrawable = compoundDrawables[2]
-                if (rightDrawable != null &&
-                    event.rawX >= right - (rightDrawable.bounds.width() + context.dpToPx(16f))) {
-                    text.clear()
-                    return true
-                }
+    private val onTouchListener = OnTouchListener { v, event ->
+        if (event.action == MotionEvent.ACTION_UP) {
+            val rightDrawable = compoundDrawables[2]
+            if (rightDrawable != null &&
+                event.rawX >= right - (rightDrawable.bounds.width() + context.dpToPx(16f))) {
+                text.clear()
+                return@OnTouchListener true
             }
-            return false
         }
+        false
     }
 
     private val onFocusChangeListener = object : OnFocusChangeListener {

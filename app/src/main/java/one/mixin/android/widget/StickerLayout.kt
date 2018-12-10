@@ -6,11 +6,11 @@ import android.view.View
 import android.widget.FrameLayout
 import one.mixin.android.widget.keyboard.InputAwareLayout
 
-class StickerLayout : FrameLayout, InputAwareLayout.InputView {
-
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+class StickerLayout @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr), InputAwareLayout.InputView {
 
     override fun show(height: Int, immediate: Boolean) {
         val params = layoutParams
