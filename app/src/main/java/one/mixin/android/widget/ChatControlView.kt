@@ -34,7 +34,11 @@ import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
 
 @SuppressLint("CheckResult")
-class ChatControlView : FrameLayout {
+class ChatControlView @JvmOverloads constructor(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : FrameLayout(context, attrs, defStyleAttr) {
 
     companion object {
         const val REPLY = -1
@@ -54,6 +58,7 @@ class ChatControlView : FrameLayout {
     lateinit var callback: Callback
     lateinit var inputLayout: InputAwareLayout
     lateinit var stickerContainer: StickerLayout
+    lateinit var panelContainer: PanelLayout
     lateinit var recordTipView: View
 
     private var sendStatus = AUDIO
@@ -74,6 +79,11 @@ class ChatControlView : FrameLayout {
     private var lastSendStatus = AUDIO
     private var isUp = true
 
+    var expandable = false
+        set(value) {
+            field = value
+            setSend()
+        }
     var isRecording = false
 
     var activity: Activity? = null
@@ -91,17 +101,6 @@ class ChatControlView : FrameLayout {
 
     private val stickerDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_sticker, null) }
     private val keyboardDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_keyboard, null) }
-
-    constructor(context: Context) : this(context, null)
-    constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
-        LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
-
-        chat_et.addTextChangedListener(editTextWatcher)
-        chat_send_ib.setOnTouchListener(sendOnTouchListener)
-        chat_sticker_ib.setOnClickListener(stickerClickListener)
-        chat_slide.callback = chatSlideCallback
-    }
 
     fun setCircle(record_circle: RecordCircleView) {
         recordCircle = record_circle
@@ -246,7 +245,7 @@ class ChatControlView : FrameLayout {
                 lastSendStatus = sendStatus
             }
             UP -> {
-                callback.onUp()
+                callback.onUp(isCurrentSticker())
             }
             DOWN -> {
                 callback.onDown()
@@ -266,8 +265,10 @@ class ChatControlView : FrameLayout {
                 chat_more_ib.visibility = View.VISIBLE
             }
             if (!keyboardShown) {
-                if (stickerStatus == KEYBOARD && inputLayout.isInputOpen) {
+                if (stickerStatus == KEYBOARD && inputLayout.isInputOpen && isCurrentSticker()) {
                     if (isUp) UP else DOWN
+                } else if (isCurrentPanel()) {
+                    if (expandable) UP else lastSendStatus
                 } else {
                     lastSendStatus
                 }
@@ -291,6 +292,12 @@ class ChatControlView : FrameLayout {
                 setSend()
             }
         }
+    }
+
+    private val panelClickListener = OnClickListener {
+        inputLayout.show(chat_et, panelContainer)
+        setSend()
+        callback.onPanelClick()
     }
 
     private val editTextWatcher = object : TextWatcher {
@@ -507,6 +514,10 @@ class ChatControlView : FrameLayout {
 
     private var botHide = false
 
+    private fun isCurrentSticker() = inputLayout.currentInput == stickerContainer
+
+    private fun isCurrentPanel() = inputLayout.currentInput == panelContainer
+
     fun hideBot() {
         botHide = true
         chat_bot_ib.visibility = View.GONE
@@ -517,14 +528,25 @@ class ChatControlView : FrameLayout {
         chat_bot_ib.visibility = View.VISIBLE
     }
 
+    init {
+        LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
+
+        chat_et.addTextChangedListener(editTextWatcher)
+        chat_send_ib.setOnTouchListener(sendOnTouchListener)
+        chat_sticker_ib.setOnClickListener(stickerClickListener)
+        chat_more_ib.setOnClickListener(panelClickListener)
+        chat_slide.callback = chatSlideCallback
+    }
+
     interface Callback {
         fun onStickerClick()
+        fun onPanelClick()
         fun onSendClick(text: String)
         fun onRecordStart(audio: Boolean)
         fun isReady(): Boolean
         fun onRecordEnd()
         fun onRecordCancel()
-        fun onUp()
+        fun onUp(isSticker: Boolean)
         fun onDown()
         fun onCalling()
     }

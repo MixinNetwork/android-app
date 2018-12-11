@@ -17,6 +17,7 @@ import one.mixin.android.widget.gallery.internal.entity.CaptureStrategy;
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec;
 import one.mixin.android.widget.gallery.listener.OnSelectedListener;
 import one.mixin.android.widget.gallery.ui.GalleryActivity;
+import one.mixin.android.widget.gallery.ui.GalleryFragment;
 
 
 import static android.content.pm.ActivityInfo.*;
