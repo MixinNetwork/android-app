@@ -77,14 +77,10 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.openCamera
-import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.replaceFragment
-import one.mixin.android.extension.round
-import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
@@ -98,26 +94,22 @@ import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ProfileFragment
-import one.mixin.android.ui.conversation.adapter.AppAdapter
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
-import one.mixin.android.ui.conversation.adapter.MenuAdapter
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.panel.PanelFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.ui.wallet.TransactionFragment
-import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
-import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
@@ -133,7 +125,6 @@ import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.websocket.TransferStickerData
-import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
@@ -253,126 +244,126 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         }
 
-    private val appAdapter: AppAdapter by lazy {
-        AppAdapter(if (isGroup) {
-            AppCap.GROUP.name
-        } else {
-            AppCap.CONTACT.name
-        }, object : AppAdapter.OnAppClickListener {
-            override fun onAppClick(url: String, name: String) {
-                hideMediaLayout()
-                WebBottomSheetDialogFragment
-                    .newInstance(url, conversationId, name)
-                    .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
-            }
-        })
-    }
-
-    private val menuAdapter: MenuAdapter by lazy {
-        MenuAdapter(object : MenuAdapter.OnMenuClickListener {
-            override fun onMenuClick(id: Int) {
-                when (id) {
-                    R.id.menu_camera -> {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.CAMERA)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    imageUri = createImageUri()
-                                    imageUri?.let {
-                                        openCamera(it)
-                                    }
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            }, {
-                            })
-                        hideMediaLayout()
-                    }
-                    R.id.menu_gallery -> {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    openGallery()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            }, {
-                            })
-                        hideMediaLayout()
-                    }
-                    R.id.menu_document -> {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    selectDocument()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            }, {
-                            })
-                        hideMediaLayout()
-                    }
-                    R.id.menu_transfer -> {
-                        if (Session.getAccount()?.hasPin == true) {
-                            recipient?.let {
-                                TransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
-                            }
-                        } else {
-                            activity?.supportFragmentManager?.inTransaction {
-                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                                    .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                    .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
-                                    .addToBackStack(null)
-                            }
-                        }
-                        hideMediaLayout()
-                    }
-                    R.id.menu_contact -> {
-                        activity?.supportFragmentManager?.inTransaction {
-                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                                .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                .add(R.id.container,
-                                    FriendsFragment.newInstance(conversationId, isGroup, isBot).apply {
-                                        setOnFriendClick {
-                                            sendContactMessage(it.userId)
-                                        }
-                                    }, FriendsFragment.TAG)
-                                .addToBackStack(null)
-                        }
-                        hideMediaLayout()
-                    }
-                    R.id.menu_voice -> {
-                        if (!callState.isIdle()) {
-                            if (recipient != null && callState.user?.userId == recipient?.userId) {
-                                CallActivity.show(requireContext(), recipient)
-                            } else {
-                                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-                                    .setMessage(getString(R.string.chat_call_warning_call))
-                                    .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                                        dialog.dismiss()
-                                    }
-                                    .show()
-                            }
-                        } else {
-                            RxPermissions(requireActivity())
-                                .request(Manifest.permission.RECORD_AUDIO)
-                                .subscribe({ granted ->
-                                    if (granted) {
-                                        callVoice()
-                                    } else {
-                                        context?.openPermissionSetting()
-                                    }
-                                }, {
-                                })
-                        }
-                        hideMediaLayout()
-                    }
-                }
-            }
-        })
-    }
+//    private val appAdapter: AppAdapter by lazy {
+//        AppAdapter(if (isGroup) {
+//            AppCap.GROUP.name
+//        } else {
+//            AppCap.CONTACT.name
+//        }, object : AppAdapter.OnAppClickListener {
+//            override fun onAppClick(url: String, name: String) {
+//                hideMediaLayout()
+//                WebBottomSheetDialogFragment
+//                    .newInstance(url, conversationId, name)
+//                    .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+//            }
+//        })
+//    }
+//
+//    private val menuAdapter: MenuAdapter by lazy {
+//        MenuAdapter(object : MenuAdapter.OnMenuClickListener {
+//            override fun onMenuClick(id: Int) {
+//                when (id) {
+//                    R.id.menu_camera -> {
+//                        RxPermissions(requireActivity())
+//                            .request(Manifest.permission.CAMERA)
+//                            .subscribe({ granted ->
+//                                if (granted) {
+//                                    imageUri = createImageUri()
+//                                    imageUri?.let {
+//                                        openCamera(it)
+//                                    }
+//                                } else {
+//                                    context?.openPermissionSetting()
+//                                }
+//                            }, {
+//                            })
+//                        hideMediaLayout()
+//                    }
+//                    R.id.menu_gallery -> {
+//                        RxPermissions(requireActivity())
+//                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+//                            .subscribe({ granted ->
+//                                if (granted) {
+//                                    openGallery()
+//                                } else {
+//                                    context?.openPermissionSetting()
+//                                }
+//                            }, {
+//                            })
+//                        hideMediaLayout()
+//                    }
+//                    R.id.menu_document -> {
+//                        RxPermissions(requireActivity())
+//                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+//                            .subscribe({ granted ->
+//                                if (granted) {
+//                                    selectDocument()
+//                                } else {
+//                                    context?.openPermissionSetting()
+//                                }
+//                            }, {
+//                            })
+//                        hideMediaLayout()
+//                    }
+//                    R.id.menu_transfer -> {
+//                        if (Session.getAccount()?.hasPin == true) {
+//                            recipient?.let {
+//                                TransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
+//                            }
+//                        } else {
+//                            activity?.supportFragmentManager?.inTransaction {
+//                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+//                                    .anim.slide_in_bottom, R.anim.slide_out_bottom)
+//                                    .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+//                                    .addToBackStack(null)
+//                            }
+//                        }
+//                        hideMediaLayout()
+//                    }
+//                    R.id.menu_contact -> {
+//                        activity?.supportFragmentManager?.inTransaction {
+//                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+//                                .anim.slide_in_bottom, R.anim.slide_out_bottom)
+//                                .add(R.id.container,
+//                                    FriendsFragment.newInstance(conversationId, isGroup, isBot).apply {
+//                                        setOnFriendClick {
+//                                            sendContactMessage(it.userId)
+//                                        }
+//                                    }, FriendsFragment.TAG)
+//                                .addToBackStack(null)
+//                        }
+//                        hideMediaLayout()
+//                    }
+//                    R.id.menu_voice -> {
+//                        if (!callState.isIdle()) {
+//                            if (recipient != null && callState.user?.userId == recipient?.userId) {
+//                                CallActivity.show(requireContext(), recipient)
+//                            } else {
+//                                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+//                                    .setMessage(getString(R.string.chat_call_warning_call))
+//                                    .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+//                                        dialog.dismiss()
+//                                    }
+//                                    .show()
+//                            }
+//                        } else {
+//                            RxPermissions(requireActivity())
+//                                .request(Manifest.permission.RECORD_AUDIO)
+//                                .subscribe({ granted ->
+//                                    if (granted) {
+//                                        callVoice()
+//                                    } else {
+//                                        context?.openPermissionSetting()
+//                                    }
+//                                }, {
+//                                })
+//                        }
+//                        hideMediaLayout()
+//                    }
+//                }
+//            }
+//        })
+//    }
 
     private fun callVoice() {
         if (LinkState.isOnline(linkState.state)) {
@@ -830,6 +821,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control.activity = requireActivity()
         chat_control.inputLayout = input_layout
         chat_control.stickerContainer = sticker_container
+        chat_control.panelContainer = panel_container
         chat_control.recordTipView = record_tip_tv
         chat_control.chat_et.setOnClickListener {
             cover.alpha = 0f
@@ -847,7 +839,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 return true
             }
         })
-        chat_control.chat_more_ib.setOnClickListener { toggleMediaLayout() }
         chat_rv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
         chat_rv.itemAnimator = null
@@ -1000,21 +991,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             closeTool()
         }
-        media_layout.round(dp(8f))
-        menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-        menu_rv.adapter = menuAdapter
-
-        if (!isBot) {
-            app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-            app_rv.adapter = appAdapter
-        }
-
-        shadow.setOnClickListener {
-            hideMediaLayout()
-        }
-
-        menuAdapter.isGroup = isGroup
-        menuAdapter.isBot = isBot
+//        media_layout.round(dp(8f))
+//        menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+//        menu_rv.adapter = menuAdapter
+//
+//        if (!isBot) {
+//            app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
+//            app_rv.adapter = appAdapter
+//        }
+//
+//        shadow.setOnClickListener {
+//            hideMediaLayout()
+//        }
+//
+//        menuAdapter.isGroup = isGroup
+//        menuAdapter.isBot = isBot
 
         callState.observe(this, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
@@ -1072,8 +1063,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         if (isBot) {
-            app_rv.visibility = GONE
-            extensions.visibility = GONE
+//            app_rv.visibility = GONE
+//            extensions.visibility = GONE
             chat_control.showBot()
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 if (it != null && it.isNotEmpty()) {
@@ -1091,14 +1082,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         } else {
             chat_control.hideBot()
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
-                appAdapter.appList = it
-                if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
-                    app_rv.visibility = GONE
-                    extensions.visibility = GONE
-                } else {
-                    app_rv.visibility = VISIBLE
-                    extensions.visibility = VISIBLE
-                }
+                getPanelFragment().setAppList(it)
+//                appAdapter.appList = it
+//                if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
+//                    app_rv.visibility = GONE
+//                    extensions.visibility = GONE
+//                } else {
+//                    app_rv.visibility = VISIBLE
+//                    extensions.visibility = VISIBLE
+//                }
             })
         }
     }
@@ -1365,7 +1357,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 val app = chatViewModel.findAppById(user.appId!!)
                 if (app != null && app.creatorId == Session.getAccountId()) {
                     uiThread {
-                        menuAdapter.isSelfCreatedBot = true
+//                        menuAdapter.isSelfCreatedBot = true
+                        getPanelFragment(true)
                     }
                 }
             }
@@ -1450,6 +1443,63 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
     }
 
+    private fun getPanelFragment(isSelfCreatedBot: Boolean = false): PanelFragment {
+        var panelFragment = requireFragmentManager().findFragmentByTag(PanelFragment.TAG)
+        if (panelFragment == null) {
+            panelFragment = PanelFragment.newInstance(isGroup, isBot, isSelfCreatedBot)
+        }
+        panelFragment as PanelFragment
+        panelFragment.callback = object : PanelFragment.Callback {
+            override fun toggleExpand(expandable: Boolean) {
+                chat_control.expandable = expandable
+            }
+
+            override fun onGalleryClick(uri: Uri, isVideo: Boolean) {
+                if (isVideo) {
+                    sendVideoMessage(uri)
+                } else {
+                    sendImageMessage(uri)
+                }
+            }
+
+            override fun onCameraClick(imageUri: Uri) {
+                sendImageMessage(imageUri)
+            }
+
+            @SuppressLint("CheckResult")
+            override fun onVoiceClick() {
+                if (!callState.isIdle()) {
+                    if (recipient != null && callState.user?.userId == recipient?.userId) {
+                        CallActivity.show(requireContext(), recipient)
+                    } else {
+                        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                            .setMessage(getString(R.string.chat_call_warning_call))
+                            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .show()
+                    }
+                } else {
+                    RxPermissions(requireActivity())
+                        .request(Manifest.permission.RECORD_AUDIO)
+                        .subscribe({ granted ->
+                            if (granted) {
+                                callVoice()
+                            } else {
+                                context?.openPermissionSetting()
+                            }
+                        }, {
+                        })
+                }
+            }
+        }
+        requireFragmentManager().inTransaction {
+            setCustomAnimations(R.anim.slide_in_bottom_fast, 0, 0, R.anim.slide_out_bottom_fast)
+            replace(R.id.panel_container, panelFragment, PanelFragment.TAG)
+        }
+        return panelFragment
+    }
+
     private fun adjustAlpha(color: Int, factor: Float): Int {
         val alpha = Math.round(Color.alpha(color) * factor)
         val red = Color.red(color)
@@ -1504,30 +1554,31 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun showMediaLayout() {
         if (!mediaVisibility) {
-            shadow.fadeIn()
-            media_layout.visibility = VISIBLE
-            media_layout.translationY(16f)
-            chat_control.chat_et.hideKeyboard()
-            hideStickerContainer()
-            mediaVisibility = true
-            if (reply_view.visibility == VISIBLE) {
-                reply_view.fadeOut()
-                chat_control.showOtherInput()
-            }
+            getPanelFragment()
+//            shadow.fadeIn()
+//            media_layout.visibility = VISIBLE
+//            media_layout.translationY(16f)
+//            chat_control.chat_et.hideKeyboard()
+//            hideStickerContainer()
+//            mediaVisibility = true
+//            if (reply_view.visibility == VISIBLE) {
+//                reply_view.fadeOut()
+//                chat_control.showOtherInput()
+//            }
         }
     }
 
     private fun hideMediaLayout() {
         if (mediaVisibility) {
-            shadow.fadeOut()
-            media_layout.translationY(dp(350f).toFloat()) {
-                media_layout.visibility = GONE
-            }
-            mediaVisibility = false
-            if (reply_view.visibility == VISIBLE) {
-                reply_view.fadeOut()
-                chat_control.showOtherInput()
-            }
+//            shadow.fadeOut()
+//            media_layout.translationY(dp(350f).toFloat()) {
+//                media_layout.visibility = GONE
+//            }
+//            mediaVisibility = false
+//            if (reply_view.visibility == VISIBLE) {
+//                reply_view.fadeOut()
+//                chat_control.showOtherInput()
+//            }
         }
     }
 
@@ -1696,6 +1747,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             clickSticker()
         }
 
+        @SuppressLint("CheckResult")
+        override fun onPanelClick() {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        toggleMediaLayout()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                })
+        }
+
         override fun onSendClick(text: String) {
             if (text.isBlank()) {
                 if (sticker_container.isShowing) {
@@ -1729,8 +1794,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             OpusAudioRecorder.get().stopRecording(false)
         }
 
-        override fun onUp() {
-            updateSticker()
+        override fun onUp(isSticker: Boolean) {
+            if (isSticker) {
+                updateSticker()
+            } else {
+                toast("click to expanding panel")
+            }
         }
 
         override fun onDown() {

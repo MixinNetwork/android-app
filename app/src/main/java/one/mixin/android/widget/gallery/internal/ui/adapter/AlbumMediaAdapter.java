@@ -32,6 +32,7 @@ public class AlbumMediaAdapter extends
     private SelectionSpec mSelectionSpec;
     private CheckStateListener mCheckStateListener;
     private OnMediaClickListener mOnMediaClickListener;
+    private OnPhotoCapture mOnPhotoCapture;
     private RecyclerView mRecyclerView;
     private int mImageResize;
 
@@ -53,6 +54,8 @@ public class AlbumMediaAdapter extends
             holder.itemView.setOnClickListener(v1 -> {
                 if (v1.getContext() instanceof OnPhotoCapture) {
                     ((OnPhotoCapture) v1.getContext()).capture();
+                } else if (mOnPhotoCapture != null) {
+                    mOnPhotoCapture.capture();
                 }
             });
             return holder;
@@ -139,6 +142,10 @@ public class AlbumMediaAdapter extends
 
     public void unregisterOnMediaClickListener() {
         mOnMediaClickListener = null;
+    }
+
+    public void registerOnPhotoCapture(OnPhotoCapture onPhotoCapture) {
+        mOnPhotoCapture = onPhotoCapture;
     }
 
     public void refreshSelection() {

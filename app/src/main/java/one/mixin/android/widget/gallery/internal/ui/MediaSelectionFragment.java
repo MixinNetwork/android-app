@@ -32,6 +32,7 @@ public class MediaSelectionFragment extends Fragment implements
     private SelectionProvider mSelectionProvider;
     private AlbumMediaAdapter.CheckStateListener mCheckStateListener;
     private AlbumMediaAdapter.OnMediaClickListener mOnMediaClickListener;
+    private AlbumMediaAdapter.OnPhotoCapture mOnPhotoCapture;
 
     public static MediaSelectionFragment newInstance(Album album) {
         MediaSelectionFragment fragment = new MediaSelectionFragment();
@@ -46,8 +47,6 @@ public class MediaSelectionFragment extends Fragment implements
         super.onAttach(context);
         if (context instanceof SelectionProvider) {
             mSelectionProvider = (SelectionProvider) context;
-        } else {
-            throw new IllegalStateException("Context must implement SelectionProvider.");
         }
         if (context instanceof AlbumMediaAdapter.CheckStateListener) {
             mCheckStateListener = (AlbumMediaAdapter.CheckStateListener) context;
@@ -67,7 +66,7 @@ public class MediaSelectionFragment extends Fragment implements
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        mRecyclerView = (RecyclerView) view.findViewById(R.id.recyclerview);
+        mRecyclerView = view.findViewById(R.id.recyclerview);
     }
 
     @Override
@@ -79,12 +78,13 @@ public class MediaSelectionFragment extends Fragment implements
                 mSelectionProvider.provideSelectedItemCollection(), mRecyclerView);
         mAdapter.registerCheckStateListener(this);
         mAdapter.registerOnMediaClickListener(this);
+        mAdapter.registerOnPhotoCapture(mOnPhotoCapture);
         mRecyclerView.setHasFixedSize(true);
 
         int spanCount;
         SelectionSpec selectionSpec = SelectionSpec.getInstance();
         if (selectionSpec.gridExpectedSize > 0) {
-            spanCount = UIUtils.spanCount(getContext(), selectionSpec.gridExpectedSize);
+            spanCount = UIUtils.spanCount(requireContext(), selectionSpec.gridExpectedSize);
         } else {
             spanCount = selectionSpec.spanCount;
         }
@@ -93,7 +93,7 @@ public class MediaSelectionFragment extends Fragment implements
         int spacing = getResources().getDimensionPixelSize(R.dimen.media_grid_spacing);
         mRecyclerView.addItemDecoration(new MediaGridInset(spanCount, spacing, false));
         mRecyclerView.setAdapter(mAdapter);
-        mAlbumMediaCollection.onCreate(getActivity(), this);
+        mAlbumMediaCollection.onCreate(requireActivity(), this);
         mAlbumMediaCollection.load(album, selectionSpec.capture);
     }
 
@@ -101,6 +101,22 @@ public class MediaSelectionFragment extends Fragment implements
     public void onDestroyView() {
         super.onDestroyView();
         mAlbumMediaCollection.onDestroy();
+    }
+
+    public void setSelectionProvider(SelectionProvider selectionProvider) {
+        mSelectionProvider = selectionProvider;
+    }
+
+    public void setCheckStateListener(AlbumMediaAdapter.CheckStateListener listener) {
+        mCheckStateListener = listener;
+    }
+
+    public void setOnMediaClickListener(AlbumMediaAdapter.OnMediaClickListener listener) {
+        mOnMediaClickListener = listener;
+    }
+
+    public void setOnPhotoCapture(AlbumMediaAdapter.OnPhotoCapture onPhotoCapture) {
+        mOnPhotoCapture = onPhotoCapture;
     }
 
     public void refreshMediaGrid() {

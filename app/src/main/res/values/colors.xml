@@ -64,6 +64,9 @@
     <color name="wallet_bg_gray">#F4F6F9</color>
     <color name="wallet_ripple">#F6F8FC</color>
 
+    <color name="panel_bg">#F9F9F9</color>
+    <color name="panel_bg_selected">#EDEEEE</color>
+
     <array name="name_colors">
         <item>#AA4848</item>
         <item>#B0665E</item>
