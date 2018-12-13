@@ -250,18 +250,10 @@ class ConversationAdapter(
         }
     }
 
-    private var oldSize: Int = 0
-    override fun submitList(pagedList: PagedList<MessageItem>?) {
-        currentList?.let {
-            oldSize = it.size
-        }
-        super.submitList(pagedList)
-    }
-
-    override fun onCurrentListChanged(currentList: PagedList<MessageItem>?) {
-        super.onCurrentListChanged(currentList)
-        if (currentList != null && oldSize != 0) {
-            val changeCount = currentList.size - oldSize
+    override fun onCurrentListChanged(previousList: PagedList<MessageItem>?, currentList: PagedList<MessageItem>?) {
+        super.onCurrentListChanged(previousList, currentList)
+        if (currentList != null && previousList!=null && previousList.size!=0) {
+            val changeCount = currentList.size - previousList.size
             when {
                 abs(changeCount) >= PAGE_SIZE -> notifyDataSetChanged()
                 changeCount > 0 -> for (i in 1 until changeCount + 1)
