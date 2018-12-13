@@ -1,7 +1,6 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.work.Result
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import okhttp3.OkHttpClient

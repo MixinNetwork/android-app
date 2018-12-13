@@ -2,7 +2,6 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
-import androidx.work.Result
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.vo.Asset

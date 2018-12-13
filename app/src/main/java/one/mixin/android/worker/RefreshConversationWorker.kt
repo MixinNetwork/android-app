@@ -4,7 +4,6 @@ import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import androidx.work.Result
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao

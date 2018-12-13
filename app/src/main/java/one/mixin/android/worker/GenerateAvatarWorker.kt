@@ -15,7 +15,6 @@ import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
 import android.util.ArrayMap
 import androidx.work.WorkerParameters
-import androidx.work.Result
 import com.bumptech.glide.Glide
 import one.mixin.android.R
 import one.mixin.android.extension.saveGroupAvatar

@@ -23,14 +23,17 @@ import org.whispersystems.libsignal.ecc.Curve
 
 class DeviceActivityFragment : Fragment() {
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_device, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        button.setOnClickListener{
+        button.setOnClickListener {
             val intentIntegrator = IntentIntegrator(activity)
             intentIntegrator.captureActivity = CaptureActivity::class.java
             intentIntegrator.setBeepEnabled(false)
@@ -53,7 +56,7 @@ class DeviceActivityFragment : Fragment() {
     private fun encryptKey(ctx: Context, url: String?) {
         val verificationCode = "hello"
         val uri = Uri.parse(url)
-        val ephemeralId      = uri.getQueryParameter("uuid")
+        val ephemeralId = uri.getQueryParameter("uuid")
         val deviceKey = uri.getQueryParameter("pub_key")
 
         if (TextUtils.isEmpty(ephemeralId) || TextUtils.isEmpty(deviceKey)) {

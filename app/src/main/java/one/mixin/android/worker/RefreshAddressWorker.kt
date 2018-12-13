@@ -1,7 +1,6 @@
 package one.mixin.android.worker
 
 import android.content.Context
-import androidx.work.Result
 import androidx.work.WorkerParameters
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao

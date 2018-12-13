@@ -2,7 +2,6 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
-import androidx.work.Result
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.User

@@ -21,7 +21,7 @@ class MessageProvider {
                     val countSql = "SELECT COUNT(*) FROM messages WHERE conversation_id = ?"
                     val countStatement = RoomSQLiteQuery.acquire(countSql, 1)
                     countStatement.bindString(argIndex, conversationId)
-                    return object : MixinLimitOffsetDataSource<MessageItem>(database, statement, countStatement, false, "messages","users", "snapshots", "assets", "stickers", "hyperlinks", "conversations") {
+                    return object : MixinLimitOffsetDataSource<MessageItem>(database, statement, countStatement, false, "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations") {
                         override fun convertRows(cursor: Cursor?): MutableList<MessageItem> {
                             cursor ?: return ArrayList()
                             val cursorIndexOfMessageId = cursor.getColumnIndexOrThrow("messageId")

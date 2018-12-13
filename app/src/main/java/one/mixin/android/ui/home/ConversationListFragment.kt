@@ -28,7 +28,6 @@ import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
-import one.mixin.android.extension.bottomShowFragment
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueAvatarWorkRequest
 import one.mixin.android.extension.networkConnected
@@ -44,7 +43,6 @@ import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData

@@ -252,7 +252,7 @@ class ConversationAdapter(
 
     override fun onCurrentListChanged(previousList: PagedList<MessageItem>?, currentList: PagedList<MessageItem>?) {
         super.onCurrentListChanged(previousList, currentList)
-        if (currentList != null && previousList!=null && previousList.size!=0) {
+        if (currentList != null && previousList != null && previousList.size != 0) {
             val changeCount = currentList.size - previousList.size
             when {
                 abs(changeCount) >= PAGE_SIZE -> notifyDataSetChanged()

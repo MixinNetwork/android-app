@@ -2,7 +2,6 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
-import androidx.work.Result
 import com.bumptech.glide.Glide
 import one.mixin.android.api.LocalJobException
 import one.mixin.android.vo.User
