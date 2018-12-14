@@ -13,6 +13,7 @@ import one.mixin.android.worker.GenerateAvatarWorker
 import java.util.concurrent.TimeUnit
 
 inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeNetworkWorkRequest(inputData: Data? = null) {
+    pruneWork()
     enqueue(buildNetworkRequest<W>(inputData).build())
 }
 
@@ -32,6 +33,7 @@ inline fun <reified W : ListenableWorker> buildNetworkRequest(inputData: Data? =
             .build())
 
 fun WorkManager.enqueueAvatarWorkRequest(inputData: Data? = null) {
+    pruneWork()
     beginWith(buildNetworkRequest<DownloadAvatarWorker>(inputData).build())
         .then(buildRequest<GenerateAvatarWorker>(inputData).build())
         .enqueue()

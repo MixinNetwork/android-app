@@ -18,6 +18,7 @@ import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -34,8 +35,10 @@ import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.rsaDecrypt
 import one.mixin.android.extension.alert
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.MixinJobManager
@@ -221,6 +224,7 @@ class VerificationFragment : BaseFragment() {
                 mobileViewModel.insertUser(r.data!!.toUser())
                 MixinApplication.get().onlining.set(true)
                 if (account.full_name?.isBlank()!!) {
+                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_SET_NAME, true)
                     InitializeActivity.showSetupName(context!!)
                 } else {
                     InitializeActivity.showLoading(context!!)

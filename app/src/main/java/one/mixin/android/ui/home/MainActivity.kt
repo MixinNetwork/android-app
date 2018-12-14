@@ -96,6 +96,12 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
+        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_SET_NAME, false)) {
+            InitializeActivity.showSetupName(this)
+            finish()
+            return
+        }
+
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_WRONG_TIME, false)) {
             InitializeActivity.showWongTime(this)
             finish()
@@ -119,7 +125,6 @@ class MainActivity : BlazeBaseActivity() {
         Bugsnag.setUser(account?.userId, account?.identity_number, account?.full_name)
         Crashlytics.setUserIdentifier(account?.userId)
 
-        WorkManager.getInstance().pruneWork()
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
 
         doAsync {

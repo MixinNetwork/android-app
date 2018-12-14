@@ -50,7 +50,7 @@ class InitializeActivity : BaseActivity() {
         }
 
         fun showSetupName(context: Context) {
-            context.startActivity(getIntent(context, false, false))
+            context.startActivity(getIntent(context, true, false))
         }
     }
 }
