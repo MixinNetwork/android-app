@@ -119,7 +119,6 @@ class MainActivity : BlazeBaseActivity() {
         Bugsnag.setUser(account?.userId, account?.identity_number, account?.full_name)
         Crashlytics.setUserIdentifier(account?.userId)
 
-        WorkManager.getInstance().pruneWork()
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
 
         doAsync {
