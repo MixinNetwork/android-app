@@ -31,12 +31,15 @@ class PanelFragment : BaseFragment() {
         const val ARGS_IS_BOT = "is_bot"
         const val ARGS_IS_SELF_CREATED_BOT = "is_self_created_bot"
 
-        fun newInstance(isGroup: Boolean, isBot: Boolean, isSelfCreatedBot: Boolean) =
-            PanelFragment().withArgs {
-                putBoolean(ARGS_IS_GROUP, isGroup)
-                putBoolean(ARGS_IS_BOT, isBot)
-                putBoolean(ARGS_IS_SELF_CREATED_BOT, isSelfCreatedBot)
-            }
+        fun newInstance(
+            isGroup: Boolean,
+            isBot: Boolean,
+            isSelfCreatedBot: Boolean
+        ) = PanelFragment().withArgs {
+            putBoolean(ARGS_IS_GROUP, isGroup)
+            putBoolean(ARGS_IS_BOT, isBot)
+            putBoolean(ARGS_IS_SELF_CREATED_BOT, isSelfCreatedBot)
+        }
     }
 
     @Inject
@@ -70,7 +73,7 @@ class PanelFragment : BaseFragment() {
             override fun onPanelTabClick(panelTab: PanelTab) {
                 when (panelTab.type) {
                     PanelTabType.Gallery -> showGalleryFragment()
-                    PanelTabType.Transfer -> showTransferFragment(panelTab)
+                    PanelTabType.Transfer -> showTransferFragment()
                     PanelTabType.Voice -> showVoiceFragment()
                     PanelTabType.File -> showFileFragment(panelTab)
                     PanelTabType.Contact -> showContactFragment()
@@ -92,8 +95,8 @@ class PanelFragment : BaseFragment() {
         }
     }
 
-    private fun showTransferFragment(panelTab: PanelTab) {
-
+    private fun showTransferFragment() {
+        callback?.onTransferClick()
     }
 
     private fun showVoiceFragment() {
@@ -108,15 +111,19 @@ class PanelFragment : BaseFragment() {
     }
 
     private fun showFileFragment(panelTab: PanelTab) {
-
     }
 
     private fun showContactFragment() {
-
+        var contactFragment = requireFragmentManager().findFragmentByTag(PanelContactFragment.TAG) as? PanelContactFragment
+        if (contactFragment == null) {
+            contactFragment = PanelContactFragment.newInstance()
+        }
+        requireFragmentManager().inTransaction {
+            replace(R.id.panel_tab_container, contactFragment, PanelVoiceFragment.TAG)
+        }
     }
 
     private fun showAppFragment(panelTab: PanelTab) {
-
     }
 
     fun setAppList(appList: List<App>) {
@@ -146,5 +153,6 @@ class PanelFragment : BaseFragment() {
         fun onGalleryClick(uri: Uri, isVideo: Boolean)
         fun onCameraClick(imageUri: Uri)
         fun onVoiceClick()
+        fun onTransferClick()
     }
 }
