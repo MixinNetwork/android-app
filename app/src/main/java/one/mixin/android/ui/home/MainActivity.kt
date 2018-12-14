@@ -96,6 +96,12 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
+        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_SET_NAME, false)) {
+            InitializeActivity.showSetupName(this)
+            finish()
+            return
+        }
+
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_WRONG_TIME, false)) {
             InitializeActivity.showWongTime(this)
             finish()
