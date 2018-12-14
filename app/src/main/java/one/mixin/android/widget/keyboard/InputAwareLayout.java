@@ -6,9 +6,10 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import one.mixin.android.ui.conversation.GiphyBottomSheetFragment;
 
 public class InputAwareLayout extends KeyboardAwareLinearLayout implements KeyboardAwareLinearLayout.OnKeyboardShownListener {
+    public static boolean appreciable = true;
+
     private InputView current;
 
     public InputAwareLayout(Context context) {
@@ -26,7 +27,7 @@ public class InputAwareLayout extends KeyboardAwareLinearLayout implements Keybo
 
     @Override
     public void onKeyboardShown() {
-        if (!GiphyBottomSheetFragment.shown) {
+        if (appreciable) {
             hideAttachedInput(true);
         }
     }

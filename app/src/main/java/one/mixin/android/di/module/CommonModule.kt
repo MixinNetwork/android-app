@@ -11,6 +11,7 @@ import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.panel.PanelTransferFragment
 
 @Module
 abstract class CommonModule {
@@ -40,4 +41,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeGiphyBottomSheetDialogFragment(): GiphyBottomSheetFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePanelTransferFragment(): PanelTransferFragment
 }

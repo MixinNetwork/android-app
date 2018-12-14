@@ -28,6 +28,7 @@ import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
 import retrofit2.HttpException
 import timber.log.Timber
@@ -43,9 +44,6 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         const val POS_EMPTY = 2
 
         fun newInstance() = GiphyBottomSheetFragment()
-
-        @JvmField
-        var shown = false
     }
 
     private val adapter: GiphyAdapter by lazy {
@@ -84,11 +82,11 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        shown = true
+        InputAwareLayout.appreciable = false
     }
 
     override fun onDetach() {
-        shown = false
+        InputAwareLayout.appreciable = true
         contentView.hideKeyboard()
         super.onDetach()
     }

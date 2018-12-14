@@ -102,9 +102,11 @@ import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.panel.PanelFragment
+import one.mixin.android.ui.panel.PanelTransferFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
@@ -1490,6 +1492,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             }
                         }, {
                         })
+                }
+            }
+
+            override fun onTransferClick() {
+                if (Session.getAccount()?.hasPin == true) {
+                    recipient?.let {
+                        PanelTransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), PanelTransferFragment.TAG)
+                    }
+                } else {
+                    activity?.supportFragmentManager?.inTransaction {
+                        setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                            .anim.slide_in_bottom, R.anim.slide_out_bottom)
+                            .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                            .addToBackStack(null)
+                    }
                 }
             }
         }
