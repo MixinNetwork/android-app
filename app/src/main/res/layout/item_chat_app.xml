@@ -14,6 +14,7 @@
 
     <TextView
         android:id="@+id/item_name"
+        android:minWidth="30dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
