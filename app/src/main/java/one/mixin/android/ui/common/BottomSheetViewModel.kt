@@ -2,8 +2,6 @@ package one.mixin.android.ui.common
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -20,9 +18,8 @@ import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentResponse
-import one.mixin.android.extension.enqueueAvatarWorkRequest
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.job.ConversationJob
+import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
@@ -41,7 +38,6 @@ import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
-import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
 import org.jetbrains.anko.doAsync
 import javax.inject.Inject
 
@@ -143,8 +139,7 @@ class BottomSheetViewModel @Inject internal constructor(
     fun getUser(id: String) = userRepository.getUser(id)
 
     fun startGenerateAvatar(conversationId: String) {
-        WorkManager.getInstance().enqueueAvatarWorkRequest(
-            workDataOf(GROUP_ID to conversationId))
+        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
     }
 
     fun deleteMessageByConversationId(conversationId: String) {
