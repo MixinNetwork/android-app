@@ -20,6 +20,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="5dp"
             android:maxWidth="280dp"
+            android:minWidth="30dp"
             android:ellipsize="end"
             android:gravity="start|top"
             android:lines="1"
