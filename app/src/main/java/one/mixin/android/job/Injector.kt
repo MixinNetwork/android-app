@@ -31,7 +31,6 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
-import one.mixin.android.worker.RefreshConversationWorker
 import java.io.IOException
 import javax.inject.Inject
 
@@ -99,8 +98,7 @@ open class Injector : Injectable {
             refreshConversation(data.conversationId)
         }
         if (conversation.status == ConversationStatus.START.ordinal) {
-            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
-                workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
+            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
         }
     }
 

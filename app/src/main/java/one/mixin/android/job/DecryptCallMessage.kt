@@ -27,7 +27,6 @@ import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
-import one.mixin.android.worker.RefreshUserWorker
 import org.webrtc.IceCandidate
 import timber.log.Timber
 import java.io.IOException
@@ -273,13 +272,11 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 userDao.insert(response.data!!)
                 response.data
             } else {
-                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
-                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
+                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
                 null
             }
         } catch (e: IOException) {
-            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
-                workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
+            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
             null
         }
     }

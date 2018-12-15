@@ -37,6 +37,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
+import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
@@ -157,8 +158,7 @@ class ConversationListFragment : LinkFragment() {
                 messageAdapter.setConversationList(r)
                 r.filter { it.isGroup() && (it.iconUrl() == null || !File(it.iconUrl()).exists()) }
                     .forEach {
-                        WorkManager.getInstance().enqueueAvatarWorkRequest(
-                            workDataOf(GROUP_ID to it.conversationId))
+                        jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
                     }
             }
             firstEnter = false

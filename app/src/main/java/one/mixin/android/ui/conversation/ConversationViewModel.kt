@@ -49,6 +49,7 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendMessageJob
@@ -99,7 +100,6 @@ import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
-import one.mixin.android.worker.RefreshStickerAlbumWorker
 import one.mixin.android.worker.RemoveStickersWorker
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -474,7 +474,7 @@ internal constructor(
     }
 
     fun refreshStickerAlbums() {
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerAlbumWorker>()
+        jobManager.addJobInBackground(RefreshStickerAlbumJob())
     }
 
     fun findMessageIndexSync(conversationId: String, messageId: String) =
