@@ -10,8 +10,6 @@ import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
@@ -20,7 +18,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
@@ -30,7 +28,6 @@ import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.widget.RadioGroup
-import one.mixin.android.worker.RefreshSnapshotsWorker
 
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -73,7 +70,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             }
         }
         bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey))
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshSnapshotsWorker>()
+        jobManager.addJobInBackground(RefreshSnapshotsJob())
     }
 
     override fun onStop() {
