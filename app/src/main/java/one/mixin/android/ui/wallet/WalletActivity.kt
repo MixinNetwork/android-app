@@ -5,16 +5,14 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
-import androidx.work.WorkManager
 import one.mixin.android.R
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.worker.RefreshAssetsWorker
 import javax.inject.Inject
 
 class WalletActivity : BlazeBaseActivity() {
@@ -46,7 +44,7 @@ class WalletActivity : BlazeBaseActivity() {
             }
         })
         navController.graph = navGraph
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+        jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
     override fun finish() {
