@@ -40,6 +40,7 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toDot
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BiometricDialog
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
@@ -52,7 +53,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.worker.RefreshAssetsWorker
-import one.mixin.android.worker.RefreshUserWorker
 import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -165,8 +165,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         chatViewModel.findUserById(userId).observe(this, Observer { u ->
             if (u == null) {
-                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
-                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
+                jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
             } else {
                 user = u
 

@@ -21,6 +21,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -30,7 +31,6 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.widget.RadioGroup
 import one.mixin.android.worker.RefreshSnapshotsWorker
-import one.mixin.android.worker.RefreshUserWorker
 
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -63,8 +63,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                         s?.opponentId?.let {
                             val u = walletViewModel.getUserById(it)
                             if (u == null) {
-                                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
-                                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(it)))
+                                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(it)))
                             }
                         }
                     }

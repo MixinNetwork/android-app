@@ -36,6 +36,7 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_EXIT
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
@@ -48,7 +49,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
-import one.mixin.android.worker.RefreshConversationWorker
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import javax.inject.Inject
@@ -278,8 +278,7 @@ class GroupInfoFragment : BaseFragment() {
             }
         })
 
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
-            workDataOf(RefreshConversationWorker.CONVERSATION_ID to conversationId))
+        jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 
     private fun filter(s: String) {

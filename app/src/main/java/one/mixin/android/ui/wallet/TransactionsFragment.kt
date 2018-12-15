@@ -35,6 +35,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
+import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -51,7 +52,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RadioGroup
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshSnapshotsWorker
-import one.mixin.android.worker.RefreshUserWorker
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 
@@ -133,8 +133,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
                             s.opponentId?.let {
                                 val u = walletViewModel.getUserById(it)
                                 if (u == null) {
-                                    WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
-                                        workDataOf(RefreshUserWorker.USER_IDS to arrayOf(it)))
+                                    jobManager.addJobInBackground(RefreshUserJob(arrayListOf(it)))
                                 }
                             }
                         }

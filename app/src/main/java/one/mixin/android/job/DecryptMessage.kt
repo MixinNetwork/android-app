@@ -60,11 +60,8 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
-import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
 import one.mixin.android.worker.RefreshAssetsWorker
-import one.mixin.android.worker.RefreshConversationWorker
 import one.mixin.android.worker.RefreshStickerWorker
-import one.mixin.android.worker.RefreshUserWorker
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -343,12 +340,10 @@ class DecryptMessage : Injector() {
             systemMessage.action == SystemConversationAction.JOIN.name) {
             participantDao.insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
             if (systemMessage.participantId == accountId) {
-                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
-                    workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
+                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             } else {
-                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
-                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(systemMessage.participantId),
-                        RefreshUserWorker.CONVERSATION_ID to data.conversationId))
+                jobManager.addJobInBackground(
+                    RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
             }
             if (systemMessage.participantId != accountId &&
                 signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
@@ -361,15 +356,13 @@ class DecryptMessage : Injector() {
             if (systemMessage.participantId == accountId) {
                 conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
             } else {
-                WorkManager.getInstance().enqueueAvatarWorkRequest(
-                    workDataOf(GROUP_ID to data.conversationId))
+                jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             }
             syncUser(systemMessage.participantId!!)
             jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
-            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshConversationWorker>(
-                workDataOf(RefreshConversationWorker.CONVERSATION_ID to data.conversationId))
+            jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
             participantDao.updateParticipantRole(data.conversationId,
@@ -547,8 +540,7 @@ class DecryptMessage : Injector() {
                     }
                 }
             } catch (e: IOException) {
-                WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
-                    workDataOf(RefreshUserWorker.USER_IDS to arrayOf(userId)))
+                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
             }
         }
     }
