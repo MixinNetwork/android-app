@@ -66,6 +66,7 @@
 
     <color name="panel_bg">#F9F9F9</color>
     <color name="panel_bg_selected">#EDEEEE</color>
+    <color name="panel_search_bg">#F7F7F7</color>
 
     <array name="name_colors">
         <item>#AA4848</item>
