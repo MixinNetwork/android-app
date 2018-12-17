@@ -27,7 +27,7 @@
         android:drawablePadding="8dp"
         android:drawableStart="@drawable/ic_asset_add_search"
         android:hint="@string/search"
-        android:imeOptions="actionSearch"
+        android:imeOptions="actionDone"
         android:inputType="text"
         android:maxLines="1"
         android:paddingEnd="@dimen/margin_start"

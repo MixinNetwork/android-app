@@ -9,7 +9,9 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import one.mixin.android.extension.dpToPx
+import kotlin.math.abs
 
 class PanelBarView @JvmOverloads constructor(
     context: Context,
@@ -38,6 +40,8 @@ class PanelBarView @JvmOverloads constructor(
         }
     private val path = Path()
 
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+
     var maxDragDistance = 0f
 
     override fun onDraw(canvas: Canvas) {
@@ -53,6 +57,7 @@ class PanelBarView @JvmOverloads constructor(
         canvas.drawPath(path, paint)
     }
 
+    private var originY: Float = 0f
     private var downY: Float = 0f
 
     @SuppressLint("ClickableViewAccessibility")
@@ -60,17 +65,27 @@ class PanelBarView @JvmOverloads constructor(
         when (event.action) {
             MotionEvent.ACTION_DOWN -> {
                 downY = event.rawY
+                originY = event.rawY
+
+                if (!postDelayed(performClick, 300)) {
+                    callback?.onClick()
+                }
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
                 val moveY = event.rawY
                 val disY = moveY - downY
+
+                if ((abs(originY - moveY) > touchSlop)) {
+                    removeCallbacks(performClick)
+                }
+
                 val projectionDisY = disY / height
                 currHeight -= projectionDisY
                 callback?.onDrag(disY)
                 downY = moveY
             }
-            MotionEvent.ACTION_UP -> {
+            MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                 val ratio = currHeight / maxDragDistance
                 currHeight = if (ratio < .5f) {
                     height.toFloat()
@@ -78,6 +93,7 @@ class PanelBarView @JvmOverloads constructor(
                     offsetVertical
                 }
                 downY = 0f
+                originY = 0f
                 callback?.onRelease()
             }
         }
@@ -94,10 +110,13 @@ class PanelBarView @JvmOverloads constructor(
         invalidate()
     }
 
+    private val performClick = Runnable { callback?.onClick() }
+
     var callback: Callback? = null
 
     interface Callback {
         fun onDrag(dis: Float)
         fun onRelease()
+        fun onClick()
     }
 }

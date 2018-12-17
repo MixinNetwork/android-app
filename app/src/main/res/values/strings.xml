@@ -53,6 +53,7 @@
     <string name="undo_capital">UNDO</string>
     <string name="searching">Searching</string>
     <string name="add_success">Add success</string>
+    <string name="back">Back</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -517,5 +518,8 @@
     <string name="call_decline">Decline</string>
     <string name="call_accept">Accept</string>
     <string name="call_mute">Mute</string>
+    
+    <!-- panel -->
+    <string name="panel_transfer_asset_balance">%1$s BALANCE</string>
 </resources>
 

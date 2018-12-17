@@ -50,6 +50,7 @@
     <string name="undo_capital">撤销</string>
     <string name="searching">搜索中</string>
     <string name="add_success">添加成功</string>
+    <string name="back">返回</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -509,4 +510,7 @@
     <string name="call_decline">挂断</string>
     <string name="call_accept">接听</string>
     <string name="call_mute">静音</string>
+
+    <!-- panel -->
+    <string name="panel_transfer_asset_balance">%1$s 余额</string>
 </resources>

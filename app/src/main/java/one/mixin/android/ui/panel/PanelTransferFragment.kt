@@ -8,27 +8,23 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
-import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
-import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_panel_transfer.view.*
-import kotlinx.android.synthetic.main.item_transfer_type.view.*
+import kotlinx.android.synthetic.main.layout_panel_transfer_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.displaySize
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
@@ -42,9 +38,9 @@ import one.mixin.android.extension.toDot
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BiometricDialog
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.panel.adapter.PanelTransferAssetAdapter
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.BiometricUtil.REQUEST_CODE_CREDENTIALS
 import one.mixin.android.util.ErrorHandler
@@ -53,6 +49,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PanelBarView
+import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshUserWorker
@@ -67,6 +64,9 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PanelTransferFragment"
         const val ASSERT_PREFERENCE = "TRANSFER_ASSERT"
+
+        private const val POS_TRANSFER = 0
+        private const val POS_ASSET = 1
 
         fun newInstance(userId: String) = PanelTransferFragment().apply {
             arguments = bundleOf(
@@ -112,6 +112,11 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         }
+
+        override fun onClick() {
+            contentView.transfer_amount.hideKeyboard()
+            dismiss()
+        }
     }
 
     override fun onAttach(context: Context?) {
@@ -144,38 +149,16 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
     private var currentAsset: AssetItem? = null
         set(value) {
             field = value
-            adapter.currentAsset = value
             activity?.defaultSharedPreferences!!.putString(ASSERT_PREFERENCE, value?.assetId)
         }
-
-    private val adapter by lazy {
-        TypeAdapter()
-    }
 
     private val userId: String by lazy { arguments!!.getString(ARGS_USER_ID) }
 
     private var user: User? = null
 
-    private val assetsView: View by lazy {
-        val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null)
-        view.type_rv.addItemDecoration(SpaceItemDecoration())
-        view.type_rv.adapter = adapter
-        view
-    }
-
-    private val assetsBottomSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(requireActivity())
-        val bottomSheet = builder.create()
-        builder.setCustomView(assetsView)
-        bottomSheet.setOnDismissListener {
-            if (isAdded) {
-                contentView.transfer_amount.post { contentView.transfer_amount.showKeyboard() }
-            }
-        }
-        bottomSheet
-    }
-
     private var biometricDialog: BiometricDialog? = null
+
+    private var assetsAdapter = PanelTransferAssetAdapter()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -183,29 +166,7 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
         contentView.transfer_amount.addTextChangedListener(mWatcher)
         contentView.asset_rl.setOnClickListener {
             contentView.transfer_amount.hideKeyboard()
-            context?.let {
-                adapter.coins = assets
-                adapter.setTypeListener(object : OnTypeClickListener {
-                    override fun onTypeClick(asset: AssetItem) {
-                        currentAsset = asset
-                        contentView.asset_name.text = asset.name
-                        contentView.asset_desc.text = asset.balance.numberFormat()
-                        contentView.asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-                        contentView.asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-                        adapter.notifyDataSetChanged()
-                        assetsBottomSheet.dismiss()
-                    }
-                })
-
-                assetsView.type_cancel.setOnClickListener {
-                    assetsBottomSheet.dismiss()
-                }
-                assetsBottomSheet.show()
-
-                if (assets.size > 3) {
-                    assetsBottomSheet.setCustomViewHeight(it.dpToPx(300f))
-                }
-            }
+            contentView.asset_layout.animate().translationX(0f).start()
         }
 
         chatViewModel.findUserById(userId).observe(this, Observer { u ->
@@ -232,7 +193,7 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
         chatViewModel.assetItemsWithBalance().observe(this, Observer { r: List<AssetItem>? ->
             if (r != null && r.isNotEmpty()) {
                 assets = r
-                adapter.coins = r
+                assetsAdapter.submitList(r)
                 contentView.expand_iv.visibility = VISIBLE
                 contentView.asset_rl.isEnabled = true
 
@@ -252,6 +213,7 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
                     contentView.asset_desc.text = a.balance.numberFormat()
                     currentAsset = a
                 })
+                assetsAdapter.currentAsset = currentAsset
             } else {
                 contentView.expand_iv.visibility = GONE
                 contentView.asset_rl.isEnabled = false
@@ -275,6 +237,38 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         })
+
+        contentView.back_iv.setOnClickListener {
+            contentView.asset_layout.animate().translationX(contentView.asset_layout.width.toFloat()).start()
+        }
+        contentView.assets_rv.layoutManager = LinearLayoutManager(requireContext())
+        contentView.assets_rv.adapter = assetsAdapter
+        assetsAdapter.onAssetListener = object : PanelTransferAssetAdapter.OnAssetListener {
+            override fun onItemClick(assetItem: AssetItem) {
+                currentAsset = assetItem
+                assetsAdapter.currentAsset = assetItem
+                contentView.asset_name.text = assetItem.name
+                contentView.asset_desc.text = assetItem.balance.numberFormat()
+                contentView.asset_avatar.bg.loadImage(assetItem.iconUrl, R.drawable.ic_avatar_place_holder)
+                contentView.asset_avatar.badge.loadImage(assetItem.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                contentView.search_et.text.clear()
+                contentView.asset_layout.animate().translationX(contentView.asset_layout.width.toFloat()).start()
+            }
+        }
+        contentView.search_et.listener = object : SearchView.OnSearchViewListener {
+            override fun afterTextChanged(s: Editable?) {
+                assetsAdapter.submitList(if (s.isNullOrBlank()) {
+                    assets
+                } else {
+                    assets.filter { it.name.startsWith(s, true) }
+                })
+            }
+
+            override fun onSearch() {
+                // Left empty for local data filter
+            }
+        }
+
         (dialog as BottomSheet).setCustomViewHeight(maxHeight)
         contentView.transfer_amount.post { contentView.transfer_amount.showKeyboard() }
     }
@@ -355,48 +349,4 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
 
         override fun onCancel() {}
     }
-
-    class TypeAdapter : RecyclerView.Adapter<ItemHolder>() {
-        var coins: List<AssetItem>? = null
-            set(value) {
-                field = value
-                notifyDataSetChanged()
-            }
-
-        private var typeListener: OnTypeClickListener? = null
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
-            ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_transfer_type, parent, false))
-
-        override fun onBindViewHolder(holder: ItemHolder, position: Int) {
-            if (coins == null || coins!!.isEmpty()) {
-                return
-            }
-            val itemAssert = coins!![position]
-            holder.itemView.type_avatar.bg.loadImage(itemAssert.iconUrl, R.drawable.ic_avatar_place_holder)
-            holder.itemView.type_avatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            holder.itemView.name.text = itemAssert.name
-            holder.itemView.value.text = itemAssert.balance.numberFormat()
-            currentAsset?.let {
-                holder.itemView.check_iv.visibility = if (itemAssert.assetId == currentAsset?.assetId) VISIBLE else GONE
-            }
-            holder.itemView.setOnClickListener {
-                typeListener?.onTypeClick(itemAssert)
-            }
-        }
-
-        override fun getItemCount(): Int = notNullElse(coins, { it.size }, 0)
-
-        fun setTypeListener(listener: OnTypeClickListener) {
-            typeListener = listener
-        }
-
-        var currentAsset: AssetItem? = null
-    }
-
-    interface OnTypeClickListener {
-        fun onTypeClick(asset: AssetItem)
-    }
-
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 }
