@@ -5,23 +5,21 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.fragment_panel.*
 import one.mixin.android.R
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.panel.adapter.PanelTabAdapter
+import one.mixin.android.ui.panel.listener.OnSendContactsListener
 import one.mixin.android.vo.App
+import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import one.mixin.android.widget.gallery.internal.entity.CaptureStrategy
 import one.mixin.android.widget.gallery.ui.GalleryFragment
-import javax.inject.Inject
 
 class PanelFragment : BaseFragment() {
     companion object {
@@ -40,12 +38,6 @@ class PanelFragment : BaseFragment() {
             putBoolean(ARGS_IS_BOT, isBot)
             putBoolean(ARGS_IS_SELF_CREATED_BOT, isSelfCreatedBot)
         }
-    }
-
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val chatViewModel: ConversationViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
     private val isGroup by lazy { arguments!!.getBoolean(ARGS_IS_GROUP) }
@@ -68,18 +60,18 @@ class PanelFragment : BaseFragment() {
         panel_tab_rv.adapter = panelTabAdapter
 
         showGalleryFragment()
-        callback?.toggleExpand(true)
+        callback?.toggleExpand(panelTabAdapter.buildInPanelTabs[0])
         panelTabAdapter.onPanelTabListener = object : PanelTabAdapter.OnPanelTabListener {
             override fun onPanelTabClick(panelTab: PanelTab) {
                 when (panelTab.type) {
                     PanelTabType.Gallery -> showGalleryFragment()
                     PanelTabType.Transfer -> showTransferFragment()
                     PanelTabType.Voice -> showVoiceFragment()
-                    PanelTabType.File -> showFileFragment(panelTab)
+                    PanelTabType.File -> showFileFragment()
                     PanelTabType.Contact -> showContactFragment()
                     PanelTabType.App -> showAppFragment(panelTab)
                 }
-                callback?.toggleExpand(panelTab.expandable)
+                callback?.toggleExpand(panelTab)
             }
         }
     }
@@ -110,13 +102,19 @@ class PanelFragment : BaseFragment() {
         }
     }
 
-    private fun showFileFragment(panelTab: PanelTab) {
+    private fun showFileFragment() {
+        callback?.onFileClick()
     }
 
     private fun showContactFragment() {
         var contactFragment = requireFragmentManager().findFragmentByTag(PanelContactFragment.TAG) as? PanelContactFragment
         if (contactFragment == null) {
             contactFragment = PanelContactFragment.newInstance()
+            contactFragment.onSendContactsListener = object : OnSendContactsListener {
+                override fun onSendContacts(messages: ArrayList<ForwardMessage>) {
+                    callback?.onSendContacts(messages)
+                }
+            }
         }
         requireFragmentManager().inTransaction {
             replace(R.id.panel_tab_container, contactFragment, PanelVoiceFragment.TAG)
@@ -149,10 +147,12 @@ class PanelFragment : BaseFragment() {
     var callback: Callback? = null
 
     interface Callback {
-        fun toggleExpand(expandable: Boolean)
+        fun toggleExpand(panelTab: PanelTab)
         fun onGalleryClick(uri: Uri, isVideo: Boolean)
         fun onCameraClick(imageUri: Uri)
         fun onVoiceClick()
         fun onTransferClick()
+        fun onFileClick()
+        fun onSendContacts(messages: ArrayList<ForwardMessage>)
     }
 }

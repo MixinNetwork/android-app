@@ -17,7 +17,7 @@ class PanelTabAdapter(
     private val isSelfCreatedBot: Boolean
 ) : RecyclerView.Adapter<PanelTabAdapter.PanelHolder>() {
 
-    private val buildInPanelTabs = arrayListOf<PanelTab>().apply {
+    internal val buildInPanelTabs = arrayListOf<PanelTab>().apply {
         add(PanelTab(PanelTabType.Gallery, R.drawable.ic_panel_camera, null, true, true, true))
         val transferPanelTab = PanelTab(PanelTabType.Transfer, R.drawable.ic_panel_transfer, null, false, true, false)
         val voicePanelTab = PanelTab(PanelTabType.Voice, R.drawable.ic_panel_voice, null, true, false, false)

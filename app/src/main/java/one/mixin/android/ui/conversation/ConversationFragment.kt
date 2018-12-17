@@ -77,10 +77,12 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
@@ -101,8 +103,12 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.panel.PanelContactBottomSheet
 import one.mixin.android.ui.panel.PanelFragment
+import one.mixin.android.ui.panel.PanelTab
+import one.mixin.android.ui.panel.PanelTabType
 import one.mixin.android.ui.panel.PanelTransferFragment
+import one.mixin.android.ui.panel.listener.OnSendContactsListener
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.ui.wallet.TransactionFragment
@@ -665,7 +671,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         conversationContext = Job()
         val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
         if (messages != null) {
-            sendForwardMessages(messages)
+            sendForwardMessages(messages, true)
         } else {
             initView()
         }
@@ -1097,9 +1103,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendForwardMessages(messages: List<ForwardMessage>) {
+    private fun sendForwardMessages(messages: List<ForwardMessage>, init: Boolean) {
         createConversation {
-            initView()
+            if (init) {
+                initView()
+            }
             messages.let {
                 for (item in it) {
                     if (item.id != null) {
@@ -1359,7 +1367,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 val app = chatViewModel.findAppById(user.appId!!)
                 if (app != null && app.creatorId == Session.getAccountId()) {
                     uiThread {
-//                        menuAdapter.isSelfCreatedBot = true
+                        //                        menuAdapter.isSelfCreatedBot = true
                         getPanelFragment(true)
                     }
                 }
@@ -1445,6 +1453,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
     }
 
+    lateinit var currPanelTab: PanelTab
+
     private fun getPanelFragment(isSelfCreatedBot: Boolean = false): PanelFragment {
         var panelFragment = requireFragmentManager().findFragmentByTag(PanelFragment.TAG)
         if (panelFragment == null) {
@@ -1452,8 +1462,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         panelFragment as PanelFragment
         panelFragment.callback = object : PanelFragment.Callback {
-            override fun toggleExpand(expandable: Boolean) {
-                chat_control.expandable = expandable
+            override fun toggleExpand(panelTab: PanelTab) {
+                chat_control.expandable = panelTab.expandable
+                if (panelTab.checkable && panelTab.checked) {
+                    currPanelTab = panelTab
+                }
             }
 
             override fun onGalleryClick(uri: Uri, isVideo: Boolean) {
@@ -1498,7 +1511,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onTransferClick() {
                 if (Session.getAccount()?.hasPin == true) {
                     recipient?.let {
-                        PanelTransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), PanelTransferFragment.TAG)
+                        PanelTransferFragment.newInstance(it.userId)
+                            .showNow(requireFragmentManager(), PanelTransferFragment.TAG)
                     }
                 } else {
                     activity?.supportFragmentManager?.inTransaction {
@@ -1508,6 +1522,24 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             .addToBackStack(null)
                     }
                 }
+            }
+
+            @SuppressLint("CheckResult")
+            override fun onFileClick() {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .subscribe({ granted ->
+                        if (granted) {
+                            selectDocument()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }, {
+                    })
+            }
+
+            override fun onSendContacts(messages: ArrayList<ForwardMessage>) {
+                sendForwardMessages(messages, false)
             }
         }
         requireFragmentManager().inTransaction {
@@ -1815,7 +1847,31 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             if (isSticker) {
                 updateSticker()
             } else {
-                toast("click to expanding panel")
+                when (currPanelTab.type) {
+                    PanelTabType.Gallery -> {
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    openGallery()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                            })
+                    }
+                    PanelTabType.Contact -> {
+                        val panelContactBottomSheet = PanelContactBottomSheet.newInstance()
+                        panelContactBottomSheet.onSendContactsListener = object : OnSendContactsListener {
+                            override fun onSendContacts(messages: ArrayList<ForwardMessage>) {
+                                sendForwardMessages(messages, false)
+                            }
+                        }
+                        panelContactBottomSheet.show(requireFragmentManager(), PanelContactBottomSheet.TAG)
+                    }
+                    PanelTabType.App -> {
+                    }
+                }
             }
         }
 

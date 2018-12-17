@@ -67,6 +67,7 @@ class PanelBarView @JvmOverloads constructor(
                 downY = event.rawY
                 originY = event.rawY
 
+                callback?.onTap()
                 if (!postDelayed(performClick, 300)) {
                     callback?.onClick()
                 }
@@ -118,5 +119,6 @@ class PanelBarView @JvmOverloads constructor(
         fun onDrag(dis: Float)
         fun onRelease()
         fun onClick()
+        fun onTap()
     }
 }

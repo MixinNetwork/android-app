@@ -513,4 +513,5 @@
 
     <!-- panel -->
     <string name="panel_transfer_asset_balance">%1$s 余额</string>
+    <string name="panel_contact_send">发送（%1$d）</string>
 </resources>

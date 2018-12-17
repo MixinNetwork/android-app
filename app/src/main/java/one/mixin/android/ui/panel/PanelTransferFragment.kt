@@ -65,9 +65,6 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "PanelTransferFragment"
         const val ASSERT_PREFERENCE = "TRANSFER_ASSERT"
 
-        private const val POS_TRANSFER = 0
-        private const val POS_ASSET = 1
-
         fun newInstance(userId: String) = PanelTransferFragment().apply {
             arguments = bundleOf(
                 ARGS_USER_ID to userId
@@ -116,6 +113,10 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
         override fun onClick() {
             contentView.transfer_amount.hideKeyboard()
             dismiss()
+        }
+
+        override fun onTap() {
+            contentView.transfer_amount.hideKeyboard()
         }
     }
 
