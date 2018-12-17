@@ -10,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.loadImage
 import org.jetbrains.anko.sp
@@ -90,6 +91,14 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
 
     fun setTextSize(size: Float) {
         avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
+    }
+
+    fun setBorder(
+        color: Int = ContextCompat.getColor(context, android.R.color.white),
+        width: Float = context.dpToPx(2f).toFloat()
+    ) {
+        avatar_tv.setBorderInfo(width, color)
+        avatar_simple.borderColor = color
     }
 
     private fun getAvatarPlaceHolderById(id: Int): Int {

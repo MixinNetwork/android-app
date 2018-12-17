@@ -2,16 +2,16 @@
 <one.mixin.android.widget.gallery.internal.ui.widget.SquareFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/avatar_place_holder"
+    android:background="@android:color/black"
     android:foreground="?attr/selectableItemBackground">
 
     <TextView
         android:id="@+id/hint"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="75dp"
+        android:layout_height="60dp"
         android:layout_gravity="center"
-        android:drawablePadding="8dp"
-        android:drawableTop="@drawable/ic_photo_camera"
+        android:paddingTop="10dp"
+        android:drawableTop="@drawable/ic_gallery_camera"
         android:gravity="center"
         android:textColor="@color/text_black"
         android:textSize="14sp"/>

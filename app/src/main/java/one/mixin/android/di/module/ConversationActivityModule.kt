@@ -12,6 +12,8 @@ import one.mixin.android.ui.conversation.GiphyFragment
 import one.mixin.android.ui.panel.PanelFragment
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.group.GroupInfoFragment
+import one.mixin.android.ui.panel.PanelContactBottomSheet
+import one.mixin.android.ui.panel.PanelContactFragment
 import one.mixin.android.ui.sticker.StickerAddFragment
 import one.mixin.android.ui.sticker.StickerManagementFragment
 import one.mixin.android.ui.wallet.TransactionFragment
@@ -60,4 +62,10 @@ abstract class ConversationActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributePanelFragment(): PanelFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePanelContactFragment(): PanelContactFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePanelContactBottomSheet(): PanelContactBottomSheet
 }
