@@ -1,15 +1,12 @@
 package one.mixin.android.ui.conversation.tansfer
 
 import android.annotation.SuppressLint
-import android.app.Dialog
 import android.os.Bundle
 import android.text.TextUtils
-import android.view.View
 import android.view.View.VISIBLE
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
@@ -22,7 +19,7 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.panel.PanelBottomSheet
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Asset
@@ -34,7 +31,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 
-class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class TransferBottomSheetDialogFragment : PanelBottomSheet() {
 
     companion object {
         const val TAG = "TransferBottomSheetDialogFragment"
@@ -76,21 +73,13 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getString(ARGS_TRACE)
     }
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_transfer_bottom_sheet, null)
-        (dialog as BottomSheet).setCustomView(contentView)
-    }
+    override fun getContentViewId() = R.layout.fragment_transfer_bottom_sheet
 
     @SuppressLint("SetJavaScriptEnabled", "SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title_view.left_ib.setOnClickListener { dismiss() }
-        contentView.title_view.setSubTitle(getString(R.string.wallet_bottom_transfer_to, user.fullName), user.identityNumber)
-        contentView.title_view.avatar_iv.visibility = VISIBLE
-        contentView.title_view.avatar_iv.setTextSize(16f)
-        contentView.title_view.avatar_iv.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+        contentView.transfer_to_tv.text = getString(R.string.wallet_bottom_transfer_to, user.fullName)
+        contentView.id_tv.text = user.identityNumber
         if (!TextUtils.isEmpty(memo)) {
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = memo
@@ -148,6 +137,13 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         })
+
+        contentView.post {
+            maxHeight = contentView.height
+            closeHeight = 0
+            middleHeight = (maxHeight + closeHeight) / 2
+            (dialog as BottomSheet).setCustomViewHeight(contentView.height)
+        }
     }
 
     private var callback: Callback? = null

@@ -41,11 +41,11 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.LoadingFragment
+import one.mixin.android.ui.panel.PanelTransferFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -184,7 +184,7 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
-            TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
+            PanelTransferFragment.newInstance(userId).showNow(supportFragmentManager, PanelTransferFragment.TAG)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()

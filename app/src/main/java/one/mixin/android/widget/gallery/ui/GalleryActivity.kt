@@ -9,10 +9,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
+import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_gallery.*
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
@@ -97,6 +97,20 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_CAPTURE && resultCode == Activity.RESULT_OK) {
+            mMediaStoreCompat.currentPhotoUri?.let { imageUri ->
+                showPreview(imageUri) {
+                    val result = Intent()
+                    result.data = imageUri
+                    setResult(Activity.RESULT_OK, result)
+                    finish()
+                }
+            }
+        }
     }
 
     override fun onBackPressed() {

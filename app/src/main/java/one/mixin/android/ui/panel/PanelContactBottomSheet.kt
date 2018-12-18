@@ -9,12 +9,14 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.bottom_sheet_panel_contact.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.panel.adapter.PanelContactAdapter
 import one.mixin.android.ui.panel.listener.OnSendContactsListener
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
+import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 
 class PanelContactBottomSheet : PanelBottomSheet() {
@@ -63,9 +65,15 @@ class PanelContactBottomSheet : PanelBottomSheet() {
             friends = it
             adapter.submitList(it)
         })
+
+        (dialog as BottomSheet).setCustomViewHeight(maxHeight)
     }
 
     override fun getContentViewId() = R.layout.bottom_sheet_panel_contact
+
+    override fun onTapPanelBar() {
+        contentView.search_et.hideKeyboard()
+    }
 
     var onSendContactsListener: OnSendContactsListener? = null
 

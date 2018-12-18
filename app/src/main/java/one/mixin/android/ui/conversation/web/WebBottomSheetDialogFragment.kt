@@ -40,11 +40,10 @@ import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.panel.PanelBottomSheet
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.KeyBoardAssist
@@ -57,7 +56,7 @@ import java.io.FileInputStream
 import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 
-class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class WebBottomSheetDialogFragment : PanelBottomSheet() {
 
     companion object {
         const val TAG = "WebBottomSheetDialogFragment"
@@ -88,12 +87,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getString(NAME)
     }
 
+    override fun getContentViewId() = R.layout.fragment_web
+
     @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_web, null)
         registerForContextMenu(contentView.chat_web_view)
-        (dialog as BottomSheet).setCustomView(contentView)
     }
 
     override fun onCreateContextMenu(menu: ContextMenu, v: View, menuInfo: ContextMenu.ContextMenuInfo?) {
@@ -158,34 +157,22 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         context!!.displaySize().y * 3 / 4
     }
 
-    private val closeHeight by lazy {
-        context!!.displaySize().y / 2
-    }
-
-    private val maxHeight by lazy {
-        context!!.displaySize().y - context!!.statusBarHeight()
-    }
-
-    private val middleHeight by lazy {
-        (miniHeight + maxHeight) / 2
-    }
-
     var uploadMessage: ValueCallback<Array<Uri>>? = null
     @SuppressLint("SetJavaScriptEnabled")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         KeyBoardAssist.assistContent(contentView as ViewGroup)
-        contentView.close_iv.setOnClickListener {
-            dialog.dismiss()
-        }
+//        contentView.close_iv.setOnClickListener {
+//            dialog.dismiss()
+//        }
         contentView.chat_web_view.settings.javaScriptEnabled = true
         contentView.chat_web_view.settings.domStorageEnabled = true
 
         contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
             override fun onPageFinished() {
-                contentView.progress.visibility = View.GONE
-                contentView.title_view.visibility = View.VISIBLE
+//                contentView.progress.visibility = View.GONE
+//                contentView.title_view.visibility = View.VISIBLE
             }
         }, conversationId, this.requireFragmentManager())
 
@@ -193,7 +180,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
                 if (!title.equals(url)) {
-                    contentView.title_view.text = title
+//                    contentView.title_view.text = title
                 }
             }
 
@@ -245,15 +232,15 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         })
 
-        contentView.more_iv.setOnClickListener {
-            showBottomSheet()
-        }
+//        contentView.more_iv.setOnClickListener {
+//            showBottomSheet()
+//        }
 
-        name?.let {
-            contentView.title_view.text = it
-            contentView.progress.visibility = View.GONE
-            contentView.title_view.visibility = View.VISIBLE
-        }
+//        name?.let {
+//            contentView.title_view.text = it
+//            contentView.progress.visibility = View.GONE
+//            contentView.title_view.visibility = View.VISIBLE
+//        }
 
         dialog.setOnShowListener {
             val extraHeaders = HashMap<String, String>()

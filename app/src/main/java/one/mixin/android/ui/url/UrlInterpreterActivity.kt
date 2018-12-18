@@ -9,9 +9,9 @@ import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.panel.PanelTransferFragment
 import one.mixin.android.util.Session
 
 class UrlInterpreterActivity : BaseActivity() {
@@ -50,7 +50,7 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
-                    TransferFragment.newInstance(lastPathSegment).showNow(supportFragmentManager, TransferFragment.TAG)
+                    PanelTransferFragment.newInstance(lastPathSegment).showNow(supportFragmentManager, PanelTransferFragment.TAG)
                 }
             }
         }
@@ -85,7 +85,7 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
         if (segments.size >= 1) {
             val data = segments[0]
             if (data.isUUID()) {
-                TransferFragment.newInstance(data).showNow(supportFragmentManager, TransferFragment.TAG)
+                PanelTransferFragment.newInstance(data).showNow(supportFragmentManager, PanelTransferFragment.TAG)
             }
         }
     } else {

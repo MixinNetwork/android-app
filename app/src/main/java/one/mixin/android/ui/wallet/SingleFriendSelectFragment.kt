@@ -16,7 +16,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
-import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.panel.PanelTransferFragment
 import one.mixin.android.ui.wallet.adapter.SingleFriendSelectAdapter
 import one.mixin.android.vo.User
 import one.mixin.android.widget.SearchView
@@ -51,7 +51,7 @@ class SingleFriendSelectFragment : BaseFragment() {
         recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.listener = object : SingleFriendSelectAdapter.FriendSelectListener {
             override fun onItemClick(user: User) {
-                TransferFragment.newInstance(user.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
+                PanelTransferFragment.newInstance(user.userId).showNow(requireFragmentManager(), PanelTransferFragment.TAG)
                 view!!.findNavController().navigateUp()
             }
         }

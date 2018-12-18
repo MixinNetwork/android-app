@@ -6,7 +6,6 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.GiphyBottomSheetFragment
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
@@ -29,9 +28,6 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeWebBottomSheetDialogFragment(): WebBottomSheetDialogFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeTransferFragment(): TransferFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment

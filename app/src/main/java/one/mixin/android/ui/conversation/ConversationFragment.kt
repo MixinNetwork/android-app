@@ -102,6 +102,7 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListe
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.panel.PanelContactBottomSheet
 import one.mixin.android.ui.panel.PanelFragment
@@ -1540,6 +1541,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onSendContacts(messages: ArrayList<ForwardMessage>) {
                 sendForwardMessages(messages, false)
+            }
+
+            override fun onAppClick(panelTab: PanelTab) {
+                panelTab.homeUri?.let {
+                    WebBottomSheetDialogFragment
+                        .newInstance(it, conversationId, panelTab.name)
+                        .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+                }
             }
         }
         requireFragmentManager().inTransaction {
