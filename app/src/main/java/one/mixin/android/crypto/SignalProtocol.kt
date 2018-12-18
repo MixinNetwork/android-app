@@ -141,17 +141,8 @@ class SignalProtocol(ctx: Context) {
 
     private fun getSenderKeyDistribution(groupId: String, senderId: String): SenderKeyDistributionMessage {
         val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(senderId, DEFAULT_DEVICE_ID))
-        val senderKeyRecord = senderKeyStore.loadSenderKey(senderKeyName)
-        return if (senderKeyRecord.isEmpty) {
-            val builder = GroupSessionBuilder(senderKeyStore)
-            builder.create(senderKeyName)
-        } else {
-            val state = senderKeyRecord.senderKeyState
-            SenderKeyDistributionMessage(state.keyId,
-                state.senderChainKey.iteration,
-                state.senderChainKey.seed,
-                state.signingKeyPublic)
-        }
+        val builder = GroupSessionBuilder(senderKeyStore)
+        return builder.create(senderKeyName)
     }
 
     fun isExistSenderKey(groupId: String, senderId: String): Boolean {
