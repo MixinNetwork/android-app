@@ -22,6 +22,9 @@ import java.util.Set;
 import one.mixin.android.R;
 
 
+import static one.mixin.android.Constants.KEYBOARD_HEIGHT_PORTRAIT;
+
+
 public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
     private static final String TAG = KeyboardAwareLinearLayout.class.getSimpleName();
 
@@ -150,14 +153,14 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
 
     private int getKeyboardPortraitHeight() {
         int keyboardHeight = PreferenceManager.getDefaultSharedPreferences(getContext())
-                .getInt("keyboard_height_portrait", defaultCustomKeyboardSize);
+                .getInt(KEYBOARD_HEIGHT_PORTRAIT, defaultCustomKeyboardSize);
 
         return Math.min(Math.max(keyboardHeight, minCustomKeyboardSize), getRootView().getHeight() - minCustomKeyboardTopMargin);
     }
 
     private void setKeyboardPortraitHeight(int height) {
         PreferenceManager.getDefaultSharedPreferences(getContext())
-                .edit().putInt("keyboard_height_portrait", height).apply();
+                .edit().putInt(KEYBOARD_HEIGHT_PORTRAIT, height).apply();
     }
 
     public void postOnKeyboardClose(final Runnable runnable) {

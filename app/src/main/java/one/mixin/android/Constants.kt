@@ -60,4 +60,6 @@ object Constants {
     const val BIOMETRIC_INTERVAL = "biometric_interval"
     const val BIOMETRIC_INTERVAL_DEFAULT: Long = 1000 * 60 * 60 * 2
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
+
+    const val KEYBOARD_HEIGHT_PORTRAIT = "keyboard_height_portrait"
 }

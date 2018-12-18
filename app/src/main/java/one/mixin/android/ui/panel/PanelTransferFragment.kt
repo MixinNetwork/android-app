@@ -2,15 +2,14 @@ package one.mixin.android.ui.panel
 
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
-import android.app.Dialog
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
+import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,7 +23,6 @@ import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
@@ -33,11 +31,9 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toDot
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BiometricDialog
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.panel.adapter.PanelTransferAssetAdapter
@@ -48,9 +44,8 @@ import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.PanelBarView
 import one.mixin.android.widget.SearchView
-import one.mixin.android.widget.keyboard.InputAwareLayout
+import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshUserWorker
 import org.jetbrains.anko.bundleOf
@@ -60,7 +55,8 @@ import java.util.UUID
 import javax.inject.Inject
 
 @SuppressLint("InflateParams")
-class PanelTransferFragment : MixinBottomSheetDialogFragment() {
+class PanelTransferFragment : PanelBottomSheet(), KeyboardAwareLinearLayout.OnKeyboardHiddenListener, KeyboardAwareLinearLayout.OnKeyboardShownListener {
+
     companion object {
         const val TAG = "PanelTransferFragment"
         const val ASSERT_PREFERENCE = "TRANSFER_ASSERT"
@@ -72,71 +68,10 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val maxHeight by lazy {
-        context!!.displaySize().y - context!!.statusBarHeight()
-    }
-    private val closeHeight by lazy {
-        context!!.displaySize().y / 2
-    }
-    private val middleHeight by lazy {
-        (maxHeight + closeHeight) / 2
-    }
+    override fun getContentViewId() = R.layout.fragment_panel_transfer
 
-    private val panelBarCallback = object : PanelBarView.Callback {
-        override fun onDrag(dis: Float) {
-            (dialog as BottomSheet).getCustomView()?.let {
-                val height = it.layoutParams.height - dis.toInt()
-                if (height in closeHeight..maxHeight) {
-                    (dialog as BottomSheet).setCustomViewHeightSync(height)
-                } else if (height < closeHeight) {
-                    dismiss()
-                }
-            }
-        }
-
-        override fun onRelease() {
-            (dialog as BottomSheet).getCustomView()?.let {
-                val height = it.layoutParams.height
-                when {
-                    height < middleHeight -> {
-                        (dialog as BottomSheet).setCustomViewHeight(0) {
-                            dismiss()
-                        }
-                    }
-                    else -> {
-                        (dialog as BottomSheet).setCustomViewHeight(maxHeight)
-                    }
-                }
-            }
-        }
-
-        override fun onClick() {
-            contentView.transfer_amount.hideKeyboard()
-            dismiss()
-        }
-
-        override fun onTap() {
-            contentView.transfer_amount.hideKeyboard()
-        }
-    }
-
-    override fun onAttach(context: Context?) {
-        super.onAttach(context)
-        InputAwareLayout.appreciable = false
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        InputAwareLayout.appreciable = true
-    }
-
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_panel_transfer, null)
-        contentView.panel_bar.maxDragDistance = (maxHeight - closeHeight).toFloat()
-        contentView.panel_bar.callback = panelBarCallback
-        (dialog as BottomSheet).setCustomView(contentView)
+    override fun onTapPanelBar() {
+        contentView.transfer_amount.hideKeyboard()
     }
 
     @Inject
@@ -240,6 +175,7 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
         })
 
         contentView.back_iv.setOnClickListener {
+            contentView.search_et.hideKeyboard()
             contentView.asset_layout.animate().translationX(contentView.asset_layout.width.toFloat()).start()
         }
         contentView.assets_rv.layoutManager = LinearLayoutManager(requireContext())
@@ -274,6 +210,18 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
         contentView.transfer_amount.post { contentView.transfer_amount.showKeyboard() }
     }
 
+    override fun onResume() {
+        super.onResume()
+        contentView.input_layout.addOnKeyboardShownListener(this)
+        contentView.input_layout.addOnKeyboardHiddenListener(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        contentView.input_layout.removeOnKeyboardShownListener(this)
+        contentView.input_layout.removeOnKeyboardHiddenListener(this)
+    }
+
     private fun showBiometricPrompt() {
         biometricDialog = BiometricDialog(requireContext(), user!!, contentView.transfer_amount.text.toString().toDot(),
             currentAsset!!.toAsset(), UUID.randomUUID().toString(), contentView.transfer_memo.text.toString())
@@ -297,6 +245,24 @@ class PanelTransferFragment : MixinBottomSheetDialogFragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE_CREDENTIALS && resultCode == RESULT_OK) {
             showBiometricPrompt()
+        }
+    }
+
+    override fun onKeyboardShown() {
+        updateContinueAnimatorBottomMargin(true)
+    }
+
+    override fun onKeyboardHidden() {
+        updateContinueAnimatorBottomMargin(false)
+    }
+
+    private fun updateContinueAnimatorBottomMargin(shown: Boolean) {
+        contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            bottomMargin = if (shown) {
+                contentView.input_layout.keyboardHeight
+            } else {
+                0
+            }
         }
     }
 
