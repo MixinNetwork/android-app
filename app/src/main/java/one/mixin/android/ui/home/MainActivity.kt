@@ -140,8 +140,8 @@ class MainActivity : BlazeBaseActivity() {
         handlerCode(intent)
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun onStart() {
+        super.onStart()
         getSystemService<NotificationManager>()?.cancelAll()
     }
 
