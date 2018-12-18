@@ -10,7 +10,6 @@ import android.view.View
 import androidx.core.content.getSystemService
 import androidx.fragment.app.MixinDialogFragment
 import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import com.uber.autodispose.kotlin.autoDisposable
@@ -134,13 +133,16 @@ class MainActivity : BlazeBaseActivity() {
             WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
         }
 
-        getSystemService<NotificationManager>()?.cancelAll()
-
         rotateSignalPreKey()
         checkRoot()
 
         initView()
         handlerCode(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        getSystemService<NotificationManager>()?.cancelAll()
     }
 
     private fun checkRoot() {
