@@ -15,6 +15,7 @@ import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_gallery.*
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
@@ -118,16 +119,16 @@ class GalleryFragment : Fragment(), AlbumCollection.AlbumCallbacks, AdapterView.
         } else {
             gallery_container.visibility = View.VISIBLE
             empty_view.visibility = View.GONE
+            val tag = MediaSelectionFragment::class.java.simpleName
             val fragment = MediaSelectionFragment.newInstance(album).apply {
                 setSelectionProvider(this@GalleryFragment)
                 setCheckStateListener(this@GalleryFragment)
                 setOnMediaClickListener(this@GalleryFragment)
                 setOnPhotoCapture(this@GalleryFragment)
             }
-            requireFragmentManager()
-                .beginTransaction()
-                .replace(R.id.gallery_container, fragment, MediaSelectionFragment::class.java.simpleName)
-                .commitAllowingStateLoss()
+            requireFragmentManager().inTransaction {
+                replace(R.id.gallery_container, fragment!!, tag)
+            }
         }
     }
 
@@ -157,7 +158,7 @@ class GalleryFragment : Fragment(), AlbumCollection.AlbumCallbacks, AdapterView.
     }
 
     override fun onMediaClick(album: Album, item: Item, adapterPosition: Int) {
-        if (!mSpec.preview) {
+        if (mSpec.preview) {
             if (item.isVideo) {
                 showVideoPreview(item.uri) {
                     onGalleryFragmentCallback?.onGalleryClick(item.uri, true)

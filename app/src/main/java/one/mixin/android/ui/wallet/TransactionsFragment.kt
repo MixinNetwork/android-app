@@ -36,7 +36,7 @@ import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.TransferFragment
+import one.mixin.android.ui.panel.PanelTransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.util.ErrorHandler
@@ -92,7 +92,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
         }
         updateHeader(headerView, asset)
         headerView.tranfer_tv.setOnClickListener {
-            defaultSharedPreferences.putString(TransferFragment.ASSERT_PREFERENCE, asset.assetId)
+            defaultSharedPreferences.putString(PanelTransferFragment.ASSERT_PREFERENCE, asset.assetId)
             view!!.findNavController().navigate(R.id.action_transactions_to_single_friend_select)
         }
         headerView.deposit_tv.setOnClickListener {

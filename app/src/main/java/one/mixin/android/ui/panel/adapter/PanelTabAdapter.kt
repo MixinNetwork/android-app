@@ -42,7 +42,7 @@ class PanelTabAdapter(
                 addAll(buildInPanelTabs)
             }
             for (app in appList) {
-                panelTabs.add(PanelTab(PanelTabType.App, null, app.icon_url, true, true, false))
+                panelTabs.add(PanelTab(PanelTabType.App, null, app.icon_url, false, true, false, app.homeUri, app.name))
             }
 
             notifyDataSetChanged()

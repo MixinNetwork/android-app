@@ -13,11 +13,12 @@ import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.vibrate
+import one.mixin.android.ui.panel.PanelBottomSheet
 import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 
-abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+abstract class PinBottomSheetDialogFragment : PanelBottomSheet() {
 
     companion object {
         const val POS_PIN = 0
@@ -27,7 +28,6 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
-        contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet, null)
         val tipTv = View.inflate(context, R.layout.view_pin_bottom_sheet_tip, null) as TextView
         tipTv.setText(getTipTextRes())
         val lp = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
@@ -37,7 +37,6 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             bottomMargin = dp16
         }
         (contentView.pin_ll as ViewGroup).addView(tipTv, 2, lp)
-        (dialog as BottomSheet).setCustomView(contentView)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -46,6 +45,13 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.keyboard.setKeyboardKeys(KEYS)
         contentView.keyboard.setOnClickKeyboardListener(mKeyboardListener)
         contentView.keyboard.animate().translationY(0f).start()
+
+        contentView.post {
+            maxHeight = contentView.height
+            closeHeight = 0
+            middleHeight = (maxHeight + closeHeight) / 2
+            (dialog as BottomSheet).setCustomViewHeight(contentView.height)
+        }
     }
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
@@ -67,6 +73,8 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
     }
+
+    override fun getContentViewId() = R.layout.fragment_pin_bottom_sheet
 
     protected abstract fun getTipTextRes(): Int
 

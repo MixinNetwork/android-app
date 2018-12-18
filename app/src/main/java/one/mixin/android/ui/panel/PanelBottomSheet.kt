@@ -3,7 +3,6 @@ package one.mixin.android.ui.panel
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
-import android.os.Bundle
 import android.view.View
 import one.mixin.android.R
 import one.mixin.android.extension.displaySize
@@ -15,15 +14,9 @@ import one.mixin.android.widget.keyboard.InputAwareLayout
 
 abstract class PanelBottomSheet : MixinBottomSheetDialogFragment() {
 
-    private val maxHeight by lazy {
-        context!!.displaySize().y - context!!.statusBarHeight()
-    }
-    private val closeHeight by lazy {
-        context!!.displaySize().y / 2
-    }
-    private val middleHeight by lazy {
-        (maxHeight + closeHeight) / 2
-    }
+    protected var maxHeight = 0
+    protected var closeHeight = 0
+    protected var middleHeight = (maxHeight + closeHeight) / 2
 
     private val panelBarCallback = object : PanelBarView.Callback {
         override fun onDrag(dis: Float) {
@@ -58,7 +51,7 @@ abstract class PanelBottomSheet : MixinBottomSheetDialogFragment() {
         }
 
         override fun onTap() {
-
+            onTapPanelBar()
         }
     }
 
@@ -75,6 +68,9 @@ abstract class PanelBottomSheet : MixinBottomSheetDialogFragment() {
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
+        maxHeight = context!!.displaySize().y - context!!.statusBarHeight()
+        closeHeight = context!!.displaySize().y / 2
+        middleHeight = (maxHeight + closeHeight) / 2
         contentView = View.inflate(context, getContentViewId(), null)
         val panelBar = contentView.findViewById<PanelBarView>(R.id.panel_bar)
         panelBar.maxDragDistance = (maxHeight - closeHeight).toFloat()
@@ -82,9 +78,8 @@ abstract class PanelBottomSheet : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        (dialog as BottomSheet).setCustomViewHeight(maxHeight)
+    protected open fun onTapPanelBar() {
+        // Left empty for override
     }
 
     abstract fun getContentViewId(): Int

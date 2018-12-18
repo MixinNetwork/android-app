@@ -49,6 +49,7 @@ import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
+import one.mixin.android.widget.gallery.internal.entity.CaptureStrategy
 import org.jetbrains.anko.displayMetrics
 import timber.log.Timber
 import java.io.File
@@ -408,6 +409,8 @@ fun Fragment.openGallery() {
     Gallery.from(this)
         .choose(MimeType.ofMedia())
         .imageEngine(GlideEngine())
+        .capture(true)
+        .captureStrategy(CaptureStrategy(true, "one.mixin.messenger.provider"))
         .forResult(REQUEST_GALLERY)
 }
 

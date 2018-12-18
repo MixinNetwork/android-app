@@ -51,14 +51,14 @@ class PanelFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        panel_tab_rv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+        panel_tab_rv.adapter = panelTabAdapter
+
         Gallery.from(this@PanelFragment)
             .choose(MimeType.ofMedia())
             .imageEngine(GlideEngine())
             .capture(true)
             .captureStrategy(CaptureStrategy(true, "one.mixin.messenger.provider"))
-        panel_tab_rv.layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        panel_tab_rv.adapter = panelTabAdapter
-
         showGalleryFragment()
         callback?.toggleExpand(panelTabAdapter.buildInPanelTabs[0])
         panelTabAdapter.onPanelTabListener = object : PanelTabAdapter.OnPanelTabListener {
@@ -122,6 +122,7 @@ class PanelFragment : BaseFragment() {
     }
 
     private fun showAppFragment(panelTab: PanelTab) {
+        callback?.onAppClick(panelTab)
     }
 
     fun setAppList(appList: List<App>) {
@@ -154,5 +155,6 @@ class PanelFragment : BaseFragment() {
         fun onTransferClick()
         fun onFileClick()
         fun onSendContacts(messages: ArrayList<ForwardMessage>)
+        fun onAppClick(panelTab: PanelTab)
     }
 }

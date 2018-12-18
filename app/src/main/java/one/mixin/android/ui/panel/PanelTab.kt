@@ -6,7 +6,9 @@ class PanelTab(
     val iconUrl: String?,
     val checkable: Boolean = false,
     val expandable: Boolean = false,
-    var checked: Boolean = false
+    var checked: Boolean = false,
+    var homeUri: String? = null,
+    var name: String? = null
 )
 
 sealed class PanelTabType {
