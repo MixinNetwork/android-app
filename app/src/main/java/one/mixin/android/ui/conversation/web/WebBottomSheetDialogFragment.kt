@@ -66,8 +66,8 @@ class WebBottomSheetDialogFragment : PanelBottomSheet() {
         private const val CONTEXT_MENU_ID_SCAN_IMAGE = 0x11
         private const val CONTEXT_MENU_ID_SAVE_IMAGE = 0x12
 
-        private const val URL = "url"
-        private const val CONVERSATION_ID = "conversation_id"
+        const val URL = "url"
+        const val CONVERSATION_ID = "conversation_id"
         private const val NAME = "name"
         fun newInstance(url: String, conversationId: String?, name: String? = null) =
             WebBottomSheetDialogFragment().withArgs {
