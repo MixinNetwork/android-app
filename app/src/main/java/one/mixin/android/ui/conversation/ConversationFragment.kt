@@ -1539,8 +1539,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     })
             }
 
-            override fun onSendContacts(messages: ArrayList<ForwardMessage>) {
-                sendForwardMessages(messages, false)
+            override fun onSendContact(message: ForwardMessage) {
+                sendForwardMessages(listOf(message), false)
             }
         }
         requireFragmentManager().inTransaction {
@@ -1864,8 +1864,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     PanelTabType.Contact -> {
                         val panelContactBottomSheet = PanelContactBottomSheet.newInstance()
                         panelContactBottomSheet.onSendContactsListener = object : OnSendContactsListener {
-                            override fun onSendContacts(messages: ArrayList<ForwardMessage>) {
-                                sendForwardMessages(messages, false)
+                            override fun onSendContacts(message: ForwardMessage) {
+                                sendForwardMessages(listOf(message), false)
                             }
                         }
                         panelContactBottomSheet.show(requireFragmentManager(), PanelContactBottomSheet.TAG)

@@ -2,8 +2,6 @@ package one.mixin.android.ui.panel
 
 import android.os.Bundle
 import android.text.Editable
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
@@ -13,7 +11,6 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.panel.adapter.PanelContactAdapter
 import one.mixin.android.ui.panel.listener.OnSendContactsListener
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -34,18 +31,10 @@ class PanelContactBottomSheet : PanelBottomSheet() {
         contentView.contact_rv.layoutManager = GridLayoutManager(context, 3)
         contentView.contact_rv.adapter = adapter
         adapter.onContactListener = object : PanelContactAdapter.OnContactListener {
-            override fun onContactSizeChanged(size: Int) {
-                contentView.send_tv.visibility = if (size == 0) GONE else VISIBLE
-                contentView.send_tv.text = getString(R.string.panel_contact_send, size)
+            override fun onSendContact(msg: ForwardMessage) {
+                onSendContactsListener?.onSendContacts(msg)
+                dismiss()
             }
-        }
-        contentView.send_tv.setOnClickListener {
-            val msgArray = arrayListOf<ForwardMessage>()
-            adapter.selectedSet.forEach { userId ->
-                msgArray.add(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = userId))
-            }
-            onSendContactsListener?.onSendContacts(msgArray)
-            dismiss()
         }
         contentView.search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {

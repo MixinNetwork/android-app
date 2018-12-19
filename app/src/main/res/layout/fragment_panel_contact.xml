@@ -9,14 +9,4 @@
         android:layout_height="match_parent"
         android:layout_above="@id/send_tv"/>
     
-    <TextView
-        android:id="@+id/send_tv"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:background="@color/wallet_blue_secondary"
-        android:gravity="center"
-        android:layout_alignParentBottom="true"
-        android:visibility="gone"
-        android:textColor="@color/white"
-        android:text="@string/panel_contact_send"/>
 </RelativeLayout>
