@@ -15,6 +15,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
 import android.provider.Settings
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
@@ -34,6 +35,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.crashlytics.android.Crashlytics
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -264,6 +266,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 WebBottomSheetDialogFragment
                     .newInstance(url, conversationId, name)
                     .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+                Crashlytics.log(Log.INFO, "APP", url)
             }
         })
     }
@@ -529,6 +532,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onActionClick(action: String) {
                 openUrlWithExtraWeb(action, conversationId, requireFragmentManager())
+                Crashlytics.log(Log.INFO, "APP", action)
             }
 
             override fun onBillClick(messageItem: MessageItem) {
@@ -1082,6 +1086,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         hideIfShowBottomSheet()
                         this.app?.let {
                             openUrlWithExtraWeb(it.homeUri, conversationId, requireFragmentManager())
+                            Crashlytics.log(Log.INFO, "APP", it.homeUri)
                         }
                     }
                 } else {
