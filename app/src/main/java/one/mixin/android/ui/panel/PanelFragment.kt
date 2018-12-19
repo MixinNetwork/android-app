@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.panel.adapter.PanelTabAdapter
 import one.mixin.android.ui.panel.listener.OnSendContactsListener
 import one.mixin.android.vo.App
@@ -32,17 +33,20 @@ class PanelFragment : BaseFragment() {
         fun newInstance(
             isGroup: Boolean,
             isBot: Boolean,
-            isSelfCreatedBot: Boolean
+            isSelfCreatedBot: Boolean,
+            conversationId: String
         ) = PanelFragment().withArgs {
             putBoolean(ARGS_IS_GROUP, isGroup)
             putBoolean(ARGS_IS_BOT, isBot)
             putBoolean(ARGS_IS_SELF_CREATED_BOT, isSelfCreatedBot)
+            putString(CONVERSATION_ID, conversationId)
         }
     }
 
     private val isGroup by lazy { arguments!!.getBoolean(ARGS_IS_GROUP) }
     private val isBot by lazy { arguments!!.getBoolean(ARGS_IS_BOT) }
     private val isSelfCreatedBot by lazy { arguments!!.getBoolean(ARGS_IS_SELF_CREATED_BOT) }
+    private val conversationId by lazy { arguments!!.getString(CONVERSATION_ID) }
 
     private val panelTabAdapter by lazy { PanelTabAdapter(isGroup, isBot, isSelfCreatedBot) }
 
@@ -122,7 +126,15 @@ class PanelFragment : BaseFragment() {
     }
 
     private fun showAppFragment(panelTab: PanelTab) {
-        callback?.onAppClick(panelTab)
+        var appFragment = requireFragmentManager().findFragmentByTag(PanelAppFragment.TAG) as? PanelAppFragment
+        if (appFragment == null) {
+            appFragment = PanelAppFragment.newInstance(panelTab.homeUri!!, conversationId)
+        } else {
+            appFragment.load(panelTab.homeUri!!)
+        }
+        requireFragmentManager().inTransaction {
+            replace(R.id.panel_tab_container, appFragment, PanelAppFragment.TAG)
+        }
     }
 
     fun setAppList(appList: List<App>) {
@@ -155,6 +167,5 @@ class PanelFragment : BaseFragment() {
         fun onTransferClick()
         fun onFileClick()
         fun onSendContacts(messages: ArrayList<ForwardMessage>)
-        fun onAppClick(panelTab: PanelTab)
     }
 }

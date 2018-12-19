@@ -1459,7 +1459,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun getPanelFragment(isSelfCreatedBot: Boolean = false): PanelFragment {
         var panelFragment = requireFragmentManager().findFragmentByTag(PanelFragment.TAG)
         if (panelFragment == null) {
-            panelFragment = PanelFragment.newInstance(isGroup, isBot, isSelfCreatedBot)
+            panelFragment = PanelFragment.newInstance(isGroup, isBot, isSelfCreatedBot, conversationId)
         }
         panelFragment as PanelFragment
         panelFragment.callback = object : PanelFragment.Callback {
@@ -1541,14 +1541,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onSendContacts(messages: ArrayList<ForwardMessage>) {
                 sendForwardMessages(messages, false)
-            }
-
-            override fun onAppClick(panelTab: PanelTab) {
-                panelTab.homeUri?.let {
-                    WebBottomSheetDialogFragment
-                        .newInstance(it, conversationId, panelTab.name)
-                        .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
-                }
             }
         }
         requireFragmentManager().inTransaction {
@@ -1879,6 +1871,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         panelContactBottomSheet.show(requireFragmentManager(), PanelContactBottomSheet.TAG)
                     }
                     PanelTabType.App -> {
+                        currPanelTab.homeUri?.let {
+                            WebBottomSheetDialogFragment
+                                .newInstance(it, conversationId, currPanelTab.name)
+                                .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+                        }
                     }
                 }
             }

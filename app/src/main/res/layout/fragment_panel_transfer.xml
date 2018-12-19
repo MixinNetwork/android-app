@@ -92,7 +92,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:src="@drawable/ic_arrow_right_24dp"
+                        android:src="@drawable/ic_chevron_right_black_24dp"
                         tools:ignore="ContentDescription"/>
                 </RelativeLayout>
 
