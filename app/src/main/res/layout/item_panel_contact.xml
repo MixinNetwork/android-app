@@ -13,6 +13,15 @@
         app:border_color="@color/white"
         app:border_width="2dp"/>
 
+    <one.mixin.android.widget.BlurAvatarView
+        android:id="@+id/blur"
+        android:layout_width="74dp"
+        android:layout_height="74dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin16">
+
+    </one.mixin.android.widget.BlurAvatarView>
+
     <TextView
         android:id="@+id/name"
         android:layout_width="wrap_content"

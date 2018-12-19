@@ -3,15 +3,17 @@ package one.mixin.android.ui.panel.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.collection.ArraySet
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_panel_contact.view.*
 import one.mixin.android.R
+import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 
 class PanelContactAdapter : ListAdapter<User, PanelContactAdapter.PanelContactHolder>(User.DIFF_CALLBACK) {
-    internal val selectedSet = ArraySet<String>()
+
+    private var selectedIndex = -1
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PanelContactHolder =
         PanelContactHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_panel_contact, parent, false))
@@ -21,19 +23,20 @@ class PanelContactAdapter : ListAdapter<User, PanelContactAdapter.PanelContactHo
         val view = holder.itemView
         view.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         view.name.text = user.fullName
-        if (selectedSet.contains(user.userId)) {
-            view.avatar.setBorder(view.context.getColor(R.color.wallet_blue_secondary))
+        if (selectedIndex == position) {
+            view.blur.showBlur(view.avatar, user.userId)
         } else {
-            view.avatar.setBorder()
+            view.blur.hideBlur()
         }
         view.setOnClickListener {
-            if (selectedSet.contains(user.userId)) {
-                selectedSet.remove(user.userId)
+            if (selectedIndex == position) {
+                selectedIndex = -1
+                onContactListener?.onSendContact(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId))
+                notifyItemChanged(position)
             } else {
-                selectedSet.add(user.userId)
+                selectedIndex = position
+                notifyItemChanged(position)
             }
-            onContactListener?.onContactSizeChanged(selectedSet.size)
-            notifyItemChanged(position)
         }
     }
 
@@ -42,6 +45,6 @@ class PanelContactAdapter : ListAdapter<User, PanelContactAdapter.PanelContactHo
     var onContactListener: OnContactListener? = null
 
     interface OnContactListener {
-        fun onContactSizeChanged(size: Int)
+        fun onSendContact(msg: ForwardMessage)
     }
 }

@@ -3,8 +3,6 @@ package one.mixin.android.ui.panel
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -16,7 +14,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.panel.adapter.PanelContactAdapter
 import one.mixin.android.ui.panel.listener.OnSendContactsListener
-import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import javax.inject.Inject
 
@@ -38,20 +35,9 @@ class PanelContactFragment : BaseFragment() {
         contact_rv.layoutManager = GridLayoutManager(context, 3)
         contact_rv.adapter = adapter
         adapter.onContactListener = object : PanelContactAdapter.OnContactListener {
-            override fun onContactSizeChanged(size: Int) {
-                send_tv.visibility = if (size == 0) GONE else VISIBLE
-                send_tv.text = getString(R.string.panel_contact_send, size)
+            override fun onSendContact( msg:ForwardMessage) {
+                onSendContactsListener?.onSendContacts(msg)
             }
-        }
-        send_tv.setOnClickListener {
-            val msgArray = arrayListOf<ForwardMessage>()
-            adapter.selectedSet.forEach { userId ->
-                msgArray.add(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = userId))
-            }
-            onSendContactsListener?.onSendContacts(msgArray)
-            adapter.selectedSet.clear()
-            adapter.notifyDataSetChanged()
-            send_tv.visibility = GONE
         }
 
         conversationViewModel.getFriends().observe(this, Observer {

@@ -115,8 +115,8 @@ class PanelFragment : BaseFragment() {
         if (contactFragment == null) {
             contactFragment = PanelContactFragment.newInstance()
             contactFragment.onSendContactsListener = object : OnSendContactsListener {
-                override fun onSendContacts(messages: ArrayList<ForwardMessage>) {
-                    callback?.onSendContacts(messages)
+                override fun onSendContacts(message: ForwardMessage) {
+                    callback?.onSendContact(message)
                 }
             }
         }
@@ -166,6 +166,6 @@ class PanelFragment : BaseFragment() {
         fun onVoiceClick()
         fun onTransferClick()
         fun onFileClick()
-        fun onSendContacts(messages: ArrayList<ForwardMessage>)
+        fun onSendContact(message: ForwardMessage)
     }
 }
