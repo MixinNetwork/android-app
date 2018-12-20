@@ -1,26 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/gallery_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <FrameLayout
-        android:id="@+id/empty_view"
+    <View
+        android:id="@+id/panel_cover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="gone">
+        android:alpha="0"
+        android:visibility="gone"
+        android:background="@android:color/black"/>
 
-        <TextView
-            android:id="@+id/empty_view_content"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:drawablePadding="8dp"
-            android:drawableTop="@drawable/ic_hidden_assets"
-            android:gravity="center"
-            android:text="@string/gallery_empty_text"
-            android:textColor="@color/text_gray"
-            android:textSize="16sp"/>
+    <LinearLayout
+        android:id="@+id/panel_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="bottom"
+        android:orientation="vertical">
 
-    </FrameLayout>
+        <one.mixin.android.widget.PanelBarView
+            android:id="@+id/panel_bar"
+            android:layout_width="match_parent"
+            android:layout_height="26dp"
+            android:background="@drawable/bg_upper_round"/>
+
+        <FrameLayout
+            android:id="@+id/gallery_container"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <FrameLayout
+                android:id="@+id/empty_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/empty_view_content"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:drawablePadding="8dp"
+                    android:drawableTop="@drawable/ic_hidden_assets"
+                    android:gravity="center"
+                    android:text="@string/gallery_empty_text"
+                    android:textColor="@color/text_gray"
+                    android:textSize="16sp"/>
+
+            </FrameLayout>
+        </FrameLayout>
+    </LinearLayout>
 </FrameLayout>

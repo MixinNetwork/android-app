@@ -4,6 +4,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <one.mixin.android.widget.PanelBarView
+        android:id="@+id/panel_bar"
+        android:layout_width="match_parent"
+        android:layout_height="26dp"/>
+
     <WebView
         android:id="@+id/web_view"
         android:layout_width="match_parent"

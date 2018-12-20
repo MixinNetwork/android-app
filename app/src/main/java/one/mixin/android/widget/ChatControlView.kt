@@ -30,6 +30,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.widget.audio.SlidePanelView
+import one.mixin.android.widget.keyboard.InputAwareFrameLayoutLayout
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
 
@@ -56,7 +57,7 @@ class ChatControlView @JvmOverloads constructor(
     }
 
     lateinit var callback: Callback
-    lateinit var inputLayout: InputAwareLayout
+    lateinit var inputLayout: InputAwareFrameLayoutLayout
     lateinit var stickerContainer: StickerLayout
     lateinit var panelContainer: PanelLayout
     lateinit var recordTipView: View

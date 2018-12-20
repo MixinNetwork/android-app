@@ -45,6 +45,7 @@ class PanelBarView @JvmOverloads constructor(
     var maxDragDistance = 0f
 
     override fun onDraw(canvas: Canvas) {
+        super.onDraw(canvas)
         if (offsetHorizontal == 0f) {
             offsetHorizontal = (width - barWidth) / 2
         }

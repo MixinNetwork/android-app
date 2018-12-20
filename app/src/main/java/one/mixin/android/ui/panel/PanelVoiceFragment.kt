@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_panel_voice.*
 import one.mixin.android.R
@@ -22,6 +23,12 @@ class PanelVoiceFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         voice_iv.setOnClickListener {
             onVoiceCallback?.onVoiceClick()
+        }
+    }
+
+    fun setHeight(height: Int) {
+        view?.updateLayoutParams<ViewGroup.LayoutParams> {
+            this.height = height
         }
     }
 

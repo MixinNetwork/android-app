@@ -7,16 +7,14 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.AdapterView
-import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_gallery.*
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
+import one.mixin.android.ui.panel.PanelBarFragment
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.entity.SelectionSpec
@@ -27,7 +25,7 @@ import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumMediaAdapter
 import one.mixin.android.widget.gallery.internal.ui.adapter.AlbumsAdapter
 import one.mixin.android.widget.gallery.internal.utils.MediaStoreCompat
 
-class GalleryFragment : Fragment(), AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener,
+class GalleryFragment : PanelBarFragment(), AlbumCollection.AlbumCallbacks, AdapterView.OnItemSelectedListener,
     MediaSelectionFragment.SelectionProvider, AlbumMediaAdapter.CheckStateListener,
     AlbumMediaAdapter.OnMediaClickListener, AlbumMediaAdapter.OnPhotoCapture {
     private val mAlbumCollection = AlbumCollection()
@@ -38,8 +36,7 @@ class GalleryFragment : Fragment(), AlbumCollection.AlbumCallbacks, AdapterView.
 
     private lateinit var mAlbumsAdapter: AlbumsAdapter
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_gallery, container, false)
+    override fun getLayoutId() = R.layout.fragment_gallery
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

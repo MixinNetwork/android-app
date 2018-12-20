@@ -63,21 +63,19 @@ import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.adjustAlpha
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.openGallery
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.removeEnd
@@ -102,14 +100,11 @@ import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListe
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.panel.PanelContactBottomSheet
 import one.mixin.android.ui.panel.PanelFragment
 import one.mixin.android.ui.panel.PanelTab
-import one.mixin.android.ui.panel.PanelTabType
+import one.mixin.android.ui.panel.PanelTabFragment
 import one.mixin.android.ui.panel.PanelTransferFragment
-import one.mixin.android.ui.panel.listener.OnSendContactsListener
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.ui.wallet.TransactionFragment
@@ -138,8 +133,9 @@ import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
-import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
-import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
+import one.mixin.android.widget.keyboard.InputAwareFrameLayoutLayout
+import one.mixin.android.widget.keyboard.KeyboardAwareFrameLayout.OnKeyboardHiddenListener
+import one.mixin.android.widget.keyboard.KeyboardAwareFrameLayout.OnKeyboardShownListener
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -163,7 +159,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         private const val KEY_WORD = "key_word"
         private const val MESSAGES = "messages"
 
-        private const val COVER_MAX_ALPHA = .4f
+        const val COVER_MAX_ALPHA = .4f
 
         fun putBundle(
             conversationId: String?,
@@ -253,127 +249,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         }
 
-//    private val appAdapter: AppAdapter by lazy {
-//        AppAdapter(if (isGroup) {
-//            AppCap.GROUP.name
-//        } else {
-//            AppCap.CONTACT.name
-//        }, object : AppAdapter.OnAppClickListener {
-//            override fun onAppClick(url: String, name: String) {
-//                hideMediaLayout()
-//                WebBottomSheetDialogFragment
-//                    .newInstance(url, conversationId, name)
-//                    .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
-//            }
-//        })
-//    }
-//
-//    private val menuAdapter: MenuAdapter by lazy {
-//        MenuAdapter(object : MenuAdapter.OnMenuClickListener {
-//            override fun onMenuClick(id: Int) {
-//                when (id) {
-//                    R.id.menu_camera -> {
-//                        RxPermissions(requireActivity())
-//                            .request(Manifest.permission.CAMERA)
-//                            .subscribe({ granted ->
-//                                if (granted) {
-//                                    imageUri = createImageUri()
-//                                    imageUri?.let {
-//                                        openCamera(it)
-//                                    }
-//                                } else {
-//                                    context?.openPermissionSetting()
-//                                }
-//                            }, {
-//                            })
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_gallery -> {
-//                        RxPermissions(requireActivity())
-//                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-//                            .subscribe({ granted ->
-//                                if (granted) {
-//                                    openGallery()
-//                                } else {
-//                                    context?.openPermissionSetting()
-//                                }
-//                            }, {
-//                            })
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_document -> {
-//                        RxPermissions(requireActivity())
-//                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-//                            .subscribe({ granted ->
-//                                if (granted) {
-//                                    selectDocument()
-//                                } else {
-//                                    context?.openPermissionSetting()
-//                                }
-//                            }, {
-//                            })
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_transfer -> {
-//                        if (Session.getAccount()?.hasPin == true) {
-//                            recipient?.let {
-//                                TransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
-//                            }
-//                        } else {
-//                            activity?.supportFragmentManager?.inTransaction {
-//                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-//                                    .anim.slide_in_bottom, R.anim.slide_out_bottom)
-//                                    .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
-//                                    .addToBackStack(null)
-//                            }
-//                        }
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_contact -> {
-//                        activity?.supportFragmentManager?.inTransaction {
-//                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-//                                .anim.slide_in_bottom, R.anim.slide_out_bottom)
-//                                .add(R.id.container,
-//                                    FriendsFragment.newInstance(conversationId, isGroup, isBot).apply {
-//                                        setOnFriendClick {
-//                                            sendContactMessage(it.userId)
-//                                        }
-//                                    }, FriendsFragment.TAG)
-//                                .addToBackStack(null)
-//                        }
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_voice -> {
-//                        if (!callState.isIdle()) {
-//                            if (recipient != null && callState.user?.userId == recipient?.userId) {
-//                                CallActivity.show(requireContext(), recipient)
-//                            } else {
-//                                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-//                                    .setMessage(getString(R.string.chat_call_warning_call))
-//                                    .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-//                                        dialog.dismiss()
-//                                    }
-//                                    .show()
-//                            }
-//                        } else {
-//                            RxPermissions(requireActivity())
-//                                .request(Manifest.permission.RECORD_AUDIO)
-//                                .subscribe({ granted ->
-//                                    if (granted) {
-//                                        callVoice()
-//                                    } else {
-//                                        context?.openPermissionSetting()
-//                                    }
-//                                }, {
-//                                })
-//                        }
-//                        hideMediaLayout()
-//                    }
-//                }
-//            }
-//        })
-//    }
-
     private fun callVoice() {
         if (LinkState.isOnline(linkState.state)) {
             createConversation {
@@ -382,7 +257,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         } else {
             toast(R.string.error_no_connection)
         }
-        hideMediaLayout()
     }
 
     private val onItemListener: ConversationAdapter.OnItemListener by lazy {
@@ -619,7 +493,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private var imageUri: Uri? = null
-    private fun createImageUri() = Uri.fromFile(context?.getImagePath()?.createImageTemp())
 
     private val conversationId: String by lazy {
         var cid = arguments!!.getString(CONVERSATION_ID)
@@ -728,6 +601,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onBackPressed(): Boolean {
+        val panelFragment = getPanelFragment()
         return when {
             tool_view.visibility == VISIBLE -> {
                 closeTool()
@@ -737,8 +611,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 hideStickerContainer()
                 true
             }
-            mediaVisibility -> {
-                hideMediaLayout()
+            panelFragment.isExpanded() -> {
+                panelFragment.collapse()
                 true
             }
             chat_control.isRecording -> {
@@ -751,16 +625,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chat_control.showOtherInput()
                 true
             }
-            else -> false
+            else -> {
+                chat_panel_container.visibility = GONE
+                false
+            }
         }
     }
 
     private fun hideIfShowBottomSheet() {
         if (sticker_container.visibility == VISIBLE) {
             hideStickerContainer()
-        }
-        if (mediaVisibility) {
-            hideMediaLayout()
         }
         if (chat_control.isRecording) {
             OpusAudioRecorder.get().stopRecording(false)
@@ -830,7 +704,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control.activity = requireActivity()
         chat_control.inputLayout = input_layout
         chat_control.stickerContainer = sticker_container
-        chat_control.panelContainer = panel_container
+        chat_control.panelContainer = panel_tab_container
         chat_control.recordTipView = record_tip_tv
         chat_control.chat_et.setOnClickListener {
             cover.alpha = 0f
@@ -1000,21 +874,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             closeTool()
         }
-//        media_layout.round(dp(8f))
-//        menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-//        menu_rv.adapter = menuAdapter
-//
-//        if (!isBot) {
-//            app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-//            app_rv.adapter = appAdapter
-//        }
-//
-//        shadow.setOnClickListener {
-//            hideMediaLayout()
-//        }
-//
-//        menuAdapter.isGroup = isGroup
-//        menuAdapter.isBot = isBot
 
         callState.observe(this, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
@@ -1072,8 +931,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         if (isBot) {
-//            app_rv.visibility = GONE
-//            extensions.visibility = GONE
             chat_control.showBot()
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 if (it != null && it.isNotEmpty()) {
@@ -1091,15 +948,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         } else {
             chat_control.hideBot()
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
-                getPanelFragment().setAppList(it)
-//                appAdapter.appList = it
-//                if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
-//                    app_rv.visibility = GONE
-//                    extensions.visibility = GONE
-//                } else {
-//                    app_rv.visibility = VISIBLE
-//                    extensions.visibility = VISIBLE
-//                }
+                getPanelTabFragment().setAppList(it)
             })
         }
     }
@@ -1335,10 +1184,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onKeyboardHidden() {
+        if (!InputAwareFrameLayoutLayout.appreciable) return
+
         chat_control.toggleKeyboard(false)
     }
 
     override fun onKeyboardShown() {
+        if (!InputAwareFrameLayoutLayout.appreciable) return
+
         hideMediaLayout()
         chat_control.toggleKeyboard(true)
     }
@@ -1369,7 +1222,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (app != null && app.creatorId == Session.getAccountId()) {
                     uiThread {
                         //                        menuAdapter.isSelfCreatedBot = true
-                        getPanelFragment(true)
+                        getPanelTabFragment(true)
                     }
                 }
             }
@@ -1422,7 +1275,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
 
                 val coverColor = (cover.background as ColorDrawable).color
-                activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
+                activity?.window?.statusBarColor = coverColor.adjustAlpha(cover.alpha)
             }
 
             override fun onRelease() {
@@ -1456,106 +1309,36 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     lateinit var currPanelTab: PanelTab
 
-    private fun getPanelFragment(isSelfCreatedBot: Boolean = false): PanelFragment {
-        var panelFragment = requireFragmentManager().findFragmentByTag(PanelFragment.TAG)
-        if (panelFragment == null) {
-            panelFragment = PanelFragment.newInstance(isGroup, isBot, isSelfCreatedBot, conversationId)
+    private fun getPanelTabFragment(isSelfCreatedBot: Boolean = false): PanelTabFragment {
+        var panelTabFragment = requireFragmentManager().findFragmentByTag(PanelTabFragment.TAG)
+        if (panelTabFragment == null) {
+            panelTabFragment = PanelTabFragment.newInstance(isGroup, isBot, isSelfCreatedBot)
         }
-        panelFragment as PanelFragment
-        panelFragment.callback = object : PanelFragment.Callback {
-            override fun toggleExpand(panelTab: PanelTab) {
-                chat_control.expandable = panelTab.expandable
-                if (panelTab.checkable && panelTab.checked) {
-                    currPanelTab = panelTab
-                }
-            }
-
-            override fun onGalleryClick(uri: Uri, isVideo: Boolean) {
-                if (isVideo) {
-                    sendVideoMessage(uri)
-                } else {
-                    sendImageMessage(uri)
-                }
-            }
-
-            override fun onCameraClick(imageUri: Uri) {
-                sendImageMessage(imageUri)
-            }
-
-            @SuppressLint("CheckResult")
-            override fun onVoiceClick() {
-                if (!callState.isIdle()) {
-                    if (recipient != null && callState.user?.userId == recipient?.userId) {
-                        CallActivity.show(requireContext(), recipient)
-                    } else {
-                        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-                            .setMessage(getString(R.string.chat_call_warning_call))
-                            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                                dialog.dismiss()
-                            }
-                            .show()
-                    }
-                } else {
-                    RxPermissions(requireActivity())
-                        .request(Manifest.permission.RECORD_AUDIO)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                callVoice()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        }, {
-                        })
-                }
-            }
-
-            override fun onTransferClick() {
-                if (Session.getAccount()?.hasPin == true) {
-                    recipient?.let {
-                        PanelTransferFragment.newInstance(it.userId)
-                            .showNow(requireFragmentManager(), PanelTransferFragment.TAG)
-                    }
-                } else {
-                    activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                            .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                            .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
-                            .addToBackStack(null)
-                    }
-                }
-            }
-
-            @SuppressLint("CheckResult")
-            override fun onFileClick() {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    .subscribe({ granted ->
-                        if (granted) {
-                            selectDocument()
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    }, {
-                    })
-            }
-
-            override fun onSendContact(message: ForwardMessage) {
-                sendForwardMessages(listOf(message), false)
-            }
-        }
+        panelTabFragment as PanelTabFragment
+        panelTabFragment.callback = panelTabCallback
         requireFragmentManager().inTransaction {
-            setCustomAnimations(R.anim.slide_in_bottom_fast, 0, 0, R.anim.slide_out_bottom_fast)
-            replace(R.id.panel_container, panelFragment, PanelFragment.TAG)
+            replace(R.id.panel_tab_container, panelTabFragment, PanelTabFragment.TAG)
         }
-        return panelFragment
+        return panelTabFragment
     }
 
-    private fun adjustAlpha(color: Int, factor: Float): Int {
-        val alpha = Math.round(Color.alpha(color) * factor)
-        val red = Color.red(color)
-        val green = Color.green(color)
-        val blue = Color.blue(color)
-        return Color.argb(alpha, red, green, blue)
+    private fun getPanelFragment(shown: Boolean = true): PanelFragment {
+        var panelFragment = requireFragmentManager().findFragmentByTag(PanelFragment.TAG)
+        if (panelFragment == null) {
+            panelFragment = PanelFragment.newInstance(conversationId)
+        }
+        panelFragment as PanelFragment
+        panelFragment.callback = panelCallback
+        requireFragmentManager().inTransaction {
+            replace(R.id.chat_panel_container, panelFragment, PanelFragment.TAG)
+        }
+        if (shown) {
+            panelFragment.keyboardHeight = input_layout.keyboardHeight
+            chat_panel_container.visibility = VISIBLE
+        } else {
+            chat_panel_container.visibility = GONE
+        }
+        return panelFragment
     }
 
     private fun stickerAnim(curH: Int, targetH: Int) {
@@ -1578,7 +1361,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     a
                 }
                 val coverColor = (cover.background as ColorDrawable).color
-                activity?.window?.statusBarColor = adjustAlpha(coverColor, cover.alpha)
+                activity?.window?.statusBarColor = coverColor.adjustAlpha(cover.alpha)
             }
 
             sticker_container.layoutParams = params
@@ -1593,42 +1376,25 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         anim.start()
     }
 
-    private var mediaVisibility = false
+    private var panelVisibility = false
     private fun toggleMediaLayout() {
-        if (!mediaVisibility) {
+        if (!panelVisibility) {
             showMediaLayout()
-        } else {
-            hideMediaLayout()
         }
     }
 
     private fun showMediaLayout() {
-        if (!mediaVisibility) {
+        if (!panelVisibility) {
+            panelVisibility = true
+            getPanelTabFragment()
             getPanelFragment()
-//            shadow.fadeIn()
-//            media_layout.visibility = VISIBLE
-//            media_layout.translationY(16f)
-//            chat_control.chat_et.hideKeyboard()
-//            hideStickerContainer()
-//            mediaVisibility = true
-//            if (reply_view.visibility == VISIBLE) {
-//                reply_view.fadeOut()
-//                chat_control.showOtherInput()
-//            }
         }
     }
 
     private fun hideMediaLayout() {
-        if (mediaVisibility) {
-//            shadow.fadeOut()
-//            media_layout.translationY(dp(350f).toFloat()) {
-//                media_layout.visibility = GONE
-//            }
-//            mediaVisibility = false
-//            if (reply_view.visibility == VISIBLE) {
-//                reply_view.fadeOut()
-//                chat_control.showOtherInput()
-//            }
+        if (panelVisibility) {
+            panelVisibility = false
+            getPanelFragment(false)
         }
     }
 
@@ -1792,6 +1558,114 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    private val panelTabCallback = object : PanelTabFragment.Callback {
+        override fun showGalleryFragment(panelTab: PanelTab) {
+            getPanelFragment().showGalleryFragment()
+        }
+
+        override fun showTransferFragment(panelTab: PanelTab) {
+            getPanelFragment().showTransferFragment()
+        }
+
+        override fun showVoiceFragment(panelTab: PanelTab) {
+            getPanelFragment().showVoiceFragment()
+        }
+
+        override fun showFileFragment(panelTab: PanelTab) {
+            getPanelFragment().showFileFragment()
+        }
+
+        override fun showContactFragment(panelTab: PanelTab) {
+            getPanelFragment().showContactFragment()
+        }
+
+        override fun showAppFragment(panelTab: PanelTab) {
+            getPanelFragment().showAppFragment(panelTab)
+        }
+
+        override fun toggleExpand(panelTab: PanelTab) {
+            chat_control.expandable = panelTab.expandable
+            if (panelTab.checkable && panelTab.checked) {
+                currPanelTab = panelTab
+            }
+        }
+    }
+
+    private val panelCallback = object : PanelFragment.Callback {
+        override fun onGalleryClick(uri: Uri, isVideo: Boolean) {
+            if (isVideo) {
+                sendVideoMessage(uri)
+            } else {
+                sendImageMessage(uri)
+            }
+        }
+
+        override fun onCameraClick(imageUri: Uri) {
+            sendImageMessage(imageUri)
+        }
+
+        @SuppressLint("CheckResult")
+        override fun onVoiceClick() {
+            if (!callState.isIdle()) {
+                if (recipient != null && callState.user?.userId == recipient?.userId) {
+                    CallActivity.show(requireContext(), recipient)
+                } else {
+                    AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                        .setMessage(getString(R.string.chat_call_warning_call))
+                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
+            } else {
+                RxPermissions(requireActivity())
+                    .request(Manifest.permission.RECORD_AUDIO)
+                    .subscribe({ granted ->
+                        if (granted) {
+                            callVoice()
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }, {
+                    })
+            }
+        }
+
+        override fun onTransferClick() {
+            if (Session.getAccount()?.hasPin == true) {
+                recipient?.let {
+                    PanelTransferFragment.newInstance(it.userId)
+                        .showNow(requireFragmentManager(), PanelTransferFragment.TAG)
+                }
+            } else {
+                activity?.supportFragmentManager?.inTransaction {
+                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                        .anim.slide_in_bottom, R.anim.slide_out_bottom)
+                        .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                        .addToBackStack(null)
+                }
+            }
+        }
+
+        @SuppressLint("CheckResult")
+        override fun onFileClick() {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        selectDocument()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                })
+        }
+
+        override fun onSendContact(message: ForwardMessage) {
+            sendForwardMessages(listOf(message), false)
+        }
+    }
+
     private val chatControlCallback = object : ChatControlView.Callback {
         override fun onStickerClick() {
             clickSticker()
@@ -1848,36 +1722,37 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             if (isSticker) {
                 updateSticker()
             } else {
-                when (currPanelTab.type) {
-                    PanelTabType.Gallery -> {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    openGallery()
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            }, {
-                            })
-                    }
-                    PanelTabType.Contact -> {
-                        val panelContactBottomSheet = PanelContactBottomSheet.newInstance()
-                        panelContactBottomSheet.onSendContactsListener = object : OnSendContactsListener {
-                            override fun onSendContacts(message: ForwardMessage) {
-                                sendForwardMessages(listOf(message), false)
-                            }
-                        }
-                        panelContactBottomSheet.show(requireFragmentManager(), PanelContactBottomSheet.TAG)
-                    }
-                    PanelTabType.App -> {
-                        currPanelTab.homeUri?.let {
-                            WebBottomSheetDialogFragment
-                                .newInstance(it, conversationId, currPanelTab.name)
-                                .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
-                        }
-                    }
-                }
+                getPanelFragment().expand()
+//                when (currPanelTab.type) {
+//                    PanelTabType.Gallery -> {
+//                        RxPermissions(requireActivity())
+//                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+//                            .subscribe({ granted ->
+//                                if (granted) {
+//                                    openGallery()
+//                                } else {
+//                                    context?.openPermissionSetting()
+//                                }
+//                            }, {
+//                            })
+//                    }
+//                    PanelTabType.Contact -> {
+//                        val panelContactBottomSheet = PanelContactBottomSheet.newInstance()
+//                        panelContactBottomSheet.onSendContactsListener = object : OnSendContactsListener {
+//                            override fun onSendContacts(message: ForwardMessage) {
+//                                sendForwardMessages(listOf(message), false)
+//                            }
+//                        }
+//                        panelContactBottomSheet.show(requireFragmentManager(), PanelContactBottomSheet.TAG)
+//                    }
+//                    PanelTabType.App -> {
+//                        currPanelTab.homeUri?.let {
+//                            WebBottomSheetDialogFragment
+//                                .newInstance(it, conversationId, currPanelTab.name)
+//                                .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+//                        }
+//                    }
+//                }
             }
         }
 

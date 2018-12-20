@@ -39,4 +39,5 @@
     <dimen name="album_item_height">72dp</dimen>
     <dimen name="call_button_size">74dp</dimen>
     <dimen name="call_button_icon_size">48dp</dimen>
+    <dimen name="panel_tab_height">56dp</dimen>
 </resources>

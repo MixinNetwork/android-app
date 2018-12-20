@@ -29,6 +29,7 @@ class PanelContactAdapter : ListAdapter<User, PanelContactAdapter.PanelContactHo
             view.blur.hideBlur()
         }
         view.setOnClickListener {
+            notifyItemChanged(selectedIndex)
             if (selectedIndex == position) {
                 selectedIndex = -1
                 onContactListener?.onSendContact(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId))

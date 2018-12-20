@@ -9,15 +9,18 @@ import one.mixin.android.ui.conversation.FriendsFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.ui.conversation.GiphyFragment
-import one.mixin.android.ui.panel.PanelFragment
+import one.mixin.android.ui.panel.PanelTabFragment
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.group.GroupInfoFragment
+import one.mixin.android.ui.panel.PanelAppFragment
 import one.mixin.android.ui.panel.PanelContactBottomSheet
 import one.mixin.android.ui.panel.PanelContactFragment
+import one.mixin.android.ui.panel.PanelVoiceFragment
 import one.mixin.android.ui.sticker.StickerAddFragment
 import one.mixin.android.ui.sticker.StickerManagementFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
+import one.mixin.android.widget.gallery.ui.GalleryFragment
 
 @Module
 abstract class ConversationActivityModule {
@@ -61,11 +64,17 @@ abstract class ConversationActivityModule {
     internal abstract fun contributeGiphyFragment(): GiphyFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributePanelFragment(): PanelFragment
+    internal abstract fun contributePanelFragment(): PanelTabFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributePanelContactFragment(): PanelContactFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributePanelContactBottomSheet(): PanelContactBottomSheet
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeGalleryFragment(): GalleryFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePanelAppFragment(): PanelAppFragment
 }

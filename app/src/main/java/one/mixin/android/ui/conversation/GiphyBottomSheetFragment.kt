@@ -28,6 +28,7 @@ import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.keyboard.InputAwareFrameLayoutLayout
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
 import retrofit2.HttpException
@@ -82,11 +83,11 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
     override fun onAttach(context: Context?) {
         super.onAttach(context)
-        InputAwareLayout.appreciable = false
+        InputAwareFrameLayoutLayout.appreciable = false
     }
 
     override fun onDetach() {
-        InputAwareLayout.appreciable = true
+        InputAwareFrameLayoutLayout.appreciable = true
         contentView.hideKeyboard()
         super.onDetach()
     }
