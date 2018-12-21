@@ -175,7 +175,7 @@ class PanelTransferFragment : PanelBottomSheet(), KeyboardAwareLinearLayout.OnKe
         })
 
         contentView.back_iv.setOnClickListener {
-            contentView.search_et.hideKeyboard()
+            contentView.transfer_amount.showKeyboard()
             contentView.asset_layout.animate().translationX(contentView.asset_layout.width.toFloat()).start()
         }
         contentView.assets_rv.layoutManager = LinearLayoutManager(requireContext())

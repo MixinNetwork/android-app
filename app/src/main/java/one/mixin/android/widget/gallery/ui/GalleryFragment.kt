@@ -1,5 +1,7 @@
 package one.mixin.android.widget.gallery.ui
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.database.Cursor
@@ -12,10 +14,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.AdapterView
 import androidx.fragment.app.Fragment
+import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_gallery.*
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
@@ -181,8 +185,18 @@ class GalleryFragment : Fragment(), AlbumCollection.AlbumCallbacks, AdapterView.
         return mSelectedCollection
     }
 
+    @SuppressLint("CheckResult")
     override fun capture() {
-        mMediaStoreCompat.dispatchCaptureIntent(requireContext(), REQUEST_CAMERA)
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.CAMERA)
+            .subscribe({ granted ->
+                if (granted) {
+                    mMediaStoreCompat.dispatchCaptureIntent(requireContext(), REQUEST_CAMERA)
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }, {
+            })
     }
 
     var onGalleryFragmentCallback: OnGalleryFragmentCallback? = null

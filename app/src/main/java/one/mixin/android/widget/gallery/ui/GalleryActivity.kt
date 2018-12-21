@@ -1,5 +1,7 @@
 package one.mixin.android.widget.gallery.ui
 
+import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.database.Cursor
@@ -13,8 +15,10 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
 import androidx.appcompat.app.AppCompatActivity
+import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_gallery.*
 import one.mixin.android.R
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
@@ -223,10 +227,18 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
         return mSelectedCollection
     }
 
+    @SuppressLint("CheckResult")
     override fun capture() {
-        if (mMediaStoreCompat != null) {
-            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE)
-        }
+        RxPermissions(this)
+            .request(Manifest.permission.CAMERA)
+            .subscribe({ granted ->
+                if (granted) {
+                    mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE)
+                } else {
+                    openPermissionSetting()
+                }
+            }, {
+            })
     }
 
     companion object {

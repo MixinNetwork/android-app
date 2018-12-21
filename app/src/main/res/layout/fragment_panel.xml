@@ -9,7 +9,6 @@
         android:id="@+id/panel_tab_rv"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/panel_bg"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
         android:paddingTop="4dp"/>

@@ -63,14 +63,12 @@ import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
@@ -252,127 +250,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         }
-
-//    private val appAdapter: AppAdapter by lazy {
-//        AppAdapter(if (isGroup) {
-//            AppCap.GROUP.name
-//        } else {
-//            AppCap.CONTACT.name
-//        }, object : AppAdapter.OnAppClickListener {
-//            override fun onAppClick(url: String, name: String) {
-//                hideMediaLayout()
-//                WebBottomSheetDialogFragment
-//                    .newInstance(url, conversationId, name)
-//                    .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
-//            }
-//        })
-//    }
-//
-//    private val menuAdapter: MenuAdapter by lazy {
-//        MenuAdapter(object : MenuAdapter.OnMenuClickListener {
-//            override fun onMenuClick(id: Int) {
-//                when (id) {
-//                    R.id.menu_camera -> {
-//                        RxPermissions(requireActivity())
-//                            .request(Manifest.permission.CAMERA)
-//                            .subscribe({ granted ->
-//                                if (granted) {
-//                                    imageUri = createImageUri()
-//                                    imageUri?.let {
-//                                        openCamera(it)
-//                                    }
-//                                } else {
-//                                    context?.openPermissionSetting()
-//                                }
-//                            }, {
-//                            })
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_gallery -> {
-//                        RxPermissions(requireActivity())
-//                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-//                            .subscribe({ granted ->
-//                                if (granted) {
-//                                    openGallery()
-//                                } else {
-//                                    context?.openPermissionSetting()
-//                                }
-//                            }, {
-//                            })
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_document -> {
-//                        RxPermissions(requireActivity())
-//                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-//                            .subscribe({ granted ->
-//                                if (granted) {
-//                                    selectDocument()
-//                                } else {
-//                                    context?.openPermissionSetting()
-//                                }
-//                            }, {
-//                            })
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_transfer -> {
-//                        if (Session.getAccount()?.hasPin == true) {
-//                            recipient?.let {
-//                                TransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
-//                            }
-//                        } else {
-//                            activity?.supportFragmentManager?.inTransaction {
-//                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-//                                    .anim.slide_in_bottom, R.anim.slide_out_bottom)
-//                                    .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
-//                                    .addToBackStack(null)
-//                            }
-//                        }
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_contact -> {
-//                        activity?.supportFragmentManager?.inTransaction {
-//                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-//                                .anim.slide_in_bottom, R.anim.slide_out_bottom)
-//                                .add(R.id.container,
-//                                    FriendsFragment.newInstance(conversationId, isGroup, isBot).apply {
-//                                        setOnFriendClick {
-//                                            sendContactMessage(it.userId)
-//                                        }
-//                                    }, FriendsFragment.TAG)
-//                                .addToBackStack(null)
-//                        }
-//                        hideMediaLayout()
-//                    }
-//                    R.id.menu_voice -> {
-//                        if (!callState.isIdle()) {
-//                            if (recipient != null && callState.user?.userId == recipient?.userId) {
-//                                CallActivity.show(requireContext(), recipient)
-//                            } else {
-//                                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-//                                    .setMessage(getString(R.string.chat_call_warning_call))
-//                                    .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-//                                        dialog.dismiss()
-//                                    }
-//                                    .show()
-//                            }
-//                        } else {
-//                            RxPermissions(requireActivity())
-//                                .request(Manifest.permission.RECORD_AUDIO)
-//                                .subscribe({ granted ->
-//                                    if (granted) {
-//                                        callVoice()
-//                                    } else {
-//                                        context?.openPermissionSetting()
-//                                    }
-//                                }, {
-//                                })
-//                        }
-//                        hideMediaLayout()
-//                    }
-//                }
-//            }
-//        })
-//    }
 
     private fun callVoice() {
         if (LinkState.isOnline(linkState.state)) {
@@ -619,7 +496,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private var imageUri: Uri? = null
-    private fun createImageUri() = Uri.fromFile(context?.getImagePath()?.createImageTemp())
 
     private val conversationId: String by lazy {
         var cid = arguments!!.getString(CONVERSATION_ID)
@@ -1000,21 +876,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
             closeTool()
         }
-//        media_layout.round(dp(8f))
-//        menu_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-//        menu_rv.adapter = menuAdapter
-//
-//        if (!isBot) {
-//            app_rv.layoutManager = LinearLayoutManager(context, RecyclerView.HORIZONTAL, false)
-//            app_rv.adapter = appAdapter
-//        }
-//
-//        shadow.setOnClickListener {
-//            hideMediaLayout()
-//        }
-//
-//        menuAdapter.isGroup = isGroup
-//        menuAdapter.isBot = isBot
 
         callState.observe(this, Observer { info ->
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
@@ -1072,8 +933,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         if (isBot) {
-//            app_rv.visibility = GONE
-//            extensions.visibility = GONE
             chat_control.showBot()
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 if (it != null && it.isNotEmpty()) {
@@ -1091,18 +950,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         } else {
             chat_control.hideBot()
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
-                getPanelFragment().setAppList(it)
-//                appAdapter.appList = it
-//                if (appAdapter.appList == null || appAdapter.appList!!.isEmpty()) {
-//                    app_rv.visibility = GONE
-//                    extensions.visibility = GONE
-//                } else {
-//                    app_rv.visibility = VISIBLE
-//                    extensions.visibility = VISIBLE
-//                }
+                appList = it
             })
         }
     }
+
+    private var appList: List<App>? = null
 
     private fun sendForwardMessages(messages: List<ForwardMessage>, init: Boolean) {
         createConversation {
@@ -1368,7 +1221,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 val app = chatViewModel.findAppById(user.appId!!)
                 if (app != null && app.creatorId == Session.getAccountId()) {
                     uiThread {
-                        //                        menuAdapter.isSelfCreatedBot = true
                         getPanelFragment(true)
                     }
                 }
@@ -1460,94 +1312,95 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         var panelFragment = requireFragmentManager().findFragmentByTag(PanelFragment.TAG)
         if (panelFragment == null) {
             panelFragment = PanelFragment.newInstance(isGroup, isBot, isSelfCreatedBot, conversationId)
-        }
-        panelFragment as PanelFragment
-        panelFragment.callback = object : PanelFragment.Callback {
-            override fun toggleExpand(panelTab: PanelTab) {
-                chat_control.expandable = panelTab.expandable
-                if (panelTab.checkable && panelTab.checked) {
-                    currPanelTab = panelTab
-                }
+            appList?.let {
+                panelFragment.setAppList(it)
             }
-
-            override fun onGalleryClick(uri: Uri, isVideo: Boolean) {
-                if (isVideo) {
-                    sendVideoMessage(uri)
-                } else {
-                    sendImageMessage(uri)
-                }
-            }
-
-            override fun onCameraClick(imageUri: Uri) {
-                sendImageMessage(imageUri)
-            }
-
-            @SuppressLint("CheckResult")
-            override fun onVoiceClick() {
-                if (!callState.isIdle()) {
-                    if (recipient != null && callState.user?.userId == recipient?.userId) {
-                        CallActivity.show(requireContext(), recipient)
-                    } else {
-                        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-                            .setMessage(getString(R.string.chat_call_warning_call))
-                            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                                dialog.dismiss()
-                            }
-                            .show()
+            panelFragment.callback = object : PanelFragment.Callback {
+                override fun toggleExpand(panelTab: PanelTab) {
+                    chat_control.expandable = panelTab.expandable
+                    if (panelTab.checkable && panelTab.checked) {
+                        currPanelTab = panelTab
                     }
-                } else {
+                }
+
+                override fun onGalleryClick(uri: Uri, isVideo: Boolean) {
+                    if (isVideo) {
+                        sendVideoMessage(uri)
+                    } else {
+                        sendImageMessage(uri)
+                    }
+                }
+
+                override fun onCameraClick(imageUri: Uri) {
+                    sendImageMessage(imageUri)
+                }
+
+                @SuppressLint("CheckResult")
+                override fun onVoiceClick() {
+                    if (!callState.isIdle()) {
+                        if (recipient != null && callState.user?.userId == recipient?.userId) {
+                            CallActivity.show(requireContext(), recipient)
+                        } else {
+                            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                                .setMessage(getString(R.string.chat_call_warning_call))
+                                .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                                .show()
+                        }
+                    } else {
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.RECORD_AUDIO)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    callVoice()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                            })
+                    }
+                }
+
+                override fun onTransferClick() {
+                    if (Session.getAccount()?.hasPin == true) {
+                        recipient?.let {
+                            PanelTransferFragment.newInstance(it.userId)
+                                .showNow(requireFragmentManager(), PanelTransferFragment.TAG)
+                        }
+                    } else {
+                        activity?.supportFragmentManager?.inTransaction {
+                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                                .anim.slide_in_bottom, R.anim.slide_out_bottom)
+                                .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                                .addToBackStack(null)
+                        }
+                    }
+                }
+
+                @SuppressLint("CheckResult")
+                override fun onFileClick() {
                     RxPermissions(requireActivity())
-                        .request(Manifest.permission.RECORD_AUDIO)
+                        .request(Manifest.permission.READ_EXTERNAL_STORAGE)
                         .subscribe({ granted ->
                             if (granted) {
-                                callVoice()
+                                selectDocument()
                             } else {
                                 context?.openPermissionSetting()
                             }
                         }, {
                         })
                 }
-            }
 
-            override fun onTransferClick() {
-                if (Session.getAccount()?.hasPin == true) {
-                    recipient?.let {
-                        PanelTransferFragment.newInstance(it.userId)
-                            .showNow(requireFragmentManager(), PanelTransferFragment.TAG)
-                    }
-                } else {
-                    activity?.supportFragmentManager?.inTransaction {
-                        setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                            .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                            .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
-                            .addToBackStack(null)
-                    }
+                override fun onSendContact(message: ForwardMessage) {
+                    sendForwardMessages(listOf(message), false)
                 }
-            }
-
-            @SuppressLint("CheckResult")
-            override fun onFileClick() {
-                RxPermissions(requireActivity())
-                    .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    .subscribe({ granted ->
-                        if (granted) {
-                            selectDocument()
-                        } else {
-                            context?.openPermissionSetting()
-                        }
-                    }, {
-                    })
-            }
-
-            override fun onSendContact(message: ForwardMessage) {
-                sendForwardMessages(listOf(message), false)
             }
         }
         requireFragmentManager().inTransaction {
-            setCustomAnimations(R.anim.slide_in_bottom_fast, 0, 0, R.anim.slide_out_bottom_fast)
             replace(R.id.panel_container, panelFragment, PanelFragment.TAG)
         }
-        return panelFragment
+        return panelFragment as PanelFragment
     }
 
     private fun adjustAlpha(color: Int, factor: Float): Int {
@@ -1605,30 +1458,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun showMediaLayout() {
         if (!mediaVisibility) {
             getPanelFragment()
-//            shadow.fadeIn()
-//            media_layout.visibility = VISIBLE
-//            media_layout.translationY(16f)
-//            chat_control.chat_et.hideKeyboard()
-//            hideStickerContainer()
-//            mediaVisibility = true
-//            if (reply_view.visibility == VISIBLE) {
-//                reply_view.fadeOut()
-//                chat_control.showOtherInput()
-//            }
+            mediaVisibility = true
         }
     }
 
     private fun hideMediaLayout() {
         if (mediaVisibility) {
-//            shadow.fadeOut()
-//            media_layout.translationY(dp(350f).toFloat()) {
-//                media_layout.visibility = GONE
-//            }
-//            mediaVisibility = false
-//            if (reply_view.visibility == VISIBLE) {
-//                reply_view.fadeOut()
-//                chat_control.showOtherInput()
-//            }
+            mediaVisibility = false
         }
     }
 

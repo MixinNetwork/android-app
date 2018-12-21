@@ -60,8 +60,8 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
     fun getTabView(pos: Int, context: Context): View {
         val view = View.inflate(context, R.layout.layout_sticker_tab, null)
         when (pos) {
-            TYPE_RECENT -> view.icon.setImageResource(R.drawable.ic_access_time_gray_24dp)
-            TYPE_LIKE -> view.icon.setImageResource(R.drawable.ic_favorite_border_gray_24dp)
+            TYPE_RECENT -> view.icon.setImageResource(R.drawable.ic_sticker_time)
+            TYPE_LIKE -> view.icon.setImageResource(R.drawable.ic_sticker_like)
             TYPE_GIPHY -> view.icon.setImageResource(R.drawable.ic_sticker_gif)
             else -> view.icon.loadImage(albums[pos - UN_NORMAL_COUNT].iconUrl)
         }

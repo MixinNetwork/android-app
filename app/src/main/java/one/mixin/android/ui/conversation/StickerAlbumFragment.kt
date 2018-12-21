@@ -9,9 +9,12 @@ import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.fragment_sticker_album.*
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter
 import one.mixin.android.vo.StickerAlbum
@@ -56,6 +59,9 @@ class StickerAlbumFragment : BaseFragment() {
                     for (i in 0 until albumAdapter.count) {
                         val tabView = albumAdapter.getTabView(i, c) as FrameLayout
                         album_tl.getTabAt(i)?.customView = tabView
+                        tabView.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                            height = c.dpToPx(48f)
+                        }
                         if (album_tl.selectedTabPosition == i) {
                             tabView.setBackgroundResource(R.drawable.bg_sticker_tab)
                         }
