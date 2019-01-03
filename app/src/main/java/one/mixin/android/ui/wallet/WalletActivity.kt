@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import androidx.navigation.NavArgument
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import one.mixin.android.R
@@ -11,6 +12,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_CHANGE
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 import javax.inject.Inject
@@ -34,13 +36,13 @@ class WalletActivity : BlazeBaseActivity() {
         val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
         notNullElse(asset, {
             navGraph.startDestination = R.id.transactions_fragment
-            navGraph.setDefaultArguments(Bundle().apply { putParcelable(ARGS_ASSET, it) })
+            navGraph.addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
         }, {
             if (account.hasPin) {
                 navGraph.startDestination = R.id.wallet_fragment
             } else {
                 navGraph.startDestination = R.id.wallet_password_fragment
-                navGraph.setDefaultArguments(Bundle().apply { putBoolean(WalletPasswordFragment.ARGS_CHANGE, false) })
+                navGraph.addArgument(ARGS_CHANGE, NavArgument.Builder().setDefaultValue(false).build())
             }
         })
         navController.graph = navGraph
