@@ -86,6 +86,12 @@ class SignalProtocol(ctx: Context) {
     private val signalProtocolStore = SignalProtocolStoreImpl(MixinApplication.appContext)
     private val senderKeyStore: MixinSenderKeyStore = MixinSenderKeyStore(ctx)
 
+    private fun getSenderKeyDistribution(groupId: String, senderId: String): SenderKeyDistributionMessage {
+        val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(senderId, DEFAULT_DEVICE_ID))
+        val builder = GroupSessionBuilder(senderKeyStore)
+        return builder.create(senderKeyName)
+    }
+
     fun encryptSenderKey(conversationId: String, recipientId: String): EncryptResult {
         val senderKeyDistributionMessage = getSenderKeyDistribution(conversationId, Session.getAccountId()!!)
         return try {
@@ -137,12 +143,6 @@ class SignalProtocol(ctx: Context) {
                 else -> throw InvalidMessageException("Unknown type: $dataType")
             }
         }
-    }
-
-    private fun getSenderKeyDistribution(groupId: String, senderId: String): SenderKeyDistributionMessage {
-        val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(senderId, DEFAULT_DEVICE_ID))
-        val builder = GroupSessionBuilder(senderKeyStore)
-        return builder.create(senderKeyName)
     }
 
     fun isExistSenderKey(groupId: String, senderId: String): Boolean {

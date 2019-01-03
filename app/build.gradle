@@ -169,7 +169,7 @@ dependencies {
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"
     implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"
     implementation "com.google.firebase:firebase-dynamic-links:${firebaseDylinkVersion}"
-    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.6'
+    implementation 'com.crashlytics.sdk.android:crashlytics:2.9.8'
     implementation "com.google.zxing:core:${zxingVersion}"
     implementation "com.timehop.stickyheadersrecyclerview:library:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
