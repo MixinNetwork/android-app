@@ -47,6 +47,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
+import java.util.Locale
 import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
@@ -155,10 +156,10 @@ class MobileFragment : BaseFragment() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null) {
             val credential = data.getParcelableExtra<Credential>(Credential.EXTRA_KEY)
-            val phoneNum = if (credential.id.startsWith(mCountry.dialCode)) {
-                credential.id.substring(mCountry.dialCode.length)
-            } else {
-                credential.id
+            val phoneNum = try {
+                PhoneNumberUtil.getInstance().parse(credential.id, Locale.getDefault().country).nationalNumber.toString()
+            } catch (e: NumberParseException) {
+                ""
             }
             mobile_et.setText(phoneNum)
         }
