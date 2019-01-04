@@ -20,6 +20,8 @@ import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.credentials.Credential
 import com.google.android.gms.auth.api.credentials.HintRequest
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import com.google.android.gms.common.api.GoogleApiClient
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
@@ -80,12 +82,7 @@ class MobileFragment : BaseFragment(), GoogleApiClient.ConnectionCallbacks {
 
     private lateinit var recaptchaView: RecaptchaView
 
-    private val apiClient: GoogleApiClient by lazy {
-        GoogleApiClient.Builder(requireContext())
-            .addConnectionCallbacks(this)
-            .addApi(Auth.CREDENTIALS_API)
-            .build()
-    }
+    private lateinit var apiClient: GoogleApiClient
     private var googleApiConnected = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -177,6 +174,13 @@ class MobileFragment : BaseFragment(), GoogleApiClient.ConnectionCallbacks {
     }
 
     private fun requestHint() {
+        val available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(requireContext())
+        if (available != ConnectionResult.SUCCESS) return
+
+        apiClient = GoogleApiClient.Builder(requireContext())
+            .addConnectionCallbacks(this)
+            .addApi(Auth.CREDENTIALS_API)
+            .build()
         val hintRequest = HintRequest.Builder()
             .setPhoneNumberIdentifierSupported(true)
             .build()
