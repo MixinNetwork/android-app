@@ -91,5 +91,6 @@ class CallAudioManager(private val context: Context) {
         audioManager.isSpeakerphoneOn = savedSpeakerOn
         audioManager.mode = saveMode
         audioManager.isMicrophoneMute = savedMicrophoneMute
+        vibrator?.cancel()
     }
 }

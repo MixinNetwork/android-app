@@ -49,7 +49,7 @@ import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
 import javax.inject.Inject
 
-class MobileFragment : BaseFragment(), GoogleApiClient.ConnectionCallbacks {
+class MobileFragment : BaseFragment() {
 
     companion object {
         const val TAG: String = "MobileFragment"
@@ -83,7 +83,6 @@ class MobileFragment : BaseFragment(), GoogleApiClient.ConnectionCallbacks {
     private lateinit var recaptchaView: RecaptchaView
 
     private lateinit var apiClient: GoogleApiClient
-    private var googleApiConnected = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val parent = layoutInflater.inflate(R.layout.fragment_mobile, container, false) as ViewGroup
@@ -165,20 +164,11 @@ class MobileFragment : BaseFragment(), GoogleApiClient.ConnectionCallbacks {
         }
     }
 
-    override fun onConnected(bundle: Bundle?) {
-        googleApiConnected = true
-    }
-
-    override fun onConnectionSuspended(cause: Int) {
-        googleApiConnected = false
-    }
-
     private fun requestHint() {
         val available = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(requireContext())
         if (available != ConnectionResult.SUCCESS) return
 
         apiClient = GoogleApiClient.Builder(requireContext())
-            .addConnectionCallbacks(this)
             .addApi(Auth.CREDENTIALS_API)
             .build()
         val hintRequest = HintRequest.Builder()
