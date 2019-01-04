@@ -136,6 +136,9 @@ dependencies {
     implementation "android.arch.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "android.arch.navigation:navigation-ui-ktx:${navigationVersion}"
 
+    // play service
+    implementation "com.google.android.gms:play-services-auth:${playServiceVersion}"
+
     // DI
     implementation "com.google.dagger:dagger:${daggerVersion}"
     implementation "com.google.dagger:dagger-android:${daggerVersion}"
