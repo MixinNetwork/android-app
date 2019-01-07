@@ -109,7 +109,6 @@ open class SendMessageJob(
         }
         if (signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
             checkSentSenderKey(message.conversationId)
-            deliver(encryptNormalMessage())
         } else {
             val conversation = conversationDao.getConversation(message.conversationId)!!
             if (conversation.isGroup()) {
@@ -119,8 +118,8 @@ open class SendMessageJob(
                 requestCreateConversation(conversation)
                 sendSenderKey(conversation.conversationId, conversation.ownerId!!)
             }
-            deliver(encryptNormalMessage())
         }
+        deliver(encryptNormalMessage())
     }
 
     private fun requestCreateConversation(conversation: Conversation) {
