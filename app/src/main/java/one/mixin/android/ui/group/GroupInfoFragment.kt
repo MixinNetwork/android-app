@@ -1,13 +1,8 @@
 package one.mixin.android.ui.group
 
 import android.app.Dialog
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.PopupMenu
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.ArrayMap
@@ -16,8 +11,11 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_group_info.*
@@ -27,7 +25,6 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ConversationEvent
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
