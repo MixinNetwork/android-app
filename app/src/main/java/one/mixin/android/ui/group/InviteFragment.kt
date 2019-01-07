@@ -1,14 +1,14 @@
 package one.mixin.android.ui.group
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.ClipData
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_invite.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -52,17 +52,12 @@ class InviteFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_invite, container, false)
 
-    private var ifFirst: Boolean = true
-
-    private fun loadUrl() {
-        if (ifFirst) {
-            inviteViewModel.findConversation(conversationId).autoDisposable(scopeProvider).subscribe({
-                if (it.isSuccess && it.data != null) {
-                    ifFirst = false
-                    inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
-                }
-            }, { ErrorHandler.handleError(it) })
-        }
+    private fun refreshUrl() {
+        inviteViewModel.findConversation(conversationId).autoDisposable(scopeProvider).subscribe({
+            if (it.isSuccess && it.data != null) {
+                inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
+            }
+        }, { ErrorHandler.handleError(it) })
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -71,9 +66,6 @@ class InviteFragment : BaseFragment() {
 
         inviteViewModel.getConversation(conversationId).observe(this, Observer {
             notNullElse(it, {
-                if (it.codeUrl.isNullOrBlank()) {
-                    loadUrl()
-                }
                 val url = it.codeUrl
                 invite_link.text = url
                 invite_forward.setOnClickListener {
@@ -108,5 +100,7 @@ class InviteFragment : BaseFragment() {
                 ErrorHandler.handleError(it)
             })
         }
+
+        refreshUrl()
     }
 }
