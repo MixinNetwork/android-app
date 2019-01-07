@@ -60,9 +60,9 @@ abstract class PanelBottomSheet : MixinBottomSheetDialogFragment() {
         InputAwareLayout.appreciable = false
     }
 
-    override fun onDetach() {
-        super.onDetach()
+    override fun dismiss() {
         InputAwareLayout.appreciable = true
+        super.dismiss()
     }
 
     @SuppressLint("RestrictedApi")

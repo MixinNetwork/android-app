@@ -24,7 +24,7 @@ class PanelContactAdapter : ListAdapter<User, PanelContactAdapter.PanelContactHo
         view.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         view.name.text = user.fullName
         if (selectedIndex == position) {
-            view.blur.showBlur(view.avatar, user.userId)
+            view.blur.showBlur(view.avatar)
         } else {
             view.blur.hideBlur()
         }

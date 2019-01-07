@@ -10,7 +10,7 @@ import kotlinx.android.synthetic.main.fragment_panel_app.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.R
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.common.WebAppInterface
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment.Companion.URL
 
@@ -28,7 +28,7 @@ class PanelAppFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         web_view.settings.javaScriptEnabled = true
         web_view.settings.domStorageEnabled = true
-        web_view.addJavascriptInterface(WebBottomSheetDialogFragment.WebAppInterface(context!!, conversationId), "MixinContext")
+        web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
 
         url = arguments!!.getString(URL)!!
         load(url)

@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ActivityNotFoundException
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -13,20 +12,14 @@ import android.view.ContextMenu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
 import android.webkit.WebViewClient
-import android.widget.Toast
-import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_web.view.*
-import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -39,10 +32,10 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.WebAppInterface
 import one.mixin.android.ui.panel.PanelBottomSheet
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
@@ -82,9 +75,6 @@ class WebBottomSheetDialogFragment : PanelBottomSheet() {
     }
     private val conversationId: String? by lazy {
         arguments!!.getString(CONVERSATION_ID)
-    }
-    private val name: String? by lazy {
-        arguments!!.getString(NAME)
     }
 
     override fun getContentViewId() = R.layout.fragment_web
@@ -162,28 +152,15 @@ class WebBottomSheetDialogFragment : PanelBottomSheet() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         KeyBoardAssist.assistContent(contentView as ViewGroup)
-//        contentView.close_iv.setOnClickListener {
-//            dialog.dismiss()
-//        }
         contentView.chat_web_view.settings.javaScriptEnabled = true
         contentView.chat_web_view.settings.domStorageEnabled = true
 
         contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
-            override fun onPageFinished() {
-//                contentView.progress.visibility = View.GONE
-//                contentView.title_view.visibility = View.VISIBLE
-            }
+            override fun onPageFinished() {}
         }, conversationId, this.requireFragmentManager())
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
-            override fun onReceivedTitle(view: WebView?, title: String?) {
-                super.onReceivedTitle(view, title)
-                if (!title.equals(url)) {
-//                    contentView.title_view.text = title
-                }
-            }
-
             override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
                 uploadMessage?.onReceiveValue(null)
                 uploadMessage = filePathCallback
@@ -232,16 +209,6 @@ class WebBottomSheetDialogFragment : PanelBottomSheet() {
             }
         })
 
-//        contentView.more_iv.setOnClickListener {
-//            showBottomSheet()
-//        }
-
-//        name?.let {
-//            contentView.title_view.text = it
-//            contentView.progress.visibility = View.GONE
-//            contentView.title_view.visibility = View.VISIBLE
-//        }
-
         dialog.setOnShowListener {
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
@@ -256,7 +223,7 @@ class WebBottomSheetDialogFragment : PanelBottomSheet() {
             contentView.chat_web_view.webChromeClient = null
             dismiss()
         }
-        (dialog as BottomSheet).setCustomViewHeight(miniHeight)
+        (dialog as BottomSheet).setCustomViewHeight(maxHeight)
     }
 
     @Override
@@ -273,24 +240,6 @@ class WebBottomSheetDialogFragment : PanelBottomSheet() {
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
         super.onDestroyView()
-    }
-
-    private fun showBottomSheet() {
-        val builder = BottomSheet.Builder(requireActivity())
-        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_web_bottom, null)
-        builder.setCustomView(view)
-        val bottomSheet = builder.create()
-        view.refresh.setOnClickListener {
-            contentView.chat_web_view.clearCache(true)
-            contentView.chat_web_view.reload()
-            bottomSheet.dismiss()
-        }
-        view.open.setOnClickListener {
-            context?.openUrl(contentView.chat_web_view.url)
-            bottomSheet.dismiss()
-        }
-        view.cancel_tv.setOnClickListener { bottomSheet.dismiss() }
-        bottomSheet.show()
     }
 
     @SuppressLint("CheckResult")
@@ -358,9 +307,6 @@ class WebBottomSheetDialogFragment : PanelBottomSheet() {
                             context.startActivity(intent)
                         } else {
                             view.loadUrl(url, extraHeaders)
-                            // or call external broswer
-                            //                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fallbackUrl));
-                            //                    context.startActivity(browserIntent);
                         }
                     }
                 } catch (e: URISyntaxException) {
@@ -375,25 +321,4 @@ class WebBottomSheetDialogFragment : PanelBottomSheet() {
             fun onPageFinished()
         }
     }
-
-    class WebAppInterface(val context: Context, val conversationId: String?) {
-        @JavascriptInterface
-        fun showToast(toast: String) {
-            Toast.makeText(context, toast, Toast.LENGTH_SHORT).show()
-        }
-
-        @JavascriptInterface
-        fun getContext(): String? {
-            return if (conversationId != null) {
-                Gson().toJson(MixinContext(conversationId))
-            } else {
-                null
-            }
-        }
-    }
-
-    class MixinContext(
-        @SerializedName("conversation_id")
-        val conversationId: String?
-    )
 }

@@ -613,10 +613,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 hideStickerContainer()
                 true
             }
-            mediaVisibility -> {
-                hideMediaLayout()
-                true
-            }
             chat_control.isRecording -> {
                 OpusAudioRecorder.get().stopRecording(false)
                 chat_control.cancelExternal()
@@ -711,6 +707,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control.chat_et.setOnClickListener {
             cover.alpha = 0f
             activity?.window?.statusBarColor = Color.TRANSPARENT
+        }
+        chat_control.chat_et.setOnFocusChangeListener { v, hasFocus ->
+            Timber.d("@@@ hasFocus: $hasFocus")
         }
         chat_control.setCircle(record_circle)
         chat_control.cover = cover
@@ -1188,10 +1187,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onKeyboardHidden() {
+        Timber.d("@@@ onKeyboardHidden")
         chat_control.toggleKeyboard(false)
     }
 
     override fun onKeyboardShown() {
+        Timber.d("@@@ onKeyboardShown")
+        if (!chat_control.chat_et.hasFocus() && currPanelTab.type == PanelTabType.App) {
+            currPanelTab.homeUri?.let {
+                WebBottomSheetDialogFragment
+                    .newInstance(it, conversationId, currPanelTab.name)
+                    .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+            }
+        }
         hideMediaLayout()
         chat_control.toggleKeyboard(true)
     }

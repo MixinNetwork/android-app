@@ -8,17 +8,15 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.preference.PreferenceManager;
-import androidx.appcompat.widget.LinearLayoutCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
-
+import androidx.appcompat.widget.LinearLayoutCompat;
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
-
 import one.mixin.android.R;
 
 
@@ -121,7 +119,6 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
 
     protected void onKeyboardOpen() {
         keyboardOpen = true;
-
         notifyShownListeners();
     }
 
