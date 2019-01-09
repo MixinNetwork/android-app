@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.bottom_sheet_panel_contact.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.panel.adapter.PanelContactAdapter
 import one.mixin.android.ui.panel.listener.OnSendContactsListener
@@ -30,6 +31,8 @@ class PanelContactBottomSheet : PanelBottomSheet() {
         super.onActivityCreated(savedInstanceState)
         contentView.contact_rv.layoutManager = GridLayoutManager(context, 3)
         contentView.contact_rv.adapter = adapter
+        val selected = arguments!!.getString(ARGS_SELECTED)
+        adapter.selectedUserId = selected
         adapter.onContactListener = object : PanelContactAdapter.OnContactListener {
             override fun onSendContact(msg: ForwardMessage) {
                 onSendContactsListener?.onSendContacts(msg)
@@ -64,11 +67,19 @@ class PanelContactBottomSheet : PanelBottomSheet() {
         contentView.search_et.hideKeyboard()
     }
 
+    override fun dismiss() {
+        contentView.search_et.hideKeyboard()
+        super.dismiss()
+    }
+
     var onSendContactsListener: OnSendContactsListener? = null
 
     companion object {
         const val TAG = "PanelContactBottomSheet"
+        const val ARGS_SELECTED = "args_selected"
 
-        fun newInstance() = PanelContactBottomSheet()
+        fun newInstance(selected: String? = null) = PanelContactBottomSheet().withArgs {
+            putString(ARGS_SELECTED, selected)
+        }
     }
 }

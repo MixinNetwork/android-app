@@ -522,5 +522,6 @@
     <!-- panel -->
     <string name="panel_transfer_asset_balance">%1$s BALANCE</string>
     <string name="panel_contact_send">Send(%1$d)</string>
+    <string name="panel_file_see_more">Browse other docs…</string>
 </resources>
 

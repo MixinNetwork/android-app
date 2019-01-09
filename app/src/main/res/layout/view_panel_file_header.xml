@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/more_tv"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:background="@drawable/bg_ripple_rect"
+    android:drawableStart="@drawable/ic_storage_gray_24dp"
+    android:drawablePadding="@dimen/margin16"
+    android:paddingStart="@dimen/margin16"
+    android:paddingEnd="@dimen/margin16"
+    android:gravity="center_vertical"
+    android:textColor="@color/black"
+    android:text="@string/panel_file_see_more"/>

@@ -1187,12 +1187,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onKeyboardHidden() {
-        Timber.d("@@@ onKeyboardHidden")
         chat_control.toggleKeyboard(false)
     }
 
     override fun onKeyboardShown() {
-        Timber.d("@@@ onKeyboardShown")
         if (!chat_control.chat_et.hasFocus() && currPanelTab.type == PanelTabType.App) {
             currPanelTab.homeUri?.let {
                 WebBottomSheetDialogFragment
@@ -1387,17 +1385,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
 
                 @SuppressLint("CheckResult")
-                override fun onFileClick() {
-                    RxPermissions(requireActivity())
-                        .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                        .subscribe({ granted ->
-                            if (granted) {
-                                selectDocument()
-                            } else {
-                                context?.openPermissionSetting()
-                            }
-                        }, {
-                        })
+                override fun onFileClick(file: File) {
+                    val uri = file.toUri()
+                    showSendFileDialog(Attachment(uri, file.name, getMimeType(uri) ?: "", file.length()))
+                }
+
+                override fun onOpenFileSelector() {
+                    selectDocument()
                 }
 
                 override fun onSendContact(message: ForwardMessage) {
@@ -1516,22 +1510,27 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
+
             context?.getAttachment(uri)?.let {
-                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-                    .setMessage(if (isGroup) {
-                        requireContext().getString(R.string.send_file_group, it.filename, groupName)
-                    } else {
-                        requireContext().getString(R.string.send_file, it.filename, recipient?.fullName)
-                    })
-                    .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-                    .setPositiveButton(R.string.send) { dialog, _ ->
-                        sendAttachmentMessage(it)
-                        dialog.dismiss()
-                    }.show()
+                showSendFileDialog(it)
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
         }
+    }
+
+    private fun showSendFileDialog(attachment: Attachment) {
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setMessage(if (isGroup) {
+                requireContext().getString(R.string.send_file_group, attachment.filename, groupName)
+            } else {
+                requireContext().getString(R.string.send_file, attachment.filename, recipient?.fullName)
+            })
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.send) { dialog, _ ->
+                sendAttachmentMessage(attachment)
+                dialog.dismiss()
+            }.show()
     }
 
     private fun openMedia(messageItem: MessageItem) {
@@ -1706,13 +1705,26 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             })
                     }
                     PanelTabType.Contact -> {
-                        val panelContactBottomSheet = PanelContactBottomSheet.newInstance()
+                        val selected = getPanelFragment().getSelectAndClear()
+                        val panelContactBottomSheet = PanelContactBottomSheet.newInstance(selected)
                         panelContactBottomSheet.onSendContactsListener = object : OnSendContactsListener {
                             override fun onSendContacts(message: ForwardMessage) {
                                 sendForwardMessages(listOf(message), false)
                             }
                         }
                         panelContactBottomSheet.show(requireFragmentManager(), PanelContactBottomSheet.TAG)
+                    }
+                    PanelTabType.File -> {
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    selectDocument()
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                            })
                     }
                     PanelTabType.App -> {
                         currPanelTab.homeUri?.let {

@@ -22,6 +22,7 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import one.mixin.android.widget.gallery.internal.entity.CaptureStrategy
 import one.mixin.android.widget.gallery.ui.GalleryFragment
+import java.io.File
 
 class PanelFragment : BaseFragment() {
     companion object {
@@ -109,7 +110,14 @@ class PanelFragment : BaseFragment() {
     }
 
     private fun showFileFragment() {
-        callback?.onFileClick()
+        var fileFragment = requireFragmentManager().findFragmentByTag(PanelFileFragment.TAG) as? PanelFileFragment
+        if (fileFragment == null) {
+            fileFragment = PanelFileFragment.newInstance()
+            fileFragment.onPanelFileCallback = onFileFragment
+        }
+        requireFragmentManager().inTransaction {
+            replace(R.id.panel_tab_container, fileFragment, PanelFileFragment.TAG)
+        }
     }
 
     private fun showContactFragment() {
@@ -123,7 +131,7 @@ class PanelFragment : BaseFragment() {
             }
         }
         requireFragmentManager().inTransaction {
-            replace(R.id.panel_tab_container, contactFragment, PanelVoiceFragment.TAG)
+            replace(R.id.panel_tab_container, contactFragment, PanelContactFragment.TAG)
         }
     }
 
@@ -143,6 +151,11 @@ class PanelFragment : BaseFragment() {
         panelTabAdapter.appList = appList
     }
 
+    fun getSelectAndClear(): String? {
+        val contactFragment = requireFragmentManager().findFragmentByTag(PanelContactFragment.TAG) as? PanelContactFragment ?: return null
+        return contactFragment.getSelectAndClear()
+    }
+
     private val onGalleryFragment = object : GalleryFragment.OnGalleryFragmentCallback {
         override fun onGalleryClick(uri: Uri, isVideo: Boolean) {
             callback?.onGalleryClick(uri, isVideo)
@@ -159,6 +172,16 @@ class PanelFragment : BaseFragment() {
         }
     }
 
+    private val onFileFragment = object : PanelFileFragment.OnPanelFileCallback {
+        override fun onFileClick(file: File) {
+            callback?.onFileClick(file)
+        }
+
+        override fun onOpenFileSelector() {
+            callback?.onOpenFileSelector()
+        }
+    }
+
     var callback: Callback? = null
 
     interface Callback {
@@ -167,7 +190,8 @@ class PanelFragment : BaseFragment() {
         fun onCameraClick(imageUri: Uri)
         fun onVoiceClick()
         fun onTransferClick()
-        fun onFileClick()
+        fun onFileClick(file: File)
+        fun onOpenFileSelector()
         fun onSendContact(message: ForwardMessage)
     }
 }

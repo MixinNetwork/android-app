@@ -45,6 +45,13 @@ class PanelContactFragment : BaseFragment() {
         })
     }
 
+    fun getSelectAndClear(): String? {
+        val uid = adapter.selectedUserId
+        adapter.selectedUserId = null
+        adapter.notifyDataSetChanged()
+        return uid
+    }
+
     var onSendContactsListener: OnSendContactsListener? = null
 
     companion object {

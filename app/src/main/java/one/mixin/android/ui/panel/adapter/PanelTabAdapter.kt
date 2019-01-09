@@ -27,7 +27,7 @@ class PanelTabAdapter(
             add(transferPanelTab)
             add(voicePanelTab)
         }
-        add(PanelTab(PanelTabType.File, R.drawable.ic_panel_file, null, false, true, false))
+        add(PanelTab(PanelTabType.File, R.drawable.ic_panel_file, null, true, true, false))
         add(PanelTab(PanelTabType.Contact, R.drawable.ic_panel_contact, null, true, true, false))
     }
 

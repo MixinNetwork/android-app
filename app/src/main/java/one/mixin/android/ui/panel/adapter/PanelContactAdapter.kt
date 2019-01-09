@@ -13,7 +13,7 @@ import one.mixin.android.vo.User
 
 class PanelContactAdapter : ListAdapter<User, PanelContactAdapter.PanelContactHolder>(User.DIFF_CALLBACK) {
 
-    private var selectedIndex = -1
+    var selectedUserId: String? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PanelContactHolder =
         PanelContactHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_panel_contact, parent, false))
@@ -23,20 +23,19 @@ class PanelContactAdapter : ListAdapter<User, PanelContactAdapter.PanelContactHo
         val view = holder.itemView
         view.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         view.name.text = user.fullName
-        if (selectedIndex == position) {
+        if (selectedUserId == user.userId) {
             view.blur.showBlur(view.avatar)
         } else {
             view.blur.hideBlur()
         }
         view.setOnClickListener {
-            notifyItemChanged(selectedIndex)
-            if (selectedIndex == position) {
-                selectedIndex = -1
+            if (selectedUserId == user.userId) {
+                selectedUserId = null
                 onContactListener?.onSendContact(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId))
                 notifyItemChanged(position)
             } else {
-                selectedIndex = position
-                notifyItemChanged(position)
+                selectedUserId = user.userId
+                notifyDataSetChanged()
             }
         }
     }
