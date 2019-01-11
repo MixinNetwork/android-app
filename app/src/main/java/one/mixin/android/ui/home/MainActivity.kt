@@ -30,6 +30,7 @@ import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager

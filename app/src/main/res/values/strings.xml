@@ -527,8 +527,8 @@
     <string name="restore_retry">RETRY</string>
     <string name="restore_restore">RESTORE</string>
     <string name="restore_authorization">authorization</string>
-    <string name="restore_message">如果您之前曾备份到 Google 云端硬盘并且现在想要还原备份，请给与 Mixin 相应权限以检查您 Google账户里的备份。</string>
-    <string name="restore_account">Accont: %1$s</string>
+    <string name="restore_message">Back up your messages and media to Google Drove. You can restore them when you reinstall Mixin. Your messages and media will also back up to your phone\'s internal storage. Media and messages your back up are not protected by Mixin end-to-end encryption while in Google Drive.</string>
+    <string name="restore_account">Account: %1$s</string>
     <string name="restore_size">Size: %1$s</string>
     <string name="restore_failure">Failure</string>
     <string name="restore_not_found">Not found</string>

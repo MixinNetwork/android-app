@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getMediaPath
+import one.mixin.android.util.backup.drive.DriveFolder
+import one.mixin.android.util.backup.drive.DriveResourceClient
 import java.io.File
 import java.util.concurrent.ExecutionException
 
@@ -20,7 +22,7 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
     private val folderName: String) : BackupManager(driveResourceClient) {
 
     companion object {
-        private const val madieName = "Media"
+        private const val mediaName = "Media"
         private val lock = Any()
         private var INSTANCE: FileBackupManager? = null
 
@@ -53,15 +55,15 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
                     callback(Result.FAILURE)
                     return@launch
                 }
-                var mediaFolder = queryChildren(root, madieName)?.find {
-                    it.title == madieName && it.isFolder
+                var mediaFolder = queryChildren(root, mediaName)?.find {
+                    it.title == mediaName && it.isFolder
                 }?.driveId?.asDriveFolder()
                 if (mediaFolder == null) {
-                    mediaFolder = createChildrenFolder(root, madieName)
+                    mediaFolder = createChildrenFolder(root, mediaName)
                 }
-                mediaFolder?.let { mediaFolder ->
-                    contrastUpload(MixinApplication.appContext.getMediaPath(), mediaFolder)
-                    contrastDelete(MixinApplication.appContext.getMediaPath(), mediaFolder)
+                mediaFolder?.let { it ->
+                    contrastUpload(MixinApplication.appContext.getMediaPath(), it)
+                    contrastDelete(MixinApplication.appContext.getMediaPath(), it)
                 }
                 withContext(Dispatchers.Main) {
                     callback(Result.SUCCESS)
@@ -119,7 +121,7 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
                         callback(Result.NOT_FOUND, null)
                     }
                 }
-                val metaData = findBackupFiles(parentMetadata!!.driveId.asDriveFolder(), madieName).run {
+                val metaData = findBackupFiles(parentMetadata!!.driveId.asDriveFolder(), mediaName).run {
                     if (this.isNullOrEmpty()) {
                         null
                     } else {
@@ -173,8 +175,8 @@ class FileBackupManager private constructor(driveResourceClient: DriveResourceCl
                     callback(Result.FAILURE)
                     return@launch
                 }
-                val mediaFolder = queryChildren(root, madieName)?.find {
-                    it.title == madieName && it.isFolder
+                val mediaFolder = queryChildren(root, mediaName)?.find {
+                    it.title == mediaName && it.isFolder
                 }?.driveId?.asDriveFolder()
                 if (mediaFolder == null) {
                     callback(Result.NOT_FOUND)

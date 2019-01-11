@@ -1,5 +1,6 @@
 <resources>
     <!--common-->
+    <string name="app_name">Mixin备份</string>
     <string name="confirm">确认</string>
     <string name="change">更改</string>
     <string name="common_continue">继续</string>

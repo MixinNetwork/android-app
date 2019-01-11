@@ -82,7 +82,7 @@ class RestoreActivity : BaseActivity() {
             when (result) {
                 Result.SUCCESS -> {
                     metadata?.let { data ->
-                        FileBackupManager.getManager(driveResourceClient!!, Session.getAccount()!!.identity_number).findBackup { result, metadata ->
+                        FileBackupManager.getManager(driveResourceClient, Session.getAccount()!!.identity_number).findBackup { result, metadata ->
                             if (result == Result.SUCCESS) {
 
                             }
@@ -201,8 +201,9 @@ class RestoreActivity : BaseActivity() {
         }
     }
 
-    override fun onBackPressed() {
-    }
+    // open later
+//    override fun onBackPressed() {
+//    }
 
     companion object {
         fun show(context: Context) {

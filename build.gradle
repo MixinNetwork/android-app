@@ -12,7 +12,6 @@ buildscript {
         ext.supportLibVersion = '1.0.0'
         ext.daggerVersion = '2.19'
         ext.ktxVersion = '1.0.1'
-        ext.playServiceVersion = '16.0.1'
         ext.espressoVersion = '3.1.0-alpha4'
         ext.glideVersion = '4.8.0'
         ext.webpdecoderVesion = '0.0.7.4.6.1'

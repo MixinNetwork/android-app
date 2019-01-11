@@ -14,7 +14,7 @@ android {
     compileSdkVersion 28
     buildToolsVersion "28.0.3"
     defaultConfig {
-        applicationId "one.mixin.messenger"
+        applicationId "one.mixin.messenger.backup"
         minSdkVersion 23
         targetSdkVersion 28
         versionCode versionMajor * 1000000 + versionMinor * 10000 + versionPatch * 100 + versionBuild
@@ -137,7 +137,11 @@ dependencies {
     implementation "android.arch.navigation:navigation-ui-ktx:${navigationVersion}"
 
     // play service
-    implementation "com.google.android.gms:play-services-auth:${playServiceVersion}"
+    implementation "com.google.android.gms:play-services-auth:${gcmVersion}"
+    implementation "com.google.android.gms:play-services-drive:${gcmVersion}"
+    implementation "com.google.api-client:google-api-client:1.23.0"
+    implementation "com.google.api-client:google-api-client-android:1.23.0"
+    implementation "com.google.apis:google-api-services-drive:v3-rev110-1.23.0"
 
     // DI
     implementation "com.google.dagger:dagger:${daggerVersion}"
@@ -168,9 +172,6 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:${okhttpVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
-
-    implementation "com.google.android.gms:play-services-auth:${gcmVersion}"
-    implementation "com.google.android.gms:play-services-drive:${gcmVersion}"
 
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"

@@ -18,7 +18,6 @@ import com.google.android.gms.drive.Drive
 import com.google.android.gms.drive.DriveResourceClient
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_backup.*
-import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -41,6 +40,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.Session
 import one.mixin.android.util.backup.DataBaseBackupManager
 import one.mixin.android.util.backup.Result
@@ -140,7 +140,10 @@ class BackUpFragment : BaseFragment() {
                 }, {
                     context?.openPermissionSetting()
                 })
+        }
 
+        restore_bn.setOnClickListener {
+            RestoreActivity.show(requireContext())
         }
     }
 
