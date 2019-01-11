@@ -22,6 +22,7 @@ import androidx.core.net.toUri
 import androidx.core.os.EnvironmentCompat
 import androidx.exifinterface.media.ExifInterface
 import one.mixin.android.MixinApplication
+import one.mixin.android.util.Session
 import one.mixin.android.widget.gallery.MimeType
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -31,8 +32,8 @@ import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.LinkedList
 import java.util.Locale
-import java.util.Stack
 
 private fun isAvailable(): Boolean {
     val state = Environment.getExternalStorageState()
@@ -71,6 +72,16 @@ private fun Context.getAppPath(): File {
 
 fun Context.getMediaPath(): File {
     return File("${getAppPath().absolutePath}${File.separator}Media${File.separator}")
+}
+
+fun Context.getBackupPath(): File {
+    val parentName = Session.getAccount()?.identity_number
+    val f = File("${getAppPath().absolutePath}${File.separator}Backup${File.separator}$parentName${File.separator}")
+    if (!f.exists() || !f.isDirectory) {
+        f.delete()
+        f.mkdirs()
+    }
+    return f
 }
 
 fun Context.getCacheMediaPath(): File {
@@ -346,7 +357,7 @@ fun File.blurThumbnail(size: Size): Bitmap? {
 fun File.dirSize(): Long? {
     return if (isDirectory) {
         var result = 0L
-        val dirList = Stack<File>()
+        val dirList = LinkedList<File>()
         dirList.clear()
         dirList.push(this)
         while (!dirList.isEmpty()) {

@@ -51,16 +51,6 @@
         tools:text="Size: 100kB"/>
 
     <TextView
-        android:id="@+id/restore_name"
-        android:layout_width="wrap_content"
-        android:layout_marginTop="3dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/restore_size"
-        tools:text="Accont: **@gmail.com"/>
-
-    <TextView
         android:layout_marginTop="@dimen/margin16"
         android:textColor="@color/text_black"
         android:gravity="center"
@@ -71,22 +61,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/restore_name"/>
-
-
-    <TextView
-        android:id="@+id/restore_alert"
-        android:layout_marginBottom="32dp"
-        android:layout_alignParentBottom="true"
-        android:gravity="center_horizontal"
-        android:text="@string/restore_alert"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginEnd="28dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/restore_size"/>
 
     <Button
         android:id="@+id/restore_restore"
@@ -99,7 +74,7 @@
         android:layout_marginBottom="32dp"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
-        app:layout_constraintBottom_toTopOf="@id/restore_alert"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/restore_skip"
         app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"/>
@@ -115,7 +90,7 @@
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
         android:textColor="@color/text_black"
-        app:layout_constraintBottom_toTopOf="@id/restore_alert"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@id/restore_restore"/>
 
@@ -123,11 +98,11 @@
         android:id="@+id/restore_progress"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:visibility="gone"
         android:theme="@style/AppTheme.BlueProgress"
+        android:visibility="gone"
         android:layout_gravity="center"
-        android:layout_marginBottom="30dp"
-        app:layout_constraintBottom_toTopOf="@id/restore_alert"
+        android:layout_marginBottom="100dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 

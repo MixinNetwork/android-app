@@ -505,9 +505,3 @@ inline fun belowOreo(code: () -> Unit) {
 
 inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
     this.apply { arguments = Bundle().apply(argsBuilder) }
-
-fun Context.isGooglePlayServicesAvailable(): Boolean {
-    val googleApiAvailability = GoogleApiAvailability.getInstance()
-    val status = googleApiAvailability.isGooglePlayServicesAvailable(this)
-    return status == ConnectionResult.SUCCESS
-}

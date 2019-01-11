@@ -101,7 +101,7 @@ class MainActivity : BlazeBaseActivity() {
             InitializeActivity.showSetupName(this)
         }
 
-        if (isGooglePlayServicesAvailable() && defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
+        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
             RestoreActivity.show(this)
             finish()
             return

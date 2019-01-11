@@ -1,101 +1,88 @@
 package one.mixin.android.ui.landing
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.View
+import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
-import com.google.android.gms.common.api.ApiException
-import com.google.android.gms.drive.Drive
-import com.google.android.gms.drive.DriveResourceClient
-import com.google.android.gms.drive.Metadata
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.activity_restore.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RestoreJob
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.util.Session
-import one.mixin.android.util.backup.DataBaseBackupManager
-import one.mixin.android.util.backup.FileBackupManager
+import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
+import one.mixin.android.util.backup.restore
+import java.io.File
 import java.util.Date
 import javax.inject.Inject
 
 class RestoreActivity : BaseActivity() {
 
-    private lateinit var driveResourceClient: DriveResourceClient
-
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    @SuppressLint("MissingPermission", "CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, true)
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestScopes(Drive.SCOPE_FILE, Drive.SCOPE_APPFOLDER)
-            .requestEmail()
-            .build()
-        val googleSignInClient = GoogleSignIn.getClient(this, gso)
-        val account = GoogleSignIn.getAccountForScopes(this, Drive.SCOPE_FILE, Drive.SCOPE_APPFOLDER)
-        if (account.isExpired) {
-            AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
-                .setMessage(R.string.restore_message)
-                .setNegativeButton(R.string.restore_skip) { dialog, _ ->
-                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                    InitializeActivity.showLoading(this)
-                    dialog.dismiss()
-                    finish()
-                }
-                .setPositiveButton(R.string.restore_authorization) { dialog, _ ->
-                    startActivityForResult(googleSignInClient.signInIntent, RC_SIGN_IN)
-                    dialog.dismiss()
-                }.create().run {
-                    this.setCanceledOnTouchOutside(false)
-                    this.show()
-                }
-        } else {
-            initialize(account)
-        }
-    }
-
-    private fun initialize(account: GoogleSignInAccount) {
-        driveResourceClient = Drive.getDriveResourceClient(this, account)
-        val manager = DataBaseBackupManager.getManager(driveResourceClient, DB_NAME,
-            Session.getAccount()!!.identity_number, { this.getDatabasePath(DB_NAME) }, Constants.DataBase.MINI_VERSION, Constants.DataBase.CURRENT_VERSION)
-        findBackup(manager, account)
-    }
-
-    private fun findBackup(manager: DataBaseBackupManager, account: GoogleSignInAccount) {
-        manager.findBackup { result, metadata ->
-            when (result) {
-                Result.SUCCESS -> {
-                    metadata?.let { data ->
-                        FileBackupManager.getManager(driveResourceClient!!, Session.getAccount()!!.identity_number).findBackup { result, metadata ->
-                            if (result == Result.SUCCESS) {
-
-                            }
+        AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
+            .setMessage(R.string.restore_message)
+            .setNegativeButton(R.string.restore_skip) { dialog, _ ->
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
+                InitializeActivity.showLoading(this)
+                dialog.dismiss()
+                finish()
+            }
+            .setPositiveButton(R.string.restore_authorization) { dialog, _ ->
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .subscribe({ granted ->
+                        if (!granted) {
+                            openPermissionSetting()
+                        } else {
+                            findBackup()
                         }
-                        initUI(manager, account, data)
-                    }
+                    }, {
+                        InitializeActivity.showLoading(this)
+                        finish()
+                    })
+                dialog.dismiss()
+            }.create().run {
+                this.setCanceledOnTouchOutside(false)
+                this.show()
+            }
+    }
+
+    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private fun findBackup() {
+        GlobalScope.launch {
+            val file = one.mixin.android.util.backup.findBackup(this@RestoreActivity, coroutineContext)
+            withContext(Dispatchers.Main) {
+                if (file == null) {
+                    showErrorAlert(Result.NOT_FOUND)
+                } else {
+                    initUI(file)
                 }
-                else -> showErrorAlert(manager, account, result)
             }
         }
     }
 
-    private fun showErrorAlert(manager: DataBaseBackupManager, account: GoogleSignInAccount, error: Result) {
+    @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private fun showErrorAlert(error: Result) {
         AlertDialog.Builder(this, R.style.MixinAlertDialogTheme)
             .setMessage(when (error) {
                 Result.FAILURE -> {
@@ -109,7 +96,7 @@ class RestoreActivity : BaseActivity() {
                 }
             })
             .setNegativeButton(R.string.restore_retry) { dialog, _ ->
-                findBackup(manager, account)
+                findBackup()
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.restore_skip) { dialog, _ ->
@@ -122,11 +109,12 @@ class RestoreActivity : BaseActivity() {
             }
     }
 
-    private fun initUI(manager: DataBaseBackupManager, account: GoogleSignInAccount, data: Metadata) {
+    @SuppressLint("MissingPermission")
+    private fun initUI(data: File) {
         setContentView(R.layout.activity_restore)
-        restore_time.text = data.createdDate.run {
+        restore_time.text = data.lastModified().run {
             val now = Date().time
-            val createTime = data.createdDate.time
+            val createTime = data.lastModified()
             DateUtils.getRelativeTimeSpanString(createTime, now, when {
                 ((now - createTime) < 60000L) -> DateUtils.SECOND_IN_MILLIS
                 ((now - createTime) < 3600000L) -> DateUtils.MINUTE_IN_MILLIS
@@ -142,9 +130,10 @@ class RestoreActivity : BaseActivity() {
                         openPermissionSetting()
                     } else {
                         showProgress()
-                        manager.restoreDatabase { result ->
+                        BackupNotification.show(false)
+                        restore(this) { result ->
+                            BackupNotification.cancel()
                             if (result == Result.SUCCESS) {
-                                jobManager.addJobInBackground(RestoreJob())
                                 InitializeActivity.showLoading(this)
                                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                                 finish()
@@ -154,13 +143,12 @@ class RestoreActivity : BaseActivity() {
                         }
                     }
                 }, {
-
+                    BackupNotification.cancel()
+                    hideProgress()
                 })
 
         }
-        restore_size.text = getString(R.string.restore_size, data.fileSize.fileSize())
-        restore_name.text = getString(R.string.restore_account, account.email)
-        restore_alert.text = getString(R.string.restore_alert, data.fileSize.fileSize())
+        restore_size.text = getString(R.string.restore_size, data.length().fileSize())
         restore_skip.setOnClickListener {
             InitializeActivity.showLoading(this)
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
@@ -180,27 +168,6 @@ class RestoreActivity : BaseActivity() {
         restore_skip.visibility = View.VISIBLE
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == RC_SIGN_IN) {
-            try {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-                val account = task.getResult(ApiException::class.java)
-                if (account == null) {
-                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                    InitializeActivity.showLoading(this)
-                    finish()
-                } else {
-                    initialize(account)
-                }
-            } catch (e: ApiException) {
-                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
-                InitializeActivity.showLoading(this)
-                finish()
-            }
-        }
-    }
-
     override fun onBackPressed() {
     }
 
@@ -208,7 +175,5 @@ class RestoreActivity : BaseActivity() {
         fun show(context: Context) {
             context.startActivity(Intent(context, RestoreActivity::class.java))
         }
-
-        private const val RC_SIGN_IN = 9001
     }
 }

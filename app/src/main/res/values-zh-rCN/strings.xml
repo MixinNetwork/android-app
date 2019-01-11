@@ -512,14 +512,13 @@
     <string name="call_mute">静音</string>
 
     <!-- restore&backup -->
-    <string name="restore_info">从 Google 云端硬盘还原您的对话。如果您选择现在不进行还原，您稍后讲无法还原资料。</string>
+    <string name="restore_info">从外部存储还原您的对话。如果您选择现在不进行还原，您稍后讲无法还原资料。</string>
     <string name="restore_found">找到备份</string>
-    <string name="restore_alert">下载容量约为 %1$s。若要减少蜂窝数据流量，请将设备连接至 Wi-Fi。</string>
     <string name="restore_skip">跳过</string>
     <string name="restore_retry">重试</string>
     <string name="restore_restore">还原</string>
     <string name="restore_authorization">授权</string>
-    <string name="restore_message">如果您之前曾备份到 Google 云端硬盘并且现在想要还原备份，请给与 Mixin 相应权限以检查您 Google账户里的备份。</string>
+    <string name="restore_message">如果您之前曾备份到外部存储并且现在想要还原备份，请给与 Mixin 相应权限以检查您外部存储里的备份。</string>
     <string name="restore_account">账户: %1$s</string>
     <string name="restore_size">备份大小: %1$s</string>
     <string name="restore_failure">错误</string>
@@ -528,14 +527,12 @@
     <string name="restore_notification_title">还原正在进行中</string>
     <string name="restore_notification_content">正在准备还原&#8230;</string>
     <string name="backup_title">上次备份</string>
-    <string name="backup_des">备份对话记录到 Google 云端硬盘以便在重新安装 Mixin 时还原对话记录，备份到 Google 云端硬盘的对话不会进行加密处理。</string>
-    <string name="backup_google_drive">Google 云端硬盘: %1$s</string>
+    <string name="backup_des">备份对话记录到外部存储以便在重新安装 Mixin 时还原对话记录，备份到外部存储的对话不会进行加密处理。</string>
+    <string name="backup_external_storage">外部存储: %1$s</string>
+    <string name="backup_never">从未备份</string>
     <string name="backup">备份</string>
-    <string name="backup_include">包括媒体文件</string>
-    <string name="backup_account">账号</string>
-    <string name="backup_dialog_title">自动备份到 Google 云端硬盘</string>
-    <string name="backup_account_none">未登录</string>
-    <string name="backup_ing">正在 Google 云端云盘备份&#8230;</string>
+    <string name="backup_dialog_title">自动备份到外部存储</string>
+    <string name="backup_ing">正在备份到外部存储&#8230;</string>
     <string name="backup_notification_title">备份正在进行中</string>
     <string name="backup_notification_content">正在准备备份&#8230;</string>
 </resources>

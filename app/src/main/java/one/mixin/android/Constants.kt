@@ -41,11 +41,10 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 19
+        const val CURRENT_VERSION = 20
     }
 
     object BackUp {
-        const val BACKUP_MEDIA = "backup_media"
         const val BACKUP_PERIOD = "backup_period"
         const val BACKUP_LAST_TIME = "backup_last_time"
     }
