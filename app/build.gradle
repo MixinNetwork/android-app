@@ -145,6 +145,8 @@ dependencies {
     implementation "com.google.dagger:dagger-android-support:${daggerVersion}"
     kapt "com.google.dagger:dagger-compiler:${daggerVersion}"
     kapt "com.google.dagger:dagger-android-processor:${daggerVersion}"
+    kapt "com.squareup.inject:assisted-inject-processor-dagger2:${assistedinjectVersion}"
+    compileOnly "com.squareup.inject:assisted-inject-annotations-dagger2:${assistedinjectVersion}"
 
     // RxJava
     implementation "io.reactivex.rxjava2:rxjava:${rxJavaVersion}"

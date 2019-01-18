@@ -4,26 +4,25 @@ import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.UserService
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.enqueueAvatarWorkRequest
-import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
-import javax.inject.Inject
 
-class RefreshUserWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
+class RefreshUserWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val userService: UserService,
+    private val userRepo: UserRepository
+) : BaseWork(context, parameters) {
 
     companion object {
         const val USER_IDS = "user_ids"
         const val CONVERSATION_ID = "conversation_id"
     }
-
-    @Inject
-    lateinit var userService: UserService
-    @Inject
-    lateinit var userRepo: UserRepository
-    @Inject
-    lateinit var jobManager: MixinJobManager
 
     override fun onRun(): Result {
         val userIds = inputData.getStringArray(USER_IDS) ?: return Result.failure()
@@ -46,4 +45,7 @@ class RefreshUserWorker(context: Context, parameters: WorkerParameters) : BaseWo
             Result.failure()
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

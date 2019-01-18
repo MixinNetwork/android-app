@@ -2,21 +2,22 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AddressDao
-import javax.inject.Inject
+import one.mixin.android.di.worker.ChildWorkerFactory
 
-class RefreshAddressWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
+class RefreshAddressWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val assetService: AssetService,
+    private val addressDao: AddressDao
+) : BaseWork(context, parameters) {
 
     companion object {
         const val ASSET_ID = "asset_id"
     }
-
-    @Inject
-    lateinit var assetService: AssetService
-
-    @Inject
-    lateinit var addressDao: AddressDao
 
     override fun onRun(): Result {
         val assetId = inputData.getString(ASSET_ID) ?: return Result.failure()
@@ -30,4 +31,7 @@ class RefreshAddressWorker(context: Context, parameters: WorkerParameters) : Bas
             Result.failure()
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

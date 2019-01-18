@@ -3,8 +3,11 @@ package one.mixin.android.worker
 import android.content.Context
 import android.graphics.Point
 import androidx.work.WorkerParameters
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AccountService
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.putInt
@@ -15,14 +18,13 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageSource
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.windowManager
-import javax.inject.Inject
 
-class RefreshAccountWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
-
-    @Inject
-    lateinit var accountService: AccountService
-    @Inject
-    lateinit var userRepo: UserRepository
+class RefreshAccountWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val accountService: AccountService,
+    private val userRepo: UserRepository
+) : BaseWork(context, parameters) {
 
     override fun onRun(): Result {
         val response = accountService.getMe().execute().body()
@@ -66,4 +68,7 @@ class RefreshAccountWorker(context: Context, parameters: WorkerParameters) : Bas
             return Result.failure()
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

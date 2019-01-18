@@ -2,17 +2,19 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.TopAssetDao
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.vo.TopAsset
-import javax.inject.Inject
 
-class RefreshTopAssetsWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
-
-    @Inject
-    lateinit var assetService: AssetService
-    @Inject
-    lateinit var topAssetDao: TopAssetDao
+class RefreshTopAssetsWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val assetService: AssetService,
+    private val topAssetDao: TopAssetDao
+) : BaseWork(context, parameters) {
 
     override fun onRun(): Result {
         val response = assetService.topAssets().execute().body()
@@ -24,4 +26,7 @@ class RefreshTopAssetsWorker(context: Context, parameters: WorkerParameters) : B
             Result.failure()
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

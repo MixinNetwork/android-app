@@ -9,18 +9,16 @@ import one.mixin.android.api.LocalJobException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.WebSocketException
-import one.mixin.android.di.worker.AndroidWorkerInjector
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
-abstract class BaseWork(context: Context, parameters: WorkerParameters) : Worker(context, parameters) {
+abstract class BaseWork(
+    context: Context,
+    parameters: WorkerParameters
+) : Worker(context, parameters) {
 
     @Inject
     lateinit var okHttpClient: OkHttpClient
-
-    init {
-        AndroidWorkerInjector.inject(this)
-    }
 
     override fun doWork(): Result {
         return try {

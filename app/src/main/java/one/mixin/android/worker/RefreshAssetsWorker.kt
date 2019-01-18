@@ -2,18 +2,19 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AssetService
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.vo.Asset
-import javax.inject.Inject
 
-class RefreshAssetsWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
-
-    @Inject
-    lateinit var assetService: AssetService
-    @Inject
-    lateinit var assetRepo: AssetRepository
-
+class RefreshAssetsWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val assetService: AssetService,
+    private val assetRepo: AssetRepository
+) : BaseWork(context, parameters) {
     companion object {
         const val ASSET_ID = "asset_id"
     }
@@ -43,4 +44,7 @@ class RefreshAssetsWorker(context: Context, parameters: WorkerParameters) : Base
             }
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

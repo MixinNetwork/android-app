@@ -3,11 +3,17 @@ package one.mixin.android.worker
 import android.content.Context
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.LocalJobException
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
 
-class DownloadAvatarWorker(context: Context, parameters: WorkerParameters) : AvatarWorker(context, parameters) {
+class DownloadAvatarWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters
+) : AvatarWorker(context, parameters) {
 
     override fun onRun(): Result {
         val groupId = inputData.getString(GROUP_ID) ?: return Result.failure()
@@ -35,4 +41,7 @@ class DownloadAvatarWorker(context: Context, parameters: WorkerParameters) : Ava
             }
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }
