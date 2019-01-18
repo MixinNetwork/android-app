@@ -539,6 +539,7 @@
     <string name="backup_external_storage">External storage: %1$s</string>
     <string name="backup_never">Never</string>
     <string name="backup">Backup</string>
+    <string name="backup_delete">Backup delete</string>
     <string name="backup_dialog_title">Auto back up to external storage</string>
     <string name="backup_ing">External storage backup&#8230;</string>
     <string name="backup_notification_title">Backup in progress</string>

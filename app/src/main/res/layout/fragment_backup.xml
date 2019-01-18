@@ -115,6 +115,19 @@
             app:layout_constraintStart_toStartOf="@id/backup_title"
             app:layout_constraintTop_toBottomOf="@id/backup_auto"/>
 
+        <Button
+            android:id="@+id/delete_bn"
+            android:text="@string/backup_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorDarkBlue"
+            android:textColor="@color/white"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:layout_marginTop="80dp"
+            app:layout_constraintStart_toStartOf="@id/backup_title"
+            app:layout_constraintTop_toBottomOf="@id/backup_auto"/>
+
         <androidx.constraintlayout.widget.Group
             android:id="@+id/progressGroup"
             android:visibility="gone"

@@ -522,7 +522,7 @@
     <string name="restore_account">账户: %1$s</string>
     <string name="restore_size">备份大小: %1$s</string>
     <string name="restore_failure">错误</string>
-    <string name="restore_not_found">未找到</string>
+    <string name="restore_not_found">未找到备份文件</string>
     <string name="restore_not_support">不支持备份</string>
     <string name="restore_notification_title">还原正在进行中</string>
     <string name="restore_notification_content">正在准备还原&#8230;</string>
@@ -531,6 +531,7 @@
     <string name="backup_external_storage">外部存储: %1$s</string>
     <string name="backup_never">从未备份</string>
     <string name="backup">备份</string>
+    <string name="backup_delete">删除备份</string>
     <string name="backup_dialog_title">自动备份到外部存储</string>
     <string name="backup_ing">正在备份到外部存储&#8230;</string>
     <string name="backup_notification_title">备份正在进行中</string>

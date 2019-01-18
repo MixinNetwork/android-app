@@ -84,6 +84,16 @@ fun restore(
 }
 
 @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+suspend fun delete(
+    context: Context
+): Boolean {
+    return GlobalScope.async {
+        val backupDir = context.getBackupPath()
+        return@async backupDir.deleteRecursively()
+    }.await()
+}
+
+@RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
 suspend fun findBackup(
     context: Context,
     coroutineContext: CoroutineContext

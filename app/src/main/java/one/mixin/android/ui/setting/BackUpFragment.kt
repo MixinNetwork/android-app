@@ -32,6 +32,7 @@ import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.backup.Result
+import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
 import java.util.Date
 import javax.inject.Inject
@@ -75,6 +76,18 @@ class BackUpFragment : BaseFragment() {
         if (ContextCompat.checkSelfPermission(requireContext(),
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             findBackUp()
+        }
+        delete_bn.setOnClickListener {
+            delete_bn.visibility = GONE
+            GlobalScope.launch {
+                if (delete(requireContext())) {
+                    findBackUp()
+                } else {
+                    withContext(Dispatchers.Main) {
+                        delete_bn.visibility = VISIBLE
+                    }
+                }
+            }
         }
 
         BackupJob.backupLiveData.observe(this, Observer {
@@ -121,6 +134,7 @@ class BackUpFragment : BaseFragment() {
                 if (file == null) {
                     backup_info.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
                     backup_size.visibility = GONE
+                    delete_bn.visibility = GONE
                 } else {
                     val time = file.lastModified().run {
                         val now = Date().time
@@ -135,6 +149,7 @@ class BackUpFragment : BaseFragment() {
                     backup_info.text = getString(R.string.backup_external_storage, time)
                     backup_size.text = getString(R.string.restore_size, file.length().fileSize())
                     backup_size.visibility = VISIBLE
+                    delete_bn.visibility = VISIBLE
                 }
             }
         }
