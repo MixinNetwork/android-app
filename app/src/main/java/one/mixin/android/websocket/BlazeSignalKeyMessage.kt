@@ -11,8 +11,10 @@ data class BlazeSignalKeyMessage(
     @SerializedName("data")
     val data: String,
     @Transient
-    val senderKeyId: Int? = null
+    val senderKeyId: Int? = null,
+    @SerializedName("session_id")
+    val sessionId: String? = null
 )
 
-fun createBlazeSignalKeyMessage(recipientId: String, data: String, senderKeyId: Int? = null) =
-    BlazeSignalKeyMessage(UUID.randomUUID().toString(), recipientId, data, senderKeyId)
+fun createBlazeSignalKeyMessage(recipientId: String, data: String, senderKeyId: Int? = null, sessionId: String? = null) =
+    BlazeSignalKeyMessage(UUID.randomUUID().toString(), recipientId, data, senderKeyId, sessionId)

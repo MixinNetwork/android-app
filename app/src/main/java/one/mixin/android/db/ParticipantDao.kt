@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
 
 @Dao
@@ -37,9 +38,12 @@ interface ParticipantDao : BaseDao<Participant> {
     fun getParticipantsAvatar(conversationId: String): List<User>
 
     @Transaction
-    @Query("SELECT p.* FROM participants p LEFT JOIN users u ON p.user_id = u.user_id WHERE p.conversation_id = :conversationId AND u.app_id IS NULL AND " +
-        "p.user_id NOT IN (SELECT user_id FROM sent_sender_keys WHERE conversation_id= :conversationId) AND p.user_id != :accountId")
-    fun getNotSentKeyParticipants(conversationId: String, accountId: String): List<Participant>?
+    @Query("SELECT p.user_id AS userId, s.session_id AS sessionId, s.device_id AS deviceId FROM participants p " +
+        "LEFT JOIN users u ON p.user_id = u.user_id " +
+        "LEFT JOIN sessions s ON p.user_id = s.user_id WHERE p.conversation_id = :conversationId " +
+        "AND u.app_id IS NULL AND NOT EXISTS (SELECT user_id, session_id FROM sent_session_sender_keys " +
+        "WHERE conversation_id= :conversationId) AND (p.user_id != :accountId OR (p.user_id = :accountId AND s.device_id != 1))")
+    fun getNotSentKeyParticipants(conversationId: String, accountId: String): List<ParticipantItem>?
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +

@@ -49,5 +49,14 @@ class MixinDatabaseMigrations private constructor() {
                     "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT, capitalization REAL) ")
             }
         }
+
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("CREATE TABLE IF NOT EXISTS sessions (session_id TEXT NOT NULL, user_id TEXT NOT NULL, device_id INTEGER NOT NULL, " +
+                    "PRIMARY KEY(session_id))")
+                database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_user_id ON sessions ('user_id')")
+                database.execSQL("CREATE TABLE IF NOT EXISTS sent_session_sender_keys (conversation_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, sent_to_server TEXT NOT NULL, sender_key_id INTEGER, created_at TEXT, PRIMARY KEY(conversation_id, user_id, session_id))")
+            }
+        }
     }
 }

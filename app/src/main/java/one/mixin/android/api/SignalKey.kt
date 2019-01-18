@@ -17,7 +17,9 @@ data class SignalKey(
     @SerializedName("registration_id")
     var registrationId: Int,
     @SerializedName("user_id")
-    val userId: String?
+    val userId: String?,
+    @SerializedName("session_id")
+    val sessionId: String
 ) {
     fun getPreKeyPublic() = Curve.decodePoint(Base64.decode(preKey.pubKey), 0)!!
 

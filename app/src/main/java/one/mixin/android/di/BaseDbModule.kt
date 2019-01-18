@@ -65,6 +65,10 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
+    fun provideSentSessionSenderKeyDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.sentSessionSenderKeyDao()
+
+    @Singleton
+    @Provides
     fun provideStickerAlbumDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.stickerAlbumDao()
 
     @Singleton
@@ -102,4 +106,8 @@ internal class BaseDbModule {
     @Singleton
     @Provides
     fun providesHotAssetDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.topAssetDao()
+
+    @Singleton
+    @Provides
+    fun providesSessionDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.sessionDao()
 }

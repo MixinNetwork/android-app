@@ -6,12 +6,14 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import androidx.sqlite.db.SupportSQLiteDatabase
+import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_15_16
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_17_18
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_18_19
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_19_20
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_20_21
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -25,6 +27,8 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.SentSenderKey
+import one.mixin.android.vo.SentSessionSenderKey
+import one.mixin.android.vo.Session
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
@@ -51,7 +55,10 @@ import one.mixin.android.vo.User
     (ResendMessage::class),
     (StickerRelationship::class),
     (TopAsset::class),
-    (Job::class)], version = 20)
+    (Job::class),
+    (Session::class),
+    (SentSessionSenderKey::class)
+], version = CURRENT_VERSION)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -62,6 +69,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun snapshotDao(): SnapshotDao
     abstract fun messageHistoryDao(): MessageHistoryDao
     abstract fun sentSenderKeyDao(): SentSenderKeyDao
+    abstract fun sentSessionSenderKeyDao(): SentSessionSenderKeyDao
     abstract fun stickerDao(): StickerDao
     abstract fun stickerAlbumDao(): StickerAlbumDao
     abstract fun appDao(): AppDao
@@ -72,6 +80,7 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun resendMessageDao(): ResendMessageDao
     abstract fun stickerRelationshipDao(): StickerRelationshipDao
     abstract fun topAssetDao(): TopAssetDao
+    abstract fun sessionDao(): SessionDao
 
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -85,7 +94,7 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
+                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                         .build()
@@ -103,7 +112,7 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(readlock) {
                 if (READINSTANCE == null) {
                     READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
+                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
                         .enableMultiInstanceInvalidation()
                         .build()
                 }

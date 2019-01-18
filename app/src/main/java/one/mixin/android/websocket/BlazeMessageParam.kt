@@ -3,6 +3,7 @@ package one.mixin.android.websocket
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.Session
 import java.io.Serializable
 import java.util.UUID
 
@@ -13,10 +14,11 @@ data class BlazeMessageParam(
     val category: String?,
     val data: String?,
     val status: String?,
-    val recipients: ArrayList<String>? = null,
+    val recipients: List<Session>? = null,
     val keys: SignalKeyRequest? = null,
     val messages: List<Any>? = null,
-    val quote_message_id: String? = null
+    val quote_message_id: String? = null,
+    val session_id: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -29,15 +31,17 @@ fun createAckParam(message_id: String, status: String) =
 fun createAckListParam(messages: List<BlazeAckMessage>) =
     BlazeMessageParam(null, null, null, null, null, null, null, null, messages)
 
-fun createSignalKeyParam(conversationId: String, recipientId: String, cipherText: String) =
+fun createSignalKeyParam(conversationId: String, recipientId: String, cipherText: String, sessionId: String? = null) =
     BlazeMessageParam(conversationId, recipientId, UUID.randomUUID().toString(), MessageCategory.SIGNAL_KEY.name,
-        cipherText, MessageStatus.SENT.name)
+        cipherText, MessageStatus.SENT.name, session_id = sessionId)
+
+fun createSignalKeyParam(recipients: ArrayList<Session>) = BlazeMessageParam(null, null, null, null, null, null, recipients)
 
 fun createPlainJsonParam(conversationId: String, userId: String, encoded: String) =
     BlazeMessageParam(conversationId, userId, UUID.randomUUID().toString(), MessageCategory.PLAIN_JSON.name,
         encoded, MessageStatus.SENDING.name)
 
-fun createConsumeSignalKeysParam(recipients: ArrayList<String>?) =
+fun createConsumeSignalKeysParam(recipients: List<Session>?) =
     BlazeMessageParam(null, null, null, null, null, null, recipients)
 
 fun createSyncSignalKeysParam(keys: SignalKeyRequest?) =

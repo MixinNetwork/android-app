@@ -171,6 +171,8 @@ class DecryptMessage : Injector() {
             } else if (plainData.action == PlainDataAction.NO_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId,
                     DEFAULT_DEVICE_ID).toString())
+            } else if (plainData.action == PlainDataAction.SYNC_SESSION.name) {
+                refreshSession()
             }
 
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -379,7 +381,7 @@ class DecryptMessage : Injector() {
 
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
         try {
-            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, DecryptionCallback {
+            signalProtocol.decrypt(data.conversationId, data.userId, data.sessionId, keyType, cipherText, data.category, DecryptionCallback {
                 if (data.category != MessageCategory.SIGNAL_KEY.name) {
                     val plaintext = String(it)
                     if (resendMessageId != null) {
@@ -392,7 +394,7 @@ class DecryptMessage : Injector() {
                 }
             })
 
-            val address = SignalProtocolAddress(data.userId, DEFAULT_DEVICE_ID)
+            val address = SignalProtocolAddress(data.userId, data.sessionId.hashCode())
             val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
             if (status != null) {
                 if (status == RatchetStatus.REQUESTING.name) {
@@ -420,12 +422,12 @@ class DecryptMessage : Injector() {
             }
             if (data.category == MessageCategory.SIGNAL_KEY.name) {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId,
-                    DEFAULT_DEVICE_ID).toString())
+                    data.sessionId.hashCode()).toString())
                 refreshKeys(data.conversationId)
             } else {
                 insertFailedMessage(data)
                 refreshKeys(data.conversationId)
-                val address = SignalProtocolAddress(data.userId, DEFAULT_DEVICE_ID)
+                val address = SignalProtocolAddress(data.userId, data.sessionId.hashCode())
                 val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
                 if (status == null || (status != RatchetStatus.REQUESTING.name && status != RatchetStatus.REQUESTING_MESSAGE.name)) {
                     requestResendKey(data.conversationId, data.userId, data.messageId)
@@ -531,6 +533,22 @@ class DecryptMessage : Injector() {
             } catch (e: IOException) {
                 jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
             }
+        }
+    }
+
+    private fun refreshSession() {
+        try {
+            val call = accountService.getSessions(listOf(Session.getAccountId()!!)).execute()
+            val response = call.body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { sessions ->
+                    for (session in sessions) {
+                        sessionDao.insert(session)
+                    }
+                }
+            }
+        } catch (e: IOException) {
+            jobManager.addJobInBackground(RefreshSessionJob())
         }
     }
 

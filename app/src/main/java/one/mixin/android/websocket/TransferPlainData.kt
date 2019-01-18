@@ -27,4 +27,4 @@ data class ResendData(
     }
 }
 
-enum class PlainDataAction { RESEND_KEY, NO_KEY, RESEND_MESSAGES }
+enum class PlainDataAction { RESEND_KEY, NO_KEY, RESEND_MESSAGES, SYNC_SESSION}
