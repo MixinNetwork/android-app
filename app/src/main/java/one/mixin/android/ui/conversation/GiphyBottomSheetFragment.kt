@@ -206,13 +206,15 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             params.height = (size * (3f / 4)).toInt()
             holder.itemView.layoutParams = params
             val item = (holder.itemView as ViewGroup).getChildAt(0) as ImageView
-            val image = getItem(pos).images.fixed_width
+            val images = getItem(pos).images
+            val previewImage = images.fixed_width_downsampled
+            val sendImage = images.fixed_width
             item.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = size
                 height = (size * (3f / 4)).toInt()
             }
-            item.loadGif(image.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
-            holder.itemView.setOnClickListener { listener.onGifClick(image.url) }
+            item.loadGif(previewImage.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
+            holder.itemView.setOnClickListener { listener.onGifClick(sendImage.url) }
         }
     }
 
