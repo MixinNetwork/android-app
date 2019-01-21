@@ -2,31 +2,28 @@ package one.mixin.android.worker
 
 import android.content.Context
 import androidx.work.WorkerParameters
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
-import javax.inject.Inject
 
-class RefreshStickerAlbumWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
-
-    @Inject
-    lateinit var accountService: AccountService
-
-    @Inject
-    lateinit var stickerAlbumDao: StickerAlbumDao
-
-    @Inject
-    lateinit var stickerDao: StickerDao
-
-    @Inject
-    lateinit var stickerRelationshipDao: StickerRelationshipDao
+class RefreshStickerAlbumWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val accountService: AccountService,
+    private val stickerAlbumDao: StickerAlbumDao,
+    private val stickerDao: StickerDao,
+    private val stickerRelationshipDao: StickerRelationshipDao
+) : BaseWork(context, parameters) {
 
     override fun onRun(): Result {
         val response = accountService.getStickerAlbums().execute().body()
@@ -54,4 +51,7 @@ class RefreshStickerAlbumWorker(context: Context, parameters: WorkerParameters) 
             return Result.failure()
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

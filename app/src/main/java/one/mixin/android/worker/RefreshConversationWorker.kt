@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
@@ -12,6 +14,7 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertConversation
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.enqueueAvatarWorkRequest
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
@@ -25,21 +28,16 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
-import javax.inject.Inject
 
-class RefreshConversationWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
-
-    @Inject
-    lateinit var conversationApi: ConversationService
-    @Inject
-    @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
-    lateinit var conversationDao: ConversationDao
-    @Inject
-    lateinit var userDao: UserDao
-    @Inject
-    lateinit var participantDao: ParticipantDao
-    @Inject
-    lateinit var jobManager: MixinJobManager
+class RefreshConversationWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val conversationApi: ConversationService,
+    @DatabaseCategory(DatabaseCategoryEnum.BASE)
+    private val conversationDao: ConversationDao,
+    private val userDao: UserDao,
+    private val participantDao: ParticipantDao
+) : BaseWork(context, parameters) {
 
     companion object {
         const val CONVERSATION_ID = "conversation_id"
@@ -123,4 +121,7 @@ class RefreshConversationWorker(context: Context, parameters: WorkerParameters) 
             return Result.failure()
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

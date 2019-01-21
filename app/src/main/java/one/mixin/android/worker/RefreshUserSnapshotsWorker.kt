@@ -4,27 +4,26 @@ import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.SnapshotDao
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.vo.Snapshot
-import javax.inject.Inject
 
-class RefreshUserSnapshotsWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
+class RefreshUserSnapshotsWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val assetService: AssetService,
+    private val snapshotDao: SnapshotDao,
+    private val assetDao: AssetDao
+) : BaseWork(context, parameters) {
 
     companion object {
         const val USER_ID = "user_id"
     }
-
-    @Inject
-    lateinit var assetService: AssetService
-
-    @Inject
-    lateinit var snapshotDao: SnapshotDao
-
-    @Inject
-    lateinit var assetDao: AssetDao
 
     override fun onRun(): Result {
         val userId = inputData.getString(USER_ID) ?: return Result.failure()
@@ -44,4 +43,7 @@ class RefreshUserSnapshotsWorker(context: Context, parameters: WorkerParameters)
             Result.failure()
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

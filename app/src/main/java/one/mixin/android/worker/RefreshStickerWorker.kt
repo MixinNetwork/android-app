@@ -3,23 +3,24 @@ package one.mixin.android.worker
 import android.content.Context
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.insertUpdate
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.vo.Sticker
-import javax.inject.Inject
 
-class RefreshStickerWorker(context: Context, parameters: WorkerParameters) : BaseWork(context, parameters) {
+class RefreshStickerWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters,
+    private val accountService: AccountService,
+    private val stickerDao: StickerDao
+) : BaseWork(context, parameters) {
 
     companion object {
         const val STICKER_ID = "sticker_id"
     }
-
-    @Inject
-    lateinit var accountService: AccountService
-
-    @Inject
-    lateinit var stickerDao: StickerDao
 
     override fun onRun(): Result {
         val stickerId = inputData.getString(STICKER_ID) ?: return Result.failure()
@@ -36,4 +37,7 @@ class RefreshStickerWorker(context: Context, parameters: WorkerParameters) : Bas
             Result.failure()
         }
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }

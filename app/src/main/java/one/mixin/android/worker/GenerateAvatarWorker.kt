@@ -16,7 +16,10 @@ import android.text.TextPaint
 import android.util.ArrayMap
 import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
+import com.squareup.inject.assisted.Assisted
+import com.squareup.inject.assisted.AssistedInject
 import one.mixin.android.R
+import one.mixin.android.di.worker.ChildWorkerFactory
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
@@ -24,7 +27,10 @@ import org.jetbrains.anko.dip
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class GenerateAvatarWorker(context: Context, parameters: WorkerParameters) : AvatarWorker(context, parameters) {
+class GenerateAvatarWorker @AssistedInject constructor(
+    @Assisted context: Context,
+    @Assisted parameters: WorkerParameters
+) : AvatarWorker(context, parameters) {
 
     private lateinit var texts: ArrayMap<Int, String>
     private val size = 256
@@ -311,4 +317,7 @@ class GenerateAvatarWorker(context: Context, parameters: WorkerParameters) : Ava
         d.draw(c)
         return b
     }
+
+    @AssistedInject.Factory
+    interface Factory : ChildWorkerFactory
 }
