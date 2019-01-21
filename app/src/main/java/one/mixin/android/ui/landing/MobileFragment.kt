@@ -39,7 +39,6 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
@@ -98,7 +97,6 @@ class MobileFragment : BaseFragment() {
             }
         })
         parent.addView(recaptchaView.webView, MATCH_PARENT, MATCH_PARENT)
-        recaptchaView.webView.translationY = requireContext().screenHeight().toFloat()
         return parent
     }
 
