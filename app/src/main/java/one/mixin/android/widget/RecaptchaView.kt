@@ -30,6 +30,7 @@ class RecaptchaView(private val context: Context, private val callback: Callback
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
             addJavascriptInterface(this@RecaptchaView, "MixinContext")
+            translationY = context.screenHeight().toFloat()
         }
     }
 
