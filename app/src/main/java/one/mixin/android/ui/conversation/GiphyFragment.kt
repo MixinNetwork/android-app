@@ -154,9 +154,11 @@ class GiphyFragment : BaseFragment() {
                 item.setImageDrawable(ctx.getDrawable(R.drawable.ic_gif_search))
                 item.setOnClickListener { listener?.onSearchClick() }
             } else {
-                val g = data!![position - 1].images.fixed_width
-                item.loadGif(g.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
-                item.setOnClickListener { listener?.onItemClick(position, g.url) }
+                val images = data!![position - 1].images
+                val previewImage = images.fixed_width_downsampled
+                val sendImage = images.fixed_width
+                item.loadGif(previewImage.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
+                item.setOnClickListener { listener?.onItemClick(position, sendImage.url) }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size
                     height = (size * (3f / 4)).toInt()
