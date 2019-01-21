@@ -221,13 +221,13 @@ class VerificationFragment : BaseFragment() {
                 Session.storePinToken(key)
 
                 verification_keyboard.animate().translationY(300f).start()
-                mobileViewModel.insertUser(r.data!!.toUser())
                 MixinApplication.get().onlining.set(true)
                 if (account.full_name?.isBlank()!!) {
                     defaultSharedPreferences.putBoolean(Constants.Account.PREF_SET_NAME, true)
+                    mobileViewModel.insertUser(r.data!!.toUser())
                     InitializeActivity.showSetupName(context!!)
                 } else {
-                    InitializeActivity.showLoading(context!!)
+                    RestoreActivity.show(requireContext())
                 }
                 activity?.finish()
             }, { t: Throwable ->

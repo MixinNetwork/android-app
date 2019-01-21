@@ -345,6 +345,7 @@
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_authentications">授权</string>
     <string name="setting_deauthorize">取消授权</string>
+    <string name="setting_backup">备份</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>
@@ -509,4 +510,30 @@
     <string name="call_decline">挂断</string>
     <string name="call_accept">接听</string>
     <string name="call_mute">静音</string>
+
+    <!-- restore&backup -->
+    <string name="restore_info">从外部存储还原您的对话。如果您选择现在不进行还原，您稍后讲无法还原资料。</string>
+    <string name="restore_found">找到备份</string>
+    <string name="restore_skip">跳过</string>
+    <string name="restore_retry">重试</string>
+    <string name="restore_restore">还原</string>
+    <string name="restore_authorization">授权</string>
+    <string name="restore_message">如果您之前曾备份到外部存储并且现在想要还原备份，请给与 Mixin 相应权限以检查您外部存储里的备份。</string>
+    <string name="restore_account">账户: %1$s</string>
+    <string name="restore_size">备份大小: %1$s</string>
+    <string name="restore_failure">错误</string>
+    <string name="restore_not_found">未找到备份文件</string>
+    <string name="restore_not_support">不支持备份</string>
+    <string name="restore_notification_title">还原正在进行中</string>
+    <string name="restore_notification_content">正在准备还原&#8230;</string>
+    <string name="backup_title">上次备份</string>
+    <string name="backup_des">备份对话记录到外部存储以便在重新安装 Mixin 时还原对话记录，备份到外部存储的对话不会进行加密处理。</string>
+    <string name="backup_external_storage">外部存储: %1$s</string>
+    <string name="backup_never">从未备份</string>
+    <string name="backup">备份</string>
+    <string name="backup_delete">删除备份</string>
+    <string name="backup_dialog_title">自动备份到外部存储</string>
+    <string name="backup_ing">正在备份到外部存储&#8230;</string>
+    <string name="backup_notification_title">备份正在进行中</string>
+    <string name="backup_notification_content">正在准备备份&#8230;</string>
 </resources>

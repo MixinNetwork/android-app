@@ -13,7 +13,6 @@ buildscript {
         ext.daggerVersion = '2.21'
         ext.assistedinjectVersion = '0.3.2'
         ext.ktxVersion = '1.0.1'
-        ext.playServiceVersion = '16.0.1'
         ext.espressoVersion = '3.1.0-alpha4'
         ext.glideVersion = '4.8.0'
         ext.webpdecoderVesion = '0.0.7.4.6.1'
@@ -49,6 +48,7 @@ buildscript {
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.29.0'
         ext.exoplayerVersion = '2.9.1'
+        ext.gcmVersion = '15.0.1'
 
         ext.junitVersion = '4.12'
         ext.leakcanaryVerison = '1.5.1'

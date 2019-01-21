@@ -352,6 +352,7 @@
     <string name="setting_no_blocked">No blocked users</string>
     <string name="setting_authentications">Authentications</string>
     <string name="setting_deauthorize">Deauthorize</string>
+    <string name="setting_backup">Backup</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>
@@ -517,5 +518,31 @@
     <string name="call_decline">Decline</string>
     <string name="call_accept">Accept</string>
     <string name="call_mute">Mute</string>
+
+    <!-- restore&backup -->
+    <string name="restore_info">Restore your messages from external storage.\nIf you don\'t restore new, you won\'t be able to restore later.</string>
+    <string name="restore_found">Backup found</string>
+    <string name="restore_skip">SKIP</string>
+    <string name="restore_retry">RETRY</string>
+    <string name="restore_restore">RESTORE</string>
+    <string name="restore_authorization">authorization</string>
+    <string name="restore_message">Back up your messages and media to external storage. You can restore them when you reinstall Mixin. Your messages and media will also back up to your phone\'s internal storage. Media and messages your back up are not protected by Mixin end-to-end encryption while in external storage.</string>
+    <string name="restore_account">Account: %1$s</string>
+    <string name="restore_size">Size: %1$s</string>
+    <string name="restore_failure">Failure</string>
+    <string name="restore_not_found">Not found</string>
+    <string name="restore_not_support">Not support</string>
+    <string name="restore_notification_title">Restore in progress</string>
+    <string name="restore_notification_content">Preparing restore&#8230;</string>
+    <string name="backup_title">Last Backup</string>
+    <string name="backup_des">Back up your messages to external storage. You can restore them when you reinstall Mixin. Messages you back up are not protected while in external storage.</string>
+    <string name="backup_external_storage">External storage: %1$s</string>
+    <string name="backup_never">Never</string>
+    <string name="backup">Backup</string>
+    <string name="backup_delete">Backup delete</string>
+    <string name="backup_dialog_title">Auto back up to external storage</string>
+    <string name="backup_ing">External storage backup&#8230;</string>
+    <string name="backup_notification_title">Backup in progress</string>
+    <string name="backup_notification_content">Preparing backup&#8230;</string>
 </resources>
 

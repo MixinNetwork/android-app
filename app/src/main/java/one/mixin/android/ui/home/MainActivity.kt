@@ -31,6 +31,7 @@ import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putLong
+import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -46,6 +47,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.LoadingFragment
+import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -97,6 +99,10 @@ class MainActivity : BlazeBaseActivity() {
 
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_SET_NAME, false)) {
             InitializeActivity.showSetupName(this)
+        }
+
+        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {
+            RestoreActivity.show(this)
             finish()
             return
         }
@@ -126,6 +132,8 @@ class MainActivity : BlazeBaseActivity() {
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
+        jobManager.addJobInBackground(BackupJob())
+
         doAsync {
             WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
             WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()

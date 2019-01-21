@@ -22,6 +22,7 @@ import androidx.core.net.toUri
 import androidx.core.os.EnvironmentCompat
 import androidx.exifinterface.media.ExifInterface
 import one.mixin.android.MixinApplication
+import one.mixin.android.util.Session
 import one.mixin.android.widget.gallery.MimeType
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -31,6 +32,7 @@ import java.io.IOException
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.LinkedList
 import java.util.Locale
 
 private fun isAvailable(): Boolean {
@@ -51,14 +53,14 @@ private fun Context.getAppPath(): File {
         getBestAvailableCacheRoot()
     } else if (isAvailable()) {
         File(
-            "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}Media${File.separator}"
+            "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
         )
     } else {
         var externalFile: Array<File>? = ContextCompat.getExternalFilesDirs(this, null)
         if (externalFile == null) {
             externalFile = arrayOf(this.getExternalFilesDir(null))
         }
-        val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}Media${File.separator}")
+        val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}")
         root.mkdirs()
         return if (root.exists()) {
             root
@@ -66,6 +68,24 @@ private fun Context.getAppPath(): File {
             getBestAvailableCacheRoot()
         }
     }
+}
+
+fun Context.getMediaPath(): File {
+    return File("${getAppPath().absolutePath}${File.separator}Media${File.separator}")
+}
+
+fun Context.getBackupPath(): File {
+    val parentName = Session.getAccount()?.identity_number
+    val f = File("${getAppPath().absolutePath}${File.separator}Backup${File.separator}$parentName${File.separator}")
+    if (!f.exists() || !f.isDirectory) {
+        f.delete()
+        f.mkdirs()
+    }
+    return f
+}
+
+fun Context.getCacheMediaPath(): File {
+    return File("${getBestAvailableCacheRoot().absolutePath}${File.separator}Media${File.separator}")
 }
 
 fun getMimeType(uri: Uri): String? {
@@ -138,22 +158,22 @@ private fun Context.getBestAvailableCacheRoot(): File {
 }
 
 fun Context.getImagePath(): File {
-    val root = getAppPath()
+    val root = getMediaPath()
     return File("$root${File.separator}Images")
 }
 
 fun Context.getDocumentPath(): File {
-    val root = getAppPath()
+    val root = getMediaPath()
     return File("$root${File.separator}Files")
 }
 
 fun Context.getVideoPath(): File {
-    val root = getAppPath()
+    val root = getMediaPath()
     return File("$root${File.separator}Video")
 }
 
 fun Context.getAudioPath(): File {
-    val root = getAppPath()
+    val root = getMediaPath()
     return File("$root${File.separator}Audio")
 }
 
@@ -332,6 +352,56 @@ fun File.blurThumbnail(size: Size): Bitmap? {
         }
     } while (true)
     return blurThumbnail(size.width / scale, size.height / scale)
+}
+
+fun File.dirSize(): Long? {
+    return if (isDirectory) {
+        var result = 0L
+        val dirList = LinkedList<File>()
+        dirList.clear()
+        dirList.push(this)
+        while (!dirList.isEmpty()) {
+            val dirCurrent = dirList.pop()
+            val fileList = dirCurrent.listFiles()
+            for (f in fileList) {
+                if (f.isDirectory) {
+                    dirList.push(f)
+                } else {
+                    result += f.length()
+                }
+            }
+        }
+        return result
+    } else {
+        null
+    }
+}
+
+fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: File) -> Unit)? = null) {
+    if (!dir.exists()) {
+        dir.mkdirs()
+    }
+    if (isDirectory && dir.isDirectory) {
+        for (chile in listFiles()) {
+            if (chile.length() > 0 && chile.isFile) {
+                val newFile = File("${dir.absolutePath}${File.separator}${chile.name}")
+                chile.renameTo(newFile)
+                eachCallback?.let {
+                    it.invoke(newFile, chile)
+                }
+            }
+        }
+    }
+}
+
+fun File.deleteDir() {
+    if (isDirectory()) {
+        val children = listFiles()
+        for (child in children) {
+            child.deleteDir()
+        }
+    }
+    delete()
 }
 
 fun Bitmap.rotate(angle: String): Bitmap? {

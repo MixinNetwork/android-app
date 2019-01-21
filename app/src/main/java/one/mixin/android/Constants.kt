@@ -23,6 +23,7 @@ object Constants {
         const val PREF_LOGOUT_COMPLETE = "pref_logout_complete"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
+        const val PREF_RESTORE = "pref_restore"
     }
 
     object Scheme {
@@ -35,6 +36,17 @@ object Constants {
         const val HTTPS_PAY = "https://mixin.one/pay"
         const val HTTPS_USERS = "https://mixin.one/users"
         const val HTTPS_TRANSFER = "https://mixin.one/transfer"
+    }
+
+    object DataBase {
+        const val DB_NAME = "mixin.db"
+        const val MINI_VERSION = 15
+        const val CURRENT_VERSION = 20
+    }
+
+    object BackUp {
+        const val BACKUP_PERIOD = "backup_period"
+        const val BACKUP_LAST_TIME = "backup_last_time"
     }
 
     const val SLEEP_MILLIS: Long = 1000

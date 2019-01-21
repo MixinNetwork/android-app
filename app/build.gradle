@@ -137,7 +137,7 @@ dependencies {
     implementation "android.arch.navigation:navigation-ui-ktx:${navigationVersion}"
 
     // play service
-    implementation "com.google.android.gms:play-services-auth:${playServiceVersion}"
+    implementation "com.google.android.gms:play-services-auth:${gcmVersion}"
 
     // DI
     implementation "com.google.dagger:dagger:${daggerVersion}"
@@ -170,6 +170,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:${okhttpVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
+
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"
     implementation "com.google.firebase:firebase-messaging:${firebaseMessageVersion}"

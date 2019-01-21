@@ -4,8 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -73,6 +75,7 @@ abstract class MixinDatabase : RoomDatabase() {
 
         private val lock = Any()
         private val readlock = Any()
+        private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
 
         private val MIGRATION_15_17: Migration = object : Migration(15, 17) {
             override fun migrate(database: SupportSQLiteDatabase) {
@@ -261,7 +264,7 @@ abstract class MixinDatabase : RoomDatabase() {
         fun getDatabase(context: Context): MixinDatabase {
             synchronized(lock) {
                 if (INSTANCE == null) {
-                    INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, "mixin.db")
+                    INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
                         .addMigrations(MIGRATION_15_17, MIGRATION_16_17)
                         .addMigrations(MIGRATION_15_18, MIGRATION_16_18, MIGRATION_17_18)
                         .addMigrations(MIGRATION_15_19, MIGRATION_16_19, MIGRATION_17_19, MIGRATION_18_19)
@@ -274,10 +277,15 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
+        @Transaction
+        fun checkPoint() {
+            supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
+        }
+
         fun getReadDatabase(context: Context): MixinDatabase {
             synchronized(readlock) {
                 if (READINSTANCE == null) {
-                    READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, "mixin.db")
+                    READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
                         .addMigrations(MIGRATION_15_17, MIGRATION_16_17)
                         .addMigrations(MIGRATION_15_18, MIGRATION_16_18, MIGRATION_17_18)
                         .addMigrations(MIGRATION_15_19, MIGRATION_16_19, MIGRATION_17_19, MIGRATION_18_19)
@@ -295,6 +303,15 @@ abstract class MixinDatabase : RoomDatabase() {
                 db.execSQL("CREATE TRIGGER conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET last_message_id = new.id WHERE conversation_id = new.conversation_id; END")
                 db.execSQL("CREATE TRIGGER conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END")
                 db.execSQL("CREATE TRIGGER conversation_unseen_message_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
+            }
+
+            override fun onOpen(db: SupportSQLiteDatabase) {
+                super.onOpen(db)
+                supportSQLiteDatabase = db
+                db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_update AFTER INSERT ON messages BEGIN UPDATE conversations SET " +
+                    "last_message_id = new.id WHERE conversation_id = new.conversation_id; END")
+                db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_last_message_delete AFTER DELETE ON messages BEGIN UPDATE conversations SET last_message_id = (select id from messages where conversation_id = old.conversation_id order by created_at DESC limit 1) WHERE conversation_id = old.conversation_id; END")
+                db.execSQL("CREATE TRIGGER IF NOT EXISTS conversation_unseen_message_count_insert AFTER INSERT ON messages BEGIN UPDATE conversations SET unseen_message_count = (SELECT count(m.id) FROM messages m, users u WHERE m.user_id = u.user_id AND u.relationship != 'ME' AND m.status = 'DELIVERED' AND conversation_id = new.conversation_id) where conversation_id = new.conversation_id; END")
             }
         }
     }
