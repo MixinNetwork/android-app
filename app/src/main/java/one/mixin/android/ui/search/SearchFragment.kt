@@ -31,6 +31,7 @@ import one.mixin.android.vo.SearchDataPackage
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import org.jetbrains.anko.support.v4.onUiThread
+import org.jetbrains.anko.support.v4.runOnUiThread
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -129,7 +130,7 @@ class SearchFragment : BaseFragment(), Injectable {
             }
         }
         setSearchListener {
-            onUiThread {
+            runOnUiThread {
                 if (it.contactList != null) {
                     searchAdapter.setData(null, it.contactList, null, null)
                 } else {

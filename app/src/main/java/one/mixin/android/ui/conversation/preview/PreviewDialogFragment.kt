@@ -22,7 +22,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
-import org.jetbrains.anko.bundleOf
+import androidx.core.os.bundleOf
 import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : MixinDialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {

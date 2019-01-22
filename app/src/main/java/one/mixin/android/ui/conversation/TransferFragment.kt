@@ -12,12 +12,12 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
@@ -53,7 +53,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.worker.RefreshAssetsWorker
-import org.jetbrains.anko.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import java.util.UUID

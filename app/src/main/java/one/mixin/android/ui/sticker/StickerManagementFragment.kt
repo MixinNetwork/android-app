@@ -35,7 +35,7 @@ import one.mixin.android.ui.conversation.StickerFragment.Companion.ARGS_ALBUM_ID
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.Sticker
-import org.jetbrains.anko.bundleOf
+import androidx.core.os.bundleOf
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColor
 import javax.inject.Inject

@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
-import one.mixin.android.extension.displayWitdh
+import one.mixin.android.extension.displayWidth
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getQRCodePath
@@ -46,7 +46,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             )
         }
 
-        fun getSize(context: Context) = context.displayWitdh() - context.dpToPx(64f)
+        fun getSize(context: Context) = context.displayWidth() - context.dpToPx(64f)
     }
 
     private val asset: AssetItem by lazy { arguments!!.getParcelable<AssetItem>(TransactionsFragment.ARGS_ASSET) }

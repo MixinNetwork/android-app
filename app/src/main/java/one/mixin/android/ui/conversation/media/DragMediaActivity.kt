@@ -62,7 +62,7 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.displaySize
-import one.mixin.android.extension.displayWitdh
+import one.mixin.android.extension.displayWidth
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
@@ -409,8 +409,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun createLargeImageView(container: ViewGroup, position: Int, messageItem: MessageItem): LargeImageView {
             val imageView = LargeImageView(container.context)
             imageView.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
-            if (messageItem.mediaWidth!! < displayWitdh()) {
-                imageView.scale = (displayWitdh().toFloat() / messageItem.mediaWidth)
+            if (messageItem.mediaWidth!! < displayWidth()) {
+                imageView.scale = (displayWidth().toFloat() / messageItem.mediaWidth)
             }
             if (position == index) {
                 ViewCompat.setTransitionName(imageView, "transition")

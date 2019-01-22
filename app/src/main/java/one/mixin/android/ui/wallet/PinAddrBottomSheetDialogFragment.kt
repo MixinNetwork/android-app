@@ -10,7 +10,7 @@ import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
 import one.mixin.android.widget.PinView
-import org.jetbrains.anko.bundleOf
+import androidx.core.os.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 

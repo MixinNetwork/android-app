@@ -16,7 +16,6 @@ import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.HasServiceInjector
-import dagger.android.support.DaggerAppCompatActivity
 import io.reactivex.plugins.RxJavaPlugins
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.db.SignalDatabase
@@ -33,7 +32,6 @@ import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.util.Session
 import one.mixin.android.webrtc.CallService
-import org.jetbrains.anko.ctx
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.uiThread
@@ -100,18 +98,18 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         if (onlining.compareAndSet(true, false)) {
             val ise = IllegalStateException("Time error: Server-Time $serverTime - Local-Time ${System.currentTimeMillis()}")
             Crashlytics.logException(ise)
-            BlazeMessageService.stopService(ctx)
-            CallService.disconnect(ctx)
+            BlazeMessageService.stopService(this)
+            CallService.disconnect(this)
             notificationManager.cancelAll()
             defaultSharedPreferences.putBoolean(Constants.Account.PREF_WRONG_TIME, true)
-            InitializeActivity.showWongTimeTop(ctx)
+            InitializeActivity.showWongTimeTop(this)
         }
     }
 
     fun closeAndClear(toLanding: Boolean = true) {
         if (onlining.compareAndSet(true, false)) {
-            BlazeMessageService.stopService(ctx)
-            CallService.disconnect(ctx)
+            BlazeMessageService.stopService(this)
+            CallService.disconnect(this)
             notificationManager.cancelAll()
             Session.clearAccount()
             defaultSharedPreferences.clear()
@@ -125,7 +123,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
 
                     uiThread {
                         inject()
-                        LandingActivity.show(ctx)
+                        LandingActivity.show(this@MixinApplication)
                     }
                 }
             } else {
@@ -138,8 +136,8 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
     fun clearData() {
         jobManager.cancelAllJob()
         jobManager.clear()
-        SignalDatabase.getDatabase(ctx).clearAllTables()
-        MixinDatabase.getDatabase(ctx).clearAllTables()
+        SignalDatabase.getDatabase(this).clearAllTables()
+        MixinDatabase.getDatabase(this).clearAllTables()
         defaultSharedPreferences.putBoolean(Constants.Account.PREF_LOGOUT_COMPLETE, true)
     }
 }
