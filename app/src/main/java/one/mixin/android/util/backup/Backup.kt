@@ -57,7 +57,7 @@ fun backup(
                 result.renameTo(File("$backupDir${File.separator}$name"))
             }
 
-            val db = SQLiteDatabase.openOrCreateDatabase(File("$backupDir${File.separator}$name"), null)
+            val db = SQLiteDatabase.openDatabase("$backupDir${File.separator}$name", null, SQLiteDatabase.OPEN_READWRITE)
             db.execSQL("DELETE FROM sent_sender_keys")
             db.close()
 
