@@ -99,6 +99,11 @@ class BackUpFragment : BaseFragment() {
                 progressGroup.visibility = View.GONE
                 if (BackupJob.backupLiveData.result == Result.SUCCESS) {
                     findBackUp()
+                } else if (BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY) {
+                    AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                        .setMessage(R.string.backup_no_available_memory)
+                        .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
+                        .show()
                 }
             }
         })

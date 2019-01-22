@@ -2,6 +2,8 @@ package one.mixin.android.util.backup
 
 import android.Manifest
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
+import android.os.StatFs
 import androidx.annotation.RequiresPermission
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -25,6 +27,15 @@ fun backup(
         ?: return callback(Result.NOT_FOUND)
     GlobalScope.launch {
         val backupDir = context.getBackupPath()
+
+        val availableSize = StatFs(backupDir.path).availableBytes
+        if (availableSize < dbFile.length()) {
+            withContext(Dispatchers.Main) {
+                callback(Result.NO_AVAILABLE_MEMORY)
+            }
+            return@launch
+        }
+
         val exists = backupDir.listFiles().any { it.name.contains(dbFile.name) }
         val name = "${dbFile.name}.${Constants.DataBase.CURRENT_VERSION}"
         val tmpName = if (exists) {
@@ -45,6 +56,10 @@ fun backup(
             if (tmpName.contains(BACKUP_POSTFIX)) {
                 result.renameTo(File("$backupDir${File.separator}$name"))
             }
+
+            val db = SQLiteDatabase.openOrCreateDatabase(File("$backupDir${File.separator}$name"), null)
+            db.execSQL("DELETE FROM sent_sender_keys")
+            db.close()
 
             withContext(Dispatchers.Main) {
                 callback(Result.SUCCESS)
