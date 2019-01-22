@@ -31,7 +31,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
-import org.jetbrains.anko.bundleOf
+import androidx.core.os.bundleOf
 import javax.inject.Inject
 
 class ForwardFragment : BaseFragment() {

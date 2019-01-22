@@ -170,7 +170,7 @@ fun Context.displayHeight(): Int {
     return displaySize().y
 }
 
-fun Context.displayWitdh(): Int {
+fun Context.displayWidth(): Int {
     return displaySize().x
 }
 
