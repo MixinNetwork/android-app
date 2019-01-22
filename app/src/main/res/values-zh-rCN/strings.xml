@@ -537,4 +537,7 @@
     <string name="backup_notification_title">备份正在进行中</string>
     <string name="backup_notification_content">正在准备备份&#8230;</string>
     <string name="backup_no_available_memory">没有足够的空间来备份。</string>
+    <!-- shortcut -->
+    <string name="shortcut_wallet_label">钱包</string>
+    <string name="shortcut_scan_label">扫码</string>
 </resources>

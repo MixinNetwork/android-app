@@ -545,5 +545,8 @@
     <string name="backup_notification_title">Backup in progress</string>
     <string name="backup_notification_content">Preparing backup&#8230;</string>
     <string name="backup_no_available_memory">There are no available memory for backup.</string>
+    <!-- shortcut -->
+    <string name="shortcut_wallet_label">Wallet</string>
+    <string name="shortcut_scan_label">Scan</string>
 </resources>
 
