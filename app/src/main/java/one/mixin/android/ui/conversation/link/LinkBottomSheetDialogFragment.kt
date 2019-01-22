@@ -24,6 +24,7 @@ import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
@@ -32,6 +33,7 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
@@ -44,6 +46,7 @@ import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
@@ -230,6 +233,9 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
             }, {
                 error()
             })
+        } else if (url.startsWith(Constants.Scheme.DEVICE)) {
+            DeviceFragment.newInstance(url).showNow(requireFragmentManager(), DeviceFragment.TAG)
+            dismiss()
         } else {
             error()
         }

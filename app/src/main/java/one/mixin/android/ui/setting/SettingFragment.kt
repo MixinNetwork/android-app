@@ -41,8 +41,7 @@ class SettingFragment : BaseFragment() {
                 AboutFragment.newInstance(), AboutFragment.TAG)
         }
         desktop_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                DeviceFragment.newInstance(), DeviceFragment.TAG)
+            DeviceFragment.newInstance().showNow(requireFragmentManager(), DeviceFragment.TAG)
         }
         storage_rl.setOnClickListener {
             requireActivity().addFragment(this@SettingFragment,

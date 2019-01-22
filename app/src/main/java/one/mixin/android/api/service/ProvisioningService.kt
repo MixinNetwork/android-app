@@ -1,6 +1,6 @@
 package one.mixin.android.api.service
 
-import io.reactivex.Observable
+import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ProvisioningRequest
 import one.mixin.android.api.response.ProvisioningResponse
@@ -13,8 +13,8 @@ import retrofit2.http.Path
 interface ProvisioningService {
 
     @GET("/device/provisioning/code")
-    fun provisionCode(): Observable<MixinResponse<ProvisioningResponseCode>>
+    fun provisionCode(): Deferred<MixinResponse<ProvisioningResponseCode>>
 
     @POST("/provisionings/{id}")
-    fun updateProvisioning(@Path("id") id: String, @Body request: ProvisioningRequest): Observable<MixinResponse<ProvisioningResponse>>
+    fun updateProvisioning(@Path("id") id: String, @Body request: ProvisioningRequest): Deferred<MixinResponse<ProvisioningResponse>>
 }

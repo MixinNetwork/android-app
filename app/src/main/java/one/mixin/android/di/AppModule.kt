@@ -7,6 +7,7 @@ import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
@@ -133,6 +134,7 @@ internal class AppModule {
             .baseUrl(URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttp)
         return builder.build()

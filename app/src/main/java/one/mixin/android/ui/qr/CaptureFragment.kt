@@ -49,6 +49,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.extension.xYuv2Simple
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.widget.AndroidUtilities.dp
