@@ -544,5 +544,6 @@
     <string name="backup_ing">External storage backup&#8230;</string>
     <string name="backup_notification_title">Backup in progress</string>
     <string name="backup_notification_content">Preparing backup&#8230;</string>
+    <string name="backup_no_available_memory">There are no available memory for backup.</string>
 </resources>
 
