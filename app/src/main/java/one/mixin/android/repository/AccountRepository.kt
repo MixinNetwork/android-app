@@ -33,6 +33,7 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
+import retrofit2.Call
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -140,4 +141,6 @@ constructor(
     fun trendingGifs(limit: Int, offset: Int) = giphyService.trendingGifs(limit, offset)
 
     fun searchGifs(query: String, limit: Int, offset: Int) = giphyService.searchGifs(query, limit, offset)
+
+    fun getSessions(ids: List<String>) = accountService.getSessions(ids)
 }

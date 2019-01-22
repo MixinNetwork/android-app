@@ -170,6 +170,9 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:${okhttpVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
+    implementation("com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:${coroutineAdapterVersion}") {
+        exclude group: 'com.squareup.okhttp3', module: 'okhttp'
+    }
 
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"

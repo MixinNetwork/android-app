@@ -61,7 +61,8 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
     return if (url.startsWith(Scheme.HTTPS_PAY, true) ||
         url.startsWith(Scheme.PAY, true) ||
         url.startsWith(Scheme.USERS, true) ||
-        url.startsWith(Scheme.HTTPS_USERS, true)) {
+        url.startsWith(Scheme.HTTPS_USERS, true) ||
+        url.startsWith(Scheme.DEVICE, true)) {
         true
     } else {
         val segments = Uri.parse(url).pathSegments

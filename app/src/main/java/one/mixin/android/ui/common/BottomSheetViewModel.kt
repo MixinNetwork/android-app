@@ -181,4 +181,6 @@ class BottomSheetViewModel @Inject internal constructor(
         accountRepository.searchGifs(query, limit, offset).map { it.data }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+
+    fun getSessions(ids: List<String>) = accountRepository.getSessions(ids)
 }
