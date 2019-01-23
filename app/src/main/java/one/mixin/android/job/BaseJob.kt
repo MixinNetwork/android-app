@@ -6,7 +6,6 @@ import com.birbit.android.jobqueue.Params
 import com.birbit.android.jobqueue.RetryConstraint
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.MetaData
-import okhttp3.OkHttpClient
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.LocalJobException
 import one.mixin.android.api.NetworkException
@@ -24,7 +23,6 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
-import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.HyperlinkDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
@@ -36,6 +34,7 @@ import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
+import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.di.AppComponent
 import one.mixin.android.di.Injectable
@@ -136,9 +135,6 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Inject
     @Transient
     lateinit var signalProtocol: SignalProtocol
-    @Inject
-    @Transient
-    lateinit var okHttpClient: OkHttpClient
     @Transient
     @Inject
     @field:[DatabaseCategory(DatabaseCategoryEnum.BASE)]
@@ -149,7 +145,6 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {
-            okHttpClient.connectionPool().evictAll()
             return true
         }
         return (throwable as? ServerErrorException)?.shouldRetry()
