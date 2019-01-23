@@ -3,7 +3,7 @@
     <shortcut
         android:shortcutId="wallet"
         android:enabled="true"
-        android:icon="@drawable/ic_wallet"
+        android:icon="@mipmap/ic_adaptive_shortcut_wallet"
         android:shortcutShortLabel="@string/shortcut_wallet_label">
         <intent
             android:action="android.intent.action.VIEW"
@@ -15,7 +15,7 @@
     <shortcut
         android:shortcutId="scan"
         android:enabled="true"
-        android:icon="@drawable/ic_qrcode"
+        android:icon="@mipmap/ic_adaptive_shortcut_scan"
         android:shortcutShortLabel="@string/shortcut_scan_label">
         <intent
             android:action="android.intent.action.VIEW"
