@@ -63,7 +63,8 @@ fun StickerDao.insertUpdate(s: Sticker) {
 fun MixinDatabase.clearParticipant(conversationId: String, participantId: String) {
     participantDao().deleteById(conversationId, participantId)
     sentSenderKeyDao().deleteByConversationId(conversationId)
-    sentSessionSenderKeyDao().delete(conversationId)
+    sessionDao().deleteByUserId(participantId)
+    sentSessionSenderKeyDao().deleteByConversationId(conversationId)
 }
 
 fun JobDao.findAckJobsDeferred(): Deferred<List<Job>?> = GlobalScope.async {

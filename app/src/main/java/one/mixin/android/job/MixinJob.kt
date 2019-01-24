@@ -68,36 +68,23 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     protected fun checkSentSenderKey(conversationId: String) {
         val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
         val participantIds = participants.map { it.userId }
-        try {
-            val call = accountService.getSessions(participantIds).execute()
-            val response = call.body()
-            if (response != null && response.isSuccess) {
-                response.data?.let { list ->
-                    sessionDao.insertList(list)
-                }
-            }
-        } catch (e: IOException) {
+        val sessions = getSession(participantIds)
+        if (sessions.isNullOrEmpty()) {
             return
         }
+        sessionDao.insertList(sessions)
         if (participants.size > 1) {
             sendBatchSenderKey(conversationId, participants)
         }
     }
 
     protected fun sendGroupSenderKey(conversationId: String) {
-        participantDao.getRealParticipants(conversationId).map { it.userId }.let { ids ->
-            try {
-                val call = accountService.getSessions(ids).execute()
-                val response = call.body()
-                if (response != null && response.isSuccess) {
-                    response.data?.let { list ->
-                        sessionDao.insertList(list)
-                    }
-                }
-            } catch (e: IOException) {
-                Timber.e(e)
-            }
+        val ids = participantDao.getRealParticipants(conversationId).map { it.userId }
+        val sessions = getSession(ids)
+        if (sessions.isNullOrEmpty()) {
+            return
         }
+        sessionDao.insertList(sessions)
         val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
         sendBatchSenderKey(conversationId, participants)
     }
@@ -164,7 +151,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle)
+                signalProtocol.processSession(keys[0].userId!!, preKeyBundle, keys[0].sessionId.hashCode())
             } else {
                 return false
             }
@@ -173,47 +160,34 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun redirectSendSenderKey(conversationId: String, recipientId: String): Boolean {
-        var sessions: List<one.mixin.android.vo.Session>? = null
-        try {
-            val call = accountService.getSessions(listOf(recipientId)).execute()
-            val response = call.body()
-            if (response != null && response.isSuccess) {
-                response.data?.let { list ->
-                    sessions = list
-                    sessionDao.insertList(list)
-                }
-            }
-        } catch (e: IOException) {
-            Timber.e(e)
-        }
-        if (sessions?.isNotEmpty() == true) {
+        val sessions = getSession(listOf(recipientId))
+        if (sessions.isNullOrEmpty()) {
+            return false
+        } else {
+            sessionDao.insertList(sessions)
             val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(sessions))
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle)
+                signalProtocol.processSession(keys[0].userId!!, preKeyBundle, keys[0].sessionId.hashCode())
             } else {
-                // Todo
                 // sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
                 Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
                 return false
             }
-
-            for (session in sessions!!) {
+            for (session in sessions) {
                 val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, session.userId, session.deviceId)
                 if (err) return false
                 val param = createSignalKeyParam(conversationId, session.userId, cipherText!!, session.sessionId)
                 val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
                 val result = deliverNoThrow(bm)
                 if (result) {
-                    // Todo
                     sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, session.userId, session.sessionId, "1", null))
                 }
             }
             return true
         }
-        return false
     }
 
     protected fun sendSenderKey(conversationId: String, recipientId: String): Boolean {
@@ -260,20 +234,27 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     private fun syncUserSession(userId: String): List<one.mixin.android.vo.Session>? {
         var sessions = sessionDao.findSessionByUserId(userId)
         if (sessions.isNullOrEmpty()) {
-            try {
-                val call = accountService.getSessions(listOf(userId)).execute()
-                val response = call.body()
-                if (response != null && response.isSuccess) {
-                    response.data?.let { list ->
-                        sessions = list
-                        sessionDao.insertList(list)
-                    }
-                }
-            } catch (e: IOException) {
-                Timber.e(e)
+            sessions = getSession(listOf(userId))
+            if (!sessions.isNullOrEmpty()) {
+                sessionDao.insertList(sessions)
             }
         }
         return sessions
+    }
+
+    private fun getSession(ids: List<String>): List<one.mixin.android.vo.Session>? {
+        return try {
+            val call = accountService.getSessions(ids).execute()
+            val response = call.body()
+            if (response != null && response.isSuccess && response.data != null) {
+                response.data
+            } else {
+                null
+            }
+        } catch (e: IOException) {
+            Timber.e(e)
+            null
+        }
     }
 
     protected fun deliverNoThrow(blazeMessage: BlazeMessage): Boolean {

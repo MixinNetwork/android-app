@@ -18,6 +18,7 @@ class MixinSessionStore(context: Context) : SessionStore {
 
     private val sessionDao: SessionDao = SignalDatabase.getDatabase(context).sessionDao()
     private val sentSenderKeyDao = MixinDatabase.getDatabase(context).sentSenderKeyDao()
+    private val sentSessionSenderKeyDao = MixinDatabase.getDatabase(context).sentSessionSenderKeyDao()
 
     override fun loadSession(address: SignalProtocolAddress): SessionRecord {
         synchronized(FILE_LOCK) {
@@ -42,9 +43,10 @@ class MixinSessionStore(context: Context) : SessionStore {
     override fun storeSession(address: SignalProtocolAddress, record: SessionRecord) {
         synchronized(FILE_LOCK) {
             val session = sessionDao.getSession(address.name, address.deviceId)
-            if (session != null) {
+            if (session != null && session.device == 1) {
                 Log.w(TAG, "New session coming")
                 sentSenderKeyDao.deleteByUserId(address.name)
+                sentSessionSenderKeyDao.deleteByUserId(address.name)
             }
             sessionDao.insert(Session(address.name, address.deviceId, record.serialize(), System.currentTimeMillis()))
         }

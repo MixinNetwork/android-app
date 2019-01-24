@@ -11,4 +11,7 @@ interface SessionDao : BaseDao<Session> {
 
     @Query("SELECT * FROM sessions WHERE user_id = :userId AND device_id != 1")
     fun findSecondarySessionByUserId(userId: String): List<Session>?
+
+    @Query("DELETE FROM sessions WHERE user_id= :userId")
+    fun deleteByUserId(userId: String)
 }

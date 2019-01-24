@@ -577,10 +577,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun sendNotificationJob(message: Message, source: String) {
-        if (source == LIST_PENDING_MESSAGES) {
-            return
-        }
-        if (MixinApplication.conversationId == message.conversationId) {
+        if (source == LIST_PENDING_MESSAGES || MixinApplication.conversationId == message.conversationId || message.userId == Session.getAccountId()) {
             return
         }
         jobManager.addJobInBackground(NotificationJob(message))
