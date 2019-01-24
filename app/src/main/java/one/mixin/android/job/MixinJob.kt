@@ -66,7 +66,10 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun checkSentSenderKey(conversationId: String) {
-        val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
+        val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!)
+        if (participants.isNullOrEmpty()) {
+            return
+        }
         val participantIds = participants.map { it.userId }
         val sessions = getSession(participantIds)
         if (sessions.isNullOrEmpty()) {

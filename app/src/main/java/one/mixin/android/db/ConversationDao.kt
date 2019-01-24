@@ -32,7 +32,7 @@ interface ConversationDao : BaseDao<Conversation> {
         "LEFT JOIN users mu ON mu.user_id = m.user_id " +
         "LEFT JOIN snapshots s ON s.snapshot_id = m.snapshot_id " +
         "LEFT JOIN users pu ON pu.user_id = m.participant_id " +
-        "WHERE c.category IS NOT NULL " +
+        "WHERE c.category = 'CONTACT' OR c.category = 'GROUP' " +
         "ORDER BY c.pin_time DESC, m.created_at DESC")
     fun conversationList(): LiveData<List<ConversationItem>>
 

@@ -371,7 +371,7 @@ class DecryptMessage : Injector() {
         if (!data.category.startsWith("SIGNAL_")) {
             return
         }
-
+        refreshSession(data.userId) // Todo maybe optimize
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
@@ -536,9 +536,9 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun refreshSession() {
+    private fun refreshSession(userId: String = Session.getAccountId()!!) {
         try {
-            val call = accountService.getSessions(listOf(Session.getAccountId()!!)).execute()
+            val call = accountService.getSessions(listOf(userId)).execute()
             val response = call.body()
             if (response != null && response.isSuccess) {
                 response.data?.let { sessions ->
