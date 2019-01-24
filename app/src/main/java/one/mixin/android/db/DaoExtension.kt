@@ -62,7 +62,7 @@ fun StickerDao.insertUpdate(s: Sticker) {
 @Transaction
 fun MixinDatabase.clearParticipant(conversationId: String, participantId: String) {
     participantDao().deleteById(conversationId, participantId)
-    sentSenderKeyDao().delete(conversationId)
+    sentSenderKeyDao().deleteByConversationId(conversationId)
 }
 
 fun JobDao.findAckJobsDeferred(): Deferred<List<Job>?> = GlobalScope.async {
