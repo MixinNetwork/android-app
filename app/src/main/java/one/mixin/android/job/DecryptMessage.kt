@@ -394,7 +394,7 @@ class DecryptMessage : Injector() {
                 }
             })
 
-            val address = SignalProtocolAddress(data.userId, data.sessionId.hashCode())
+            val address = SignalProtocolAddress(data.userId, data.deviceId)
             val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
             if (status != null) {
                 if (status == RatchetStatus.REQUESTING.name) {
@@ -421,13 +421,12 @@ class DecryptMessage : Injector() {
                 return
             }
             if (data.category == MessageCategory.SIGNAL_KEY.name) {
-                ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId,
-                    data.sessionId.hashCode()).toString())
+                ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId, data.deviceId).toString())
                 refreshKeys(data.conversationId)
             } else {
                 insertFailedMessage(data)
                 refreshKeys(data.conversationId)
-                val address = SignalProtocolAddress(data.userId, data.sessionId.hashCode())
+                val address = SignalProtocolAddress(data.userId, data.deviceId)
                 val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
                 if (status == null || (status != RatchetStatus.REQUESTING.name && status != RatchetStatus.REQUESTING_MESSAGE.name)) {
                     requestResendKey(data.conversationId, data.userId, data.messageId)

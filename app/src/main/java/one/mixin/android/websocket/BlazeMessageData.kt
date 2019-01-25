@@ -23,7 +23,9 @@ data class BlazeMessageData(
     @SerializedName("source")
     val source: String,
     @SerializedName("session_id")
-    val sessionId:String?,
+    val sessionId:String,
+    @SerializedName("device_id")
+    val deviceId:Int,
     @SerializedName("representative_id")
     val representativeId: String?,
     @SerializedName("quote_message_id")
