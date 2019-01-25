@@ -37,7 +37,6 @@ import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.statusBarHeight
@@ -49,7 +48,6 @@ import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.DragWebView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -154,22 +152,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return super.onContextItemSelected(item)
     }
 
-    private val miniHeight by lazy {
-        context!!.displaySize().y * 3 / 4
-    }
-
-    private val closeHeight by lazy {
-        context!!.displaySize().y / 2
-    }
-
-    private val maxHeight by lazy {
-        context!!.displaySize().y - context!!.statusBarHeight()
-    }
-
-    private val middleHeight by lazy {
-        (miniHeight + maxHeight) / 2
-    }
-
     var uploadMessage: ValueCallback<Array<Uri>>? = null
     @SuppressLint("SetJavaScriptEnabled")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -212,39 +194,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        contentView.chat_web_view.setOnScrollListener(object : DragWebView.OnDragListener {
-            override fun onUp() {
-                ((dialog as BottomSheet).getCustomView())?.let {
-                    val height = it.layoutParams.height
-                    when {
-                        height < closeHeight -> {
-                            (dialog as BottomSheet).setCustomViewHeight(0) {
-                                dismiss()
-                            }
-                        }
-                        height < middleHeight -> {
-                            (dialog as BottomSheet).setCustomViewHeight(miniHeight)
-                        }
-                        else -> {
-                            (dialog as BottomSheet).setCustomViewHeight(maxHeight)
-                        }
-                    }
-                }
-            }
-
-            override fun onScroll(disY: Float): Boolean {
-                return notNullElse((dialog as BottomSheet).getCustomView(), {
-                    val height = it.layoutParams.height - disY.toInt()
-                    return if (height in 0..maxHeight) {
-                        (dialog as BottomSheet).setCustomViewHeightSync(height)
-                        true
-                    } else {
-                        false
-                    }
-                }, false)
-            }
-        })
-
         contentView.more_iv.setOnClickListener {
             showBottomSheet()
         }
@@ -269,7 +218,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.webChromeClient = null
             dismiss()
         }
-        (dialog as BottomSheet).setCustomViewHeight(miniHeight)
+        (dialog as BottomSheet).setCustomViewHeight(context!!.displaySize().y - context!!.statusBarHeight())
     }
 
     @Override
