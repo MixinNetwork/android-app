@@ -5,10 +5,17 @@ import com.google.android.exoplayer2.Player
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isAudio
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
@@ -47,6 +54,8 @@ class AudioPlayer private constructor() {
                     RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
                     stopTimber()
                     status = STATUS_ERROR
+
+                    checkNext()
                 }
             }
 
@@ -60,18 +69,18 @@ class AudioPlayer private constructor() {
     }
 
     private var id: String? = null
-    private var url: String? = null
+    private var messageItem: MessageItem? = null
     private var status = STATUS_PAUSE
 
     fun play(messageItem: MessageItem) {
         if (id != messageItem.messageId) {
             id = messageItem.messageId
-            url = messageItem.mediaUrl
-            url?.let {
+            this.messageItem = messageItem
+            messageItem.mediaUrl?.let {
                 player.loadAudio(it)
             }
         } else if (status == STATUS_ERROR) {
-            player.loadAudio(url!!)
+            player.loadAudio(messageItem.mediaUrl!!)
         }
         status = STATUS_PLAY
         player.start()
@@ -102,10 +111,11 @@ class AudioPlayer private constructor() {
     var progress = 0f
     private fun startTimer() {
         if (timerDisposable == null) {
-            timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
-                progress = player.getCurrentPos().toFloat() / player.duration()
-                RxBus.publish(ProgressEvent(id!!, progress))
-            }
+            timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+                .observeOn(AndroidSchedulers.mainThread()).subscribe {
+                    progress = player.getCurrentPos().toFloat() / player.duration()
+                    RxBus.publish(ProgressEvent(id!!, progress))
+                }
         }
     }
 
@@ -116,5 +126,20 @@ class AudioPlayer private constructor() {
             }
         }
         timerDisposable = null
+    }
+
+    private fun checkNext() {
+        messageItem?.let { item ->
+            GlobalScope.launch {
+                val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
+                    .messageDao()
+                    .findNextMessage(item.conversationId, item.createdAt) ?: return@launch
+                if (!nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
+
+                withContext(Dispatchers.Main) {
+                    play(nextMessage)
+                }
+            }
+        }
     }
 }

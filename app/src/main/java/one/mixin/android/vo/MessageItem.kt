@@ -107,3 +107,8 @@ fun MessageItem.isCallMessage() =
         type == MessageCategory.WEBRTC_AUDIO_END.name ||
         type == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
         type == MessageCategory.WEBRTC_AUDIO_FAILED.name
+
+fun MessageItem.isAudio() =
+    type == MessageCategory.PLAIN_AUDIO.name ||
+        type == MessageCategory.SIGNAL_AUDIO.name
+
