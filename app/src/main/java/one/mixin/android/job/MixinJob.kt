@@ -118,8 +118,8 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 if (signalKeys.isNotEmpty()) {
                     for (key in signalKeys) {
                         val preKeyBundle = createPreKeyBundle(key)
-                        signalProtocol.processSession(key.userId!!, preKeyBundle, key.sessionId.hashCode())
-                        val (cipherText, senderKeyId, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, key.sessionId.hashCode())
+                        signalProtocol.processSession(key.userId!!, preKeyBundle, key.deviceId)
+                        val (cipherText, senderKeyId, _) = signalProtocol.encryptSenderKey(conversationId, key.userId, key.deviceId)
                         signalKeyMessages.add(createBlazeSignalKeyMessage(key.userId, cipherText!!, senderKeyId, key.sessionId))
                         keys.add(key.userId)
                     }
@@ -154,7 +154,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(keys[0].userId!!, preKeyBundle, keys[0].sessionId.hashCode())
+                signalProtocol.processSession(keys[0].userId!!, preKeyBundle, keys[0].deviceId)
             } else {
                 return false
             }
@@ -173,7 +173,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(keys[0].userId!!, preKeyBundle, keys[0].sessionId.hashCode())
+                signalProtocol.processSession(keys[0].userId!!, preKeyBundle, keys[0].deviceId)
             } else {
                 // sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
                 Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)

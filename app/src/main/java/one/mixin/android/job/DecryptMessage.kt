@@ -381,7 +381,7 @@ class DecryptMessage : Injector() {
 
         val (keyType, cipherText, resendMessageId) = SignalProtocol.decodeMessageData(data.data)
         try {
-            signalProtocol.decrypt(data.conversationId, data.userId, data.sessionId, keyType, cipherText, data.category, DecryptionCallback {
+            signalProtocol.decrypt(data.conversationId, data.userId, data.deviceId, keyType, cipherText, data.category, DecryptionCallback {
                 if (data.category != MessageCategory.SIGNAL_KEY.name) {
                     val plaintext = String(it)
                     if (resendMessageId != null) {
