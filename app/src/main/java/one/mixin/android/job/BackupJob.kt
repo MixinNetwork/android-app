@@ -77,18 +77,21 @@ class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) 
 
     @RequiresPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
     private fun backup(context: Context) {
-        backupLiveData.start()
-        BackupNotification.show()
-        cleanMedia()
-        one.mixin.android.util.backup.backup(context) { result ->
-            if (result == Result.SUCCESS) {
+        try {
+            backupLiveData.start()
+            BackupNotification.show()
+            cleanMedia()
+            one.mixin.android.util.backup.backup(context) { result ->
                 backupLiveData.setResult(false, result)
                 BackupNotification.cancel()
-                context.defaultSharedPreferences.putLong(BACKUP_LAST_TIME, System.currentTimeMillis())
-            } else {
-                backupLiveData.setResult(false, result)
-                BackupNotification.cancel()
+                if (result == Result.SUCCESS) {
+                    context.defaultSharedPreferences.putLong(BACKUP_LAST_TIME, System.currentTimeMillis())
+                }
             }
+        } catch (e: Exception) {
+            backupLiveData.setResult(false, null)
+            BackupNotification.cancel()
+            throw e
         }
     }
 }

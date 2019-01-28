@@ -28,6 +28,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.toast
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
@@ -97,13 +98,14 @@ class BackUpFragment : BaseFragment() {
             } else {
                 backup_bn.visibility = View.VISIBLE
                 progressGroup.visibility = View.GONE
-                if (BackupJob.backupLiveData.result == Result.SUCCESS) {
-                    findBackUp()
-                } else if (BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY) {
-                    AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-                        .setMessage(R.string.backup_no_available_memory)
-                        .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
-                        .show()
+                when {
+                    BackupJob.backupLiveData.result == Result.SUCCESS -> findBackUp()
+                    BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY ->
+                        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                            .setMessage(R.string.backup_no_available_memory)
+                            .setNegativeButton(R.string.group_ok) { dialog, _ -> dialog.dismiss() }
+                            .show()
+                    BackupJob.backupLiveData.result == Result.FAILURE -> toast(R.string.backup_failure_tip)
                 }
             }
         })
