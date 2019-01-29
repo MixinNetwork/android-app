@@ -358,6 +358,7 @@
     <string name="setting_desktop_last_active">上次登录 %1$s %2$s</string>
     <string name="setting_desktop_signed">已登录桌面端</string>
     <string name="setting_desktop_sigin_failed">登录桌面端失败</string>
+    <string name="setting_desktop_logout_failed">退出桌面端失败。</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>

@@ -102,8 +102,7 @@ constructor(
     fun search(query: String): Observable<MixinResponse<User>> =
         userService.search(query)
 
-    fun logout(): Observable<MixinResponse<Unit>> =
-        accountService.logout()
+    fun logoutAsync() = accountService.logoutAsync()
 
     fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 

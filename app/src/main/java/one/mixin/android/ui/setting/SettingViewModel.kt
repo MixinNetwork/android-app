@@ -2,10 +2,8 @@ package one.mixin.android.ui.setting
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.repository.AccountRepository
@@ -17,8 +15,6 @@ internal constructor(private val accountRepository: AccountRepository, private v
 
     fun countBlockingUsers() =
         accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
-
-    fun logout(): Observable<MixinResponse<Unit>> = accountRepository.logout()
 
     fun authorizations() = authorizationService.authorizations().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
 

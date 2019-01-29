@@ -15,6 +15,7 @@ import com.google.zxing.integration.android.IntentIntegrator
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -34,6 +35,7 @@ import one.mixin.android.ui.common.AvatarActivity.Companion.ARGS_URL
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.widget.BottomSheet
@@ -58,6 +60,12 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
 
     private var disposable: Disposable? = null
 
+    private var loggedIn = false
+
+    private val coroutineExceptionHandler = CoroutineExceptionHandler { _, exception ->
+        ErrorHandler.handleError(exception)
+    }
+
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
@@ -75,12 +83,27 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         super.onActivityCreated(savedInstanceState)
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.auth_tv.setOnClickListener {
-            val intentIntegrator = IntentIntegrator(activity)
-            intentIntegrator.captureActivity = CaptureActivity::class.java
-            intentIntegrator.setBeepEnabled(false)
-            val intent = intentIntegrator.createScanIntent().putExtra(CaptureFragment.ARGS_FOR_ADDRESS, true)
-            startActivityForResult(intent, IntentIntegrator.REQUEST_CODE)
-            activity?.overridePendingTransition(R.anim.slide_in_bottom, 0)
+            if (loggedIn) {
+                GlobalScope.launch(coroutineExceptionHandler) {
+                    val response = bottomViewModel.logoutAsync().await()
+                    if (response.isSuccess) {
+                        withContext(Dispatchers.Main) {
+                            updateUI(false)
+                        }
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            toast(R.string.setting_desktop_logout_failed)
+                        }
+                    }
+                }
+            } else {
+                val intentIntegrator = IntentIntegrator(activity)
+                intentIntegrator.captureActivity = CaptureActivity::class.java
+                intentIntegrator.setBeepEnabled(false)
+                val intent = intentIntegrator.createScanIntent().putExtra(CaptureFragment.ARGS_FOR_ADDRESS, true)
+                startActivityForResult(intent, IntentIntegrator.REQUEST_CODE)
+                activity?.overridePendingTransition(R.anim.slide_in_bottom, 0)
+            }
         }
 
         val url = arguments!!.getString(ARGS_URL)
@@ -108,7 +131,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
     private fun checkSession() {
         val accountId = Session.getAccountId() ?: return
 
-        GlobalScope.launch {
+        GlobalScope.launch(coroutineExceptionHandler) {
             val response = bottomViewModel.getSessions(Collections.singletonList(accountId)).execute().body()
             if (response != null && response.isSuccess) {
                 response.data?.let { list ->
@@ -122,28 +145,36 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun updateUI(loginSuccess: Boolean) {
-        if (loginSuccess) {
+    private fun updateUI(
+        loggedIn: Boolean,
+        positiveTip: (() -> Unit)? = null,
+        negativeTip: (() -> Unit)? = null
+    ) {
+        this.loggedIn = loggedIn
+        if (loggedIn) {
             contentView.auth_tv.text = getString(R.string.setting_logout_desktop)
             contentView.desc_tv.text = getString(R.string.setting_desktop_signed)
             contentView.auth_tv.textColor = R.color.colorDarkBlue
             contentView.logo_iv.setImageResource(R.drawable.ic_desktop_online)
+            positiveTip?.invoke()
         } else {
             contentView.auth_tv.text = getString(R.string.setting_scan_qr_code)
             contentView.desc_tv.text = ""
             contentView.auth_tv.textColor = android.R.color.black
             contentView.logo_iv.setImageResource(R.drawable.ic_desktop_offline)
-            context?.toast(R.string.setting_desktop_sigin_failed)
+            negativeTip?.invoke()
         }
     }
 
     private fun processUrl(url: String) {
-        GlobalScope.launch {
-            val provisioningCode = provisioningService.provisionCode().await()
-            if (provisioningCode.isSuccess) {
-                val success = encryptKey(requireContext(), url, provisioningCode.data!!.code)
+        GlobalScope.launch(coroutineExceptionHandler) {
+            val response = provisioningService.provisionCodeAsync().await()
+            if (response.isSuccess) {
+                val success = encryptKey(requireContext(), url, response.data!!.code)
                 withContext(Dispatchers.Main) {
-                    updateUI(success)
+                    updateUI(success, negativeTip = {
+                        context?.toast(R.string.setting_desktop_sigin_failed)
+                    })
                 }
             } else {
                 withContext(Dispatchers.Main) {
@@ -184,7 +215,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         val message = ProvisionMessage(identityKeyPair.publicKey.serialize(), identityKeyPair.privateKey.serialize(), account.userId, account.session_id, verificationCode, profileKey)
         val cipherText = cipher.encrypt(message)
         val encoded = Base64.encodeBytes(cipherText)
-        val response = provisioningService.updateProvisioning(ephemeralId, ProvisioningRequest(encoded)).await()
+        val response = provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded)).await()
         return response.isSuccess
     }
 }
