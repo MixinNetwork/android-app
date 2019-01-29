@@ -13,8 +13,8 @@ import retrofit2.http.Path
 interface ProvisioningService {
 
     @GET("/device/provisioning/code")
-    fun provisionCode(): Deferred<MixinResponse<ProvisioningResponseCode>>
+    fun provisionCodeAsync(): Deferred<MixinResponse<ProvisioningResponseCode>>
 
     @POST("/provisionings/{id}")
-    fun updateProvisioning(@Path("id") id: String, @Body request: ProvisioningRequest): Deferred<MixinResponse<ProvisioningResponse>>
+    fun updateProvisioningAsync(@Path("id") id: String, @Body request: ProvisioningRequest): Deferred<MixinResponse<ProvisioningResponse>>
 }
