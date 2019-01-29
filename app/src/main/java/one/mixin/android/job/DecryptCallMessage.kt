@@ -1,8 +1,6 @@
 package one.mixin.android.job
 
 import androidx.collection.ArrayMap
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.google.gson.Gson
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -12,7 +10,6 @@ import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.createAtToLong
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState

@@ -1,7 +1,5 @@
 package one.mixin.android.job
 
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.google.gson.JsonElement
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
@@ -22,7 +20,6 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.di.Injectable
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationCategory

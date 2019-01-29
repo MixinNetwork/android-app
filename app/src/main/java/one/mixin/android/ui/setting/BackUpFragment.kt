@@ -126,7 +126,6 @@ class BackUpFragment : BaseFragment() {
             dialog.dismiss()
         }
         builder.setNegativeButton(android.R.string.cancel) { _, _ ->
-
         }
         val dialog = builder.create()
         dialog.show()

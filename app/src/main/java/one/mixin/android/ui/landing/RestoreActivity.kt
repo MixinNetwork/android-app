@@ -146,7 +146,6 @@ class RestoreActivity : BaseActivity() {
                     BackupNotification.cancel()
                     hideProgress()
                 })
-
         }
         restore_size.text = getString(R.string.restore_size, data.length().fileSize())
         restore_skip.setOnClickListener {

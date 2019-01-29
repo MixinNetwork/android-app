@@ -2,7 +2,7 @@ package one.mixin.android.util
 
 import android.net.UrlQuerySanitizer
 
-class UnescapeIgnorePlusUrlQuerySanitizer: UrlQuerySanitizer() {
+class UnescapeIgnorePlusUrlQuerySanitizer : UrlQuerySanitizer() {
 
     override fun unescape(string: String): String {
         // Early exit if no escaped characters.

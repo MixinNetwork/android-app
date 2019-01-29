@@ -18,8 +18,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.google.zxing.integration.android.IntentIntegrator
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -29,7 +27,6 @@ import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.enqueueAvatarWorkRequest
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyOrElse
 import one.mixin.android.extension.notNullElse
@@ -53,7 +50,6 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.worker.AvatarWorker.Companion.GROUP_ID
 import org.jetbrains.anko.doAsync
 import java.io.File
 import javax.inject.Inject

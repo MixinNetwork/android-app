@@ -10,7 +10,6 @@ import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.di.worker.ChildWorkerFactory
-import javax.inject.Inject
 
 class RefreshFcmWorker @AssistedInject constructor(
     @Assisted context: Context,

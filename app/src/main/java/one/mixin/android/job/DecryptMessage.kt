@@ -336,13 +336,11 @@ class DecryptMessage : Injector() {
             if (systemMessage.participantId == accountId) {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             } else {
-                jobManager.addJobInBackground(
-                    RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
+                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
             }
             if (systemMessage.participantId != accountId &&
                 signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
-                jobManager.addJobInBackground(SendProcessSignalKeyJob(data,
-                    ProcessSignalKeyAction.ADD_PARTICIPANT, systemMessage.participantId))
+                jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.ADD_PARTICIPANT, systemMessage.participantId))
             }
         } else if (systemMessage.action == SystemConversationAction.REMOVE.name ||
             systemMessage.action == SystemConversationAction.EXIT.name) {
@@ -430,8 +428,7 @@ class DecryptMessage : Injector() {
                 refreshKeys(data.conversationId)
                 val address = SignalProtocolAddress(data.userId, DEFAULT_DEVICE_ID)
                 val status = ratchetSenderKeyDao.getRatchetSenderKey(data.conversationId, address.toString())?.status
-                if (status == null || (status != RatchetStatus.REQUESTING.name &&
-                        status != RatchetStatus.REQUESTING_MESSAGE.name)) {
+                if (status == null || (status != RatchetStatus.REQUESTING.name && status != RatchetStatus.REQUESTING_MESSAGE.name)) {
                     requestResendKey(data.conversationId, data.userId, data.messageId)
                 }
             }

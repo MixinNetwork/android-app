@@ -44,7 +44,7 @@ class MixinSessionStore(context: Context) : SessionStore {
             val session = sessionDao.getSession(address.name, address.deviceId)
             if (session != null) {
                 Log.w(TAG, "New session coming")
-                sentSenderKeyDao.deleteByUserId((address.name))
+                sentSenderKeyDao.deleteByUserId(address.name)
             }
             sessionDao.insert(Session(address.name, address.deviceId, record.serialize(), System.currentTimeMillis()))
         }

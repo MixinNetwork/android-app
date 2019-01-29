@@ -20,7 +20,6 @@ import one.mixin.android.extension.enqueueAvatarWorkRequest
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.job.MixinJobManager
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
