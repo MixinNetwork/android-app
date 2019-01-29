@@ -172,6 +172,7 @@ class DecryptMessage : Injector() {
                 ratchetSenderKeyDao.delete(data.conversationId, SignalProtocolAddress(data.userId,
                     DEFAULT_DEVICE_ID).toString())
             } else if (plainData.action == PlainDataAction.SYNC_SESSION.name) {
+                sentSessionSenderKeyDao.deleteByUserId(data.userId)
                 refreshSession()
             }
 
@@ -358,8 +359,7 @@ class DecryptMessage : Injector() {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
-            participantDao.updateParticipantRole(data.conversationId,
-                systemMessage.participantId!!, systemMessage.role!!)
+            participantDao.updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role!!)
             if (message.participantId != accountId) {
                 return
             }
