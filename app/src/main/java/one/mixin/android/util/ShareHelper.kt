@@ -58,7 +58,7 @@ class ShareHelper {
         if (imageUri == null) {
             return null
         }
-        return ForwardMessage(type,
-            mediaUrl = imageUri.getFilePath(MixinApplication.appContext))
+        val imageUrl = imageUri.getFilePath(MixinApplication.appContext) ?: return null
+        return ForwardMessage(type, mediaUrl = imageUrl)
     }
 }
