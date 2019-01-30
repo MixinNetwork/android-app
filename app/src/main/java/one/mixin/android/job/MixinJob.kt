@@ -147,9 +147,10 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    protected fun checkSignalSession(recipientId: String): Boolean {
-        if (!signalProtocol.containsSession(recipientId)) {
-            val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(sessionDao.findSessionByUserId(recipientId)!!))
+    protected fun checkSignalSession(recipientId: String, sessionId: String, deviceId: Int): Boolean {
+        if (!signalProtocol.containsSession(recipientId, deviceId)) {
+            val sessions = listOf(one.mixin.android.vo.Session(sessionId, recipientId, deviceId))
+            val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(sessions))
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {

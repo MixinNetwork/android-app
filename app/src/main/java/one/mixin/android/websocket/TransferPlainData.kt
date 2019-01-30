@@ -20,7 +20,9 @@ data class TransferPlainData(
 
 data class ResendData(
     val userId: String,
-    val messageId: String
+    val messageId: String,
+    val sessionId: String,
+    val deviceId: Int
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 4L

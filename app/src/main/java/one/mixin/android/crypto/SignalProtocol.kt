@@ -108,7 +108,7 @@ class SignalProtocol(ctx: Context) {
         }
     }
 
-    private fun encryptSession(content: ByteArray, destination: String, deviceId: Int = DEFAULT_DEVICE_ID): CiphertextMessage {
+    private fun encryptSession(content: ByteArray, destination: String, deviceId: Int): CiphertextMessage {
         val remoteAddress = SignalProtocolAddress(destination, deviceId)
         val sessionCipher = SessionCipher(signalProtocolStore, remoteAddress)
         return sessionCipher.encrypt(content)
@@ -153,8 +153,8 @@ class SignalProtocol(ctx: Context) {
         return !senderKeyRecord.isEmpty
     }
 
-    fun containsSession(recipientId: String, deviceId: Int? = null): Boolean {
-        val signalProtocolAddress = SignalProtocolAddress(recipientId, notNullElse(deviceId, { it }, SignalProtocol.DEFAULT_DEVICE_ID))
+    fun containsSession(recipientId: String, deviceId: Int): Boolean {
+        val signalProtocolAddress = SignalProtocolAddress(recipientId, deviceId)
         return signalProtocolStore.containsSession(signalProtocolAddress)
     }
 
@@ -182,8 +182,8 @@ class SignalProtocol(ctx: Context) {
         }
     }
 
-    fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null): BlazeMessage {
-        val cipher = encryptSession(message.content!!.toByteArray(), recipientId)
+    fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null, sessionId: String, deviceId: Int): BlazeMessage {
+        val cipher = encryptSession(message.content!!.toByteArray(), recipientId, deviceId)
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize(), resendMessageId))
         val blazeParam = BlazeMessageParam(
             message.conversationId,
@@ -192,7 +192,8 @@ class SignalProtocol(ctx: Context) {
             message.category,
             data,
             MessageStatus.SENT.name,
-            quote_message_id = message.quoteMessageId)
+            quote_message_id = message.quoteMessageId,
+            session_id = sessionId)
         return createParamBlazeMessage(blazeParam)
     }
 

@@ -150,7 +150,7 @@ class DecryptMessage : Injector() {
             val json = Base64.decode(data.data)
             val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
             if (plainData.action == PlainDataAction.RESEND_KEY.name) {
-                if (signalProtocol.containsSession(data.userId)) {
+                if (signalProtocol.containsSession(data.userId, data.deviceId)) {
                     jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.RESEND_KEY))
                 }
             } else if (plainData.action == PlainDataAction.RESEND_MESSAGES.name) {
@@ -162,8 +162,8 @@ class DecryptMessage : Injector() {
                     val needResendMessage = messageDao.findMessageById(mId)
                     if (needResendMessage != null) {
                         needResendMessage.id = UUID.randomUUID().toString()
-                        jobManager.addJobInBackground(SendMessageJob(needResendMessage,
-                            ResendData(data.userId, mId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE))
+                        val resendData = ResendData(data.userId, mId, data.sessionId, data.deviceId)
+                        jobManager.addJobInBackground(SendMessageJob(needResendMessage, resendData, true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE))
                         resendMessageDao.insert(ResendMessage(mId, data.userId, 1, nowInUtc()))
                     } else {
                         resendMessageDao.insert(ResendMessage(mId, data.userId, 0, nowInUtc()))

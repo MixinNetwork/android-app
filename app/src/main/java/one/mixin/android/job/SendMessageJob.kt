@@ -102,7 +102,7 @@ open class SendMessageJob(
 
     private fun sendSignalMessage() {
         if (resendData != null) {
-            if (checkSignalSession(resendData.userId)) {
+            if (checkSignalSession(resendData.userId, resendData.sessionId, resendData.deviceId)) {
                 deliver(encryptNormalMessage())
             }
             return
@@ -161,7 +161,7 @@ open class SendMessageJob(
 
     private fun encryptNormalMessage(): BlazeMessage {
         return if (resendData != null) {
-            signalProtocol.encryptSessionMessage(message, resendData.userId, resendData.messageId)
+            signalProtocol.encryptSessionMessage(message, resendData.userId, resendData.messageId, resendData.sessionId, resendData.deviceId)
         } else {
             signalProtocol.encryptGroupMessage(message)
         }
