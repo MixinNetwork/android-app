@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.ContextMenu
+import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -90,6 +91,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_web, null)
+        contentView.chat_web_view.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && contentView.chat_web_view.canGoBack()) {
+                contentView.chat_web_view.goBack()
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
+        }
         registerForContextMenu(contentView.chat_web_view)
         (dialog as BottomSheet).setCustomView(contentView)
     }
