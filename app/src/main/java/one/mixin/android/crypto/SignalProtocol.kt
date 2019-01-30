@@ -158,7 +158,7 @@ class SignalProtocol(ctx: Context) {
         return signalProtocolStore.containsSession(signalProtocolAddress)
     }
 
-    fun clearSenderKey(groupId: String, senderId: String,deviceId: Int= DEFAULT_DEVICE_ID) {
+    fun clearSenderKey(groupId: String, senderId: String, deviceId: Int = DEFAULT_DEVICE_ID) {
         val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(senderId, deviceId))
         senderKeyStore.removeSenderKey(senderKeyName)
     }

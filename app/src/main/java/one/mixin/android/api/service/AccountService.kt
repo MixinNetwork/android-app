@@ -82,5 +82,5 @@ interface AccountService {
     fun ping(): Call<MixinResponse<Void>>
 
     @POST("sessions/fetch")
-    fun getSessions(@Body ids: List<String>):Call<MixinResponse<List<Session>>>
+    fun getSessions(@Body ids: List<String>): Call<MixinResponse<List<Session>>>
 }

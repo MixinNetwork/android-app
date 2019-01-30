@@ -33,7 +33,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
-import retrofit2.Call
 import javax.inject.Inject
 import javax.inject.Singleton
 

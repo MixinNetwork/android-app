@@ -29,7 +29,6 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.db.ParticipantDao
-import one.mixin.android.db.SentSenderKeyDao
 import one.mixin.android.db.SentSessionSenderKeyDao
 import one.mixin.android.db.SessionDao
 import one.mixin.android.db.SnapshotDao
