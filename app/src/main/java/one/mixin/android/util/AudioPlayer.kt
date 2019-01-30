@@ -134,7 +134,7 @@ class AudioPlayer private constructor() {
                 val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
                     .messageDao()
                     .findNextMessage(item.conversationId, item.createdAt) ?: return@launch
-                if (!nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
+                if (nextMessage.userId != item.userId || !nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
 
                 withContext(Dispatchers.Main) {
                     play(nextMessage)
