@@ -26,7 +26,7 @@
     <string name="transfer">Transfer</string>
     <string name="balance">BALANCE</string>
     <string name="admin">admin</string>
-    <string name="share_file">Share</string>
+    <string name="share">Share</string>
     <string name="done">Done</string>
     <string name="forward">Forward</string>
     <string name="forward_success">Forward success</string>

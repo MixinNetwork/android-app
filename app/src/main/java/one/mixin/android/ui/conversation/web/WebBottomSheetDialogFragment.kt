@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.ContextMenu
+import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
@@ -44,6 +45,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.KeyBoardAssist
@@ -90,6 +92,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_web, null)
+        contentView.chat_web_view.setOnKeyListener { _, keyCode, _ ->
+            if (keyCode == KeyEvent.KEYCODE_BACK && contentView.chat_web_view.canGoBack()) {
+                contentView.chat_web_view.goBack()
+                return@setOnKeyListener true
+            }
+            return@setOnKeyListener false
+        }
         registerForContextMenu(contentView.chat_web_view)
         (dialog as BottomSheet).setCustomView(contentView)
     }
@@ -242,6 +251,10 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_web_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        view.share.setOnClickListener {
+            ForwardActivity.show(requireContext(), contentView.chat_web_view.url)
+            bottomSheet.dismiss()
+        }
         view.refresh.setOnClickListener {
             contentView.chat_web_view.clearCache(true)
             contentView.chat_web_view.reload()

@@ -432,7 +432,7 @@ fun Context.openUrl(url: String) {
             .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
             .setShowTitle(true)
             .setActionButton(BitmapFactory.decodeResource(this.resources, R.drawable.ic_share_black_24dp),
-                this.getString(R.string.share_file), pendingIntent)
+                this.getString(R.string.share), pendingIntent)
             .build()
         customTabsIntent.launchUrl(this, uri)
         return
