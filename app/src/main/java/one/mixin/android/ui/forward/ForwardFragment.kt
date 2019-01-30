@@ -106,7 +106,7 @@ class ForwardFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         if (isShare) {
-            title_view.title_tv.text = getString(R.string.share_file)
+            title_view.title_tv.text = getString(R.string.share)
         }
         title_view.setOnClickListener { activity?.onBackPressed() }
         forward_rv.adapter = adapter

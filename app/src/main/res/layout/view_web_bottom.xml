@@ -5,10 +5,28 @@
               android:orientation="vertical">
 
     <TextView
+        android:id="@+id/share"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_upper_round"
+        android:drawablePadding="16dp"
+        android:layout_gravity="center"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:text="@string/share"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider"/>
+
+    <TextView
             android:id="@+id/refresh"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@drawable/bg_upper_round"
+            android:background="@android:color/white"
             android:drawablePadding="16dp"
             android:layout_gravity="center"
             android:foreground="?attr/selectableItemBackground"
@@ -26,8 +44,8 @@
             android:id="@+id/open"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="@android:color/white"
             android:drawablePadding="16dp"
+            android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:paddingEnd="16dp"
