@@ -12,6 +12,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
+import one.mixin.android.db.batchMarkReadAndTake
 import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.findLastUrl
@@ -301,6 +302,9 @@ class DecryptMessage : Injector() {
                 syncUser(contactData.userId)
                 sendNotificationJob(message, data.source)
             }
+        }
+        if (data.userId == Session.getAccountId()) {
+            messageDao.batchMarkReadAndTake(data.conversationId, data.userId, data.createdAt)
         }
     }
 
