@@ -40,7 +40,7 @@ interface ParticipantDao : BaseDao<Participant> {
     @Transaction
     @Query("SELECT p.user_id AS userId, s.session_id AS sessionId, s.device_id AS deviceId FROM participants p " +
         "LEFT JOIN users u ON p.user_id = u.user_id " +
-        "LEFT JOIN sessions s ON p.user_id = s.user_id WHERE p.conversation_id = :conversationId " +
+        "INNER JOIN sessions s ON p.user_id = s.user_id WHERE p.conversation_id = :conversationId " +
         "AND u.app_id IS NULL AND NOT EXISTS (SELECT * FROM sent_session_sender_keys k " +
         "WHERE k.conversation_id= :conversationId AND k.user_id = s.user_id AND k.session_id = s.session_id) " +
         "AND (p.user_id != :accountId OR (p.user_id = :accountId AND s.device_id != 1))")
