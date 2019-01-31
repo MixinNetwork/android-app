@@ -135,7 +135,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         val result = deliverNoThrow(bm)
         if (result) {
             val sentSenderKeys = signalKeyMessages.map {
-                SentSessionSenderKey(conversationId, it.recipient_id, it.sessionId!!, "1", null)
+                SentSessionSenderKey(conversationId, it.recipient_id, it.sessionId!!, SentSenderKeyStatus.SENT.ordinal, null)
             }
             sentSessionSenderKeyDao.insertList(sentSenderKeys)
         }
@@ -170,6 +170,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
                 signalProtocol.processSession(keys[0].userId!!, preKeyBundle, keys[0].deviceId)
             } else {
+                sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, keys[0].userId!!, keys[0].sessionId, SentSenderKeyStatus.UNKNOWN.ordinal, null))
                 return false
             }
             for (session in sessions) {
@@ -179,7 +180,8 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
                 val result = deliverNoThrow(bm)
                 if (result) {
-                    sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, session.userId, session.sessionId, "1", null))
+                    sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, session.userId, session.sessionId, SentSenderKeyStatus.SENT.ordinal,
+                        null))
                 }
             }
             return true
@@ -202,12 +204,12 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                         val preKeyBundle = createPreKeyBundle(keys[0])
                         signalProtocol.processSession(session.userId, preKeyBundle, session.deviceId)
                     } else {
-                        sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, session.userId, session.sessionId, "0", null, nowInUtc()))
+                        sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, session.userId, session.sessionId, SentSenderKeyStatus.UNKNOWN.ordinal, null, nowInUtc()))
                         Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
                         return false
                     }
                 }
-                val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, session.userId, session.deviceId)
+                val (cipherText, _, err) = signalProtocol.encryptSenderKey(conversationId, session.userId, session.deviceId)
                 if (err) {
                     Timber.e("err")
                     return false
@@ -216,7 +218,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
                 val result = deliverNoThrow(bm)
                 if (result) {
-                    sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, session.userId, session.sessionId, "1", null, nowInUtc()))
+                    sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, session.userId, session.sessionId, SentSenderKeyStatus.SENT.ordinal, null, nowInUtc()))
                 }
             }
         }

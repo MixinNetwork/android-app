@@ -55,7 +55,7 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("CREATE TABLE IF NOT EXISTS sessions (session_id TEXT NOT NULL, user_id TEXT NOT NULL, device_id INTEGER NOT NULL, " +
                     "PRIMARY KEY(session_id))")
                 database.execSQL("CREATE INDEX IF NOT EXISTS index_sessions_user_id ON sessions ('user_id')")
-                database.execSQL("CREATE TABLE IF NOT EXISTS sent_session_sender_keys (conversation_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, sent_to_server TEXT NOT NULL, sender_key_id INTEGER, created_at TEXT, PRIMARY KEY(conversation_id, user_id, session_id))")
+                database.execSQL("CREATE TABLE IF NOT EXISTS sent_session_sender_keys (conversation_id TEXT NOT NULL, user_id TEXT NOT NULL, session_id TEXT NOT NULL, sent_to_server INTEGER NOT NULL, sender_key_id INTEGER, created_at TEXT, PRIMARY KEY(conversation_id, user_id, session_id))")
             }
         }
     }

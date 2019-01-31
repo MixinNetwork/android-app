@@ -13,9 +13,9 @@ class SentSessionSenderKey(
     @ColumnInfo(name = "session_id")
     val sessionId: String,
     @ColumnInfo(name = "sent_to_server")
-    val sentToServer: String,
+    val sentToServer: Int,
     @ColumnInfo(name = "sender_key_id")
-    val senderKeyId: Int?,
+    val senderKeyId: Int? = null,
     @ColumnInfo(name = "created_at")
     val createdAt: String? = nowInUtc()
 )
