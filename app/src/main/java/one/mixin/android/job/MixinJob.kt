@@ -126,18 +126,12 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 } else {
                     Log.e(TAG, "No any group signal key from server")
                 }
-
-                val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it.userId) }
-                if (noKeyList.isNotEmpty()) {
-                    // Maybe todo
-                }
             }
         }
         if (signalKeyMessages.isEmpty()) {
             return
         }
         val bm = createSignalKeyMessage(createSignalKeyMessageParam(conversationId, signalKeyMessages))
-        Timber.d(Gson().toJson(bm))
         val result = deliverNoThrow(bm)
         if (result) {
             val sentSenderKeys = signalKeyMessages.map {
@@ -176,12 +170,10 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
                 signalProtocol.processSession(keys[0].userId!!, preKeyBundle, keys[0].deviceId)
             } else {
-                // sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
-                Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
                 return false
             }
             for (session in sessions) {
-                val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, session.userId, session.deviceId)
+                val (cipherText, _, err) = signalProtocol.encryptSenderKey(conversationId, session.userId, session.deviceId)
                 if (err) return false
                 val param = createSignalKeyParam(conversationId, session.userId, cipherText!!, session.sessionId)
                 val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
@@ -196,17 +188,14 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
     protected fun sendSenderKey(conversationId: String, recipientId: String): Boolean {
         val sessions = syncUserSession(recipientId)?.toMutableList()
-        syncUserSession(Session.getAccountId()!!) // Todo
         sessionDao.findSecondarySessionByUserId(Session.getAccountId()!!)?.let { senderPrimarySession ->
             sessions?.addAll(0, senderPrimarySession)
         }
-        Timber.d(Gson().toJson(sessions))
         if (!sessions.isNullOrEmpty()) {
             for (session in sessions) {
                 if (!signalProtocol.containsSession(session.userId, session.deviceId)) {
                     val param = createSignalKeyParam(ArrayList(listOf(session)))
                     val blazeMessage = BlazeMessage(UUID.randomUUID().toString(), CONSUME_SESSION_SIGNAL_KEYS, param)
-                    Timber.d("blaze:${Gson().toJson(blazeMessage)}")
                     val data = signalKeysChannel(blazeMessage) ?: return false
                     val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
                     if (keys.isNotEmpty() && keys.count() > 0) {
@@ -225,7 +214,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 }
                 val param = createSignalKeyParam(conversationId, session.userId, cipherText!!, session.sessionId)
                 val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
-                Timber.d("send:${Gson().toJson(bm)}")
                 val result = deliverNoThrow(bm)
                 if (result) {
                     sentSessionSenderKeyDao.insert(SentSessionSenderKey(conversationId, session.userId, session.sessionId, "1", null, nowInUtc()))
