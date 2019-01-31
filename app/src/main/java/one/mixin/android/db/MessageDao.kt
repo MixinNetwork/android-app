@@ -185,6 +185,7 @@ interface MessageDao : BaseDao<Message> {
         "AND m.status = 'DELIVERED' AND m.conversation_id = :conversationId) WHERE conversation_id = :conversationId")
     fun takeUnseen(userId: String, conversationId: String)
 
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM AND m.created_at > :createdAt LIMIT 1")
     fun findNextMessage(conversationId: String, createdAt: String): MessageItem?
 }

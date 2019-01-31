@@ -174,7 +174,7 @@ class DecryptMessage : Injector() {
                     DEFAULT_DEVICE_ID).toString())
             } else if (plainData.action == PlainDataAction.SYNC_SESSION.name) {
                 sentSessionSenderKeyDao.deleteByUserId(data.userId)
-                refreshSession()
+                refreshSession(data.userId)
             }
 
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -336,28 +336,27 @@ class DecryptMessage : Injector() {
             data.createdAt, MessageStatus.DELIVERED, systemMessage.action, systemMessage.participantId)
 
         val accountId = Session.getAccountId()
-        if (systemMessage.action == SystemConversationAction.ADD.name ||
-            systemMessage.action == SystemConversationAction.JOIN.name) {
-            participantDao.insert(Participant(data.conversationId, systemMessage.participantId!!, "", data.updatedAt))
+        if (systemMessage.action == SystemConversationAction.ADD.name || systemMessage.action == SystemConversationAction.JOIN.name) {
+            val pId = systemMessage.participantId!!
+            participantDao.insert(Participant(data.conversationId, pId, "", data.updatedAt))
+            refreshSession(pId)
             if (systemMessage.participantId == accountId) {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             } else {
-                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(systemMessage.participantId), data.conversationId))
+                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(pId), data.conversationId))
             }
-            if (systemMessage.participantId != accountId &&
-                signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
-                jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.ADD_PARTICIPANT, systemMessage.participantId))
+            if (pId != accountId && signalProtocol.isExistSenderKey(data.conversationId, accountId!!)) {
+                jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.ADD_PARTICIPANT, pId))
             }
-        } else if (systemMessage.action == SystemConversationAction.REMOVE.name ||
-            systemMessage.action == SystemConversationAction.EXIT.name) {
-
-            if (systemMessage.participantId == accountId) {
+        } else if (systemMessage.action == SystemConversationAction.REMOVE.name || systemMessage.action == SystemConversationAction.EXIT.name) {
+            val pId = systemMessage.participantId!!
+            if (pId == accountId) {
                 conversationDao.updateConversationStatusById(data.conversationId, ConversationStatus.QUIT.ordinal)
             } else {
                 jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
             }
-            syncUser(systemMessage.participantId!!)
-            jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, systemMessage.participantId))
+            syncUser(pId)
+            jobManager.addJobInBackground(SendProcessSignalKeyJob(data, ProcessSignalKeyAction.REMOVE_PARTICIPANT, pId))
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
@@ -375,7 +374,7 @@ class DecryptMessage : Injector() {
         if (!data.category.startsWith("SIGNAL_")) {
             return
         }
-        refreshSession(data.userId) // Todo maybe optimize
+        sessionDao.insert(one.mixin.android.vo.Session(data.sessionId, data.userId, data.deviceId))
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
@@ -539,19 +538,17 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun refreshSession(userId: String = Session.getAccountId()!!) {
+    private fun refreshSession(userId: String) {
         try {
             val call = accountService.getSessions(listOf(userId)).execute()
             val response = call.body()
             if (response != null && response.isSuccess) {
                 response.data?.let { sessions ->
-                    for (session in sessions) {
-                        sessionDao.insert(session)
-                    }
+                    sessionDao.insertList(sessions)
                 }
             }
         } catch (e: IOException) {
-            jobManager.addJobInBackground(RefreshSessionJob())
+            jobManager.addJobInBackground(RefreshSessionJob(userId))
         }
     }
 
