@@ -346,6 +346,7 @@
     <string name="setting_authentications">授权</string>
     <string name="setting_deauthorize">取消授权</string>
     <string name="setting_backup">备份</string>
+    <string name="setting_clearing">正在清理…</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>
