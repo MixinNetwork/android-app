@@ -70,16 +70,20 @@ class TransactionFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.visibility = View.GONE
         if (snapshot == null || asset == null) {
-            doAsync {
-                val asset = walletViewModel.simpleAssetItem(assetId!!)
-                val snapshot = walletViewModel.snapshotLocal(assetId!!, snapshotId!!)
-                uiThread {
-                    if (asset == null || snapshot == null) {
-                        context?.toast(R.string.error_unknown)
-                    } else {
-                        updateUI(asset, snapshot)
+            if (snapshotId != null && assetId != null) {
+                doAsync {
+                    val asset = walletViewModel.simpleAssetItem(assetId!!)
+                    val snapshot = walletViewModel.snapshotLocal(assetId!!, snapshotId!!)
+                    uiThread {
+                        if (asset == null || snapshot == null) {
+                            context?.toast(R.string.error_unknown)
+                        } else {
+                            updateUI(asset, snapshot)
+                        }
                     }
                 }
+            } else {
+                context?.toast(R.string.error_unknown)
             }
         } else {
             updateUI(asset!!, snapshot!!)
