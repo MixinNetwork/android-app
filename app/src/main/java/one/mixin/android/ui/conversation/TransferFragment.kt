@@ -23,7 +23,6 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
-import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -51,7 +50,6 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.BiometricUtil.REQUEST_CODE_CREDENTIALS
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
@@ -372,10 +370,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         biometricDialog?.show()
     }
 
-    private fun showTransferBottom() {
+    private fun showTransferBottom(trace: String? = null, pin: String? = null) {
         val bottom = TransferBottomSheetDialogFragment
-            .newInstance(user!!, getLeftValue(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
-                contentView.transfer_memo.text.toString())
+            .newInstance(user!!, getLeftValue(), currentAsset!!.toAsset(), trace ?: UUID.randomUUID().toString(),
+            contentView.transfer_memo.text.toString(), pin)
         bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
         bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
@@ -439,16 +437,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             trace: String?,
             memo: String?
         ) {
-            chatViewModel.transfer(assetId, userId, amount, pin, trace, memo).autoDisposable(scopeProvider)
-                .subscribe({
-                    if (it.isSuccess) {
-                        dialog?.dismiss()
-                    } else {
-                        ErrorHandler.handleMixinError(it.errorCode)
-                    }
-                }, {
-                    ErrorHandler.handleError(it)
-                })
+            showTransferBottom(trace, pin)
         }
 
         override fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {

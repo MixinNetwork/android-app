@@ -42,17 +42,26 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_MEMO = "args_memo"
         const val ARGS_TRACE = "args_trace"
+        const val ARGS_PIN = "args_pin"
 
         const val POS_PIN = 0
         const val POS_PB = 1
 
-        fun newInstance(user: User, transferAmount: String, asset: Asset, trace: String?, transferMemo: String?) =
+        fun newInstance(
+            user: User,
+            transferAmount: String,
+            asset: Asset,
+            trace: String?,
+            transferMemo: String?,
+            pin: String? = null
+        ) =
             TransferBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_USER, user)
                 putString(ARGS_AMOUNT, transferAmount)
                 putString(ARGS_MEMO, transferMemo)
                 putParcelable(ARGS_ASSET, asset)
                 putString(ARGS_TRACE, trace)
+                pin?.let { putString(ARGS_PIN, pin) }
             }
     }
 
@@ -144,6 +153,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         })
+        val pin = arguments!!.getString(ARGS_PIN)
+        if (pin != null) {
+            contentView.pin.set(pin)
+        }
     }
 
     private var callback: Callback? = null
