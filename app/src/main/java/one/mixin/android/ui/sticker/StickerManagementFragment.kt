@@ -2,14 +2,9 @@ package one.mixin.android.ui.sticker
 
 import android.Manifest
 import android.app.Activity
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -17,7 +12,13 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.ImageView
+import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
@@ -25,17 +26,16 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.openGalleryFromSticker
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.realSize
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.StickerFragment.Companion.ARGS_ALBUM_ID
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.Sticker
-import androidx.core.os.bundleOf
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
@@ -87,7 +87,7 @@ class StickerManagementFragment : BaseFragment() {
         }
         sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        stickerAdapter.size = (requireContext().displaySize().x - (COLUMN + 1) * padding) / COLUMN
+        stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
             override fun onAddClick() {

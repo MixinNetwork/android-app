@@ -18,10 +18,10 @@ import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterAdapter
@@ -75,7 +75,7 @@ class GiphyFragment : BaseFragment() {
         val foot = layoutInflater.inflate(R.layout.view_giphy_foot, sticker_rv, false)
         giphyAdapter.footerView = foot
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        giphyAdapter.size = (context!!.displaySize().x - (COLUMN + 1) * padding) / COLUMN
+        giphyAdapter.size = (context!!.realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = giphyAdapter
         giphyAdapter.setOnGiphyListener(object : GiphyListener {
             override fun onItemClick(pos: Int, s: String) {

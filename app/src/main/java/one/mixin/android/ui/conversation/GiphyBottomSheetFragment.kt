@@ -16,9 +16,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_giphy_search_bottom_sheet.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadGif
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -50,7 +50,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter: GiphyAdapter by lazy {
         GiphyAdapter(
-            (requireContext().displaySize().x - (COLUMN + 1) * padding) / COLUMN,
+            (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN,
             object : GifListener {
                 override fun onGifClick(url: String) {
                     callback?.onGiphyClick(url)
@@ -77,7 +77,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         contentView = View.inflate(context, R.layout.fragment_giphy_search_bottom_sheet, null)
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
-            val h = requireContext().displaySize().y - requireContext().statusBarHeight() - requireContext().dip(56)
+            val h = requireContext().realSize().y - requireContext().statusBarHeight() - requireContext().dip(56)
             setCustomViewHeight(h)
         }
     }

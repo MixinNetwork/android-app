@@ -147,28 +147,12 @@ fun Context.networkConnected(): Boolean {
     return network != null && network.isConnected
 }
 
-fun Context.displaySize(): Point {
-    val displaySize = Point()
-    val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    val display = manager.defaultDisplay
-    display.getSize(displaySize)
-    return displaySize
-}
-
 fun Context.realSize(): Point {
     val displaySize = Point()
     val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val display = manager.defaultDisplay
     display.getRealSize(displaySize)
     return displaySize
-}
-
-fun Context.displayHeight(): Int {
-    return displaySize().y
-}
-
-fun Context.displayWidth(): Int {
-    return displaySize().x
 }
 
 fun Context.screenHeight(): Int {
@@ -187,7 +171,7 @@ fun Context.screenSize(): Point {
 }
 
 fun Context.displayRatio(): Float {
-    val size = displaySize()
+    val size = realSize()
     return size.y.toFloat() / size.x
 }
 
@@ -202,7 +186,7 @@ fun Context.getUriForFile(file: File): Uri {
 
 fun Context.hasNavigationBar(bottom: Int = 0): Boolean {
     // TRICK  Maybe not correct
-    if (bottom > displaySize().y) {
+    if (bottom > realSize().y) {
         return true
     }
 
@@ -218,7 +202,7 @@ private var maxItemWidth: Int? = null
 
 fun Context.maxItemWidth(): Int {
     if (maxItemWidth == null) {
-        maxItemWidth = displaySize().x - dpToPx(66f)
+        maxItemWidth = realSize().x - dpToPx(66f)
     }
     return maxItemWidth!!
 }

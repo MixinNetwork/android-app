@@ -1,20 +1,20 @@
 package one.mixin.android.ui.conversation
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.loadSticker
+import one.mixin.android.extension.realSize
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter
 import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_LIKE
@@ -111,7 +111,7 @@ class StickerFragment : BaseFragment() {
 
         sticker_rv.layoutManager = GridLayoutManager(context, COLUMN)
         sticker_rv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-        stickerAdapter.size = (context!!.displaySize().x - (COLUMN + 1) * padding) / COLUMN
+        stickerAdapter.size = (context!!.realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
             override fun onItemClick(pos: Int, stickerId: String) {

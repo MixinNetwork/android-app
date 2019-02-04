@@ -61,8 +61,6 @@ import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayRatio
-import one.mixin.android.extension.displaySize
-import one.mixin.android.extension.displayWidth
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
@@ -74,6 +72,8 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.realSize
+import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.repository.ConversationRepository
@@ -409,8 +409,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun createLargeImageView(container: ViewGroup, position: Int, messageItem: MessageItem): LargeImageView {
             val imageView = LargeImageView(container.context)
             imageView.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
-            if (messageItem.mediaWidth!! < displayWidth()) {
-                imageView.scale = (displayWidth().toFloat() / messageItem.mediaWidth)
+            if (messageItem.mediaWidth!! < screenWidth()) {
+                imageView.scale = (screenWidth().toFloat() / messageItem.mediaWidth)
             }
             if (position == index) {
                 ViewCompat.setTransitionName(imageView, "transition")
@@ -603,7 +603,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 addUpdateListener {
                     (it.animatedValue as Int).apply {
                         val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${view_pager.currentItem}")
-                        v.translationY = (displaySize().y * this / 100).toFloat()
+                        v.translationY = (realSize().y * this / 100).toFloat()
                         colorDrawable.alpha = ALPHA_MAX * (100 - this) / 100
                         if (it.animatedValue == 100) {
                             super.finish()

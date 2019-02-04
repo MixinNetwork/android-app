@@ -9,11 +9,11 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.os.Parcelable
-import androidx.recyclerview.widget.RecyclerView
 import android.util.ArraySet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_auth.view.*
@@ -22,9 +22,9 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.response.AuthorizationResponse
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadCircleImage
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -109,11 +109,11 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val miniHeight by lazy {
-        context!!.displaySize().y * 3 / 4
+        context!!.realSize().y * 3 / 4
     }
 
     private val maxHeight by lazy {
-        context!!.displaySize().y - context!!.statusBarHeight()
+        context!!.realSize().y - context!!.statusBarHeight()
     }
 
     private var success = false
