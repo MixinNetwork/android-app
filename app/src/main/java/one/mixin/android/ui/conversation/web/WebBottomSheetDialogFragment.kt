@@ -34,12 +34,12 @@ import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -227,7 +227,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.webChromeClient = null
             dismiss()
         }
-        (dialog as BottomSheet).setCustomViewHeight(context!!.displaySize().y - context!!.statusBarHeight())
+        (dialog as BottomSheet).setCustomViewHeight(context!!.realSize().y - context!!.statusBarHeight())
     }
 
     @Override
