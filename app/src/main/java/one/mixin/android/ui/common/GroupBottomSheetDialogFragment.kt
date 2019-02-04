@@ -21,8 +21,8 @@ import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
@@ -145,7 +145,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         })
 
         contentView.post {
-            contentView.detail_tv.maxHeight = requireContext().displayHeight() / 3
+            contentView.detail_tv.maxHeight = requireContext().screenHeight() / 3
         }
 
         bottomViewModel.refreshConversation(conversationId)

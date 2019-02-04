@@ -17,7 +17,7 @@ import kotlinx.android.synthetic.main.fragment_pin_check.view.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
-import one.mixin.android.extension.displaySize
+import one.mixin.android.extension.realSize
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.util.ErrorHandler
@@ -94,7 +94,7 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
 
     override fun onStart() {
         super.onStart()
-        val displaySize = context!!.displaySize()
+        val displaySize = context!!.realSize()
         dialog.window?.setLayout(displaySize.x, MATCH_PARENT)
         dialog.window?.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
         dialog.window?.setGravity(Gravity.BOTTOM)

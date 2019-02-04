@@ -1,9 +1,9 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.view.View
-import one.mixin.android.extension.displayHeight
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.realSize
+import one.mixin.android.extension.screenHeight
 
 abstract class MediaHolder constructor(containerView: View) : BaseViewHolder(containerView) {
     protected val dp6 by lazy {
@@ -11,10 +11,10 @@ abstract class MediaHolder constructor(containerView: View) : BaseViewHolder(con
     }
 
     protected val mediaWidth by lazy {
-        (itemView.context.displaySize().x * 0.6).toInt()
+        (itemView.context.realSize().x * 0.6).toInt()
     }
 
     protected val mediaHeight by lazy {
-        (itemView.context.displayHeight() * 2 / 3)
+        (itemView.context.screenHeight() * 2 / 3)
     }
 }

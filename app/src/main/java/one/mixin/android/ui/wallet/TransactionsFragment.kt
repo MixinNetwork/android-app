@@ -25,12 +25,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.displayHeight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
@@ -116,7 +116,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
             if (!isAdded) return@post
 
             headerView.bottom_rl.updateLayoutParams<ViewGroup.LayoutParams> {
-                height = requireContext().displayHeight() - title_view.height - headerView.top_ll.height - headerView.group_info_member_title_layout.height
+                height = requireContext().screenHeight() - title_view.height - headerView.top_ll.height - headerView.group_info_member_title_layout.height
             }
         }
 

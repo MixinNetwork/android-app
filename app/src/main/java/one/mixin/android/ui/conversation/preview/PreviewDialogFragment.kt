@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
+import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.MixinDialogFragment
 import io.reactivex.Observable
@@ -15,14 +16,14 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.android.synthetic.main.fragment_preview.view.*
 import kotlinx.android.synthetic.main.fragment_preview_video.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.displaySize
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
-import androidx.core.os.bundleOf
 import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : MixinDialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
@@ -146,8 +147,8 @@ class PreviewDialogFragment : MixinDialogFragment(), VideoTimelineView.VideoTime
         override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
             val ratio = width / height.toFloat()
             val lp = mediaDialogView!!.dialog_video_texture.layoutParams
-            val screenWidth = context!!.displaySize().x
-            val screenHeight = context!!.displaySize().y
+            val screenWidth = context!!.screenWidth()
+            val screenHeight = context!!.screenHeight()
             if (screenWidth / ratio > screenHeight) {
                 lp.height = screenHeight
                 lp.width = (screenHeight * ratio).toInt()
