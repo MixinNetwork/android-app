@@ -5,7 +5,6 @@ import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
-import android.net.UrlQuerySanitizer
 import android.os.Build
 import android.os.Bundle
 import android.support.design.MixinBottomSheetDialogFragment
@@ -48,7 +47,6 @@ import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragme
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
-import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
 import org.jetbrains.anko.doAsync
@@ -64,12 +62,6 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         fun newInstance(code: String) = LinkBottomSheetDialogFragment().withArgs {
             putString(CODE, code)
         }
-    }
-
-    private val sanitizer = UnescapeIgnorePlusUrlQuerySanitizer().apply {
-        allowUnregisteredParamaters = true
-        unregisteredParameterValueSanitizer = UrlQuerySanitizer.IllegalCharacterValueSanitizer(
-            UrlQuerySanitizer.IllegalCharacterValueSanitizer.ALL_OK)
     }
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
@@ -156,8 +148,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
             val assetId = uri.getQueryParameter("asset")
             val amount = uri.getQueryParameter("amount")
             val trace = uri.getQueryParameter("trace")
-            sanitizer.parseUrl(url)
-            val memo = sanitizer.getValue("memo")
+            val memo = uri.getQueryParameter("memo")
             if (userId == null || assetId == null || amount == null) {
                 error(R.string.bottom_sheet_check_payment_info)
                 return
