@@ -12,6 +12,7 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.CompoundButton
 import androidx.appcompat.app.AlertDialog
+import androidx.collection.ArrayMap
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -32,6 +33,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
 import javax.inject.Inject
@@ -83,9 +85,58 @@ class SettingStorageFragment : BaseFragment() {
     }
 
     private val selectSet: ArraySet<StorageUsage> = ArraySet()
-
+    private val unknownSet: ArraySet<String> = ArraySet()
     private fun showMenu(conversationId: String) {
-        settingStorageViewModel.getStorageUsage(conversationId).autoDisposable(scopeProvider).subscribe({
+        settingStorageViewModel.getStorageUsage(conversationId).map { list ->
+            val map = ArrayMap<String, StorageUsage>()
+            unknownSet.clear()
+            list.forEach { item ->
+                when {
+                    item.category.endsWith("_IMAGE") -> {
+                        if (map["IMAGE"] != null) {
+                            map["IMAGE"]!!.mediaSize += item.mediaSize
+                            map["IMAGE"]!!.count += item.count
+                        } else {
+                            map["IMAGE"] = item
+                        }
+                    }
+                    item.category.endsWith("_DATA") -> {
+                        if (map["DATA"] != null) {
+                            map["DATA"]!!.mediaSize += item.mediaSize
+                            map["DATA"]!!.count += item.count
+                        } else {
+                            map["DATA"] = item
+                        }
+                    }
+                    item.category.endsWith("_VIDEO") -> {
+                        if (map["VIDEO"] != null) {
+                            map["VIDEO"]!!.mediaSize += item.mediaSize
+                            map["VIDEO"]!!.count += item.count
+                        } else {
+                            map["VIDEO"] = item
+                        }
+                    }
+                    item.category.endsWith("_AUDIO") -> {
+                        if (map["AUDIO"] != null) {
+                            map["AUDIO"]!!.mediaSize += item.mediaSize
+                            map["AUDIO"]!!.count += item.count
+                        } else {
+                            map["AUDIO"] = item
+                        }
+                    }
+                    else -> {
+                        if (map["UNKNOWN"] != null) {
+                            map["UNKNOWN"]!!.mediaSize += item.mediaSize
+                            map["UNKNOWN"]!!.count += item.count
+                        } else {
+                            map["UNKNOWN"] = item
+                        }
+                        unknownSet.add(item.category)
+                    }
+                }
+            }
+            map.values.toMutableList()
+        }.autoDisposable(scopeProvider).subscribe({
             menuAdapter.setData(it)
             selectSet.clear()
             it?.let {
@@ -145,7 +196,29 @@ class SettingStorageFragment : BaseFragment() {
             .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())
             .map {
                 for (item in selectSet) {
-                    settingStorageViewModel.clear(item.conversationId, item.category)
+                    when {
+                        item.category.endsWith("_IMAGE") -> {
+                            settingStorageViewModel.clear(item.conversationId, MessageCategory.PLAIN_IMAGE.name)
+                            settingStorageViewModel.clear(item.conversationId, MessageCategory.SIGNAL_IMAGE.name)
+                        }
+                        item.category.endsWith("_DATA") -> {
+                            settingStorageViewModel.clear(item.conversationId, MessageCategory.PLAIN_DATA.name)
+                            settingStorageViewModel.clear(item.conversationId, MessageCategory.SIGNAL_DATA.name)
+                        }
+                        item.category.endsWith("_VIDEO") -> {
+                            settingStorageViewModel.clear(item.conversationId, MessageCategory.PLAIN_VIDEO.name)
+                            settingStorageViewModel.clear(item.conversationId, MessageCategory.SIGNAL_VIDEO.name)
+                        }
+                        item.category.endsWith("_AUDIO") -> {
+                            settingStorageViewModel.clear(item.conversationId, MessageCategory.PLAIN_AUDIO.name)
+                            settingStorageViewModel.clear(item.conversationId, MessageCategory.SIGNAL_AUDIO.name)
+                        }
+                        else -> {
+                            unknownSet.forEach { category ->
+                                settingStorageViewModel.clear(item.conversationId, category)
+                            }
+                        }
+                    }
                 }
             }
             .observeOn(AndroidSchedulers.mainThread())
