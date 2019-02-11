@@ -6,6 +6,6 @@ import androidx.room.Entity
 data class StorageUsage(
     val conversationId: String,
     val category: String,
-    val mediaSize: Long,
-    val count: Long
+    var mediaSize: Long,
+    var count: Long
 )
