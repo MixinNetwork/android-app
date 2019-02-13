@@ -39,7 +39,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
     private var startAnimationRunnable: Runnable? = null
     private var curSheetAnimation: AnimatorSet? = null
     private var isDismissed = false
-    private var lastInsets: WindowInsets? = null
+    var lastInsets: WindowInsets? = null
 
     private val container: ContainerView by lazy { ContainerView(context) }
     private val sheetContainer: FrameLayout by lazy { FrameLayout(context) }

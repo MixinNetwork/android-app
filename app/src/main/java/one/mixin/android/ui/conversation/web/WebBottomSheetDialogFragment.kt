@@ -7,6 +7,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Point
 import android.net.Uri
 import android.os.Bundle
 import android.view.ContextMenu
@@ -14,6 +15,7 @@ import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -36,6 +38,7 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
@@ -227,7 +230,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.webChromeClient = null
             dismiss()
         }
-        (dialog as BottomSheet).setCustomViewHeight(context!!.realSize().y - context!!.statusBarHeight())
+        contentView.post {
+            (dialog as BottomSheet).setCustomViewHeight(getCustomViewHeight())
+        }
     }
 
     @Override
@@ -244,6 +249,21 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
         super.onDestroyView()
+    }
+
+    private fun getCustomViewHeight(): Int {
+        val dialog = (dialog as BottomSheet)
+        val isNotchScreen = dialog.window?.isNotchScreen() ?: false
+        val totalHeight = if (isNotchScreen) {
+            val bottom = dialog.lastInsets?.systemWindowInsetBottom ?: 0
+            context!!.realSize().y - bottom
+        } else {
+            val size = Point()
+            val manager = context!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            manager.defaultDisplay.getSize(size)
+            size.y
+        }
+        return totalHeight - context!!.statusBarHeight()
     }
 
     private fun showBottomSheet() {
