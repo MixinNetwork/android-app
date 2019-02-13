@@ -1,8 +1,6 @@
 package one.mixin.android.job
 
 import android.util.Log
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
@@ -13,7 +11,6 @@ import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
@@ -59,8 +56,6 @@ import one.mixin.android.websocket.createPlainJsonParam
 import one.mixin.android.websocket.createSyncSignalKeys
 import one.mixin.android.websocket.createSyncSignalKeysParam
 import one.mixin.android.websocket.invalidData
-import one.mixin.android.worker.RefreshAssetsWorker
-import one.mixin.android.worker.RefreshStickerWorker
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
@@ -280,8 +275,7 @@ class DecryptMessage : Injector() {
                 } else {
                     val sticker = stickerDao.getStickerByUnique(mediaData.stickerId)
                     if (sticker == null) {
-                        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerWorker>(
-                            workDataOf(RefreshStickerWorker.STICKER_ID to mediaData.stickerId))
+                        jobManager.addJobInBackground(RefreshStickerJob(mediaData.stickerId))
                     }
                     createStickerMessage(data.messageId, data.conversationId, data.userId, data.category, null,
                         mediaData.albumId, mediaData.stickerId, mediaData.name, MessageStatus.DELIVERED, data.createdAt)
@@ -471,8 +465,7 @@ class DecryptMessage : Injector() {
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
                 if (sticker == null) {
-                    WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshStickerWorker>(
-                        workDataOf(RefreshStickerWorker.STICKER_ID to stickerData.stickerId))
+                    jobManager.addJobInBackground(RefreshStickerJob(stickerData.stickerId))
                 }
             }
             stickerData.stickerId?.let { messageDao.updateStickerMessage(it, MessageStatus.DELIVERED.name, messageId) }
