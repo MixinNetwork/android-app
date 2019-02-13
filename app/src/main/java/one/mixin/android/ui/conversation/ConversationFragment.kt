@@ -482,7 +482,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (file.exists()) {
                     DragMediaActivity.show(requireActivity(), view, messageItem)
                 } else {
-                    toast(R.string.error_file_exists)
+                    toast(R.string.error_image_downloading)
                 }
             }
 

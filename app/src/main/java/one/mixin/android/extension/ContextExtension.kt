@@ -29,6 +29,7 @@ import android.util.TypedValue
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.view.ViewConfiguration
+import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.IdRes
 import androidx.browser.customtabs.CustomTabsIntent
@@ -148,26 +149,18 @@ fun Context.networkConnected(): Boolean {
 }
 
 fun Context.realSize(): Point {
-    val displaySize = Point()
-    val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    val display = manager.defaultDisplay
-    display.getRealSize(displaySize)
-    return displaySize
-}
-
-fun Context.screenHeight(): Int {
-    return screenSize().y
-}
-
-fun Context.screenWidth(): Int {
-    return screenSize().x
-}
-
-fun Context.screenSize(): Point {
     val size = Point()
     val manager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
     manager.defaultDisplay.getRealSize(size)
     return size
+}
+
+fun Context.screenHeight(): Int {
+    return realSize().y
+}
+
+fun Context.screenWidth(): Int {
+    return realSize().x
 }
 
 fun Context.displayRatio(): Float {
@@ -433,6 +426,24 @@ fun Context.openUrl(url: String) {
 }
 
 fun Context.getClipboardManager(): ClipboardManager = this.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+
+fun Window.isNotchScreen(): Boolean {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        val insets = decorView.rootWindowInsets
+        if (insets != null) {
+            val cutout = insets.displayCutout
+            if (cutout != null) {
+                val rects = cutout.boundingRects
+                if (rects != null && rects.size > 0) {
+                    return true
+                }
+            }
+        }
+        return false
+    } else {
+        return false
+    }
+}
 
 inline fun <T : Any, R> notNullElse(input: T?, normalAction: (T) -> R, default: R): R {
     return if (input == null) {
