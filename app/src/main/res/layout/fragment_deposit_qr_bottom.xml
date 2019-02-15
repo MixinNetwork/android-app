@@ -1,43 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
 
-    <one.mixin.android.widget.TitleView
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@drawable/bg_upper_round"
-            app:leftIcon="@drawable/ic_close_black_24dp"/>
+    <one.mixin.android.widget.RoundTitleView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
     <FrameLayout
-            android:id="@+id/bottom_ll"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/white">
+        android:id="@+id/bottom_ll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="150dp"
+        android:background="@color/white">
 
-        <FrameLayout
-                android:id="@+id/qr_fl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="32dp">
+        <RelativeLayout
+            android:id="@+id/qr_fl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="32dp">
 
             <ImageView
-                    android:id="@+id/qr"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    tools:ignore="ContentDescription"/>
+                android:id="@+id/qr"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                tools:ignore="ContentDescription" />
 
             <one.mixin.android.widget.BadgeCircleImageView
-                    android:id="@+id/badge_view"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:layout_gravity="center"
-                    app:border_color="@color/white"
-                    app:border_width="2dp"/>
-        </FrameLayout>
+                android:id="@+id/badge_view"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_centerInParent="true"
+                app:border_color="@color/white"
+                app:border_width="2dp" />
+
+            <TextView
+                android:id="@+id/addr_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/qr"
+                android:gravity="center"
+                android:layout_marginStart="@dimen/margin20"
+                android:layout_marginEnd="@dimen/margin20"/>
+        </RelativeLayout>
     </FrameLayout>
 </LinearLayout>

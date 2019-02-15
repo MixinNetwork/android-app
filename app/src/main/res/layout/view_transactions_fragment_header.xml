@@ -9,7 +9,6 @@
         android:id="@+id/top_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/bg_wallet_card"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -21,19 +20,19 @@
                 android:id="@+id/avatar"
                 android:layout_width="56dp"
                 android:layout_height="56dp"
-                android:layout_marginStart="20dp"
+                android:layout_marginStart="32dp"
                 android:layout_marginTop="28dp"
                 android:layout_marginBottom="16dp"
-                tools:ignore="ContentDescription"/>
+                tools:ignore="ContentDescription" />
 
             <one.mixin.android.widget.BalanceLayout
                 android:id="@+id/balance_rl"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@+id/avatar"
                 android:layout_alignTop="@+id/avatar"
                 android:layout_marginStart="@dimen/margin12"
-                android:layout_marginEnd="42dp">
+                android:layout_marginEnd="42dp"
+                android:layout_toEndOf="@+id/avatar">
 
                 <TextView
                     android:id="@+id/balance"
@@ -42,46 +41,35 @@
                     android:fontFamily="@font/mixin_condensed"
                     android:textColor="@color/wallet_text_dark"
                     android:textSize="40sp"
-                    tools:text="123902813409182345.5518390518"/>
+                    tools:text="123902813409182345.5518390518" />
 
                 <TextView
                     android:id="@+id/symbol_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:background="@drawable/bg_wallet_symbol"
                     android:gravity="center"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
-                    android:textColor="@color/wallet_text_gray"
-                    android:background="@drawable/bg_wallet_symbol"/>
+                    android:textColor="@color/wallet_text_gray" />
             </one.mixin.android.widget.BalanceLayout>
 
             <TextView
                 android:id="@+id/balance_as"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/avatar"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginStart="@dimen/margin12"
-                android:layout_marginBottom="@dimen/margin16"
                 android:layout_below="@+id/balance_rl"
+                android:layout_marginStart="@dimen/margin12"
                 android:layout_marginTop="@dimen/margin12"
-                android:textColor="@color/wallet_text_gray"/>
-
-            <ImageView
-                android:id="@+id/contract_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerInParent="true"
-                android:layout_marginEnd="@dimen/margin12"
-                android:src="@drawable/ic_keyboard_arrow_down_gray_24dp"
-                tools:ignore="ContentDescription"/>
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginBottom="@dimen/margin16"
+                android:layout_toEndOf="@id/avatar"
+                android:textColor="@color/wallet_text_gray" />
         </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_marginBottom="16dp"
             android:weightSum="2">
 
             <TextView
@@ -90,14 +78,14 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:textColor="@color/wallet_blue_secondary"
-                android:text="@string/transfer_capital"/>
+                android:text="@string/transfer_capital"
+                android:textColor="@color/wallet_blue_secondary" />
 
             <View
                 android:layout_width="1dp"
                 android:layout_height="18dp"
                 android:layout_gravity="center_vertical"
-                android:background="#f3f3f3"/>
+                android:background="#f3f3f3" />
 
             <TextView
                 android:id="@+id/deposit_tv"
@@ -105,76 +93,79 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:textColor="@color/wallet_blue_secondary"
-                android:text="@string/deposit_capital"/>
+                android:text="@string/deposit_capital"
+                android:textColor="@color/wallet_blue_secondary" />
         </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@color/bg_gray"/>
     </LinearLayout>
 
     <RelativeLayout
         android:id="@+id/group_info_member_title_layout"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_below="@+id/top_ll"
-        android:background="@drawable/bg_wallet_transactions_no_shadow_top">
+        android:layout_below="@+id/top_ll">
 
         <ImageView
             android:id="@+id/group_info_member_title_sort"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:padding="8dp"
             android:layout_marginEnd="8dp"
             android:background="@drawable/mixin_ripple_small"
-            android:src="@drawable/ic_sort"
-            android:layout_width="32dp"
-            android:layout_height="32dp"/>
+            android:padding="8dp"
+            android:src="@drawable/ic_sort" />
 
         <TextView
             android:id="@+id/group_info_member_title"
-            android:layout_toStartOf="@id/group_info_member_title_sort"
             android:layout_width="match_parent"
             android:layout_height="40dp"
-            android:gravity="bottom"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:paddingStart="@dimen/activity_horizontal_margin"
             android:layout_marginBottom="8dp"
-            android:text="@string/wallet_transactions_title"/>
+            android:layout_toStartOf="@id/group_info_member_title_sort"
+            android:gravity="bottom"
+            android:paddingStart="@dimen/margin20"
+            android:paddingEnd="@dimen/margin20"
+            android:text="@string/wallet_transactions_title" />
     </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/bottom_rl"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="240dp"
         android:layout_below="@+id/group_info_member_title_layout"
-        android:background="@drawable/bg_wallet_card_bottom">
+        android:minHeight="240dp">
 
         <Space
             android:id="@+id/center"
             android:layout_width="1dp"
             android:layout_height="1dp"
-            android:layout_centerInParent="true"/>
+            android:layout_centerInParent="true" />
 
         <View
             android:layout_width="match_parent"
             android:layout_height=".5dp"
-            android:background="@color/wallet_divider"/>
+            android:background="@color/wallet_divider" />
 
         <ImageView
             android:id="@+id/bottom_iv"
             android:layout_width="125dp"
             android:layout_height="125dp"
-            android:layout_centerHorizontal="true"
             android:layout_above="@+id/center"
-            android:src="@drawable/ic_transactions_empty"/>
+            android:layout_centerHorizontal="true"
+            android:src="@drawable/ic_transactions_empty" />
 
         <TextView
             android:id="@+id/wallet_transactions_empty"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/bottom_iv"
-            android:layout_marginTop="@dimen/margin16"
             android:layout_centerHorizontal="true"
-            android:textColor="@color/wallet_text_gray"
-            android:text="@string/wallet_transactions_empty"/>
+            android:layout_marginTop="@dimen/margin16"
+            android:text="@string/wallet_transactions_empty"
+            android:textColor="@color/wallet_text_gray" />
     </RelativeLayout>
 </RelativeLayout>

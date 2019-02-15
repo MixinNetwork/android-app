@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent"
         app:need_divider="false"
-        app:titleText="@string/wallet_transaction_title"/>
+        app:titleText="@string/wallet_transaction_title" />
 
     <ScrollView
         android:layout_width="match_parent"
@@ -27,8 +27,7 @@
             <FrameLayout
                 android:id="@+id/top_ll"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_wallet_card_single">
+                android:layout_height="wrap_content">
 
                 <RelativeLayout
                     android:layout_width="match_parent"
@@ -37,21 +36,21 @@
 
                     <one.mixin.android.widget.BadgeCircleImageView
                         android:id="@+id/avatar"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
-                        android:layout_marginStart="20dp"
-                        android:layout_marginTop="28dp"
-                        android:layout_marginBottom="28dp"
-                        tools:ignore="ContentDescription"/>
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
+                        android:layout_centerHorizontal="true"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="16dp"
+                        tools:ignore="ContentDescription" />
 
                     <one.mixin.android.widget.BalanceLayout
                         android:id="@+id/value_rl"
-                        android:layout_width="wrap_content"
+                        android:layout_width="200dp"
+                        android:layout_marginStart="32dp"
+                        android:layout_marginEnd="32dp"
+                        android:layout_centerHorizontal="true"
                         android:layout_height="wrap_content"
-                        android:layout_toEndOf="@+id/avatar"
-                        android:layout_alignTop="@+id/avatar"
-                        android:layout_marginStart="@dimen/margin12"
-                        android:layout_marginEnd="42dp">
+                        android:layout_below="@id/avatar">
 
                         <TextView
                             android:id="@+id/value_tv"
@@ -60,36 +59,39 @@
                             android:fontFamily="@font/mixin_condensed"
                             android:textColor="@color/wallet_text_dark"
                             android:textSize="40sp"
-                            tools:text="1234812304812045.8321498123749812348"/>
+                            tools:text="1234812304812045.8321498123749812348" />
 
                         <TextView
                             android:id="@+id/symbol_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_wallet_symbol"
                             android:gravity="center"
                             android:paddingStart="2dp"
                             android:paddingEnd="2dp"
-                            android:background="@drawable/bg_wallet_symbol"
-                            android:textColor="@color/wallet_text_gray"/>
+                            android:textColor="@color/wallet_text_gray" />
                     </one.mixin.android.widget.BalanceLayout>
 
                     <TextView
                         android:id="@+id/value_as_tv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_toEndOf="@id/avatar"
                         android:layout_below="@+id/value_rl"
-                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        android:layout_marginStart="@dimen/activity_horizontal_margin"
                         android:layout_marginTop="@dimen/margin12"
-                        android:textColor="@color/wallet_text_gray"/>
+                        android:layout_marginBottom="32dp"
+                        android:layout_centerHorizontal="true"
+                        android:textColor="@color/wallet_text_gray" />
                 </RelativeLayout>
             </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="@color/bg_gray" />
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_wallet_card_single"
                 android:orientation="vertical">
 
                 <RelativeLayout
@@ -101,7 +103,7 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/transactions_id"/>
+                        android:text="@string/transactions_id" />
 
                     <TextView
                         android:id="@+id/transaction_id_tv"
@@ -109,14 +111,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@+id/transaction_id_title_tv"
-                        android:textIsSelectable="true"/>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height=".5dp"
-                        android:layout_marginStart="@dimen/margin12"
-                        android:layout_alignParentBottom="true"
-                        android:background="@color/wallet_divider"/>
+                        android:textIsSelectable="true" />
                 </RelativeLayout>
 
                 <LinearLayout
@@ -128,20 +123,20 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/transactions_type"/>
+                        android:text="@string/transactions_type" />
 
                     <TextView
                         android:id="@+id/transaction_type_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textIsSelectable="true"/>
+                        android:textIsSelectable="true" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
                         android:layout_marginStart="@dimen/margin12"
-                        android:background="@color/wallet_divider"/>
+                        android:background="@color/wallet_divider" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -155,20 +150,20 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/sender"/>
+                        android:text="@string/sender" />
 
                     <TextView
                         android:id="@+id/sender_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textIsSelectable="true"/>
+                        android:textIsSelectable="true" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
                         android:layout_marginStart="@dimen/margin12"
-                        android:background="@color/wallet_divider"/>
+                        android:background="@color/wallet_divider" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -182,20 +177,20 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/receiver"/>
+                        android:text="@string/receiver" />
 
                     <TextView
                         android:id="@+id/receiver_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textIsSelectable="true"/>
+                        android:textIsSelectable="true" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
                         android:layout_marginStart="@dimen/margin12"
-                        android:background="@color/wallet_divider"/>
+                        android:background="@color/wallet_divider" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -207,20 +202,20 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/memo"/>
+                        android:text="@string/memo" />
 
                     <TextView
                         android:id="@+id/memo_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textIsSelectable="true"/>
+                        android:textIsSelectable="true" />
 
                     <View
                         android:layout_width="match_parent"
                         android:layout_height=".5dp"
                         android:layout_marginStart="@dimen/margin12"
-                        android:background="@color/wallet_divider"/>
+                        android:background="@color/wallet_divider" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -233,14 +228,14 @@
                         style="@style/TransactionTitleTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="@string/date"/>
+                        android:text="@string/date" />
 
                     <TextView
                         android:id="@+id/date_tv"
                         style="@style/TransactionDescTextStyle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textIsSelectable="true"/>
+                        android:textIsSelectable="true" />
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

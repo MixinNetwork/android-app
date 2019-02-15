@@ -59,8 +59,10 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         title_tv.text = first
         if (second.isBlank()) {
             sub_title_tv.visibility = View.GONE
+            title_tv.textSize = 22f
         } else {
             sub_title_tv.visibility = View.VISIBLE
+            title_tv.textSize = 18f
             sub_title_tv.text = second
         }
     }

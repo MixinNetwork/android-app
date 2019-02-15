@@ -10,8 +10,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:leftIcon="@drawable/ic_more"
-        app:rightIcon="@drawable/ic_chat"
+        app:rightIcon="@drawable/ic_more"
         app:need_divider="false"
         app:titleText="@string/wallet_title" />
 

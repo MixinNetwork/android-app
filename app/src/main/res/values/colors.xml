@@ -61,7 +61,7 @@
     <color name="wallet_header_gray">#fcfcfc</color>
     <color name="wallet_blue_light">#f2faff</color>
     <color name="wallet_divider">#F8F8F8</color>
-    <color name="wallet_bg_gray">#F4F6F9</color>
+    <color name="wallet_bg_gray">#F5F7FA</color>
     <color name="wallet_ripple">#F6F8FC</color>
     <color name="gray_black">#3A3C3E</color>
     <color name="gray_black_50">#AA3A3C3E</color>

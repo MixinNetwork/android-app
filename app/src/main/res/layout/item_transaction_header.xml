@@ -3,30 +3,15 @@
     android:layout_width="match_parent"
     android:layout_height="34dp">
 
-    <View
-        android:id="@+id/shadow_left"
-        android:layout_width="16dp"
-        android:layout_height="match_parent"
-        android:background="@drawable/bg_wallet_shadow_left"/>
-
     <TextView
         android:id="@+id/date_tv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:background="@color/wallet_header_gray"
-        android:layout_toEndOf="@+id/shadow_left"
-        android:layout_toStartOf="@+id/shadow_right"
+        android:background="@color/white"
         android:layout_centerVertical="true"
-        android:paddingStart="@dimen/margin16"
-        android:paddingEnd="@dimen/margin16"
+        android:paddingStart="@dimen/margin20"
+        android:paddingEnd="@dimen/margin20"
         android:textColor="@color/wallet_text_gray"
         android:textSize="13sp" />
-
-    <View
-        android:id="@+id/shadow_right"
-        android:layout_width="16dp"
-        android:layout_height="match_parent"
-        android:layout_alignParentEnd="true"
-        android:background="@drawable/bg_wallet_shadow_right"/>
 </RelativeLayout>

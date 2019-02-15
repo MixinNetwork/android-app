@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/wallet_bg_gray"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -16,13 +16,13 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_wallet_card_single">
+        android:layout_height="wrap_content">
 
         <RelativeLayout
             android:id="@+id/address_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="@color/white"
             android:layout_marginBottom="@dimen/margin16"
             tools:ignore="UselessParent">
 
@@ -30,7 +30,7 @@
                 android:id="@+id/address_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginStart="32dp"
                 android:layout_marginTop="32dp"
                 android:textColor="@color/wallet_text_gray"
                 android:text="@string/address"/>
@@ -43,8 +43,8 @@
                 android:maxLines="4"
                 android:layout_marginTop="@dimen/margin16"
                 android:layout_toStartOf="@+id/qr_fl"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:layout_marginStart="32dp"
+                android:layout_marginEnd="@dimen/margin20"
                 android:textColor="@color/wallet_text_dark"/>
 
             <TextView
@@ -54,7 +54,7 @@
                 android:gravity="center"
                 android:layout_alignBottom="@+id/qr_fl"
                 android:background="@drawable/bg_wallet_blue_btn"
-                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginStart="32dp"
                 android:layout_marginBottom="8dp"
                 android:textColor="@color/white"
                 android:text="@string/copy"/>
@@ -65,6 +65,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
                 android:layout_marginBottom="@dimen/margin16"
+                android:layout_marginEnd="@dimen/margin16"
                 android:layout_centerVertical="true"
                 android:layout_alignParentEnd="true">
 
