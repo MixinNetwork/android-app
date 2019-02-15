@@ -54,6 +54,7 @@
     <string name="searching">Searching</string>
     <string name="add_success">Add success</string>
     <string name="dont_remind">Don\'t remind me again</string>
+    <string name="time">Time</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -511,7 +512,8 @@
     <string name="filters_withdrawal">Withdrawal</string>
     <string name="filters_fee">Fee</string>
     <string name="filters_rebate">Rebate</string>
-    <string name="filters_by">Filter by</string>
+    <string name="filters_by">FILTER BY</string>
+    <string name="sort_by">SORT BY</string>
     <!--Pending-->
     <string name="pending">Pending</string>
     <string name="pending_confirmations">%1$d/%2$d confirmations</string>

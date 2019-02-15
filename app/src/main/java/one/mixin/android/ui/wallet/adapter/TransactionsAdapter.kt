@@ -34,10 +34,9 @@ class TransactionsAdapter : HeaderAdapter<SnapshotItem>(), StickyRecyclerHeaders
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is SnapshotHolder) {
-            val isLast = position == itemCount - 1
             val pos = getPos(position)
             val snapshot = data!![pos]
-            holder.bind(snapshot, listener, isLast)
+            holder.bind(snapshot, listener)
         }
     }
 

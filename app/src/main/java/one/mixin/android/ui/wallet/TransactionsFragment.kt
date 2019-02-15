@@ -48,6 +48,7 @@ import one.mixin.android.vo.differentProcess
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.CheckedFlowLayout
 import one.mixin.android.widget.RadioGroup
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
@@ -273,7 +274,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
     }
 
     override fun setRadioGroupListener(view: View) {
-        view.filters_radio_group.setOnCheckedListener(object : RadioGroup.OnCheckedListener {
+        view.filter_flow.setOnCheckedListener(object : CheckedFlowLayout.OnCheckedListener {
             override fun onChecked(id: Int) {
                 currentType = id
                 when (currentType) {

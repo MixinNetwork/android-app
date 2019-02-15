@@ -27,7 +27,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.widget.RadioGroup
+import one.mixin.android.widget.CheckedFlowLayout
 
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -103,7 +103,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun setRadioGroupListener(view: View) {
-        view.filters_radio_group.setOnCheckedListener(object : RadioGroup.OnCheckedListener {
+        view.filter_flow.setOnCheckedListener(object : CheckedFlowLayout.OnCheckedListener {
             override fun onChecked(id: Int) {
                 currentType = id
                 when (currentType) {

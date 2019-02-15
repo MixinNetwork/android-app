@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import one.mixin.android.R
 
-class FlowLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0)
+open class FlowLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0)
     : ViewGroup(context, attrs, defStyle) {
 
     protected var mAllViews: MutableList<List<View>> = ArrayList()

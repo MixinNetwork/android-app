@@ -95,4 +95,9 @@
     <declare-styleable name="KerningTextView">
         <attr name="kv_spacing" format="float" />
     </declare-styleable>
+    <declare-styleable name="RoundTitleView">
+        <attr name="title_text" format="string" />
+        <attr name="right_icon" format="reference" />
+        <attr name="left_icon" format="reference" />
+    </declare-styleable>
 </resources>
