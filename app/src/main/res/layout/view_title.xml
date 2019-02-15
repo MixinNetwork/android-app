@@ -73,10 +73,9 @@
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_centerVertical="true"
         android:layout_marginStart="56dp"
         android:layout_marginEnd="56dp"
-        android:gravity="center"
         android:orientation="vertical">
 
         <TextView
@@ -87,18 +86,19 @@
             android:maxWidth="240dp"
             android:singleLine="true"
             android:textColor="@android:color/black"
-            android:textSize="18sp" />
+            android:textSize="22sp" />
 
         <TextView
             android:id="@+id/sub_title_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:maxWidth="240dp"
+            android:gravity="center_vertical"
             android:singleLine="true"
-            android:ellipsize="middle"
+            android:ellipsize="end"
             android:visibility="gone"
             android:textColor="@color/text_gray"
-            android:textSize="10sp"
+            android:textSize="14sp"
             tools:ignore="SmallSp"/>
 
     </LinearLayout>

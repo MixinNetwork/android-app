@@ -35,8 +35,7 @@ class SnapshotListAdapter : ListAdapter<SnapshotItem, SnapshotHolder>(DIFF_CALLB
 
     override fun onBindViewHolder(holder: SnapshotHolder, position: Int) {
         getItem(position)?.let {
-            val isLast = position == itemCount - 1
-            holder.bind(it, listener, isLast)
+            holder.bind(it, listener)
         }
     }
 

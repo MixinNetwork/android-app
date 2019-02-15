@@ -1,68 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/root"
+<one.mixin.android.widget.ConfirmationBgView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bg"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="60dp"
     android:background="@android:color/white">
 
-    <View
-        android:id="@+id/transaction_shadow_left"
-        android:layout_width="16dp"
-        android:layout_height="60dp"
-        android:background="@drawable/bg_wallet_shadow_left"/>
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20" />
 
-    <one.mixin.android.widget.ConfirmationBgView
-        android:id="@+id/bg"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_toEndOf="@+id/transaction_shadow_left"
-        android:layout_toStartOf="@+id/transaction_shadow_right">
+    <TextView
+        android:id="@+id/name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@id/avatar"
+        android:ellipsize="end"
+        android:maxWidth="200dp"
+        android:singleLine="true"
+        android:textColor="@color/wallet_text_dark"
+        android:textSize="12sp" />
 
-        <one.mixin.android.widget.AvatarView
-            android:id="@+id/avatar"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:layout_marginStart="@dimen/margin16"
-            android:layout_marginEnd="@dimen/margin16"
-            android:layout_centerVertical="true"/>
-
-        <TextView
-            android:id="@+id/name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxWidth="200dp"
-            android:layout_toEndOf="@id/avatar"
-            android:layout_centerVertical="true"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textSize="12sp"
-            android:textColor="@color/wallet_text_dark"/>
-
-        <TextView
-            android:id="@+id/value"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxWidth="200dp"
-            android:fontFamily="@font/mixin_condensed"
-            android:layout_marginEnd="@dimen/margin16"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textSize="22sp"
-            android:textColor="@color/wallet_pink"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:layout_marginStart="68dp"
-            android:background="@color/wallet_divider"/>
-    </one.mixin.android.widget.ConfirmationBgView>
-
-    <View
-        android:id="@+id/transaction_shadow_right"
-        android:layout_width="16dp"
-        android:layout_height="60dp"
+    <TextView
+        android:id="@+id/value"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:background="@drawable/bg_wallet_shadow_right"/>
-</RelativeLayout>
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/margin20"
+        android:ellipsize="end"
+        android:fontFamily="@font/mixin_condensed"
+        android:maxWidth="200dp"
+        android:singleLine="true"
+        android:textColor="@color/wallet_pink"
+        android:textSize="22sp" />
+</one.mixin.android.widget.ConfirmationBgView>

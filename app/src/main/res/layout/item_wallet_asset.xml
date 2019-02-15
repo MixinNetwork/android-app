@@ -2,14 +2,13 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="100dp"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="@drawable/bg_wallet_card">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <RelativeLayout
         android:id="@+id/background_rl"
         android:layout_width="match_parent"
         android:layout_height="84dp"
-        android:background="@drawable/bg_round_rect_green">
+        android:background="@color/wallet_green">
 
         <TextView
             android:id="@+id/back_left_tv"
@@ -31,10 +30,9 @@
             android:textColor="@android:color/white"/>
     </RelativeLayout>
 
-    <RelativeLayout
+    <one.mixin.android.widget.ConfirmationBgView
         android:id="@+id/foreground_rl"
         android:layout_width="match_parent"
-        android:background="@drawable/bg_ripple_rect_round_8"
         android:layout_height="84dp">
 
         <one.mixin.android.widget.BadgeCircleImageView
@@ -113,12 +111,5 @@
             android:maxLines="1"
             android:textSize="12sp"
             android:textColor="@color/wallet_text_gray"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:layout_marginStart="66dp"
-            android:layout_alignParentBottom="true"
-            android:background="@color/wallet_divider"/>
-    </RelativeLayout>
+    </one.mixin.android.widget.ConfirmationBgView>
 </FrameLayout>
