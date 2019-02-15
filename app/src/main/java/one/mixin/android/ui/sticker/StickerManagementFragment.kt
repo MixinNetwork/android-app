@@ -158,8 +158,8 @@ class StickerManagementFragment : BaseFragment() {
         val checkedList = arrayListOf<String>()
 
         override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
-            val s = if (stickers.isNotEmpty() && position != stickers.size) {
-                stickers[position]
+            val s = if (stickers.isNotEmpty() && position != 0) {
+                stickers[position - 1]
             } else {
                 null
             }
@@ -191,7 +191,7 @@ class StickerManagementFragment : BaseFragment() {
                 cb.isChecked = false
                 cover.visibility = GONE
             }
-            if (position == stickers.size) {
+            if (position == 0) {
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {

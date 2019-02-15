@@ -11,8 +11,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.google.gson.Gson
 import io.reactivex.Flowable
 import io.reactivex.Observable
@@ -33,7 +31,6 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
-import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getFileNameNoEx
@@ -50,6 +47,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendMessageJob
@@ -100,7 +98,6 @@ import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
-import one.mixin.android.worker.RemoveStickersWorker
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
@@ -469,8 +466,7 @@ internal constructor(
     fun addStickerLocal(sticker: Sticker, albumId: String) = accountRepository.addStickerLocal(sticker, albumId)
 
     fun removeStickers(ids: List<String>) {
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RemoveStickersWorker>(
-            workDataOf(RemoveStickersWorker.STICKER_IDS to ids.toTypedArray()))
+        jobManager.addJobInBackground(RemoveStickersJob(ids))
     }
 
     fun refreshStickerAlbums() {
