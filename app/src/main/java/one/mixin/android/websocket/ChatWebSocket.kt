@@ -17,6 +17,7 @@ import okio.ByteString
 import one.mixin.android.Constants.API.WS_URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.ClientErrorException
+import one.mixin.android.crypto.Base64
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
@@ -28,6 +29,7 @@ import one.mixin.android.extension.ungzip
 import one.mixin.android.job.DecryptCallMessage.Companion.listPendingOfferHandled
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
+import one.mixin.android.job.SendPlaintextJob
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.Session
@@ -238,11 +240,11 @@ class ChatWebSocket(
     }
 
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
-        val data = Gson().fromJson(blazeMessage.data, BlazeMessageData::class.java)
+        val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
-        } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL) {
+        } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL || blazeMessage.action == CREATE_SESSION_MESSAGE) {
             if (data.userId == accountId && data.category.isEmpty()) {
                 makeMessageStatus(data.status, data.messageId)
             } else {
@@ -257,6 +259,21 @@ class ChatWebSocket(
         val curStatus = messageDao.findMessageStatusById(messageId)
         if (curStatus != null && curStatus != MessageStatus.READ.name) {
             messageDao.updateMessageStatus(status, messageId)
+            sendSessionAck(status, messageId)
+        }
+    }
+
+    private fun sendSessionAck(status: String, messageId: String) {
+        val extensionSessionId = Session.getExtensionSession()
+        extensionSessionId?.let {
+            val plainText = gson.toJson(TransferPlainData(
+                action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPT.name,
+                messageId = messageId,
+                status = status
+            ))
+            val encoded = Base64.encodeBytes(plainText.toByteArray())
+            val bm = createParamSessionMessage(createPlainJsonParam(accountId!!, accountId, encoded, it))
+            jobManager.addJobInBackground(SendPlaintextJob(bm))
         }
     }
 

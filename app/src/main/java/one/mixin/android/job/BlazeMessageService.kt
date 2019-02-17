@@ -38,6 +38,7 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
@@ -86,6 +87,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var callState: CallState
+
+    private val accountId = Session.getAccountId()
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -228,6 +231,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
 
     private val messageDecrypt by lazy { DecryptMessage() }
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState) }
+    private val sessionMessageDecrypt by lazy { DecryptSessionMessage() }
 
     private fun startFloodJob() {
         database.invalidationTracker.addObserver(floodObserver)
@@ -268,6 +272,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                     val data = Gson().fromJson(message.data, BlazeMessageData::class.java)
                     if (data.category.startsWith("WEBRTC_")) {
                         callMessageDecrypt.onRun(data)
+                    } else if (data.userId == accountId && data.sessionId != null) {
+                        sessionMessageDecrypt.onRun(data)
                     } else {
                         messageDecrypt.onRun(data)
                     }

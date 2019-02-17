@@ -60,6 +60,16 @@ class Session {
             return preference.getString(Constants.Account.PREF_NAME_TOKEN, null)
         }
 
+        fun storeExtensionSession(extensionSession: String) {
+            val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
+            preference.putString(Constants.Account.PREF_EXTENSION_SESSION, extensionSession)
+        }
+
+        fun getExtensionSession(): String? {
+            val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
+            return preference.getString(Constants.Account.PREF_EXTENSION_SESSION, null)
+        }
+
         fun storePinToken(pinToken: String) {
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
             preference.putString(Constants.Account.PREF_PIN_TOKEN, pinToken)

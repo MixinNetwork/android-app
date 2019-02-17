@@ -16,7 +16,8 @@ data class BlazeMessageParam(
     val recipients: ArrayList<String>? = null,
     val keys: SignalKeyRequest? = null,
     val messages: List<Any>? = null,
-    val quote_message_id: String? = null
+    val quote_message_id: String? = null,
+    val session_id: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 6L
@@ -33,9 +34,9 @@ fun createSignalKeyParam(conversationId: String, recipientId: String, cipherText
     BlazeMessageParam(conversationId, recipientId, UUID.randomUUID().toString(), MessageCategory.SIGNAL_KEY.name,
         cipherText, MessageStatus.SENT.name)
 
-fun createPlainJsonParam(conversationId: String, userId: String, encoded: String) =
+fun createPlainJsonParam(conversationId: String, userId: String, encoded: String, sessionId: String? = null) =
     BlazeMessageParam(conversationId, userId, UUID.randomUUID().toString(), MessageCategory.PLAIN_JSON.name,
-        encoded, MessageStatus.SENDING.name)
+        encoded, MessageStatus.SENDING.name, session_id = sessionId)
 
 fun createConsumeSignalKeysParam(recipients: ArrayList<String>?) =
     BlazeMessageParam(null, null, null, null, null, null, recipients)
