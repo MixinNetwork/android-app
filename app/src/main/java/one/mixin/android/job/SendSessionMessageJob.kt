@@ -45,7 +45,7 @@ class SendSessionMessageJob (
         val sessionId = Session.getExtensionSession()
         val blazeParam = BlazeMessageParam(message.conversationId, message.userId,
             message.id, message.category, content, MessageStatus.SENT.name, quote_message_id = message.quoteMessageId,
-            transfer_id = accountId, transfer_session_id =  sessionId)
+            transfer_id = accountId, session_id =  sessionId)
         val blazeMessage = createParamSessionMessage(blazeParam)
         deliver(blazeMessage)
     }
@@ -54,7 +54,7 @@ class SendSessionMessageJob (
         val accountId = Session.getAccountId()!!
         val sessionId = Session.getExtensionSession()!!
         checkSignalSession(accountId, sessionId)
-        val encrypted = signalProtocol.encryptTransferSessionMessage(message, accountId, sessionId)
+        val encrypted = signalProtocol.encryptTransferSessionMessage(message, sessionId, accountId)
         deliver(encrypted)
     }
 }

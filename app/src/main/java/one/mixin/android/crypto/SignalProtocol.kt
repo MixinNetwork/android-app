@@ -182,20 +182,20 @@ class SignalProtocol(ctx: Context) {
         }
     }
 
-    fun encryptTransferSessionMessage(message: Message, transferId: String, transferSessionId: String): BlazeMessage {
-        val deviceId = UUID.fromString(transferSessionId).hashCode()
-        val cipher = encryptSession(message.content!!.toByteArray(), transferId, deviceId)
+    fun encryptTransferSessionMessage(message: Message, sessionId: String, recipientId: String): BlazeMessage {
+        val deviceId = UUID.fromString(sessionId).hashCode()
+        val cipher = encryptSession(message.content!!.toByteArray(), recipientId, deviceId)
         val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize()))
         val blazeParam = BlazeMessageParam(
             message.conversationId,
-            message.userId,
+            recipientId,
             message.id,
             message.category,
             data,
             MessageStatus.SENT.name,
             quote_message_id = message.quoteMessageId,
-            transfer_id = transferId,
-            transfer_session_id = transferSessionId)
+            transfer_id = message.userId,
+            session_id = sessionId)
         return createParamSessionMessage(blazeParam)
     }
 
