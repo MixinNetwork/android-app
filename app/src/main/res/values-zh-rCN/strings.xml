@@ -134,7 +134,6 @@
     <string name="contact_qr_desc">扫描好友的二维码</string>
     <string name="contact_invite_title">邀请好友</string>
     <string name="contact_invite_desc">我的邀请码是 %1$s</string>
-    <string name="contact_mixin_id">Mixin ID: %1$s</string>
     <string name="contact_mobile">手机: %1$s</string>
     <string name="contact_empty">手机联系人</string>
     <string name="contact_empty_tip">Mixin 需要访问你的通讯录来帮助你更快找到你的朋友。</string>
