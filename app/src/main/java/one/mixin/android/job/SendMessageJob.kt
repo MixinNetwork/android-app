@@ -6,6 +6,7 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.findLastUrl
+import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Message
@@ -55,6 +56,10 @@ open class SendMessageJob(
             } else {
                 Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
             }
+        }
+
+        if (Session.getExtensionSession() != null) {
+            jobManager.addJobInBackground(SendSessionMessageJob(message))
         }
     }
 

@@ -31,6 +31,7 @@ const val LIST_PENDING_MESSAGES = "LIST_PENDING_MESSAGES"
 const val ERROR_ACTION = "ERROR"
 const val COUNT_SIGNAL_KEYS = "COUNT_SIGNAL_KEYS"
 const val CONSUME_SIGNAL_KEYS = "CONSUME_SIGNAL_KEYS"
+const val CONSUME_SESSION_SIGNAL_KEYS = "CONSUME_SESSION_SIGNAL_KEYS"
 const val SYNC_SIGNAL_KEYS = "SYNC_SIGNAL_KEYS"
 const val CREATE_SIGNAL_KEY_MESSAGES = "CREATE_SIGNAL_KEY_MESSAGES"
 const val CREATE_CALL = "CREATE_CALL"
@@ -55,6 +56,9 @@ fun createCountSignalKeys() =
 
 fun createConsumeSignalKeys(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CONSUME_SIGNAL_KEYS, param)
+
+fun createConsumeSessionSignalKeys(param: BlazeMessageParam) =
+    BlazeMessage(UUID.randomUUID().toString(), CONSUME_SESSION_SIGNAL_KEYS, param)
 
 fun createSyncSignalKeys(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), SYNC_SIGNAL_KEYS, param)

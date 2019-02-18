@@ -12,6 +12,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.createParamBlazeMessage
+import one.mixin.android.websocket.createParamSessionMessage
 import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.InvalidMessageException
 import org.whispersystems.libsignal.NoSessionException
@@ -32,6 +33,7 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.protocol.SignalMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
+import java.util.*
 
 class SignalProtocol(ctx: Context) {
 
@@ -107,8 +109,8 @@ class SignalProtocol(ctx: Context) {
         }
     }
 
-    private fun encryptSession(content: ByteArray, destination: String): CiphertextMessage {
-        val remoteAddress = SignalProtocolAddress(destination, DEFAULT_DEVICE_ID)
+    private fun encryptSession(content: ByteArray, destination: String, deviceId: Int = DEFAULT_DEVICE_ID): CiphertextMessage {
+        val remoteAddress = SignalProtocolAddress(destination, deviceId)
         val sessionCipher = SessionCipher(signalProtocolStore, remoteAddress)
         return sessionCipher.encrypt(content)
     }
@@ -151,8 +153,8 @@ class SignalProtocol(ctx: Context) {
         return !senderKeyRecord.isEmpty
     }
 
-    fun containsSession(recipientId: String): Boolean {
-        val signalProtocolAddress = SignalProtocolAddress(recipientId, SignalProtocol.DEFAULT_DEVICE_ID)
+    fun containsSession(recipientId: String, deviceId: Int = SignalProtocol.DEFAULT_DEVICE_ID): Boolean {
+        val signalProtocolAddress = SignalProtocolAddress(recipientId, deviceId)
         return signalProtocolStore.containsSession(signalProtocolAddress)
     }
 
@@ -169,8 +171,8 @@ class SignalProtocol(ctx: Context) {
         }
     }
 
-    fun processSession(userId: String, preKeyBundle: PreKeyBundle) {
-        val signalProtocolAddress = SignalProtocolAddress(userId, SignalProtocol.DEFAULT_DEVICE_ID)
+    fun processSession(userId: String, preKeyBundle: PreKeyBundle, deviceId: Int = SignalProtocol.DEFAULT_DEVICE_ID) {
+        val signalProtocolAddress = SignalProtocolAddress(userId, deviceId)
         val sessionBuilder = SessionBuilder(signalProtocolStore, signalProtocolAddress)
         try {
             sessionBuilder.process(preKeyBundle)
@@ -178,6 +180,23 @@ class SignalProtocol(ctx: Context) {
             signalProtocolStore.removeIdentity(signalProtocolAddress)
             sessionBuilder.process(preKeyBundle)
         }
+    }
+
+    fun encryptTransferSessionMessage(message: Message, transferId: String, transferSessionId: String): BlazeMessage {
+        val deviceId = UUID.fromString(transferSessionId).hashCode()
+        val cipher = encryptSession(message.content!!.toByteArray(), transferId, deviceId)
+        val data = encodeMessageData(ComposeMessageData(cipher.type, cipher.serialize()))
+        val blazeParam = BlazeMessageParam(
+            message.conversationId,
+            message.userId,
+            message.id,
+            message.category,
+            data,
+            MessageStatus.SENT.name,
+            quote_message_id = message.quoteMessageId,
+            transfer_id = transferId,
+            transfer_session_id = transferSessionId)
+        return createParamSessionMessage(blazeParam)
     }
 
     fun encryptSessionMessage(message: Message, recipientId: String, resendMessageId: String? = null): BlazeMessage {
