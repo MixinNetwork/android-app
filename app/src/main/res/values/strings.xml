@@ -53,6 +53,7 @@
     <string name="undo_capital">UNDO</string>
     <string name="searching">Searching</string>
     <string name="add_success">Add success</string>
+    <string name="dont_remind">Don\'t remind me again</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

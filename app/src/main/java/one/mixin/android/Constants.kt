@@ -24,6 +24,7 @@ object Constants {
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
         const val PREF_RESTORE = "pref_restore"
+        const val PREF_SHOW_DEPOSIT_TIP = "pref_show_deposit_tip"
     }
 
     object Scheme {
