@@ -24,14 +24,19 @@ abstract class DepositFragment : Fragment() {
     }
 
     private val showTipRunnable = Runnable {
-        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+        val builder = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setMessage(getTips())
-            .setNegativeButton(R.string.dont_remind) { dialog, _ ->
+        val firstShow = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_FIRST_SHOW_DEPOSIT, true)
+        if (firstShow) {
+            requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_FIRST_SHOW_DEPOSIT, false)
+        } else {
+            builder.setNegativeButton(R.string.dont_remind) { dialog, _ ->
                 requireContext().defaultSharedPreferences.putBoolean(Constants.Account.PREF_SHOW_DEPOSIT_TIP, false)
                 dialog.dismiss()
             }
-            .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                dialog.dismiss()
-            }.show()
+        }
+        builder.setPositiveButton(android.R.string.ok) { dialog, _ ->
+            dialog.dismiss()
+        }.show()
     }
 }
