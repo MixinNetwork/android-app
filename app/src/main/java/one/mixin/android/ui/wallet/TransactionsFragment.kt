@@ -149,8 +149,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 }
             }
         }
-        refreshWithCurrentType()
-
+        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, orderByAmount = currentOrder == R.id.sort_amount))
         doAsync {
             asset.assetId.let {
                 walletViewModel.clearPendingDepositsByAssetId(it)
@@ -283,39 +282,41 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             ?: nowInUtc().getEpochNano(), LIMIT))
     }
 
-    override fun refreshWithCurrentType() {
+    override fun onApplyClick() {
+        val orderByAmount = currentOrder == R.id.sort_amount
         when (currentType) {
             R.id.filters_radio_all -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey))
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                 headerView.group_info_member_title.setText(R.string.wallet_transactions_title)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
             }
             R.id.filters_radio_transfer -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey))
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                 headerView.group_info_member_title.setText(R.string.filters_transfer)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
             }
             R.id.filters_radio_deposit -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name, initialLoadKey = initialLoadKey))
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                 headerView.group_info_member_title.setText(R.string.filters_deposit)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
             }
             R.id.filters_radio_withdrawal -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey))
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                 headerView.group_info_member_title.setText(R.string.filters_withdrawal)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
             }
             R.id.filters_radio_fee -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey))
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                 headerView.group_info_member_title.setText(R.string.filters_fee)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_fees_empty)
             }
             R.id.filters_radio_rebate -> {
-                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey))
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
                 headerView.group_info_member_title.setText(R.string.filters_rebate)
                 headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
             }
         }
+        filtersSheet.dismiss()
     }
 
     private fun updateHeaderBottomLayout(expand: Boolean) {

@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.paging.PagedList
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -65,7 +66,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 showEmpty(true)
             }
         }
-        refreshWithCurrentType()
+        bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
+        jobManager.addJobInBackground(RefreshSnapshotsJob())
+    }
+
+    override fun onStop() {
+        super.onStop()
+        initialLoadKey = (transactions_rv.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition()
     }
 
     override fun <T> onNormalItemClick(item: T) {
@@ -97,33 +104,34 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
     }
 
-    override fun refreshWithCurrentType() {
-        when (currentType) {
-            R.id.filters_radio_all -> {
-                bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey))
-            }
-            R.id.filters_radio_transfer -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey))
-            }
-            R.id.filters_radio_deposit -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name, initialLoadKey = initialLoadKey))
-            }
-            R.id.filters_radio_withdrawal -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey))
-            }
-            R.id.filters_radio_fee -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.fee.name, initialLoadKey = initialLoadKey))
-            }
-            R.id.filters_radio_rebate -> {
-                bindLiveData(walletViewModel.allSnapshots(SnapshotType.rebate.name, initialLoadKey = initialLoadKey))
-            }
-        }
-        filtersSheet.dismiss()
-    }
-
     override fun refreshSnapshots() {
         jobManager.addJobInBackground(RefreshSnapshotsJob(limit = LIMIT,
             offset = lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano()))
+    }
+
+    override fun onApplyClick() {
+        val orderByAmount = currentOrder == R.id.sort_amount
+        when (currentType) {
+            R.id.filters_radio_all -> {
+                bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_transfer -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_deposit -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_withdrawal -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_fee -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.fee.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_rebate -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.rebate.name, initialLoadKey = initialLoadKey, orderByAmount = orderByAmount))
+            }
+        }
+        filtersSheet.dismiss()
     }
 
     private fun showEmpty(show: Boolean) {
