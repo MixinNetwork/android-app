@@ -57,9 +57,10 @@ internal constructor(
         id: String,
         type: String? = null,
         otherType: String? = null,
-        initialLoadKey: Int? = 0
+        initialLoadKey: Int? = 0,
+        orderByAmount: Boolean = false
     ): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.snapshotsFromDb(id, type, otherType), PagedList.Config.Builder()
+        LivePagedListBuilder(assetRepository.snapshotsFromDb(id, type, otherType, orderByAmount), PagedList.Config.Builder()
             .setPrefetchDistance(PAGE_SIZE)
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
@@ -105,9 +106,10 @@ internal constructor(
 
     fun addresses(id: String) = assetRepository.addresses(id)
 
-    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.allSnapshots(type, otherType), PagedList.Config.Builder()
-            .setPrefetchDistance(PAGE_SIZE)
+    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false):
+        LiveData<PagedList<SnapshotItem>> =
+        LivePagedListBuilder(assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount), PagedList.Config.Builder()
+            .setPrefetchDistance(PAGE_SIZE * 2)
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build())

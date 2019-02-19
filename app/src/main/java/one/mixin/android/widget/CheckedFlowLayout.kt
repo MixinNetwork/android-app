@@ -28,10 +28,9 @@ class CheckedFlowLayout @JvmOverloads constructor(
                     id = View.generateViewId()
                     child.setId(id)
                 } else {
-                    child.setOnClickListener { child.toggle() }
-                    child.setOnCheckedListener(object : CheckedFlowItem.OnCheckedListener {
-                        override fun onChecked(id: Int) {
-                            if (child.isChecked) {
+                    child.setOnCheckedChangeListener(object : CheckedFlowItem.OnCheckedChangeListener {
+                        override fun onCheckedChanged(id: Int, checked: Boolean) {
+                            if (checked) {
                                 update(id)
                                 onCheckedListener?.onChecked(id)
                             }
@@ -44,7 +43,7 @@ class CheckedFlowLayout @JvmOverloads constructor(
         }
 
         override fun onChildViewRemoved(parent: View, child: View) {
-            if (parent === this@CheckedFlowLayout && child is RadioButton) {
+            if (parent === this@CheckedFlowLayout && child is CheckedFlowItem) {
                 child.setOnCheckedChangeListener(null)
             }
 
@@ -62,7 +61,7 @@ class CheckedFlowLayout @JvmOverloads constructor(
         this.currentId = id
         for (i in 0 until childCount) {
             getChildAt(i).let {
-                if (it.id != id && it is RadioButton) {
+                if (it.id != id && it is CheckedFlowItem) {
                     it.isChecked = false
                 }
             }
