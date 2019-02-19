@@ -1,5 +1,7 @@
 package one.mixin.android.repository
 
+import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.TransferRequest
@@ -13,6 +15,7 @@ import one.mixin.android.db.TopAssetDao
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Snapshot
+import one.mixin.android.vo.SnapshotItem
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -50,10 +53,25 @@ constructor(
 
     fun snapshots(id: String) = assetService.snapshots(id)
 
-    fun snapshotsFromDb(id: String, type: String? = null, otherType: String? = null) = if (type == null) {
-        snapshotDao.snapshots(id)
-    } else {
-        snapshotDao.snapshotsByType(id, type, otherType)
+    fun snapshotsFromDb(
+        id: String,
+        type: String? = null,
+        otherType: String? = null,
+        orderByAmount: Boolean = false
+    ): LiveData<List<SnapshotItem>> {
+        return if (type == null) {
+            if (orderByAmount) {
+                snapshotDao.snapshotsOrderByAmount(id)
+            } else {
+                snapshotDao.snapshots(id)
+            }
+        } else {
+            if (orderByAmount) {
+                snapshotDao.snapshotsByTypeOrderByAmount(id, type, otherType)
+            } else {
+                snapshotDao.snapshotsByType(id, type, otherType)
+            }
+        }
     }
 
     fun snapshotLocal(assetId: String, snapshotId: String) = snapshotDao.snapshotLocal(assetId, snapshotId)
@@ -92,10 +110,24 @@ constructor(
 
     fun assetItemsWithBalance() = assetDao.assetItemsWithBalance()
 
-    fun allSnapshots(type: String? = null, otherType: String? = null) = if (type == null) {
-        snapshotDao.allSnapshots()
-    } else {
-        snapshotDao.allSnapshotsByType(type, otherType)
+    fun allSnapshots(
+        type: String? = null,
+        otherType: String? = null,
+        orderByAmount: Boolean = false
+    ): DataSource.Factory<Int, SnapshotItem> {
+        return if (type == null) {
+            if (orderByAmount) {
+                snapshotDao.allSnapshotsOrderByAmount()
+            } else {
+                snapshotDao.allSnapshots()
+            }
+        } else {
+            if (orderByAmount) {
+                snapshotDao.allSnapshotsByTypeOrderByAmount(type, otherType)
+            } else {
+                snapshotDao.allSnapshotsByType(type, otherType)
+            }
+        }
     }
 
     fun snapshotsByUserId(opponentId: String) = snapshotDao.snapshotsByUserId(opponentId)

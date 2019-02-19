@@ -49,7 +49,6 @@ import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CheckedFlowLayout
-import one.mixin.android.widget.RadioGroup
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 
@@ -149,9 +148,9 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
             adapter.data = list
             adapter.notifyDataSetChanged()
         }
-        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
+        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, orderByAmount = currentOrder == R.id.sort_amount))
         doAsync {
-            asset.assetId.let { it ->
+            asset.assetId.let {
                 walletViewModel.clearPendingDepositsByAssetId(it)
             }
         }
@@ -273,45 +272,41 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
         }
     }
 
-    override fun setRadioGroupListener(view: View) {
-        view.filter_flow.setOnCheckedListener(object : CheckedFlowLayout.OnCheckedListener {
-            override fun onChecked(id: Int) {
-                currentType = id
-                when (currentType) {
-                    R.id.filters_radio_all -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
-                        headerView.group_info_member_title.setText(R.string.wallet_transactions_title)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
-                    }
-                    R.id.filters_radio_transfer -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name))
-                        headerView.group_info_member_title.setText(R.string.filters_transfer)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
-                    }
-                    R.id.filters_radio_deposit -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name))
-                        headerView.group_info_member_title.setText(R.string.filters_deposit)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
-                    }
-                    R.id.filters_radio_withdrawal -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name))
-                        headerView.group_info_member_title.setText(R.string.filters_withdrawal)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
-                    }
-                    R.id.filters_radio_fee -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name))
-                        headerView.group_info_member_title.setText(R.string.filters_fee)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_fees_empty)
-                    }
-                    R.id.filters_radio_rebate -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name))
-                        headerView.group_info_member_title.setText(R.string.filters_rebate)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
-                    }
-                }
-                filtersSheet.dismiss()
+    override fun onApplyClick() {
+        val orderByAmount = currentOrder == R.id.sort_amount
+        when (currentType) {
+            R.id.filters_radio_all -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, orderByAmount = orderByAmount))
+                headerView.group_info_member_title.setText(R.string.wallet_transactions_title)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
             }
-        })
+            R.id.filters_radio_transfer -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name, orderByAmount = orderByAmount))
+                headerView.group_info_member_title.setText(R.string.filters_transfer)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
+            }
+            R.id.filters_radio_deposit -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name, orderByAmount = orderByAmount))
+                headerView.group_info_member_title.setText(R.string.filters_deposit)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
+            }
+            R.id.filters_radio_withdrawal -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name, orderByAmount = orderByAmount))
+                headerView.group_info_member_title.setText(R.string.filters_withdrawal)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
+            }
+            R.id.filters_radio_fee -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, orderByAmount = orderByAmount))
+                headerView.group_info_member_title.setText(R.string.filters_fee)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_fees_empty)
+            }
+            R.id.filters_radio_rebate -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, orderByAmount = orderByAmount))
+                headerView.group_info_member_title.setText(R.string.filters_rebate)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
+            }
+        }
+        filtersSheet.dismiss()
     }
 
     private fun updateHeaderBottomLayout(expand: Boolean) {

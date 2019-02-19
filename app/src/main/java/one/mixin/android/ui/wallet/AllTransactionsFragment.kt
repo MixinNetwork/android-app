@@ -12,7 +12,6 @@ import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
-import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -27,7 +26,6 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.widget.CheckedFlowLayout
 
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -69,7 +67,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 showEmpty(true)
             }
         }
-        bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey))
+        bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, orderByAmount = currentOrder == R.id.sort_amount))
         jobManager.addJobInBackground(RefreshSnapshotsJob())
     }
 
@@ -102,33 +100,29 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
     }
 
-    override fun setRadioGroupListener(view: View) {
-        view.filter_flow.setOnCheckedListener(object : CheckedFlowLayout.OnCheckedListener {
-            override fun onChecked(id: Int) {
-                currentType = id
-                when (currentType) {
-                    R.id.filters_radio_all -> {
-                        bindLiveData(walletViewModel.allSnapshots())
-                    }
-                    R.id.filters_radio_transfer -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.transfer.name, SnapshotType.pending.name))
-                    }
-                    R.id.filters_radio_deposit -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name))
-                    }
-                    R.id.filters_radio_withdrawal -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.withdrawal.name))
-                    }
-                    R.id.filters_radio_fee -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.fee.name))
-                    }
-                    R.id.filters_radio_rebate -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.rebate.name))
-                    }
-                }
-                filtersSheet.dismiss()
+    override fun onApplyClick() {
+        val orderByAmount = currentOrder == R.id.sort_amount
+        when (currentType) {
+            R.id.filters_radio_all -> {
+                bindLiveData(walletViewModel.allSnapshots(orderByAmount = orderByAmount))
             }
-        })
+            R.id.filters_radio_transfer -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.transfer.name, SnapshotType.pending.name, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_deposit -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_withdrawal -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.withdrawal.name, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_fee -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.fee.name, orderByAmount = orderByAmount))
+            }
+            R.id.filters_radio_rebate -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.rebate.name, orderByAmount = orderByAmount))
+            }
+        }
+        filtersSheet.dismiss()
     }
 
     private fun showEmpty(show: Boolean) {

@@ -23,7 +23,7 @@
         android:id="@+id/empty_rl"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg_wallet_card_single">
+        android:background="@color/white">
 
         <Space
             android:id="@+id/center"

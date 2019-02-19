@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.CheckedFlowLayout
 import javax.inject.Inject
 
 abstract class BaseTransactionsFragment<C> : BaseFragment() {
@@ -27,6 +28,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected lateinit var dataObserver: Observer<C>
 
     protected fun showFiltersSheet() {
+        filtersView.sort_flow.setCheckedById(currentOrder)
         filtersView.filter_flow.setCheckedById(currentType)
         filtersSheet.show()
     }
@@ -41,8 +43,17 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     private val filtersView: View by lazy {
         val view = View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null)
         view.filters_title.right_iv.setOnClickListener { filtersSheet.dismiss() }
-        view.apply_tv.setOnClickListener {  }
-        setRadioGroupListener(view)
+        view.apply_tv.setOnClickListener { onApplyClick() }
+        view.filter_flow.setOnCheckedListener(object : CheckedFlowLayout.OnCheckedListener {
+            override fun onChecked(id: Int) {
+                currentType = id
+            }
+        })
+        view.sort_flow.setOnCheckedListener(object : CheckedFlowLayout.OnCheckedListener {
+            override fun onChecked(id: Int) {
+                currentOrder = id
+            }
+        })
         view
     }
 
@@ -55,6 +66,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     }
 
     protected var currentType = R.id.filters_radio_all
+    protected var currentOrder = R.id.sort_time
 
-    abstract fun setRadioGroupListener(view: View)
+    abstract fun onApplyClick()
 }

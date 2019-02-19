@@ -48,7 +48,13 @@ internal constructor(
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
 
-    fun snapshotsFromDb(id: String, type: String? = null, otherType: String? = null): LiveData<List<SnapshotItem>> = assetRepository.snapshotsFromDb(id, type, otherType)
+    fun snapshotsFromDb(
+        id: String,
+        type: String? = null,
+        otherType: String? = null,
+        orderByAmount: Boolean = false
+    ): LiveData<List<SnapshotItem>> = assetRepository
+        .snapshotsFromDb(id, type, otherType, orderByAmount)
 
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsByUserId(opponentId)
 
@@ -75,8 +81,9 @@ internal constructor(
 
     fun addresses(id: String) = assetRepository.addresses(id)
 
-    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0): LiveData<PagedList<SnapshotItem>> =
-        LivePagedListBuilder(assetRepository.allSnapshots(type, otherType), PagedList.Config.Builder()
+    fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0, orderByAmount: Boolean = false):
+        LiveData<PagedList<SnapshotItem>> =
+        LivePagedListBuilder(assetRepository.allSnapshots(type, otherType, orderByAmount = orderByAmount), PagedList.Config.Builder()
             .setPrefetchDistance(Constants.PAGE_SIZE * 2)
             .setPageSize(Constants.PAGE_SIZE)
             .setEnablePlaceholders(true)
@@ -89,7 +96,7 @@ internal constructor(
     }
 
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
-        .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
+        .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
     fun pendingDeposits(asset: String, key: String? = null, name: String? = null, tag: String? = null) = assetRepository.pendingDeposits(asset, key, name, tag)
         .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())!!

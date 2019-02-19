@@ -16,16 +16,28 @@ class CheckedFlowItem @JvmOverloads constructor(
         layoutParams = ViewGroup.MarginLayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
         setBackgroundResource(R.drawable.bg_selector_wallet_round_gray)
-        setPaddingRelative(dip(8), dip(8), dip(8), dip(8))
+        setPaddingRelative(dip(16), dip(8), dip(16), dip(8))
+        setOnClickListener {
+            if (!isChecked) {
+                toggle()
+            }
+        }
     }
 
-    private var onCheckedListener: OnCheckedListener? = null
-
-    fun setOnCheckedListener(onCheckedListener: OnCheckedListener) {
-        this.onCheckedListener = onCheckedListener
+    override fun setChecked(checked: Boolean) {
+        if (isChecked != checked) {
+            listener?.onCheckedChanged(id, checked)
+        }
+        super.setChecked(checked)
     }
 
-    interface OnCheckedListener {
-        fun onChecked(id: Int)
+    private var listener: OnCheckedChangeListener? = null
+
+    interface OnCheckedChangeListener {
+        fun onCheckedChanged(id: Int, checked: Boolean)
+    }
+
+    fun setOnCheckedChangeListener(listener: OnCheckedChangeListener?) {
+        this.listener = listener
     }
 }

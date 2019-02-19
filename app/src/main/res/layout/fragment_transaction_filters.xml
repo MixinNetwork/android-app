@@ -21,9 +21,8 @@
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
             android:text="@string/sort_by"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:layout_width="match_parent"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
         <one.mixin.android.widget.CheckedFlowLayout
@@ -32,6 +31,8 @@
             android:layout_height="wrap_content"
             android:clipChildren="false"
             android:clipToPadding="false"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:paddingEnd="3dp"
             android:paddingStart="3dp">
 
@@ -63,15 +64,16 @@
             android:paddingTop="12dp"
             android:paddingBottom="12dp"
             android:text="@string/filters_by"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:layout_width="match_parent"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"/>
 
         <one.mixin.android.widget.CheckedFlowLayout
             android:id="@+id/filter_flow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:clipChildren="false"
             android:clipToPadding="false"
             android:paddingEnd="3dp"
