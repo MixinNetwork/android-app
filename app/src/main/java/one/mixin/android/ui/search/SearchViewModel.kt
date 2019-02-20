@@ -13,53 +13,57 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItemMinimal
-import one.mixin.android.vo.SearchDataPackage
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 
 class SearchViewModel @Inject
 internal constructor(
-    private val userRepository: UserRepository,
-    private val conversationRepository: ConversationRepository,
-    private val assetRepository: AssetRepository
+    val userRepository: UserRepository,
+    val conversationRepository: ConversationRepository,
+    val assetRepository: AssetRepository
 ) : ViewModel() {
 
     fun findConversationById(conversationId: String): Observable<Conversation> =
         conversationRepository.findConversationById(conversationId)
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    private fun contactList() = userRepository.syncFindFriends()
-
-    private fun fuzzySearchUser(context: CoroutineContext, query: String): Deferred<List<User>> =
-        GlobalScope.async(context) {
-            userRepository.fuzzySearchUser("%${query.trim()}%")
-        }
-
-    private fun fuzzySearchMessage(context: CoroutineContext, query: String): Deferred<List<SearchMessageItem>> =
-        GlobalScope.async(context) {
-            conversationRepository.fuzzySearchMessage("%${query.trim()}%")
-        }
-
-    private fun fuzzySearchAsset(context: CoroutineContext, query: String): Deferred<List<AssetItem>> = GlobalScope.async(context) {
-        assetRepository.fuzzySearchAsset("%${query.trim()}%")
+    fun contactList() = GlobalScope.async {
+        userRepository.syncFindFriends()
     }
 
-    private fun fuzzySearchGroup(context: CoroutineContext, query: String): Deferred<List<ConversationItemMinimal>> =
-        GlobalScope.async(context) {
-            conversationRepository.fuzzySearchGroup("%${query.trim()}%")
+    fun fuzzySearchUser(query: String?): Deferred<List<User>?> =
+        GlobalScope.async {
+            if (query.isNullOrBlank()) {
+                null
+            } else {
+                userRepository.fuzzySearchUser("%${query.trim()}%")
+            }
         }
 
-    fun fuzzySearch(keyword: String?) = GlobalScope.async {
-        if (keyword.isNullOrBlank()) {
-            SearchDataPackage(contactList(), null, null, null, null)
+    fun fuzzySearchMessage(query: String?): Deferred<List<SearchMessageItem>?> =
+        GlobalScope.async {
+            if (query.isNullOrBlank()) {
+                null
+            } else {
+                conversationRepository.fuzzySearchMessage("%${query.trim()}%")
+            }
+        }
+
+    fun fuzzySearchAsset(query: String?): Deferred<List<AssetItem>?> = GlobalScope.async {
+        if (query.isNullOrBlank()) {
+            null
         } else {
-            val assetList = fuzzySearchAsset(coroutineContext, keyword).await()
-            val userList = fuzzySearchUser(coroutineContext, keyword).await()
-            val groupList = fuzzySearchGroup(coroutineContext, keyword).await()
-            val messageList = fuzzySearchMessage(coroutineContext, keyword).await()
-            SearchDataPackage(null, assetList, userList, groupList, messageList)
+            assetRepository.fuzzySearchAsset("%${query.trim()}%")
         }
     }
+
+    fun fuzzySearchGroup(query: String?): Deferred<List<ConversationItemMinimal>?> =
+        GlobalScope.async {
+            if (query.isNullOrBlank()) {
+                null
+            } else {
+                conversationRepository.fuzzySearchGroup("%${query.trim()}%")
+            }
+        }
 }
