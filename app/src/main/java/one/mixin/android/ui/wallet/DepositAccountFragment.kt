@@ -8,7 +8,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import androidx.fragment.app.Fragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Observable
@@ -16,20 +15,25 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_deposit_account.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
+import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 
-class DepositAccountFragment : Fragment() {
+class DepositAccountFragment : DepositFragment() {
 
     companion object {
         const val TAG = "DepositAccountFragment"
@@ -44,7 +48,8 @@ class DepositAccountFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        title.setOnClickListener { activity?.onBackPressed() }
+        title.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/en-us/articles/360023738212-How-to-deposit-EOS-to-Mixin-Messenger-") }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         account_name_qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         account_name_qr_avatar.setBorder()
@@ -76,6 +81,7 @@ class DepositAccountFragment : Fragment() {
         asset.accountTag?.let {
             showQR(account_memo_qr, "${BuildConfig.VERSION_CODE}-${asset.accountTag}", it)
         }
+        showTip()
     }
 
     private fun showQR(qr: ImageView, name: String, code: String) {
@@ -99,4 +105,6 @@ class DepositAccountFragment : Fragment() {
             }
         }
     }
+
+    override fun getTips() = tip_tv.text.toString()
 }

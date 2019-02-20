@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.fragment.app.Fragment
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.Observable
@@ -22,13 +21,15 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_ADDRESS
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 
-class DepositPublicKeyFragment : Fragment() {
+class DepositPublicKeyFragment : DepositFragment() {
+
     companion object {
         const val TAG = "DepositPublicKeyFragment"
     }
@@ -45,6 +46,7 @@ class DepositPublicKeyFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/en-us/articles/360018789931-How-to-deposit-on-Mixin-Messenger-") }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         qr_avatar.setBorder()
@@ -79,5 +81,8 @@ class DepositPublicKeyFragment : Fragment() {
                 }
             }
         }
+        showTip()
     }
+
+    override fun getTips() = confirm_tv.text.toString()
 }

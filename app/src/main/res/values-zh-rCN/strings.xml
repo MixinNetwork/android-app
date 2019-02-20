@@ -50,6 +50,7 @@
     <string name="undo_capital">撤销</string>
     <string name="searching">搜索中</string>
     <string name="add_success">添加成功</string>
+    <string name="dont_remind">不再提醒</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
