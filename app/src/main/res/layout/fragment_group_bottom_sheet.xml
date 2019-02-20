@@ -6,43 +6,19 @@
               android:background="@drawable/bg_upper_round"
               android:orientation="vertical">
 
-    <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+    <one.mixin.android.widget.RoundTitleView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
-        <ImageView
-                android:id="@+id/left_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:padding="8dp"
-                android:background="@drawable/mixin_ripple"
-                android:src="@drawable/ic_close_black_24dp"
-                tools:ignore="ContentDescription"/>
-
-        <ImageView
-                android:id="@+id/right_iv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="8dp"
-                android:layout_marginTop="8dp"
-                android:padding="8dp"
-                android:background="@drawable/mixin_ripple"
-                android:src="@drawable/ic_more"
-                tools:ignore="ContentDescription"/>
-
-        <one.mixin.android.widget.AvatarView
-                android:id="@+id/avatar"
-                android:layout_width="@dimen/bottom_avatar_size"
-                android:layout_height="@dimen/bottom_avatar_size"
-                android:layout_centerHorizontal="true"
-                android:layout_marginTop="30dp"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                tools:ignore="ContentDescription"/>
-    </RelativeLayout>
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="@dimen/bottom_avatar_size"
+        android:layout_height="@dimen/bottom_avatar_size"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:transitionName="@string/avatar_transition_name"
+        tools:ignore="ContentDescription"/>
 
     <TextView
             android:id="@+id/name"
@@ -71,41 +47,73 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"/>
 
     <LinearLayout
-            android:id="@+id/avatar_container_ll"
-            android:orientation="horizontal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="30dp"
-            android:layout_marginBottom="30dp"
-            android:layout_gravity="center_horizontal"/>
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_marginBottom="@dimen/margin20"
+        android:orientation="horizontal"
+        android:baselineAligned="false">
 
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/bg_gray"/>
+        <FrameLayout
+            android:id="@+id/join_fl"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent">
 
-    <ViewAnimator
-            android:id="@+id/join_va"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/bottom_button_height"
-            android:visibility="gone">
-
-        <TextView
-                android:id="@+id/join_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@android:color/white"
-                android:layout_gravity="center"
-                android:text="@string/group_join"
-                android:textColor="@color/colorBlue"
-                tools:ignore="RelativeOverlap"/>
-
-        <ProgressBar
-                style="?android:attr/progressBarStyleSmall"
+            <ImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:theme="@style/AppTheme.BlueProgress"/>
-    </ViewAnimator>
+                android:background="@drawable/mixin_ripple"
+                android:src="@drawable/ic_group_add"
+                android:contentDescription="@string/contact_other_add"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/member_fl"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/mixin_ripple"
+                android:src="@drawable/ic_group_member"
+                android:contentDescription="@string/share"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/send_fl"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/mixin_ripple"
+                android:src="@drawable/ic_user_send"
+                android:contentDescription="@string/contact_other_send"/>
+        </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/more_fl"
+            android:visibility="gone"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/mixin_ripple"
+                android:src="@drawable/ic_more"
+                android:contentDescription="@string/more"/>
+        </FrameLayout>
+    </LinearLayout>
 </LinearLayout>

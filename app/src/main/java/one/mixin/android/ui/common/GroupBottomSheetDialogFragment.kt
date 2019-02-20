@@ -5,19 +5,17 @@ import android.app.Dialog
 import android.os.Bundle
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
-import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
@@ -37,14 +35,11 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
-import one.mixin.android.widget.AndroidUtilities.dp
-import one.mixin.android.widget.AvatarView
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.margin
-import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import org.threeten.bp.Instant
 import java.io.File
@@ -53,10 +48,6 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "ProfileBottomSheetDialogFragment"
-        private const val DEFAULT_COUNT = 5
-
-        private const val POS_TV = 0
-        private const val POS_PB = 1
 
         fun newInstance(conversationId: String, code: String? = null, expand: Boolean = false) = GroupBottomSheetDialogFragment().apply {
             arguments = Bundle().apply {
@@ -88,17 +79,15 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.left_iv.setOnClickListener { dismiss() }
-        contentView.right_iv.setOnClickListener {
+        contentView.title.right_iv.setOnClickListener { dismiss() }
+        contentView.more_fl.setOnClickListener {
             (dialog as BottomSheet).fakeDismiss()
             menu?.show()
         }
 
-        contentView.join_va.setOnClickListener {
+        contentView.join_fl.setOnClickListener {
             if (code == null) return@setOnClickListener
 
-            contentView.join_va.displayedChild = POS_PB
-            contentView.join_va.isEnabled = false
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
                 if (it.isSuccess) {
                     dismiss()
@@ -112,15 +101,19 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                     ConversationActivity.show(requireContext(), conversationId)
                 } else {
-                    contentView.join_va?.displayedChild = POS_TV
-                    contentView.join_va.isEnabled = true
                     ErrorHandler.handleMixinError(it.errorCode)
                 }
             }, {
-                contentView.join_va?.displayedChild = POS_TV
-                contentView.join_va.isEnabled = true
                 ErrorHandler.handleError(it)
             })
+        }
+        contentView.member_fl.setOnClickListener {
+            dismiss()
+            GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
+        }
+        contentView.send_fl.setOnClickListener {
+            dismiss()
+            ConversationActivity.show(requireContext(), conversationId)
         }
         contentView.detail_tv.movementMethod = LinkMovementMethod()
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
@@ -154,46 +147,21 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetTextI18n")
     private fun initParticipant() {
         doAsync {
-            val participantsCount = bottomViewModel.getParticipantsCount(conversationId)
-            val participants = bottomViewModel.getLimitParticipants(conversationId, DEFAULT_COUNT)
             me = bottomViewModel.findParticipantByIds(conversationId, Session.getAccountId()!!)
-
             uiThread {
                 if (!isAdded) return@uiThread
-
                 initMenu()
-
-                val size = resources.getDimensionPixelSize(R.dimen.bottom_group_avatar_size)
-                val margin = dp(7.5f)
-                val params = LinearLayout.LayoutParams(size, size)
-                params.marginStart = margin
-                params.marginEnd = margin
-                if (contentView.avatar_container_ll.childCount > 0) {
-                    contentView.avatar_container_ll.removeAllViews()
+                if (me != null) {
+                    contentView.join_fl.visibility = GONE
+                    contentView.member_fl.visibility = VISIBLE
+                    contentView.send_fl.visibility = VISIBLE
+                    contentView.more_fl.visibility = VISIBLE
+                } else {
+                    contentView.join_fl.visibility = VISIBLE
+                    contentView.member_fl.visibility = GONE
+                    contentView.send_fl.visibility = GONE
+                    contentView.more_fl.visibility = GONE
                 }
-                for (i in 0 until if (participants.size >= DEFAULT_COUNT) DEFAULT_COUNT - 1 else participants.size) {
-                    val u = participants[i]
-                    val avatarView = AvatarView(requireContext(), null)
-                    contentView.avatar_container_ll.addView(avatarView, params)
-                    avatarView.setTextSize(14f)
-                    avatarView.setInfo(u.fullName, u.avatarUrl, u.userId)
-                }
-                if (participants.size >= DEFAULT_COUNT) {
-                    val moreView = TextView(context).apply {
-                        setBackgroundResource(R.drawable.bg_circle_contact)
-                        textColor = resources.getColor(R.color.text_gray, null)
-                        gravity = Gravity.CENTER
-                        text = "+${participantsCount - DEFAULT_COUNT + 1}"
-                    }
-                    contentView.avatar_container_ll.addView(moreView, params)
-                }
-                contentView.avatar_container_ll.setOnClickListener {
-                    dismiss()
-                    GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
-                }
-
-                contentView.join_va.visibility = if ((me == null) && !TextUtils.isEmpty(code)) VISIBLE else GONE
-                contentView.right_iv.visibility = if (me != null) VISIBLE else GONE
             }
         }
     }
