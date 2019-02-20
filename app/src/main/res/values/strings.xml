@@ -56,6 +56,10 @@
     <string name="dont_remind">Don\'t remind me again</string>
     <string name="time">Time</string>
     <string name="more">More</string>
+    <string name="successful">Successful</string>
+    <string name="failed">Failed</string>
+    <string name="loading">Loading</string>
+    <string name="no_result">NO RESULT</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

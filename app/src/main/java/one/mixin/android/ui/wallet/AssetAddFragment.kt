@@ -22,6 +22,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.adapter.AssetAddAdapter
 import one.mixin.android.vo.TopAssetItem
+import one.mixin.android.widget.MixinToast
 import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
@@ -30,6 +31,7 @@ class AssetAddFragment : BaseFragment() {
     companion object {
         const val POS_RV = 0
         const val POS_PB = 1
+        const val POS_EMPTY = 2
     }
 
     @Inject
@@ -69,7 +71,7 @@ class AssetAddFragment : BaseFragment() {
         title_view.right_animator.isEnabled = false
         title_view.right_animator.setOnClickListener {
             walletViewModel.saveAssets(adapter.checkedAssets.values.toList())
-            requireContext().toast(R.string.add_success)
+            MixinToast.showSuccess(requireContext())
             search_et?.hideKeyboard()
             view?.findNavController()?.navigateUp()
         }
@@ -135,7 +137,11 @@ class AssetAddFragment : BaseFragment() {
             launch(Dispatchers.Main) {
                 adapter.existsSet = pair.second
                 adapter.submitList(pair.first)
-                va.displayedChild = POS_RV
+                if (pair.first.isNullOrEmpty()) {
+                    va.displayedChild = POS_EMPTY
+                } else {
+                    va.displayedChild = POS_RV
+                }
             }
         }
     }

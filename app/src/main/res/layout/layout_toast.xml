@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_toast">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/margin20"
+        android:layout_gravity="center_horizontal">
+
+        <ImageView
+            android:id="@+id/iv"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/ic_toast_success"
+            android:contentDescription="@null"/>
+
+        <ProgressBar
+            android:id="@+id/pb"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone"
+            android:theme="@style/AppTheme.WhiteAccent"/>
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin12"
+        android:layout_gravity="center_horizontal"
+        android:textColor="@color/white"
+        android:text="@string/add_success"/>
+</LinearLayout>

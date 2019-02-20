@@ -63,6 +63,8 @@
     <color name="wallet_divider">#F8F8F8</color>
     <color name="wallet_bg_gray">#F5F7FA</color>
     <color name="wallet_ripple">#F6F8FC</color>
+    <color name="toast_bg">#3A3C3E</color>
+    <color name="toast_error">#F67070</color>
 
     <array name="name_colors">
         <item>#AA4848</item>
