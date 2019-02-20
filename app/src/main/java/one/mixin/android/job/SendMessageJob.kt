@@ -59,6 +59,7 @@ open class SendMessageJob(
         }
 
         if (Session.getExtensionSession() != null) {
+            // more check only for user send message
             jobManager.addJobInBackground(SendSessionMessageJob(message))
         }
     }

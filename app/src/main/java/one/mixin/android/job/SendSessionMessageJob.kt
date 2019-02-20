@@ -7,6 +7,7 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.createParamSessionMessage
 
@@ -24,8 +25,10 @@ class SendSessionMessageJob(
         jobManager.saveJob(this)
         if (message.isPlain()) {
             sendPlainMessage()
-        } else {
+        } else if (message.isSignal()) {
             sendSignalMessage()
+        } else if (message.category.startsWith("SYSTEM_")) {
+            sendPlainMessage()
         }
         removeJob()
     }

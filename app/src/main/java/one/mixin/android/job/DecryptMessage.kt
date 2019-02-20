@@ -117,6 +117,12 @@ class DecryptMessage : Injector() {
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
+    private fun sendToExtensionSession(message: Message) {
+        if (Session.getExtensionSession() != null) {
+            jobManager.addJobInBackground(SendSessionMessageJob(message))
+        }
+    }
+
     private fun processSystemMessage(data: BlazeMessageData) {
         if (!data.category.startsWith("SYSTEM_")) {
             return
@@ -206,6 +212,7 @@ class DecryptMessage : Injector() {
                 }
 
                 messageDao.insert(message)
+                sendToExtensionSession(message)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_IMAGE") -> {
@@ -223,6 +230,7 @@ class DecryptMessage : Injector() {
                 messageDao.insert(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 sendNotificationJob(message, data.source)
+                sendToExtensionSession(message)
             }
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
@@ -317,7 +325,7 @@ class DecryptMessage : Injector() {
         if (userId == SYSTEM_USER) {
             userDao.insert(createSystemUser())
         }
-        val message = createMessage(data.messageId, data.conversationId, userId, data.category, "",
+        val message = createMessage(data.messageId, data.conversationId, userId, data.category, data.data,
             data.createdAt, MessageStatus.DELIVERED, systemMessage.action, systemMessage.participantId)
 
         val accountId = Session.getAccountId()
@@ -355,6 +363,7 @@ class DecryptMessage : Injector() {
             }
         }
         messageDao.insert(message)
+        sendToExtensionSession(message)
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {

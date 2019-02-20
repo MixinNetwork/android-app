@@ -154,6 +154,10 @@ fun Message.isPlain(): Boolean {
     return category.startsWith("PLAIN_")
 }
 
+fun Message.isSignal(): Boolean {
+    return category.startsWith("SIGNAL_")
+}
+
 fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
     return conversation.category == ConversationCategory.CONTACT.name && conversation.ownerId != userId
 }

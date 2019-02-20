@@ -25,6 +25,7 @@ class DecryptSessionMessage : Injector() {
 
     fun onRun(data: BlazeMessageData) {
         processSignalMessage(data)
+        processPlainMessage(data)
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
@@ -42,6 +43,25 @@ class DecryptSessionMessage : Injector() {
             }, deviceId)
         } catch (e: Exception) {
             Log.e(TAG, "process session signal message", e)
+        }
+    }
+
+    private fun processPlainMessage(data: BlazeMessageData) {
+        if (!data.category.startsWith("PLAIN_")) {
+            return
+        }
+        if (data.category == MessageCategory.PLAIN_TEXT.name ||
+            data.category == MessageCategory.PLAIN_IMAGE.name ||
+            data.category == MessageCategory.PLAIN_VIDEO.name ||
+            data.category == MessageCategory.PLAIN_DATA.name ||
+            data.category == MessageCategory.PLAIN_AUDIO.name ||
+            data.category == MessageCategory.PLAIN_STICKER.name ||
+            data.category == MessageCategory.PLAIN_CONTACT.name) {
+            if (!data.representativeId.isNullOrBlank()) {
+                data.userId = data.representativeId
+            }
+            processDecryptSuccess(data, data.data)
+//            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
