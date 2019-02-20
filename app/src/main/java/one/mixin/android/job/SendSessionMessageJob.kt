@@ -10,7 +10,7 @@ import one.mixin.android.vo.isPlain
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.createParamSessionMessage
 
-class SendSessionMessageJob (
+class SendSessionMessageJob(
     private val message: Message,
     val userId: String? = null,
     priority: Int = PRIORITY_SEND_MESSAGE
@@ -45,7 +45,7 @@ class SendSessionMessageJob (
         val sessionId = Session.getExtensionSession()
         val blazeParam = BlazeMessageParam(message.conversationId, message.userId,
             message.id, message.category, content, MessageStatus.SENT.name, quote_message_id = message.quoteMessageId,
-            transfer_id = accountId, session_id =  sessionId)
+            transfer_id = accountId, session_id = sessionId)
         val blazeMessage = createParamSessionMessage(blazeParam)
         deliver(blazeMessage)
     }

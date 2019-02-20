@@ -33,7 +33,6 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast

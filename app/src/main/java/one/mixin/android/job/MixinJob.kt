@@ -35,7 +35,6 @@ import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
 import one.mixin.android.websocket.createSignalKeyParam
-import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.util.UUID
 

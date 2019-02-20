@@ -13,6 +13,7 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
+import java.util.*
 
 class DecryptSessionMessage : Injector() {
 
@@ -31,10 +32,14 @@ class DecryptSessionMessage : Injector() {
             return
         }
         val (keyType, cipherText, _) = SignalProtocol.decodeMessageData(data.data)
+        val deviceId = UUID.fromString(data.sessionId).hashCode()
         try {
             signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, DecryptionCallback {
+                if (!data.transferId.isNullOrBlank()) {
+                    data.userId = data.transferId
+                }
                 processDecryptSuccess(data, String(it))
-            })
+            }, deviceId)
         } catch (e: Exception) {
             Log.e(TAG, "process session signal message", e)
         }
