@@ -57,6 +57,10 @@
     <string name="contract">资产标识</string>
     <string name="time">时间</string>
     <string name="more">更多</string>
+    <string name="successful">成功</string>
+    <string name="failed">失败</string>
+    <string name="loading">加载中</string>
+    <string name="no_result">没有结果</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
