@@ -66,6 +66,8 @@
     <color name="gray_black">#3A3C3E</color>
     <color name="gray_black_50">#AA3A3C3E</color>
     <color name="menu_bg_border">#E5E7EC</color>
+    <color name="toast_bg">#3A3C3E</color>
+    <color name="toast_error">#F67070</color>
 
     <array name="name_colors">
         <item>#AA4848</item>
