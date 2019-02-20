@@ -34,4 +34,18 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
             ta.recycle()
         }
     }
+
+    fun hideLeftIv() {
+        left_iv.visibility = View.GONE
+        title_tv.updateLayoutParams<RelativeLayout.LayoutParams> {
+            marginStart = context.dpToPx(20f)
+        }
+    }
+
+    fun showLeftIv() {
+        left_iv.visibility = View.VISIBLE
+        title_tv.updateLayoutParams<RelativeLayout.LayoutParams> {
+            marginStart = 0
+        }
+    }
 }
