@@ -11,11 +11,10 @@ import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
-import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipAction
@@ -81,7 +80,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.onActivityCreated(savedInstanceState)
         user = arguments!!.getParcelable(ARGS_USER)!!
         conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
-        contentView.left_iv.setOnClickListener { dismiss() }
+        contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             user.avatarUrl.let { url ->
                 if (!url.isNullOrBlank()) {
@@ -110,6 +109,14 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             dismiss()
         }
+        contentView.share_fl.setOnClickListener {
+            ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
+            dismiss()
+        }
+        contentView.add_tv.setOnClickListener {
+            updateRelationship(UserRelationship.FRIEND.name)
+            contentView.add_tv.visibility = GONE
+        }
 
         contentView.detail_tv.movementMethod = LinkMovementMethod()
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
@@ -128,6 +135,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         choices.add(getString(R.string.contact_other_transactions))
         when (user.relationship) {
             UserRelationship.BLOCKING.name -> {
+                choices.add(getString(R.string.contact_other_unblock))
             }
             UserRelationship.FRIEND.name -> {
                 choices.add(getString(R.string.edit_name))
@@ -168,6 +176,9 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     getString(R.string.contact_other_block) -> {
                         bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.BLOCK.name))
                     }
+                    getString(R.string.contact_other_unblock) -> {
+                        bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
+                    }
                     getString(R.string.contact_other_remove) -> {
                         updateRelationship(UserRelationship.STRANGER.name)
                     }
@@ -179,7 +190,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        contentView.right_iv.setOnClickListener {
+        contentView.more_fl.setOnClickListener {
             (dialog as BottomSheet).fakeDismiss()
             menu.show()
         }
@@ -206,7 +217,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 bottomViewModel.findAppById(user.appId!!)?.let { app ->
                     uiThread {
                         contentView.detail_tv.visibility = VISIBLE
-                        contentView.open_fl.visibility = VISIBLE
                         contentView.detail_tv.text = app.description
                         contentView.open_fl.setOnClickListener {
                             dismiss()
@@ -241,7 +251,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.creator_tv.visibility = GONE
             contentView.bot_iv.visibility = GONE
             contentView.detail_tv.visibility = GONE
-            contentView.open_fl.visibility = GONE
         }
 
         updateUserStatus(user.relationship)
@@ -250,30 +259,42 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun updateUserStatus(relationship: String) {
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
+                contentView.share_fl.visibility = GONE
                 contentView.send_fl.visibility = GONE
-                contentView.add_fl.visibility = GONE
-                contentView.unblock_fl.visibility = VISIBLE
-                contentView.unblock_fl.setOnClickListener {
-                    bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
-                    dismiss()
-                }
+                contentView.more_fl.visibility = GONE
+                notFriend()
             }
             UserRelationship.FRIEND.name -> {
                 contentView.add_fl.visibility = GONE
-                contentView.send_fl.visibility = VISIBLE
-                contentView.send_fl.updateLayoutParams<LinearLayout.LayoutParams> {
-                    topMargin = resources.getDimensionPixelOffset(R.dimen.activity_vertical_margin)
+                contentView.add_tv.visibility = GONE
+                if (user.isBot()) {
+                    contentView.open_fl.visibility = VISIBLE
+                    contentView.share_fl.visibility = GONE
+                } else {
+                    contentView.share_fl.visibility = VISIBLE
+                    contentView.open_fl.visibility = GONE
                 }
-                contentView.unblock_fl.visibility = GONE
+                contentView.send_fl.visibility = VISIBLE
+                contentView.more_fl.visibility = VISIBLE
             }
             UserRelationship.STRANGER.name -> {
-                contentView.add_fl.visibility = VISIBLE
+                contentView.share_fl.visibility = GONE
                 contentView.send_fl.visibility = VISIBLE
-                contentView.add_fl.updateLayoutParams<LinearLayout.LayoutParams> {
-                    topMargin = resources.getDimensionPixelOffset(R.dimen.activity_vertical_margin)
-                }
-                contentView.unblock_fl.visibility = GONE
+                contentView.more_fl.visibility = VISIBLE
+                notFriend()
             }
+        }
+    }
+
+    private fun notFriend() {
+        if (user.isBot()) {
+            contentView.add_tv.visibility = VISIBLE
+            contentView.add_fl.visibility = GONE
+            contentView.open_fl.visibility = VISIBLE
+        } else {
+            contentView.add_tv.visibility = GONE
+            contentView.add_fl.visibility = VISIBLE
+            contentView.open_fl.visibility = GONE
         }
     }
 

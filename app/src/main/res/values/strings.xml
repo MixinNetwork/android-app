@@ -59,6 +59,7 @@
     <string name="chain">Chain</string>
     <string name="contract">Asset Key</string>
     <string name="time">Time</string>
+    <string name="more">More</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -163,6 +164,7 @@
     <string name="contact_my_qr_tip">Scan the QR code to add me on Mixin</string>
     <string name="contact_receive_money">Receive Money</string>
     <string name="contact_receive_tip">Scan the QR Code to pay me</string>
+    <string name="add_contact">+ Add Contact</string>
     <!--profile-->
     <string name="profile_my_title">My Profile</string>
     <string name="profile_photo">Profile Photo</string>
@@ -452,7 +454,7 @@
     <string name="notification_node">Messaging Node</string>
     <string name="notification_reply">Reply</string>
     <!--auth-->
-    <string name="auth_request">requests access to your</string>
+    <string name="auth_request">Requests access to your</string>
     <string name="auth_public_profile">Public profile (required)</string>
     <string name="auth_phone_number">Phone number</string>
     <string name="auth_assets">Assets balances</string>

@@ -56,6 +56,7 @@
     <string name="chain">所属公链</string>
     <string name="contract">资产标识</string>
     <string name="time">时间</string>
+    <string name="more">更多</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -154,6 +155,7 @@
     <string name="contact_my_qr_tip">用 Mixin 扫描二维码加我为联系人</string>
     <string name="contact_receive_money">我的收款码</string>
     <string name="contact_receive_tip">用 Mixin 扫描二维码给我转账</string>
+    <string name="add_contact">+ 添加联系人</string>
     <!--profile-->
     <string name="profile_my_title">我的</string>
     <string name="profile_photo">个人头像</string>

@@ -33,6 +33,7 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_web.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
@@ -192,7 +193,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         KeyBoardAssist.assistContent(contentView as ViewGroup)
-        contentView.close_iv.setOnClickListener {
+        contentView.title.right_iv.setOnClickListener {
             dialog.dismiss()
         }
         contentView.chat_web_view.settings.javaScriptEnabled = true
@@ -201,8 +202,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
             override fun onPageFinished() {
-                contentView.progress.visibility = View.GONE
-                contentView.title_view.visibility = View.VISIBLE
+                if (contentView.chat_web_view.canGoBack()) {
+                    contentView.title.showLeftIv()
+                    contentView.title.left_iv.setOnClickListener { contentView.chat_web_view.goBack() }
+                } else {
+                    contentView.title.hideLeftIv()
+                }
             }
         }, conversationId, this.requireFragmentManager())
 
@@ -210,7 +215,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
                 if (!title.equals(url)) {
-                    contentView.title_view.text = title
+                    contentView.title.title_tv.text = title
                 }
             }
 
@@ -233,7 +238,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val intent: Intent? = fileChooserParams?.createIntent()
                 if (fileChooserParams?.isCaptureEnabled == true) {
                     if (intent?.type == "video/*") {
-                        PermissionBottomSheetDialogFragment.requestVideo(contentView.title_view.text.toString(), appName, appAvatar)
+                        PermissionBottomSheetDialogFragment.requestVideo(contentView.title.title_tv.toString(), appName, appAvatar)
                             .setCancelAction {
                                 uploadMessage?.onReceiveValue(null)
                                 uploadMessage = null
@@ -252,7 +257,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     } else if (intent?.type == "image/*") {
-                        PermissionBottomSheetDialogFragment.requestCamera(contentView.title_view.text.toString(), appName, appAvatar)
+                        PermissionBottomSheetDialogFragment.requestCamera(contentView.title.title_tv.toString(), appName, appAvatar)
                             .setCancelAction {
                                 uploadMessage?.onReceiveValue(null)
                                 uploadMessage = null
@@ -282,14 +287,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        contentView.more_iv.setOnClickListener {
-            showBottomSheet()
-        }
-
         name?.let {
-            contentView.title_view.text = it
-            contentView.progress.visibility = View.GONE
-            contentView.title_view.visibility = View.VISIBLE
+            contentView.title.title_tv.text = it
         }
 
         dialog.setOnShowListener {
