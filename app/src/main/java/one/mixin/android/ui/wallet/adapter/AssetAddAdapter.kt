@@ -12,8 +12,8 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.toast
 import one.mixin.android.vo.TopAssetItem
+import one.mixin.android.widget.MixinToast
 
 internal class AssetAddAdapter : ListAdapter<TopAssetItem, AssetAddAdapter.ItemHolder>(TopAssetItem.DIFF_CALLBACK) {
 
@@ -45,7 +45,7 @@ internal class AssetAddAdapter : ListAdapter<TopAssetItem, AssetAddAdapter.ItemH
             itemView.cb.isChecked = checkedAssets.contains(asset.assetId)
             itemView.setOnClickListener {
                 if (!itemView.cb.isEnabled) {
-                    itemView.context.toast(R.string.wallet_add_asset_already)
+                    MixinToast.showWarning(itemView.context, text = itemView.context.getString(R.string.wallet_add_asset_already))
                 } else {
                     itemView.cb.isChecked = !itemView.cb.isChecked
                     if (itemView.cb.isChecked) {

@@ -23,7 +23,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/white"
-            android:layout_marginBottom="@dimen/margin16"
             tools:ignore="UselessParent">
 
             <TextView
@@ -83,6 +82,11 @@
             </FrameLayout>
         </RelativeLayout>
     </FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="15dp"
+        android:background="@drawable/ic_shadow_bottom"/>
 
     <TextView
         android:id="@+id/confirm_tv"

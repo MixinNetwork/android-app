@@ -5,6 +5,7 @@ import android.text.Layout
 import android.util.AttributeSet
 import android.view.ViewGroup
 import android.widget.TextView
+import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 
 class BalanceLayout : ViewGroup {
@@ -14,10 +15,19 @@ class BalanceLayout : ViewGroup {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
-    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr)
+    constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
+        val ta = context.obtainStyledAttributes(attrs, R.styleable.BalanceLayout)
+        if (ta != null) {
+            if (ta.hasValue(R.styleable.BalanceLayout_center)) {
+                center = ta.getBoolean(R.styleable.BalanceLayout_center, false)
+            }
+            ta.recycle()
+        }
+    }
 
     private val symbolOffset by lazy { context.dpToPx(8f) }
     private var balanceWordWidth: Int? = null
+    private var center = false
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
@@ -70,7 +80,13 @@ class BalanceLayout : ViewGroup {
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
         val balanceTv = getChildAt(0) as TextView
         val symbolTv = getChildAt(1) as TextView
-        balanceTv.layout(0, 0, balanceTv.measuredWidth, balanceTv.measuredHeight)
+        var left = 0
+        if (center) {
+            left = (measuredWidth - balanceTv.measuredWidth - symbolTv.measuredWidth) / 2
+            balanceTv.layout(left, 0, left + balanceTv.measuredWidth, balanceTv.measuredHeight)
+        } else {
+            balanceTv.layout(0, 0, balanceTv.measuredWidth, balanceTv.measuredHeight)
+        }
         val symbolTop = balanceTv.height - symbolTv.measuredHeight
         val lines = balanceTv.layout.lineCount
         val balanceWidth = if (lines == 1) {
@@ -79,8 +95,8 @@ class BalanceLayout : ViewGroup {
             val lastLineText = getLastLineText(balanceTv.layout, lines)
             balanceTv.layout.paint.measureText(lastLineText.toString()).toInt()
         }
-        val symbolLeft = balanceWidth + symbolOffset
-        symbolTv.layout(symbolLeft, symbolTop, symbolLeft + symbolTv.measuredWidth, symbolTop + symbolTv.measuredHeight)
+        val symbolLeft = left + balanceWidth + symbolOffset
+        symbolTv.layout(symbolLeft, symbolTop, left + symbolLeft + symbolTv.measuredWidth, symbolTop + symbolTv.measuredHeight)
     }
 
     private fun getLastLineText(balanceLayout: Layout, lines: Int): CharSequence {
