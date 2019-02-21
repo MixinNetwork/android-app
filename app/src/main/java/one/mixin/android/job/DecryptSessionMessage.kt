@@ -7,9 +7,13 @@ import one.mixin.android.extension.findLastUrl
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
+import one.mixin.android.websocket.ACKNOWLEDGE_SESSION_MESSAGE_RECEIPTS
+import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
@@ -44,6 +48,7 @@ class DecryptSessionMessage : Injector() {
         } catch (e: Exception) {
             Log.e(TAG, "process session signal message", e)
         }
+        updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
     }
 
     private fun processPlainMessage(data: BlazeMessageData) {
@@ -61,8 +66,12 @@ class DecryptSessionMessage : Injector() {
                 data.userId = data.representativeId
             }
             processDecryptSuccess(data, data.data)
-//            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
+    }
+
+    private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
+        jobDao.insert(createAckJob(ACKNOWLEDGE_SESSION_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
     private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
