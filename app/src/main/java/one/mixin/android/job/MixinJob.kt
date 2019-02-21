@@ -30,6 +30,7 @@ import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.createBlazeSignalKeyMessage
+import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
@@ -141,7 +142,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             deviceId = UUID.fromString(sessionId).hashCode()
         }
         if (!signalProtocol.containsSession(recipientId, deviceId)) {
-            val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(arrayListOf(
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(
                 BlazeMessageParamSession(recipientId, sessionId)
             )))
 
