@@ -185,7 +185,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
     protected fun sendSenderKey(conversationId: String, recipientId: String): Boolean {
         if (!signalProtocol.containsSession(recipientId)) {
-            val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
@@ -252,6 +252,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             Thread.sleep(SLEEP_MILLIS)
             return signalKeysChannel(blazeMessage)
         } else if (bm.error != null) {
+            Log.e(TAG, bm.error.toString())
             return if (bm.error.code == FORBIDDEN) {
                 null
             } else {
