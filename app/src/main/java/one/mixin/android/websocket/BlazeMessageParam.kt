@@ -12,7 +12,7 @@ data class BlazeMessageParam(
     val message_id: String?,
     val category: String?,
     val data: String?,
-    val status: String?,
+    val status: String? = null,
     val recipients: ArrayList<BlazeMessageParamSession>? = null,
     val keys: SignalKeyRequest? = null,
     val messages: List<Any>? = null,

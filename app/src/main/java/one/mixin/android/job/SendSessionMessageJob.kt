@@ -5,7 +5,6 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.BlazeMessageParam
@@ -47,7 +46,7 @@ class SendSessionMessageJob(
         val accountId = Session.getAccountId()
         val sessionId = Session.getExtensionSession()
         val blazeParam = BlazeMessageParam(message.conversationId, message.userId,
-            message.id, message.category, content, MessageStatus.SENT.name, quote_message_id = message.quoteMessageId,
+            message.id, message.category, content, quote_message_id = message.quoteMessageId,
             transfer_id = accountId, session_id = sessionId)
         val blazeMessage = createParamSessionMessage(blazeParam)
         deliver(blazeMessage)

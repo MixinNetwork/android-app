@@ -11,7 +11,6 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageStatus.SENT
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isGroup
@@ -97,7 +96,7 @@ open class SendMessageJob(
             }
         }
         val blazeParam = BlazeMessageParam(message.conversationId, recipientId,
-            message.id, message.category, content, SENT.name, quote_message_id = message.quoteMessageId)
+            message.id, message.category, content, quote_message_id = message.quoteMessageId)
         val blazeMessage = if (message.isCall()) {
             createCallMessage(blazeParam)
         } else {

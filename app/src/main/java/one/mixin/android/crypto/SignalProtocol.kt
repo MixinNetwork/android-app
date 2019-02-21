@@ -8,7 +8,6 @@ import one.mixin.android.crypto.storage.SignalProtocolStoreImpl
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.createParamBlazeMessage
@@ -193,7 +192,6 @@ class SignalProtocol(ctx: Context) {
             message.id,
             message.category,
             data,
-            MessageStatus.SENT.name,
             quote_message_id = message.quoteMessageId,
             transfer_id = message.userId,
             session_id = sessionId)
@@ -209,7 +207,6 @@ class SignalProtocol(ctx: Context) {
             message.id,
             message.category,
             data,
-            MessageStatus.SENT.name,
             quote_message_id = message.quoteMessageId)
         return createParamBlazeMessage(blazeParam)
     }
@@ -232,7 +229,6 @@ class SignalProtocol(ctx: Context) {
             message.id,
             message.category,
             data,
-            MessageStatus.SENT.name,
             quote_message_id = message.quoteMessageId)
         return createParamBlazeMessage(blazeParam)
     }
