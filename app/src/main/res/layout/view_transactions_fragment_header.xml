@@ -18,12 +18,12 @@
 
             <one.mixin.android.widget.BadgeCircleImageView
                 android:id="@+id/avatar"
-                android:layout_width="56dp"
-                android:layout_height="56dp"
+                android:layout_width="51dp"
+                android:layout_height="51dp"
                 android:layout_marginStart="32dp"
                 android:layout_marginTop="28dp"
                 android:layout_marginBottom="16dp"
-                tools:ignore="ContentDescription" />
+                tools:ignore="ContentDescription"/>
 
             <one.mixin.android.widget.BalanceLayout
                 android:id="@+id/balance_rl"
@@ -41,17 +41,16 @@
                     android:fontFamily="@font/mixin_condensed"
                     android:textColor="@color/wallet_text_dark"
                     android:textSize="40sp"
-                    tools:text="123902813409182345.5518390518" />
+                    tools:text="123902813409182345.5518390518"/>
 
                 <TextView
                     android:id="@+id/symbol_tv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_wallet_symbol"
                     android:gravity="center"
                     android:paddingStart="2dp"
                     android:paddingEnd="2dp"
-                    android:textColor="@color/wallet_text_gray" />
+                    android:textColor="@color/black"/>
             </one.mixin.android.widget.BalanceLayout>
 
             <TextView
@@ -64,7 +63,7 @@
                 android:layout_marginEnd="@dimen/activity_horizontal_margin"
                 android:layout_marginBottom="@dimen/margin16"
                 android:layout_toEndOf="@id/avatar"
-                android:textColor="@color/wallet_text_gray" />
+                android:textColor="@color/wallet_text_gray"/>
         </RelativeLayout>
 
         <LinearLayout
@@ -79,13 +78,13 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/transfer_capital"
-                android:textColor="@color/wallet_blue_secondary" />
+                android:textColor="@color/wallet_blue_secondary"/>
 
             <View
                 android:layout_width="1dp"
                 android:layout_height="18dp"
                 android:layout_gravity="center_vertical"
-                android:background="#f3f3f3" />
+                android:background="#f3f3f3"/>
 
             <TextView
                 android:id="@+id/deposit_tv"
@@ -94,13 +93,13 @@
                 android:layout_weight="1"
                 android:gravity="center"
                 android:text="@string/deposit_capital"
-                android:textColor="@color/wallet_blue_secondary" />
+                android:textColor="@color/wallet_blue_secondary"/>
         </LinearLayout>
 
         <View
             android:layout_width="match_parent"
             android:layout_height="10dp"
-            android:background="@color/bg_gray"/>
+            android:background="@drawable/ic_shadow_divider"/>
     </LinearLayout>
 
     <RelativeLayout
@@ -111,14 +110,14 @@
 
         <ImageView
             android:id="@+id/group_info_member_title_sort"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="8dp"
+            android:padding="8dp"
             android:background="@drawable/mixin_ripple_small"
-            android:padding="4dp"
-            android:src="@drawable/ic_sort" />
+            android:src="@drawable/ic_sort"/>
 
         <TextView
             android:id="@+id/group_info_member_title"
@@ -129,7 +128,7 @@
             android:gravity="bottom"
             android:paddingStart="@dimen/margin20"
             android:paddingEnd="@dimen/margin20"
-            android:text="@string/wallet_transactions_title" />
+            android:text="@string/wallet_transactions_title"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -143,12 +142,12 @@
             android:id="@+id/center"
             android:layout_width="1dp"
             android:layout_height="1dp"
-            android:layout_centerInParent="true" />
+            android:layout_centerInParent="true"/>
 
         <View
             android:layout_width="match_parent"
             android:layout_height=".5dp"
-            android:background="@color/wallet_divider" />
+            android:background="@color/wallet_divider"/>
 
         <ImageView
             android:id="@+id/bottom_iv"
@@ -156,7 +155,7 @@
             android:layout_height="125dp"
             android:layout_above="@+id/center"
             android:layout_centerHorizontal="true"
-            android:src="@drawable/ic_transactions_empty" />
+            android:src="@drawable/ic_transactions_empty"/>
 
         <TextView
             android:id="@+id/wallet_transactions_empty"
@@ -166,6 +165,6 @@
             android:layout_centerHorizontal="true"
             android:layout_marginTop="@dimen/margin16"
             android:text="@string/wallet_transactions_empty"
-            android:textColor="@color/wallet_text_gray" />
+            android:textColor="@color/wallet_text_gray"/>
     </RelativeLayout>
 </RelativeLayout>

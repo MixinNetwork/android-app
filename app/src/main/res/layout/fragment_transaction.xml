@@ -45,9 +45,10 @@
 
                     <one.mixin.android.widget.BalanceLayout
                         android:id="@+id/value_rl"
-                        android:layout_width="200dp"
+                        android:layout_width="wrap_content"
                         android:layout_marginStart="32dp"
                         android:layout_marginEnd="32dp"
+                        app:center="true"
                         android:layout_centerHorizontal="true"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/avatar">
@@ -65,11 +66,10 @@
                             android:id="@+id/symbol_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:background="@drawable/bg_wallet_symbol"
                             android:gravity="center"
                             android:paddingStart="2dp"
                             android:paddingEnd="2dp"
-                            android:textColor="@color/wallet_text_gray" />
+                            android:textColor="@color/black" />
                     </one.mixin.android.widget.BalanceLayout>
 
                     <TextView
@@ -87,7 +87,7 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="10dp"
-                android:background="@color/bg_gray" />
+                android:background="@drawable/ic_shadow_divider"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
