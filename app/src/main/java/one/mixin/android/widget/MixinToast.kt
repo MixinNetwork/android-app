@@ -7,15 +7,17 @@ import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.core.content.getSystemService
 import kotlinx.android.synthetic.main.layout_toast.view.*
 import one.mixin.android.R
 
 class MixinToast {
     companion object {
-        const val TYPE_SUCCESS = 0
-        const val TYPE_FAILURE = 1
-        const val TYPE_LOADING = 2
+        private const val TYPE_SUCCESS = 0
+        private const val TYPE_FAILURE = 1
+        private const val TYPE_WARNING = 2
+        private const val TYPE_LOADING = 3
 
         fun showSuccess(context: Context, duration: Int = Toast.LENGTH_SHORT) {
             show(TYPE_SUCCESS, context, duration)
@@ -25,33 +27,45 @@ class MixinToast {
             show(TYPE_FAILURE, context, duration)
         }
 
+        fun showWarning(context: Context, duration: Int = Toast.LENGTH_SHORT, text: String? = null) {
+            show(TYPE_WARNING, context, duration, text)
+        }
+
         fun showLoading(context: Context, duration: Int = Toast.LENGTH_LONG) {
             show(TYPE_LOADING, context, duration)
         }
 
         @SuppressLint("InflateParams")
-        fun show(type: Int, context: Context, duration: Int) {
+        fun show(type: Int, context: Context, duration: Int, text: String? = null) {
             val toast = Toast.makeText(context, "", duration)
             val toastLayout = context.getSystemService<LayoutInflater>()!!.inflate(R.layout.layout_toast, null)
+            var toastText: String? = null
             when (type) {
                 TYPE_SUCCESS -> {
                     toastLayout.iv.setImageResource(R.drawable.ic_toast_success)
                     toastLayout.pb.visibility = GONE
                     toastLayout.iv.visibility = VISIBLE
-                    toastLayout.tv.setText(R.string.successful)
+                    toastText = text ?: context.getString(R.string.successful)
                 }
                 TYPE_FAILURE -> {
                     toastLayout.iv.setImageResource(R.drawable.ic_toast_failure)
                     toastLayout.pb.visibility = GONE
                     toastLayout.iv.visibility = VISIBLE
-                    toastLayout.tv.setText(R.string.failed)
+                    toastText = text ?: context.getString(R.string.failed)
+                }
+                TYPE_WARNING -> {
+                    toastLayout.iv.setImageResource(R.drawable.ic_toast_warning)
+                    toastLayout.pb.visibility = GONE
+                    toastLayout.iv.visibility = VISIBLE
+                    toastText = text  // no default text
                 }
                 TYPE_LOADING -> {
                     toastLayout.pb.visibility = VISIBLE
                     toastLayout.iv.visibility = GONE
-                    toastLayout.tv.setText(R.string.loading)
+                    toastText = text ?: context.getString(R.string.loading)
                 }
             }
+            toastLayout.tv.text = toastText
             toast.view = toastLayout
             toast.setGravity(Gravity.CENTER, 0, 0)
             toast.show()

@@ -93,10 +93,14 @@
                 </RelativeLayout>
             </FrameLayout>
 
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="10dp"
+                android:background="@drawable/ic_shadow_divider"/>
+
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
                 android:background="@color/white">
 
                 <RelativeLayout
@@ -162,6 +166,11 @@
                     </FrameLayout>
                 </RelativeLayout>
             </FrameLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="15dp"
+                android:background="@drawable/ic_shadow_bottom"/>
 
             <TextView
                 android:id="@+id/tip_tv"

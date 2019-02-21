@@ -100,4 +100,7 @@
         <attr name="right_icon" format="reference" />
         <attr name="left_icon" format="reference" />
     </declare-styleable>
+    <declare-styleable name="BalanceLayout">
+        <attr name="center" format="boolean"/>
+    </declare-styleable>
 </resources>

@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:need_divider="false"
-        app:rightIcon="@drawable/ic_sort"
+        app:rightIcon="@drawable/ic_wallet_filter"
         app:titleText="@string/wallet_all_transactions"/>
 
     <androidx.recyclerview.widget.RecyclerView
