@@ -47,18 +47,18 @@ open class SendMessageJob(
         if (message.isCall()) {
             return
         }
-        if (!alreadyExistMessage) {
-            val conversation = conversationDao.findConversationById(message.conversationId)
-            if (conversation != null) {
-                messageDao.insert(message)
-                parseHyperlink()
-            } else {
-                Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
-            }
+        if (alreadyExistMessage) {
+            return
+        }
+        val conversation = conversationDao.findConversationById(message.conversationId)
+        if (conversation != null) {
+            messageDao.insert(message)
+            parseHyperlink()
+        } else {
+            Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
 
         if (Session.getExtensionSession() != null) {
-            // more check only for user send message
             jobManager.addJobInBackground(SendSessionMessageJob(message))
         }
     }

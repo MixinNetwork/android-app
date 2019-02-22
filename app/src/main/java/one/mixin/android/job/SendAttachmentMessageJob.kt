@@ -13,6 +13,7 @@ import one.mixin.android.crypto.attachment.AttachmentCipherOutputStreamFactory
 import one.mixin.android.crypto.attachment.PushAttachmentData
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.websocket.TransferAttachmentData
@@ -127,6 +128,9 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         message.content = encoded
         messageDao.updateMessageContent(encoded, message.id)
         jobManager.addJobInBackground(SendMessageJob(message, null, true))
+        if (Session.getExtensionSession() != null) {
+            jobManager.addJobInBackground(SendSessionMessageJob(message))
+        }
         return true
     }
 
