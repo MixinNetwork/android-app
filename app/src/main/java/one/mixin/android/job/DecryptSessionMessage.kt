@@ -62,6 +62,7 @@ class DecryptSessionMessage : Injector() {
             val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
             if (plainData.action == PlainDataAction.SYNC_SESSION.name && data.sessionId != null) {
                 Session.storeExtensionSession(data.sessionId)
+                signalProtocol.deleteSession(data.userId)
             }
             return
         }

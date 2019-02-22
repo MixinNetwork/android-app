@@ -3,6 +3,8 @@ package one.mixin.android.crypto
 import android.content.Context
 import android.util.Log
 import one.mixin.android.MixinApplication
+import one.mixin.android.crypto.db.SessionDao
+import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.storage.MixinSenderKeyStore
 import one.mixin.android.crypto.storage.SignalProtocolStoreImpl
 import one.mixin.android.util.Session
@@ -86,6 +88,7 @@ class SignalProtocol(ctx: Context) {
 
     private val signalProtocolStore = SignalProtocolStoreImpl(MixinApplication.appContext)
     private val senderKeyStore: MixinSenderKeyStore = MixinSenderKeyStore(ctx)
+    private val sessionDao: SessionDao = SignalDatabase.getDatabase(MixinApplication.appContext).sessionDao()
 
     private fun getSenderKeyDistribution(groupId: String, senderId: String): SenderKeyDistributionMessage {
         val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(senderId, DEFAULT_DEVICE_ID))
@@ -169,6 +172,10 @@ class SignalProtocol(ctx: Context) {
             signalProtocolStore.deleteSession(signalProtocolAddress)
             signalProtocolStore.removeIdentity(signalProtocolAddress)
         }
+    }
+
+    fun deleteSession(userId: String) {
+        sessionDao.deleteSession(userId)
     }
 
     fun processSession(userId: String, preKeyBundle: PreKeyBundle, deviceId: Int = SignalProtocol.DEFAULT_DEVICE_ID) {

@@ -14,10 +14,14 @@ interface SessionDao : BaseDao<Session> {
     fun getSession(address: String, device: Int): Session?
 
     @Transaction
-    @Query("SELECT device from sessions where address = :address AND device != 1")
+    @Query("SELECT device from sessions WHERE address = :address AND device != 1")
     fun getSubDevice(address: String): List<Int>?
 
     @Transaction
-    @Query("SELECT * FROM sessions where address = :address")
+    @Query("SELECT * FROM sessions WHERE address = :address")
     fun getSessions(address: String): List<Session>?
+
+
+    @Query("DELETE FROM sessions WHERE address = :address")
+    fun deleteSession(address: String)
 }
