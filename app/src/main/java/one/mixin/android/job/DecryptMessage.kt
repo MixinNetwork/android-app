@@ -117,9 +117,9 @@ class DecryptMessage : Injector() {
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
-    private fun sendToExtensionSession(message: Message) {
+    private fun sendToExtensionSession(message: Message, content: String? = null) {
         if (Session.getExtensionSession() != null) {
-            jobManager.addJobInBackground(SendSessionMessageJob(message))
+            jobManager.addJobInBackground(SendSessionMessageJob(message, content))
         }
     }
 
@@ -228,9 +228,9 @@ class DecryptMessage : Injector() {
                     mediaData.key, mediaData.digest, data.createdAt, MediaStatus.PENDING, MessageStatus.DELIVERED)
 
                 messageDao.insert(message)
-                sendToExtensionSession(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 sendNotificationJob(message, data.source)
+                sendToExtensionSession(message, plainText)
             }
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)

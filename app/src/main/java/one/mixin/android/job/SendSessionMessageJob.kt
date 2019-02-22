@@ -12,7 +12,7 @@ import one.mixin.android.websocket.createParamSessionMessage
 
 class SendSessionMessageJob(
     private val message: Message,
-    val userId: String? = null,
+    val content: String? = null,
     priority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(priority).addTags(message.id).groupBy("send_session_message_group").requireWebSocketConnected().persist(), message.id) {
 
@@ -56,6 +56,9 @@ class SendSessionMessageJob(
         val accountId = Session.getAccountId()!!
         val sessionId = Session.getExtensionSession()!!
         checkSignalSession(accountId, sessionId)
+        if (content != null) {
+            message.content = content
+        }
         val encrypted = signalProtocol.encryptTransferSessionMessage(message, sessionId, accountId)
         deliver(encrypted)
     }
