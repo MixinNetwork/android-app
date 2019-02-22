@@ -29,7 +29,7 @@ class Message(
 
     @SerializedName("user_id")
     @ColumnInfo(name = "user_id")
-    val userId: String,
+    var userId: String,
 
     @SerializedName("category")
     @ColumnInfo(name = "category")

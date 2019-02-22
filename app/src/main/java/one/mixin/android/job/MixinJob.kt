@@ -96,7 +96,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
 
         if (requestSignalKeyUsers.isNotEmpty()) {
-            val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
             val data = signalKeysChannel(blazeMessage)
             if (data != null) {
                 val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)

@@ -363,6 +363,9 @@ class DecryptMessage : Injector() {
             }
         }
         messageDao.insert(message)
+        if (systemMessage.userId != null) {
+            message.userId = systemMessage.userId
+        }
         sendToExtensionSession(message)
     }
 
