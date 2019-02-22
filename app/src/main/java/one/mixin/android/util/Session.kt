@@ -96,6 +96,11 @@ class Session {
             return account?.userId
         }
 
+        fun getSessionId(): String? {
+            val account = Session.getAccount()
+            return account?.session_id
+        }
+
         fun checkToken() = getAccount() != null && !getToken().isNullOrBlank()
 
         fun signToken(acct: Account?, request: Request): String {
