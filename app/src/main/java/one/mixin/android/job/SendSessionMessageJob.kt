@@ -45,9 +45,9 @@ class SendSessionMessageJob(
         }
         val accountId = Session.getAccountId()
         val sessionId = Session.getExtensionSession()
-        val blazeParam = BlazeMessageParam(message.conversationId, message.userId,
+        val blazeParam = BlazeMessageParam(message.conversationId, accountId,
             message.id, message.category, content, quote_message_id = message.quoteMessageId,
-            transfer_id = accountId, session_id = sessionId)
+            transfer_id = message.userId, session_id = sessionId)
         val blazeMessage = createParamSessionMessage(blazeParam)
         deliver(blazeMessage)
     }

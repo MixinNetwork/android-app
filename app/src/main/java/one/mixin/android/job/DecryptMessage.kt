@@ -228,9 +228,9 @@ class DecryptMessage : Injector() {
                     mediaData.key, mediaData.digest, data.createdAt, MediaStatus.PENDING, MessageStatus.DELIVERED)
 
                 messageDao.insert(message)
+                sendToExtensionSession(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 sendNotificationJob(message, data.source)
-                sendToExtensionSession(message)
             }
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
