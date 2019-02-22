@@ -30,6 +30,7 @@ class DecryptSessionMessage : Injector() {
     private val gson = GsonHelper.customGson
 
     fun onRun(data: BlazeMessageData) {
+        syncConversation(data)
         processSignalMessage(data)
         processPlainMessage(data)
     }
@@ -64,6 +65,7 @@ class DecryptSessionMessage : Injector() {
                 Session.storeExtensionSession(data.sessionId)
                 signalProtocol.deleteSession(data.userId)
             }
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
             return
         }
         if (data.category == MessageCategory.PLAIN_TEXT.name ||

@@ -253,8 +253,6 @@ class ChatWebSocket(
             }
         } else if (blazeMessage.action == CREATE_SESSION_MESSAGE) {
             if (data.userId == accountId && data.sessionId == sessionId && data.category.isEmpty()) {
-                makeMessageStatus(data.status, data.messageId)
-                sendSessionAck(data.status, data.messageId)
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
@@ -268,6 +266,7 @@ class ChatWebSocket(
         if (curStatus != null && curStatus != MessageStatus.READ.name) {
             messageDao.updateMessageStatus(status, messageId)
         }
+        sendSessionAck(status, messageId)
     }
 
     private fun sendSessionAck(status: String, messageId: String) {
