@@ -293,7 +293,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                     val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                     if (data.category.startsWith("WEBRTC_")) {
                         callMessageDecrypt.onRun(data)
-                    } else if (data.transferId == accountId && data.sessionId != null) {
+                    } else if (data.userId == accountId && data.sessionId != null) {
                         sessionMessageDecrypt.onRun(data)
                     } else {
                         messageDecrypt.onRun(data)
