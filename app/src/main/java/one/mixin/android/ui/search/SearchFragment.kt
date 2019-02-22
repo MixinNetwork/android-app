@@ -1,23 +1,26 @@
 package one.mixin.android.ui.search
 
 import android.annotation.SuppressLint
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.recyclerview.widget.LinearLayoutManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.hideKeyboard
@@ -27,17 +30,19 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.onlyLast
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationItemMinimal
-import one.mixin.android.vo.SearchDataPackage
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import org.jetbrains.anko.support.v4.runOnUiThread
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
 class SearchFragment : BaseFragment(), Injectable {
 
     private lateinit var searchContext: CoroutineContext
-    private lateinit var searchChannel: Channel<Deferred<SearchDataPackage>>
+    private lateinit var searchContactChannel: Channel<Deferred<List<User>?>>
+    private lateinit var searchAssetChannel: Channel<Deferred<List<AssetItem>?>>
+    private lateinit var searchUserChannel: Channel<Deferred<List<User>?>>
+    private lateinit var searchGroupChannel: Channel<Deferred<List<ConversationItemMinimal>?>>
+    private lateinit var searchMessageChannel: Channel<Deferred<List<SearchMessageItem>?>>
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -82,7 +87,7 @@ class SearchFragment : BaseFragment(), Injectable {
                 it.dispose()
             }
         }
-        fuzzySearch(searchContext, keyword)
+        fuzzySearch(keyword)
     }
 
     override fun onCreateView(
@@ -95,8 +100,12 @@ class SearchFragment : BaseFragment(), Injectable {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         searchContext = Job()
-        searchChannel = Channel()
-        search_rv.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+        searchContactChannel = Channel()
+        searchAssetChannel = Channel()
+        searchUserChannel = Channel()
+        searchGroupChannel = Channel()
+        searchMessageChannel = Channel()
+        search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         search_rv.addItemDecoration(StickyRecyclerHeadersDecoration(searchAdapter))
         search_rv.adapter = searchAdapter
 
@@ -128,31 +137,79 @@ class SearchFragment : BaseFragment(), Injectable {
                 context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             }
         }
-        setSearchListener {
-            runOnUiThread {
-                if (it.contactList != null) {
-                    searchAdapter.setData(null, it.contactList, null, null)
-                } else {
-                    searchAdapter.setData(it.assetList, it.userList, it.groupList, it.messageList)
-                }
-            }
+        setContactListener {
+            searchAdapter.setDefaultData(it)
+        }
+        setAssetListener {
+            searchAdapter.setAssetData(it)
+        }
+        setUserListener {
+            searchAdapter.setUserData(it)
+        }
+        setGroupListener {
+            searchAdapter.setGroupData(it)
+        }
+        setMessageListener {
+            searchAdapter.setMessageData(it)
         }
         bindData()
     }
 
     override fun onDetach() {
         super.onDetach()
-        searchChannel.close()
+        searchContactChannel.close()
+        searchAssetChannel.close()
+        searchUserChannel.close()
+        searchGroupChannel.close()
+        searchMessageChannel.close()
         searchContext.cancelChildren()
     }
 
-    private fun fuzzySearch(context: CoroutineContext, keyword: String?) = runBlocking(context) {
-        searchChannel.send(searchViewModel.fuzzySearch(keyword))
+    private fun fuzzySearch(keyword: String?) = runBlocking(searchContext) {
+        searchContactChannel.send(searchViewModel.contactList(keyword))
+        searchAssetChannel.send(searchViewModel.fuzzySearchAsset(keyword))
+        searchUserChannel.send(searchViewModel.fuzzySearchUser(keyword))
+        searchGroupChannel.send(searchViewModel.fuzzySearchGroup(keyword))
+        searchMessageChannel.send(searchViewModel.fuzzySearchMessage(keyword))
     }
 
-    private fun setSearchListener(listener: (SearchDataPackage) -> Unit) = GlobalScope.launch(searchContext) {
-        for (result in onlyLast(searchChannel)) {
-            listener(result)
+    private fun setContactListener(listener: (List<User>?) -> Unit) = GlobalScope.launch(searchContext) {
+        for (result in onlyLast(searchContactChannel)) {
+            withContext(Dispatchers.Main) {
+                listener(result)
+            }
+        }
+    }
+
+    private fun setAssetListener(userListener: (List<AssetItem>?) -> Unit) = GlobalScope.launch(searchContext) {
+        for (result in onlyLast(searchAssetChannel)) {
+            withContext(Dispatchers.Main) {
+                userListener(result)
+            }
+        }
+    }
+
+    private fun setUserListener(listener: (List<User>?) -> Unit) = GlobalScope.launch(searchContext) {
+        for (result in onlyLast(searchUserChannel)) {
+            withContext(Dispatchers.Main) {
+                listener(result)
+            }
+        }
+    }
+
+    private fun setGroupListener(userListener: (List<ConversationItemMinimal>?) -> Unit) = GlobalScope.launch(searchContext) {
+        for (result in onlyLast(searchGroupChannel)) {
+            withContext(Dispatchers.Main) {
+                userListener(result)
+            }
+        }
+    }
+
+    private fun setMessageListener(listener: (List<SearchMessageItem>?) -> Unit) = GlobalScope.launch(searchContext) {
+        for (result in onlyLast(searchMessageChannel)) {
+            withContext(Dispatchers.Main) {
+                listener(result)
+            }
         }
     }
 

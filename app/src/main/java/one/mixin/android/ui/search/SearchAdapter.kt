@@ -36,78 +36,65 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         return HeaderHolder(item)
     }
 
-    fun setData(
-        assetList: List<AssetItem>?,
-        userList: List<User>?,
-        groupList: List<ConversationItemMinimal>?,
-        messageList: List<SearchMessageItem>?
-    ) {
-        this.assetList = assetList
-        this.userList = userList
-        this.groupList = groupList
-        this.messageList = messageList
-        dataList.clear()
-        assetList?.let { dataList.addAll(it) }
-        userList?.let { dataList.addAll(it) }
-        groupList?.let { dataList.addAll(it) }
-        messageList?.let { dataList.addAll(it) }
+    private var data = SearchDataPackage()
+
+    fun setDefaultData(list: List<User>?) {
+        data.contactList = list
+        if (list != null) {
+            data.assetList = null
+            data.userList = null
+            data.groupList = null
+            data.messageList = null
+        }
         notifyDataSetChanged()
     }
 
-    private var dataList = ArrayList<Any>()
-    private var assetList: List<AssetItem>? = null
-    private var userList: List<User>? = null
-    private var groupList: List<ConversationItemMinimal>? = null
-    private var messageList: List<SearchMessageItem>? = null
+    fun setAssetData(list: List<AssetItem>?) {
+        data.assetList = list
+        notifyDataSetChanged()
+    }
+
+    fun setUserData(list: List<User>?) {
+        data.userList = list
+        notifyDataSetChanged()
+    }
+
+    fun setGroupData(list: List<ConversationItemMinimal>?) {
+        data.groupList = list
+        notifyDataSetChanged()
+    }
+
+    fun setMessageData(list: List<SearchMessageItem>?) {
+        data.messageList = list
+        notifyDataSetChanged()
+    }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             0 -> {
-                dataList[position].let {
-                    if (position == assetList!!.size - 1) {
-                        (holder as AssetHolder).bind(it as AssetItem, onItemClickListener, true)
-                    } else {
-                        (holder as AssetHolder).bind(it as AssetItem, onItemClickListener)
-                    }
+                data.getItem(position).let {
+                    (holder as AssetHolder).bind(it as AssetItem, onItemClickListener, data.isAssetEnd(position))
                 }
             }
             1 -> {
-                dataList[position].let {
-                    if (position == userList!!.size - 1) {
-                        (holder as ContactHolder).bind(it as User, onItemClickListener, true)
-                    } else {
-                        (holder as ContactHolder).bind(it as User, onItemClickListener)
-                    }
+                data.getItem(position).let {
+                    (holder as ContactHolder).bind(it as User, onItemClickListener, data.isUserEnd(position))
                 }
             }
             2 -> {
-                dataList[position].let {
-                    (holder as GroupHolder).bind(it as ConversationItemMinimal,
-                        onItemClickListener, if (userList != null) {
-                        position == userList!!.size + groupList!!.size - 1
-                    } else {
-                        position == groupList!!.size - 1
-                    })
+                data.getItem(position).let {
+                    (holder as GroupHolder).bind(it as ConversationItemMinimal, onItemClickListener, data.isGroupEnd(position))
                 }
             }
             3 -> {
-                dataList[position].let {
-                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener,
-                        !(if (userList != null && groupList != null) {
-                            position == userList!!.size + groupList!!.size + messageList!!.size - 1
-                        } else if (userList != null) {
-                            position == userList!!.size + messageList!!.size - 1
-                        } else if (groupList != null) {
-                            position == groupList!!.size + messageList!!.size - 1
-                        } else {
-                            position == messageList!!.size - 1
-                        }))
+                data.getItem(position).let {
+                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener, data.isMessageEnd(position))
                 }
             }
         }
     }
 
-    override fun getItemCount(): Int = dataList.size
+    override fun getItemCount(): Int = data.getCount()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
@@ -133,10 +120,11 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             }
         }
 
-    override fun getItemViewType(position: Int): Int = when {
-        dataList[position] is AssetItem -> 0
-        dataList[position] is User -> 1
-        dataList[position] is ConversationItemMinimal -> 2
-        else -> 3
-    }
+    override fun getItemViewType(position: Int): Int =
+        when (data.getItem(position)) {
+            is AssetItem -> 0
+            is User -> 1
+            is ConversationItemMinimal -> 2
+            else -> 3
+        }
 }
