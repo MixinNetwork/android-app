@@ -31,7 +31,6 @@ import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.createBlazeSignalKeyMessage
 import one.mixin.android.websocket.createConsumeSessionSignalKeys
-import one.mixin.android.websocket.createConsumeSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
@@ -159,7 +158,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun redirectSendSenderKey(conversationId: String, recipientId: String): Boolean {
-        val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
+        val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
         val data = signalKeysChannel(blazeMessage) ?: return false
         val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
         if (keys.isNotEmpty() && keys.count() > 0) {

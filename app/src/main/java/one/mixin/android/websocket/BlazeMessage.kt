@@ -58,9 +58,6 @@ fun createListPendingMessage() =
 fun createCountSignalKeys() =
     BlazeMessage(UUID.randomUUID().toString(), COUNT_SIGNAL_KEYS, null)
 
-fun createConsumeSignalKeys(param: BlazeMessageParam) =
-    BlazeMessage(UUID.randomUUID().toString(), CONSUME_SIGNAL_KEYS, param)
-
 fun createConsumeSessionSignalKeys(param: BlazeMessageParam) =
     BlazeMessage(UUID.randomUUID().toString(), CONSUME_SESSION_SIGNAL_KEYS, param)
 
