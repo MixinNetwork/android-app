@@ -1,11 +1,9 @@
 package one.mixin.android.widget
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.os.SystemClock
-import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.appcompat.app.AppCompatDelegate
 import android.text.Editable
 import android.text.InputType
 import android.text.TextUtils
@@ -16,6 +14,10 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.View.OnFocusChangeListener
 import android.widget.FrameLayout
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import com.jakewharton.rxbinding3.widget.textChanges
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.animateWidth
@@ -24,6 +26,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
+import java.util.concurrent.TimeUnit
 
 class MaterialSearchView : FrameLayout {
     var isOpen = false
@@ -96,6 +99,7 @@ class MaterialSearchView : FrameLayout {
         }
     }
 
+    @SuppressLint("CheckResult")
     private fun initSearchView() {
         left_ib.setOnClickListener { closeSearch() }
         search_et.setOnEditorActionListener { _, _, _ ->
@@ -110,7 +114,6 @@ class MaterialSearchView : FrameLayout {
 
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                 // When the text changes, filter
-                this@MaterialSearchView.onTextChanged(s)
                 if (search_et.text.isEmpty()) {
                     right_clear.visibility = View.GONE
                 } else {
@@ -120,6 +123,10 @@ class MaterialSearchView : FrameLayout {
 
             override fun afterTextChanged(s: Editable) {}
         })
+
+        search_et.textChanges().debounce(300, TimeUnit.MILLISECONDS).subscribe {
+            this@MaterialSearchView.onTextChanged(it)
+        }
 
         search_et.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
             if (hasFocus) {
@@ -133,15 +140,15 @@ class MaterialSearchView : FrameLayout {
             }
         }
 
-        search_tv.setOnClickListener({
+        search_tv.setOnClickListener {
             openSearch()
-        })
+        }
     }
 
     var oldLeftX = 0f
     var oldSearchWidth = 0
     fun openSearch() {
-        synchronized(this, {
+        synchronized(this) {
             if (isOpen) {
                 return
             }
@@ -165,11 +172,11 @@ class MaterialSearchView : FrameLayout {
                 SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0F, 0F, 0))
             search_et.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
                 SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 0F, 0F, 0))
-        })
+        }
     }
 
     fun closeSearch() {
-        synchronized(this, {
+        synchronized(this) {
             if (!isOpen) {
                 return
             }
@@ -187,12 +194,11 @@ class MaterialSearchView : FrameLayout {
             search_et.setText("")
             mSearchViewListener?.onSearchViewClosed()
             isOpen = false
-        })
+        }
     }
 
     private fun onTextChanged(newText: CharSequence) {
         mCurrentQuery = search_et.text
-
         mOnQueryTextListener?.onQueryTextChange(newText.toString())
     }
 
@@ -200,7 +206,7 @@ class MaterialSearchView : FrameLayout {
         val query = search_et.text
 
         if (query != null && TextUtils.getTrimmedLength(query) > 0) {
-            if (mOnQueryTextListener == null || !mOnQueryTextListener!!.onQueryTextSubmit(query.toString())) {
+            if (mOnQueryTextListener == null) {
                 closeSearch()
                 search_et.setText("")
             }
@@ -290,8 +296,6 @@ class MaterialSearchView : FrameLayout {
     }
 
     interface OnQueryTextListener {
-        fun onQueryTextSubmit(query: String): Boolean
-
         fun onQueryTextChange(newText: String): Boolean
     }
 

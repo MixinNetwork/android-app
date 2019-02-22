@@ -166,7 +166,7 @@ class SearchFragment : BaseFragment(), Injectable {
     }
 
     private fun fuzzySearch(keyword: String?) = runBlocking(searchContext) {
-        searchContactChannel.send(searchViewModel.contactList())
+        searchContactChannel.send(searchViewModel.contactList(keyword))
         searchAssetChannel.send(searchViewModel.fuzzySearchAsset(keyword))
         searchUserChannel.send(searchViewModel.fuzzySearchUser(keyword))
         searchGroupChannel.send(searchViewModel.fuzzySearchGroup(keyword))

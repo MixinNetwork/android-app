@@ -40,10 +40,12 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     fun setDefaultData(list: List<User>?) {
         data.contactList = list
-        data.assetList = null
-        data.userList = null
-        data.groupList = null
-        data.messageList = null
+        if (list != null) {
+            data.assetList = null
+            data.userList = null
+            data.groupList = null
+            data.messageList = null
+        }
         notifyDataSetChanged()
     }
 

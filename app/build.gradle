@@ -170,6 +170,7 @@ dependencies {
     implementation("com.squareup.okhttp3:logging-interceptor:${okhttpVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
+    implementation "com.jakewharton.rxbinding3:rxbinding:${rxbindingVersion}"
 
     implementation "com.google.code.gson:gson:${gsonVersion}"
     implementation "com.google.firebase:firebase-core:${firebaseVersion}"

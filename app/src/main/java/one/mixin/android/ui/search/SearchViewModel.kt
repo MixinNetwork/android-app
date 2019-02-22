@@ -28,8 +28,12 @@ internal constructor(
         conversationRepository.findConversationById(conversationId)
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun contactList() = GlobalScope.async {
-        userRepository.syncFindFriends()
+    fun contactList(query: String?): Deferred<List<User>?> = GlobalScope.async {
+        if (query.isNullOrBlank()) {
+            userRepository.syncFindFriends()
+        } else {
+            null
+        }
     }
 
     fun fuzzySearchUser(query: String?): Deferred<List<User>?> =

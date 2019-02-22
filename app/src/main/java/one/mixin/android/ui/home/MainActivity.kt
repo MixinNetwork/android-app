@@ -307,11 +307,6 @@ class MainActivity : BlazeBaseActivity() {
                 SearchFragment.getInstance().setQueryText(newText)
                 return true
             }
-
-            override fun onQueryTextSubmit(query: String): Boolean {
-                SearchFragment.getInstance().setQueryText(query)
-                return true
-            }
         }
 
         search_bar.setSearchViewListener(object : MaterialSearchView.SearchViewListener {
