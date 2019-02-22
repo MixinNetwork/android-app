@@ -101,11 +101,6 @@ fun Context.navigationBarHeight(): Int {
     return dpToPx(24f)
 }
 
-fun Context.hasNavBar(): Boolean {
-    val id = resources.getIdentifier("config_showNavigationBar", "bool", "android")
-    return id > 0 && resources.getBoolean(id)
-}
-
 @Suppress("DEPRECATION")
 fun Context.vibrate(pattern: LongArray) {
     if (Build.VERSION.SDK_INT >= 26) {
@@ -183,7 +178,7 @@ fun Context.hasNavigationBar(bottom: Int = 0): Boolean {
         return true
     }
 
-    if (Build.MANUFACTURER == "smartisan" && Build.MODEL == "OS105") {
+    if (Build.MANUFACTURER == "smartisan") {
         return true
     }
     val hasMenuKey = ViewConfiguration.get(this).hasPermanentMenuKey()
