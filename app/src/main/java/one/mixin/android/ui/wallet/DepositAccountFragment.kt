@@ -49,7 +49,7 @@ class DepositAccountFragment : DepositFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/en-us/articles/360023738212-How-to-deposit-EOS-to-Mixin-Messenger-") }
+        title.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360023738212") }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         account_name_qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         account_name_qr_avatar.setBorder()
