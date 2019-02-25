@@ -110,7 +110,7 @@ open class SendMessageJob(
         if (signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
             checkSentSenderKey(message.conversationId)
         } else {
-            val conversation = conversationDao.getConversation(message.conversationId)!!
+            val conversation = conversationDao.getConversation(message.conversationId) ?: return
             if (conversation.isGroup()) {
                 syncConversation(conversation)
                 sendGroupSenderKey(conversation.conversationId)
