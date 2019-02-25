@@ -17,16 +17,13 @@ import kotlinx.android.synthetic.main.fragment_deposit_account.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.BuildConfig
-import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG

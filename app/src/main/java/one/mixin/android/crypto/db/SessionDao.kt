@@ -21,7 +21,6 @@ interface SessionDao : BaseDao<Session> {
     @Query("SELECT * FROM sessions WHERE address = :address")
     fun getSessions(address: String): List<Session>?
 
-
     @Query("DELETE FROM sessions WHERE address = :address")
     fun deleteSession(address: String)
 }

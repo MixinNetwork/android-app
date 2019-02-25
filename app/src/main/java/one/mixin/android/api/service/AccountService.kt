@@ -79,5 +79,4 @@ interface AccountService {
 
     @GET("/")
     fun ping(): Call<MixinResponse<Void>>
-
 }
