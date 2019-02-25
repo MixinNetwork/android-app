@@ -238,6 +238,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             if (bm.error.code == FORBIDDEN) {
                 return true
             } else {
+                Log.e(TAG, bm.toString())
                 Thread.sleep(SLEEP_MILLIS)
                 throw NetworkException()
             }

@@ -15,6 +15,7 @@ import one.mixin.android.extension.clear
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
@@ -60,14 +61,19 @@ class Session {
             return preference.getString(Constants.Account.PREF_NAME_TOKEN, null)
         }
 
-        fun storeExtensionSession(extensionSession: String) {
+        fun storeExtensionSessionId(extensionSession: String) {
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-            preference.putString(Constants.Account.PREF_EXTENSION_SESSION, extensionSession)
+            preference.putString(Constants.Account.PREF_EXTENSION_SESSION_ID, extensionSession)
         }
 
-        fun getExtensionSession(): String? {
+        fun getExtensionSessionId(): String? {
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-            return preference.getString(Constants.Account.PREF_EXTENSION_SESSION, null)
+            return preference.getString(Constants.Account.PREF_EXTENSION_SESSION_ID, null)
+        }
+
+        fun deleteExtensionSessionId(extensionSession: String) {
+            val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
+            preference.remove(Constants.Account.PREF_EXTENSION_SESSION_ID)
         }
 
         fun storePinToken(pinToken: String) {

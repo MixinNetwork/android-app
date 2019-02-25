@@ -61,8 +61,11 @@ class DecryptSessionMessage : Injector() {
         if (data.category == MessageCategory.PLAIN_JSON.name) {
             val json = Base64.decode(data.data)
             val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
-            if (plainData.action == PlainDataAction.SYNC_SESSION.name && data.sessionId != null) {
-                Session.storeExtensionSession(data.sessionId)
+            if (plainData.action == PlainDataAction.ADD_SESSION.name && data.sessionId != null) {
+                Session.storeExtensionSessionId(data.sessionId)
+                signalProtocol.deleteSession(data.userId)
+            } else if (plainData.action == PlainDataAction.REMOVE_SESSION.name && data.sessionId != null) {
+                Session.deleteExtensionSessionId(data.sessionId)
                 signalProtocol.deleteSession(data.userId)
             }
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)

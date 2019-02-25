@@ -41,7 +41,6 @@ import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.textColor
 import org.whispersystems.libsignal.ecc.Curve
-import java.util.Collections
 import javax.inject.Inject
 
 class DeviceFragment : MixinBottomSheetDialogFragment() {
@@ -129,19 +128,9 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun checkSession() {
-        val accountId = Session.getAccountId() ?: return
-
-        GlobalScope.launch(coroutineExceptionHandler) {
-            val response = bottomViewModel.getSessions(Collections.singletonList(accountId)).execute().body()
-            if (response != null && response.isSuccess) {
-                response.data?.let { list ->
-                    if (list.size > 1) {
-                        withContext(Dispatchers.Main) {
-                            updateUI(true)
-                        }
-                    }
-                }
-            }
+        val sessionId = Session.getExtensionSessionId()
+        if (sessionId != null) {
+            updateUI(true)
         }
     }
 

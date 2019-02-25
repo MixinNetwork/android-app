@@ -270,7 +270,7 @@ class ChatWebSocket(
     }
 
     private fun sendSessionAck(status: String, messageId: String) {
-        val extensionSessionId = Session.getExtensionSession()
+        val extensionSessionId = Session.getExtensionSessionId()
         extensionSessionId?.let {
             val plainText = gson.toJson(TransferPlainData(
                 action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPT.name,

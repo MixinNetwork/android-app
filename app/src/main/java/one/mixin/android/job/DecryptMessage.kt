@@ -118,7 +118,7 @@ class DecryptMessage : Injector() {
     }
 
     private fun sendToExtensionSession(message: Message, content: String? = null) {
-        if (Session.getExtensionSession() != null) {
+        if (Session.getExtensionSessionId() != null) {
             jobManager.addJobInBackground(SendSessionMessageJob(message, content))
         }
     }

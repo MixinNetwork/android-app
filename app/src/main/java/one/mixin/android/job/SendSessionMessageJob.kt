@@ -44,7 +44,7 @@ class SendSessionMessageJob(
             }
         }
         val accountId = Session.getAccountId()
-        val sessionId = Session.getExtensionSession()
+        val sessionId = Session.getExtensionSessionId()
         val blazeParam = BlazeMessageParam(message.conversationId, accountId,
             message.id, message.category, content, quote_message_id = message.quoteMessageId,
             transfer_id = message.userId, session_id = sessionId)
@@ -54,7 +54,7 @@ class SendSessionMessageJob(
 
     private fun sendSignalMessage() {
         val accountId = Session.getAccountId()!!
-        val sessionId = Session.getExtensionSession()!!
+        val sessionId = Session.getExtensionSessionId()!!
         checkSignalSession(accountId, sessionId)
         if (content != null) {
             message.content = content

@@ -12,7 +12,6 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.Session
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.TurnServer
@@ -81,6 +80,4 @@ interface AccountService {
     @GET("/")
     fun ping(): Call<MixinResponse<Void>>
 
-    @POST("sessions/fetch")
-    fun getSessions(@Body ids: List<String>): Call<MixinResponse<List<Session>>>
 }

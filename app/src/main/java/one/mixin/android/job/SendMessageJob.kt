@@ -58,7 +58,7 @@ open class SendMessageJob(
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
 
-        if (Session.getExtensionSession() != null) {
+        if (Session.getExtensionSessionId() != null) {
             jobManager.addJobInBackground(SendSessionMessageJob(message))
         }
     }

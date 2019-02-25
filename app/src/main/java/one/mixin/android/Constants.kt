@@ -26,7 +26,7 @@ object Constants {
         const val PREF_RESTORE = "pref_restore"
         const val PREF_SHOW_DEPOSIT_TIP = "pref_show_deposit_tip"
         const val PREF_FIRST_SHOW_DEPOSIT = "pref_first_show_deposit"
-        const val PREF_EXTENSION_SESSION = "pref_extension_session"
+        const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
     }
 
     object Scheme {
