@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/wallet_bg_gray"
+    android:background="@color/wallet_light_bg"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView

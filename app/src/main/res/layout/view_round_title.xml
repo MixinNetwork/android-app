@@ -5,18 +5,32 @@
     android:layout_height="70dp"
     android:background="@drawable/bg_upper_round">
 
-    <ImageView
-        android:id="@+id/left_iv"
+    <FrameLayout
+        android:id="@+id/left_fl"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="8dp"
-        android:padding="8dp"
-        android:visibility="gone"
-        android:background="@drawable/mixin_ripple"
-        android:src="@drawable/ic_back"
-        tools:ignore="ContentDescription" />
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/left_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:padding="8dp"
+            android:visibility="gone"
+            android:background="@drawable/mixin_ripple"
+            android:src="@drawable/ic_back"
+            tools:ignore="ContentDescription"/>
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/avatar_iv"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:visibility="gone"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginEnd="10dp"/>
+    </FrameLayout>
 
     <ImageView
         android:id="@+id/right_iv"
@@ -27,17 +41,37 @@
         android:layout_marginEnd="@dimen/margin12"
         android:src="@drawable/ic_close_gray"
         android:background="@drawable/mixin_ripple"
-        tools:ignore="ContentDescription" />
+        tools:ignore="ContentDescription"/>
 
-    <TextView
-        android:id="@+id/title_tv"
+    <LinearLayout
+        android:id="@+id/title_ll"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/left_iv"
         android:layout_centerVertical="true"
-        android:gravity="center"
-        android:maxWidth="240dp"
-        android:singleLine="true"
-        android:textColor="@android:color/black"
-        android:textSize="22sp" />
+        android:layout_toEndOf="@id/left_fl"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:maxWidth="240dp"
+            android:singleLine="true"
+            android:textColor="@android:color/black"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/sub_title_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:maxWidth="240dp"
+            android:gravity="center_vertical"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:visibility="gone"
+            android:textColor="@color/text_gray"
+            android:textSize="14sp"
+            tools:ignore="SmallSp"/>
+    </LinearLayout>
 </RelativeLayout>
