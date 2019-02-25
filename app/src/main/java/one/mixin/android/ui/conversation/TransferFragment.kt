@@ -132,8 +132,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         super.onActivityCreated(savedInstanceState)
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
-        contentView.title_view.avatar_iv.visibility = View.VISIBLE
-        contentView.title_view.avatar_iv.setTextSize(16f)
         contentView.transfer_amount.addTextChangedListener(mWatcher)
         contentView.asset_rl.setOnClickListener {
             contentView.transfer_amount.hideKeyboard()
@@ -168,8 +166,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             } else {
                 user = u
 
-                contentView.title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, u.fullName))
-                contentView.title_view.avatar_iv.setInfo(u.fullName, u.avatarUrl, u.identityNumber)
+//                contentView.title_view.setSubTitle(getString(R.string.conversation_status_transfer), getString(R.string.to, u.fullName))
             }
         })
 

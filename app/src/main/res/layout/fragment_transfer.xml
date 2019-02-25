@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_below="@+id/ph"
-            app:leftIcon="@drawable/ic_close_black_24dp"
+            app:left_icon="@drawable/ic_close_black_24dp"
             app:titleText="@string/transfer"/>
 
     <ScrollView
@@ -49,8 +49,8 @@
 
                 <one.mixin.android.widget.BadgeCircleImageView
                         android:id="@+id/asset_avatar"
-                        android:layout_width="56dp"
-                        android:layout_height="56dp"
+                        android:layout_width="70dp"
+                        android:layout_height="70dp"
                         android:layout_centerVertical="true"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"/>
 
