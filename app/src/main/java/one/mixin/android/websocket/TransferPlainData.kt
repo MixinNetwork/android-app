@@ -20,6 +20,17 @@ data class TransferPlainData(
     }
 }
 
+data class TransferPlainAckData(
+    @SerializedName("action")
+    val action: String,
+    @SerializedName("messages")
+    val messages: List<BlazeAckMessage>
+) : Serializable {
+    companion object {
+        private const val serialVersionUID: Long = 8L
+    }
+}
+
 data class ResendData(
     val userId: String,
     val messageId: String
@@ -29,4 +40,4 @@ data class ResendData(
     }
 }
 
-enum class PlainDataAction { RESEND_KEY, NO_KEY, RESEND_MESSAGES, ACKNOWLEDGE_MESSAGE_RECEIPT }
+enum class PlainDataAction { RESEND_KEY, NO_KEY, RESEND_MESSAGES, ACKNOWLEDGE_MESSAGE_RECEIPTS }

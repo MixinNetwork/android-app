@@ -12,14 +12,18 @@ import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.ACKNOWLEDGE_SESSION_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
+import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.SystemConversationData
 import one.mixin.android.websocket.SystemExtensionSessionAction
+import one.mixin.android.websocket.TransferPlainAckData
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
-import java.util.*
+import timber.log.Timber
+import java.util.UUID
 
 class DecryptSessionMessage : Injector() {
 
@@ -89,6 +93,24 @@ class DecryptSessionMessage : Injector() {
             }
             processDecryptSuccess(data, data.data)
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+        } else if (data.category == MessageCategory.PLAIN_JSON.name) {
+            val json = Base64.decode(data.data)
+            Timber.d(String(json))
+            val plainData = gson.fromJson(String(json), TransferPlainAckData::class.java)
+            if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
+                plainData.messages.forEach {
+                    jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, it))
+                    val curStatus = messageDao.findMessageStatusById(it.message_id)
+                    if (curStatus != null && MessageStatus.valueOf(it.status) > MessageStatus.valueOf(curStatus)) {
+                        messageDao.updateMessageStatus(it.status, it.message_id)
+                        messageDao.findConversationById(it.message_id)?.let { conversationId ->
+                            messageDao.takeUnseen(Session.getAccountId()!!, conversationId)
+                        }
+                    }
+                }
+
+                updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+            }
         }
     }
 

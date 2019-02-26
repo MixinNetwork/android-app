@@ -73,6 +73,10 @@ fun JobDao.findSessionAckJobsDeferred(): Deferred<List<Job>?> = GlobalScope.asyn
     findSessionAckJobsSync()
 }
 
+fun JobDao.findDesktopAckJobsDeferred(): Deferred<List<Job>?> = GlobalScope.async {
+    findDesktopAckJobsSync()
+}
+
 fun FloodMessageDao.findFloodMessageDeferred(): Deferred<List<FloodMessage>?> = GlobalScope.async {
     findFloodMessagesSync()
 }
