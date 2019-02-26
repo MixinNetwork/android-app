@@ -15,8 +15,8 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.websocket.ACKNOWLEDGE_SESSION_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
-import one.mixin.android.websocket.PlainDataAction
-import one.mixin.android.websocket.TransferPlainData
+import one.mixin.android.websocket.SystemConversationData
+import one.mixin.android.websocket.SystemExtensionSessionAction
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
 import java.util.*
@@ -33,6 +33,7 @@ class DecryptSessionMessage : Injector() {
         syncConversation(data)
         processSignalMessage(data)
         processPlainMessage(data)
+        processSystemMessage(data)
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
@@ -54,21 +55,26 @@ class DecryptSessionMessage : Injector() {
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
     }
 
-    private fun processPlainMessage(data: BlazeMessageData) {
-        if (!data.category.startsWith("PLAIN_")) {
+    private fun processSystemMessage(data: BlazeMessageData) {
+        if (!data.category.startsWith("SYSTEM_")) {
             return
         }
-        if (data.category == MessageCategory.PLAIN_JSON.name) {
+        if (data.category == MessageCategory.SYSTEM_EXTENSION_SESSION.name) {
             val json = Base64.decode(data.data)
-            val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
-            if (plainData.action == PlainDataAction.ADD_SESSION.name && data.sessionId != null) {
+            val systemMessage = gson.fromJson(String(json), SystemConversationData::class.java)
+            if (systemMessage.action == SystemExtensionSessionAction.ADD_SESSION.name && data.sessionId != null) {
                 Session.storeExtensionSessionId(data.sessionId)
                 signalProtocol.deleteSession(data.userId)
-            } else if (plainData.action == PlainDataAction.REMOVE_SESSION.name && data.sessionId != null) {
+            } else if (systemMessage.action == SystemExtensionSessionAction.REMOVE_SESSION.name && data.sessionId != null) {
                 Session.deleteExtensionSessionId(data.sessionId)
                 signalProtocol.deleteSession(data.userId)
             }
-            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+        }
+        updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+    }
+
+    private fun processPlainMessage(data: BlazeMessageData) {
+        if (!data.category.startsWith("PLAIN_")) {
             return
         }
         if (data.category == MessageCategory.PLAIN_TEXT.name ||
