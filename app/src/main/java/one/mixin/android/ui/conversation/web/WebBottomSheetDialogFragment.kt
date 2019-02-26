@@ -7,7 +7,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Point
 import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
@@ -16,7 +15,6 @@ import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.view.WindowManager
 import android.webkit.JavascriptInterface
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
@@ -39,12 +37,9 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.realSize
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -54,6 +49,7 @@ import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.getMaxCustomViewHeight
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -130,7 +126,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     override fun onContextItemSelected(item: MenuItem): Boolean {
-        contentView.chat_web_view.hitTestResult?.let { it ->
+        contentView.chat_web_view.hitTestResult?.let {
             val url = it.extra
             if (item.itemId == CONTEXT_MENU_ID_SCAN_IMAGE) {
                 doAsync {
@@ -235,7 +231,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         // workaround with realSize() not get the correct value in some device.
         contentView.postDelayed({
-            (dialog as BottomSheet).setCustomViewHeight(getCustomViewHeight())
+            (dialog as BottomSheet).setCustomViewHeight((dialog as BottomSheet).getMaxCustomViewHeight())
         }, 100)
     }
 
@@ -253,21 +249,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
         super.onDestroyView()
-    }
-
-    private fun getCustomViewHeight(): Int {
-        val dialog = (dialog as BottomSheet)
-        val isNotchScreen = dialog.window?.isNotchScreen() ?: false
-        val totalHeight = if (isNotchScreen) {
-            val bottom = dialog.lastInsets?.systemWindowInsetBottom ?: 0
-            context!!.realSize().y - bottom
-        } else {
-            val size = Point()
-            val manager = context!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            manager.defaultDisplay.getSize(size)
-            size.y
-        }
-        return totalHeight - context!!.statusBarHeight()
     }
 
     private fun showBottomSheet() {

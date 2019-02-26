@@ -92,6 +92,7 @@ import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -1281,6 +1282,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         menuFragment.callback = object : MenuFragment.Callback {
             override fun onMenuClick(menu: Menu) {
+                chat_control.reset()
                 when (menu.type) {
                     MenuType.Camera -> {
                         openCamera()
@@ -1300,7 +1302,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     MenuType.Transfer -> {
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
-                                TransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
+                                TransferFragment.newInstance(it.userId)
+                                    .showNow(requireFragmentManager(), TransferFragment.TAG)
                             }
                         } else {
                             requireFragmentManager().inTransaction {
@@ -1355,7 +1358,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                 }
-                chat_control.reset()
             }
         }
     }
