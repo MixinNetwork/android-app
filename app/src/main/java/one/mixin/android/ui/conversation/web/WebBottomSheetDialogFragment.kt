@@ -55,6 +55,7 @@ import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.getMaxCustomViewHeight
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
@@ -232,7 +233,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dismiss()
         }
         contentView.post {
-            (dialog as BottomSheet).setCustomViewHeight(getCustomViewHeight())
+            (dialog as BottomSheet).setCustomViewHeight((dialog as BottomSheet).getMaxCustomViewHeight())
         }
     }
 
@@ -250,21 +251,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
         super.onDestroyView()
-    }
-
-    private fun getCustomViewHeight(): Int {
-        val dialog = (dialog as BottomSheet)
-        val isNotchScreen = dialog.window?.isNotchScreen() ?: false
-        val totalHeight = if (isNotchScreen) {
-            val bottom = dialog.lastInsets?.systemWindowInsetBottom ?: 0
-            context!!.realSize().y - bottom
-        } else {
-            val size = Point()
-            val manager = context!!.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            manager.defaultDisplay.getSize(size)
-            size.y
-        }
-        return totalHeight - context!!.statusBarHeight()
     }
 
     private fun showBottomSheet() {

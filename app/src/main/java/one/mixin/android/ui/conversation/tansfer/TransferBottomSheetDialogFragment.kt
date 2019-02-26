@@ -10,7 +10,6 @@ import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
@@ -88,9 +87,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title_view.avatar_iv.visibility = VISIBLE
-        contentView.title_view.avatar_iv.setTextSize(16f)
-        contentView.title_view.avatar_iv.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
         if (!TextUtils.isEmpty(memo)) {
             contentView.memo.visibility = VISIBLE
             contentView.memo.text = memo

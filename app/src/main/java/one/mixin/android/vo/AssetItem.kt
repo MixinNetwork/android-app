@@ -2,6 +2,7 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
+import androidx.recyclerview.widget.DiffUtil
 import kotlinx.android.parcel.Parcelize
 import java.math.BigDecimal
 
@@ -43,6 +44,16 @@ data class AssetItem(
 
     fun isAccountTagAsset(): Boolean {
         return !accountName.isNullOrEmpty() && !accountTag.isNullOrEmpty() && publicKey.isNullOrEmpty()
+    }
+
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AssetItem>() {
+            override fun areItemsTheSame(oldItem: AssetItem, newItem: AssetItem) =
+                oldItem.assetId == newItem.assetId
+
+            override fun areContentsTheSame(oldItem: AssetItem, newItem: AssetItem) =
+                oldItem == newItem
+        }
     }
 }
 
