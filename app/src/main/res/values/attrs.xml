@@ -103,4 +103,7 @@
     <declare-styleable name="BalanceLayout">
         <attr name="center" format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="CheckedImageView">
+        <attr name="android:checked" format="boolean"/>
+    </declare-styleable>
 </resources>

@@ -852,7 +852,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 return true
             }
         })
-        chat_control.chat_more_ib.setOnClickListener { toggleMediaLayout() }
+        chat_control.chat_more_iv.setOnClickListener { toggleMediaLayout() }
         chat_rv.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, true)
         chat_rv.addItemDecoration(decoration)
         chat_rv.itemAnimator = null
@@ -1083,14 +1083,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
                 if (it != null && it.isNotEmpty()) {
                     this.app = it[0]
-                    chat_control.chat_bot_ib.setOnClickListener {
+                    chat_control.chat_bot_iv.setOnClickListener {
                         hideIfShowBottomSheet()
                         this.app?.let {
                             openUrlWithExtraWeb(it.homeUri, conversationId, requireFragmentManager())
                         }
                     }
                 } else {
-                    chat_control.chat_bot_ib.setOnClickListener(null)
+                    chat_control.chat_bot_iv.setOnClickListener(null)
                 }
             })
         } else {

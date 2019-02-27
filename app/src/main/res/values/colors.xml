@@ -66,6 +66,7 @@
     <color name="wallet_ripple">#F6F8FC</color>
     <color name="toast_bg">#3A3C3E</color>
     <color name="toast_error">#F67070</color>
+    <color name="menu_bg_border">#E5E7EC</color>
 
     <array name="name_colors">
         <item>#AA4848</item>
