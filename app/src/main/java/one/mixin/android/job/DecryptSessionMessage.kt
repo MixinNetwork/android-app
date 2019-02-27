@@ -22,7 +22,6 @@ import one.mixin.android.websocket.SystemExtensionSessionAction
 import one.mixin.android.websocket.TransferPlainAckData
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
-import timber.log.Timber
 import java.util.UUID
 
 class DecryptSessionMessage : Injector() {
@@ -95,20 +94,21 @@ class DecryptSessionMessage : Injector() {
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         } else if (data.category == MessageCategory.PLAIN_JSON.name) {
             val json = Base64.decode(data.data)
-            Timber.d(String(json))
             val plainData = gson.fromJson(String(json), TransferPlainAckData::class.java)
             if (plainData.action == PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name) {
-                plainData.messages.forEach {
-                    jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, it))
-                    val curStatus = messageDao.findMessageStatusById(it.message_id)
-                    if (curStatus != null && MessageStatus.valueOf(it.status) > MessageStatus.valueOf(curStatus)) {
-                        messageDao.updateMessageStatus(it.status, it.message_id)
-                        messageDao.findConversationById(it.message_id)?.let { conversationId ->
+                for (m in plainData.messages) {
+                    if (m.status != MessageStatus.READ.name) {
+                        continue
+                    }
+                    val curStatus = messageDao.findMessageStatusById(m.message_id)
+                    if (curStatus != null && MessageStatus.valueOf(m.status) > MessageStatus.valueOf(curStatus)) {
+                        messageDao.updateMessageStatus(m.status, m.message_id)
+                        messageDao.findConversationById(m.message_id)?.let { conversationId ->
                             messageDao.takeUnseen(Session.getAccountId()!!, conversationId)
                         }
+                        jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, m))
                     }
                 }
-
                 updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
             }
         }

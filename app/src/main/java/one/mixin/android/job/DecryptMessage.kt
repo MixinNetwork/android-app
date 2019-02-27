@@ -37,7 +37,6 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.isIllegalMessageCategory
-import one.mixin.android.websocket.ACKNOWLEDGE_DESKTOP_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -519,9 +518,6 @@ class DecryptMessage : Injector() {
 
     private fun updateRemoteMessageStatus(messageId: String, status: MessageStatus = MessageStatus.DELIVERED) {
         jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
-        Session.getExtensionSessionId()?.let {
-            jobDao.insert(createAckJob(ACKNOWLEDGE_DESKTOP_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
-        }
     }
 
     private fun syncUser(userId: String) {

@@ -270,7 +270,7 @@ class ChatWebSocket(
     private fun sendSessionAck(status: String, messageId: String) {
         val extensionSessionId = Session.getExtensionSessionId()
         extensionSessionId?.let {
-            jobDao.insert(createAckJob(ACKNOWLEDGE_DESKTOP_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status)))
+            jobDao.insert(createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(messageId, status)))
         }
     }
 

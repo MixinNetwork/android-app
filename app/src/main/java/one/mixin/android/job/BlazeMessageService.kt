@@ -29,7 +29,7 @@ import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.findAckJobsDeferred
-import one.mixin.android.db.findDesktopAckJobsDeferred
+import one.mixin.android.db.findCreatePlainSessionJobsDeferred
 import one.mixin.android.db.findFloodMessageDeferred
 import one.mixin.android.db.findSessionAckJobsDeferred
 import one.mixin.android.di.type.DatabaseCategory
@@ -210,8 +210,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
         ackJob = GlobalScope.launch(ackThread) {
             ackJobBlock()
-            ackSessionJobBlock()
             Session.getExtensionSessionId()?.let {
+                ackSessionJobBlock()
                 ackDesktopJobBlock(it)
             }
         }
@@ -256,7 +256,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     private suspend fun ackDesktopJobBlock(sessionId: String) {
-        jobDao.findDesktopAckJobsDeferred().await()?.let { list ->
+        jobDao.findCreatePlainSessionJobsDeferred().await()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     try {
