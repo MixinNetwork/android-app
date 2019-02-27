@@ -94,6 +94,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
+import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
@@ -398,6 +399,11 @@ internal constructor(
                     list.map { createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
                         conversationRepository.insertList(it)
                     }
+                    Session.getExtensionSessionId()?.let {
+                        list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
+                            conversationRepository.insertList(it)
+                        }
+                    }
                 }
             }
         }
@@ -546,12 +552,17 @@ internal constructor(
                 MixinApplication.get().mainThread {
                     MixinApplication.get().toast(R.string.forward_success)
                 }
-                findUnreadMessagesSync(conversationId!!)?.let {
-                    if (it.isNotEmpty()) {
-                        conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, it.last().created_at)
-                        it.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {
-                            it.chunked(100).forEach {
-                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(it)))
+                findUnreadMessagesSync(conversationId!!)?.let {list->
+                    if (list.isNotEmpty()) {
+                        conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
+                        list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {messages->
+                            messages.chunked(100).forEach {list->
+                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
+                            }
+                        }
+                        Session.getExtensionSessionId()?.let {
+                            list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
+                                conversationRepository.insertList(it)
                             }
                         }
                     }
