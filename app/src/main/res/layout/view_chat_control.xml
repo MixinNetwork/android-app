@@ -9,31 +9,22 @@
         android:id="@+id/bottom_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
         android:minHeight="@dimen/chat_control_height"
         android:background="@color/white"
         android:layout_gravity="bottom"
         android:orientation="horizontal">
 
-        <ImageButton
-            android:id="@+id/chat_bot_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:padding="6dp"
-            android:layout_marginStart="4dp"
-            android:background="@drawable/mixin_ripple"
-            app:srcCompat="@drawable/ic_chat_bot"
-            tools:ignore="ContentDescription"/>
-
-        <ImageButton
-            android:id="@+id/chat_sticker_ib"
+        <one.mixin.android.widget.CheckedImageView
+            android:id="@+id/chat_more_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:background="@drawable/mixin_ripple"
             android:padding="6dp"
+            android:checked="false"
             android:layout_marginStart="4dp"
-            app:srcCompat="@drawable/ic_chat_sticker"
+            android:src="@drawable/selector_chat_more"
             tools:ignore="ContentDescription"/>
 
         <one.mixin.android.widget.ContentEditText
@@ -42,9 +33,10 @@
             android:layout_marginStart="6dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:minHeight="40dp"
+            android:minHeight="32dp"
             android:layout_gravity="center_vertical"
             android:background="@drawable/bg_input"
+            android:drawableEnd="@drawable/ic_chat_sticker"
             android:inputType="textMultiLine|textNoSuggestions"
             android:maxLines="5"
             android:paddingEnd="12dp"
@@ -56,27 +48,40 @@
             android:textSize="14sp"
             tools:ignore="LabelFor"/>
 
-        <ImageButton
-            android:id="@+id/chat_more_ib"
+        <one.mixin.android.widget.CheckedImageView
+            android:id="@+id/chat_bot_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="@drawable/mixin_ripple"
             android:padding="6dp"
+            android:checked="false"
             android:layout_marginStart="4dp"
-            app:srcCompat="@drawable/ic_chat_ext"
+            android:background="@drawable/mixin_ripple"
+            android:src="@drawable/selector_chat_bot"
+            tools:ignore="ContentDescription"/>
+
+        <one.mixin.android.widget.CheckedImageView
+            android:id="@+id/chat_img_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:padding="6dp"
+            android:checked="false"
+            android:layout_marginStart="4dp"
+            android:background="@drawable/mixin_ripple"
+            android:src="@drawable/selector_chat_img"
             tools:ignore="ContentDescription"/>
 
         <ImageButton
             android:id="@+id/chat_send_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_gravity="center_vertical"
             android:background="@drawable/mixin_ripple"
             android:padding="6dp"
             android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:src="@drawable/ic_record_mic_black"
+            android:layout_marginEnd="8dp"
+            android:src="@drawable/ic_chat_mic"
             tools:ignore="ContentDescription"/>
     </LinearLayout>
 
@@ -86,11 +91,4 @@
         android:layout_height="@dimen/chat_control_height"
         android:layout_gravity="bottom"
         android:visibility="gone"/>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:layout_gravity="top"
-        android:background="@color/divider"/>
-
 </merge>
