@@ -21,7 +21,7 @@ class AppAdapter(private val type: String, private val onAppClickListener: OnApp
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): AppHolder =
         AppHolder(LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_chat_app, parent, false))
+            .inflate(R.layout.item_chat_menu, parent, false))
 
     override fun getItemCount(): Int {
         return notNullElse(appList, { it.size }, 0)

@@ -142,62 +142,6 @@
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
                 tools:ignore="MissingConstraints"/>
 
-            <View
-                android:id="@+id/shadow"
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:background="#33000000"
-                android:visibility="gone"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
-
-            <LinearLayout
-                android:id="@+id/media_layout"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:background="@color/white"
-                android:orientation="vertical"
-                android:visibility="gone"
-                android:translationY="350dp"
-                app:layout_constraintBottom_toTopOf="@id/chat_control"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent">
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/menu_rv"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/chat_menu_height"/>
-
-                <View
-                    android:id="@+id/divider"
-                    android:layout_width="match_parent"
-                    android:layout_height="0.5dp"
-                    android:background="@color/divider"
-                    app:layout_constraintTop_toBottomOf="@id/menu_rv"/>
-
-                <TextView
-                    android:id="@+id/extensions"
-                    android:layout_marginTop="16dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="16dp"
-                    android:text="@string/extensions"
-                    android:textColor="@color/black_50"
-                    android:textSize="14sp"/>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/app_rv"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="16dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/chat_app_height"/>
-
-            </LinearLayout>
-
             <FrameLayout
                 android:id="@+id/bottom_layout"
                 android:layout_width="match_parent"
@@ -288,6 +232,16 @@
 
     <one.mixin.android.widget.StickerLayout
         android:id="@+id/sticker_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_control"/>
+
+    <one.mixin.android.widget.MenuLayout
+        android:id="@+id/menu_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"

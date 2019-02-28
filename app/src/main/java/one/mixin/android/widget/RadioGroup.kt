@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import android.widget.LinearLayout
 import androidx.annotation.IdRes
 
@@ -19,19 +20,17 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         private val mOnHierarchyChangeListener: ViewGroup.OnHierarchyChangeListener? = null
 
         override fun onChildViewAdded(parent: View, child: View) {
-            if (parent === this@RadioGroup && child is RadioButton) {
+            if (parent === this@RadioGroup && child is CompoundButton) {
                 var id = child.getId()
                 // generates an id if it's missing
                 if (id == View.NO_ID) {
                     id = View.generateViewId()
                     child.setId(id)
                 } else {
-                    child.setOnCheckedChangeListener(object : RadioButton.OnCheckedChangeListener {
-                        override fun onCheckedChanged(id: Int, checked: Boolean) {
-                            if (checked) {
-                                update(id)
-                                onCheckedListener?.onChecked(id)
-                            }
+                    child.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, isChecked ->
+                        if (isChecked) {
+                            update(id)
+                            onCheckedListener?.onChecked(id)
                         }
                     })
                 }
@@ -41,7 +40,7 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         }
 
         override fun onChildViewRemoved(parent: View, child: View) {
-            if (parent === this@RadioGroup && child is RadioButton) {
+            if (parent === this@RadioGroup && child is CompoundButton) {
                 child.setOnCheckedChangeListener(null)
             }
 
@@ -59,7 +58,7 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         this.currentId = id
         for (i in 0 until childCount) {
             getChildAt(i).let {
-                if (it.id != id && it is RadioButton) {
+                if (it.id != id && it is CompoundButton) {
                     it.isChecked = false
                 }
             }
@@ -70,7 +69,7 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         this.currentId = id
         for (i in 0 until childCount) {
             getChildAt(i).let {
-                if (it.id == id && it is RadioButton) {
+                if (it.id == id && it is CompoundButton) {
                     it.isChecked = true
                 }
             }
