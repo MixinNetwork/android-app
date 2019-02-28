@@ -212,7 +212,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
             ackJobBlock()
             Session.getExtensionSessionId()?.let {
                 ackSessionJobBlock()
-                ackDesktopJobBlock(it)
+                syncMessageStatusToExtension(it)
             }
         }
     }
@@ -255,7 +255,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
     }
 
-    private suspend fun ackDesktopJobBlock(sessionId: String) {
+    private suspend fun syncMessageStatusToExtension(sessionId: String) {
         jobDao.findCreatePlainSessionJobsDeferred().await()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {

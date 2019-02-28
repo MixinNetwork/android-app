@@ -196,11 +196,12 @@ class SignalProtocol(ctx: Context) {
         val blazeParam = BlazeMessageParam(
             message.conversationId,
             recipientId,
-            message.id,
+            UUID.randomUUID().toString(),
             message.category,
             data,
             quote_message_id = message.quoteMessageId,
-            transfer_id = message.userId,
+            primitive_id = message.userId,
+            primitive_message_id = message.id,
             session_id = sessionId)
         return createParamSessionMessage(blazeParam)
     }
