@@ -148,8 +148,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
             positiveTip?.invoke()
         } else {
             contentView.auth_tv.text = getString(R.string.setting_scan_qr_code)
-            contentView.desc_tv.text = ""
-            contentView.auth_tv.textColor = android.R.color.black
+            contentView.desc_tv.text = getString(R.string.setting_scan_qr_code)
             contentView.logo_iv.setImageResource(R.drawable.ic_desktop_offline)
             negativeTip?.invoke()
         }
