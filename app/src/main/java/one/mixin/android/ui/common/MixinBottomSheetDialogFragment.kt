@@ -44,9 +44,16 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
         if (isAdded) {
             try {
                 dialog.dismiss()
+                onDismissListener?.onDismiss()
             } catch (e: IllegalStateException) {
                 super.dismissAllowingStateLoss()
             }
         }
+    }
+
+    var onDismissListener: OnDismissListener? = null
+
+    interface OnDismissListener {
+        fun onDismiss()
     }
 }

@@ -1,26 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:gravity="center_horizontal"
+    tools:ignore="UseCompoundDrawables">
 
     <ImageView
         android:id="@+id/menu_icon"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:padding="16dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:padding="20dp"
+        android:layout_marginTop="@dimen/margin20"
         tools:ignore="ContentDescription"/>
 
     <TextView
         android:id="@+id/menu_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="3dp"
+        android:layout_marginTop="@dimen/margin12"
+        android:layout_marginBottom="@dimen/margin20"
         android:singleLine="true"
-        android:textSize="12sp"
-        android:text="@string/gallery"
+        android:ellipsize="end"
+        android:textColor="@color/gray_black"
         android:maxWidth="64dp"/>
-
 </LinearLayout>

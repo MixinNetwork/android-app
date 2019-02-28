@@ -13,16 +13,17 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.view.View
+import android.view.View.OnClickListener
 import android.view.View.OnTouchListener
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import android.widget.ImageButton
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isGone
@@ -31,7 +32,6 @@ import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.widget.audio.SlidePanelView
@@ -56,6 +56,7 @@ class ChatControlView : FrameLayout {
     lateinit var callback: Callback
     lateinit var inputLayout: InputAwareLayout
     lateinit var stickerContainer: StickerLayout
+    lateinit var menuContainer: MenuLayout
     lateinit var recordTipView: View
 
     private var sendStatus = AUDIO
@@ -84,6 +85,7 @@ class ChatControlView : FrameLayout {
     private var keyboardShown = false
 
     private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send, null) }
+    private val sendCheckedDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send_checked, null) }
     private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_mic, null) }
     private val audioActiveDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_mic_checked, null) }
 
@@ -95,12 +97,12 @@ class ChatControlView : FrameLayout {
     constructor(context: Context, attrs: AttributeSet?, defStyleAttr: Int) : super(context, attrs, defStyleAttr) {
         LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
 
-        bottom_ll.layoutTransition = createItemTransitions()
-
-        chat_more_iv.setOnClickListener(onChatMoreClickListener)
         chat_et.addTextChangedListener(editTextWatcher)
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
-        chat_et.setOnTouchListener (onChatEtTouchListener)
+        chat_more_iv.setOnClickListener(onChatMoreClickListener)
+        chat_sticker_ib.setOnClickListener(onStickerClickListener)
+        chat_img_iv.setOnClickListener(onChatImgClickListener)
+        chat_bot_iv.setOnClickListener(onChatBotClickListener)
         chat_slide.callback = chatSlideCallback
     }
 
@@ -137,19 +139,19 @@ class ChatControlView : FrameLayout {
 
     fun hideOtherInput() {
         if (!botHide) {
-            chat_bot_iv.visibility = View.GONE
+            chat_bot_iv.isGone = true
         }
-        operateSticker(false)
-        chat_more_iv.visibility = View.GONE
+        chat_sticker_ib.isGone = true
+        chat_more_iv.isGone = true
         sendStatus = REPLY
     }
 
     fun showOtherInput() {
         if (!botHide) {
-            chat_bot_iv.visibility = View.VISIBLE
+            chat_bot_iv.isVisible = true
         }
         checkSticker()
-        chat_more_iv.visibility = View.VISIBLE
+        chat_more_iv.isVisible = true
         if (sendStatus == REPLY && chat_et.text.toString().trim().isNotEmpty()) {
             return
         }
@@ -161,11 +163,13 @@ class ChatControlView : FrameLayout {
     fun hideBot() {
         botHide = true
         chat_bot_iv.visibility = View.GONE
+        initTransitions()
     }
 
     fun showBot() {
         botHide = false
         chat_bot_iv.visibility = View.VISIBLE
+        initTransitions()
     }
 
     fun toggleKeyboard(shown: Boolean) {
@@ -182,31 +186,26 @@ class ChatControlView : FrameLayout {
         setSend()
     }
 
+    fun uncheckBot() {
+        chat_img_iv.isChecked = false
+    }
+
+    private fun initTransitions() {
+        post {
+            bottom_ll.layoutTransition = createTransitions()
+            edit_ll.layoutTransition = createEditTransitions()
+        }
+    }
+
     private fun checkSend() {
         val d = when (sendStatus) {
             REPLY -> sendDrawable
-            SEND -> sendDrawable
+            SEND -> if (isEditEmpty()) sendDrawable else sendCheckedDrawable
             AUDIO -> if (isRecording) audioActiveDrawable else audioDrawable
             else -> throw IllegalArgumentException("error send status")
         }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
-        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(chat_send_ib,
-            PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)).apply {
-            duration = 150
-            interpolator = AccelerateInterpolator()
-        }
-        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(chat_send_ib,
-            PropertyValuesHolder.ofFloat("scaleX", 1f, 0f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0f)).apply {
-            duration = 150
-            interpolator = DecelerateInterpolator()
-        }
-        scaleDown.doOnEnd {
-            chat_send_ib.setImageDrawable(d)
-            scaleUp.start()
-        }
-        scaleDown.start()
+        startScaleAnim(chat_send_ib, d)
     }
 
     private fun checkSticker() {
@@ -216,7 +215,27 @@ class ChatControlView : FrameLayout {
             else -> null
         }
         d?.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
-        chat_et.setCompoundDrawables(null, null, d, null)
+        startScaleAnim(chat_sticker_ib, d)
+    }
+
+    private fun startScaleAnim(v: ImageButton, d: Drawable?) {
+        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(v,
+            PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
+            PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)).apply {
+            duration = 100
+            interpolator = AccelerateInterpolator()
+        }
+        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(v,
+            PropertyValuesHolder.ofFloat("scaleX", 1f, 0f),
+            PropertyValuesHolder.ofFloat("scaleY", 1f, 0f)).apply {
+            duration = 100
+            interpolator = DecelerateInterpolator()
+        }
+        scaleDown.doOnEnd {
+            v.setImageDrawable(d)
+            scaleUp.start()
+        }
+        scaleDown.start()
     }
 
     private fun cleanUp(locked: Boolean = false) {
@@ -268,21 +287,51 @@ class ChatControlView : FrameLayout {
 
     private fun currentAudio() = sendStatus == AUDIO
 
-    private fun createItemTransitions(): LayoutTransition {
+    @SuppressLint("ObjectAnimatorBinding")
+    private fun createTransitions(): LayoutTransition {
+        val scaleDownTransX = chat_send_ib.width
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
             PropertyValuesHolder.ofFloat("scaleX", 1f, 0f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0f)).apply {
+            PropertyValuesHolder.ofFloat("scaleY", 1f, 0f),
+            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())).apply {
             duration = 100
             interpolator = DecelerateInterpolator()
         }
 
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
             PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)).apply {
+            PropertyValuesHolder.ofFloat("scaleY", 0f, 1f),
+            PropertyValuesHolder.ofFloat("translationX", 0f)).apply {
             duration = 100
             interpolator = AccelerateInterpolator()
         }
 
+        return getLayoutTransition(scaleUp, scaleDown)
+    }
+
+    @SuppressLint("ObjectAnimatorBinding")
+    private fun createEditTransitions(): LayoutTransition {
+        val scaleDownTransX = right - chat_more_iv.width - chat_send_ib.width - edit_ll.width
+        val scaleDown = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
+            PropertyValuesHolder.ofFloat("scaleX", 1f, 0f),
+            PropertyValuesHolder.ofFloat("scaleY", 1f, 0f),
+            PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())).apply {
+            duration = 100
+            interpolator = DecelerateInterpolator()
+        }
+
+        val scaleUp = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
+            PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
+            PropertyValuesHolder.ofFloat("scaleY", 0f, 1f),
+            PropertyValuesHolder.ofFloat("translationX", 0f)).apply {
+            duration = 100
+            interpolator = DecelerateInterpolator()
+        }
+
+        return getLayoutTransition(scaleUp, scaleDown)
+    }
+
+    private fun getLayoutTransition(scaleUp: ObjectAnimator, scaleDown: ObjectAnimator): LayoutTransition {
         val layoutTransition = LayoutTransition()
         layoutTransition.setAnimator(LayoutTransition.APPEARING, scaleUp)
         layoutTransition.setAnimator(LayoutTransition.DISAPPEARING, scaleDown)
@@ -314,9 +363,13 @@ class ChatControlView : FrameLayout {
         }
     }
 
+    private fun isEditEmpty() = chat_et.text.toString().trim().isEmpty()
+
     private fun realSetSend() {
-        val editEmpty = chat_et.text.toString().trim().isEmpty()
-        sendStatus = if (!editEmpty) {
+        sendStatus = if (!isEditEmpty()) {
+            if (!chat_sticker_ib.isGone) {
+                chat_sticker_ib.isGone = true
+            }
             if (!botHide) {
                 if (!chat_bot_iv.isGone) {
                     chat_bot_iv.isGone = true
@@ -325,9 +378,11 @@ class ChatControlView : FrameLayout {
             if (!chat_img_iv.isGone) {
                 chat_img_iv.isGone = true
             }
-            operateSticker(false)
             SEND
         } else {
+            if (!chat_sticker_ib.isVisible) {
+                chat_sticker_ib.isVisible = true
+            }
             if (!botHide) {
                 if (!chat_bot_iv.isVisible) {
                     chat_bot_iv.isVisible = true
@@ -336,7 +391,6 @@ class ChatControlView : FrameLayout {
             if (!chat_img_iv.isVisible) {
                 chat_img_iv.isVisible = true
             }
-            operateSticker(true)
             lastSendStatus
         }
     }
@@ -357,30 +411,29 @@ class ChatControlView : FrameLayout {
         }
     }
 
-    private val onChatEtTouchListener = OnTouchListener { _, event ->
-        if (event.action == MotionEvent.ACTION_UP) {
-            val rightDrawable = chat_et.compoundDrawables[2]
-            if (rightDrawable != null &&
-                event.rawX >= right - (rightDrawable.bounds.width() + context.dpToPx(16f))) {
-                onStickerClick()
-                return@OnTouchListener true
+    private val onChatMoreClickListener = OnClickListener {
+        if (chat_more_iv.isChecked) {
+            inputLayout.show(chat_et, menuContainer)
+            callback.onMenuClick()
+        } else {
+            if (stickerStatus == STICKER) {
+                inputLayout.showSoftKey(chat_et)
             } else {
-                performClick()
+                inputLayout.show(chat_et, stickerContainer)
             }
         }
-        return@OnTouchListener false
     }
 
-    private val onChatMoreClickListener = OnClickListener {
-        chat_more_iv.isChecked = !chat_more_iv.isChecked
+    private val onStickerClickListener = OnClickListener {
+        onStickerClick()
     }
 
-    private fun operateSticker(show: Boolean) {
-        if (show) {
-            checkSticker()
-        } else {
-            chat_et.setCompoundDrawables(null, null, null, null)
-        }
+    private val onChatBotClickListener = OnClickListener {
+        callback.onBotClick()
+    }
+
+    private val onChatImgClickListener = OnClickListener {
+        callback.onImageClick()
     }
 
     private val editTextWatcher = object : TextWatcher {
@@ -581,8 +634,9 @@ class ChatControlView : FrameLayout {
         fun isReady(): Boolean
         fun onRecordEnd()
         fun onRecordCancel()
-        fun onUp()
-        fun onDown()
         fun onCalling()
+        fun onMenuClick()
+        fun onBotClick()
+        fun onImageClick()
     }
 }

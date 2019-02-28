@@ -9,6 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -80,7 +81,11 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
     }
 }
 
-inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAction: () -> Unit) {
+inline fun openUrl(
+    url: String,
+    supportFragmentManager: FragmentManager,
+    extraAction: () -> Unit
+) {
     if (url.startsWith(Scheme.TRANSFER, true)) {
         val segments = Uri.parse(url).pathSegments
         if (segments.size >= 1) {
@@ -100,11 +105,26 @@ inline fun openUrl(url: String, supportFragmentManager: FragmentManager, extraAc
     }
 }
 
-fun openWebBottomSheet(url: String, conversationId: String?, supportFragmentManager: FragmentManager) {
-    WebBottomSheetDialogFragment
-        .newInstance(url, conversationId)
-        .showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
+fun openWebBottomSheet(
+    url: String,
+    conversationId: String?,
+    supportFragmentManager: FragmentManager,
+    onDismiss: (() -> Unit)? = null
+) {
+    val dialog = WebBottomSheetDialogFragment.newInstance(url, conversationId)
+    onDismiss?.let {
+        dialog.onDismissListener = object : MixinBottomSheetDialogFragment.OnDismissListener {
+            override fun onDismiss() {
+                it.invoke()
+            }
+        }
+    }
+    dialog.showNow(supportFragmentManager, WebBottomSheetDialogFragment.TAG)
 }
 
-fun openUrlWithExtraWeb(url: String, conversationId: String?, supportFragmentManager: FragmentManager) =
-    openUrl(url, supportFragmentManager) { openWebBottomSheet(url, conversationId, supportFragmentManager) }
+fun openUrlWithExtraWeb(
+    url: String,
+    conversationId: String?,
+    supportFragmentManager: FragmentManager,
+    onDismiss: (() -> Unit)? = null
+) = openUrl(url, supportFragmentManager) { openWebBottomSheet(url, conversationId, supportFragmentManager, onDismiss) }
