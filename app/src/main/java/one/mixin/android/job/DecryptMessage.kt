@@ -288,6 +288,7 @@ class DecryptMessage : Injector() {
                 }
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
+                sendToExtensionSession(message, plainText)
             }
             data.category.endsWith("_CONTACT") -> {
                 val decoded = Base64.decode(plainText)
