@@ -552,11 +552,11 @@ internal constructor(
                 MixinApplication.get().mainThread {
                     MixinApplication.get().toast(R.string.forward_success)
                 }
-                findUnreadMessagesSync(conversationId!!)?.let {list->
+                findUnreadMessagesSync(conversationId!!)?.let { list ->
                     if (list.isNotEmpty()) {
                         conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
-                        list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let {messages->
-                            messages.chunked(100).forEach {list->
+                        list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
+                            messages.chunked(100).forEach { list ->
                                 jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
                             }
                         }

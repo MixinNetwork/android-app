@@ -47,8 +47,8 @@ class DecryptSessionMessage : Injector() {
         val deviceId = UUID.fromString(data.sessionId).hashCode()
         try {
             signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, DecryptionCallback {
-                if (!data.transferId.isNullOrBlank()) {
-                    data.userId = data.transferId
+                if (!data.primitiveId.isNullOrBlank()) {
+                    data.userId = data.primitiveId
                 }
                 processDecryptSuccess(data, String(it))
             }, deviceId)
