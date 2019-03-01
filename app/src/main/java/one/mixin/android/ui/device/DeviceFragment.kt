@@ -28,6 +28,7 @@ import one.mixin.android.crypto.IdentityKeyUtil
 import one.mixin.android.crypto.ProfileKeyUtil
 import one.mixin.android.crypto.ProvisionMessage
 import one.mixin.android.crypto.ProvisioningCipher
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -83,14 +84,17 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.auth_tv.setOnClickListener {
             if (loggedIn) {
+                loadOuting.show()
                 GlobalScope.launch(coroutineExceptionHandler) {
                     val response = bottomViewModel.logoutAsync().await()
                     if (response.isSuccess) {
                         withContext(Dispatchers.Main) {
+                            loadOuting.dismiss()
                             updateUI(false)
                         }
                     } else {
                         withContext(Dispatchers.Main) {
+                            loadOuting.dismiss()
                             toast(R.string.setting_desktop_logout_failed)
                         }
                     }
@@ -154,18 +158,35 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private val loading: Dialog by lazy {
+        indeterminateProgressDialog(message = R.string.pb_dialog_message,
+            title = R.string.setting_desktop_logging).apply {
+            setCancelable(false)
+        }
+    }
+
+    private val loadOuting: Dialog by lazy {
+        indeterminateProgressDialog(message = R.string.pb_dialog_message,
+            title = R.string.setting_desktop_logout).apply {
+            setCancelable(false)
+        }
+    }
+
     private fun processUrl(url: String) {
+        loading.show()
         GlobalScope.launch(coroutineExceptionHandler) {
             val response = provisioningService.provisionCodeAsync().await()
             if (response.isSuccess) {
                 val success = encryptKey(requireContext(), url, response.data!!.code)
                 withContext(Dispatchers.Main) {
+                    loading.dismiss()
                     updateUI(success, negativeTip = {
                         context?.toast(R.string.setting_desktop_sigin_failed)
                     })
                 }
             } else {
                 withContext(Dispatchers.Main) {
+                    loading.dismiss()
                     context?.toast(R.string.setting_desktop_sigin_failed)
                 }
             }

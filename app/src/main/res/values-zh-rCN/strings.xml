@@ -356,6 +356,8 @@
     <string name="setting_logout_desktop">退出桌面端</string>
     <string name="setting_scan_qr_code">扫描二维码</string>
     <string name="setting_desktop_last_active">上次登录 %1$s %2$s</string>
+    <string name="setting_desktop_logging">登录中…</string>
+    <string name="setting_desktop_logout">退出中…</string>
     <string name="setting_desktop_signed">已登录桌面端</string>
     <string name="setting_desktop_sigin_failed">登录桌面端失败</string>
     <string name="setting_desktop_logout_failed">退出桌面端失败。</string>

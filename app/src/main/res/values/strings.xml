@@ -362,6 +362,8 @@
     <string name="setting_auth_cancel_msg">Deauthorize %1$s?</string>
     <string name="setting_logout_desktop">Logout of desktop</string>
     <string name="setting_scan_qr_code">Scan QR Code</string>
+    <string name="setting_desktop_logging">Logging…</string>
+    <string name="setting_desktop_logout">Logout…</string>
     <string name="setting_desktop_last_active">Last active %1$s at %2$s</string>
     <string name="setting_desktop_signed">You have signed onto your desktop</string>
     <string name="setting_desktop_sigin_failed">Link desktop failed</string>
