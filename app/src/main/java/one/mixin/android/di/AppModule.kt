@@ -114,7 +114,7 @@ internal class AppModule {
                 }
 
                 if (MixinApplication.get().onlining.get()) {
-                    response.header("X-Server-Time")?.toLong()?.let { serverTime ->
+                    response.header("X-Server-Time", null)?.toLong()?.let { serverTime ->
                         if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= 600000L) {
                             MixinApplication.get().gotoTimeWrong(serverTime)
                         }
