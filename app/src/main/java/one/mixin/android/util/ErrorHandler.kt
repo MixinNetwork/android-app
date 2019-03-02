@@ -173,8 +173,8 @@ open class ErrorHandler {
         private const val PHONE_INVALID_FORMAT = 20110
         private const val INSUFFICIENT_IDENTITY_NUMBER = 20111
         private const val INVALID_INVITATION_CODE = 20112
-        private const val PHONE_VERIFICATION_CODE_INVALID = 20113
-        private const val PHONE_VERIFICATION_CODE_EXPIRED = 20114
+        const val PHONE_VERIFICATION_CODE_INVALID = 20113
+        const val PHONE_VERIFICATION_CODE_EXPIRED = 20114
         private const val INVALID_QR_CODE = 20115
         private const val GROUP_CHAT_FULL = 20116
         private const val INSUFFICIENT_BALANCE = 20117

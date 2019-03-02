@@ -161,6 +161,8 @@ class VerificationCodeView : LinearLayout {
         if (index <= 0) return
         updateSpace(index, true)
         codes[--index].text = ""
+
+        listener?.onCodeEntered(code())
     }
 
     @MainThread
@@ -171,6 +173,8 @@ class VerificationCodeView : LinearLayout {
 
             updateSpace(0, true)
         }
+
+        listener?.onCodeEntered(code())
     }
 
     fun error() {

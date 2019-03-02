@@ -237,16 +237,17 @@ class VerificationFragment : BaseFragment() {
         pin_verification_view.error()
         pin_verification_tip_tv.visibility = VISIBLE
         pin_verification_tip_tv.text = getString(R.string.landing_validation_error)
-        verification_next_fab.visibility = View.INVISIBLE
+        if (r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
+            r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED) {
+            verification_next_fab.visibility = View.INVISIBLE
+        }
         ErrorHandler.handleMixinError(r.errorCode)
     }
 
     private fun handleError(t: Throwable) {
+        verification_next_fab.hide()
+        verification_cover.visibility = GONE
         ErrorHandler.handleError(t)
-        if (!isAdded) {
-            return
-        }
-        hideLoading()
     }
 
     private fun showLoading() {
@@ -280,12 +281,14 @@ class VerificationFragment : BaseFragment() {
                     }
                 } else {
                     hideLoading()
+                    pin_verification_view?.clear()
+                    startCountDown()
                 }
             }, { t: Throwable ->
                 handleError(t)
+                verification_next_fab.visibility = GONE
                 recaptchaView.webView.visibility = GONE
             })
-        startCountDown()
     }
 
     private fun startCountDown() {
@@ -338,6 +341,9 @@ class VerificationFragment : BaseFragment() {
         override fun onCodeEntered(code: String) {
             pin_verification_tip_tv.visibility = INVISIBLE
             if (code.isEmpty() || code.length != pin_verification_view.count) {
+                if (isAdded) {
+                    hideLoading()
+                }
                 return
             }
             handlePinVerification()
