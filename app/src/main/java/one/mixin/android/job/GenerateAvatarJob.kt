@@ -12,7 +12,7 @@ import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
 import android.text.TextPaint
-import android.util.ArrayMap
+import androidx.collection.ArrayMap
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import one.mixin.android.R

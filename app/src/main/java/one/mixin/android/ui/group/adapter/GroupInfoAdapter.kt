@@ -2,12 +2,12 @@ package one.mixin.android.ui.group.adapter
 
 import android.content.Context
 import androidx.recyclerview.widget.RecyclerView
-import android.util.ArrayMap
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.collection.ArrayMap
 import kotlinx.android.synthetic.main.item_group_info.view.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import one.mixin.android.R

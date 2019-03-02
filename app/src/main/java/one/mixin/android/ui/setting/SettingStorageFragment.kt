@@ -5,7 +5,6 @@ import android.content.DialogInterface
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.util.ArraySet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +12,7 @@ import android.view.WindowManager
 import android.widget.CompoundButton
 import androidx.appcompat.app.AlertDialog
 import androidx.collection.ArrayMap
+import androidx.collection.ArraySet
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders

@@ -2,7 +2,7 @@ package one.mixin.android.extension
 
 import android.app.ProgressDialog
 import android.content.DialogInterface
-import android.util.ArrayMap
+import androidx.collection.ArrayMap
 import androidx.fragment.app.Fragment
 import org.jetbrains.anko.AlertBuilder
 import org.jetbrains.anko.alert

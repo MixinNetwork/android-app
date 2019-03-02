@@ -1,13 +1,13 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import android.util.ArraySet
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.animation.DecelerateInterpolator
 import android.widget.RelativeLayout
+import androidx.collection.ArraySet
 import kotlinx.android.synthetic.main.view_pseudo_notification.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.url.isMixinUrl

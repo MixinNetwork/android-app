@@ -1,10 +1,10 @@
 package one.mixin.android.ui.wallet.adapter
 
-import android.util.ArrayMap
-import android.util.ArraySet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.ArrayMap
+import androidx.collection.ArraySet
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_asset_add.view.*

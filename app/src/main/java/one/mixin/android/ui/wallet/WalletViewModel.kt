@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet
 
-import android.util.ArraySet
+import androidx.collection.ArraySet
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.LivePagedListBuilder

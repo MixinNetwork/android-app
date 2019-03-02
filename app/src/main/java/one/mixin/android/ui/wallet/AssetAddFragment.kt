@@ -2,10 +2,10 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.text.Editable
-import android.util.ArraySet
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.ArraySet
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
