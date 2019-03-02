@@ -10,7 +10,6 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.getRSAPrivateKeyFromString
-import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.bodyToString
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.cutOut
@@ -21,6 +20,7 @@ import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
 import one.mixin.android.vo.Account
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 class Session {
     companion object {
@@ -102,7 +102,7 @@ class Session {
                 content += request.body()!!.bodyToString()
             }
             return Jwts.builder()
-                .setClaims(arrayMapOf<String, Any>().apply {
+                .setClaims(ConcurrentHashMap<String, Any>().apply {
                     put(Claims.ID, UUID.randomUUID().toString())
                     put(Claims.EXPIRATION, expire)
                     put(Claims.ISSUED_AT, iat)
