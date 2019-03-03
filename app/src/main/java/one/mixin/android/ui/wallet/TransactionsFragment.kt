@@ -93,14 +93,14 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
         updateHeader(headerView, asset)
         headerView.tranfer_tv.setOnClickListener {
             defaultSharedPreferences.putString(TransferFragment.ASSERT_PREFERENCE, asset.assetId)
-            view!!.findNavController().navigate(R.id.action_transactions_to_single_friend_select)
+            view?.findNavController()?.navigate(R.id.action_transactions_to_single_friend_select)
         }
         headerView.deposit_tv.setOnClickListener {
             asset.differentProcess({
-                view!!.findNavController().navigate(R.id.action_transactions_to_deposit_public_key,
+                view?.findNavController()?.navigate(R.id.action_transactions_to_deposit_public_key,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) })
             }, {
-                view!!.findNavController().navigate(R.id.action_transactions_to_deposit_account,
+                view?.findNavController()?.navigate(R.id.action_transactions_to_deposit_account,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) })
             }, {
                 toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
@@ -240,7 +240,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
         val bottomSheet = builder.create()
         view.withdrawal.setOnClickListener {
             bottomSheet.dismiss()
-            this@TransactionsFragment.view!!.findNavController().navigate(R.id.action_transactions_to_withdrawal,
+            this@TransactionsFragment.view?.findNavController()?.navigate(R.id.action_transactions_to_withdrawal,
                 Bundle().apply { putParcelable(ARGS_ASSET, asset) })
         }
         view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
@@ -257,7 +257,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        view!!.findNavController().navigate(R.id.action_transactions_fragment_to_transaction_fragment,
+        view?.findNavController()?.navigate(R.id.action_transactions_fragment_to_transaction_fragment,
             Bundle().apply {
                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, item as SnapshotItem)
                 putParcelable(ARGS_ASSET, asset)

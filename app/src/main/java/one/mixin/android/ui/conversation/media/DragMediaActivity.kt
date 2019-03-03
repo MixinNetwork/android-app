@@ -602,7 +602,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             .apply {
                 addUpdateListener {
                     (it.animatedValue as Int).apply {
-                        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${view_pager.currentItem}")
+                        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${view_pager.currentItem}") ?: return@addUpdateListener
                         v.translationY = (realSize().y * this / 100).toFloat()
                         colorDrawable.alpha = ALPHA_MAX * (100 - this) / 100
                         if (it.animatedValue == 100) {

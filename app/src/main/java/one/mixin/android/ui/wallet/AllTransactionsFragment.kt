@@ -45,7 +45,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        title_view.left_ib.setOnClickListener { view!!.findNavController().navigateUp() }
+        title_view.left_ib.setOnClickListener { view?.findNavController()?.navigateUp() }
         title_view.right_animator.setOnClickListener { showFiltersSheet() }
         adapter.listener = this
         transaction_rv.itemAnimator = null
@@ -85,7 +85,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             a?.let {
                 if (!isAdded) return@launch
 
-                view!!.findNavController().navigate(R.id.action_all_transactions_fragment_to_transaction_fragment,
+                view?.findNavController()?.navigate(R.id.action_all_transactions_fragment_to_transaction_fragment,
                     Bundle().apply {
                         putParcelable(ARGS_SNAPSHOT, snapshot)
                         putParcelable(ARGS_ASSET, it)
