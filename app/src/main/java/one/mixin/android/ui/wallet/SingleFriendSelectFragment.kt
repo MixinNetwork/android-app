@@ -44,7 +44,7 @@ class SingleFriendSelectFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         title_view.setOnClickListener {
             search_et.hideKeyboard()
-            view!!.findNavController().navigateUp()
+            view?.findNavController()?.navigateUp()
         }
         recycler_view.layoutManager = LinearLayoutManager(requireContext())
         recycler_view.adapter = adapter
@@ -52,7 +52,7 @@ class SingleFriendSelectFragment : BaseFragment() {
         adapter.listener = object : SingleFriendSelectAdapter.FriendSelectListener {
             override fun onItemClick(user: User) {
                 TransferFragment.newInstance(user.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
-                view!!.findNavController().navigateUp()
+                view?.findNavController()?.navigateUp()
             }
         }
         chatViewModel.findContactUsers().observe(this, Observer { data ->

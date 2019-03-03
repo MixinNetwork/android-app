@@ -64,14 +64,14 @@ class AssetAddFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener {
             search_et?.hideKeyboard()
-            view!!.findNavController().navigateUp()
+            view?.findNavController()?.navigateUp()
         }
         title_view.right_animator.isEnabled = false
         title_view.right_animator.setOnClickListener {
             walletViewModel.saveAssets(adapter.checkedAssets.values.toList())
             requireContext().toast(R.string.add_success)
             search_et?.hideKeyboard()
-            view!!.findNavController().navigateUp()
+            view?.findNavController()?.navigateUp()
         }
         adapter.onTopAssetListener = onTopAssetListener
         assets_rv.adapter = adapter

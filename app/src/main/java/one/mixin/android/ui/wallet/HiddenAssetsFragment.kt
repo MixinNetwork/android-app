@@ -85,7 +85,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        view!!.findNavController().navigate(R.id.action_hidden_assets_to_transactions,
+        view?.findNavController()?.navigate(R.id.action_hidden_assets_to_transactions,
             Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, item as AssetItem) })
     }
 }

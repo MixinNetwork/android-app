@@ -81,7 +81,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.headerView = header
         footer = layoutInflater.inflate(R.layout.layout_wallet_asset_foot, coins_rv, false)
         footer.setOnClickListener {
-            view!!.findNavController().navigate(R.id.action_wallet_to_asset_add)
+            view?.findNavController()?.navigate(R.id.action_wallet_to_asset_add)
         }
         assetsAdapter.footerView = footer
         (coins_rv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
@@ -249,21 +249,21 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        val rootView = this.view!!
+        val rootView = this.view
         view.add.setOnClickListener {
-            rootView.findNavController().navigate(R.id.action_wallet_to_asset_add)
+            rootView?.findNavController()?.navigate(R.id.action_wallet_to_asset_add)
             bottomSheet.dismiss()
         }
         view.hide.setOnClickListener {
-            rootView.findNavController().navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
+            rootView?.findNavController()?.navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
             bottomSheet.dismiss()
         }
         view.setting.setOnClickListener {
-            rootView.findNavController().navigate(R.id.action_wallet_fragment_to_wallet_setting_fragment)
+            rootView?.findNavController()?.navigate(R.id.action_wallet_fragment_to_wallet_setting_fragment)
             bottomSheet.dismiss()
         }
         view.transactions_tv.setOnClickListener {
-            rootView.findNavController().navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
+            rootView?.findNavController()?.navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
             bottomSheet.dismiss()
         }
         view.cancel.setOnClickListener { bottomSheet.dismiss() }
@@ -272,7 +272,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        view!!.findNavController().navigate(R.id.action_wallet_fragment_to_transactions_fragment,
+        view?.findNavController()?.navigate(R.id.action_wallet_fragment_to_transactions_fragment,
             Bundle().apply { putParcelable(ARGS_ASSET, item as AssetItem) })
     }
 }
