@@ -13,7 +13,7 @@ import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.fragment_sticker_album.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.vo.StickerAlbum
 import org.jetbrains.anko.backgroundResource
 import javax.inject.Inject
@@ -35,8 +35,8 @@ class StickerAlbumFragment : BaseFragment() {
 
     private val albums = mutableListOf<StickerAlbum>()
 
-    private val albumAdapter: AlbumAdapter by lazy {
-        AlbumAdapter(requireActivity().supportFragmentManager, albums).apply {
+    private val albumAdapter: StickerAlbumAdapter by lazy {
+        StickerAlbumAdapter(requireActivity().supportFragmentManager, albums).apply {
             callback = this@StickerAlbumFragment.callback
         }
     }

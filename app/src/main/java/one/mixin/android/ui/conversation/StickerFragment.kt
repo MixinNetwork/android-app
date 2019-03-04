@@ -16,10 +16,10 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_LIKE
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_NORMAL
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_RECENT
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_LIKE
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_NORMAL
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.vo.Sticker
@@ -71,7 +71,7 @@ class StickerFragment : BaseFragment() {
         context!!.dip(PADDING)
     }
 
-    private var callback: AlbumAdapter.Callback? = null
+    private var callback: StickerAlbumAdapter.Callback? = null
     private var personalAlbumId: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -135,7 +135,7 @@ class StickerFragment : BaseFragment() {
         stickerAdapter.notifyDataSetChanged()
     }
 
-    fun setCallback(callback: AlbumAdapter.Callback) {
+    fun setCallback(callback: StickerAlbumAdapter.Callback) {
         this.callback = callback
     }
 

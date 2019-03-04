@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.FrameLayout
 import one.mixin.android.widget.keyboard.InputAwareLayout
 
-class MenuLayout : FrameLayout, InputAwareLayout.InputView {
+class InputAwareFrameLayout : FrameLayout, InputAwareLayout.InputView {
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
