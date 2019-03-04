@@ -98,6 +98,7 @@ import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.Menu
@@ -133,7 +134,7 @@ import one.mixin.android.webrtc.CallService
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
-import one.mixin.android.widget.MenuLayout
+import one.mixin.android.widget.InputAwareFrameLayout
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
@@ -704,6 +705,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_control.inputLayout = input_layout
         chat_control.stickerContainer = sticker_container
         chat_control.menuContainer = menu_container
+        chat_control.galleryContainer = gallery_container
         chat_control.recordTipView = record_tip_tv
         chat_control.chat_et.setOnClickListener {
             cover.alpha = 0f
@@ -1227,26 +1229,47 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun clickSticker() {
-        val stickerAlbumFragment = activity?.supportFragmentManager?.findFragmentByTag(StickerAlbumFragment.TAG)
+        val stickerAlbumFragment = requireFragmentManager().findFragmentByTag(StickerAlbumFragment.TAG)
         if (stickerAlbumFragment == null) {
             initStickerLayout()
         }
     }
 
     private fun clickMenu() {
-        val menuFragment = activity?.supportFragmentManager?.findFragmentByTag(MenuFragment.TAG)
+        val menuFragment = requireFragmentManager().findFragmentByTag(MenuFragment.TAG)
         if (menuFragment == null) {
             initMenuLayout()
         }
     }
 
+    private fun clickGallery() {
+        val galleryAlbumFragment = requireFragmentManager().findFragmentByTag(GalleryAlbumFragment.TAG)
+        if (galleryAlbumFragment == null) {
+            initGalleryLayout()
+        }
+    }
+
+    private fun initGalleryLayout() {
+        val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
+        galleryAlbumFragment.callback = object : GalleryCallback {
+            override fun onItemClick(pos: Int, uri: Uri) {
+                sendImageMessage(uri)
+            }
+
+            override fun onCameraClick() {
+                openCamera()
+            }
+        }
+        activity?.replaceFragment(galleryAlbumFragment, R.id.gallery_container, GalleryAlbumFragment.TAG)
+    }
+
     private fun initMenuLayout(isSelfCreatedBot: Boolean = false) {
         val menuFragment = MenuFragment.newInstance(isGroup, isBot, isSelfCreatedBot, conversationId)
         activity?.replaceFragment(menuFragment, R.id.menu_container, MenuFragment.TAG)
-        menu_container.visibilityChangedListener = object : MenuLayout.OnVisibilityChangedListener {
+        menu_container.visibilityChangedListener = object : InputAwareFrameLayout.OnVisibilityChangedListener {
             override fun onVisibilityChanged(changedView: View, visibility: Int) {
-                if (changedView == chat_control.chat_more_iv) {
-                    chat_control.chat_more_iv.isChecked = changedView.isVisible
+                if (changedView == chat_control.chat_menu_iv) {
+                    chat_control.chat_menu_iv.isChecked = changedView.isVisible
                 }
             }
         }
@@ -1257,19 +1280,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onMenuClick(menu: Menu) {
                 when (menu.type) {
                     MenuType.Camera -> {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.CAMERA)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    imageUri = createImageUri()
-                                    imageUri?.let {
-                                        openCamera(it)
-                                    }
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            }, {
-                            })
+                        openCamera()
                     }
                     MenuType.File -> {
                         RxPermissions(requireActivity())
@@ -1289,7 +1300,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 TransferFragment.newInstance(it.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
                             }
                         } else {
-                            activity?.supportFragmentManager?.inTransaction {
+                            requireFragmentManager().inTransaction {
                                 setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                                     .anim.slide_in_bottom, R.anim.slide_out_bottom)
                                     .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
@@ -1298,7 +1309,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                     MenuType.Contact -> {
-                        activity?.supportFragmentManager?.inTransaction {
+                        requireFragmentManager().inTransaction {
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                                 .anim.slide_in_bottom, R.anim.slide_out_bottom)
                                 .add(R.id.container,
@@ -1539,6 +1550,23 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    @SuppressLint("CheckResult")
+    private fun openCamera() {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.CAMERA)
+            .subscribe({ granted ->
+                if (granted) {
+                    imageUri = createImageUri()
+                    imageUri?.let {
+                        openCamera(it)
+                    }
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }, {
+            })
+    }
+
     private fun showAlert(duration: Long = 100) {
         if (isGroup) {
             if (showGroupNotification) {
@@ -1658,18 +1686,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         }
 
-        @SuppressLint("CheckResult")
-        override fun onImageClick() {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                .subscribe({ granted ->
-                    if (granted) {
-                        openGallery()
-                    } else {
-                        context?.openPermissionSetting()
-                    }
-                }, {
-                })
+        override fun onGalleryClick() {
+            clickGallery()
         }
     }
 }

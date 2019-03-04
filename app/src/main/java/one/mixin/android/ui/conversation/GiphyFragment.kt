@@ -26,7 +26,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.giphy.Gif
 import org.jetbrains.anko.dip
@@ -54,7 +54,7 @@ class GiphyFragment : BaseFragment() {
     private val stickerViewModel: ConversationViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
-    var callback: AlbumAdapter.Callback? = null
+    var callback: StickerAlbumAdapter.Callback? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_sticker, container, false)

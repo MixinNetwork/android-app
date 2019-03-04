@@ -15,7 +15,7 @@
         android:orientation="horizontal">
 
         <one.mixin.android.widget.RadioButton
-            android:id="@+id/chat_more_iv"
+            android:id="@+id/chat_menu_iv"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:layout_gravity="center_vertical"

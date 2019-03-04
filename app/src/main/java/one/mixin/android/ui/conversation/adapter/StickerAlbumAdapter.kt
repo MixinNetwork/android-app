@@ -13,7 +13,7 @@ import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.vo.StickerAlbum
 
-class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm) {
+class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm) {
     companion object {
         const val TYPE_RECENT = 0
         const val TYPE_LIKE = 1

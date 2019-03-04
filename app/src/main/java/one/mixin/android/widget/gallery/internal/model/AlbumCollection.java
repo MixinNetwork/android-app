@@ -3,6 +3,8 @@ package one.mixin.android.widget.gallery.internal.model;
 import android.content.Context;
 import android.database.Cursor;
 import android.os.Bundle;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.content.Loader;
@@ -17,6 +19,7 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     private AlbumCallbacks mCallbacks;
     private int mCurrentSelection;
 
+    @NonNull
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         Context context = mContext.get();
@@ -27,7 +30,7 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+    public void onLoadFinished(@NonNull Loader<Cursor> loader, Cursor data) {
         Context context = mContext.get();
         if (context == null) {
             return;
@@ -37,7 +40,7 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
+    public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         Context context = mContext.get();
         if (context == null) {
             return;
@@ -47,8 +50,14 @@ public class AlbumCollection implements LoaderManager.LoaderCallbacks<Cursor> {
     }
 
     public void onCreate(FragmentActivity activity, AlbumCallbacks callbacks) {
-        mContext = new WeakReference<Context>(activity);
-        mLoaderManager = activity.getSupportLoaderManager();
+        mContext = new WeakReference<>(activity);
+        mLoaderManager = LoaderManager.getInstance(activity);
+        mCallbacks = callbacks;
+    }
+
+    public void onCreate(Fragment fragment, AlbumCallbacks callbacks) {
+        mContext = new WeakReference<>(fragment.requireContext());
+        mLoaderManager = LoaderManager.getInstance(fragment);
         mCallbacks = callbacks;
     }
 

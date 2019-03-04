@@ -230,7 +230,7 @@
 
     </RelativeLayout>
 
-    <one.mixin.android.widget.StickerLayout
+    <one.mixin.android.widget.InputAwareFrameLayout
         android:id="@+id/sticker_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -240,8 +240,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/chat_control"/>
 
-    <one.mixin.android.widget.MenuLayout
+    <one.mixin.android.widget.InputAwareFrameLayout
         android:id="@+id/menu_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chat_control"/>
+
+    <one.mixin.android.widget.InputAwareFrameLayout
+        android:id="@+id/gallery_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:visibility="gone"

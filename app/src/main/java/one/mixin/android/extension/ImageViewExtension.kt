@@ -46,6 +46,14 @@ fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null
     }).into(this)
 }
 
+fun ImageView.loadImageCenterCrop(uri: Uri?, @DrawableRes holder: Int? = null) {
+    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
+        if (holder != null) {
+            this.placeholder(holder)
+        }
+    }).into(this)
+}
+
 fun ImageView.loadGif(uri: String?, requestListener: RequestListener<GifDrawable?>? = null, centerCrop: Boolean? = null, @DrawableRes holder: Int? = null) {
     var requestOptions = RequestOptions().dontTransform()
     if (centerCrop != null) {

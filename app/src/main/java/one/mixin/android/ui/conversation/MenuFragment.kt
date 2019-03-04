@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
-import kotlinx.android.synthetic.main.fragment_menu.*
+import kotlinx.android.synthetic.main.fragment_recycler_view.*
 import one.mixin.android.R
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
@@ -43,7 +43,7 @@ class MenuFragment: Fragment() {
     private val menuAdapter by lazy { MenuAdapter(isGroup, isBot, isSelfCreatedBot) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-        layoutInflater.inflate(R.layout.fragment_menu, container, false)
+        layoutInflater.inflate(R.layout.fragment_recycler_view, container, false)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -52,8 +52,8 @@ class MenuFragment: Fragment() {
                 callback?.onMenuClick(menu)
             }
         }
-        menu_rv.layoutManager = GridLayoutManager(requireContext(), 4)
-        menu_rv.adapter = menuAdapter
+        rv.layoutManager = GridLayoutManager(requireContext(), 4)
+        rv.adapter = menuAdapter
     }
 
     fun setAppList(appList: List<App>) {
