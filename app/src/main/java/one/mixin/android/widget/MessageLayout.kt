@@ -47,12 +47,20 @@ class MessageLayout : ViewGroup {
         val third = getThird()
         initTextParams(firstView)
 
-        var layoutHeight: Int
-        var layoutWidth: Int
+        val layoutHeight: Int
+        val layoutWidth: Int
 
         if (lastLineWidth + offset + secondView.measuredWidth <= firstView.measuredWidth) {
             layoutWidth = firstView.measuredWidth + contentPadding * 2
             layoutHeight = firstView.measuredHeight + contentPadding * 2
+        } else if (secondView.measuredWidth > firstView.measuredWidth + contentPadding * 2) {
+            if (secondView.measuredWidth + offset + firstView.measuredWidth < maxWidth - paddingWidth) {
+                layoutWidth = firstView.measuredWidth + offset + secondView.measuredWidth + contentPadding * 2
+                layoutHeight = firstView.measuredHeight + contentPadding * 2
+            } else {
+                layoutWidth = secondView.measuredWidth
+                layoutHeight = firstView.measuredHeight + secondView.measuredHeight + contentPadding * 2
+            }
         } else if (lastLineWidth == firstView.measuredWidth.toFloat() && lastLineWidth + offset + secondView.measuredWidth < maxWidth - paddingWidth) {
             layoutWidth = (lastLineWidth + offset + secondView.measuredWidth).toInt() + contentPadding * 2
             layoutHeight = firstView.measuredHeight + contentPadding * 2
