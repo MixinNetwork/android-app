@@ -15,7 +15,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="32dp"
             android:layout_marginEnd="@dimen/activity_horizontal_margin">
 
             <TextView
@@ -34,10 +33,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerHorizontal="true"
-                android:fontFamily="@font/mixin_condensed"
+                android:fontFamily="@font/mixin_wallet"
                 android:gravity="center"
                 android:textColor="@android:color/black"
-                android:textSize="40sp"
+                android:textSize="96sp"
                 tools:text="12345.8"/>
         </RelativeLayout>
 
@@ -47,8 +46,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/activity_vertical_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
             android:layout_marginBottom="20dp">
 
             <TextView
@@ -56,9 +55,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@font/mixin_condensed"
+                android:fontFamily="@font/mixin_wallet"
                 android:textColor="@color/wallet_text_dark"
-                android:textSize="18sp"
+                android:textSize="30sp"
                 tools:text="0.123"/>
 
             <TextView
@@ -69,6 +68,7 @@
                 android:layout_marginStart="@dimen/padding8"
                 android:layout_toEndOf="@+id/total_as_tv"
                 android:text="BTC"
+                android:textSize="12sp"
                 android:textColor="@color/wallet_text_gray"
                 tools:ignore="HardcodedText"/>
         </RelativeLayout>

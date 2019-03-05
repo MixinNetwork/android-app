@@ -33,9 +33,9 @@
         android:layout_centerVertical="true"
         android:layout_marginEnd="@dimen/margin20"
         android:ellipsize="end"
-        android:fontFamily="@font/mixin_condensed"
+        android:fontFamily="@font/mixin_wallet"
         android:maxWidth="200dp"
         android:singleLine="true"
         android:textColor="@color/wallet_pink"
-        android:textSize="22sp" />
+        android:textSize="50sp" />
 </one.mixin.android.widget.ConfirmationBgView>

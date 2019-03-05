@@ -57,9 +57,9 @@
                             android:id="@+id/value_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/mixin_condensed"
+                            android:fontFamily="@font/mixin_wallet"
                             android:textColor="@color/wallet_text_dark"
-                            android:textSize="40sp"
+                            android:textSize="86sp"
                             tools:text="1234812304812045.8321498123749812348" />
 
                         <TextView

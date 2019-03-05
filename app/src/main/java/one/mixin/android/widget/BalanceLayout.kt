@@ -43,7 +43,7 @@ class BalanceLayout : ViewGroup {
         val lines = balanceTv.layout.lineCount
         val lastLineText = getLastLineText(balanceTv.layout, lines)
         if (balanceWordWidth == null) {
-            // fix bug caused by mixin_condensed.otf '+' and '-' too wide
+            // fix bug caused by mixin_wallet.otf '+' and '-' too wide
             var char = balanceText[0]
             if (char == '+' || char == '-') {
                 char = balanceText[1]
