@@ -411,6 +411,7 @@ class ChatControlView : FrameLayout {
             callback.onMenuClick()
         } else {
             inputLayout.hideCurrentInput(chat_et)
+            stickerStatus = STICKER
         }
     }
 
@@ -441,6 +442,7 @@ class ChatControlView : FrameLayout {
             callback.onGalleryClick()
         } else {
             inputLayout.hideCurrentInput(chat_et)
+            stickerStatus = STICKER
         }
     }
 

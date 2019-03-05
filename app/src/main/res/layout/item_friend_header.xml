@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="24dp"
+    android:gravity="center_vertical"
+    android:id="@+id/head_tv"
+    android:paddingStart="@dimen/margin20"
+    android:paddingEnd="@dimen/margin20"
+    android:textColor="@color/gray_black" />
