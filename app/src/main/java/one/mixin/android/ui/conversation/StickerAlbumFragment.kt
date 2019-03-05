@@ -1,15 +1,14 @@
 package one.mixin.android.ui.conversation
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import com.google.android.material.tabs.TabLayout
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import com.google.android.material.tabs.TabLayout
 import kotlinx.android.synthetic.main.fragment_sticker_album.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
@@ -86,25 +85,7 @@ class StickerAlbumFragment : BaseFragment() {
                 tab.customView?.setBackgroundResource(R.drawable.bg_sticker_tab)
             }
         })
-        album_tl.setOnTouchListener { _, event ->
-            when (event.action) {
-                MotionEvent.ACTION_MOVE -> {
-                    val moveY = event.rawY
-                    if (downY != 0f) {
-                        callback?.onMove(moveY - downY)
-                    }
-                    downY = moveY
-                }
-                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
-                    downY = 0f
-                    callback?.onRelease()
-                }
-            }
-            return@setOnTouchListener false
-        }
     }
-
-    private var downY = 0f
 
     fun setCallback(callback: Callback) {
         this.callback = callback
@@ -113,7 +94,5 @@ class StickerAlbumFragment : BaseFragment() {
     interface Callback {
         fun onStickerClick(stickerId: String)
         fun onGiphyClick(url: String)
-        fun onMove(dis: Float)
-        fun onRelease()
     }
 }

@@ -40,6 +40,11 @@ class GalleryItemAdapter(
         val imageView = holder.itemView.thumbnail_iv
         val blurView = holder.itemView.blur_view
         if (position == 0 && needCamera) {
+            holder.itemView.gif_tv.isVisible = false
+            holder.itemView.video_iv.isVisible = false
+            holder.itemView.duration_tv.isVisible = false
+            blurView.isVisible = false
+            holder.itemView.send_tv.isVisible = false
             imageView.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = ctx.dpToPx(42f)
                 height = ctx.dpToPx(42f)
