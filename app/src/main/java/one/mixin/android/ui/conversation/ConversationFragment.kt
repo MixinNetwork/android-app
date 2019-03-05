@@ -130,7 +130,6 @@ import one.mixin.android.webrtc.CallService
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
-import one.mixin.android.widget.InputAwareFrameLayout
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
@@ -1206,8 +1205,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         if (user.isBot()) {
             doAsync {
-                val app = chatViewModel.findAppById(user.appId!!)
-                if (app != null && app.creatorId == Session.getAccountId()) {
+                app = chatViewModel.findAppById(user.appId!!)
+                if (app != null && app!!.creatorId == Session.getAccountId()) {
                     uiThread {
                         initMenuLayout(true)
                     }
@@ -1256,13 +1255,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun initGalleryLayout() {
         val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
-        gallery_container.visibilityChangedListener = object : InputAwareFrameLayout.OnVisibilityChangedListener {
-            override fun onVisibilityChanged(changedView: View, visibility: Int) {
-                if (changedView == chat_control.chat_img_iv) {
-                    chat_control.chat_img_iv.isChecked = changedView.isVisible
-                }
-            }
-        }
         galleryAlbumFragment.callback = object : GalleryCallback {
             override fun onItemClick(pos: Int, uri: Uri) {
                 sendImageMessage(uri)
@@ -1278,13 +1270,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun initMenuLayout(isSelfCreatedBot: Boolean = false) {
         val menuFragment = MenuFragment.newInstance(isGroup, isBot, isSelfCreatedBot, conversationId)
         activity?.replaceFragment(menuFragment, R.id.menu_container, MenuFragment.TAG)
-        menu_container.visibilityChangedListener = object : InputAwareFrameLayout.OnVisibilityChangedListener {
-            override fun onVisibilityChanged(changedView: View, visibility: Int) {
-                if (changedView == chat_control.chat_menu_iv) {
-                    chat_control.chat_menu_iv.isChecked = changedView.isVisible
-                }
-            }
-        }
         appList?.let {
             menuFragment.setAppList(it)
         }
@@ -1366,6 +1351,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                 }
+                chat_control.reset()
             }
         }
     }
