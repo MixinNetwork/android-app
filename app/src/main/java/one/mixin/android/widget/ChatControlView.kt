@@ -7,7 +7,6 @@ import android.animation.PropertyValuesHolder
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.text.Editable
 import android.text.TextWatcher
@@ -81,7 +80,6 @@ class ChatControlView : FrameLayout {
 
     var activity: Activity? = null
     private lateinit var recordCircle: RecordCircleView
-    lateinit var cover: View
     private var upBeforeGrant = false
     private var keyboardShown = false
 
@@ -123,6 +121,9 @@ class ChatControlView : FrameLayout {
 
     fun reset() {
         stickerStatus = STICKER
+        chat_img_iv.isChecked = false
+        chat_menu_iv.isChecked = false
+        chat_bot_iv.isChecked = false
         setSend()
         inputLayout.hideCurrentInput(chat_et)
     }
@@ -134,16 +135,13 @@ class ChatControlView : FrameLayout {
         chat_slide.parent.requestDisallowInterceptTouchEvent(false)
     }
 
-    fun updateUp(up: Boolean) {
-        setSend()
-    }
-
     fun hideOtherInput() {
         if (!botHide) {
             chat_bot_iv.isGone = true
         }
         chat_sticker_ib.isGone = true
         chat_menu_iv.isGone = true
+        chat_img_iv.isGone = true
         sendStatus = REPLY
     }
 
@@ -153,6 +151,7 @@ class ChatControlView : FrameLayout {
         }
         checkSticker()
         chat_menu_iv.isVisible = true
+        chat_img_iv.isVisible = true
         if (sendStatus == REPLY && chat_et.text.toString().trim().isNotEmpty()) {
             return
         }
@@ -176,8 +175,6 @@ class ChatControlView : FrameLayout {
     fun toggleKeyboard(shown: Boolean) {
         keyboardShown = shown
         if (shown) {
-            cover.alpha = 0f
-            activity?.window?.statusBarColor = Color.TRANSPARENT
             stickerStatus = STICKER
         } else {
             if (inputLayout.isInputOpen) {
@@ -188,7 +185,14 @@ class ChatControlView : FrameLayout {
     }
 
     fun uncheckBot() {
-        chat_img_iv.isChecked = false
+        chat_bot_iv.isChecked = false
+    }
+
+    fun getCurrentContainer() = when {
+        stickerContainer.isVisible -> stickerContainer
+        menuContainer.isVisible -> menuContainer
+        galleryContainer.isVisible -> galleryContainer
+        else -> null
     }
 
     private fun initTransitions() {
@@ -217,6 +221,10 @@ class ChatControlView : FrameLayout {
         }
         d?.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         startScaleAnim(chat_sticker_ib, d)
+
+        chat_img_iv.isChecked = false
+        chat_menu_iv.isChecked = false
+        chat_bot_iv.isChecked = false
     }
 
     private fun startScaleAnim(v: ImageButton, d: Drawable?) {
