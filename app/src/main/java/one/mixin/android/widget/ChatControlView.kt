@@ -97,6 +97,7 @@ class ChatControlView : FrameLayout {
         LayoutInflater.from(context).inflate(R.layout.view_chat_control, this, true)
 
         chat_et.addTextChangedListener(editTextWatcher)
+        chat_et.setOnClickListener(onChatEtClickListener)
         chat_send_ib.setOnTouchListener(sendOnTouchListener)
         chat_menu_iv.setOnClickListener(onChatMenuClickListener)
         chat_sticker_ib.setOnClickListener(onStickerClickListener)
@@ -121,9 +122,7 @@ class ChatControlView : FrameLayout {
 
     fun reset() {
         stickerStatus = STICKER
-        chat_img_iv.isChecked = false
-        chat_menu_iv.isChecked = false
-        chat_bot_iv.isChecked = false
+        uncheckMenuImgBot()
         setSend()
         inputLayout.hideCurrentInput(chat_et)
     }
@@ -221,7 +220,9 @@ class ChatControlView : FrameLayout {
         }
         d?.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
         startScaleAnim(chat_sticker_ib, d)
+    }
 
+    private fun uncheckMenuImgBot() {
         chat_img_iv.isChecked = false
         chat_menu_iv.isChecked = false
         chat_bot_iv.isChecked = false
@@ -427,6 +428,7 @@ class ChatControlView : FrameLayout {
                 setSend()
             }
         }
+        uncheckMenuImgBot()
     }
 
     private val onChatBotClickListener = OnClickListener {
@@ -440,6 +442,10 @@ class ChatControlView : FrameLayout {
         } else {
             inputLayout.hideCurrentInput(chat_et)
         }
+    }
+
+    private val onChatEtClickListener = OnClickListener {
+        uncheckMenuImgBot()
     }
 
     private val editTextWatcher = object : TextWatcher {

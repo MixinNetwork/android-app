@@ -16,8 +16,8 @@
 
         <one.mixin.android.widget.RadioButton
             android:id="@+id/chat_menu_iv"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:gravity="center"
             android:background="@drawable/mixin_ripple"
@@ -33,6 +33,7 @@
             android:layout_weight="1"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
+            android:layout_marginStart="@dimen/margin12"
             android:layout_gravity="center_vertical"
             android:background="@drawable/bg_input">
 
@@ -67,34 +68,35 @@
 
         <one.mixin.android.widget.RadioButton
             android:id="@+id/chat_bot_iv"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:gravity="center"
             android:checked="false"
+            android:background="@drawable/mixin_ripple"
             android:layout_marginStart="@dimen/margin12"
             android:button="@drawable/selector_chat_bot"
             tools:ignore="ContentDescription"/>
 
         <one.mixin.android.widget.RadioButton
             android:id="@+id/chat_img_iv"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:gravity="center"
             android:checked="false"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="@dimen/margin12"
             android:background="@drawable/mixin_ripple"
             android:button="@drawable/selector_chat_img"
             tools:ignore="ContentDescription"/>
 
         <ImageButton
             android:id="@+id/chat_send_ib"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:background="@drawable/mixin_ripple"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="@dimen/margin12"
             android:layout_marginEnd="@dimen/margin12"
             android:src="@drawable/ic_chat_mic"
             tools:ignore="ContentDescription"/>
