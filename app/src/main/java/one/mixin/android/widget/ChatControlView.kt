@@ -530,6 +530,7 @@ class ChatControlView : FrameLayout {
             currentChecked = NONE
             stickerStatus = STICKER
             inputLayout.hideCurrentInput(chat_et)
+            stickerStatus = STICKER
         }
         remainFocusable()
     }

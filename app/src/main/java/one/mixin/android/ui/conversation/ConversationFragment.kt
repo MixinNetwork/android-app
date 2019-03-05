@@ -1354,9 +1354,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                                 .anim.slide_in_bottom, R.anim.slide_out_bottom)
                                 .add(R.id.container,
-                                    FriendsFragment.newInstance(conversationId, isGroup, isBot).apply {
-                                        setOnFriendClick {
-                                            sendContactMessage(it.userId)
+                                    FriendsFragment.newInstance().apply {
+                                        setOnFriendClick { idSet ->
+                                            idSet.forEach {id ->
+                                                sendContactMessage(id)
+                                            }
                                         }
                                     }, FriendsFragment.TAG)
                                 .addToBackStack(null)
