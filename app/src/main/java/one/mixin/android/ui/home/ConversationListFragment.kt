@@ -23,6 +23,7 @@ import com.google.zxing.integration.android.IntentIntegrator
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
+import kotlinx.android.synthetic.main.view_badge_avatar_text.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
@@ -433,24 +434,19 @@ class ConversationListFragment : LinkFragment() {
                 itemView.msg_pin.visibility = GONE
                 if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.START.ordinal) {
                     itemView.pb.visibility = VISIBLE
-                    itemView.unread_tv.visibility = GONE
+                    itemView.avatar_iv.badge.visibility = GONE
                 } else {
                     itemView.pb.visibility = GONE
-                    notEmptyOrElse(conversationItem.unseenMessageCount,
-                        { itemView.unread_tv.text = "$it"; itemView.unread_tv.visibility = VISIBLE },
-                        { itemView.unread_tv.visibility = GONE })
+                    setUnreadBadge(conversationItem.unseenMessageCount, itemView)
                 }
             } else {
                 itemView.msg_pin.visibility = VISIBLE
                 if (conversationItem.isGroup() && conversationItem.status == ConversationStatus.START.ordinal) {
                     itemView.pb.visibility = VISIBLE
-                    itemView.unread_tv.visibility = GONE
+                    itemView.avatar_iv.badge.visibility = GONE
                 } else {
                     itemView.pb.visibility = GONE
-                    notEmptyOrElse(conversationItem.unseenMessageCount,
-                        { itemView.unread_tv.text = "$it"; itemView.unread_tv.visibility = VISIBLE; },
-                        { itemView.unread_tv.visibility = GONE }
-                    )
+                    setUnreadBadge(conversationItem.unseenMessageCount, itemView)
                 }
             }
 
@@ -459,9 +455,9 @@ class ConversationListFragment : LinkFragment() {
             itemView.verified_iv.visibility = if (conversationItem.ownerVerified == true) VISIBLE else GONE
 
             if (conversationItem.isGroup()) {
-                itemView.avatar_iv.setGroup(conversationItem.iconUrl())
+                itemView.avatar_iv.bg.setGroup(conversationItem.iconUrl())
             } else {
-                itemView.avatar_iv.setInfo(conversationItem.getConversationName(),
+                itemView.avatar_iv.bg.setInfo(conversationItem.getConversationName(),
                     conversationItem.iconUrl(), conversationItem.ownerIdentityNumber)
             }
             itemView.setOnClickListener { onItemClickListener?.click(position, conversationItem) }
@@ -478,6 +474,15 @@ class ConversationListFragment : LinkFragment() {
             } else {
                 itemView.group_name_tv.visibility = GONE
             }
+        }
+
+        private fun setUnreadBadge(unseenCount: Int?, itemView: View) {
+            notEmptyOrElse(unseenCount, {
+                itemView.avatar_iv.badge.text = if (it >= 99) "99" else "$it"
+                itemView.avatar_iv.badge.visibility = VISIBLE
+            }, {
+                itemView.avatar_iv.badge.visibility = GONE
+            })
         }
     }
 

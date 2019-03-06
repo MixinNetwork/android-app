@@ -1,16 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="MaterialSearchView">
-        <attr name="searchCloseIcon" format="integer" />
-        <attr name="searchBackIcon" format="integer" />
-        <attr name="searchBarHeight" format="dimension" />
-        <attr name="android:fitsSystemWindows" />
-        <attr name="android:hint" />
-        <attr name="android:textColor" />
-        <attr name="android:textColorHint" />
-        <attr name="android:inputType" />
-    </declare-styleable>
-
     <declare-styleable name="TitleView">
         <attr name="titleText" format="string" />
         <attr name="rightIcon" format="reference" />

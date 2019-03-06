@@ -3,6 +3,7 @@ package one.mixin.android.ui.search.holder
 import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_message.view.*
@@ -44,8 +45,6 @@ class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
         } else {
             itemView.search_avatar_iv.setGroup(message.conversationAvatarUrl)
         }
-
-        itemView.divider.visibility = View.VISIBLE
         itemView.setOnClickListener {
             onItemClickListener?.onMessageClick(message)
         }

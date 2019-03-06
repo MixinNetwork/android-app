@@ -61,6 +61,7 @@
     <string name="loading">Loading</string>
     <string name="no_result">NO RESULT</string>
     <string name="gif" translatable="false">GIF</string>
+    <string name="chat">Chat</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

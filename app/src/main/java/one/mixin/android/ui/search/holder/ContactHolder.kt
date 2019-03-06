@@ -2,6 +2,8 @@ package one.mixin.android.ui.search.holder
 
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.item_search_contact.view.*
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.User
@@ -14,11 +16,8 @@ class ContactHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
     fun bind(user: User, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean) {
         itemView.search_name.text = user.fullName
         itemView.search_avatar_iv.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
-        if (isEnd) {
-            itemView.divider.visibility = View.GONE
-        } else {
-            itemView.divider.visibility = View.VISIBLE
-        }
+        itemView.ph1.isVisible = isEnd
+        itemView.ph2.isVisible = isEnd
         itemView.verified_iv.visibility = if (user.isVerified == true) {
             View.VISIBLE
         } else {

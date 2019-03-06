@@ -3,8 +3,9 @@
     android:id="@+id/search_header_tv"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/bg_gray"
-    android:paddingStart="16dp"
-    android:paddingTop="8dp"
+    android:background="@color/white"
+    android:paddingStart="@dimen/margin20"
+    android:paddingEnd="@dimen/margin20"
+    android:paddingTop="@dimen/margin20"
     android:paddingBottom="8dp"
-    android:textColor="@color/gray_50" />
+    android:textColor="@color/gray_black" />

@@ -115,6 +115,12 @@
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 
+    <style name="AppTheme.GrayProgress">
+        <item name="android:indeterminateTint">@color/wallet_text_gray</item>
+        <item name="android:indeterminate">true</item>
+        <item name="android:indeterminateTintMode">src_atop</item>
+    </style>
+
     <style name="AppTheme.WhiteAccent">
         <item name="android:indeterminateTint">@android:color/white</item>
         <item name="android:indeterminate">true</item>
