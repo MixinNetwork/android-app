@@ -15,6 +15,7 @@ import com.bumptech.glide.request.target.Target
 import jp.wasabeef.glide.transformations.CropTransformation
 import jp.wasabeef.glide.transformations.RoundedCornersTransformation
 import one.mixin.android.util.StringSignature
+import org.jetbrains.anko.runOnUiThread
 
 fun ImageView.loadImage(uri: String?) {
     Glide.with(this).load(uri).into(this)
@@ -76,7 +77,9 @@ fun ImageView.loadGifMark(uri: String?, mark: Int) {
             }
 
             override fun onResourceReady(resource: GifDrawable?, model: Any?, target: Target<GifDrawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-                setImageDrawable(resource)
+                this@loadGifMark.context.runOnUiThread {
+                    setImageDrawable(resource)
+                }
                 return true
             }
         })
@@ -101,7 +104,9 @@ fun ImageView.loadImageMark(uri: String?, mark: Int) {
             }
 
             override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-                setImageDrawable(resource)
+                this@loadImageMark.context.runOnUiThread {
+                    setImageDrawable(resource)
+                }
                 return true
             }
         })
@@ -127,7 +132,9 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int) {
         }
 
         override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-            setImageDrawable(resource)
+            this@loadLongImageMark.context.runOnUiThread {
+                setImageDrawable(resource)
+            }
             return true
         }
     }).submit(layoutParams.width, layoutParams.height)
@@ -153,7 +160,9 @@ fun ImageView.loadVideoMark(uri: String?, mark: Int) {
         }
 
         override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-            setImageDrawable(resource)
+            this@loadVideoMark.context.runOnUiThread {
+                setImageDrawable(resource)
+            }
             return true
         }
     }).submit(layoutParams.width, layoutParams.height)

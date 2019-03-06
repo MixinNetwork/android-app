@@ -88,8 +88,8 @@
                         android:layout_marginBottom="6dp"
                         android:visibility="gone"
                         app:border_text_size="14sp"
-                        app:layout_constraintDimensionRatio="1:1"
                         app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintDimensionRatio="1:1"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
                         tools:ignore="ContentDescription"/>
@@ -113,7 +113,7 @@
                         android:id="@+id/reply_content_tv"
                         android:ellipsize="end"
                         android:drawablePadding="3dp"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="3dp"
                         android:layout_marginEnd="16dp"
@@ -121,12 +121,12 @@
                         android:textColor="@color/text_gray"
                         android:fontFamily="@font/sf_pro_light"
                         android:textSize="12sp"
+                        app:layout_constrainedWidth="true"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toStartOf="@id/reply_iv"
                         app:layout_constraintHorizontal_bias="0.0"
                         app:layout_constraintStart_toStartOf="@id/reply_name_tv"
-                        app:layout_constraintTop_toBottomOf="@id/reply_name_tv"
-                        app:layout_constraintWidth_default="wrap"/>
+                        app:layout_constraintTop_toBottomOf="@id/reply_name_tv"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </one.mixin.android.widget.MessageLayout>
         </FrameLayout>
