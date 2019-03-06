@@ -66,7 +66,10 @@ class SendSessionMessageJob(
     }
 
     private fun sendSignalMessage(accountId: String, sessionId: String) {
-        checkSignalSession(accountId, sessionId)
+        val result = checkSignalSession(accountId, sessionId)
+        if (!result) {
+            return
+        }
         if (content != null) {
             message.content = content
         }
