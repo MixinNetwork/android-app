@@ -2,6 +2,7 @@ package one.mixin.android.di.module
 
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
+import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.AboutFragment
 import one.mixin.android.ui.setting.AuthenticationsFragment
@@ -40,4 +41,7 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeDeviceFragment(): DeviceFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeConfirmBottomFragment(): ConfirmBottomFragment
 }

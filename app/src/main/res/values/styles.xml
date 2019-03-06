@@ -103,6 +103,12 @@
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 
+    <style name="AppTheme.DarkBlueProgress">
+        <item name="android:indeterminateTint">@color/colorDarkBlue</item>
+        <item name="android:indeterminate">true</item>
+        <item name="android:indeterminateTintMode">src_atop</item>
+    </style>
+
     <style name="AppTheme.WalletBlue">
         <item name="android:indeterminateTint">@color/wallet_blue_secondary</item>
         <item name="android:indeterminate">true</item>

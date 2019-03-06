@@ -366,8 +366,11 @@
     <string name="setting_desktop_logout">Logout…</string>
     <string name="setting_desktop_last_active">Last active %1$s at %2$s</string>
     <string name="setting_desktop_signed">You have signed onto your desktop</string>
+    <string name="setting_desktop_sigin_success">Link desktop success</string>
     <string name="setting_desktop_sigin_failed">Link desktop failed</string>
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
+    <string name="setting_desktop_confirm"> Confirm login to\nMixin Messenger Desktop</string>
+    <string name="setting_desktop_login">Log in</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>

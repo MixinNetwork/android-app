@@ -359,8 +359,11 @@
     <string name="setting_desktop_logging">登录中…</string>
     <string name="setting_desktop_logout">退出中…</string>
     <string name="setting_desktop_signed">已登录桌面端</string>
+    <string name="setting_desktop_sigin_success">登录桌面端成功</string>
     <string name="setting_desktop_sigin_failed">登录桌面端失败</string>
-    <string name="setting_desktop_logout_failed">退出桌面端失败。</string>
+    <string name="setting_desktop_logout_failed">退出桌面端失败</string>
+    <string name="setting_desktop_confirm">确认登录 Mixin Messenger 桌面端</string>
+    <string name="setting_desktop_login">登录</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>

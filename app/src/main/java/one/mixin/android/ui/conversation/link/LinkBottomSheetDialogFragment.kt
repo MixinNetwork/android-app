@@ -24,7 +24,6 @@ import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
@@ -45,7 +44,6 @@ import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
-import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
@@ -79,7 +77,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         if (Build.VERSION.SDK_INT >= 26) {
             dialog.window?.decorView?.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
         contentView = View.inflate(context, R.layout.fragment_bottom_sheet, null)
         dialog.setContentView(contentView)
@@ -232,9 +230,6 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
             }, {
                 error()
             })
-        } else if (url.startsWith(Constants.Scheme.DEVICE)) {
-            DeviceFragment.newInstance(url).showNow(requireFragmentManager(), DeviceFragment.TAG)
-            dismiss()
         } else {
             error()
         }
