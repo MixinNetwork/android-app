@@ -57,7 +57,6 @@
             android:paddingStart="32dp"
             android:paddingEnd="32dp"
             android:paddingTop="6dp"
-            android:foreground="?attr/selectableItemBackground"
             android:textColor="@color/white"
             android:paddingBottom="6dp"
             android:background="@drawable/selector_round_bn"
