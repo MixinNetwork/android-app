@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingStart="16dp"
+    android:paddingStart="@dimen/margin20"
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
-    android:background="@color/bg_gray"
-    android:paddingEnd="16dp">
+    android:background="@color/white"
+    android:paddingEnd="@dimen/margin20">
 
     <TextView
         android:id="@+id/search_header_tv"
@@ -15,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
         android:layout_alignParentStart="true"
-        android:textColor="@color/gray_50"/>
+        android:textColor="@color/gray_black"/>
 
     <TextView
         android:id="@+id/search_header_more"

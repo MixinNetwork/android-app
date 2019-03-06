@@ -1,6 +1,7 @@
 package one.mixin.android.ui.search.holder
 
 import android.view.View
+import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.item_search_contact.view.*
 import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -14,12 +15,13 @@ class ChatHolder constructor(containerView: View) : NormalHolder(containerView) 
         itemView.verified_iv.visibility = View.GONE
     }
 
-    fun bind(chat: ChatMinimal, target: String?, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+    fun bind(chat: ChatMinimal, target: String?, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean = false) {
+        itemView.ph1.isVisible = isEnd
+        itemView.ph2.isVisible = isEnd
         if (chat.category == ConversationCategory.CONTACT.name) {
             itemView.search_name.text = chat.fullName
             itemView.search_name.highLight(target)
             itemView.search_avatar_iv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)
-            itemView.divider.visibility = View.VISIBLE
             itemView.verified_iv.visibility = if (chat.isVerified == true) {
                 View.VISIBLE
             } else {
@@ -36,7 +38,6 @@ class ChatHolder constructor(containerView: View) : NormalHolder(containerView) 
             itemView.search_name.text = chat.groupName
             itemView.search_name.highLight(target)
             itemView.search_avatar_iv.setInfo(chat.groupName, chat.groupIconUrl, chat.conversationId)
-            itemView.divider.visibility = View.VISIBLE
         }
         itemView.setOnClickListener {
             onItemClickListener?.onChatClick(chat)

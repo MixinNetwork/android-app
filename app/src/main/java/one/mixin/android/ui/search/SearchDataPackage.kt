@@ -57,6 +57,11 @@ class SearchDataPackage(
         messageLimit && messageList!!.size > LIMIT_COUNT
     }
 
+    fun isAssetEnd(position: Int) = position == assetCount().decTip() - 1
+    fun isUserEnd(position: Int) = position == assetCount().decTip() + userCount() - 1
+    fun isChatEnd(position: Int) = position == assetCount().decTip() + userCount() + chatCount() - 1
+    fun isMessageEnd(position: Int) = position == assetCount().decTip() + userCount() + chatCount() + messageCount() - 1
+
     private fun assetCount() = if (assetLimit) {
         min(assetList?.size ?: 0, LIMIT_COUNT)
     } else {

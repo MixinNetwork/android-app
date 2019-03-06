@@ -1,6 +1,9 @@
 package one.mixin.android.ui.search.holder
 
+import android.annotation.SuppressLint
 import android.view.View
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
@@ -15,15 +18,24 @@ import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.textColorResource
 import java.math.BigDecimal
 
-class AssetHolder constructor(containerView: View) : NormalHolder(containerView) {
-    fun bind(asset: AssetItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        itemView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        itemView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        itemView.setOnClickListener { onItemClickListener?.onAsset(asset) }
+class AssetHolder constructor(containerView: View) :NormalHolder(containerView) {
 
-        itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
+    @SuppressLint("SetTextI18n")
+    fun bind(asset: AssetItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean = false) {
+        itemView.ph1.isVisible = isEnd
+        itemView.ph2.isVisible = isEnd
+        itemView.balance.text = try {
+            if (asset.balance.numberFormat8().toFloat() == 0f) {
+                "0.00"
+            } else {
+                asset.balance.numberFormat8()
+            }
+        } catch (ignored: NumberFormatException) {
+            asset.balance.numberFormat8()
+        }
         itemView.balance.highLight(target)
-        itemView.balance_as.text = itemView.context.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
+        itemView.symbol_tv.text = asset.symbol
+        itemView.balance_as.text = "≈ $${asset.usd().numberFormat2()}"
         if (asset.priceUsd == "0") {
             itemView.price_tv.setText(R.string.asset_none)
             itemView.change_tv.visibility = View.GONE
@@ -33,10 +45,12 @@ class AssetHolder constructor(containerView: View) : NormalHolder(containerView)
             if (asset.changeUsd.isNotEmpty()) {
                 val changeUsd = BigDecimal(asset.changeUsd)
                 val isPositive = changeUsd > BigDecimal.ZERO
-                val t = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
-                itemView.change_tv.text = if (isPositive) "+$t" else t
-                itemView.change_tv.textColorResource = if (isPositive) R.color.colorGreen else R.color.colorRed
+                itemView.change_tv.text = "${(changeUsd * BigDecimal(100)).numberFormat2()}%"
+                itemView.change_tv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
             }
         }
+        itemView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+        itemView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        itemView.setOnClickListener { onItemClickListener?.onAsset(asset) }
     }
 }

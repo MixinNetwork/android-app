@@ -106,22 +106,22 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             }
             TypeAsset.index -> {
                 data.getItem(position).let {
-                    (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener)
+                    (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener, data.isAssetEnd(position))
                 }
             }
             TypeUser.index -> {
                 data.getItem(position).let {
-                    (holder as ContactHolder).bind(it as User, query, onItemClickListener)
+                    (holder as ContactHolder).bind(it as User, query, onItemClickListener, data.isUserEnd(position))
                 }
             }
             TypeChat.index -> {
                 data.getItem(position).let {
-                    (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
+                    (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener, data.isChatEnd(position))
                 }
             }
             TypeMessage.index -> {
                 data.getItem(position).let {
-                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
+                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener, data.isMessageEnd(position))
                 }
             }
         }

@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
-import android.view.View
 import androidx.core.content.getSystemService
 import androidx.fragment.app.MixinDialogFragment
 import androidx.work.WorkManager
@@ -65,7 +64,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
-import one.mixin.android.widget.MaterialSearchView
+import one.mixin.android.widget.HomeActionBar
 import one.mixin.android.worker.RefreshAccountWorker
 import one.mixin.android.worker.RefreshAssetsWorker
 import one.mixin.android.worker.RefreshContactWorker
@@ -308,26 +307,23 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     private fun initView() {
-        search_bar.setOnLeftClickListener(View.OnClickListener {
-            navigationController.pushWallet()
-        })
-
-        search_bar.setOnRightClickListener(View.OnClickListener {
-            navigationController.pushContacts()
-        })
-
-        search_bar.setOnBackClickListener(View.OnClickListener {
-            search_bar.closeSearch()
-        })
-
-        search_bar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
-            override fun onQueryTextChange(newText: String): Boolean {
-                (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(newText)
-                return true
+        action_bar.callback = object : HomeActionBar.Callback {
+            override fun onQueryTextSubmit(query: String) {
+                (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(query)
             }
-        }
 
-        search_bar.setSearchViewListener(object : MaterialSearchView.SearchViewListener {
+            override fun onQueryTextChange(newText: String) {
+                (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(newText)
+            }
+
+            override fun onContactListener() {
+                navigationController.pushContacts()
+            }
+
+            override fun onWalletListener() {
+                navigationController.pushWallet()
+            }
+
             override fun onSearchViewClosed() {
                 navigationController.hideSearch()
             }
@@ -335,10 +331,11 @@ class MainActivity : BlazeBaseActivity() {
             override fun onSearchViewOpened() {
                 navigationController.showSearch()
             }
-        })
+        }
+
         root_view.setOnKeyListener { _, keyCode, _ ->
-            if (keyCode == KeyEvent.KEYCODE_BACK && search_bar.isOpen) {
-                search_bar.closeSearch()
+            if (keyCode == KeyEvent.KEYCODE_BACK && action_bar.isOpen) {
+                action_bar.closeSearch()
                 true
             } else {
                 false
@@ -347,15 +344,15 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     fun openSearch() {
-        search_bar?.openSearch()
+        action_bar?.openSearch()
     }
 
     fun closeSearch() {
-        search_bar?.closeSearch()
+        action_bar?.closeSearch()
     }
 
     fun dragSearch(progress: Float) {
-        search_bar?.dragSearch(progress)
+//        action_bar?.dragSearch(progress)
     }
 
     override fun onBackPressed() {
@@ -364,7 +361,7 @@ class MainActivity : BlazeBaseActivity() {
         when {
             searchMessageFragment != null -> super.onBackPressed()
             searchSingleFragment != null -> super.onBackPressed()
-            search_bar.isOpen -> search_bar.closeSearch()
+            action_bar.isOpen -> action_bar.closeSearch()
             else -> super.onBackPressed()
         }
     }

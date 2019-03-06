@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="?actionBarSize">
+
+    <RelativeLayout
+        android:id="@+id/bottom_rl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ProgressBar
+            android:id="@+id/pb"
+            style="?android:attr/progressBarStyle"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_centerVertical="true"
+            android:visibility="gone"
+            android:theme="@style/AppTheme.GrayProgress"/>
+
+        <TextView
+            android:id="@+id/title_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toEndOf="@id/pb"
+            android:layout_toStartOf="@id/search_iv"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginEnd="@dimen/margin20"
+            android:textColor="@color/gray_black"
+            android:textSize="20sp"
+            android:text="@string/chat"/>
+
+        <ImageView
+            android:id="@+id/search_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/mixin_ripple"
+            android:padding="4dp"
+            android:layout_marginEnd="@dimen/margin16"
+            android:layout_toStartOf="@id/contact_iv"
+            android:layout_centerVertical="true"
+            android:src="@drawable/ic_home_search"
+            android:contentDescription="@string/search"/>
+
+        <ImageView
+            android:id="@+id/contact_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/mixin_ripple"
+            android:padding="4dp"
+            android:layout_marginEnd="@dimen/margin16"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/wallet_iv"
+            android:src="@drawable/ic_home_contact"
+            android:contentDescription="@string/contact"/>
+
+        <ImageView
+            android:id="@+id/wallet_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@drawable/mixin_ripple"
+            android:padding="4dp"
+            android:layout_marginEnd="@dimen/margin16"
+            android:src="@drawable/ic_home_wallet"
+            android:contentDescription="@string/wallet_title"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/search_rl"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="gone">
+
+        <one.mixin.android.widget.SearchView
+            android:id="@+id/search_et"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:background="@drawable/bg_search"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_toStartOf="@id/cancel_tv"
+            android:layout_centerVertical="true"
+            android:drawablePadding="8dp"
+            android:drawableStart="@drawable/ic_asset_add_search"
+            android:hint="@string/search"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:paddingEnd="@dimen/margin_start"
+            android:paddingStart="@dimen/margin_start"
+            android:textColor="@color/wallet_text_dark"
+            android:textColorHint="@color/text_gray"
+            android:textSize="14sp"/>
+
+        <TextView
+            android:id="@+id/cancel_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="@string/cancel"
+            android:textColor="@color/wallet_blue"
+            tools:ignore="RelativeOverlap"/>
+    </RelativeLayout>
+</FrameLayout>
