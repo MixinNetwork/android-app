@@ -12,6 +12,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.MotionEvent
 import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_MOVE
@@ -104,6 +105,8 @@ class ChatControlView : FrameLayout {
         chat_img_iv.setOnClickListener(onChatImgClickListener)
         chat_bot_iv.setOnClickListener(onChatBotClickListener)
         chat_slide.callback = chatSlideCallback
+
+        remainFocusable()
     }
 
     fun setCircle(record_circle: RecordCircleView) {
@@ -194,6 +197,16 @@ class ChatControlView : FrameLayout {
         else -> null
     }
 
+    // remove focus but remain focusable
+    private fun remainFocusable() {
+        post {
+            chat_et.isFocusableInTouchMode = false
+            chat_et.isFocusable = false
+            chat_et.isFocusableInTouchMode = true
+            chat_et.isFocusable = true
+        }
+    }
+
     private fun initTransitions() {
         post {
             bottom_ll.layoutTransition = createTransitions()
@@ -201,7 +214,7 @@ class ChatControlView : FrameLayout {
         }
     }
 
-    private fun checkSend() {
+    private fun checkSend(anim: Boolean = true) {
         val d = when (sendStatus) {
             REPLY -> sendDrawable
             SEND -> if (isEditEmpty()) sendDrawable else sendCheckedDrawable
@@ -209,7 +222,11 @@ class ChatControlView : FrameLayout {
             else -> throw IllegalArgumentException("error send status")
         }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
-        startScaleAnim(chat_send_ib, d)
+        if (anim) {
+            startScaleAnim(chat_send_ib, d)
+        } else {
+            chat_send_ib.setImageDrawable(d)
+        }
     }
 
     private fun checkSticker() {
@@ -254,7 +271,7 @@ class ChatControlView : FrameLayout {
         if (!locked) {
             isRecording = false
         }
-        checkSend()
+        checkSend(false)
     }
 
     private fun handleCancelOrEnd(cancel: Boolean) {
@@ -412,6 +429,7 @@ class ChatControlView : FrameLayout {
         } else {
             inputLayout.hideCurrentInput(chat_et)
         }
+        remainFocusable()
     }
 
     private val onStickerClickListener = OnClickListener {
@@ -427,12 +445,14 @@ class ChatControlView : FrameLayout {
                 sendStatus == AUDIO && lastSendStatus == AUDIO) {
                 setSend()
             }
+            remainFocusable()
         }
         uncheckMenuImgBot()
     }
 
     private val onChatBotClickListener = OnClickListener {
         callback.onBotClick()
+        remainFocusable()
     }
 
     private val onChatImgClickListener = OnClickListener {
@@ -442,6 +462,7 @@ class ChatControlView : FrameLayout {
         } else {
             inputLayout.hideCurrentInput(chat_et)
         }
+        remainFocusable()
     }
 
     private val onChatEtClickListener = OnClickListener {
@@ -456,6 +477,86 @@ class ChatControlView : FrameLayout {
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+    }
+
+    private var downY = 0f
+    private var dragging = false
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            ACTION_DOWN -> {
+                getCurrentContainer() ?: return super.dispatchTouchEvent(event)
+                downY = event.rawY
+            }
+            ACTION_MOVE -> {
+                val moveY = event.rawY
+                if (downY != 0f && getCurrentContainer() != null && !isRecording) {
+                    val dif = moveY - downY
+                    dragging = dif != 0f
+                    callback.onDragChatControl(dif)
+                }
+                downY = moveY
+            }
+            ACTION_UP, ACTION_CANCEL -> {
+                downY = 0f
+
+                checkAudioRecord()
+
+                if (dragging) {
+                    dragging = false
+                    callback.onReleaseChatControl()
+                    return true
+                }
+            }
+        }
+        return if (dragging) true else super.dispatchTouchEvent(event)
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        when (event.action) {
+            ACTION_DOWN -> {
+                getCurrentContainer() ?: return false
+                downY = event.rawY
+                return true
+            }
+            ACTION_MOVE -> {
+                val moveY = event.rawY
+                if (downY != 0f) {
+                    val dif = moveY - downY
+                    dragging = dif != 0f
+                    callback.onDragChatControl(dif)
+                }
+                downY = moveY
+            }
+            ACTION_UP, ACTION_CANCEL -> {
+                downY = 0f
+                dragging = false
+                callback.onReleaseChatControl()
+
+                checkAudioRecord()
+            }
+        }
+        return false
+    }
+
+    private fun checkAudioRecord() {
+        if (!hasStartRecord) {
+            removeCallbacks(recordRunnable)
+            removeCallbacks(checkReadyRunnable)
+            cleanUp()
+        } else if (hasStartRecord && !locked && System.currentTimeMillis() - startTime < 500) {
+            removeCallbacks(recordRunnable)
+            removeCallbacks(checkReadyRunnable)
+            // delay check sendButtonVisible
+            postDelayed({
+                if (!recordCircle.sendButtonVisible) {
+                    handleCancelOrEnd(true)
+                } else {
+                    recordCircle.sendButtonVisible = false
+                }
+            }, 200)
+        }
     }
 
     private var startX = 0f
@@ -650,5 +751,7 @@ class ChatControlView : FrameLayout {
         fun onMenuClick()
         fun onBotClick()
         fun onGalleryClick()
+        fun onDragChatControl(dis: Float)
+        fun onReleaseChatControl()
     }
 }

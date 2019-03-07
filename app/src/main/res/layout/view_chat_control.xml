@@ -20,7 +20,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:gravity="center"
-            android:background="@drawable/mixin_ripple"
             android:checked="false"
             android:layout_marginStart="@dimen/margin12"
             android:button="@drawable/selector_chat_more"
@@ -73,7 +72,6 @@
             android:layout_gravity="center_vertical"
             android:gravity="center"
             android:checked="false"
-            android:background="@drawable/mixin_ripple"
             android:layout_marginStart="@dimen/margin12"
             android:button="@drawable/selector_chat_bot"
             tools:ignore="ContentDescription"/>
@@ -86,7 +84,6 @@
             android:gravity="center"
             android:checked="false"
             android:layout_marginStart="@dimen/margin12"
-            android:background="@drawable/mixin_ripple"
             android:button="@drawable/selector_chat_img"
             tools:ignore="ContentDescription"/>
 
@@ -95,7 +92,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:background="@drawable/mixin_ripple"
+            android:background="@null"
             android:layout_marginStart="@dimen/margin12"
             android:layout_marginEnd="@dimen/margin12"
             android:src="@drawable/ic_chat_mic"

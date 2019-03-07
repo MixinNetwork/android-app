@@ -13,6 +13,7 @@ import kotlinx.android.synthetic.main.fragment_gallery_album.*
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.adapter.GalleryAlbumAdapter
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
+import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.model.AlbumCollection
 
@@ -28,6 +29,7 @@ class GalleryAlbumFragment: Fragment(), AlbumCollection.AlbumCallbacks {
     }
 
     var callback: GalleryCallback? = null
+    var rvCallback: DraggableRecyclerView.Callback? = null
 
     private val albumCollection = AlbumCollection()
 
@@ -52,6 +54,15 @@ class GalleryAlbumFragment: Fragment(), AlbumCollection.AlbumCallbacks {
 
             override fun onCameraClick() {
                 callback?.onCameraClick()
+            }
+        }
+        albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease() {
+                rvCallback?.onRelease()
             }
         }
         view_pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {

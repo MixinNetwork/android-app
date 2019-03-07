@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_DRAGGING
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import kotlinx.android.synthetic.main.fragment_recycler_view.*
 import one.mixin.android.R
@@ -18,6 +17,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.GalleryItemAdapter
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
+import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumMediaCollection
@@ -38,6 +38,7 @@ class GalleryItemFragment: Fragment(), AlbumMediaCollection.AlbumMediaCallbacks 
     }
 
     var callback: GalleryCallback? = null
+    var rvCallback: DraggableRecyclerView.Callback? = null
 
     private val album: Album by lazy { arguments!!.getParcelable<Album>(ARGS_ALBUM) }
     private val needCamera: Boolean by lazy { arguments!!.getBoolean(ARGS_NEED_CAMERA) }
@@ -77,6 +78,15 @@ class GalleryItemFragment: Fragment(), AlbumMediaCollection.AlbumMediaCallbacks 
                 }
             }
         })
+        rv.callback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease() {
+                rvCallback?.onRelease()
+            }
+        }
 
         albumMediaCollection.onCreate(this, this)
         albumMediaCollection.load(album)

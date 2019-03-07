@@ -9,10 +9,10 @@ import androidx.recyclerview.widget.GridLayoutManager
 import kotlinx.android.synthetic.main.fragment_recycler_view.*
 import one.mixin.android.R
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuAdapter
 import one.mixin.android.vo.App
+import one.mixin.android.widget.DraggableRecyclerView
 
 class MenuFragment: Fragment() {
     companion object {
@@ -25,22 +25,21 @@ class MenuFragment: Fragment() {
         fun newInstance(
             isGroup: Boolean,
             isBot: Boolean,
-            isSelfCreatedBot: Boolean,
-            conversationId: String
+            isSelfCreatedBot: Boolean
         ) = MenuFragment().withArgs {
             putBoolean(ARGS_IS_GROUP, isGroup)
             putBoolean(ARGS_IS_BOT, isBot)
             putBoolean(ARGS_IS_SELF_CREATED_BOT, isSelfCreatedBot)
-            putString(CONVERSATION_ID, conversationId)
         }
     }
 
     private val isGroup by lazy { arguments!!.getBoolean(ARGS_IS_GROUP) }
     private val isBot by lazy { arguments!!.getBoolean(ARGS_IS_BOT) }
     private val isSelfCreatedBot by lazy { arguments!!.getBoolean(ARGS_IS_SELF_CREATED_BOT) }
-    private val conversationId by lazy { arguments!!.getString(CONVERSATION_ID) }
 
     private val menuAdapter by lazy { MenuAdapter(isGroup, isBot, isSelfCreatedBot) }
+
+    var rvCallback: DraggableRecyclerView.Callback? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_recycler_view, container, false)
@@ -54,6 +53,15 @@ class MenuFragment: Fragment() {
         }
         rv.layoutManager = GridLayoutManager(requireContext(), 4)
         rv.adapter = menuAdapter
+        rv.callback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease() {
+                rvCallback?.onRelease()
+            }
+        }
     }
 
     fun setAppList(appList: List<App>) {
