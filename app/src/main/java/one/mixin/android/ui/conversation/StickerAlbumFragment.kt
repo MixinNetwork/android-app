@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.vo.StickerAlbum
+import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.backgroundResource
 import javax.inject.Inject
 
@@ -40,6 +41,7 @@ class StickerAlbumFragment : BaseFragment() {
         }
     }
     private var callback: Callback? = null
+    var rvCallback: DraggableRecyclerView.Callback? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_sticker_album, container, false)
@@ -68,6 +70,15 @@ class StickerAlbumFragment : BaseFragment() {
                 }
             }
         })
+        albumAdapter.rvCallback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease() {
+                rvCallback?.onRelease()
+            }
+        }
         view_pager.adapter = albumAdapter
         album_tl.setupWithViewPager(view_pager)
         album_tl.tabMode = TabLayout.MODE_SCROLLABLE

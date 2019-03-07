@@ -43,7 +43,7 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="MissingConstraints"/>
 
-            <androidx.recyclerview.widget.RecyclerView
+            <one.mixin.android.widget.DraggableRecyclerView
                 android:id="@+id/chat_rv"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
@@ -51,6 +51,7 @@
                 android:clipToPadding="false"
                 android:paddingBottom="6dp"
                 app:stackFromEnd="true"
+                app:drag_direction="1"
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

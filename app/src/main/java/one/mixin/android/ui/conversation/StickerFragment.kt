@@ -23,6 +23,7 @@ import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.T
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.vo.Sticker
+import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -70,6 +71,8 @@ class StickerFragment : BaseFragment() {
     private val padding: Int by lazy {
         context!!.dip(PADDING)
     }
+
+    var rvCallback: DraggableRecyclerView.Callback? = null
 
     private var callback: StickerAlbumAdapter.Callback? = null
     private var personalAlbumId: String? = null
@@ -125,6 +128,15 @@ class StickerFragment : BaseFragment() {
                 StickerActivity.show(requireContext(), personalAlbumId)
             }
         })
+        sticker_rv.callback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease() {
+                rvCallback?.onRelease()
+            }
+        }
     }
 
     @Synchronized

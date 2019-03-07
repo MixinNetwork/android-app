@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import one.mixin.android.ui.conversation.GalleryItemFragment
+import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
 
 class GalleryAlbumAdapter(
@@ -16,6 +17,7 @@ class GalleryAlbumAdapter(
 ): FragmentPagerAdapter(fm) {
 
     var callback: GalleryCallback? = null
+    var rvCallback: DraggableRecyclerView.Callback? = null
 
     var albums: List<Album>? = null
         set(value) {
@@ -34,6 +36,15 @@ class GalleryAlbumAdapter(
 
             override fun onCameraClick() {
                 callback?.onCameraClick()
+            }
+        }
+        fragment.rvCallback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease() {
+                rvCallback?.onRelease()
             }
         }
         pageMap[position] = fragment

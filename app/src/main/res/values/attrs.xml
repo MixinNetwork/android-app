@@ -87,4 +87,7 @@
     <declare-styleable name="BalanceLayout">
         <attr name="center" format="boolean"/>
     </declare-styleable>
+    <declare-styleable name="DraggableRecyclerView">
+        <attr name="drag_direction" format="integer"/>
+    </declare-styleable>
 </resources>
