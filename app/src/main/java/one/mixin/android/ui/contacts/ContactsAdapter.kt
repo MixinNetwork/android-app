@@ -8,8 +8,8 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_contact.view.*
-import kotlinx.android.synthetic.main.item_contact_header.view.*
-import kotlinx.android.synthetic.main.item_contact_normal.view.*
+import kotlinx.android.synthetic.main.item_contact_friend.view.*
+import kotlinx.android.synthetic.main.item_search_header.view.*
 import kotlinx.android.synthetic.main.view_contact_header.view.*
 import kotlinx.android.synthetic.main.view_contact_list_empty.view.*
 import one.mixin.android.R
@@ -86,7 +86,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
+        val view = parent.inflate(R.layout.item_search_header, false)
         return HeaderViewHolder(view)
     }
 
@@ -159,11 +159,11 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
     class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind() {
-            itemView.header.text = itemView.context.getString(R.string.contact_item_title)
+            itemView.search_header_tv.text = itemView.context.getString(R.string.contact_item_title)
         }
 
         fun bind(user: User) {
-            itemView.header.text = if (user.fullName != null &&
+            itemView.search_header_tv.text = if (user.fullName != null &&
                 user.fullName.isNotEmpty()) user.fullName[0].toString() else ""
         }
     }
@@ -192,8 +192,8 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             }
             if (listener != null) {
                 itemView.contact_header_rl.setOnClickListener { listener.onHeaderRl() }
-                itemView.new_group_rl.setOnClickListener { listener.onNewGroup() }
-                itemView.add_contact_rl.setOnClickListener { listener.onAddContact() }
+                itemView.new_group_ll.setOnClickListener { listener.onNewGroup() }
+                itemView.add_contact_ll.setOnClickListener { listener.onAddContact() }
                 itemView.my_qr_fl.setOnClickListener { listener.onMyQr(self) }
                 itemView.receive_fl.setOnClickListener { listener.onReceiveQr(self) }
             }
@@ -210,7 +210,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
     class FriendViewHolder(itemView: View) : ViewHolder(itemView) {
         fun bind(user: User, listener: ContactListener?) {
-            itemView.normal.text = user.fullName
+            itemView.name_tv.text = user.fullName
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
             itemView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
@@ -225,9 +225,8 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             itemView.index.text = if (user.fullName != null && user.fullName.isNotEmpty())
                 user.fullName[0].toString() else ""
             itemView.contact_friend.text = user.fullName
-            if (listener != null) {
-                itemView.setOnClickListener { listener.onContactItem(user) }
-            }
+            itemView.contact_phone.text = user.phone
+            itemView.invite_tv.setOnClickListener { listener?.onContactItem(user) }
         }
     }
 

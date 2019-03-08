@@ -14,10 +14,10 @@
 
         <one.mixin.android.widget.AvatarView
             android:id="@+id/contact_header_avatar"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:layout_centerVertical="true"
-            android:layout_margin="@dimen/activity_horizontal_margin"/>
+            android:layout_margin="@dimen/margin20"/>
 
         <TextView
             android:id="@+id/contact_header_name_tv"
@@ -25,11 +25,11 @@
             android:layout_height="wrap_content"
             android:layout_above="@+id/contact_header_id_tv"
             android:layout_marginBottom="4dp"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/margin20"
             android:layout_toEndOf="@+id/contact_header_avatar"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textColor="@android:color/black"
+            android:textColor="@color/gray_black"
             android:textSize="16sp"/>
 
         <TextView
@@ -38,11 +38,11 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_toEndOf="@+id/contact_header_avatar"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/margin20"
             android:maxLines="1"
             android:text="@string/contact_mixin_id"
-            android:textColor="@color/text_gray"
-            android:textSize="11sp"/>
+            android:textColor="@color/wallet_text_gray"
+            android:textSize="12sp"/>
 
         <TextView
             android:id="@+id/contact_header_mobile_tv"
@@ -51,248 +51,147 @@
             android:layout_below="@+id/contact_header_id_tv"
             android:layout_marginTop="4dp"
             android:layout_toEndOf="@+id/contact_header_avatar"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/margin20"
             android:maxLines="1"
             android:text="@string/contact_mobile"
             android:textColor="@color/text_gray"
-            android:textSize="11sp"/>
-    </RelativeLayout>
+            android:textSize="12sp"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/margin16"
+            android:src="@drawable/ic_keyboard_arrow_down_gray_24dp"
+            tools:ignore="ContentDescription"/>
+    </RelativeLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
+        android:layout_marginBottom="8dp"
         android:background="@android:color/white">
 
-        <FrameLayout
+        <LinearLayout
             android:id="@+id/receive_fl"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?attr/selectableItemBackground"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="8dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_contact_receive_qr"/>
 
             <TextView
                 android:id="@+id/receive_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:drawablePadding="8dp"
-                android:drawableStart="@drawable/ic_contacts_receive"
-                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:textColor="@color/gray_black"
                 android:text="@string/contact_receive_money"/>
-        </FrameLayout>
+        </LinearLayout>
 
-        <View
-            android:layout_width=".5dp"
-            android:layout_height="match_parent"
-            android:background="@color/divider"/>
-
-        <FrameLayout
+        <LinearLayout
             android:id="@+id/my_qr_fl"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent"
-            android:foreground="?attr/selectableItemBackground">
+            android:foreground="?attr/selectableItemBackground"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="8dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_contact_my_qr"
+                tools:ignore="ContentDescription"/>
 
             <TextView
                 android:id="@+id/my_qr_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:drawablePadding="8dp"
-                android:drawableStart="@drawable/ic_contacts_qr"
-                android:textColor="@color/black"
+                android:gravity="center_vertical"
+                android:textColor="@color/gray_black"
                 android:text="@string/contact_my_qr_title"/>
-        </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
 
-    <include layout="@layout/view_item_divider"/>
-
-    <RelativeLayout
-        android:id="@+id/new_group_rl"
+    <View
         android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
+        android:layout_height="10dp"
+        android:background="@drawable/ic_shadow_divider"/>
 
-        <androidx.legacy.widget.Space
-            android:id="@+id/center_new_group"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:layout_centerVertical="true"/>
-
-        <ImageView
-            android:id="@+id/new_group_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:src="@drawable/ic_new_group"
-            tools:ignore="ContentDescription"/>
-
-        <TextView
-            android:id="@+id/new_group_title_iv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/center_new_group"
-            android:layout_toEndOf="@+id/new_group_iv"
-            android:text="@string/contact_new_group_chat_title"/>
-
-        <TextView
-            android:id="@+id/new_group_desc_iv"
-            style="@style/DescTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/center_new_group"
-            android:layout_toEndOf="@+id/new_group_iv"
-            android:text="@string/contact_new_group_chat_desc"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@+id/new_group_iv"
-            android:background="@color/divider"/>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/add_contact_rl"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
-
-        <androidx.legacy.widget.Space
-            android:id="@+id/center_add_contact"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:layout_centerVertical="true"/>
-
-        <ImageView
-            android:id="@+id/add_contact_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:src="@drawable/ic_add_contact"
-            tools:ignore="ContentDescription"/>
-
-        <TextView
-            android:id="@+id/add_contact_title_iv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/center_add_contact"
-            android:layout_toEndOf="@+id/add_contact_iv"
-            android:text="@string/contact_add_contact_title"/>
-
-        <TextView
-            android:id="@+id/add_contact_desc_iv"
-            style="@style/DescTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/center_add_contact"
-            android:layout_toEndOf="@+id/add_contact_iv"
-            android:text="@string/contact_add_contact_desc"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:layout_alignParentBottom="true"
-            android:background="@color/divider"/>
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/qr_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:visibility="gone"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
-
-        <androidx.legacy.widget.Space
-            android:id="@+id/center_qr"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:layout_centerVertical="true"/>
-
-        <ImageView
-            android:id="@+id/qr_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            android:src="@drawable/ic_qr_code"
-            tools:ignore="ContentDescription"/>
-
-        <TextView
-            android:id="@+id/qr_title_iv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_above="@+id/center_qr"
-            android:layout_toEndOf="@+id/qr_iv"
-            android:text="@string/contact_qr_mixin"/>
-
-        <TextView
-            android:id="@+id/qr_desc_iv"
-            style="@style/DescTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/center_qr"
-            android:layout_toEndOf="@+id/qr_iv"
-            android:text="@string/contact_qr_desc"/>
-
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/invite_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:visibility="gone"
-        android:foreground="?attr/selectableItemBackground"
+        android:layout_height="66dp"
         android:background="@android:color/white">
 
-        <androidx.legacy.widget.Space
-            android:id="@+id/center_invite"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:layout_centerVertical="true"/>
+        <LinearLayout
+            android:id="@+id/new_group_ll"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:foreground="?attr/selectableItemBackground">
 
-        <ImageView
-            android:id="@+id/invite_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_invite"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="24dp"
-            android:layout_marginEnd="24dp"
-            tools:ignore="ContentDescription"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="8dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_contact_new_group"/>
 
-        <TextView
-            android:id="@+id/invite_title_iv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toEndOf="@+id/invite_iv"
-            android:layout_above="@+id/center_invite"
-            android:text="@string/contact_invite_title"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center_vertical"
+                android:textColor="@color/gray_black"
+                android:text="@string/contact_new_group_chat_title"/>
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/invite_desc_iv"
-            style="@style/DescTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/center_invite"
-            android:text="@string/contact_invite_desc"
-            android:layout_toEndOf="@+id/invite_iv"/>
-    </RelativeLayout>
+        <LinearLayout
+            android:id="@+id/add_contact_ll"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:foreground="?attr/selectableItemBackground">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginTop="5dp"
+                android:layout_marginEnd="8dp"
+                android:layout_gravity="center_vertical"
+                android:src="@drawable/ic_contact_add"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center_vertical"
+                android:textColor="@color/gray_black"
+                android:text="@string/contact_add_contact_title"/>
+        </LinearLayout>
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="@drawable/ic_shadow_divider"/>
 </LinearLayout>

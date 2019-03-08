@@ -62,6 +62,7 @@
     <string name="no_result">NO RESULT</string>
     <string name="gif" translatable="false">GIF</string>
     <string name="chat">Chat</string>
+    <string name="invite">Invite</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -174,6 +175,7 @@
     <string name="verify_pin">Verify Wallet PIN</string>
     <string name="change_phone_success">Change phone number successfully!</string>
     <string name="edit_name">Edit Name</string>
+    <string name="change_avatar">Change Avatar</string>
     <!-- chat -->
     <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %2$s.</string>
     <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>

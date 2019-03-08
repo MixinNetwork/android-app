@@ -148,7 +148,7 @@ class ContactsFragment : BaseFragment() {
     private val mContactListener: ContactsAdapter.ContactListener = object : ContactsAdapter.ContactListener {
 
         override fun onHeaderRl() {
-            activity?.addFragment(this@ContactsFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+            ProfileBottomSheetDialogFragment.newInstance().showNow(requireFragmentManager(), ProfileBottomSheetDialogFragment.TAG)
         }
 
         override fun onNewGroup() {

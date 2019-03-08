@@ -7,6 +7,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.contacts.AddPeopleFragment
 import one.mixin.android.ui.contacts.ContactBottomSheetDialog
 import one.mixin.android.ui.contacts.ContactsFragment
+import one.mixin.android.ui.contacts.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 
 @Module
@@ -28,4 +29,7 @@ abstract class ContactActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeQrBottomSheetDialogFragment(): QrBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contribteProfileBottomSheetDailogFragment(): ProfileBottomSheetDialogFragment
 }

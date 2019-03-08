@@ -21,7 +21,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_qr_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_avatar.view.*
 import kotlinx.android.synthetic.main.view_qr_bottom.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.MY_QR
@@ -72,8 +72,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title.left_ib.setOnClickListener { dismiss() }
-        contentView.right_animator.setOnClickListener { showBottom() }
+        contentView.title.right_iv.setOnClickListener { dismiss() }
         if (type == TYPE_MY_QR) {
             contentView.title.title_tv.text = getString(R.string.contact_my_qr_title)
             contentView.tip_tv.text = getString(R.string.contact_my_qr_tip)
@@ -141,9 +140,9 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (granted) {
                         doAsync {
                             val outFile = requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
-                            val b = Bitmap.createBitmap(contentView.bottom_ll.width, contentView.bottom_ll.height, Bitmap.Config.ARGB_8888)
+                            val b = Bitmap.createBitmap(contentView.qr_fl.width, contentView.qr_fl.height, Bitmap.Config.ARGB_8888)
                             val c = Canvas(b)
-                            contentView.bottom_ll.draw(c)
+                            contentView.qr_fl.draw(c)
                             b.save(outFile)
                             try {
                                 MediaStore.Images.Media.insertImage(requireContext().contentResolver,

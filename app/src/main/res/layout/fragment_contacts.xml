@@ -10,12 +10,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:titleText="@string/title_home"
-        app:leftIcon="@drawable/ic_chat"
-        app:rightIcon="@drawable/ic_settings_black_24dp"/>
+        app:need_divider="false"
+        app:rightIcon="@drawable/ic_setting"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/contact_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/divider"/>
+        android:layout_height="match_parent"/>
 </LinearLayout>

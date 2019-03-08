@@ -21,7 +21,7 @@
     <dimen name="group_avatar_text_size">34sp</dimen>
     <dimen name="group_avatar_text_medium">28sp</dimen>
     <dimen name="group_avatar_text_small">22sp</dimen>
-    <dimen name="bottom_avatar_size">110dp</dimen>
+    <dimen name="bottom_avatar_size">90dp</dimen>
     <dimen name="bottom_group_avatar_size">40dp</dimen>
     <dimen name="bottom_button_height">56dp</dimen>
     <dimen name="bottom_name_text_size">18sp</dimen>
