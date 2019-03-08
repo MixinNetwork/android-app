@@ -394,6 +394,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         override fun afterTextChanged(s: Editable) {
             checkInputForbidden(s)
             if (s.isNotEmpty() && contentView.asset_rl.isEnabled && s.toString().checkNumber()) {
+                contentView.continue_animator.isEnabled = true
                 contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_wallet_blue_btn, null)
                 contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     height = requireContext().dpToPx(72f)
@@ -407,6 +408,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     contentView.amount_as_tv.text = getBottomText()
                 }
             } else {
+                contentView.continue_animator.isEnabled = false
                 contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_gray_btn, null)
                 contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     height = requireContext().dpToPx(40f)

@@ -24,7 +24,7 @@ class ContactsActivity : BlazeBaseActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         val contactsFragment = supportFragmentManager.findFragmentByTag(ContactsFragment.TAG)
         contactsFragment?.onActivityResult(requestCode, resultCode, data)
-        val profileFragment = supportFragmentManager.findFragmentByTag(ProfileFragment.TAG)
+        val profileFragment = supportFragmentManager.findFragmentByTag(ProfileBottomSheetDialogFragment.TAG)
         profileFragment?.onActivityResult(requestCode, resultCode, data)
     }
 

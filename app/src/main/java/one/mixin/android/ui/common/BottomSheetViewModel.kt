@@ -8,6 +8,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.ConversationRequest
@@ -183,4 +184,13 @@ class BottomSheetViewModel @Inject internal constructor(
             .observeOn(AndroidSchedulers.mainThread())
 
     fun logoutAsync(sessionId: String) = accountRepository.logoutAsync(sessionId)
+
+    fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
+        accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
+    fun insertUser(user: User) {
+        userRepository.upsert(user)
+    }
+
+    fun findSelf(): LiveData<User?> = userRepository.findSelf()
 }

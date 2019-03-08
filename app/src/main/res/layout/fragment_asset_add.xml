@@ -15,11 +15,6 @@
         app:rightText="@string/save"
         app:titleText="@string/wallet_add_asset"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/wallet_divider"/>
-
     <one.mixin.android.widget.SearchView
         android:id="@+id/search_et"
         android:layout_width="match_parent"

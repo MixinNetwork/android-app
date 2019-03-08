@@ -1,15 +1,14 @@
 package one.mixin.android.ui.contacts
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.kotlin.autoDisposable
@@ -17,6 +16,7 @@ import kotlinx.android.synthetic.main.fragment_add_people.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
@@ -25,6 +25,7 @@ import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.widget.Keyboard
+import org.jetbrains.anko.textColor
 import java.util.Locale
 import javax.inject.Inject
 
@@ -61,8 +62,7 @@ class AddPeopleFragment : BaseFragment() {
         }
         search_et.addTextChangedListener(mWatcher)
         search_et.showSoftInputOnFocus = false
-        search_et.isClickable = true
-        search_et.requestFocus()
+        search_et.post { search_et.isFocusable = false }
         keyboard.setKeyboardKeys(keys)
         keyboard.setOnClickKeyboardListener(mKeyboardListener)
         keyboard.animate().translationY(0f).start()
@@ -70,12 +70,12 @@ class AddPeopleFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        search_tv.setOnClickListener {
+        search_animator.setOnClickListener {
             search_animator.displayedChild = POS_PROGRESS
-            search_tv.isEnabled = false
+            search_animator.isEnabled = false
             contactsViewModel.search(search_et.text.toString()).autoDisposable(scopeProvider).subscribe({ r ->
                 search_animator.displayedChild = POS_SEARCH
-                search_tv.isEnabled = true
+                search_animator.isEnabled = true
                 when {
                     r.isSuccess -> r.data?.let { data ->
                         if (data.userId == Session.getAccountId()) {
@@ -91,7 +91,7 @@ class AddPeopleFragment : BaseFragment() {
                 }
             }, { t: Throwable ->
                 search_animator.displayedChild = POS_SEARCH
-                search_tv.isEnabled = true
+                search_animator.isEnabled = true
                 ErrorHandler.handleError(t)
             })
         }
@@ -173,7 +173,24 @@ class AddPeopleFragment : BaseFragment() {
         override fun afterTextChanged(s: Editable?) {
             if (!isAdded) return
 
-            search_animator.visibility = if (valid(s.toString())) VISIBLE else GONE
+            if (valid(s.toString())) {
+                search_animator.isEnabled = true
+                search_animator.background = resources.getDrawable(R.drawable.bg_wallet_blue_btn, null)
+                search_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    height = requireContext().dpToPx(72f)
+                    bottomMargin = 0
+                }
+                search_tv.textColor = requireContext().getColor(R.color.white)
+            } else {
+                search_animator.isEnabled = false
+                search_animator.background = resources.getDrawable(R.drawable.bg_gray_btn, null)
+                search_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    height = requireContext().dpToPx(40f)
+                    bottomMargin = requireContext().dpToPx(16f)
+                }
+                search_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+
+            }
         }
     }
 }

@@ -62,6 +62,7 @@
     <string name="loading">加载中</string>
     <string name="no_result">没有结果</string>
     <string name="chat">聊天</string>
+    <string name="invite">邀请</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -175,6 +176,7 @@
     <string name="profile_modify_number">你想要修改手机号码么？</string>
     <string name="change_phone_success">修改手机号成功!</string>
     <string name="edit_name">修改昵称</string>
+    <string name="change_avatar">修改头像</string>
     <!-- chat -->
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="chat_learn">了解更多</string>
