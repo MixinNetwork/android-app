@@ -124,7 +124,9 @@ dependencies {
     implementation "androidx.constraintlayout:constraintlayout:${constraintLayoutVersion}"
     implementation "androidx.core:core-ktx:${ktxVersion}"
 
-    implementation "android.arch.work:work-runtime-ktx:${workManagerVersion}"
+    implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
+    implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
+    implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
 
     // Architecture components
     implementation "androidx.paging:paging-runtime:${pagingVersion}"
@@ -133,8 +135,6 @@ dependencies {
     implementation "androidx.room:room-runtime:${roomVersion}"
     kapt "androidx.room:room-compiler:${roomVersion}"
     implementation "androidx.room:room-rxjava2:${roomVersion}"
-    implementation "android.arch.navigation:navigation-fragment-ktx:${navigationVersion}"
-    implementation "android.arch.navigation:navigation-ui-ktx:${navigationVersion}"
 
     // play service
     implementation "com.google.android.gms:play-services-auth:${gcmVersion}"
