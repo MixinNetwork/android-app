@@ -206,7 +206,6 @@ dependencies {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
     implementation "com.github.jorgecastilloprz:fabprogresscircle:${fabprogresscircleVersion}"
-    implementation "com.github.tougee:country-picker-android:${countryPickerVersion}"
     implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
     implementation "com.github.tougee:rx-contacts2:${rxContactsVersion}"

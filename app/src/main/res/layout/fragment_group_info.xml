@@ -18,7 +18,7 @@
             android:layout_height="60dp"
             android:background="@android:color/white"
             android:drawablePadding="8dp"
-            android:drawableStart="@drawable/ic_search"
+            android:drawableStart="@drawable/ic_asset_add_search"
             android:singleLine="true"
             android:imeOptions="actionSearch"
             android:hint="@string/search"

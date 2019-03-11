@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/margin20"
+        android:paddingEnd="@dimen/margin20"
+        android:paddingTop="@dimen/padding8"
+        android:paddingBottom="@dimen/padding8"
+        android:text="@string/landing_country_current_selected"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/selected_iv"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="36dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="@dimen/margin12"
+            tools:ignore="ContentDescription"/>
+
+        <TextView
+            android:id="@+id/selected_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_gravity="center_vertical"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="@color/gray_black"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="@dimen/margin20"
+        android:paddingEnd="@dimen/margin20"
+        android:paddingTop="@dimen/padding8"
+        android:paddingBottom="@dimen/padding8"
+        android:text="@string/landing_country_current_location"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/location_iv"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginStart="36dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="@dimen/margin12"
+            tools:ignore="ContentDescription"/>
+
+        <TextView
+            android:id="@+id/location_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_gravity="center_vertical"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="@color/gray_black"/>
+    </LinearLayout>
+</LinearLayout>

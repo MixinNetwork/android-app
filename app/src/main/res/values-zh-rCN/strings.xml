@@ -142,6 +142,10 @@
     <string name="landing_agree">同意并继续</string>
     <string name="landing_privacy_policy">隐私政策</string>
     <string name="landing_terms_service">服务条款</string>
+    <string name="landing_country_select">选择一个国家</string>
+    <string name="landing_country_no_sim">未检测到sim卡。</string>
+    <string name="landing_country_current_location">当前位置</string>
+    <string name="landing_country_current_selected">当前选择</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">新群聊</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>

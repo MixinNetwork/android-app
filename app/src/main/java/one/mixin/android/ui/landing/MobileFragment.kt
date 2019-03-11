@@ -27,8 +27,6 @@ import com.google.android.gms.common.api.GoogleApiClient
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
-import com.mukesh.countrypicker.Country
-import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_mobile.*
 import one.mixin.android.Constants.KEYS
@@ -43,6 +41,8 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
+import one.mixin.android.ui.landing.country.Country
+import one.mixin.android.ui.landing.country.CountryFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
@@ -74,7 +74,7 @@ class MobileFragment : BaseFragment() {
     private val mobileViewModel: MobileViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(MobileViewModel::class.java)
     }
-    private lateinit var countryPicker: CountryPicker
+    private lateinit var countryFragment: CountryFragment
     private lateinit var mCountry: Country
     private val phoneUtil = PhoneNumberUtil.getInstance()
     private var phoneNumber: Phonenumber.PhoneNumber? = null
@@ -117,18 +117,16 @@ class MobileFragment : BaseFragment() {
         mobile_et.requestFocus()
         mobile_cover.isClickable = true
 
-        countryPicker = CountryPicker.newInstance()
-        countryPicker.setListener { _: String, code: String, dialCode: String, flagResId: Int ->
-            Unit
-            mCountry = Country()
-            mCountry.code = code
-            mCountry.dialCode = dialCode
-            mCountry.flag = flagResId
-            country_icon_iv.setImageResource(flagResId)
-            country_code_tv.text = dialCode
-            handleEditView(mobile_et.text.toString())
-            activity?.supportFragmentManager?.popBackStackImmediate()
-            country_icon_iv.hideKeyboard()
+        countryFragment = CountryFragment.newInstance()
+        countryFragment.callback = object : CountryFragment.Callback {
+            override fun onSelectCountry(country: Country) {
+                mCountry = country
+                country_icon_iv.setImageResource(country.flag)
+                country_code_tv.text = country.dialCode
+                handleEditView(mobile_et.text.toString())
+                activity?.supportFragmentManager?.popBackStackImmediate()
+                country_icon_iv.hideKeyboard()
+            }
         }
         getUserCountryInfo()
 
@@ -242,10 +240,10 @@ class MobileFragment : BaseFragment() {
     }
 
     private fun getUserCountryInfo() {
-        mCountry = countryPicker.getUserCountryInfo(context)
+        mCountry = countryFragment.getUserCountryInfo(requireContext())
         country_icon_iv.setImageResource(mCountry.flag)
         country_code_tv.text = mCountry.dialCode
-        countryPicker.setLocationCountry(mCountry)
+        countryFragment.locationCountry = mCountry
     }
 
     private fun isValidNumber(number: String): Boolean {
@@ -261,7 +259,7 @@ class MobileFragment : BaseFragment() {
     private fun showCountry() {
         activity?.supportFragmentManager?.inTransaction {
             setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
-                .add(R.id.container, countryPicker).addToBackStack(null)
+                .add(R.id.container, countryFragment).addToBackStack(null)
         }
     }
 
