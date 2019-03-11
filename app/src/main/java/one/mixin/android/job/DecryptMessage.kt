@@ -117,9 +117,9 @@ class DecryptMessage : Injector() {
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
-    private fun sendToExtensionSession(message: Message, content: String? = null) {
+    private fun sendToExtensionSession(message: Message, content: String? = null, dataUserId: String? = null) {
         if (Session.getExtensionSessionId() != null) {
-            jobManager.addJobInBackground(SendSessionMessageJob(message, content))
+            jobManager.addJobInBackground(SendSessionMessageJob(message, content, dataUserId))
         }
     }
 
@@ -181,15 +181,17 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_AUDIO.name ||
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name) {
+            var dataUserId: String? = null
             if (!data.representativeId.isNullOrBlank()) {
+                dataUserId = data.userId
                 data.userId = data.representativeId
             }
-            processDecryptSuccess(data, data.data)
+            processDecryptSuccess(data, data.data, dataUserId)
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
-    private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
+    private fun processDecryptSuccess(data: BlazeMessageData, plainText: String, dataUserId: String? = null) {
         syncUser(data.userId)
         when {
             data.category.endsWith("_TEXT") -> {
@@ -212,7 +214,7 @@ class DecryptMessage : Injector() {
                 }
 
                 messageDao.insert(message)
-                sendToExtensionSession(message)
+                sendToExtensionSession(message, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_IMAGE") -> {
@@ -229,8 +231,8 @@ class DecryptMessage : Injector() {
 
                 messageDao.insert(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
-                sendToExtensionSession(message, plainText)
             }
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
@@ -288,7 +290,7 @@ class DecryptMessage : Injector() {
                 }
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
-                sendToExtensionSession(message, plainText)
+                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
             }
             data.category.endsWith("_CONTACT") -> {
                 val decoded = Base64.decode(plainText)

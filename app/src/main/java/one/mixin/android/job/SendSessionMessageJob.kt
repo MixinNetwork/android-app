@@ -14,7 +14,8 @@ import java.util.*
 
 class SendSessionMessageJob(
     private val message: Message,
-    val content: String? = null,
+    private val content: String? = null,
+    private val dataUserId: String? = null,
     priority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(priority).addTags(message.id).groupBy("send_session_message_group").requireWebSocketConnected().persist(), message.id) {
 
@@ -39,10 +40,10 @@ class SendSessionMessageJob(
     }
 
     private fun sendPlainMessage(accountId: String, sessionId: String) {
-        var content = message.content
+        var data = message.content
         if (message.category == MessageCategory.PLAIN_TEXT.name) {
             if (message.content != null) {
-                content = Base64.encodeBytes(message.content!!.toByteArray())
+                data = Base64.encodeBytes(message.content!!.toByteArray())
             }
         }
 
@@ -56,11 +57,17 @@ class SendSessionMessageJob(
             accountId,
             UUID.randomUUID().toString(),
             message.category,
-            content,
+            data,
             quote_message_id = message.quoteMessageId,
             primitive_id = primitiveId,
             primitive_message_id = message.id,
             session_id = sessionId)
+
+        if (dataUserId != null) {
+            blazeParam.primitive_id = dataUserId
+            blazeParam.representative_id = message.userId
+        }
+
         val blazeMessage = createParamSessionMessage(blazeParam)
         deliver(blazeMessage)
     }
