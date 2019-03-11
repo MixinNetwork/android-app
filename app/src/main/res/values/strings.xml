@@ -141,6 +141,10 @@
     <string name="landing_terms_service">Terms of Service</string>
     <string name="landing_privacy_policy_url" translatable="false">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url" translatable="false">https://mixin.one/pages/terms</string>
+    <string name="landing_country_select">Select a Country</string>
+    <string name="landing_country_no_sim">No sim card detected.</string>
+    <string name="landing_country_current_location">Current Location</string>
+    <string name="landing_country_current_selected">Current Selected</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">New Group Chat</string>
     <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>

@@ -37,7 +37,6 @@ buildscript {
         ext.zxingEmbeddedVersion = '3.6.8'
         ext.rxpermissionsVersion = '0.9.5@aar'
         ext.ucropVersion = '2.2.1'
-        ext.countryPickerVersion = '1.0.10'
         ext.fabprogresscircleVersion = '1.01@aar'
         ext.rxContactsVersion = '1.1'
         ext.glideTransformationsVersion = '3.2.0'

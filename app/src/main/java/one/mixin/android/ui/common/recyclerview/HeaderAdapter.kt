@@ -36,7 +36,7 @@ abstract class HeaderAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         }
     }
 
-    protected fun getPos(position: Int): Int {
+    protected open fun getPos(position: Int): Int {
         return if (headerView != null) {
             position - 1
         } else {

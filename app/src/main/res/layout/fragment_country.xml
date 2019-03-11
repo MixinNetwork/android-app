@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:leftIcon="@drawable/ic_close_black_24dp"
+        app:titleText="@string/landing_country_select"/>
+
+    <one.mixin.android.widget.SearchView
+        android:id="@+id/search_et"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_search"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_marginTop="@dimen/margin16"
+        android:layout_marginBottom="@dimen/margin16"
+        android:drawablePadding="8dp"
+        android:drawableStart="@drawable/ic_asset_add_search"
+        android:hint="@string/search"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:maxLines="1"
+        android:paddingEnd="@dimen/margin20"
+        android:paddingStart="@dimen/margin20"
+        android:textColor="@color/wallet_text_dark"
+        android:textColorHint="@color/text_gray"
+        android:textSize="14sp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/country_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</LinearLayout>
