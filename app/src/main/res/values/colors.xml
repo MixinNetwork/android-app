@@ -68,6 +68,7 @@
     <color name="toast_error">#F67070</color>
     <color name="menu_bg_border">#E5E7EC</color>
     <color name="badge_red">#FF5555</color>
+    <color name="verification_code_line">#d8d8d8</color>
 
     <array name="name_colors">
         <item>#AA4848</item>

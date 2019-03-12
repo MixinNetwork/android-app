@@ -38,12 +38,10 @@ class LandingActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_landing)
         val pin = intent.getStringExtra(ARGS_PIN)
-        val fragment = if (pin != null) {
-            MobileFragment.newInstance(pin)
-        } else {
+        if (pin == null) {
             doAsync { jobManager.clear() }
-            LandingFragment.newInstance()
         }
-        replaceFragment(fragment, R.id.container)
+        val fragment = MobileFragment.newInstance(pin)
+        replaceFragment(fragment, R.id.container, MobileFragment.TAG)
     }
 }

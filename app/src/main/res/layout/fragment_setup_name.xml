@@ -4,52 +4,33 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/ph"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="@string/landing_back_content_desc"
-        android:layout_marginTop="@dimen/margin12"
-        android:padding="@dimen/margin12"
-        android:visibility="invisible"
-        app:srcCompat="@drawable/ic_arrow_back_black_24dp" />
-
     <TextView
         android:id="@+id/name_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/ph"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="@dimen/margin12"
+        android:layout_marginTop="76dp"
+        android:layout_centerHorizontal="true"
         android:text="@string/landing_enter_name_title"
         android:textColor="@android:color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:textSize="18sp"/>
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/name_til"
+    <EditText
+        android:id="@+id/name_et"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/name_title_tv"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_height="54dp"
+        android:gravity="center"
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
+        android:background="@drawable/bg_landing_round_gray_4dp"
+        android:hint="@string/landing_enter_name_hint"
+        android:lines="1"
+        android:textSize="16sp"
+        android:layout_below="@id/name_title_tv"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/name_title_tv">
-
-        <EditText
-            android:id="@+id/name_et"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/landing_enter_name_hint"
-            android:lines="1"
-            android:textSize="16sp" />
-    </com.google.android.material.textfield.TextInputLayout>
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <com.github.jorgecastilloprz.FABProgressCircle
         android:id="@+id/name_fab"
@@ -57,14 +38,14 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
-        app:arcColor="@android:color/holo_blue_dark">
+        app:arcColor="@color/wallet_blue">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue" />
+            app:backgroundTint="@color/wallet_blue_secondary"/>
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <View
@@ -72,5 +53,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        android:layout_marginTop="-100dp"
+        android:layout_below="@+id/name_title_tv"/>
 </RelativeLayout>

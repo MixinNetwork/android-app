@@ -306,14 +306,14 @@ class VerificationFragment : BaseFragment() {
         }
         mCountDownTimer?.start()
         verification_left_bottom_tv.isEnabled = false
-        context?.getColor(R.color.colorGray)?.let { verification_left_bottom_tv.setTextColor(it) }
+        context?.getColor(R.color.wallet_text_gray)?.let { verification_left_bottom_tv.setTextColor(it) }
     }
 
     private fun resetCountDown() {
         if (verification_left_bottom_tv != null) {
             verification_left_bottom_tv.setText(R.string.landing_resend_code_enable)
             verification_left_bottom_tv.isEnabled = true
-            context?.getColor(R.color.colorBlue)?.let { verification_left_bottom_tv.setTextColor(it) }
+            context?.getColor(R.color.wallet_blue_secondary)?.let { verification_left_bottom_tv.setTextColor(it) }
         }
     }
 

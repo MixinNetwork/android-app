@@ -6,7 +6,11 @@ import android.content.Intent
 import android.content.IntentSender
 import android.os.Bundle
 import android.text.Editable
+import android.text.SpannableString
+import android.text.Spanned
 import android.text.TextWatcher
+import android.text.method.LinkMovementMethod
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -15,6 +19,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.auth.api.Auth
@@ -45,6 +50,7 @@ import one.mixin.android.ui.landing.country.CountryFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.NoUnderLineSpan
 import one.mixin.android.widget.RecaptchaView
 import java.util.Locale
 import javax.inject.Inject
@@ -107,7 +113,20 @@ class MobileFragment : BaseFragment() {
         if (pin != null) {
             mobile_title_tv.setText(R.string.landing_enter_new_mobile_number)
         }
-        back_iv.setOnClickListener { activity?.onBackPressed() }
+
+        val policy: String = getString(R.string.landing_privacy_policy)
+        val termsService: String = getString(R.string.landing_terms_service)
+        val policyWrapper = getString(R.string.landing_introduction, policy, termsService)
+        val colorPrimary = ContextCompat.getColor(context!!, R.color.wallet_blue_secondary)
+        val policyUrl = getString(R.string.landing_privacy_policy_url)
+        val termsUrl = getString(R.string.landing_terms_url)
+        enter_tip.text = highlightLinkText(
+            policyWrapper,
+            colorPrimary,
+            arrayOf(policy, termsService),
+            arrayOf(policyUrl, termsUrl))
+        enter_tip.movementMethod = LinkMovementMethod.getInstance()
+
         country_icon_iv.setOnClickListener { showCountry() }
         country_code_tv.setOnClickListener { showCountry() }
         mobile_fab.setOnClickListener { showDialog() }
@@ -139,10 +158,6 @@ class MobileFragment : BaseFragment() {
     override fun onBackPressed(): Boolean {
         if (recaptchaView.isVisible()) {
             hideLoading()
-            return true
-        }
-        if (pin == null) {
-            activity?.supportFragmentManager?.popBackStackImmediate()
             return true
         }
         return false
@@ -259,6 +274,26 @@ class MobileFragment : BaseFragment() {
             setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
                 .add(R.id.container, countryFragment).addToBackStack(null)
         }
+    }
+
+    private fun highlightLinkText(
+        source: String,
+        color: Int,
+        texts: Array<String>,
+        links: Array<String>
+    ): SpannableString {
+        if (texts.size != links.size) {
+            throw IllegalArgumentException("texts's length should equals with links")
+        }
+        val sp = SpannableString(source)
+        for (i in texts.indices) {
+            val text = texts[i]
+            val link = links[i]
+            val start = source.indexOf(text)
+            sp.setSpan(NoUnderLineSpan(link), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+            sp.setSpan(ForegroundColorSpan(color), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+        }
+        return sp
     }
 
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
