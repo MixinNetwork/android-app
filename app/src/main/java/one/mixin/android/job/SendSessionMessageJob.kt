@@ -27,6 +27,9 @@ class SendSessionMessageJob(
         jobManager.saveJob(this)
         val accountId = Session.getAccountId()!!
         val sessionId = Session.getExtensionSessionId()!!
+        if (content != null) {
+            message.content = content
+        }
         when {
             message.isPlain() -> sendPlainMessage(accountId, sessionId)
             message.isSignal() -> sendSignalMessage(accountId, sessionId)
@@ -76,9 +79,6 @@ class SendSessionMessageJob(
         val result = checkSignalSession(accountId, sessionId)
         if (!result) {
             return
-        }
-        if (content != null) {
-            message.content = content
         }
         val encrypted = signalProtocol.encryptTransferSessionMessage(message, sessionId, accountId)
         deliver(encrypted)
