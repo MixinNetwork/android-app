@@ -300,6 +300,7 @@ class DecryptMessage : Injector() {
                 messageDao.insert(message)
                 syncUser(contactData.userId)
                 sendNotificationJob(message, data.source)
+                sendToExtensionSession(message, plainText)
             }
         }
     }
