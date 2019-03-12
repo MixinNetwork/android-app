@@ -45,7 +45,9 @@ class SetupNameFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        name_et.setText(Build.MODEL)
+        val s = Build.MODEL
+        name_et.setText(s)
+        name_et.setSelection(s.length)
         name_fab.setOnClickListener {
             name_fab.show()
             name_cover.visibility = VISIBLE

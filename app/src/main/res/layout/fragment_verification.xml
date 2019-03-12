@@ -29,43 +29,49 @@
             android:id="@+id/pin_verification_title_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="@dimen/margin20"
+            android:gravity="center_horizontal"
             android:text="@string/landing_validation_title"
-            android:textColor="@android:color/black"
+            android:textColor="@color/wallet_text_dark"
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
         <one.mixin.android.widget.VerificationCodeView
             android:id="@+id/pin_verification_view"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="36dp"
             android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pin_verification_title_tv"
-            app:vcv_inputWidth="30dp"
-            app:vcv_spacing="10dp"
-            app:vcv_textColor="@android:color/black"/>
+            app:vcv_inputWidth="40dp"
+            app:vcv_inputColor="@color/wallet_blue_secondary"
+            app:vcv_textColor="@color/wallet_text_dark"/>
 
         <TextView
             android:id="@+id/pin_verification_tip_tv"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:gravity="center_vertical"
+            android:gravity="center_horizontal"
             android:textColor="@color/colorRed"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/pin_verification_view"/>
+
+        <TextView
+            android:id="@+id/verification_left_bottom_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin20"
+            android:text="@string/landing_resend_code_enable"
+            android:textColor="@color/wallet_text_gray"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/pin_verification_tip_tv"/>
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.github.jorgecastilloprz.FABProgressCircle
@@ -75,7 +81,7 @@
         android:layout_above="@+id/verification_keyboard"
         android:layout_alignParentEnd="true"
         android:visibility="invisible"
-        app:arcColor="@android:color/holo_blue_dark"
+        app:arcColor="@color/wallet_blue"
         app:layout_constraintBottom_toTopOf="@+id/verification_keyboard"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -84,23 +90,8 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:src="@drawable/ic_arrow_forward_white_24dp"
-            app:backgroundTint="@color/colorBlue"/>
+            app:backgroundTint="@color/wallet_blue_secondary"/>
     </com.github.jorgecastilloprz.FABProgressCircle>
-
-    <TextView
-        android:id="@+id/verification_left_bottom_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="25dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_above="@+id/verification_keyboard"
-        android:text="@string/landing_resend_code_enable"
-        android:textColor="@color/text_gray"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintVertical_bias="0.489"/>
 
     <one.mixin.android.widget.Keyboard
         android:id="@+id/verification_keyboard"
