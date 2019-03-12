@@ -323,21 +323,24 @@ fun Fragment.selectAudio(requestCode: Int) {
     selectMediaType("audio/*", null, REQUEST_AUDIO)
 }
 
-fun Context.getAttachment(uri: Uri): Attachment? {
+fun Context.getAttachment(local: Uri): Attachment? {
     var cursor: Cursor? = null
 
     try {
+        val uri = if (local.authority == null) {
+            getUriForFile(File(local.path))
+        } else {
+            local
+        }
         cursor = contentResolver.query(uri, null, null, null, null)
-
         if (cursor != null && cursor.moveToFirst()) {
             val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
             val fileSize = cursor.getLong(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE))
             val mimeType = contentResolver.getType(uri)
-
             return Attachment(uri, fileName, mimeType, fileSize)
         }
     } finally {
-        if (cursor != null) cursor.close()
+        cursor?.close()
     }
     return null
 }
