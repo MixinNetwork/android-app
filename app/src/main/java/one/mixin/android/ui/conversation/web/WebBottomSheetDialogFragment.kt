@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.graphics.Point
 import android.net.Uri
 import android.os.Bundle
+import android.util.Base64
 import android.view.ContextMenu
 import android.view.KeyEvent
 import android.view.MenuItem
@@ -56,6 +57,7 @@ import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
@@ -290,27 +292,39 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @SuppressLint("CheckResult")
     private fun saveImageFromUrl(url: String?) {
-        if (isAdded) {
-            RxPermissions(requireActivity())
-                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .subscribe { granted ->
-                    if (granted) {
-                        doAsync {
-                            val file = Glide.with(MixinApplication.appContext)
-                                .asFile()
-                                .load(url)
-                                .submit()
-                                .get(10, TimeUnit.SECONDS)
+        if (!isAdded) return
+
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .subscribe { granted ->
+                if (granted) {
+                    doAsync {
+                        try {
                             val outFile = requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
-                            outFile.copyFromInputStream(FileInputStream(file))
+                            val encodingPrefix = "base64,"
+                            val prefixIndex = url?.indexOf(encodingPrefix)
+                            if (url != null && prefixIndex != null && prefixIndex != -1) {
+                                val dataStartIndex = prefixIndex + encodingPrefix.length
+                                val imageData = Base64.decode(url.substring(dataStartIndex), Base64.DEFAULT)
+                                outFile.copyFromInputStream(ByteArrayInputStream(imageData))
+                            } else {
+                                val file = Glide.with(MixinApplication.appContext)
+                                    .asFile()
+                                    .load(url)
+                                    .submit()
+                                    .get(10, TimeUnit.SECONDS)
+                                outFile.copyFromInputStream(FileInputStream(file))
+                            }
                             requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
                             uiThread { toast(R.string.save_success) }
+                        } catch (e: Exception) {
+                            uiThread { toast(R.string.save_failure) }
                         }
-                    } else {
-                        context?.openPermissionSetting()
                     }
+                } else {
+                    context?.openPermissionSetting()
                 }
-        }
+            }
     }
 
     class WebViewClientImpl(
