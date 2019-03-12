@@ -26,6 +26,7 @@ object Constants {
         const val PREF_RESTORE = "pref_restore"
         const val PREF_SHOW_DEPOSIT_TIP = "pref_show_deposit_tip"
         const val PREF_FIRST_SHOW_DEPOSIT = "pref_first_show_deposit"
+        const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
     }
 
     object Scheme {
@@ -33,6 +34,7 @@ object Constants {
         const val PAY = "mixin://pay"
         const val USERS = "mixin://users"
         const val TRANSFER = "mixin://transfer"
+        const val DEVICE = "mixin://device/auth"
 
         const val HTTPS_CODES = "https://mixin.one/codes"
         const val HTTPS_PAY = "https://mixin.one/pay"

@@ -77,7 +77,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         if (Build.VERSION.SDK_INT >= 26) {
             dialog.window?.decorView?.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
         contentView = View.inflate(context, R.layout.fragment_bottom_sheet, null)
         dialog.setContentView(contentView)

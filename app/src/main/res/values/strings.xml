@@ -355,6 +355,22 @@
     <string name="setting_deauthorize">Deauthorize</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>
+    <string name="setting_storage">Storage Usage</string>
+    <string name="setting_desktop">Mixin Messenger Desktop</string>
+    <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
+    <string name="setting_storage_bn_clear">Clear</string>
+    <string name="setting_auth_cancel_msg">Deauthorize %1$s?</string>
+    <string name="setting_logout_desktop">Logout of desktop</string>
+    <string name="setting_scan_qr_code">Scan QR Code</string>
+    <string name="setting_desktop_logging">Logging…</string>
+    <string name="setting_desktop_logout">Logout…</string>
+    <string name="setting_desktop_last_active">Last active %1$s at %2$s</string>
+    <string name="setting_desktop_signed">You have signed onto your desktop</string>
+    <string name="setting_desktop_sigin_success">Link desktop success</string>
+    <string name="setting_desktop_sigin_failed">Link desktop failed</string>
+    <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
+    <string name="setting_desktop_confirm"> Confirm login to\nMixin Messenger Desktop</string>
+    <string name="setting_desktop_login">Log in</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>
@@ -486,10 +502,6 @@
     <string name="sticker_no_result">No result</string>
     <!--avatar-->
     <string name="avatar_transition_name" translatable="false">avatar_transition_name</string>
-    <string name="setting_storage">Storage Usage</string>
-    <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
-    <string name="setting_storage_bn_clear">Clear</string>
-    <string name="setting_auth_cancel_msg">Deauthorize %1$s?</string>
     <!--filter-->
     <string name="filters_title">Filters</string>
     <string name="filters_apply">Apply</string>

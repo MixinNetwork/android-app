@@ -7,6 +7,7 @@ import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
 import com.facebook.stetho.okhttp3.StethoInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
+import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
 import okhttp3.OkHttpClient
@@ -20,16 +21,7 @@ import one.mixin.android.Constants.API.URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
-import one.mixin.android.api.service.AccountService
-import one.mixin.android.api.service.AddressService
-import one.mixin.android.api.service.AssetService
-import one.mixin.android.api.service.AuthorizationService
-import one.mixin.android.api.service.ContactService
-import one.mixin.android.api.service.ConversationService
-import one.mixin.android.api.service.GiphyService
-import one.mixin.android.api.service.MessageService
-import one.mixin.android.api.service.SignalKeyService
-import one.mixin.android.api.service.UserService
+import one.mixin.android.api.service.*
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
@@ -142,6 +134,7 @@ internal class AppModule {
             .baseUrl(URL)
             .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
             .addCallAdapterFactory(LiveDataCallAdapterFactory())
+            .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .addConverterFactory(GsonConverterFactory.create())
             .client(okHttp)
         return builder.build()
@@ -184,6 +177,10 @@ internal class AppModule {
     @Singleton
     @Provides
     fun provideAddressService(retrofit: Retrofit) = retrofit.create(AddressService::class.java) as AddressService
+
+    @Singleton
+    @Provides
+    fun provideProvisioningService(retrofit: Retrofit) = retrofit.create(ProvisioningService::class.java) as ProvisioningService
 
     @Singleton
     @Provides

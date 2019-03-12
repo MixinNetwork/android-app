@@ -164,6 +164,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT id FROM messages WHERE id = :messageId")
     fun findMessageIdById(messageId: String): String?
 
+    @Query("SELECT conversation_id FROM messages WHERE id = :messageId")
+    fun findConversationById(messageId: String): String?
+
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT id, created_at FROM messages WHERE conversation_id = :conversationId " +
         "AND user_id != :userId AND status = 'DELIVERED' ORDER BY created_at ASC")

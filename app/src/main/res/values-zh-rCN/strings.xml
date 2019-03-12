@@ -1,4 +1,5 @@
 <resources>
+
     <!--common-->
     <string name="confirm">确认</string>
     <string name="change">更改</string>
@@ -347,6 +348,22 @@
     <string name="setting_deauthorize">取消授权</string>
     <string name="setting_backup">备份</string>
     <string name="setting_clearing">正在清理…</string>
+    <string name="setting_storage">储存空间</string>
+    <string name="setting_desktop">Mixin Messenger 桌面</string>
+    <string name="setting_storage_clear">清除 %1$d 条消息 (%2$s)?</string>
+    <string name="setting_storage_bn_clear">清理</string>
+    <string name="setting_auth_cancel_msg">取消 %1$s 授权?</string>
+    <string name="setting_logout_desktop">退出桌面端</string>
+    <string name="setting_scan_qr_code">扫描二维码</string>
+    <string name="setting_desktop_last_active">上次登录 %1$s %2$s</string>
+    <string name="setting_desktop_logging">登录中…</string>
+    <string name="setting_desktop_logout">退出中…</string>
+    <string name="setting_desktop_signed">已登录桌面端</string>
+    <string name="setting_desktop_sigin_success">登录桌面端成功</string>
+    <string name="setting_desktop_sigin_failed">登录桌面端失败</string>
+    <string name="setting_desktop_logout_failed">退出桌面端失败</string>
+    <string name="setting_desktop_confirm">确认登录 Mixin Messenger 桌面端</string>
+    <string name="setting_desktop_login">登录</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>
@@ -476,11 +493,6 @@
     <string name="sticker_add_invalid_format">贴纸格式不支持</string>
     <string name="sticker_search_giphy">搜索 GIPHY</string>
     <string name="sticker_no_result">未找到相关结果</string>
-    <!--auth-->
-    <string name="setting_storage">储存空间</string>
-    <string name="setting_storage_clear">清除 %1$d 条消息 (%2$s)?</string>
-    <string name="setting_storage_bn_clear">清理</string>
-    <string name="setting_auth_cancel_msg">取消 %1$s 授权?</string>
     <!--filter-->
     <string name="filters_title">筛选</string>
     <string name="filters_apply">应用</string>

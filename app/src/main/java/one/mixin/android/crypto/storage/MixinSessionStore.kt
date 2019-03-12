@@ -42,11 +42,14 @@ class MixinSessionStore(context: Context) : SessionStore {
     override fun storeSession(address: SignalProtocolAddress, record: SessionRecord) {
         synchronized(FILE_LOCK) {
             val session = sessionDao.getSession(address.name, address.deviceId)
-            if (session != null) {
-                Log.w(TAG, "New session coming")
-                sentSenderKeyDao.deleteByUserId(address.name)
+            if (session == null) {
+                sessionDao.insert(Session(address.name, address.deviceId, record.serialize(), System.currentTimeMillis()))
+                return
             }
-            sessionDao.insert(Session(address.name, address.deviceId, record.serialize(), System.currentTimeMillis()))
+            if (!session.record.contentEquals(record.serialize())) {
+                sentSenderKeyDao.deleteByUserId(address.name)
+                sessionDao.insert(Session(address.name, address.deviceId, record.serialize(), System.currentTimeMillis()))
+            }
         }
     }
 

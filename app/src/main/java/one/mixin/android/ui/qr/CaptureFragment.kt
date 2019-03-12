@@ -49,6 +49,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.extension.xYuv2Simple
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.widget.AndroidUtilities.dp
@@ -318,10 +319,18 @@ class CaptureFragment : BaseFragment() {
                 activity?.finish()
                 return
             }
-            pseudo_view.addContent(barcodeResult.text)
-            requireContext().mainThreadDelayed({
-                mCaptureManager.decode()
-            }, 1000)
+            if (barcodeResult.text.startsWith(Constants.Scheme.DEVICE)) {
+                val confirmBottomFragment = ConfirmBottomFragment.newInstance(barcodeResult.text)
+                confirmBottomFragment.setCallBack {
+                    activity?.finish()
+                }
+                confirmBottomFragment.show(fragmentManager, ConfirmBottomFragment.TAG)
+            } else {
+                pseudo_view.addContent(barcodeResult.text)
+                requireContext().mainThreadDelayed({
+                    mCaptureManager.decode()
+                }, 1000)
+            }
         }
 
         override fun onPreview(sourceData: SourceData) {

@@ -111,4 +111,3 @@ fun MessageItem.isCallMessage() =
 fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name
-

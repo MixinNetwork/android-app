@@ -11,6 +11,7 @@ import one.mixin.android.api.SignalKey
 import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.crypto.Base64
+import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
@@ -23,12 +24,13 @@ import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.SentSenderKeyStatus
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
+import one.mixin.android.websocket.BlazeMessageParamSession
 import one.mixin.android.websocket.BlazeSignalKeyMessage
 import one.mixin.android.websocket.CREATE_MESSAGE
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.createBlazeSignalKeyMessage
-import one.mixin.android.websocket.createConsumeSignalKeys
+import one.mixin.android.websocket.createConsumeSessionSignalKeys
 import one.mixin.android.websocket.createConsumeSignalKeysParam
 import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
@@ -77,15 +79,15 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     private fun sendBatchSenderKey(conversationId: String, participants: List<Participant>) {
-        val requestSignalKeyUsers = arrayListOf<String>()
+        val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
         val signalKeyMessages = ArrayList<BlazeSignalKeyMessage>()
         for (p in participants) {
             if (!signalProtocol.containsSession(p.userId)) {
-                requestSignalKeyUsers.add(p.userId)
+                requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId))
             } else {
                 val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, p.userId)
                 if (err) {
-                    requestSignalKeyUsers.add(p.userId)
+                    requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId))
                 } else {
                     signalKeyMessages.add(createBlazeSignalKeyMessage(p.userId, cipherText!!, senderKeyId))
                 }
@@ -93,7 +95,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
 
         if (requestSignalKeyUsers.isNotEmpty()) {
-            val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
             val data = signalKeysChannel(blazeMessage)
             if (data != null) {
                 val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
@@ -110,10 +112,10 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                     Log.e(TAG, "No any group signal key from server")
                 }
 
-                val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it) }
+                val noKeyList = requestSignalKeyUsers.filter { !keys.contains(it.user_id) }
                 if (noKeyList.isNotEmpty()) {
                     val sentSenderKeys = noKeyList.map {
-                        SentSenderKey(conversationId, it, SentSenderKeyStatus.UNKNOWN.ordinal)
+                        SentSenderKey(conversationId, it.user_id, SentSenderKeyStatus.UNKNOWN.ordinal)
                     }
                     sentSenderKeyDao.insertList(sentSenderKeys)
                 }
@@ -133,14 +135,21 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    protected fun checkSignalSession(recipientId: String): Boolean {
-        if (!signalProtocol.containsSession(recipientId)) {
-            val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(arrayListOf(recipientId)))
+    protected fun checkSignalSession(recipientId: String, sessionId: String? = null): Boolean {
+        var deviceId = SignalProtocol.DEFAULT_DEVICE_ID
+        if (sessionId != null) {
+            deviceId = UUID.fromString(sessionId).hashCode()
+        }
+        if (!signalProtocol.containsSession(recipientId, deviceId)) {
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(
+                BlazeMessageParamSession(recipientId, sessionId)
+            )))
+
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle)
+                signalProtocol.processSession(recipientId, preKeyBundle, deviceId)
             } else {
                 return false
             }
@@ -149,7 +158,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun redirectSendSenderKey(conversationId: String, recipientId: String): Boolean {
-        val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(arrayListOf(recipientId)))
+        val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
         val data = signalKeysChannel(blazeMessage) ?: return false
         val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
         if (keys.isNotEmpty() && keys.count() > 0) {
@@ -175,7 +184,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
     protected fun sendSenderKey(conversationId: String, recipientId: String): Boolean {
         if (!signalProtocol.containsSession(recipientId)) {
-            val blazeMessage = createConsumeSignalKeys(createConsumeSignalKeysParam(arrayListOf(recipientId)))
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
@@ -229,6 +238,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             if (bm.error.code == FORBIDDEN) {
                 return true
             } else {
+                Log.e(TAG, bm.toString())
                 Thread.sleep(SLEEP_MILLIS)
                 throw NetworkException()
             }
@@ -242,6 +252,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             Thread.sleep(SLEEP_MILLIS)
             return signalKeysChannel(blazeMessage)
         } else if (bm.error != null) {
+            Log.e(TAG, bm.error.toString())
             return if (bm.error.code == FORBIDDEN) {
                 null
             } else {

@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.device.DeviceFragment
 import javax.inject.Inject
 
 class SettingFragment : BaseFragment() {
@@ -38,6 +39,9 @@ class SettingFragment : BaseFragment() {
         about_rl.setOnClickListener {
             activity?.addFragment(this@SettingFragment,
                 AboutFragment.newInstance(), AboutFragment.TAG)
+        }
+        desktop_rl.setOnClickListener {
+            DeviceFragment.newInstance().showNow(requireFragmentManager(), DeviceFragment.TAG)
         }
         storage_rl.setOnClickListener {
             requireActivity().addFragment(this@SettingFragment,

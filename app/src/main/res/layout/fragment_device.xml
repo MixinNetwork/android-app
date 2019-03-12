@@ -1,17 +1,65 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="one.mixin.android.ui.device.DeviceActivityFragment"
-    tools:showIn="@layout/activity_device">
+    tools:context="one.mixin.android.ui.device.DeviceFragment">
 
-    <Button
-        android:id="@+id/button"
+    <View
+        android:id="@+id/ph"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Button" />
+        android:background="@android:color/white"/>
 
-</LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_below="@id/ph"
+        android:background="@color/bg_gray">
+
+        <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:leftIcon="@drawable/ic_close_black_24dp"
+            app:titleText="@string/setting_desktop"/>
+
+        <ImageView
+            android:id="@+id/logo_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_desktop_offline"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"/>
+
+        <TextView
+            android:id="@+id/auth_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:gravity="center_vertical"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:textColor="@color/black"
+            android:text="@string/setting_scan_qr_code"
+            tools:ignore="RelativeOverlap"/>
+
+        <TextView
+            android:id="@+id/desc_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/activity_vertical_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/text_gray"
+            android:textSize="12sp"/>
+    </LinearLayout>
+</RelativeLayout>

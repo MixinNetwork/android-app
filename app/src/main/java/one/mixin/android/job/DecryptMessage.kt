@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import android.util.Log
 import com.bugsnag.android.Bugsnag
-import com.google.gson.Gson
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.SignalKeyCount
 import one.mixin.android.crypto.Base64
@@ -71,8 +70,7 @@ class DecryptMessage : Injector() {
     }
 
     private var refreshKeyMap = arrayMapOf<String, Long?>()
-    private val gson = Gson()
-    private val customGson = GsonHelper.customGson
+    private val gson = GsonHelper.customGson
 
     fun onRun(data: BlazeMessageData) {
         if (!isExistMessage(data.messageId)) {
@@ -117,6 +115,12 @@ class DecryptMessage : Injector() {
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+    }
+
+    private fun sendToExtensionSession(message: Message, content: String? = null, dataUserId: String? = null) {
+        if (Session.getExtensionSessionId() != null) {
+            jobManager.addJobInBackground(SendSessionMessageJob(message, content, dataUserId))
+        }
     }
 
     private fun processSystemMessage(data: BlazeMessageData) {
@@ -177,15 +181,17 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_AUDIO.name ||
             data.category == MessageCategory.PLAIN_STICKER.name ||
             data.category == MessageCategory.PLAIN_CONTACT.name) {
+            var dataUserId: String? = null
             if (!data.representativeId.isNullOrBlank()) {
+                dataUserId = data.userId
                 data.userId = data.representativeId
             }
-            processDecryptSuccess(data, data.data)
+            processDecryptSuccess(data, data.data, dataUserId)
             updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
-    private fun processDecryptSuccess(data: BlazeMessageData, plainText: String) {
+    private fun processDecryptSuccess(data: BlazeMessageData, plainText: String, dataUserId: String? = null) {
         syncUser(data.userId)
         when {
             data.category.endsWith("_TEXT") -> {
@@ -208,11 +214,12 @@ class DecryptMessage : Injector() {
                 }
 
                 messageDao.insert(message)
+                sendToExtensionSession(message, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 if (mediaData.invalidData()) {
                     return
                 }
@@ -224,11 +231,12 @@ class DecryptMessage : Injector() {
 
                 messageDao.insert(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_VIDEO") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 if (mediaData.invalidData()) {
                     return
                 }
@@ -242,7 +250,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_DATA") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
                 val message = createAttachmentMessage(data.messageId, data.conversationId, data.userId,
                     data.category, mediaData.attachmentId, mediaData.name, null,
@@ -253,7 +261,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_AUDIO") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val message = createAudioMessage(data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                     data.category, mediaData.size, null, mediaData.duration.toString(), nowInUtc(), mediaData.waveform,
                     mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
@@ -263,7 +271,7 @@ class DecryptMessage : Injector() {
             }
             data.category.endsWith("_STICKER") -> {
                 val decoded = Base64.decode(plainText)
-                val mediaData = customGson.fromJson(String(decoded), TransferStickerData::class.java)
+                val mediaData = gson.fromJson(String(decoded), TransferStickerData::class.java)
                 val message = if (mediaData.stickerId == null) {
                     val sticker = stickerDao.getStickerByAlbumIdAndName(mediaData.albumId!!, mediaData.name!!)
                     if (sticker != null) {
@@ -282,15 +290,17 @@ class DecryptMessage : Injector() {
                 }
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
+                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
             }
             data.category.endsWith("_CONTACT") -> {
                 val decoded = Base64.decode(plainText)
-                val contactData = customGson.fromJson(String(decoded), TransferContactData::class.java)
+                val contactData = gson.fromJson(String(decoded), TransferContactData::class.java)
                 val message = createContactMessage(data.messageId, data.conversationId, data.userId, data.category,
                     plainText, contactData.userId, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)
                 syncUser(contactData.userId)
                 sendNotificationJob(message, data.source)
+                sendToExtensionSession(message, plainText)
             }
         }
     }
@@ -319,7 +329,7 @@ class DecryptMessage : Injector() {
         if (userId == SYSTEM_USER) {
             userDao.insert(createSystemUser())
         }
-        val message = createMessage(data.messageId, data.conversationId, userId, data.category, "",
+        val message = createMessage(data.messageId, data.conversationId, userId, data.category, data.data,
             data.createdAt, MessageStatus.DELIVERED, systemMessage.action, systemMessage.participantId)
 
         val accountId = Session.getAccountId()
@@ -348,6 +358,7 @@ class DecryptMessage : Injector() {
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
+            sendToExtensionSession(message)
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
             participantDao.updateParticipantRole(data.conversationId,
@@ -357,6 +368,7 @@ class DecryptMessage : Injector() {
             }
         }
         messageDao.insert(message)
+        sendToExtensionSession(message)
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
@@ -449,7 +461,7 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.SIGNAL_AUDIO.name ||
             data.category == MessageCategory.SIGNAL_DATA.name) {
             val decoded = Base64.decode(plainText)
-            val mediaData = customGson.fromJson(String(decoded), TransferAttachmentData::class.java)
+            val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
             val duration = if (mediaData.duration == null) null else mediaData.duration.toString()
             val mimeType = if (mediaData.mimeType.isEmpty()) mediaData.mineType else mediaData.mimeType
             messageDao.updateAttachmentMessage(messageId, mediaData.attachmentId, mimeType, mediaData.size,
@@ -461,7 +473,7 @@ class DecryptMessage : Injector() {
             }
         } else if (data.category == MessageCategory.SIGNAL_STICKER.name) {
             val decoded = Base64.decode(plainText)
-            val stickerData = customGson.fromJson(String(decoded), TransferStickerData::class.java)
+            val stickerData = gson.fromJson(String(decoded), TransferStickerData::class.java)
             if (stickerData.stickerId != null) {
                 val sticker = stickerDao.getStickerByUnique(stickerData.stickerId)
                 if (sticker == null) {
@@ -471,7 +483,7 @@ class DecryptMessage : Injector() {
             stickerData.stickerId?.let { messageDao.updateStickerMessage(it, MessageStatus.DELIVERED.name, messageId) }
         } else if (data.category == MessageCategory.SIGNAL_CONTACT.name) {
             val decoded = Base64.decode(plainText)
-            val contactData = customGson.fromJson(String(decoded), TransferContactData::class.java)
+            val contactData = gson.fromJson(String(decoded), TransferContactData::class.java)
             messageDao.updateContactMessage(contactData.userId, MessageStatus.DELIVERED.name, messageId)
             syncUser(contactData.userId)
         }

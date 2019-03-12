@@ -25,4 +25,5 @@ abstract class MainActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment
+
 }

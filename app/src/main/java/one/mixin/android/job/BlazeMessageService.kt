@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat
 import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
-import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
@@ -25,11 +24,14 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.WebSocketException
+import one.mixin.android.crypto.Base64
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.findAckJobsDeferred
+import one.mixin.android.db.findCreatePlainSessionJobsDeferred
 import one.mixin.android.db.findFloodMessageDeferred
+import one.mixin.android.db.findSessionAckJobsDeferred
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.networkConnected
@@ -38,12 +40,18 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
+import one.mixin.android.websocket.PlainDataAction
+import one.mixin.android.websocket.TransferPlainAckData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
+import one.mixin.android.websocket.createAckSessionListParamBlazeMessage
+import one.mixin.android.websocket.createParamSessionMessage
+import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
 import java.util.concurrent.Executors
 import javax.inject.Inject
@@ -86,6 +94,9 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     lateinit var jobManager: MixinJobManager
     @Inject
     lateinit var callState: CallState
+
+    private val accountId = Session.getAccountId()
+    private val gson = GsonHelper.customGson
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -199,6 +210,10 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         }
         ackJob = GlobalScope.launch(ackThread) {
             ackJobBlock()
+            Session.getExtensionSessionId()?.let {
+                ackSessionJobBlock()
+                syncMessageStatusToExtension(it)
+            }
         }
     }
 
@@ -207,9 +222,51 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     private suspend fun ackJobBlock() {
         jobDao.findAckJobsDeferred().await()?.let { list ->
             if (list.isNotEmpty()) {
-                list.map { GsonHelper.customGson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+                list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     try {
                         deliver(createAckListParamBlazeMessage(it)).let {
+                            jobDao.deleteList(list)
+                        }
+                    } catch (e: Exception) {
+                        runAckJob()
+                    } finally {
+                        ackJob = null
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun ackSessionJobBlock() {
+        jobDao.findSessionAckJobsDeferred().await()?.let { list ->
+            if (list.isNotEmpty()) {
+                list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+                    try {
+                        deliver(createAckSessionListParamBlazeMessage(it)).let {
+                            jobDao.deleteList(list)
+                        }
+                    } catch (e: Exception) {
+                        runAckJob()
+                    } finally {
+                        ackJob = null
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun syncMessageStatusToExtension(sessionId: String) {
+        jobDao.findCreatePlainSessionJobsDeferred().await()?.let { list ->
+            if (list.isNotEmpty()) {
+                list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+                    try {
+                        val plainText = gson.toJson(TransferPlainAckData(
+                            action = PlainDataAction.ACKNOWLEDGE_MESSAGE_RECEIPTS.name,
+                            messages = it
+                        ))
+                        val encoded = Base64.encodeBytes(plainText.toByteArray())
+                        val bm = createParamSessionMessage(createPlainJsonParam(accountId!!, accountId, encoded, sessionId))
+                        deliver(bm).let {
                             jobDao.deleteList(list)
                         }
                     } catch (e: Exception) {
@@ -228,6 +285,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
 
     private val messageDecrypt by lazy { DecryptMessage() }
     private val callMessageDecrypt by lazy { DecryptCallMessage(callState) }
+    private val sessionMessageDecrypt by lazy { DecryptSessionMessage() }
 
     private fun startFloodJob() {
         database.invalidationTracker.addObserver(floodObserver)
@@ -265,9 +323,11 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         floodMessageDao.findFloodMessageDeferred().await()?.let { list ->
             try {
                 list.forEach { message ->
-                    val data = Gson().fromJson(message.data, BlazeMessageData::class.java)
+                    val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                     if (data.category.startsWith("WEBRTC_")) {
                         callMessageDecrypt.onRun(data)
+                    } else if (data.userId == accountId && !data.sessionId.isNullOrEmpty()) {
+                        sessionMessageDecrypt.onRun(data)
                     } else {
                         messageDecrypt.onRun(data)
                     }

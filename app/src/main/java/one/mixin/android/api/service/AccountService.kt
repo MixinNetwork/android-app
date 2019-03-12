@@ -2,6 +2,7 @@ package one.mixin.android.api.service
 
 import com.google.gson.JsonObject
 import io.reactivex.Observable
+import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -41,7 +42,7 @@ interface AccountService {
     fun getMe(): Call<MixinResponse<Account>>
 
     @POST("logout")
-    fun logout(): Observable<MixinResponse<Unit>>
+    fun logoutAsync(): Deferred<MixinResponse<Unit>>
 
     @GET("codes/{id}")
     fun code(@Path("id") id: String): Observable<MixinResponse<JsonObject>>

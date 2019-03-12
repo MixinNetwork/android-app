@@ -12,6 +12,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.SYSTEM_USER
 
 class RefreshConversationJob(val conversationId: String)
     : MixinJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("refresh_conversation")
@@ -31,6 +32,10 @@ class RefreshConversationJob(val conversationId: String)
     }
 
     override fun onRun() {
+        if (conversationId == SYSTEM_USER || conversationId == Session.getAccountId()) {
+            removeJob()
+            return
+        }
         val call = conversationApi.getConversation(conversationId).execute()
         val response = call.body()
         if (response != null && response.isSuccess) {

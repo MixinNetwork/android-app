@@ -24,6 +24,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -88,6 +89,9 @@ open class Injector : Injectable {
     }
 
     protected fun syncConversation(data: BlazeMessageData) {
+        if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
+           return
+        }
         var conversation = conversationDao.getConversation(data.conversationId)
         if (conversation == null) {
             conversation = createConversation(data.conversationId, null, data.userId, ConversationStatus.START.ordinal)

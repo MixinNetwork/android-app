@@ -6,11 +6,11 @@ import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.findLastUrl
+import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.vo.MessageStatus.SENT
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isGroup
@@ -47,14 +47,19 @@ open class SendMessageJob(
         if (message.isCall()) {
             return
         }
-        if (!alreadyExistMessage) {
-            val conversation = conversationDao.findConversationById(message.conversationId)
-            if (conversation != null) {
-                messageDao.insert(message)
-                parseHyperlink()
-            } else {
-                Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
-            }
+        if (alreadyExistMessage) {
+            return
+        }
+        val conversation = conversationDao.findConversationById(message.conversationId)
+        if (conversation != null) {
+            messageDao.insert(message)
+            parseHyperlink()
+        } else {
+            Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
+        }
+
+        if (Session.getExtensionSessionId() != null) {
+            jobManager.addJobInBackground(SendSessionMessageJob(message))
         }
     }
 
@@ -91,7 +96,7 @@ open class SendMessageJob(
             }
         }
         val blazeParam = BlazeMessageParam(message.conversationId, recipientId,
-            message.id, message.category, content, SENT.name, quote_message_id = message.quoteMessageId)
+            message.id, message.category, content, quote_message_id = message.quoteMessageId)
         val blazeMessage = if (message.isCall()) {
             createCallMessage(blazeParam)
         } else {

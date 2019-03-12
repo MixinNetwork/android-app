@@ -61,6 +61,7 @@ class ChatWebSocket(
     private val transactions = ConcurrentHashMap<String, WebSocketTransaction>()
     private val gson = Gson()
     private val accountId = Session.getAccountId()
+    private val sessionId = Session.getSessionId()
 
     companion object {
         val TAG = ChatWebSocket::class.java.simpleName
@@ -238,13 +239,18 @@ class ChatWebSocket(
     }
 
     private fun handleReceiveMessage(blazeMessage: BlazeMessage) {
-        val data = Gson().fromJson(blazeMessage.data, BlazeMessageData::class.java)
+        val data = gson.fromJson(blazeMessage.data, BlazeMessageData::class.java)
         if (blazeMessage.action == ACKNOWLEDGE_MESSAGE_RECEIPT) {
             makeMessageStatus(data.status, data.messageId)
             offsetDao.insert(Offset(STATUS_OFFSET, data.updatedAt))
         } else if (blazeMessage.action == CREATE_MESSAGE || blazeMessage.action == CREATE_CALL) {
             if (data.userId == accountId && data.category.isEmpty()) {
                 makeMessageStatus(data.status, data.messageId)
+            } else {
+                floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
+            }
+        } else if (blazeMessage.action == CREATE_SESSION_MESSAGE) {
+            if (data.userId == accountId && data.sessionId == sessionId && data.category.isEmpty()) {
             } else {
                 floodMessageDao.insert(FloodMessage(data.messageId, gson.toJson(data), data.createdAt))
             }
@@ -257,6 +263,14 @@ class ChatWebSocket(
         val curStatus = messageDao.findMessageStatusById(messageId)
         if (curStatus != null && curStatus != MessageStatus.READ.name) {
             messageDao.updateMessageStatus(status, messageId)
+        }
+        sendSessionAck(status, messageId)
+    }
+
+    private fun sendSessionAck(status: String, messageId: String) {
+        val extensionSessionId = Session.getExtensionSessionId()
+        extensionSessionId?.let {
+            jobDao.insert(createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(messageId, status)))
         }
     }
 

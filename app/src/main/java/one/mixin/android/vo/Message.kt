@@ -29,7 +29,7 @@ class Message(
 
     @SerializedName("user_id")
     @ColumnInfo(name = "user_id")
-    val userId: String,
+    var userId: String,
 
     @SerializedName("category")
     @ColumnInfo(name = "category")
@@ -154,6 +154,10 @@ fun Message.isPlain(): Boolean {
     return category.startsWith("PLAIN_")
 }
 
+fun Message.isSignal(): Boolean {
+    return category.startsWith("SIGNAL_")
+}
+
 fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
     return conversation.category == ConversationCategory.CONTACT.name && conversation.ownerId != userId
 }
@@ -180,6 +184,7 @@ enum class MessageCategory {
     STRANGER,
     SECRET,
     SYSTEM_CONVERSATION,
+    SYSTEM_EXTENSION_SESSION,
     SYSTEM_ACCOUNT_SNAPSHOT,
     APP_BUTTON_GROUP,
     APP_CARD,

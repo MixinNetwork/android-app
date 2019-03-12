@@ -1,5 +1,6 @@
 package one.mixin.android.fcm
 
+import android.util.Log
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.firebase.messaging.FirebaseMessagingService
@@ -22,6 +23,7 @@ class FcmService : FirebaseMessagingService() {
     }
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        Log.d("FcmService", "From: ${remoteMessage.from}")
     }
 
     override fun onNewToken(token: String?) {
