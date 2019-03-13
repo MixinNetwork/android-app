@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_contact_header.view.*
+import kotlinx.android.synthetic.main.item_search_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_check.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
@@ -61,14 +61,14 @@ class SingleFriendSelectAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
             return
         }
         if (conversations != null && conversations!!.isNotEmpty() && position < conversations!!.size) {
-            holder.itemView.header.text = holder.itemView.context.getString(R.string.chat_item_title)
+            holder.itemView.search_header_tv.text = holder.itemView.context.getString(R.string.chat_item_title)
         } else {
-            holder.itemView.header.text = holder.itemView.context.getString(R.string.contact_item_title)
+            holder.itemView.search_header_tv.text = holder.itemView.context.getString(R.string.contact_item_title)
         }
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
+        val view = parent.inflate(R.layout.item_search_header, false)
         return HeaderViewHolder(view)
     }
 

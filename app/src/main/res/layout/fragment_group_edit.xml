@@ -1,26 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
-            android:id="@+id/title_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:rightText="@string/save"
-            app:titleText="@string/group_edit_title"/>
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:titleText="@string/group_edit_title"/>
 
     <EditText
-            android:id="@+id/desc_et"
-            android:background="@android:color/white"
-            android:padding="@dimen/activity_horizontal_margin"
-            android:maxLength="1024"
-            style="@style/NormalTextStyle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="start|end"
-            android:hint="@string/group_info_edit"/>
+        android:id="@+id/desc_et"
+        style="@style/NormalTextStyle"
+        android:layout_below="@id/title_view"
+        android:background="@drawable/bg_landing_round_gray_4dp"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:maxLength="1024"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="250dp"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
+        android:gravity="start|end"
+        android:hint="@string/group_info_edit"/>
 
-</LinearLayout>
+    <TextView
+        android:id="@+id/save_tv"
+        android:layout_width="116dp"
+        android:layout_height="40dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="@dimen/margin16"
+        android:gravity="center"
+        android:text="@string/save"
+        android:background="@drawable/bg_gray_btn"
+        android:textColor="@color/wallet_text_gray"/>
+</RelativeLayout>

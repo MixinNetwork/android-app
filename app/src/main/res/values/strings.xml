@@ -66,6 +66,7 @@
     <string name="no_result">NO RESULT</string>
     <string name="chat">Chat</string>
     <string name="invite">Invite</string>
+    <string name="qr_code">QR Code</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -422,7 +423,7 @@
     <string name="invite_revoke">Revoke Link</string>
     <string name="invite_share">Share Link</string>
     <string name="invite_copy">Copy Link</string>
-    <string name="invite_forward">Forward to friend</string>
+    <string name="invite_forward">Forward Link</string>
     <string name="invite_title">Invite to Group via Link</string>
     <string name="invite_invalid">Invalid Link</string>
     <string name="conversation_pin">Pin to top</string>
@@ -433,6 +434,8 @@
     <string name="loading_init">Initializing…</string>
     <string name="loading_wait">Please wait a moment</string>
     <string name="loading_time">System time is unusual, please continue to use again after correction</string>
+    <string name="invite_qr_title">Group QR Code</string>
+    <string name="invite_qr_tip">Scan the QR Code to join this group</string>
     <!-- notification -->
     <string name="alert_key_group_text_message">%1$s send a message</string>
     <string name="alert_key_group_image_message">%1$s send a photo</string>

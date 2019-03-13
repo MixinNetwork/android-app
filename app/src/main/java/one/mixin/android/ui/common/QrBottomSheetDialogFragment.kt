@@ -25,6 +25,8 @@ import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.MY_QR
+import one.mixin.android.Constants.Scheme.CODES
+import one.mixin.android.Constants.Scheme.HTTPS_CODES
 import one.mixin.android.Constants.Scheme.TRANSFER
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
@@ -48,20 +50,32 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "QrBottomSheetDialogFragment"
         const val ARGS_TYPE = "args_type"
+        const val ARGS_GROUP_CODE = "args_group_code"
+        const val ARGS_GROUO_ICON = "args_group_icon"
 
         const val TYPE_MY_QR = 0
         const val TYPE_RECEIVE_QR = 1
+        const val TYPE_GROUP_QR = 2
 
-        fun newInstance(userId: String, type: Int) = QrBottomSheetDialogFragment().apply {
+        fun newInstance(
+            type: Int,
+            userId: String? = null,
+            groupCode: String? = null,
+            groupIcon: String? = null
+        ) = QrBottomSheetDialogFragment().apply {
             arguments = bundleOf(
+                ARGS_TYPE to type,
                 ARGS_USER_ID to userId,
-                ARGS_TYPE to type
+                ARGS_GROUP_CODE to groupCode,
+                ARGS_GROUO_ICON to groupIcon
             )
         }
     }
 
-    private val userId: String by lazy { arguments!!.getString(ARGS_USER_ID) }
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
+    private val userId: String? by lazy { arguments!!.getString(ARGS_USER_ID) }
+    private val groupCode: String? by lazy { arguments!!.getString(ARGS_GROUP_CODE) }
+    private val groupIcon: String? by lazy { arguments!!.getString(ARGS_GROUO_ICON) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -73,51 +87,70 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.title.right_iv.setOnClickListener { dismiss() }
-        if (type == TYPE_MY_QR) {
-            contentView.title.title_tv.text = getString(R.string.contact_my_qr_title)
-            contentView.tip_tv.text = getString(R.string.contact_my_qr_tip)
-        } else if (type == TYPE_RECEIVE_QR) {
-            contentView.title.title_tv.text = getString(R.string.contact_receive_money)
-            contentView.tip_tv.text = getString(R.string.contact_receive_tip)
-        }
-        bottomViewModel.findUserById(userId).observe(this, Observer { user ->
-            if (user == null) {
-                bottomViewModel.refreshUser(userId, true)
-            } else {
-                contentView.badge_view.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
-                if (type == TYPE_RECEIVE_QR) {
-                    contentView.badge_view.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
-                    contentView.badge_view.pos = END_BOTTOM
-                }
-
-                val name = getName(user)
-                if (context!!.isQRCodeFileExists(name)) {
-                    contentView.qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(name).absolutePath))
-                } else {
-                    contentView.qr.post {
-                        Observable.create<Bitmap> { e ->
-                            val account = Session.getAccount() ?: return@create
-                            val code = when (type) {
-                                TYPE_MY_QR -> account.code_url
-                                TYPE_RECEIVE_QR -> "$TRANSFER/${user.userId}"
-                                else -> ""
-                            }
-                            val b = code.generateQRCode(contentView.qr.width)
-                            if (b != null) {
-                                b.saveQRCode(context!!, name)
-                                e.onNext(b)
-                            }
-                        }.subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .autoDisposable(scopeProvider)
-                            .subscribe({ r ->
-                                contentView.qr.setImageBitmap(r)
-                            }, { _ ->
-                            })
-                    }
+        when (type) {
+            TYPE_MY_QR -> {
+                contentView.title.title_tv.text = getString(R.string.contact_my_qr_title)
+                contentView.tip_tv.text = getString(R.string.contact_my_qr_tip)
+            }
+            TYPE_RECEIVE_QR -> {
+                contentView.title.title_tv.text = getString(R.string.contact_receive_money)
+                contentView.tip_tv.text = getString(R.string.contact_receive_tip)
+            }
+            TYPE_GROUP_QR -> {
+                contentView.title.title_tv.text = getString(R.string.invite_qr_title)
+                contentView.tip_tv.text = getString(R.string.invite_qr_tip)
+                groupCode?.let {
+                    showQR(when {
+                        it.startsWith(HTTPS_CODES) -> it.replace("$HTTPS_CODES/", "")
+                        it.startsWith(CODES) -> it.replace("$CODES/", "")
+                        else -> it
+                    })
+                    contentView.badge_view.bg.setGroup(groupIcon)
                 }
             }
-        })
+        }
+        if (userId != null) {
+            bottomViewModel.findUserById(userId!!).observe(this, Observer { user ->
+                if (user == null) {
+                    bottomViewModel.refreshUser(userId!!, true)
+                } else {
+                    contentView.badge_view.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
+                    if (type == TYPE_RECEIVE_QR) {
+                        contentView.badge_view.badge.setImageResource(R.drawable.ic_contacts_receive_blue)
+                        contentView.badge_view.pos = END_BOTTOM
+                    }
+                    showQR(getName(user))
+                }
+            })
+        }
+    }
+
+    private fun showQR(name: String) {
+        if (context!!.isQRCodeFileExists(name)) {
+            contentView.qr.setImageBitmap(BitmapFactory.decodeFile(context!!.getQRCodePath(name).absolutePath))
+        } else {
+            contentView.qr.post {
+                Observable.create<Bitmap> { e ->
+                    val account = Session.getAccount() ?: return@create
+                    val code = when (type) {
+                        TYPE_MY_QR -> account.code_url
+                        TYPE_RECEIVE_QR -> "$TRANSFER/$userId"
+                        TYPE_GROUP_QR -> "$groupCode"
+                        else -> ""
+                    }
+                    val b = code.generateQRCode(contentView.qr.width)
+                    if (b != null) {
+                        b.saveQRCode(context!!, name)
+                        e.onNext(b)
+                    }
+                }.subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .autoDisposable(scopeProvider)
+                    .subscribe({ r ->
+                        contentView.qr.setImageBitmap(r)
+                    }, {})
+            }
+        }
     }
 
     private fun getName(user: User): String {

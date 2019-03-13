@@ -141,7 +141,7 @@ class ContactsFragment : BaseFragment() {
                 mutableList.addAll(0, contactAdapter.users)
                 contactAdapter.users = mutableList
                 contactAdapter.notifyDataSetChanged()
-            }, { _ -> })
+            }, { })
         jobManager.addJobInBackground(UploadContactsJob())
     }
 
@@ -185,14 +185,14 @@ class ContactsFragment : BaseFragment() {
 
         override fun onMyQr(self: User?) {
             self?.let {
-                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
+                QrBottomSheetDialogFragment.newInstance(TYPE_MY_QR, it.userId)
                     .showNow(requireFragmentManager(), QrBottomSheetDialogFragment.TAG)
             }
         }
 
         override fun onReceiveQr(self: User?) {
             self?.let {
-                QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
+                QrBottomSheetDialogFragment.newInstance(TYPE_RECEIVE_QR, it.userId)
                     .showNow(requireFragmentManager(), QrBottomSheetDialogFragment.TAG)
             }
         }

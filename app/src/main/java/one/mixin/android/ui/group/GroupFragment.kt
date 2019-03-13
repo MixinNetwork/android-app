@@ -1,15 +1,14 @@
 package one.mixin.android.ui.group
 
 import android.app.Dialog
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -25,9 +24,9 @@ import one.mixin.android.job.ConversationJob.Companion.TYPE_ADD
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_REMOVE
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.group.adapter.GroupFriendAdapter
 import one.mixin.android.vo.User
+import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
@@ -132,7 +131,6 @@ class GroupFragment : BaseFragment() {
             groupFriendAdapter.alreadyUserIds = alreadyUserIds
         }
         group_rv.adapter = groupFriendAdapter
-        group_rv.addItemDecoration(SpaceItemDecoration())
         group_rv.addItemDecoration(StickyRecyclerHeadersDecoration(groupFriendAdapter))
 
         if (from == TYPE_ADD || from == TYPE_CREATE) {
@@ -144,14 +142,13 @@ class GroupFragment : BaseFragment() {
             users = alreadyUsers
             groupFriendAdapter.setData(alreadyUsers, true)
         }
-        search_et.addTextChangedListener(mWatcher)
+        search_et.listener = object : SearchView.OnSearchViewListener {
+            override fun afterTextChanged(s: Editable?) {
+                groupFriendAdapter.setData(users?.filter { it.fullName!!.contains(s.toString(), true) },
+                    s.isNullOrEmpty())
+            }
 
-        search_et.isFocusableInTouchMode = false
-        search_et.isFocusable = false
-        search_et.post {
-            search_et?.let {
-                it.isFocusableInTouchMode = true
-                it.isFocusable = true
+            override fun onSearch() {
             }
         }
 
@@ -198,23 +195,9 @@ class GroupFragment : BaseFragment() {
                 title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
                 title_view.right_animator.isEnabled = false
             } else {
-                title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
+                title_view.right_tv.textColor = resources.getColor(R.color.wallet_blue_secondary, null)
                 title_view.right_animator.isEnabled = true
             }
-        }
-    }
-
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
-
-        override fun afterTextChanged(s: Editable?) {
-            val keyword = s.toString().trim()
-            groupFriendAdapter.setData(users?.filter { it.fullName!!.contains(keyword, true) || it.identityNumber.contains(keyword, true) },
-                s.isNullOrEmpty())
         }
     }
 }

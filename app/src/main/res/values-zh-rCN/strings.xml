@@ -63,6 +63,7 @@
     <string name="no_result">没有结果</string>
     <string name="chat">聊天</string>
     <string name="invite">邀请</string>
+    <string name="qr_code">二维码</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -411,10 +412,10 @@
     <string name="group_invite">群邀请链接</string>
     <!-- invite -->
     <string name="invite_info">Mixin 使用者可以使用此链接加入这个群组，请只跟您信任的人共享链接。</string>
-    <string name="invite_revoke">重置邀请链接</string>
-    <string name="invite_share">分享邀请链接</string>
-    <string name="invite_copy">复制邀请链接</string>
-    <string name="invite_forward">转发给好友</string>
+    <string name="invite_revoke">重置链接</string>
+    <string name="invite_share">分享链接</string>
+    <string name="invite_copy">复制链接</string>
+    <string name="invite_forward">转发链接</string>
     <string name="invite_title">群邀请链接</string>
     <string name="invite_invalid">邀请链接</string>
     <string name="conversation_pin">置顶</string>
@@ -425,6 +426,8 @@
     <string name="loading_init">初始化…</string>
     <string name="loading_wait">请稍等</string>
     <string name="loading_time">检测到系统时间异常，请校正后再继续使用</string>
+    <string name="invite_qr_title">群组二维码</string>
+    <string name="invite_qr_tip">用 Mixin 扫描二维码加如群组</string>
     <!-- notification -->
     <string name="alert_key_group_text_message">%1$s 发送一条消息</string>
     <string name="alert_key_group_image_message">%1$s 发送一张照片</string>

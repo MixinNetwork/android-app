@@ -4,13 +4,13 @@ import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.appcompat.widget.PopupMenu
 import androidx.collection.ArrayMap
 import androidx.lifecycle.Observer
@@ -19,7 +19,7 @@ import androidx.lifecycle.ViewModelProviders
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_group_info.*
-import kotlinx.android.synthetic.main.view_group_info_header.view.*
+import kotlinx.android.synthetic.main.view_group_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -36,7 +36,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
 import one.mixin.android.ui.group.GroupFragment.Companion.MAX_USER
@@ -46,6 +45,8 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
+import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import javax.inject.Inject
@@ -73,7 +74,7 @@ class GroupInfoFragment : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(GroupViewModel::class.java)
     }
     private val adapter by lazy {
-        GroupInfoAdapter(group_info_rv)
+        GroupInfoAdapter()
     }
 
     private val conversationId: String by lazy {
@@ -84,7 +85,6 @@ class GroupInfoFragment : BaseFragment() {
     private var users = arrayListOf<User>()
     private var disposable: Disposable? = null
     private var dialog: Dialog? = null
-    private lateinit var header: View
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         LayoutInflater.from(context).inflate(R.layout.fragment_group_info, container, false)
@@ -95,15 +95,9 @@ class GroupInfoFragment : BaseFragment() {
             search_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        group_info_rv.addItemDecoration(SpaceItemDecoration(2))
-        header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
-        adapter.headerView = header
+        title_view.right_animator.setOnClickListener { showBottomSheet() }
         group_info_rv.adapter = adapter
         adapter.setGroupInfoListener(object : GroupInfoAdapter.GroupInfoListener {
-            override fun onAdd() {
-                modifyMember(true)
-            }
-
             override fun onClick(name: View, user: User) {
                 val choices = mutableListOf<String>()
                 choices.add(getString(R.string.group_pop_menu_message, user.fullName))
@@ -217,7 +211,7 @@ class GroupInfoFragment : BaseFragment() {
                 users.clear()
                 users.addAll(u)
 
-                header.add_rl.visibility = if (it.isEmpty() || it.size >= MAX_USER || role == null ||
+                title_view.right_animator.visibility = if (it.isEmpty() || it.size >= MAX_USER || role == null ||
                     (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name))
                     GONE else VISIBLE
 
@@ -239,7 +233,7 @@ class GroupInfoFragment : BaseFragment() {
                         if (s.isNotBlank()) {
                             filter(s.trim())
                         } else {
-                            adapter.data = u
+                            adapter.submitList(u)
                         }
                     }
                 }
@@ -267,15 +261,14 @@ class GroupInfoFragment : BaseFragment() {
                 }
         }
 
-        search_et.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            override fun afterTextChanged(s: Editable) {
+        search_et.listener = object : SearchView.OnSearchViewListener {
+            override fun afterTextChanged(s: Editable?) {
                 filter(s.toString())
             }
-        })
+
+            override fun onSearch() {
+            }
+        }
 
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
@@ -287,7 +280,7 @@ class GroupInfoFragment : BaseFragment() {
                 us.add(it)
             }
         }
-        adapter.data = us
+        adapter.submitList(us)
     }
 
     private fun openChat(user: User) {
@@ -332,12 +325,21 @@ class GroupInfoFragment : BaseFragment() {
         dialog!!.show()
     }
 
-    private fun modifyMember(isAdd: Boolean) {
-        val list = arrayListOf<User>()
-        adapter.data.let {
-            list += it!!
+    private fun showBottomSheet() {
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_group_bottom, null)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.add.setOnClickListener {
+            activity?.addFragment(this@GroupInfoFragment,
+                GroupFragment.newInstance(TYPE_ADD, users, conversationId), GroupFragment.TAG)
+            bottomSheet.dismiss()
         }
-        activity?.addFragment(this@GroupInfoFragment,
-            GroupFragment.newInstance(if (isAdd) TYPE_ADD else TYPE_REMOVE, list, conversationId), GroupFragment.TAG)
+        view.invite.setOnClickListener {
+            InviteActivity.show(requireContext(), conversationId)
+            bottomSheet.dismiss()
+        }
+        view.cancel.setOnClickListener { bottomSheet.dismiss() }
+        bottomSheet.show()
     }
 }
