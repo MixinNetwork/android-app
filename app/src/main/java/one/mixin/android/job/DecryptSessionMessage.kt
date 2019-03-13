@@ -1,6 +1,9 @@
 package one.mixin.android.job
 
+import android.app.Activity
+import android.app.NotificationManager
 import android.util.Log
+import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.extension.findLastUrl
@@ -31,6 +34,9 @@ class DecryptSessionMessage : Injector() {
     }
 
     private val gson = GsonHelper.customGson
+    private val notificationManager: NotificationManager by lazy {
+        MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
+    }
 
     fun onRun(data: BlazeMessageData) {
         syncConversation(data)
@@ -105,6 +111,7 @@ class DecryptSessionMessage : Injector() {
                         messageDao.updateMessageStatus(m.status, m.message_id)
                         messageDao.findConversationById(m.message_id)?.let { conversationId ->
                             messageDao.takeUnseen(Session.getAccountId()!!, conversationId)
+                            notificationManager.cancel(conversationId.hashCode())
                         }
                         jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, m))
                     }
