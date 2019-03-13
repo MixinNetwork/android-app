@@ -13,6 +13,7 @@ import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConversationJob.Companion.TYPE_CREATE
 import one.mixin.android.job.ConversationJob.Companion.TYPE_EXIT
 import one.mixin.android.job.ConversationJob.Companion.TYPE_MAKE_ADMIN
+import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
@@ -21,7 +22,6 @@ import one.mixin.android.vo.ConversationBuilder
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
-import java.util.UUID
 import javax.inject.Inject
 
 class GroupViewModel @Inject
@@ -34,13 +34,13 @@ internal constructor(
     fun getFriends() = userRepository.findFriends()
 
     fun createGroupConversation(
+        conversationId: String,
         groupName: String,
         announcement: String,
         icon: String?,
         users: List<User>,
         sender: User
     ): Conversation {
-        val conversationId = UUID.randomUUID().toString()
         val createdAt = nowInUtc()
         val conversation = ConversationBuilder(conversationId, createdAt, 0)
             .setCategory(ConversationCategory.GROUP.name)
@@ -58,6 +58,8 @@ internal constructor(
         val request = ConversationRequest(conversationId, ConversationCategory.GROUP.name,
             groupName, icon, announcement, participantRequestList)
         jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
+
+        jobManager.addJobInBackground(GenerateAvatarJob(conversation.conversationId))
 
         return conversation
     }
@@ -121,5 +123,9 @@ internal constructor(
         announcement?.let {
             conversationRepository.updateAnnouncement(conversationId, announcement)
         }
+    }
+
+    fun generateAvatar(conversationId: String, users: List<User>) {
+        jobManager.addJobInBackground(GenerateAvatarJob(conversationId, users))
     }
 }

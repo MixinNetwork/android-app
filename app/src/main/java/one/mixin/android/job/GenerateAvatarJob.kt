@@ -16,7 +16,9 @@ import androidx.collection.ArrayMap
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.LocalJobException
+import one.mixin.android.event.AvatarEvent
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
@@ -78,6 +80,8 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
             }
         }
         conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+
+        RxBus.publish(AvatarEvent(f.absolutePath))
     }
 
     private fun drawInternal(canvas: Canvas, bitmaps: List<Bitmap>) {

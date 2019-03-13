@@ -1,13 +1,13 @@
 package one.mixin.android.ui.conversation.adapter
 
-import android.util.ArrayMap
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.ArrayMap
+import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_friend.view.*
-import kotlinx.android.synthetic.main.item_friend_header.view.*
+import kotlinx.android.synthetic.main.item_search_header.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.inflate
@@ -32,13 +32,13 @@ class FriendAdapter : RecyclerView.Adapter<FriendAdapter.FriendViewHolder>(),
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup) =
-        FriendViewHolder(parent.inflate(R.layout.item_friend_header,false))
+        FriendViewHolder(parent.inflate(R.layout.item_search_header,false))
 
     override fun onBindHeaderViewHolder(holder: FriendViewHolder, position: Int) {
         if (friends == null || friends!!.isEmpty()) return
 
         val u = friends!![position]
-        holder.itemView.head_tv.text = if (u.fullName != null &&
+        holder.itemView.search_header_tv.text = if (u.fullName != null &&
             u.fullName.isNotEmpty()) u.fullName[0].toString() else ""
     }
 

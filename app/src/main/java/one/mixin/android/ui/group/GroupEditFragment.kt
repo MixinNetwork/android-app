@@ -1,17 +1,20 @@
 package one.mixin.android.ui.group
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
+import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_edit.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
@@ -19,6 +22,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
 import one.mixin.android.util.ErrorHandler
+import org.jetbrains.anko.textColor
 import org.jetbrains.anko.textColorResource
 import javax.inject.Inject
 
@@ -94,11 +98,25 @@ class GroupEditFragment : BaseFragment() {
 
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 val enabled = s?.toString() != desc
-                title_view.right_tv.isEnabled = enabled
-                title_view.right_tv.textColorResource = if (enabled) {
-                    R.color.selector_bn
+                save_tv.isEnabled = enabled
+                save_tv.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    if (enabled) {
+                        height = requireContext().dpToPx(72f)
+                        bottomMargin = 0
+                    } else {
+                        height = requireContext().dpToPx(40f)
+                        bottomMargin = requireContext().dpToPx(16f)
+                    }
+                }
+                save_tv.textColor = if (enabled) {
+                    requireContext().getColor(R.color.white)
                 } else {
-                    R.color.text_gray
+                    requireContext().getColor(R.color.wallet_text_gray)
+                }
+                save_tv.background = if (enabled) {
+                    resources.getDrawable(R.drawable.bg_wallet_blue_btn, null)
+                } else {
+                    resources.getDrawable(R.drawable.bg_gray_btn, null)
                 }
             }
         })

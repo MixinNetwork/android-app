@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation
 
 import android.os.Bundle
 import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +17,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.FriendAdapter
 import one.mixin.android.vo.User
+import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
 import java.util.Arrays
 import javax.inject.Inject
@@ -72,21 +72,20 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
             adapter.friends = list
         })
 
-        search_et.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            override fun afterTextChanged(s: Editable) {
+        search_et.listener = object : SearchView.OnSearchViewListener {
+            override fun afterTextChanged(s: Editable?) {
                 val us = arrayListOf<User>()
                 users.forEach {
-                    if (it.fullName?.contains(s, true) == true) {
+                    if (it.fullName?.contains(s.toString(), true) == true) {
                         us.add(it)
                     }
                 }
                 adapter.friends = us
             }
-        })
+
+            override fun onSearch() {
+            }
+        }
     }
 
     private var friendClick: ((Set<String>) -> Unit)? = null
@@ -96,7 +95,7 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
     }
 
     override fun onFriendClick(pos: Int) {
-        if (adapter.selectedFriends.isEmpty()) {
+        if (adapter.selectedFriends.isEmpty) {
             title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
             title_view.right_animator.isEnabled = false
         } else {

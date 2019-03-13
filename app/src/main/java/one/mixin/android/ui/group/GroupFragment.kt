@@ -28,6 +28,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.group.adapter.GroupFriendAdapter
 import one.mixin.android.vo.User
+import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
 
@@ -132,7 +133,6 @@ class GroupFragment : BaseFragment() {
             groupFriendAdapter.alreadyUserIds = alreadyUserIds
         }
         group_rv.adapter = groupFriendAdapter
-        group_rv.addItemDecoration(SpaceItemDecoration())
         group_rv.addItemDecoration(StickyRecyclerHeadersDecoration(groupFriendAdapter))
 
         if (from == TYPE_ADD || from == TYPE_CREATE) {
@@ -144,14 +144,13 @@ class GroupFragment : BaseFragment() {
             users = alreadyUsers
             groupFriendAdapter.setData(alreadyUsers, true)
         }
-        search_et.addTextChangedListener(mWatcher)
+        search_et.listener = object : SearchView.OnSearchViewListener {
+            override fun afterTextChanged(s: Editable?) {
+                groupFriendAdapter.setData(users?.filter { it.fullName!!.contains(s.toString(), true) },
+                    s.isNullOrEmpty())
+            }
 
-        search_et.isFocusableInTouchMode = false
-        search_et.isFocusable = false
-        search_et.post {
-            search_et?.let {
-                it.isFocusableInTouchMode = true
-                it.isFocusable = true
+            override fun onSearch() {
             }
         }
 
@@ -198,22 +197,9 @@ class GroupFragment : BaseFragment() {
                 title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
                 title_view.right_animator.isEnabled = false
             } else {
-                title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
+                title_view.right_tv.textColor = resources.getColor(R.color.wallet_blue_secondary, null)
                 title_view.right_animator.isEnabled = true
             }
-        }
-    }
-
-    private val mWatcher: TextWatcher = object : TextWatcher {
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
-        }
-
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-        }
-
-        override fun afterTextChanged(s: Editable?) {
-            groupFriendAdapter.setData(users?.filter { it.fullName!!.contains(s.toString(), true) },
-                s.isNullOrEmpty())
         }
     }
 }

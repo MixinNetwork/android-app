@@ -7,8 +7,8 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_contact_header.view.*
-import kotlinx.android.synthetic.main.item_group_friend.view.*
+import kotlinx.android.synthetic.main.item_friend.view.*
+import kotlinx.android.synthetic.main.item_search_header.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.notNullElse
@@ -57,7 +57,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): HeaderViewHolder {
-        val view = parent.inflate(R.layout.item_contact_header, false)
+        val view = parent.inflate(R.layout.item_search_header, false)
         return HeaderViewHolder(view)
     }
 
@@ -70,7 +70,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FriendViewHolder =
-        FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_group_friend, parent, false))
+        FriendViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_friend, parent, false))
 
     fun setGroupFriendListener(listener: GroupFriendListener) {
         mListener = listener
@@ -84,7 +84,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
             alreadyUserIds: List<String>?,
             isAdd: Boolean
         ) {
-            itemView.name.text = user.fullName
+            itemView.normal.text = user.fullName
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
             if (isAdd) {
                 alreadyUserIds?.let {
@@ -117,7 +117,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
 
     class HeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(user: User) {
-            itemView.header.text = if (user.fullName != null && user.fullName.isNotEmpty())
+            itemView.search_header_tv.text = if (user.fullName != null && user.fullName.isNotEmpty())
                 user.fullName[0].toString() else ""
         }
     }

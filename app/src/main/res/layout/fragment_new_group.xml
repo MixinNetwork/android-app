@@ -1,130 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
-    android:orientation="vertical">
+    android:background="@color/white">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightText="@string/create"
-        app:titleText="@string/group_new_title" />
+        app:need_divider="false"
+        app:titleText="@string/group_new_title"/>
 
-    <RelativeLayout
-        android:visibility="gone"
-        android:id="@+id/photo_rl"
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_marginTop="30dp"
+        android:layout_below="@id/title_view"
+        android:layout_centerHorizontal="true"/>
+
+    <TextView
+        android:id="@+id/participant_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin12"
+        android:layout_below="@id/avatar"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/wallet_text_gray"/>
+
+    <EditText
+        android:id="@+id/name_et"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
+        android:layout_height="54dp"
+        android:layout_below="@id/participant_tv"
+        android:layout_marginTop="40dp"
+        android:paddingStart="@dimen/margin12"
+        android:paddingEnd="@dimen/margin12"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
+        android:background="@drawable/bg_landing_round_gray_4dp"
+        android:hint="@string/group_new_name_tip"
+        android:inputType="text"
+        android:lines="1"
+        android:textSize="16sp"/>
+
+    <ViewAnimator
+        android:id="@+id/create_animator"
+        android:layout_width="116dp"
+        android:layout_height="40dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="50dp"
+        android:enabled="false"
+        android:inAnimation="@anim/fade_in"
+        android:outAnimation="@anim/fade_out"
+        android:background="@drawable/bg_gray_btn">
 
         <TextView
-            android:id="@+id/photo_tv"
-            style="@style/NormalTextStyle"
+            android:id="@+id/create_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_photo"
-            tools:ignore="RelativeOverlap" />
+            android:layout_gravity="center"
+            android:text="@string/create"
+            android:textColor="@color/wallet_text_gray"/>
 
-        <ImageView
-            android:id="@+id/photo_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_chevron_right_gray_24dp"
-            tools:ignore="ContentDescription" />
-
-        <ImageView
-            android:id="@+id/new_group_avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_toStartOf="@id/photo_iv"
-            android:src="@drawable/ic_photo_camera"
-            tools:ignore="ContentDescription" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/name_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white">
-
-        <TextView
-            android:id="@+id/name_tv"
-            style="@style/NormalTextStyle"
+        <ProgressBar
+            style="?android:attr/progressBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_name"
-            tools:ignore="RelativeOverlap" />
-
-        <EditText
-            android:id="@+id/name_desc_et"
-            style="@style/NormalTextStyle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_toEndOf="@id/name_tv"
-            android:background="@null"
-            android:lines="1"
-            android:maxLength="25"
-            android:gravity="center_vertical|end"
-            android:hint="@string/group_new_name_tip"
-            android:ellipsize="end"
-            android:singleLine="true" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/notice_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop=".5dp"
-        android:background="@android:color/white"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/notice_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/group_new_notice"
-            tools:ignore="RelativeOverlap" />
-
-        <EditText
-            android:id="@+id/notice_desc_et"
-            style="@style/NormalTextStyle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_toEndOf="@id/notice_tv"
-            android:background="@null"
-            android:gravity="center_vertical|end"
-            android:hint="@string/group_new_notice_tip"
-            android:textColor="@color/text_gray" />
-    </RelativeLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/user_rv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        app:layoutManager="LinearLayoutManager" />
-</LinearLayout>
+            android:layout_gravity="center"
+            android:theme="@style/AppTheme.WhiteAccent"/>
+    </ViewAnimator>
+</RelativeLayout>

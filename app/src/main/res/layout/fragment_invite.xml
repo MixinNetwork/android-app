@@ -1,155 +1,151 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/invite_title"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:need_divider="false"
+        app:rightIcon="@drawable/ic_more"
+        app:layout_constraintTop_toTopOf="parent"
+        app:titleText="@string/invite_title"/>
+
+    <one.mixin.android.widget.AvatarView
+        android:id="@+id/avatar"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="48dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"/>
+
+    <TextView
+        android:id="@+id/name_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_marginTop="@dimen/margin12"
+        android:textColor="@color/wallet_text_dark"/>
+
+    <TextView
+        android:id="@+id/invite_link"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_marginTop="@dimen/margin12"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_marginStart="@dimen/margin20"
+        android:textColor="@color/wallet_text_dark"/>
 
     <TextView
         android:id="@+id/invite_info"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_marginTop="@dimen/margin12"
+        android:layout_marginBottom="@dimen/margin20"
+        android:gravity="center_horizontal"
         android:text="@string/invite_info"
-        android:textColor="@color/text_black"
-        app:layout_constraintTop_toBottomOf="@id/title_view" />
+        android:textColor="@color/wallet_text_gray"/>
 
-    <ImageView
-        android:id="@+id/invite_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:src="@drawable/ic_invite_link"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/invite_info"
-        tools:ignore="ContentDescription" />
-
-    <TextView
-        android:id="@+id/invite_link"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:weightSum="3"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toEndOf="@id/invite_iv"
-        app:layout_constraintTop_toTopOf="@id/invite_iv" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/invite_info">
 
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height="0.5dp"
-        android:layout_marginTop="16dp"
-        android:background="@color/divider"
-        app:layout_constraintTop_toBottomOf="@id/invite_iv" />
+        <LinearLayout
+            android:id="@+id/share_ll"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="vertical"
+            app:layout_constraintTop_toBottomOf="@id/divider">
 
-    <LinearLayout
-        android:id="@+id/invite_forward"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/divider">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_group_link_share"
+                tools:ignore="ContentDescription"/>
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_forward_black_24dp"
-            tools:ignore="ContentDescription" />
+            <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/wallet_text_dark"
+                android:text="@string/invite_share"/>
 
-        <TextView
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/invite_forward" />
+        </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/copy_ll"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_group_copy"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/wallet_text_dark"
+                android:text="@string/invite_copy"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/qr_ll"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="match_parent"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/activity_horizontal_margin"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_group_qr"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/wallet_text_dark"
+                android:text="@string/qr_code"/>
+        </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/invite_copy"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/invite_forward">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_content_copy"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/invite_copy" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/invite_share"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/invite_copy">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_share_black_24dp"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/invite_share" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/invite_revoke"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/invite_share">
-
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_revoke"
-            tools:ignore="ContentDescription" />
-
-        <TextView
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/invite_revoke" />
-
-    </LinearLayout>
-
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
