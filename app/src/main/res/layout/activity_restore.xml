@@ -7,10 +7,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <TextView
+        android:id="@+id/restore_skip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        android:textColor="@color/wallet_blue_secondary"
+        android:text="@string/restore_skip"
+        android:layout_marginEnd="@dimen/margin12"
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.975"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
     <ImageView
         android:id="@+id/restore_icon"
         android:layout_marginTop="80dp"
-        android:src="@drawable/ic_backup"
+        android:src="@drawable/ic_backup_logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
@@ -51,6 +66,7 @@
         tools:text="Size: 100kB"/>
 
     <TextView
+        android:id="@+id/textView"
         android:layout_marginTop="@dimen/margin16"
         android:textColor="@color/text_black"
         android:gravity="center"
@@ -66,33 +82,18 @@
     <Button
         android:id="@+id/restore_restore"
         android:text="@string/restore_restore"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="4dp"
-        android:backgroundTint="@color/colorDarkBlue"
+        android:layout_width="114dp"
+        android:layout_height="72dp"
+        android:layout_marginEnd="8dp"
+        android:background="@drawable/bg_wallet_blue_btn"
         android:textColor="@color/white"
         android:layout_marginBottom="32dp"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/restore_skip"
-        app:layout_constraintHorizontal_chainStyle="packed"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-    <Button
-        android:id="@+id/restore_skip"
-        android:text="@string/restore_skip"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="4dp"
-        android:backgroundTint="#EFEFEF"
-        android:layout_marginBottom="32dp"
-        android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:textColor="@color/text_black"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@id/restore_restore"/>
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView"/>
 
     <ProgressBar
         android:id="@+id/restore_progress"

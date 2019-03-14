@@ -562,9 +562,12 @@
     <string name="backup_external_storage">外部存储: %1$s</string>
     <string name="backup_never">从未备份</string>
     <string name="backup">备份</string>
+    <string name="backup_now">现在备份</string>
+    <string name="backup_ing">备份中…</string>
     <string name="backup_delete">删除备份</string>
+    <string name="backup_auto">自动备份</string>
+    <string name="backup_last">上次备份：%1$s，大小: %2$s。</string>
     <string name="backup_dialog_title">自动备份到外部存储</string>
-    <string name="backup_ing">正在备份到外部存储&#8230;</string>
     <string name="backup_notification_title">备份正在进行中</string>
     <string name="backup_notification_content">正在准备备份&#8230;</string>
     <string name="backup_no_available_memory">没有足够的空间来备份。</string>

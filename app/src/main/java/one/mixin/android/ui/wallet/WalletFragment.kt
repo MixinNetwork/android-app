@@ -34,6 +34,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.common.recyclerview.ItemTouchCallback
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -86,7 +87,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         assetsAdapter.footerView = footer
         (coins_rv.itemAnimator as SimpleItemAnimator).supportsChangeAnimations = false
         coins_rv.setHasFixedSize(true)
-        ItemTouchHelper(AssetItemCallback(object : AssetItemCallback.ItemCallbackListener {
+        ItemTouchHelper(AssetItemCallback(object : ItemTouchCallback.ItemCallbackListener {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
                 val hiddenPos = viewHolder.adapterPosition
                 val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]

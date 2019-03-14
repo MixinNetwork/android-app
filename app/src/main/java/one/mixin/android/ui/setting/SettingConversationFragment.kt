@@ -63,13 +63,13 @@ class SettingConversationFragment : BaseFragment() {
     private fun render(prefer: Int) {
         if (prefer == MessageSource.EVERYBODY.ordinal) {
             everybody_iv.visibility = View.VISIBLE
-            my_contacts_iv.visibility = View.GONE
-            everybody_pb.visibility = View.GONE
-            my_contacts_pb.visibility = View.GONE
+            my_contacts_iv.visibility = View.INVISIBLE
+            everybody_pb.visibility = View.INVISIBLE
+            my_contacts_pb.visibility = View.INVISIBLE
             my_contacts_rl.setOnClickListener {
                 if (my_contacts_iv.visibility == VISIBLE) return@setOnClickListener
 
-                everybody_iv.visibility = View.GONE
+                everybody_iv.visibility = View.INVISIBLE
                 my_contacts_pb.visibility = View.VISIBLE
                 disposable?.let {
                     if (!it.isDisposed) {
@@ -86,23 +86,23 @@ class SettingConversationFragment : BaseFragment() {
                             settingConversationViewModel.preferences.setEveryBody()
                             ErrorHandler.handleMixinError(it.errorCode)
                         }
-                        my_contacts_pb?.visibility = View.GONE
+                        my_contacts_pb?.visibility = View.INVISIBLE
                     }, {
-                        my_contacts_pb?.visibility = View.GONE
+                        my_contacts_pb?.visibility = View.INVISIBLE
                         settingConversationViewModel.preferences.setEveryBody()
                         ErrorHandler.handleError(it)
                     })
             }
         } else {
-            everybody_iv.visibility = View.GONE
+            everybody_iv.visibility = View.INVISIBLE
             my_contacts_iv.visibility = View.VISIBLE
-            everybody_pb.visibility = View.GONE
-            my_contacts_pb.visibility = View.GONE
+            everybody_pb.visibility = View.INVISIBLE
+            my_contacts_pb.visibility = View.INVISIBLE
             everybody_rl.setOnClickListener {
                 if (everybody_iv.visibility == VISIBLE) return@setOnClickListener
 
                 everybody_pb.visibility = View.VISIBLE
-                my_contacts_iv.visibility = View.GONE
+                my_contacts_iv.visibility = View.INVISIBLE
                 disposable?.let {
                     if (!it.isDisposed) {
                         it.dispose()
@@ -118,9 +118,9 @@ class SettingConversationFragment : BaseFragment() {
                             settingConversationViewModel.preferences.setContacts()
                             ErrorHandler.handleMixinError(it.errorCode)
                         }
-                        everybody_pb?.visibility = View.GONE
+                        everybody_pb?.visibility = View.INVISIBLE
                     }, {
-                        everybody_pb?.visibility = View.GONE
+                        everybody_pb?.visibility = View.INVISIBLE
                         settingConversationViewModel.preferences.setContacts()
                         ErrorHandler.handleError(it)
                     })
@@ -131,13 +131,13 @@ class SettingConversationFragment : BaseFragment() {
     private fun renderGroup(prefer: Int) {
         if (prefer == MessageSource.EVERYBODY.ordinal) {
             everybody_group_iv.visibility = View.VISIBLE
-            my_contacts_group_iv.visibility = View.GONE
-            everybody_group_pb.visibility = View.GONE
-            my_contacts_group_pb.visibility = View.GONE
+            my_contacts_group_iv.visibility = View.INVISIBLE
+            everybody_group_pb.visibility = View.INVISIBLE
+            my_contacts_group_pb.visibility = View.INVISIBLE
             my_contacts_group_rl.setOnClickListener {
                 if (my_contacts_group_iv.visibility == VISIBLE) return@setOnClickListener
 
-                everybody_group_iv.visibility = View.GONE
+                everybody_group_iv.visibility = View.INVISIBLE
                 my_contacts_group_pb.visibility = View.VISIBLE
                 disposable?.let {
                     if (!it.isDisposed) {
@@ -154,23 +154,23 @@ class SettingConversationFragment : BaseFragment() {
                             settingConversationViewModel.groupPreferences.setEveryBody()
                             ErrorHandler.handleMixinError(it.errorCode)
                         }
-                        my_contacts_group_pb?.visibility = View.GONE
+                        my_contacts_group_pb?.visibility = View.INVISIBLE
                     }, {
-                        my_contacts_group_pb?.visibility = View.GONE
+                        my_contacts_group_pb?.visibility = View.INVISIBLE
                         settingConversationViewModel.groupPreferences.setEveryBody()
                         ErrorHandler.handleError(it)
                     })
             }
         } else {
-            everybody_group_iv.visibility = View.GONE
+            everybody_group_iv.visibility = View.INVISIBLE
             my_contacts_group_iv.visibility = View.VISIBLE
-            everybody_group_pb.visibility = View.GONE
-            my_contacts_group_pb.visibility = View.GONE
+            everybody_group_pb.visibility = View.INVISIBLE
+            my_contacts_group_pb.visibility = View.INVISIBLE
             everybody_group_rl.setOnClickListener {
                 if (everybody_group_iv.visibility == VISIBLE) return@setOnClickListener
 
                 everybody_group_pb.visibility = View.VISIBLE
-                my_contacts_group_iv.visibility = View.GONE
+                my_contacts_group_iv.visibility = View.INVISIBLE
                 disposable?.let {
                     if (!it.isDisposed) {
                         it.dispose()
@@ -186,9 +186,9 @@ class SettingConversationFragment : BaseFragment() {
                             settingConversationViewModel.groupPreferences.setContacts()
                             ErrorHandler.handleMixinError(it.errorCode)
                         }
-                        everybody_pb?.visibility = View.GONE
+                        everybody_pb?.visibility = View.INVISIBLE
                     }, {
-                        everybody_pb?.visibility = View.GONE
+                        everybody_pb?.visibility = View.INVISIBLE
                         settingConversationViewModel.groupPreferences.setContacts()
                         ErrorHandler.handleError(it)
                     })

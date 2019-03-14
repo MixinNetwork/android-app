@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_confirm.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -39,9 +40,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "ConfirmBottomFragment"
 
         fun newInstance(url: String) = ConfirmBottomFragment().withArgs {
-            if (url != null) {
-                putString(AvatarActivity.ARGS_URL, url)
-            }
+            putString(AvatarActivity.ARGS_URL, url)
         }
     }
 
@@ -66,7 +65,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             if (response.isSuccess) {
                 val success = encryptKey(requireContext(), url, response.data!!.code)
                 withContext(Dispatchers.Main) {
-                    confirmCallback?.let { it.invoke() }
+                    confirmCallback?.invoke()
                     if (success) {
                         context?.toast(R.string.setting_desktop_sigin_success)
                     } else {
@@ -89,11 +88,10 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             contentView.progress.visibility = View.VISIBLE
             contentView.confirm.visibility = View.INVISIBLE
             contentView.cancel.visibility = View.INVISIBLE
-            contentView.close.visibility = View.INVISIBLE
             isCancelable = false
             login()
         }
-        contentView.close.setOnClickListener {
+        contentView.title_view.right_iv.setOnClickListener {
             dismiss()
         }
         contentView.cancel.setOnClickListener {

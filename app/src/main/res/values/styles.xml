@@ -81,12 +81,12 @@
 
     <style name="NormalTextStyle">
         <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@android:color/black</item>
+        <item name="android:textColor">@color/wallet_text_dark</item>
     </style>
 
     <style name="DescTextStyle">
         <item name="android:textSize">12sp</item>
-        <item name="android:textColor">@color/colorGray</item>
+        <item name="android:textColor">@color/wallet_text_gray</item>
     </style>
 
     <style name="SwitchStyle">
@@ -194,5 +194,8 @@
 
     <style name="ProgressTheme" parent="Widget.AppCompat.ProgressBar.Horizontal">
         <item name="colorAccent">@color/colorDarkBlue</item>
+    </style>
+    <style name="AppTheme.BlueSwitch">
+        <item name="colorControlActivated">@color/wallet_blue_secondary</item>
     </style>
 </resources>

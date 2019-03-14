@@ -4,200 +4,216 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="@color/wallet_light_bg"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/setting_conversation" />
+        app:need_divider="false"
+        app:titleText="@string/setting_conversation"/>
 
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/setting_conversation_tip"
-        android:textColor="@color/text_gray"
-        android:textSize="12sp" />
-
-    <RelativeLayout
-        android:id="@+id/everybody_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:clickable="true"
-        android:focusable="true"
         android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
+        android:orientation="vertical">
 
         <TextView
-            android:id="@+id/everybody_tv"
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_conversation_everybody"
-            tools:ignore="RelativeOverlap" />
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:text="@string/setting_conversation_tip"/>
 
-        <ImageView
-            android:id="@+id/everybody_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_check_black_24dp"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
+        <RelativeLayout
+            android:id="@+id/everybody_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground">
 
-        <ProgressBar
-            android:id="@+id/everybody_pb"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:theme="@style/AppTheme.BlueAccent" />
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/everybody_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/everybody_iv"
+                android:text="@string/setting_conversation_everybody"
+                tools:ignore="RelativeOverlap"/>
 
-    <RelativeLayout
-        android:id="@+id/my_contacts_rl"
+            <ImageView
+                android:id="@+id/everybody_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin12"
+                android:layout_centerVertical="true"
+                android:visibility="invisible"
+                android:src="@drawable/ic_asset_add_checked"
+                tools:ignore="ContentDescription"/>
+
+            <ProgressBar
+                android:id="@+id/everybody_pb"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:theme="@style/AppTheme.BlueAccent"/>
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/my_contacts_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginTop=".5dp"
+            android:foreground="?attr/selectableItemBackground">
+
+            <TextView
+                android:id="@+id/my_contacts_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/my_contacts_iv"
+                android:text="@string/setting_my_contacts"
+                tools:ignore="RelativeOverlap"/>
+
+            <ImageView
+                android:id="@+id/my_contacts_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin12"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_asset_add_checked"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription"/>
+
+            <ProgressBar
+                android:id="@+id/my_contacts_pb"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:theme="@style/AppTheme.BlueAccent"/>
+        </RelativeLayout>
+    </LinearLayout>
+
+    <View
         android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:clickable="true"
-        android:focusable="true"
-        android:layout_marginTop=".5dp"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
+        android:layout_height="10dp"
+        android:background="@drawable/ic_shadow_divider"/>
 
-        <TextView
-            android:id="@+id/my_contacts_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_my_contacts"
-            tools:ignore="RelativeOverlap" />
-
-        <ImageView
-            android:id="@+id/my_contacts_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_check_black_24dp"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
-
-        <ProgressBar
-            android:id="@+id/my_contacts_pb"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:theme="@style/AppTheme.BlueAccent" />
-    </RelativeLayout>
-
-    <TextView
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:text="@string/setting_conversation_group_tip"
-        android:textColor="@color/text_gray"
-        android:textSize="12sp" />
-
-    <RelativeLayout
-        android:id="@+id/everybody_group_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:clickable="true"
-        android:focusable="true"
         android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
+        android:orientation="vertical">
 
         <TextView
-            android:id="@+id/everybody_group_tv"
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_conversation_everybody"
-            tools:ignore="RelativeOverlap" />
+            android:layout_marginBottom="8dp"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:text="@string/setting_conversation_group_tip"/>
 
-        <ImageView
-            android:id="@+id/everybody_group_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_check_black_24dp"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
+        <RelativeLayout
+            android:id="@+id/everybody_group_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground">
 
-        <ProgressBar
-            android:id="@+id/everybody_group_pb"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:theme="@style/AppTheme.BlueAccent" />
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/everybody_group_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/everybody_group_iv"
+                android:text="@string/setting_conversation_everybody"
+                tools:ignore="RelativeOverlap"/>
 
-    <RelativeLayout
-        android:id="@+id/my_contacts_group_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop=".5dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground">
+            <ImageView
+                android:id="@+id/everybody_group_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin12"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_asset_add_checked"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription"/>
 
-        <TextView
-            android:id="@+id/my_contacts_group_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/setting_my_contacts"
-            tools:ignore="RelativeOverlap" />
+            <ProgressBar
+                android:id="@+id/everybody_group_pb"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:theme="@style/AppTheme.BlueAccent"/>
+        </RelativeLayout>
 
-        <ImageView
-            android:id="@+id/my_contacts_group_iv"
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_check_black_24dp"
-            android:visibility="gone"
-            tools:ignore="ContentDescription" />
+        <RelativeLayout
+            android:id="@+id/my_contacts_group_rl"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/item_contact_height"
+            android:layout_marginTop=".5dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="@android:color/white"
+            android:foreground="?attr/selectableItemBackground">
 
-        <ProgressBar
-            android:id="@+id/my_contacts_group_pb"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:theme="@style/AppTheme.BlueAccent" />
-    </RelativeLayout>
+            <TextView
+                android:id="@+id/my_contacts_group_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_toEndOf="@id/my_contacts_group_iv"
+                android:text="@string/setting_my_contacts"
+                tools:ignore="RelativeOverlap"/>
+
+            <ImageView
+                android:id="@+id/my_contacts_group_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin12"
+                android:layout_centerVertical="true"
+                android:src="@drawable/ic_asset_add_checked"
+                android:visibility="invisible"
+                tools:ignore="ContentDescription"/>
+
+            <ProgressBar
+                android:id="@+id/my_contacts_group_pb"
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                android:theme="@style/AppTheme.BlueAccent"/>
+        </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

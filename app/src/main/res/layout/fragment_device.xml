@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context="one.mixin.android.ui.device.DeviceFragment">
 
     <View
@@ -18,24 +17,36 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:layout_below="@id/ph"
-        android:background="@color/bg_gray">
+        android:background="@color/wallet_light_bg">
 
         <one.mixin.android.widget.TitleView
             android:id="@+id/title_view"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:leftIcon="@drawable/ic_close_black_24dp"
+            app:need_divider="false"
             app:titleText="@string/setting_desktop"/>
 
-        <ImageView
-            android:id="@+id/logo_iv"
-            android:layout_width="wrap_content"
+        <FrameLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/ic_desktop_offline"
-            android:layout_marginTop="32dp"
-            android:layout_marginBottom="32dp"
-            android:layout_gravity="center"
-            android:contentDescription="@null"/>
+            android:background="@color/white">
+
+            <ImageView
+                android:id="@+id/logo_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_desktop_logo"
+                android:layout_marginTop="50dp"
+                android:layout_marginBottom="50dp"
+                android:layout_gravity="center"
+                android:contentDescription="@null"/>
+        </FrameLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@drawable/ic_shadow_divider"/>
 
         <TextView
             android:id="@+id/auth_tv"
@@ -50,6 +61,11 @@
             android:textColor="@color/black"
             android:text="@string/setting_scan_qr_code"
             tools:ignore="RelativeOverlap"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="10dp"
+            android:background="@drawable/ic_shadow_bottom"/>
 
         <TextView
             android:id="@+id/desc_tv"
