@@ -10,6 +10,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
@@ -31,7 +32,6 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
-import androidx.core.os.bundleOf
 import javax.inject.Inject
 
 class ForwardFragment : BaseFragment() {
@@ -173,7 +173,7 @@ class ForwardFragment : BaseFragment() {
 
     @SuppressLint("CheckResult")
     private fun sendMessages() {
-        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name || it.type == ForwardCategory.DATA.name } != null) {
             RxPermissions(requireActivity())
                 .request(
                     WRITE_EXTERNAL_STORAGE,
@@ -197,7 +197,7 @@ class ForwardFragment : BaseFragment() {
 
     @SuppressLint("CheckResult")
     private fun sendSingleMessage(conversationId: String?, userId: String?) {
-        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name } != null) {
+        if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name || it.type == ForwardCategory.DATA.name } != null) {
             RxPermissions(requireActivity())
                 .request(
                     WRITE_EXTERNAL_STORAGE,
