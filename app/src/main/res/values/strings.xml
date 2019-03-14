@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Mixin</string>
     <!--common-->
+    <string name="mixin_messenger" translatable="false">Mixin Messenger</string>
     <string name="confirm">Confirm</string>
     <string name="change">Change</string>
     <string name="common_continue">Continue</string>
@@ -569,9 +570,9 @@
     <!-- restore&backup -->
     <string name="restore_info">Restore your messages from external storage.\nIf you don\'t restore new, you won\'t be able to restore later.</string>
     <string name="restore_found">Backup found</string>
-    <string name="restore_skip">SKIP</string>
-    <string name="restore_retry">RETRY</string>
-    <string name="restore_restore">RESTORE</string>
+    <string name="restore_skip">Skip</string>
+    <string name="restore_retry">Retry</string>
+    <string name="restore_restore">Restore</string>
     <string name="restore_authorization">authorization</string>
     <string name="restore_message">Back up your messages and media to external storage. You can restore them when you reinstall Mixin. Your messages and media will also back up to your phone\'s internal storage. Media and messages your back up are not protected by Mixin end-to-end encryption while in external storage.</string>
     <string name="restore_account">Account: %1$s</string>
@@ -586,9 +587,12 @@
     <string name="backup_external_storage">External storage: %1$s</string>
     <string name="backup_never">Never</string>
     <string name="backup">Backup</string>
+    <string name="backup_now">Back Up Now</string>
+    <string name="backup_ing">Backing Up…</string>
     <string name="backup_delete">Backup delete</string>
+    <string name="backup_last">Last backup:%1$s,total size: %2$s.</string>
+    <string name="backup_auto">Auto Backup</string>
     <string name="backup_dialog_title">Auto back up to external storage</string>
-    <string name="backup_ing">External storage backup&#8230;</string>
     <string name="backup_notification_title">Backup in progress</string>
     <string name="backup_notification_content">Preparing backup&#8230;</string>
     <string name="backup_no_available_memory">There are no available memory for backup.</string>

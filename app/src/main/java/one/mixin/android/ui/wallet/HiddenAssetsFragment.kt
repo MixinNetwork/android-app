@@ -18,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.navigate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.common.recyclerview.ItemTouchCallback
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.vo.AssetItem
@@ -49,7 +50,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         super.onActivityCreated(savedInstanceState)
         left_ib.setOnClickListener { activity?.onBackPressed() }
         assetsAdapter.onItemListener = this
-        ItemTouchHelper(AssetItemCallback(object : AssetItemCallback.ItemCallbackListener {
+        ItemTouchHelper(AssetItemCallback(object : ItemTouchCallback.ItemCallbackListener {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
                 val hiddenPos = viewHolder.adapterPosition
                 val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]

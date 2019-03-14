@@ -1,22 +1,24 @@
 package one.mixin.android.ui.setting
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_authentications.*
 import kotlinx.android.synthetic.main.item_auth.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.recyclerview.ItemTouchCallback
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.App
 import javax.inject.Inject
@@ -42,11 +44,7 @@ class AuthenticationsFragment : BaseFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        val adapter = AuthenticationAdapter(object : OnAppClick {
-            override fun onClick(app: App, position: Int) {
-                showDialog(app, position)
-            }
-        })
+        val adapter = AuthenticationAdapter()
         settingViewModel.authorizations().autoDisposable(scopeProvider).subscribe({ list ->
             if (list.isSuccess) {
                 this.list = list.data?.map {
@@ -63,12 +61,22 @@ class AuthenticationsFragment : BaseFragment() {
             progress.visibility = View.GONE
             ErrorHandler.handleError(it)
         })
+        ItemTouchHelper(AuthItemCallback(object : ItemTouchCallback.ItemCallbackListener {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
+                if (list == null) return
+
+                val hiddenPos = viewHolder.adapterPosition
+                val app = list!![hiddenPos]
+                showDialog(app, hiddenPos)
+            }
+        })).apply { attachToRecyclerView(auth_rv) }
         auth_rv.adapter = adapter
     }
 
     private fun showDialog(app: App, position: Int) {
         AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setNegativeButton(R.string.cancel) { dialog, _ ->
+                auth_rv?.adapter?.notifyItemChanged(position)
                 dialog.dismiss()
             }
             .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
@@ -81,30 +89,24 @@ class AuthenticationsFragment : BaseFragment() {
                 setOnShowListener {
                     getButton(DialogInterface.BUTTON_POSITIVE).setTextColor(Color.RED)
                 }
+                setCanceledOnTouchOutside(false)
             }.show()
     }
 
-    class AuthenticationAdapter(private val onAppClick: OnAppClick) : ListAdapter<App, ItemHolder>(App.DIFF_CALLBACK) {
+    class AuthenticationAdapter : ListAdapter<App, ItemHolder>(App.DIFF_CALLBACK) {
         override fun onBindViewHolder(itemHolder: ItemHolder, pos: Int) {
-            itemHolder.bindTo(getItem(pos), onAppClick)
+            itemHolder.bindTo(getItem(pos))
         }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
             ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_auth, parent, false))
     }
 
-    interface OnAppClick {
-        fun onClick(app: App, position: Int)
-    }
-
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bindTo(app: App, onAppClick: OnAppClick) {
+        fun bindTo(app: App) {
             itemView.avatar.setInfo(app.name, app.icon_url, app.appId)
             itemView.name_tv.text = app.name
             itemView.number_tv.text = app.appNumber
-            itemView.deauthorize.setOnClickListener {
-                onAppClick.onClick(app, adapterPosition)
-            }
         }
     }
 }

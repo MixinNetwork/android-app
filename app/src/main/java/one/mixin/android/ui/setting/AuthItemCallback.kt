@@ -1,15 +1,12 @@
-package one.mixin.android.ui.wallet.adapter
+package one.mixin.android.ui.setting
 
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.ui.common.recyclerview.ItemTouchCallback
-import one.mixin.android.ui.common.recyclerview.NormalHolder
 
-class AssetItemCallback(listener: ItemCallbackListener) :
-    ItemTouchCallback(listener) {
-
+class AuthItemCallback(listener: ItemCallbackListener) : ItemTouchCallback(listener) {
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-        val swipeFlags = if (viewHolder is NormalHolder) {
+        val swipeFlags = if (viewHolder is AuthenticationsFragment.ItemHolder) {
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         } else {
             0

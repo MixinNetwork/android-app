@@ -11,7 +11,7 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:titleText="@string/app_name" />
+        app:need_divider="false"/>
 
     <ScrollView
         android:layout_width="match_parent"
@@ -24,98 +24,83 @@
 
             <ImageView
                 android:id="@+id/imageView"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="36dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@mipmap/ic_launcher_foreground"
+                tools:ignore="ContentDescription"/>
+
+            <TextView
+                style="@style/NormalTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:src="@drawable/ic_logo"
-                tools:ignore="ContentDescription" />
+                android:text="@string/mixin_messenger"/>
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height=".5dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="40dp"
-                android:background="@color/divider" />
+            <TextView
+                android:id="@+id/version"
+                style="@style/DescTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_gravity="center_horizontal"/>
 
             <TextView
                 android:id="@+id/twitter"
+                style="@style/NormalTextStyle"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_button_height"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_height="@dimen/item_contact_height"
+                android:layout_marginTop="40dp"
+                android:paddingStart="@dimen/margin20"
+                android:paddingEnd="@dimen/margin20"
                 android:gravity="center_vertical"
-                android:text="@string/about_follow_twitter"
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height=".5dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:background="@color/divider" />
+                android:foreground="?attr/selectableItemBackground"
+                android:text="@string/about_follow_twitter"/>
 
             <TextView
                 android:id="@+id/facebook"
+                style="@style/NormalTextStyle"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_button_height"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_height="@dimen/item_contact_height"
+                android:paddingStart="@dimen/margin20"
+                android:paddingEnd="@dimen/margin20"
                 android:gravity="center_vertical"
-                android:text="@string/about_follow_facebook"
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp" />
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height=".5dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:background="@color/divider" />
+                android:foreground="?attr/selectableItemBackground"
+                android:text="@string/about_follow_facebook"/>
 
             <TextView
                 android:id="@+id/help_center"
+                style="@style/NormalTextStyle"
                 android:layout_width="match_parent"
-                android:layout_height="@dimen/bottom_button_height"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
+                android:layout_height="@dimen/item_contact_height"
+                android:paddingStart="@dimen/margin20"
+                android:paddingEnd="@dimen/margin20"
                 android:gravity="center_vertical"
-                android:text="@string/about_help_center"
-                android:textColor="@color/colorBlue"
-                android:textSize="16sp" />
+                android:foreground="?attr/selectableItemBackground"
+                android:text="@string/about_help_center"/>
 
-            <View
+            <TextView
+                android:id="@+id/terms"
+                style="@style/NormalTextStyle"
                 android:layout_width="match_parent"
-                android:layout_height=".5dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:background="@color/divider" />
+                android:layout_height="@dimen/item_contact_height"
+                android:paddingStart="@dimen/margin20"
+                android:paddingEnd="@dimen/margin20"
+                android:gravity="center_vertical"
+                android:foreground="?attr/selectableItemBackground"
+                android:text="@string/landing_terms_service"/>
 
             <TextView
-                    android:id="@+id/terms"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/bottom_button_height"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:gravity="center_vertical"
-                    android:text="@string/landing_terms_service"
-                    android:textColor="@color/colorBlue"
-                    android:textSize="16sp" />
-
-            <View
-                    android:layout_width="match_parent"
-                    android:layout_height=".5dp"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:background="@color/divider" />
-
-            <TextView
-                    android:id="@+id/privacy"
-                    android:layout_width="match_parent"
-                    android:layout_height="@dimen/bottom_button_height"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:gravity="center_vertical"
-                    android:text="@string/landing_privacy_policy"
-                    android:textColor="@color/colorBlue"
-                    android:textSize="16sp" />
-
-            <View
-                    android:layout_width="match_parent"
-                    android:layout_height=".5dp"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:background="@color/divider" />
+                android:id="@+id/privacy"
+                style="@style/NormalTextStyle"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:paddingStart="@dimen/margin20"
+                android:paddingEnd="@dimen/margin20"
+                android:gravity="center_vertical"
+                android:foreground="?attr/selectableItemBackground"
+                android:text="@string/landing_privacy_policy"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

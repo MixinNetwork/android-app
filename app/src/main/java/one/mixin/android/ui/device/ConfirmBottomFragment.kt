@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_confirm.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -86,11 +87,10 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             contentView.progress.visibility = View.VISIBLE
             contentView.confirm.visibility = View.INVISIBLE
             contentView.cancel.visibility = View.INVISIBLE
-            contentView.close.visibility = View.INVISIBLE
             isCancelable = false
             login()
         }
-        contentView.close.setOnClickListener {
+        contentView.title_view.right_iv.setOnClickListener {
             dismiss()
         }
         contentView.cancel.setOnClickListener {

@@ -1,88 +1,98 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:animateLayoutChanges="true"
-              android:clickable="true"
-              android:background="@color/bg_gray"
-              android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:clickable="true"
+    android:background="@color/wallet_light_bg"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
-            android:id="@+id/title"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:titleText="@string/wallet_setting"/>
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:titleText="@string/wallet_setting"/>
 
     <RelativeLayout
-            android:id="@+id/biometrics_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop="@dimen/item_divider"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@android:color/white">
+        android:id="@+id/biometrics_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:foreground="?attr/selectableItemBackground"
+        android:background="@android:color/white">
 
         <TextView
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/wallet_pay_with_biometrics"
-                tools:ignore="RelativeOverlap"/>
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/wallet_pay_with_biometrics"
+            tools:ignore="RelativeOverlap"/>
 
         <androidx.appcompat.widget.SwitchCompat
-                android:id="@+id/biometrics_sc"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/biometrics_sc"
+            android:theme="@style/AppTheme.BlueSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 
     <RelativeLayout
-            android:id="@+id/time_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
+        android:id="@+id/time_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:layout_marginTop=".5dp"
+        android:foreground="?attr/selectableItemBackground"
+        android:background="@android:color/white">
+
+        <TextView
+            android:id="@+id/time_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginTop=".5dp"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@android:color/white">
-
-        <TextView
-                style="@style/NormalTextStyle"
-                android:id="@+id/time_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop=".5dp"
-                android:layout_centerVertical="true"
-                android:text="@string/wallet_pin_pay_interval"
-                android:gravity="center_vertical"
-                android:paddingStart="@dimen/activity_horizontal_margin"
-                android:paddingEnd="@dimen/activity_horizontal_margin"/>
-
-        <TextView
-                android:id="@+id/time_desc_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="@color/text_gray"
-                tools:ignore="RelativeOverlap"/>
-    </RelativeLayout>
-
-    <TextView
-            android:id="@+id/change_tv"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop="@dimen/item_divider"
-            android:text="@string/wallet_password_change"
-            android:textColor="@color/colorBlue"
+            android:layout_centerVertical="true"
+            android:text="@string/wallet_pin_pay_interval"
             android:gravity="center_vertical"
             android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:foreground="?attr/selectableItemBackground"
-            android:background="@color/white"/>
+            android:paddingEnd="@dimen/activity_horizontal_margin"/>
+
+        <TextView
+            android:id="@+id/time_desc_tv"
+            style="@style/DescTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            tools:ignore="RelativeOverlap"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="@drawable/ic_shadow_divider"/>
+
+    <TextView
+        android:id="@+id/change_tv"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:text="@string/wallet_password_change"
+        android:textColor="@color/wallet_blue_secondary"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/activity_horizontal_margin"
+        android:paddingEnd="@dimen/activity_horizontal_margin"
+        android:foreground="?attr/selectableItemBackground"
+        android:background="@color/white"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="@drawable/ic_shadow_bottom"/>
 </LinearLayout>

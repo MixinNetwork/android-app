@@ -2,26 +2,26 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="@dimen/item_contact_height"
+    android:layout_height="80dp"
     android:background="@android:color/white"
     android:foreground="?attr/selectableItemBackground">
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
         android:layout_gravity="center_vertical"
-        android:layout_marginStart="@dimen/activity_horizontal_margin" />
+        android:layout_marginStart="@dimen/margin20" />
 
     <TextView
+        style="@style/NormalTextStyle"
         android:id="@+id/normal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:ellipsize="end"
-        android:singleLine="true"
-        android:textColor="@android:color/black" />
+        android:singleLine="true" />
 
     <ImageView
         android:id="@+id/bot_iv"

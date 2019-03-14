@@ -55,13 +55,12 @@ class BackUpFragment : BaseFragment() {
     @SuppressLint("CheckResult")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        backup_info.text = getString(R.string.backup_external_storage, "")
-        backup_auto.setOnClickListener {
+        auto_rl.setOnClickListener {
             showBackupDialog()
         }
-        backup_auto_tv.text = options[defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)]
+        auto_desc_tv.text = options[defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)]
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        backup_bn.setOnClickListener {
+        backup_rl.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe({ granted ->
@@ -78,14 +77,14 @@ class BackUpFragment : BaseFragment() {
                 Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             findBackUp()
         }
-        delete_bn.setOnClickListener {
-            delete_bn.visibility = GONE
+        delete_tv.setOnClickListener {
+            delete_tv.visibility = GONE
             GlobalScope.launch {
                 if (delete(requireContext())) {
                     findBackUp()
                 } else {
                     withContext(Dispatchers.Main) {
-                        delete_bn.visibility = VISIBLE
+                        delete_tv.visibility = VISIBLE
                     }
                 }
             }
@@ -93,11 +92,11 @@ class BackUpFragment : BaseFragment() {
 
         BackupJob.backupLiveData.observe(this, Observer {
             if (it) {
-                backup_bn.visibility = View.INVISIBLE
-                progressGroup.visibility = View.VISIBLE
+                backup_now_tv.text = getString(R.string.backup_ing)
+                backup_pb.visibility = View.VISIBLE
             } else {
-                backup_bn.visibility = View.VISIBLE
-                progressGroup.visibility = View.GONE
+                backup_now_tv.text = getString(R.string.backup_now)
+                backup_pb.visibility = View.GONE
                 when {
                     BackupJob.backupLiveData.result == Result.SUCCESS -> findBackUp()
                     BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY ->
@@ -121,7 +120,7 @@ class BackUpFragment : BaseFragment() {
 
         val checkedItem = defaultSharedPreferences.getInt(BACKUP_PERIOD, 0)
         builder.setSingleChoiceItems(options, checkedItem) { dialog, which ->
-            backup_auto_tv.text = options[which]
+            auto_desc_tv.text = options[which]
             defaultSharedPreferences.putInt(BACKUP_PERIOD, which)
             dialog.dismiss()
         }
@@ -138,9 +137,8 @@ class BackUpFragment : BaseFragment() {
             withContext(Dispatchers.Main) {
                 if (!isAdded) return@withContext
                 if (file == null) {
-                    backup_info.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
-                    backup_size.visibility = GONE
-                    delete_bn.visibility = GONE
+                    last_tv.text = getString(R.string.backup_external_storage, getString(R.string.backup_never))
+                    delete_tv.visibility = GONE
                 } else {
                     val time = file.lastModified().run {
                         val now = Date().time
@@ -152,10 +150,8 @@ class BackUpFragment : BaseFragment() {
                             else -> DateUtils.DAY_IN_MILLIS
                         })
                     }
-                    backup_info.text = getString(R.string.backup_external_storage, time)
-                    backup_size.text = getString(R.string.restore_size, file.length().fileSize())
-                    backup_size.visibility = VISIBLE
-                    delete_bn.visibility = VISIBLE
+                    last_tv.text = getString(R.string.backup_last, time, file.length().fileSize())
+                    delete_tv.visibility = VISIBLE
                 }
             }
         }
