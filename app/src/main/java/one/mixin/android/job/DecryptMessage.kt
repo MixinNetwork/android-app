@@ -329,7 +329,7 @@ class DecryptMessage : Injector() {
         if (userId == SYSTEM_USER) {
             userDao.insert(createSystemUser())
         }
-        val message = createMessage(data.messageId, data.conversationId, userId, data.category, data.data,
+        val message = createMessage(data.messageId, data.conversationId, userId, data.category, "",
             data.createdAt, MessageStatus.DELIVERED, systemMessage.action, systemMessage.participantId)
 
         val accountId = Session.getAccountId()
@@ -358,7 +358,7 @@ class DecryptMessage : Injector() {
         } else if (systemMessage.action == SystemConversationAction.CREATE.name) {
         } else if (systemMessage.action == SystemConversationAction.UPDATE.name) {
             jobManager.addJobInBackground(RefreshConversationJob(data.conversationId))
-            sendToExtensionSession(message)
+            sendToExtensionSession(message, data.data)
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
             participantDao.updateParticipantRole(data.conversationId,
@@ -368,7 +368,7 @@ class DecryptMessage : Injector() {
             }
         }
         messageDao.insert(message)
-        sendToExtensionSession(message)
+        sendToExtensionSession(message, data.data)
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
