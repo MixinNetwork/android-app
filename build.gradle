@@ -30,7 +30,7 @@ buildscript {
         ext.anko_version = '0.10.8'
         ext.coroutines_version = '1.0.1'
         ext.firebaseVersion = '16.0.7'
-        ext.firebaseMessageVersion = '17.3.4'
+        ext.firebaseMessageVersion = '17.4.0'
         ext.firebaseDylinkVersion = '16.1.7'
         ext.jwtVersion = '0.9.1'
         ext.zxingVersion = '3.3.3'
