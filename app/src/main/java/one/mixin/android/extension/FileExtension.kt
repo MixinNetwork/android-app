@@ -291,28 +291,28 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
                 if (index > -1) {
                     data = cursor.getString(index)
                     if (data == null) {
-                        return getImageUrlWithAuthority(context)
+                        return getFileUrlWithAuthority(context)
                     }
                 } else if (index == -1) {
-                    return getImageUrlWithAuthority(context)
+                    return getFileUrlWithAuthority(context)
                 }
             }
             cursor.close()
         } else {
-            return getImageUrlWithAuthority(context)
+            return getFileUrlWithAuthority(context)
         }
     }
     return data
 }
 
-fun Uri.getImageUrlWithAuthority(context: Context): String? {
+fun Uri.getFileUrlWithAuthority(context: Context): String? {
     if (this.authority != null) {
         var input: InputStream? = null
         try {
             input = context.contentResolver.openInputStream(this)
             val mimeTypeMap = MimeTypeMap.getSingleton()
             val type = mimeTypeMap.getExtensionFromMimeType(context.contentResolver.getType(this))
-            val outFile = context.getImageCachePath().createImageTemp(type = ".$type")
+            val outFile = context.getDocumentPath().createDocumentTemp(type = ".$type")
             outFile.copyFromInputStream(input)
             return outFile.absolutePath
         } catch (ignored: Exception) {
