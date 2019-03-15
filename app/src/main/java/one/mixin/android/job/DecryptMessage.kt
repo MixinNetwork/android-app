@@ -86,11 +86,17 @@ class DecryptMessage : Injector() {
             }
 
             syncConversation(data)
-            processSystemMessage(data)
-            processPlainMessage(data)
-            processSignalMessage(data)
-            processAppButton(data)
-            processAppCard(data)
+            if (data.category.startsWith("SYSTEM_")) {
+                processSystemMessage(data)
+            } else if (data.category.startsWith("PLAIN_")) {
+                processPlainMessage(data)
+            } else if (data.category.startsWith("SIGNAL_")) {
+                processSignalMessage(data)
+            } else if (data.category == MessageCategory.APP_BUTTON_GROUP.name) {
+                processAppButton(data)
+            } else if (data.category == MessageCategory.APP_CARD.name) {
+                processAppCard(data)
+            }
         } catch (e: Exception) {
             Timber.e("Process error: $e")
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -98,9 +104,6 @@ class DecryptMessage : Injector() {
     }
 
     private fun processAppButton(data: BlazeMessageData) {
-        if (data.category != MessageCategory.APP_BUTTON_GROUP.name) {
-            return
-        }
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
@@ -108,9 +111,6 @@ class DecryptMessage : Injector() {
     }
 
     private fun processAppCard(data: BlazeMessageData) {
-        if (data.category != MessageCategory.APP_CARD.name) {
-            return
-        }
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
@@ -124,9 +124,6 @@ class DecryptMessage : Injector() {
     }
 
     private fun processSystemMessage(data: BlazeMessageData) {
-        if (!data.category.startsWith("SYSTEM_")) {
-            return
-        }
         if (data.category == MessageCategory.SYSTEM_CONVERSATION.name) {
             val json = Base64.decode(data.data)
             val systemMessage = gson.fromJson(String(json), SystemConversationData::class.java)
@@ -141,9 +138,6 @@ class DecryptMessage : Injector() {
     }
 
     private fun processPlainMessage(data: BlazeMessageData) {
-        if (!data.category.startsWith("PLAIN_")) {
-            return
-        }
         if (data.category == MessageCategory.PLAIN_JSON.name) {
             val json = Base64.decode(data.data)
             val plainData = gson.fromJson(String(json), TransferPlainData::class.java)
@@ -372,10 +366,6 @@ class DecryptMessage : Injector() {
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
-        if (!data.category.startsWith("SIGNAL_")) {
-            return
-        }
-
         if (data.category == MessageCategory.SIGNAL_KEY.name) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
