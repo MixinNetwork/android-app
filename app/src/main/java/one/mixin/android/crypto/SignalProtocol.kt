@@ -19,7 +19,6 @@ import org.whispersystems.libsignal.InvalidMessageException
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SessionBuilder
 import org.whispersystems.libsignal.SessionCipher
-import org.whispersystems.libsignal.SessionCipher.SESSION_LOCK
 import org.whispersystems.libsignal.SignalProtocolAddress
 import org.whispersystems.libsignal.UntrustedIdentityException
 import org.whispersystems.libsignal.groups.GroupCipher
@@ -164,14 +163,6 @@ class SignalProtocol(ctx: Context) {
     fun clearSenderKey(groupId: String, senderId: String) {
         val senderKeyName = SenderKeyName(groupId, SignalProtocolAddress(senderId, DEFAULT_DEVICE_ID))
         senderKeyStore.removeSenderKey(senderKeyName)
-    }
-
-    fun removeSession(userId: String) {
-        synchronized(SESSION_LOCK) {
-            val signalProtocolAddress = SignalProtocolAddress(userId, SignalProtocol.DEFAULT_DEVICE_ID)
-            signalProtocolStore.deleteSession(signalProtocolAddress)
-            signalProtocolStore.removeIdentity(signalProtocolAddress)
-        }
     }
 
     fun deleteSession(userId: String) {

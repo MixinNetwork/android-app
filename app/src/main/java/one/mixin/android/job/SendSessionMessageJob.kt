@@ -16,7 +16,7 @@ class SendSessionMessageJob(
     private val message: Message,
     private val content: String? = null,
     private val dataUserId: String? = null,
-    priority: Int = PRIORITY_SEND_MESSAGE
+    priority: Int = PRIORITY_SEND_SESSION_MESSAGE
 ) : MixinJob(Params(priority).addTags(message.id).groupBy("send_session_message_group").requireWebSocketConnected().persist(), message.id) {
 
     companion object {
