@@ -87,7 +87,6 @@ class ChatControlView : FrameLayout {
     private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send, null) }
     private val sendCheckedDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send_checked, null) }
     private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_mic, null) }
-    private val audioActiveDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_mic_checked, null) }
 
     private val stickerDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_sticker, null) }
     private val keyboardDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_keyboard, null) }
@@ -178,6 +177,7 @@ class ChatControlView : FrameLayout {
         keyboardShown = shown
         if (shown) {
             stickerStatus = STICKER
+            uncheckMenuImgBot()
         } else {
             if (inputLayout.isInputOpen) {
                 stickerStatus = KEYBOARD
@@ -218,7 +218,7 @@ class ChatControlView : FrameLayout {
         val d = when (sendStatus) {
             REPLY -> sendDrawable
             SEND -> if (isEditEmpty()) sendDrawable else sendCheckedDrawable
-            AUDIO -> if (isRecording) audioActiveDrawable else audioDrawable
+            AUDIO -> audioDrawable
             else -> throw IllegalArgumentException("error send status")
         }
         d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
@@ -575,6 +575,8 @@ class ChatControlView : FrameLayout {
             callback.onCalling()
             return@OnTouchListener false
         }
+        if (getCurrentContainer() != null) return@OnTouchListener false
+
         chat_send_ib.onTouchEvent(event)
         when (event.action) {
             ACTION_DOWN -> {
@@ -616,6 +618,7 @@ class ChatControlView : FrameLayout {
                     chat_slide.slideText(startX - moveX)
                     if (originX - moveX > maxScrollX) {
                         removeCallbacks(recordRunnable)
+                        removeCallbacks(checkReadyRunnable)
                         handleCancelOrEnd(true)
                         chat_slide.parent.requestDisallowInterceptTouchEvent(false)
                         triggeredCancel = true

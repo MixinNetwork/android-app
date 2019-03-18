@@ -17,7 +17,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.model.AlbumCollection
 
-class GalleryAlbumFragment: Fragment(), AlbumCollection.AlbumCallbacks {
+class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
 
     companion object {
         const val TAG = "GalleryAlbumFragment"
@@ -94,7 +94,12 @@ class GalleryAlbumFragment: Fragment(), AlbumCollection.AlbumCallbacks {
         albumCollection.onDestroy()
     }
 
+    private var first = true
+
     override fun onAlbumLoad(cursor: Cursor) {
+        if (!first) return
+
+        first = false
         va?.post {
             val albums = arrayListOf<Album>()
             va.displayedChild = POS_CONTENT
@@ -105,9 +110,7 @@ class GalleryAlbumFragment: Fragment(), AlbumCollection.AlbumCallbacks {
             }
             albumAdapter.albums = albums
         }
-
     }
 
-    override fun onAlbumReset() {
-    }
+    override fun onAlbumReset() {}
 }
