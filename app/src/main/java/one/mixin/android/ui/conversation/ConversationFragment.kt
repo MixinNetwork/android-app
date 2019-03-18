@@ -680,7 +680,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private var firstPosition = 0
-    private var downY = 0f
 
     @SuppressLint("CheckResult")
     private fun initView() {

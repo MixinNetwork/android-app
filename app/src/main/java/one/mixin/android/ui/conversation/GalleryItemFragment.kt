@@ -23,7 +23,7 @@ import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumMediaCollection
 import org.jetbrains.anko.dip
 
-class GalleryItemFragment: Fragment(), AlbumMediaCollection.AlbumMediaCallbacks {
+class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks {
     companion object {
         const val TAG = "GalleryItemFragment"
         const val ARGS_ALBUM = "args_album"
@@ -97,7 +97,12 @@ class GalleryItemFragment: Fragment(), AlbumMediaCollection.AlbumMediaCallbacks 
         albumMediaCollection.onDestroy()
     }
 
+    private var first = true
+
     override fun onAlbumMediaLoad(cursor: Cursor) {
+        if (!first) return
+
+        first = false
         rv.post {
             val itemList = arrayListOf<Item>()
             while (cursor.moveToNext()) {
@@ -109,8 +114,7 @@ class GalleryItemFragment: Fragment(), AlbumMediaCollection.AlbumMediaCallbacks 
         }
     }
 
-    override fun onAlbumMediaReset() {
-    }
+    override fun onAlbumMediaReset() {}
 
     fun hideBlur() {
         adapter.hideBLur()

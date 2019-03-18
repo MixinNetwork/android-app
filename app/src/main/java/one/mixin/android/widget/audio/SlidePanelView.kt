@@ -6,12 +6,12 @@ import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
 import android.content.Context
 import android.graphics.Color
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.RelativeLayout
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.view_slide_panel.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.formatMillis
@@ -25,6 +25,7 @@ class SlidePanelView : RelativeLayout {
     private var blinkingDrawable: BlinkingDrawable? = null
     private var timeValue = 0
     private var toCanceled = false
+    private var onEnding = false
 
     var callback: Callback? = null
 
@@ -82,6 +83,8 @@ class SlidePanelView : RelativeLayout {
     }
 
     fun toCancel() {
+        if (onEnding) return
+
         val animSet = AnimatorSet().apply {
             duration = 200
             interpolator = DecelerateInterpolator()
@@ -97,16 +100,19 @@ class SlidePanelView : RelativeLayout {
     }
 
     fun onEnd() {
+        onEnding = true
         val animSet = AnimatorSet().apply {
             interpolator = AccelerateInterpolator()
             duration = 200
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
                     handleEnd()
+                    onEnding = false
                 }
 
                 override fun onAnimationCancel(animation: Animator?) {
                     handleEnd()
+                    onEnding = false
                 }
             })
         }
@@ -118,13 +124,11 @@ class SlidePanelView : RelativeLayout {
     }
 
     private fun handleEnd() {
-        if (toCanceled) {
-            toCanceled = false
-            cancel_tv.alpha = 0f
-            cancel_tv.translationY = 0f
-            slide_ll.alpha = 1f
-            slide_ll.translationY = 0f
-        }
+        toCanceled = false
+        cancel_tv.alpha = 0f
+        cancel_tv.translationY = -AndroidUtilities.dp(20f).toFloat()
+        slide_ll.alpha = 1f
+        slide_ll.translationY = 0f
         slide_ll.translationX = 0f
 
         blinkingDrawable?.stopBlinking()
