@@ -77,6 +77,7 @@ class DecryptSessionMessage : Injector() {
             } else if (systemMessage.action == SystemExtensionSessionAction.REMOVE_SESSION.name && data.sessionId != null) {
                 Session.deleteExtensionSessionId(data.sessionId)
                 signalProtocol.deleteSession(data.userId)
+                jobDao.removeExtensionSessionJob()
             }
         }
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
