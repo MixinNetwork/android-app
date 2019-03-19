@@ -9,9 +9,11 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
@@ -22,6 +24,7 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.SystemConversationData
 import one.mixin.android.websocket.SystemExtensionSessionAction
+import one.mixin.android.websocket.TransferAttachmentData
 import one.mixin.android.websocket.TransferPlainAckData
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
@@ -170,6 +173,18 @@ class DecryptSessionMessage : Injector() {
                         mediaData.albumId, mediaData.stickerId, mediaData.name, MessageStatus.SENDING, data.createdAt)
                 }
                 messageDao.insert(message)
+                jobManager.addJobInBackground(SendMessageJob(message, alreadyExistMessage = true))
+            }
+            data.category.endsWith("_IMAGE") -> {
+                val decoded = Base64.decode(plainText)
+                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val message =  createMediaMessage(data.messageId,
+                    data.conversationId, data.userId, data.category, mediaData.attachmentId, null,
+                    mediaData.mimeType, mediaData.size, mediaData.width, mediaData.height, null, null, null,
+                    data.createdAt, MediaStatus.PENDING, MessageStatus.SENDING)
+                jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                messageDao.insert(message)
+                message.content = plainText
                 jobManager.addJobInBackground(SendMessageJob(message, alreadyExistMessage = true))
             }
         }
