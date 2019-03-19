@@ -4,7 +4,6 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
-import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.qr.CaptureFragment
 import one.mixin.android.ui.qr.EditFragment
 

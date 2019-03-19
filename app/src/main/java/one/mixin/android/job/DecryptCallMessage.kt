@@ -16,7 +16,6 @@ import one.mixin.android.vo.CallState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageHistory
 import one.mixin.android.vo.MessageStatus
-import one.mixin.android.vo.User
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createCallMessage
 import one.mixin.android.webrtc.CallService
@@ -26,7 +25,6 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import org.webrtc.IceCandidate
 import timber.log.Timber
-import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.Executors
 

@@ -179,24 +179,24 @@ class DecryptSessionMessage : Injector() {
             data.category.endsWith("_IMAGE") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
-                val message =  createMediaMessage(data.messageId,
+                val message = createMediaMessage(data.messageId,
                     data.conversationId, data.userId, data.category, mediaData.attachmentId, null,
-                    mediaData.mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,  mediaData.key, mediaData.digest,
+                    mediaData.mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail, mediaData.key, mediaData.digest,
                     data.createdAt, MediaStatus.PENDING, MessageStatus.SENDING)
                 messageDao.insert(message)
-                jobManager.addJobInBackground(AttachmentDownloadJob(message,mediaData.attachmentId))
+                jobManager.addJobInBackground(AttachmentDownloadJob(message, mediaData.attachmentId))
                 message.content = plainText
                 jobManager.addJobInBackground(SendMessageJob(message, alreadyExistMessage = true))
             }
             data.category.endsWith("_DATA") -> {
                 val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
-                val message =  createAttachmentMessage(data.messageId, data.conversationId,data.userId, data.category,
+                val message = createAttachmentMessage(data.messageId, data.conversationId, data.userId, data.category,
                     mediaData.attachmentId, mediaData.name, null,
                     mediaData.mimeType, mediaData.size, data.createdAt, mediaData.key,
                     mediaData.digest, MediaStatus.PENDING, MessageStatus.SENDING)
                 messageDao.insert(message)
-                jobManager.addJobInBackground(AttachmentDownloadJob(message,mediaData.attachmentId))
+                jobManager.addJobInBackground(AttachmentDownloadJob(message, mediaData.attachmentId))
                 message.content = plainText
                 jobManager.addJobInBackground(SendMessageJob(message, alreadyExistMessage = true))
             }

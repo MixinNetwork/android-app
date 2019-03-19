@@ -59,7 +59,6 @@ import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
-import java.io.IOException
 import java.util.UUID
 
 class DecryptMessage : Injector() {
