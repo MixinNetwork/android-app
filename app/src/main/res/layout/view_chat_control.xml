@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <one.mixin.android.widget.RadioGroup
+    <RelativeLayout
         android:id="@+id/bottom_ll"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,35 +14,36 @@
         android:layout_gravity="bottom"
         android:orientation="horizontal">
 
-        <one.mixin.android.widget.RadioButton
+        <ImageView
             android:id="@+id/chat_menu_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center"
-            android:checked="false"
-            android:layout_marginStart="@dimen/margin12"
-            android:button="@drawable/selector_chat_more"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_chat_more"
             tools:ignore="ContentDescription"/>
 
-        <LinearLayout
+        <RelativeLayout
             android:id="@+id/edit_ll"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_toEndOf="@id/chat_menu_iv"
+            android:layout_toStartOf="@id/chat_bot_iv"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:layout_marginStart="@dimen/margin12"
-            android:layout_gravity="center_vertical"
+            android:layout_centerVertical="true"
             android:background="@drawable/bg_input">
 
             <one.mixin.android.widget.ContentEditText
                 android:id="@+id/chat_et"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:minHeight="32dp"
-                android:layout_gravity="center_vertical"
+                android:minHeight="36dp"
+                android:layout_toStartOf="@id/chat_sticker_ib"
+                android:layout_centerVertical="true"
                 android:gravity="center_vertical"
                 android:inputType="textMultiLine|textNoSuggestions"
                 android:background="@null"
@@ -54,50 +55,53 @@
                 android:textSize="14sp"
                 tools:ignore="LabelFor"/>
 
-            <ImageButton
+            <ImageView
                 android:id="@+id/chat_sticker_ib"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_gravity="center_vertical"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:padding="6dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
                 android:background="@null"
-                android:layout_marginEnd="4dp"
                 android:src="@drawable/ic_chat_sticker"
                 tools:ignore="ContentDescription"/>
-        </LinearLayout>
+        </RelativeLayout>
 
-        <one.mixin.android.widget.RadioButton
+        <ImageView
             android:id="@+id/chat_bot_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center"
-            android:checked="false"
-            android:layout_marginStart="@dimen/margin12"
-            android:button="@drawable/selector_chat_bot"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@id/chat_img_iv"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_chat_bot"
             tools:ignore="ContentDescription"/>
 
-        <one.mixin.android.widget.RadioButton
+        <ImageView
             android:id="@+id/chat_img_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:gravity="center"
-            android:checked="false"
-            android:layout_marginStart="@dimen/margin12"
-            android:button="@drawable/selector_chat_img"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:layout_toStartOf="@id/chat_send_ib"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/selector_chat_img"
             tools:ignore="ContentDescription"/>
 
-        <ImageButton
+        <ImageView
             android:id="@+id/chat_send_ib"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
             android:background="@null"
-            android:layout_marginStart="@dimen/margin12"
-            android:layout_marginEnd="@dimen/margin12"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_chat_mic"
             tools:ignore="ContentDescription"/>
-    </one.mixin.android.widget.RadioGroup>
+    </RelativeLayout>
 
     <one.mixin.android.widget.audio.SlidePanelView
         android:id="@+id/chat_slide"

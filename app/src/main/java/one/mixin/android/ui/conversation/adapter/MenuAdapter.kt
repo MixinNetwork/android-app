@@ -21,8 +21,10 @@ class MenuAdapter(
         add(Menu(MenuType.Camera, R.string.camera, R.drawable.ic_menu_camera, null))
         val transferMenu = Menu(MenuType.Transfer, R.string.transfer, R.drawable.ic_menu_transfer, null)
         val voiceMenu = Menu(MenuType.Voice, R.string.voice, R.drawable.ic_menu_call, null)
-        if (isBot && isSelfCreatedBot) {
-            add(transferMenu)
+        if (isBot) {
+            if (isSelfCreatedBot) {
+                add(transferMenu)
+            }
         } else if (!isGroup) {
             add(transferMenu)
             add(voiceMenu)

@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation
 
 import android.Manifest
-import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
@@ -20,7 +19,6 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.view.animation.DecelerateInterpolator
 import androidx.appcompat.app.AlertDialog
 import androidx.core.net.toUri
 import androidx.core.view.children
@@ -60,6 +58,7 @@ import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
@@ -79,6 +78,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.selectDocument
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
@@ -731,7 +731,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_rv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 val currentContainer = chat_control.getCurrentContainer()
-                if (currentContainer != null && (currentContainer.height >= input_layout.keyboardHeight)) {
+                if (currentContainer != null) {
                     dragChatControl(dis)
                 }
             }
@@ -872,15 +872,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
         bindData()
-    }
-
-    private fun updateSticker() {
-        val currentContainer = chat_control.getCurrentContainer() ?: return
-        if (currentContainer.height == input_layout.keyboardHeight) {
-            currentContainerAnim(currentContainer.height, input_layout.height - bar_fl.height - chat_control.height, currentContainer)
-        } else {
-            currentContainerAnim(currentContainer.height, input_layout.keyboardHeight, currentContainer)
-        }
     }
 
     private fun liveDataMessage(unreadCount: Int) {
@@ -1256,7 +1247,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         galleryAlbumFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 val currentContainer = chat_control.getCurrentContainer()
-                if (currentContainer != null && (currentContainer.height > input_layout.keyboardHeight)) {
+                if (currentContainer != null) {
                     dragChatControl(dis)
                 }
             }
@@ -1277,7 +1268,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         menuFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 val currentContainer = chat_control.getCurrentContainer()
-                if (currentContainer != null && (currentContainer.height > input_layout.keyboardHeight)) {
+                if (currentContainer != null) {
                     dragChatControl(dis)
                 }
             }
@@ -1358,9 +1349,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     MenuType.App -> {
                         menu.homeUri?.let {
-                            openWebBottomSheet(it, conversationId, requireFragmentManager()) {
-                                chat_control.uncheckBot()
-                            }
+                            openWebBottomSheet(it, conversationId, requireFragmentManager())
                         }
                     }
                 }
@@ -1376,7 +1365,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onStickerClick(stickerId: String) {
                 if (isAdded) {
                     if (sticker_container.height != input_layout.keyboardHeight) {
-                        currentContainerAnim(sticker_container.height, input_layout.keyboardHeight, sticker_container)
+                        sticker_container.animateHeight(sticker_container.height, input_layout.keyboardHeight)
                     }
                     sendStickerMessage(stickerId)
                 }
@@ -1391,7 +1380,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         stickerAlbumFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
                 val currentContainer = chat_control.getCurrentContainer()
-                if (currentContainer != null && (currentContainer.height > input_layout.keyboardHeight)) {
+                if (currentContainer != null) {
                     dragChatControl(dis)
                 }
             }
@@ -1400,19 +1389,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 releaseChatControl()
             }
         }
-    }
-
-    private fun currentContainerAnim(curH: Int, targetH: Int, currentContainer: View) {
-        val anim = ValueAnimator.ofInt(curH, targetH).apply {
-            duration = 200
-            interpolator = DecelerateInterpolator()
-        }
-        anim.addUpdateListener {
-            val params = currentContainer.layoutParams
-            params.height = (it.animatedValue as Int)
-            currentContainer.layoutParams = params
-        }
-        anim.start()
     }
 
     private fun scrollToDown() {
@@ -1576,12 +1552,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun dragChatControl(dis: Float) {
-        chat_control.translationY = dis
         val currentContainer = chat_control.getCurrentContainer() ?: return
         val params = currentContainer.layoutParams
         val targetH = params.height - dis.toInt()
-        val total = input_layout.height - bar_fl.height - bottom_layout.height
-        if (targetH <= input_layout.keyboardHeight || targetH >= total) return
+        val total = (requireContext().screenHeight() * 2) / 3
+        if (targetH <= 0 || targetH >= total) return
 
         params.height = targetH
         currentContainer.layoutParams = params
@@ -1590,18 +1565,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun releaseChatControl() {
         val currentContainer = chat_control.getCurrentContainer() ?: return
         val curH = currentContainer.height
-        val total = input_layout.height - bar_fl.height - bottom_layout.height
-        val mid = input_layout.keyboardHeight + (total - input_layout.keyboardHeight) / 2
-        val targetH = if (curH <= mid) {
+        val max = (requireContext().screenHeight() * 2) / 3
+        val maxMid = input_layout.keyboardHeight + (max - input_layout.keyboardHeight) / 2
+        val minMid = input_layout.keyboardHeight / 2
+        val targetH = if (curH <= maxMid && curH > input_layout.keyboardHeight || curH > minMid && curH <= input_layout.keyboardHeight) {
             input_layout.keyboardHeight
+        } else if (curH <= minMid) {
+            0
         } else {
-            total
+            max
         }
-        chat_control.animate().translationY(0f).apply {
-            duration = 200
-            interpolator = DecelerateInterpolator()
-        }.start()
-        currentContainerAnim(curH, targetH, currentContainer)
+        if (targetH == 0) {
+            chat_control.reset()
+        }
+        currentContainer.animateHeight(curH, targetH)
     }
 
     private val chatControlCallback = object : ChatControlView.Callback {
@@ -1610,18 +1587,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         override fun onSendClick(text: String) {
-            if (text.isBlank()) {
-                if (sticker_container.isShowing) {
-                    updateSticker()
-                } else if (!reply_view.isVisible) {
-//                    toggleMediaLayout()
-                }
+            if (reply_view.isVisible && reply_view.messageItem != null) {
+                sendReplyMessage(text)
             } else {
-                if (reply_view.isVisible && reply_view.messageItem != null) {
-                    sendReplyMessage(text)
-                } else {
-                    sendMessage(text)
-                }
+                sendMessage(text)
             }
         }
 
@@ -1653,9 +1622,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onBotClick() {
             hideIfShowBottomSheet()
             app?.let {
-                openUrlWithExtraWeb(it.homeUri, conversationId, requireFragmentManager()) {
-                    chat_control.uncheckBot()
-                }
+                openUrlWithExtraWeb(it.homeUri, conversationId, requireFragmentManager())
             }
         }
 

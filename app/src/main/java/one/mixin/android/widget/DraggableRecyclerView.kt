@@ -14,7 +14,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
 
     var callback: Callback? = null
 
-    private var direction = DIRECTION_TOP_2_BOTTOM
+    private var direction = DIRECTION_BOTH
 
     private var downY = 0f
     private var dragging = false
@@ -23,7 +23,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
         val ta = context.obtainStyledAttributes(attrs, R.styleable.DraggableRecyclerView)
         if (ta != null) {
             if (ta.hasValue(R.styleable.DraggableRecyclerView_drag_direction)) {
-                direction = ta.getInteger(R.styleable.DraggableRecyclerView_drag_direction, DIRECTION_TOP_2_BOTTOM)
+                direction = ta.getInteger(R.styleable.DraggableRecyclerView_drag_direction, DIRECTION_BOTH)
             }
             ta.recycle()
         }
@@ -67,15 +67,16 @@ class DraggableRecyclerView @JvmOverloads constructor(
     }
 
     private fun canDrag(disY: Float): Boolean {
-        return if (direction == DIRECTION_TOP_2_BOTTOM) {
-            !canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0
-        } else {
-            !canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0
+        return when (direction) {
+            DIRECTION_TOP_2_BOTTOM -> !canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0
+            DIRECTION_BOTTOM_2_TOP -> !canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0
+            else -> (!canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0) || (!canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0)
         }
     }
 
     companion object {
         const val DIRECTION_TOP_2_BOTTOM = -1
+        const val DIRECTION_BOTH = 0
         const val DIRECTION_BOTTOM_2_TOP = 1
     }
 

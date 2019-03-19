@@ -1,6 +1,8 @@
 package one.mixin.android.widget
 
 import android.Manifest
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.LayoutTransition
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
@@ -23,7 +25,7 @@ import android.view.View.OnTouchListener
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
-import android.widget.ImageButton
+import android.widget.ImageView
 import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isGone
@@ -34,6 +36,7 @@ import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
@@ -51,6 +54,10 @@ class ChatControlView : FrameLayout {
 
         const val RECORD_DELAY = 200L
         const val RECORD_TIP_MILLIS = 2000L
+
+        const val NONE = 0
+        const val MENU = 1
+        const val IMAGE = 2
     }
 
     lateinit var callback: Callback
@@ -77,6 +84,14 @@ class ChatControlView : FrameLayout {
 
     private var lastSendStatus = AUDIO
 
+    private var currentChecked = NONE
+        set(value) {
+            if (value == field) return
+
+            field = value
+            checkChecked()
+        }
+
     var isRecording = false
 
     var activity: Activity? = null
@@ -84,8 +99,7 @@ class ChatControlView : FrameLayout {
     private var upBeforeGrant = false
     private var keyboardShown = false
 
-    private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send, null) }
-    private val sendCheckedDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send_checked, null) }
+    private val sendDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_send_checked, null) }
     private val audioDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_mic, null) }
 
     private val stickerDrawable: Drawable by lazy { resources.getDrawable(R.drawable.ic_chat_sticker, null) }
@@ -124,7 +138,7 @@ class ChatControlView : FrameLayout {
 
     fun reset() {
         stickerStatus = STICKER
-        uncheckMenuImgBot()
+        currentChecked = NONE
         setSend()
         inputLayout.hideCurrentInput(chat_et)
     }
@@ -147,16 +161,17 @@ class ChatControlView : FrameLayout {
     }
 
     fun showOtherInput() {
-        if (!botHide) {
-            chat_bot_iv.isVisible = true
-        }
-        checkSticker()
         chat_menu_iv.isVisible = true
-        chat_img_iv.isVisible = true
-        if (sendStatus == REPLY && chat_et.text.toString().trim().isNotEmpty()) {
-            return
+        sendStatus = if (sendStatus == REPLY && chat_et.text.toString().trim().isNotEmpty()) {
+            SEND
+        } else {
+            checkSticker()
+            if (!botHide) {
+                chat_bot_iv.isVisible = true
+            }
+            chat_img_iv.isVisible = true
+            lastSendStatus
         }
-        sendStatus = lastSendStatus
     }
 
     private var botHide = false
@@ -177,17 +192,13 @@ class ChatControlView : FrameLayout {
         keyboardShown = shown
         if (shown) {
             stickerStatus = STICKER
-            uncheckMenuImgBot()
+            currentChecked = NONE
         } else {
             if (inputLayout.isInputOpen) {
                 stickerStatus = KEYBOARD
             }
         }
         setSend()
-    }
-
-    fun uncheckBot() {
-        chat_bot_iv.isChecked = false
     }
 
     fun getCurrentContainer() = when {
@@ -216,8 +227,7 @@ class ChatControlView : FrameLayout {
 
     private fun checkSend(anim: Boolean = true) {
         val d = when (sendStatus) {
-            REPLY -> sendDrawable
-            SEND -> if (isEditEmpty()) sendDrawable else sendCheckedDrawable
+            REPLY, SEND -> sendDrawable
             AUDIO -> audioDrawable
             else -> throw IllegalArgumentException("error send status")
         }
@@ -239,13 +249,24 @@ class ChatControlView : FrameLayout {
         startScaleAnim(chat_sticker_ib, d)
     }
 
-    private fun uncheckMenuImgBot() {
-        chat_img_iv.isChecked = false
-        chat_menu_iv.isChecked = false
-        chat_bot_iv.isChecked = false
+    private fun checkChecked() {
+        when (currentChecked) {
+            MENU -> {
+                rotateChatMenu(true)
+                chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+            }
+            IMAGE -> {
+                rotateChatMenu(false)
+                chat_img_iv.setImageResource(R.drawable.ic_chat_img_checked)
+            }
+            else -> {
+                rotateChatMenu(false)
+                chat_img_iv.setImageResource(R.drawable.ic_chat_img)
+            }
+        }
     }
 
-    private fun startScaleAnim(v: ImageButton, d: Drawable?) {
+    private fun startScaleAnim(v: ImageView, d: Drawable?) {
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(v,
             PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
             PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)).apply {
@@ -390,6 +411,17 @@ class ChatControlView : FrameLayout {
         }
     }
 
+    private fun rotateChatMenu(checked: Boolean) {
+        val anim = chat_menu_iv.animate().rotation(if (checked) 45f else -45f)
+        anim.setListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator?) {
+                chat_menu_iv.rotation = 0f
+                chat_menu_iv.setImageResource(if (checked) R.drawable.ic_chat_more_checked else R.drawable.ic_chat_more)
+            }
+        })
+        anim.start()
+    }
+
     private fun isEditEmpty() = chat_et.text.toString().trim().isEmpty()
 
     private fun realSetSend() {
@@ -423,10 +455,12 @@ class ChatControlView : FrameLayout {
     }
 
     private val onChatMenuClickListener = OnClickListener {
-        if (chat_menu_iv.isChecked) {
+        if (currentChecked != MENU) {
+            currentChecked = MENU
             inputLayout.show(chat_et, menuContainer)
             callback.onMenuClick()
         } else {
+            currentChecked = NONE
             inputLayout.hideCurrentInput(chat_et)
         }
         remainFocusable()
@@ -447,7 +481,7 @@ class ChatControlView : FrameLayout {
             }
             remainFocusable()
         }
-        uncheckMenuImgBot()
+        currentChecked = NONE
     }
 
     private val onChatBotClickListener = OnClickListener {
@@ -456,17 +490,31 @@ class ChatControlView : FrameLayout {
     }
 
     private val onChatImgClickListener = OnClickListener {
-        if (chat_img_iv.isChecked) {
+        RxPermissions(activity!!)
+            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+            .subscribe({ granted ->
+                if (granted) {
+                    clickGallery()
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }, {})
+    }
+
+    private fun clickGallery() {
+        if (currentChecked != IMAGE) {
+            currentChecked = IMAGE
             inputLayout.show(chat_et, galleryContainer)
             callback.onGalleryClick()
         } else {
+            currentChecked = NONE
             inputLayout.hideCurrentInput(chat_et)
         }
         remainFocusable()
     }
 
     private val onChatEtClickListener = OnClickListener {
-        uncheckMenuImgBot()
+        currentChecked = NONE
     }
 
     private val editTextWatcher = object : TextWatcher {
@@ -493,15 +541,15 @@ class ChatControlView : FrameLayout {
                 if (downY != 0f && getCurrentContainer() != null && !isRecording) {
                     val dif = moveY - downY
                     dragging = dif != 0f
+                    if (dragging) {
+                        checkAudioRecord()
+                    }
                     callback.onDragChatControl(dif)
                 }
                 downY = moveY
             }
             ACTION_UP, ACTION_CANCEL -> {
                 downY = 0f
-
-                checkAudioRecord()
-
                 if (dragging) {
                     dragging = false
                     callback.onReleaseChatControl()
@@ -525,6 +573,9 @@ class ChatControlView : FrameLayout {
                 if (downY != 0f) {
                     val dif = moveY - downY
                     dragging = dif != 0f
+                    if (dragging) {
+                        checkAudioRecord()
+                    }
                     callback.onDragChatControl(dif)
                 }
                 downY = moveY
@@ -533,30 +584,14 @@ class ChatControlView : FrameLayout {
                 downY = 0f
                 dragging = false
                 callback.onReleaseChatControl()
-
-                checkAudioRecord()
             }
         }
         return false
     }
 
     private fun checkAudioRecord() {
-        if (!hasStartRecord) {
-            removeCallbacks(recordRunnable)
-            removeCallbacks(checkReadyRunnable)
-            cleanUp()
-        } else if (hasStartRecord && !locked && System.currentTimeMillis() - startTime < 500) {
-            removeCallbacks(recordRunnable)
-            removeCallbacks(checkReadyRunnable)
-            // delay check sendButtonVisible
-            postDelayed({
-                if (!recordCircle.sendButtonVisible) {
-                    handleCancelOrEnd(true)
-                } else {
-                    recordCircle.sendButtonVisible = false
-                }
-            }, 200)
-        }
+        removeCallbacks(recordRunnable)
+        removeCallbacks(checkReadyRunnable)
     }
 
     private var startX = 0f
@@ -573,7 +608,6 @@ class ChatControlView : FrameLayout {
             callback.onCalling()
             return@OnTouchListener false
         }
-        if (getCurrentContainer() != null) return@OnTouchListener false
 
         chat_send_ib.onTouchEvent(event)
         when (event.action) {
@@ -636,7 +670,7 @@ class ChatControlView : FrameLayout {
                     removeCallbacks(recordRunnable)
                     removeCallbacks(checkReadyRunnable)
                     cleanUp()
-                    if (!post(sendClickRunnable)) {
+                    if (event.action != ACTION_CANCEL && !post(sendClickRunnable)) {
                         clickSend()
                     }
                 } else if (hasStartRecord && !locked && System.currentTimeMillis() - startTime < 500) {
@@ -685,19 +719,10 @@ class ChatControlView : FrameLayout {
 
             if (activity == null || !currentAudio()) return@Runnable
 
-            if (sendStatus == AUDIO) {
-                if (!RxPermissions(activity!!).isGranted(Manifest.permission.RECORD_AUDIO)) {
-                    RxPermissions(activity!!).request(Manifest.permission.RECORD_AUDIO)
-                        .subscribe({}, { Bugsnag.notify(it) })
-                    return@Runnable
-                }
-            } else {
-                if (RxPermissions(activity!!).isGranted(Manifest.permission.RECORD_AUDIO) &&
-                    RxPermissions(activity!!).isGranted(Manifest.permission.CAMERA)) {
-                    RxPermissions(activity!!).request(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)
-                        .subscribe({}, { Bugsnag.notify(it) })
-                    return@Runnable
-                }
+            if (!RxPermissions(activity!!).isGranted(Manifest.permission.RECORD_AUDIO)) {
+                RxPermissions(activity!!).request(Manifest.permission.RECORD_AUDIO)
+                    .subscribe({}, { Bugsnag.notify(it) })
+                return@Runnable
             }
             callback.onRecordStart(sendStatus == AUDIO)
             upBeforeGrant = false
