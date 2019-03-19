@@ -188,7 +188,8 @@ class DecryptSessionMessage : Injector() {
                 message.content = plainText
                 jobManager.addJobInBackground(SendMessageJob(message, alreadyExistMessage = true))
             }
-            data.category.endsWith("_DATA") -> { val decoded = Base64.decode(plainText)
+            data.category.endsWith("_DATA") -> {
+                val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val message =  createAttachmentMessage(data.messageId, data.conversationId,data.userId, data.category,
                     mediaData.attachmentId, mediaData.name, null,
