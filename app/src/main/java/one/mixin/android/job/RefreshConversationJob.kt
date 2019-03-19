@@ -90,6 +90,11 @@ class RefreshConversationJob(val conversationId: String)
                         userIdList.add(p.userId)
                     }
                 }
+
+                val owner = userDao.findUser(ownerId)
+                if (owner == null) {
+                    userIdList.add(ownerId)
+                }
                 val local = participantDao.getRealParticipants(data.conversationId)
                 val remoteIds = participants.map { it.userId }
                 val needRemove = local.filter { !remoteIds.contains(it.userId) }

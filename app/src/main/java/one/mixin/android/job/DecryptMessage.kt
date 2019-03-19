@@ -512,23 +512,6 @@ class DecryptMessage : Injector() {
         jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, BlazeAckMessage(messageId, status.name)))
     }
 
-    private fun syncUser(userId: String) {
-        val user = userDao.findUser(userId)
-        if (user == null) {
-            try {
-                val call = userApi.getUserById(userId).execute()
-                val response = call.body()
-                if (response != null && response.isSuccess) {
-                    response.data?.let { data ->
-                        userDao.insert(data)
-                    }
-                }
-            } catch (e: IOException) {
-                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
-            }
-        }
-    }
-
     private fun refreshKeys(conversationId: String) {
         val start = refreshKeyMap[conversationId] ?: 0.toLong()
         val current = System.currentTimeMillis()

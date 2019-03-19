@@ -260,21 +260,4 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
             null, data.createdAt, status, mediaDuration = duration)
         messageDao.insert(message)
     }
-
-    private fun syncUser(userId: String): User? {
-        return userDao.findUser(userId) ?: try {
-            val call = userApi.getUserById(userId).execute()
-            val response = call.body()
-            if (response != null && response.isSuccess && response.data != null) {
-                userDao.insert(response.data!!)
-                response.data
-            } else {
-                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
-                null
-            }
-        } catch (e: IOException) {
-            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
-            null
-        }
-    }
 }

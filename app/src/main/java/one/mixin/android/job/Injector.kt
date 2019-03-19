@@ -25,6 +25,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.SYSTEM_USER
+import one.mixin.android.vo.User
 import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -88,6 +89,26 @@ open class Injector : Injectable {
         return bm.data
     }
 
+    protected fun syncUser(userId: String): User? {
+        var user = userDao.findUser(userId)
+        if (user == null) {
+            try {
+                val call = userApi.getUserById(userId).execute()
+                val response = call.body()
+                if (response != null && response.isSuccess && response.data != null) {
+                    user = response.data
+                }
+            } catch (e: IOException) {
+            }
+        }
+        if (user != null) {
+            userDao.insert(user)
+        } else {
+            jobManager.addJobInBackground(RefreshUserJob(arrayListOf(userId)))
+        }
+        return user
+    }
+
     protected fun syncConversation(data: BlazeMessageData) {
         if (data.conversationId == SYSTEM_USER || data.conversationId == Session.getAccountId()) {
            return
@@ -123,6 +144,8 @@ open class Injector : Injectable {
                     var ownerId: String = conversationData.creatorId
                     if (conversationData.category == ConversationCategory.CONTACT.name) {
                         ownerId = conversationData.participants.find { it.userId != Session.getAccountId() }!!.userId
+                    } else if (conversationData.category == ConversationCategory.GROUP.name) {
+                        syncUser(conversationData.creatorId)
                     }
                     conversationDao.updateConversation(conversationData.conversationId, ownerId, conversationData.category, conversationData.name,
                         conversationData.announcement, conversationData.muteUntil, conversationData.createdAt, status)
