@@ -13,6 +13,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
+import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createReplyMessage
@@ -182,6 +183,17 @@ class DecryptSessionMessage : Injector() {
                     data.conversationId, data.userId, data.category, mediaData.attachmentId, null,
                     mediaData.mimeType, mediaData.size, mediaData.width, mediaData.height, null, null, null,
                     data.createdAt, MediaStatus.PENDING, MessageStatus.SENDING)
+                jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                messageDao.insert(message)
+                message.content = plainText
+                jobManager.addJobInBackground(SendMessageJob(message, alreadyExistMessage = true))
+            }
+            data.category.endsWith("_DATA") -> { val decoded = Base64.decode(plainText)
+                val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
+                val message =  createAttachmentMessage(data.messageId, data.conversationId,data.userId, data.category,
+                    mediaData.attachmentId, mediaData.name, null,
+                    mediaData.mimeType, mediaData.size, data.createdAt, mediaData.key,
+                    mediaData.digest, MediaStatus.PENDING, MessageStatus.SENDING)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 messageDao.insert(message)
                 message.content = plainText

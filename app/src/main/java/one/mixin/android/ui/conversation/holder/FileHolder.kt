@@ -118,7 +118,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                 MediaStatus.CANCELED.name -> {
                     itemView.file_expired.visibility = View.GONE
                     itemView.file_progress.visibility = View.VISIBLE
-                    if (isMe) {
+                    if (isMe && messageItem.mediaUrl != null) {
                         itemView.file_progress.enableUpload()
                     } else {
                         itemView.file_progress.enableDownload()
@@ -126,7 +126,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     itemView.file_progress.setBindId(messageItem.messageId)
                     itemView.file_progress.setProgress(-1)
                     itemView.file_progress.setOnClickListener {
-                        if (isMe) {
+                        if (isMe && messageItem.mediaUrl != null) {
                             onItemListener.onRetryUpload(messageItem.messageId)
                         } else {
                             onItemListener.onRetryDownload(messageItem.messageId)
