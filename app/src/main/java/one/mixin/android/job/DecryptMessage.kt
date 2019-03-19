@@ -251,6 +251,7 @@ class DecryptMessage : Injector() {
                     mimeType, mediaData.size, data.createdAt,
                     mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
                 messageDao.insert(message)
+                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_AUDIO") -> {

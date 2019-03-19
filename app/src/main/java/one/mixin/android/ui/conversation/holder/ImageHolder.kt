@@ -140,7 +140,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
                 MediaStatus.CANCELED.name -> {
                     itemView.chat_warning.visibility = View.GONE
                     itemView.progress.visibility = View.VISIBLE
-                    if (isMe) {
+                    if (isMe && messageItem.mediaUrl != null) {
                         itemView.progress.enableUpload()
                     } else {
                         itemView.progress.enableDownload()
@@ -158,7 +158,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
                         if (hasSelect) {
                             onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
                         } else {
-                            if (isMe) {
+                            if (isMe && messageItem.mediaUrl != null) {
                                 onItemListener.onRetryUpload(messageItem.messageId)
                             } else {
                                 onItemListener.onRetryDownload(messageItem.messageId)
