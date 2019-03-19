@@ -181,10 +181,10 @@ class DecryptSessionMessage : Injector() {
                 val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val message =  createMediaMessage(data.messageId,
                     data.conversationId, data.userId, data.category, mediaData.attachmentId, null,
-                    mediaData.mimeType, mediaData.size, mediaData.width, mediaData.height, null, null, null,
+                    mediaData.mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,  mediaData.key, mediaData.digest,
                     data.createdAt, MediaStatus.PENDING, MessageStatus.SENDING)
-                jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 messageDao.insert(message)
+                jobManager.addJobInBackground(AttachmentDownloadJob(message,mediaData.attachmentId))
                 message.content = plainText
                 jobManager.addJobInBackground(SendMessageJob(message, alreadyExistMessage = true))
             }
@@ -195,8 +195,8 @@ class DecryptSessionMessage : Injector() {
                     mediaData.attachmentId, mediaData.name, null,
                     mediaData.mimeType, mediaData.size, data.createdAt, mediaData.key,
                     mediaData.digest, MediaStatus.PENDING, MessageStatus.SENDING)
-                jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 messageDao.insert(message)
+                jobManager.addJobInBackground(AttachmentDownloadJob(message,mediaData.attachmentId))
                 message.content = plainText
                 jobManager.addJobInBackground(SendMessageJob(message, alreadyExistMessage = true))
             }

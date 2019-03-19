@@ -26,6 +26,7 @@ import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.notNullElse
 import one.mixin.android.util.okhttp.ProgressListener
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
@@ -38,7 +39,7 @@ import java.io.File
 import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
 
-class AttachmentDownloadJob(private val message: Message)
+class AttachmentDownloadJob(private val message: Message, private val attachmentId: String? = null)
     : MixinJob(Params(PRIORITY_RECEIVE_MESSAGE).addTags(AttachmentDownloadJob.GROUP)
     .groupBy("attachment_download").requireNetwork().persist(), message.id) {
 
@@ -75,7 +76,7 @@ class AttachmentDownloadJob(private val message: Message)
             return
         }
         jobManager.saveJob(this)
-        attachmentCall = conversationApi.getAttachment(message.content!!)
+        attachmentCall = conversationApi.getAttachment(notNullElse(attachmentId, { attachmentId!! }, message.content!!))
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancel)) {
             decryptAttachment(body.data!!.view_url!!)
