@@ -14,8 +14,8 @@ class ProvisionMessage(
     val sessionId: String,
     @SerializedName("provisioning_code")
     val provisioningCode: String,
-    @SerializedName("profile_key")
-    val profileKey: ByteArray
+    @SerializedName("platform")
+    val platform: String = "Android"
 ) {
 
     fun toByteArray(): ByteArray {

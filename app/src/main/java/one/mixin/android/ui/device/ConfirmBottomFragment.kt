@@ -19,7 +19,6 @@ import one.mixin.android.api.request.ProvisioningRequest
 import one.mixin.android.api.service.ProvisioningService
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.IdentityKeyUtil
-import one.mixin.android.crypto.ProfileKeyUtil
 import one.mixin.android.crypto.ProvisionMessage
 import one.mixin.android.crypto.ProvisioningCipher
 import one.mixin.android.extension.toast
@@ -121,9 +120,8 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
 
         val publicKey = Curve.decodePoint(Base64.decode(publicKeyEncoded), 0)
         val identityKeyPair = IdentityKeyUtil.getIdentityKeyPair(ctx)
-        val profileKey = ProfileKeyUtil.getProfileKey(ctx)
         val cipher = ProvisioningCipher(publicKey)
-        val message = ProvisionMessage(identityKeyPair.publicKey.serialize(), identityKeyPair.privateKey.serialize(), account.userId, account.session_id, verificationCode, profileKey)
+        val message = ProvisionMessage(identityKeyPair.publicKey.serialize(), identityKeyPair.privateKey.serialize(), account.userId, account.session_id, verificationCode)
         val cipherText = cipher.encrypt(message)
         val encoded = Base64.encodeBytes(cipherText)
         val response = provisioningService.updateProvisioningAsync(ephemeralId, ProvisioningRequest(encoded)).await()
