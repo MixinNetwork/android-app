@@ -48,10 +48,11 @@
             android:textSize="12sp"
             android:textColor="@color/white"/>
 
-    <ImageView
-        android:id="@+id/blur_view"
+    <View
+        android:id="@+id/cover_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:background="@drawable/bg_gray_black_alpha_round_8dp"/>
 
     <TextView
         android:id="@+id/send_tv"

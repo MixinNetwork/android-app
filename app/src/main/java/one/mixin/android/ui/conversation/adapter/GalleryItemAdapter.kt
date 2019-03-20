@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
-import jp.wasabeef.blurry.Blurry
 import kotlinx.android.synthetic.main.item_chat_gallery.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -38,12 +37,12 @@ class GalleryItemAdapter(
         val ctx = holder.itemView.context
         holder.itemView.layoutParams = params
         val imageView = holder.itemView.thumbnail_iv
-        val blurView = holder.itemView.blur_view
+        val coverView = holder.itemView.cover_view
         if (position == 0 && needCamera) {
             holder.itemView.gif_tv.isVisible = false
             holder.itemView.video_iv.isVisible = false
             holder.itemView.duration_tv.isVisible = false
-            blurView.isVisible = false
+            coverView.isVisible = false
             holder.itemView.send_tv.isVisible = false
             imageView.updateLayoutParams<ViewGroup.LayoutParams> {
                 width = ctx.dpToPx(42f)
@@ -58,7 +57,7 @@ class GalleryItemAdapter(
                 height = size
             }
             imageView.round(ctx.dpToPx(8f))
-            blurView.round(ctx.dpToPx(8f))
+            coverView.round(ctx.dpToPx(8f))
             val item = items!![if (needCamera) position - 1 else position]
             holder.itemView.bg.setBackgroundResource(0)
             if (item.isGif) {
@@ -79,11 +78,10 @@ class GalleryItemAdapter(
                 imageView.loadImageCenterCrop(item.uri, R.drawable.image_holder)
             }
             if (selectedUri == item.uri) {
-                blurView.isVisible = true
-                blurView.post { Blurry.with(ctx).capture(imageView).into(blurView) }
+                coverView.isVisible = true
                 holder.itemView.send_tv.isVisible = true
             } else {
-                blurView.isVisible = false
+                coverView.isVisible = false
                 holder.itemView.send_tv.isVisible = false
             }
             imageView.setOnClickListener {
