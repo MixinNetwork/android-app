@@ -83,8 +83,8 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
                 rvCallback?.onScroll(dis)
             }
 
-            override fun onRelease() {
-                rvCallback?.onRelease()
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
             }
         }
 

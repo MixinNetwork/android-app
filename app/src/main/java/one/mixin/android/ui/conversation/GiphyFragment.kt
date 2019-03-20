@@ -99,8 +99,8 @@ class GiphyFragment : BaseFragment() {
                 rvCallback?.onScroll(dis)
             }
 
-            override fun onRelease() {
-                rvCallback?.onRelease()
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
             }
         }
         sticker_progress.visibility = View.VISIBLE

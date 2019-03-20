@@ -39,8 +39,8 @@ class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerA
                 rvCallback?.onScroll(dis)
             }
 
-            override fun onRelease() {
-                rvCallback?.onRelease()
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
             }
         }
         if (fragment is GiphyFragment) {

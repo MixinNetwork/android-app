@@ -75,8 +75,8 @@ class StickerAlbumFragment : BaseFragment() {
                 rvCallback?.onScroll(dis)
             }
 
-            override fun onRelease() {
-                rvCallback?.onRelease()
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
             }
         }
         view_pager.adapter = albumAdapter

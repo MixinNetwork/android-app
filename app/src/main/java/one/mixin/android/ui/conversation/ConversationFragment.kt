@@ -131,6 +131,9 @@ import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
+import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
@@ -736,8 +739,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            override fun onRelease() {
-                releaseChatControl()
+            override fun onRelease(fling: Int) {
+                releaseChatControl(fling)
             }
         }
         action_bar.left_ib.setOnClickListener {
@@ -1252,8 +1255,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            override fun onRelease() {
-                releaseChatControl()
+            override fun onRelease(fling: Int) {
+                releaseChatControl(fling)
             }
         }
         activity?.replaceFragment(galleryAlbumFragment, R.id.gallery_container, GalleryAlbumFragment.TAG)
@@ -1273,8 +1276,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            override fun onRelease() {
-                releaseChatControl()
+            override fun onRelease(fling: Int) {
+                releaseChatControl(fling)
             }
         }
         menuFragment.callback = object : MenuFragment.Callback {
@@ -1385,8 +1388,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            override fun onRelease() {
-                releaseChatControl()
+            override fun onRelease(fling: Int) {
+                releaseChatControl(fling)
             }
         }
     }
@@ -1562,18 +1565,44 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         currentContainer.layoutParams = params
     }
 
-    private fun releaseChatControl() {
+    private fun releaseChatControl(fling: Int) {
         val currentContainer = chat_control.getCurrentContainer() ?: return
         val curH = currentContainer.height
         val max = (requireContext().screenHeight() * 2) / 3
         val maxMid = input_layout.keyboardHeight + (max - input_layout.keyboardHeight) / 2
         val minMid = input_layout.keyboardHeight / 2
-        val targetH = if (curH <= maxMid && curH > input_layout.keyboardHeight || curH > minMid && curH <= input_layout.keyboardHeight) {
-            input_layout.keyboardHeight
-        } else if (curH <= minMid) {
-            0
+        val targetH = if (curH > input_layout.keyboardHeight) {
+            if (fling == FLING_UP) {
+                max
+            } else if (fling == FLING_DOWN) {
+                input_layout.keyboardHeight
+            } else {
+                if (curH <= maxMid) {
+                    input_layout.keyboardHeight
+                } else {
+                    max
+                }
+            }
+        } else if (curH < input_layout.keyboardHeight) {
+            if (fling == FLING_UP) {
+                input_layout.keyboardHeight
+            } else if (fling == FLING_DOWN) {
+                0
+            } else {
+                if (curH > minMid) {
+                    input_layout.keyboardHeight
+                } else {
+                    0
+                }
+            }
         } else {
-            max
+            if (fling == FLING_UP) {
+                max
+            } else if (fling == FLING_DOWN) {
+                0
+            } else {
+                input_layout.keyboardHeight
+            }
         }
         if (targetH == 0) {
             chat_control.reset()
@@ -1634,8 +1663,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             dragChatControl(dis)
         }
 
-        override fun onReleaseChatControl() {
-            releaseChatControl()
+        override fun onReleaseChatControl(fling: Int) {
+            releaseChatControl(fling)
         }
     }
 }

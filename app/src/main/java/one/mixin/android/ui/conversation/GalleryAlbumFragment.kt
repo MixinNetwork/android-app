@@ -61,8 +61,8 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
                 rvCallback?.onScroll(dis)
             }
 
-            override fun onRelease() {
-                rvCallback?.onRelease()
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
             }
         }
         view_pager.addOnPageChangeListener(object : ViewPager.OnPageChangeListener {

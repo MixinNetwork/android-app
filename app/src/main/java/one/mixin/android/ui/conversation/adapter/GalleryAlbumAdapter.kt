@@ -43,8 +43,8 @@ class GalleryAlbumAdapter(
                 rvCallback?.onScroll(dis)
             }
 
-            override fun onRelease() {
-                rvCallback?.onRelease()
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
             }
         }
         pageMap[position] = fragment

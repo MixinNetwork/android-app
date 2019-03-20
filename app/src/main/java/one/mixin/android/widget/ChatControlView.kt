@@ -19,9 +19,11 @@ import android.view.MotionEvent.ACTION_CANCEL
 import android.view.MotionEvent.ACTION_DOWN
 import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
+import android.view.VelocityTracker
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.View.OnTouchListener
+import android.view.ViewConfiguration
 import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
@@ -513,6 +515,23 @@ class ChatControlView : FrameLayout {
         remainFocusable()
     }
 
+    private fun getFling(event: MotionEvent): Int {
+        velocityTracker?.addMovement(event)
+        velocityTracker?.computeCurrentVelocity(1000)
+        val vY = velocityTracker?.yVelocity
+        velocityTracker?.recycle()
+        velocityTracker = null
+        return if (vY != null && Math.abs(vY) >= minVelocity) {
+            if (startY > event.rawY) {
+                DraggableRecyclerView.FLING_UP
+            } else {
+                DraggableRecyclerView.FLING_DOWN
+            }
+        } else {
+            DraggableRecyclerView.FLING_NONE
+        }
+    }
+
     private val onChatEtClickListener = OnClickListener {
         currentChecked = NONE
     }
@@ -527,7 +546,10 @@ class ChatControlView : FrameLayout {
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
     }
 
+    private var velocityTracker: VelocityTracker? = null
+    private val minVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
     private var downY = 0f
+    private var startY = 0f
     private var dragging = false
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
@@ -535,6 +557,10 @@ class ChatControlView : FrameLayout {
             ACTION_DOWN -> {
                 getCurrentContainer() ?: return super.dispatchTouchEvent(event)
                 downY = event.rawY
+                startY = event.rawY
+
+                velocityTracker = VelocityTracker.obtain()
+                velocityTracker?.addMovement(event)
             }
             ACTION_MOVE -> {
                 val moveY = event.rawY
@@ -545,16 +571,24 @@ class ChatControlView : FrameLayout {
                         checkAudioRecord()
                     }
                     callback.onDragChatControl(dif)
+                } else {
+                    startY = event.rawY
                 }
+                if (velocityTracker == null) {
+                    velocityTracker = VelocityTracker.obtain()
+                }
+                velocityTracker?.addMovement(event)
                 downY = moveY
             }
             ACTION_UP, ACTION_CANCEL -> {
                 downY = 0f
                 if (dragging) {
                     dragging = false
-                    callback.onReleaseChatControl()
+                    callback.onReleaseChatControl(getFling(event))
                     return true
                 }
+                velocityTracker?.recycle()
+                velocityTracker = null
             }
         }
         return if (dragging) true else super.dispatchTouchEvent(event)
@@ -566,6 +600,9 @@ class ChatControlView : FrameLayout {
             ACTION_DOWN -> {
                 getCurrentContainer() ?: return false
                 downY = event.rawY
+                startY = event.rawY
+                velocityTracker = VelocityTracker.obtain()
+                velocityTracker?.addMovement(event)
                 return true
             }
             ACTION_MOVE -> {
@@ -577,13 +614,19 @@ class ChatControlView : FrameLayout {
                         checkAudioRecord()
                     }
                     callback.onDragChatControl(dif)
+                } else {
+                    startY = event.rawY
                 }
+                if (velocityTracker == null) {
+                    velocityTracker = VelocityTracker.obtain()
+                }
+                velocityTracker?.addMovement(event)
                 downY = moveY
             }
             ACTION_UP, ACTION_CANCEL -> {
                 downY = 0f
                 dragging = false
-                callback.onReleaseChatControl()
+                callback.onReleaseChatControl(getFling(event))
             }
         }
         return false
@@ -780,6 +823,6 @@ class ChatControlView : FrameLayout {
         fun onBotClick()
         fun onGalleryClick()
         fun onDragChatControl(dis: Float)
-        fun onReleaseChatControl()
+        fun onReleaseChatControl(fling: Int)
     }
 }
