@@ -17,14 +17,11 @@ class RefreshUserJob(private val userIds: List<String>, private val conversation
         if (userIds.isEmpty()) {
             return
         }
-        val call = userService.getUsers(userIds).execute()
-        val response = call.body()
+
+        val response = userService.getUsers(userIds).execute().body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
-                for (u in data) {
-                    userRepo.upsert(u)
-                }
-
+                userRepo.upsertList(data)
                 conversationId?.let {
                     jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
                 }

@@ -4,6 +4,7 @@ import androidx.room.Transaction
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import one.mixin.android.vo.App
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
@@ -20,9 +21,21 @@ fun UserDao.insertUpdate(user: User, appDao: AppDao) {
     if (u == null) {
         insert(user)
     } else {
-        user.muteUntil = u.muteUntil
         update(user)
     }
+}
+
+@Transaction
+fun UserDao.insertUpdateList(users: List<User>, appDao: AppDao) {
+    val apps = arrayListOf<App>()
+    for (u in users) {
+        if (u.app != null) {
+            u.appId = u.app!!.appId
+            apps.add(u.app!!)
+        }
+    }
+    appDao.insertList(apps)
+    insertList(users)
 }
 
 @Transaction
