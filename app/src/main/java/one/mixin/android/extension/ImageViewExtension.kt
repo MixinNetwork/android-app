@@ -35,11 +35,11 @@ fun ImageView.loadImage(uri: String?, requestListener: RequestListener<Drawable?
 
 fun ImageView.loadImage(uri: String?, width: Int, height: Int) {
     val multi = MultiTransformation(CropTransformation(width, height))
-    Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
+    Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi)).into(this)
 }
 
 fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null) {
-    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
+    Glide.with(this).load(uri).apply(RequestOptions().dontTransform().centerCrop().apply {
         if (holder != null) {
             this.placeholder(holder)
         }
@@ -87,7 +87,7 @@ fun ImageView.loadGifMark(uri: String?, mark: Int) {
 }
 
 fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
-    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
+    Glide.with(this).load(uri).apply(RequestOptions()
         .signature(StringSignature("$uri$mark")).apply {
             if (holder != null) {
                 this.placeholder(holder.toDrawable())
@@ -96,7 +96,7 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
 }
 
 fun ImageView.loadImageMark(uri: String?, mark: Int) {
-    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
+    Glide.with(this).load(uri).apply(RequestOptions()
         .signature(StringSignature("$uri$mark")))
         .listener(object : RequestListener<Drawable> {
             override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {

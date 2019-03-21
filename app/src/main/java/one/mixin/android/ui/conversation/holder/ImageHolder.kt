@@ -1,12 +1,12 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
