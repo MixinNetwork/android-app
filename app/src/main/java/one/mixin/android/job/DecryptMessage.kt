@@ -239,6 +239,7 @@ class DecryptMessage : Injector() {
                     mediaData.width, mediaData.height, mediaData.thumbnail, mimeType,
                     mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
                 messageDao.insert(message)
+                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_DATA") -> {
@@ -261,6 +262,7 @@ class DecryptMessage : Injector() {
                     mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
                 messageDao.insert(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
             data.category.endsWith("_STICKER") -> {
