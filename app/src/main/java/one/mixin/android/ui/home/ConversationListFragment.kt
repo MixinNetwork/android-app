@@ -40,7 +40,6 @@ import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
@@ -85,8 +84,6 @@ class ConversationListFragment : LinkFragment() {
         savedInstanceState: Bundle?
     ): View? =
         inflater.inflate(R.layout.fragment_conversation_list, container, false)
-
-    private var firstEnter = true
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -145,9 +142,6 @@ class ConversationListFragment : LinkFragment() {
         }
         messagesViewModel.conversations.observe(this, Observer { r ->
             if (r == null || r.isEmpty()) {
-                if (firstEnter) {
-                    WalletActivity.show(requireActivity())
-                }
                 empty_view.visibility = VISIBLE
             } else {
                 empty_view.visibility = GONE
@@ -157,7 +151,6 @@ class ConversationListFragment : LinkFragment() {
                         jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
                     }
             }
-            firstEnter = false
         })
 
         start_bn.setOnClickListener {
