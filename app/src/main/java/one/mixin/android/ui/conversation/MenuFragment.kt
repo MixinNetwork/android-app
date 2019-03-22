@@ -12,7 +12,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuAdapter
 import one.mixin.android.vo.App
-import one.mixin.android.widget.DraggableRecyclerView
 
 class MenuFragment: Fragment() {
     companion object {
@@ -39,8 +38,6 @@ class MenuFragment: Fragment() {
 
     private val menuAdapter by lazy { MenuAdapter(isGroup, isBot, isSelfCreatedBot) }
 
-    var rvCallback: DraggableRecyclerView.Callback? = null
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_recycler_view, container, false)
 
@@ -53,15 +50,6 @@ class MenuFragment: Fragment() {
         }
         rv.layoutManager = GridLayoutManager(requireContext(), 4)
         rv.adapter = menuAdapter
-        rv.callback = object : DraggableRecyclerView.Callback {
-            override fun onScroll(dis: Float) {
-                rvCallback?.onScroll(dis)
-            }
-
-            override fun onRelease(fling: Int) {
-                rvCallback?.onRelease(fling)
-            }
-        }
     }
 
     fun setAppList(appList: List<App>) {

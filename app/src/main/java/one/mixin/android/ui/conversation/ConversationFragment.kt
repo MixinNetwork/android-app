@@ -1268,18 +1268,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         appList?.let {
             menuFragment.setAppList(it)
         }
-        menuFragment.rvCallback = object : DraggableRecyclerView.Callback {
-            override fun onScroll(dis: Float) {
-                val currentContainer = chat_control.getCurrentContainer()
-                if (currentContainer != null) {
-                    dragChatControl(dis)
-                }
-            }
-
-            override fun onRelease(fling: Int) {
-                releaseChatControl(fling)
-            }
-        }
         menuFragment.callback = object : MenuFragment.Callback {
             override fun onMenuClick(menu: Menu) {
                 when (menu.type) {

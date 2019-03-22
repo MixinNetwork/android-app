@@ -16,11 +16,13 @@
 
         <ImageView
             android:id="@+id/chat_menu_iv"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="8dp"
+            android:layout_width="48dp"
+            android:layout_height="@dimen/chat_control_height"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
             android:layout_centerVertical="true"
-            android:layout_marginStart="8dp"
             android:src="@drawable/ic_chat_more"
             tools:ignore="ContentDescription"/>
 
@@ -30,8 +32,6 @@
             android:layout_height="wrap_content"
             android:layout_toEndOf="@id/chat_menu_iv"
             android:layout_toStartOf="@id/chat_bot_iv"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:layout_centerVertical="true"
@@ -57,9 +57,12 @@
 
             <ImageView
                 android:id="@+id/chat_sticker_ib"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:padding="6dp"
+                android:layout_width="48dp"
+                android:layout_height="40dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"
                 android:background="@null"
@@ -69,36 +72,41 @@
 
         <ImageView
             android:id="@+id/chat_bot_iv"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="8dp"
+            android:layout_width="48dp"
+            android:layout_height="@dimen/chat_control_height"
+            android:paddingStart="18dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@id/chat_img_iv"
-            android:layout_marginStart="8dp"
             android:src="@drawable/ic_chat_bot"
             tools:ignore="ContentDescription"/>
 
         <ImageView
             android:id="@+id/chat_img_iv"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="8dp"
+            android:layout_width="48dp"
+            android:layout_height="@dimen/chat_control_height"
+            android:paddingStart="18dp"
+            android:paddingEnd="6dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
             android:layout_toStartOf="@id/chat_send_ib"
             android:layout_centerVertical="true"
-            android:layout_marginStart="8dp"
             android:src="@drawable/selector_chat_img"
             tools:ignore="ContentDescription"/>
 
         <ImageView
             android:id="@+id/chat_send_ib"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="8dp"
+            android:layout_width="48dp"
+            android:layout_height="@dimen/chat_control_height"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
+            android:paddingTop="14dp"
+            android:paddingBottom="14dp"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:background="@null"
-            android:layout_marginStart="4dp"
-            android:layout_marginEnd="8dp"
             android:src="@drawable/ic_chat_mic"
             tools:ignore="ContentDescription"/>
     </RelativeLayout>

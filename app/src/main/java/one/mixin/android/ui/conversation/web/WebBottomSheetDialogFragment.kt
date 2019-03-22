@@ -232,9 +232,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.chat_web_view.webChromeClient = null
             dismiss()
         }
-        contentView.post {
+
+        // workaround with realSize() not get the correct value in some device.
+        contentView.postDelayed({
             (dialog as BottomSheet).setCustomViewHeight(getCustomViewHeight())
-        }
+        }, 100)
     }
 
     @Override

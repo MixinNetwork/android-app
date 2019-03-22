@@ -39,9 +39,13 @@ import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
+import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_NONE
+import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
+import timber.log.Timber
 
 @SuppressLint("CheckResult")
 class ChatControlView : FrameLayout {
@@ -90,8 +94,9 @@ class ChatControlView : FrameLayout {
         set(value) {
             if (value == field) return
 
+            val lastChecked = field
             field = value
-            checkChecked()
+            checkChecked(lastChecked)
         }
 
     var isRecording = false
@@ -251,18 +256,24 @@ class ChatControlView : FrameLayout {
         startScaleAnim(chat_sticker_ib, d)
     }
 
-    private fun checkChecked() {
+    private fun checkChecked(lastChecked: Int) {
         when (currentChecked) {
             MENU -> {
-                rotateChatMenu(true)
+                if (lastChecked != MENU) {
+                    rotateChatMenu(true)
+                }
                 chat_img_iv.setImageResource(R.drawable.ic_chat_img)
             }
             IMAGE -> {
-                rotateChatMenu(false)
+                if (lastChecked == MENU) {
+                    rotateChatMenu(false)
+                }
                 chat_img_iv.setImageResource(R.drawable.ic_chat_img_checked)
             }
             else -> {
-                rotateChatMenu(false)
+                if (lastChecked == MENU) {
+                    rotateChatMenu(false)
+                }
                 chat_img_iv.setImageResource(R.drawable.ic_chat_img)
             }
         }
@@ -270,16 +281,14 @@ class ChatControlView : FrameLayout {
 
     private fun startScaleAnim(v: ImageView, d: Drawable?) {
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(v,
-            PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0f, 1f)).apply {
+            PropertyValuesHolder.ofFloat("scaleX", 0.6f, 1f),
+            PropertyValuesHolder.ofFloat("scaleY", 0.6f, 1f)).apply {
             duration = 100
-            interpolator = AccelerateInterpolator()
         }
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(v,
-            PropertyValuesHolder.ofFloat("scaleX", 1f, 0f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0f)).apply {
+            PropertyValuesHolder.ofFloat("scaleX", 1f, 0.6f),
+            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.6f)).apply {
             duration = 100
-            interpolator = DecelerateInterpolator()
         }
         scaleDown.doOnEnd {
             v.setImageDrawable(d)
@@ -463,12 +472,13 @@ class ChatControlView : FrameLayout {
             callback.onMenuClick()
         } else {
             currentChecked = NONE
-            inputLayout.hideCurrentInput(chat_et)
+            inputLayout.showSoftKey(chat_et)
         }
         remainFocusable()
     }
 
     private val onStickerClickListener = OnClickListener {
+        Timber.d("@@@ click sticker")
         if (stickerStatus == KEYBOARD) {
             stickerStatus = STICKER
             inputLayout.showSoftKey(chat_et)
@@ -492,6 +502,7 @@ class ChatControlView : FrameLayout {
     }
 
     private val onChatImgClickListener = OnClickListener {
+        Timber.d("@@@ click image")
         RxPermissions(activity!!)
             .request(Manifest.permission.READ_EXTERNAL_STORAGE)
             .subscribe({ granted ->
@@ -510,6 +521,7 @@ class ChatControlView : FrameLayout {
             callback.onGalleryClick()
         } else {
             currentChecked = NONE
+            stickerStatus = STICKER
             inputLayout.hideCurrentInput(chat_et)
         }
         remainFocusable()
@@ -519,16 +531,21 @@ class ChatControlView : FrameLayout {
         velocityTracker?.addMovement(event)
         velocityTracker?.computeCurrentVelocity(1000)
         val vY = velocityTracker?.yVelocity
+        val vX = velocityTracker?.xVelocity
         velocityTracker?.recycle()
         velocityTracker = null
         return if (vY != null && Math.abs(vY) >= minVelocity) {
-            if (startY > event.rawY) {
-                DraggableRecyclerView.FLING_UP
+            if (vX != null && Math.abs(vX) > Math.abs(vY)) {
+                FLING_NONE
             } else {
-                DraggableRecyclerView.FLING_DOWN
+                if (startY > event.rawY) {
+                    FLING_UP
+                } else {
+                    FLING_DOWN
+                }
             }
         } else {
-            DraggableRecyclerView.FLING_NONE
+            FLING_NONE
         }
     }
 
@@ -551,6 +568,7 @@ class ChatControlView : FrameLayout {
     private var downY = 0f
     private var startY = 0f
     private var dragging = false
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
 
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
@@ -566,7 +584,11 @@ class ChatControlView : FrameLayout {
                 val moveY = event.rawY
                 if (downY != 0f && getCurrentContainer() != null && !isRecording) {
                     val dif = moveY - downY
-                    dragging = dif != 0f
+                    dragging = if (!dragging) {
+                        Math.abs(dif) > touchSlop
+                    } else {
+                        dif != 0f
+                    }
                     if (dragging) {
                         checkAudioRecord()
                     }
@@ -585,8 +607,10 @@ class ChatControlView : FrameLayout {
                 if (dragging) {
                     dragging = false
                     callback.onReleaseChatControl(getFling(event))
+                    startY = 0f
                     return true
                 }
+                startY = 0f
                 velocityTracker?.recycle()
                 velocityTracker = null
             }
@@ -609,7 +633,11 @@ class ChatControlView : FrameLayout {
                 val moveY = event.rawY
                 if (downY != 0f) {
                     val dif = moveY - downY
-                    dragging = dif != 0f
+                    dragging = if (!dragging) {
+                        Math.abs(dif) > touchSlop
+                    } else {
+                        dif != 0f
+                    }
                     if (dragging) {
                         checkAudioRecord()
                     }
@@ -624,6 +652,7 @@ class ChatControlView : FrameLayout {
                 downY = moveY
             }
             ACTION_UP, ACTION_CANCEL -> {
+                startY = 0f
                 downY = 0f
                 dragging = false
                 callback.onReleaseChatControl(getFling(event))

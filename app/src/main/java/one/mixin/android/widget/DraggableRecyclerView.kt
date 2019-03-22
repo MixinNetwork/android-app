@@ -59,7 +59,10 @@ class DraggableRecyclerView @JvmOverloads constructor(
                     }
 
                     val disY = moveY - downY
-                    if (canDrag(disY) || dragging) {
+                    if (canDrag(disY)
+                        || dragging
+                        || (event.y < 0 && disY < 0 && direction < 1)
+                        || (event.y > height && disY > 0 && direction > -1)) {
                         velocityTracker?.addMovement(event)
                         callback?.onScroll(disY)
                         downY = moveY
@@ -74,13 +77,18 @@ class DraggableRecyclerView @JvmOverloads constructor(
                         velocityTracker?.addMovement(event)
                         velocityTracker?.computeCurrentVelocity(1000)
                         val vY = velocityTracker?.yVelocity
+                        val vX = velocityTracker?.xVelocity
                         velocityTracker?.recycle()
                         velocityTracker = null
                         val fling = if (vY != null && Math.abs(vY) >= minVelocity) {
-                            if (startY > event.rawY) {
-                                FLING_UP
+                            if (vX != null && Math.abs(vX) > Math.abs(vY)) {
+                                FLING_NONE
                             } else {
-                                FLING_DOWN
+                                if (startY > event.rawY) {
+                                    FLING_UP
+                                } else {
+                                    FLING_DOWN
+                                }
                             }
                         } else {
                             FLING_NONE
