@@ -1599,36 +1599,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         intent.action = Intent.ACTION_VIEW
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        if (messageItem.userId == Session.getAccountId()) {
-            try {
-                messageItem.mediaUrl?.let {
-                    val uri = Uri.parse(it)
-                    if (uri.scheme.equals("file", true)) {
-                        intent.setDataAndType(requireContext().getUriForFile(File(it)), messageItem.mediaMimeType)
-                        requireContext().startActivity(intent)
-                    } else {
-                        intent.setDataAndType(uri, messageItem.mediaMimeType)
-                        requireActivity().startActivity(intent)
-                    }
+        try {
+            messageItem.mediaUrl?.let {
+                val file = File(it)
+                if (!file.exists()) {
+                    context?.toast(R.string.error_file_exists)
+                } else {
+                    val uri = requireContext().getUriForFile(file)
+                    intent.setDataAndType(uri, messageItem.mediaMimeType)
+                    requireContext().startActivity(intent)
                 }
-            } catch (e: ActivityNotFoundException) {
-                context?.toast(R.string.error_unable_to_open_media)
             }
-        } else {
-            try {
-                messageItem.mediaUrl?.let {
-                    val file = File(it)
-                    if (!file.exists()) {
-                        context?.toast(R.string.error_file_exists)
-                    } else {
-                        val uri = requireContext().getUriForFile(file)
-                        intent.setDataAndType(uri, messageItem.mediaMimeType)
-                        requireContext().startActivity(intent)
-                    }
-                }
-            } catch (e: ActivityNotFoundException) {
-                context?.toast(R.string.error_unable_to_open_media)
-            }
+        } catch (e: ActivityNotFoundException) {
+            context?.toast(R.string.error_unable_to_open_media)
         }
     }
 
