@@ -25,6 +25,7 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.crypto.Base64
+import one.mixin.android.db.JobDao
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
@@ -48,7 +49,6 @@ import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RemoveStickersJob
-import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.UpdateRelationshipJob
@@ -93,11 +93,9 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
-import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferStickerData
-import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -114,7 +112,8 @@ internal constructor(
     private val userRepository: UserRepository,
     private val jobManager: MixinJobManager,
     private val assetRepository: AssetRepository,
-    private val accountRepository: AccountRepository
+    private val accountRepository: AccountRepository,
+    private val jobDao: JobDao
 ) : ViewModel() {
 
     fun getMessages(id: String, initialLoadKey: Int = 0): LiveData<PagedList<MessageItem>> {
@@ -141,14 +140,7 @@ internal constructor(
     fun saveDraft(conversationId: String, text: String) =
         conversationRepository.saveDraft(conversationId, text)
 
-    fun findUserByConversationId(conversationId: String): LiveData<User> =
-        userRepository.findUserByConversationId(conversationId)
-
     fun findUserById(conversationId: String): LiveData<User> = userRepository.findUserById(conversationId)
-
-    fun sendAckMessage(blazeMessage: BlazeMessage) {
-        jobManager.addJobInBackground(SendAckMessageJob(blazeMessage))
-    }
 
     fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
@@ -556,8 +548,8 @@ internal constructor(
                     if (list.isNotEmpty()) {
                         conversationRepository.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
                         list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
-                            messages.chunked(100).forEach { list ->
-                                jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(list)))
+                            messages.forEach {
+                                jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, it))
                             }
                         }
                         Session.getExtensionSessionId()?.let {
@@ -573,11 +565,6 @@ internal constructor(
 
     fun trendingGifs(limit: Int, offset: Int): Observable<List<Gif>> =
         accountRepository.trendingGifs(limit, offset).map { it.data }
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-
-    fun searchGifs(query: String, limit: Int, offset: Int): Observable<List<Gif>> =
-        accountRepository.searchGifs(query, limit, offset).map { it.data }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 }

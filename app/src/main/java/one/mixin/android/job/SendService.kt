@@ -20,9 +20,9 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createMessage
+import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
-import one.mixin.android.websocket.createAckListParamBlazeMessage
 import java.util.UUID
 import javax.inject.Inject
 
@@ -60,9 +60,8 @@ class SendService : IntentService("SendService") {
                 if (list.isNotEmpty()) {
                     messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
                     list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
-                        val chunkList = messages.chunked(100)
-                        for (item in chunkList) {
-                            jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))
+                        messages.forEach {
+                            jobDao.insert(createAckJob(ACKNOWLEDGE_MESSAGE_RECEIPTS, it))
                         }
                     }
                     Session.getExtensionSessionId()?.let {
