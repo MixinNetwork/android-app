@@ -44,15 +44,16 @@ class DecryptSessionMessage : Injector() {
 
     fun onRun(data: BlazeMessageData) {
         syncConversation(data)
-        processSignalMessage(data)
-        processPlainMessage(data)
-        processSystemMessage(data)
+        if (data.category.startsWith("SIGNAL_")) {
+            processSignalMessage(data)
+        } else if (data.category.startsWith("SYSTEM_")) {
+            processSystemMessage(data)
+        } else if (data.category.startsWith("PLAIN_")) {
+            processPlainMessage(data)
+        }
     }
 
     private fun processSignalMessage(data: BlazeMessageData) {
-        if (!data.category.startsWith("SIGNAL_")) {
-            return
-        }
         val (keyType, cipherText, _) = SignalProtocol.decodeMessageData(data.data)
         val deviceId = UUID.fromString(data.sessionId).hashCode()
         try {
@@ -69,9 +70,6 @@ class DecryptSessionMessage : Injector() {
     }
 
     private fun processSystemMessage(data: BlazeMessageData) {
-        if (!data.category.startsWith("SYSTEM_")) {
-            return
-        }
         if (data.category == MessageCategory.SYSTEM_EXTENSION_SESSION.name) {
             val json = Base64.decode(data.data)
             val systemMessage = gson.fromJson(String(json), SystemConversationData::class.java)
@@ -79,6 +77,10 @@ class DecryptSessionMessage : Injector() {
                 Session.storeExtensionSessionId(data.sessionId)
                 signalProtocol.deleteSession(data.userId)
             } else if (systemMessage.action == SystemExtensionSessionAction.REMOVE_SESSION.name && data.sessionId != null) {
+                if (Session.getExtensionSessionId() != data.sessionId) {
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
+                    return
+                }
                 Session.deleteExtensionSessionId(data.sessionId)
                 signalProtocol.deleteSession(data.userId)
                 jobDao.removeExtensionSessionJob()
@@ -88,9 +90,6 @@ class DecryptSessionMessage : Injector() {
     }
 
     private fun processPlainMessage(data: BlazeMessageData) {
-        if (!data.category.startsWith("PLAIN_")) {
-            return
-        }
         if (data.category == MessageCategory.PLAIN_TEXT.name ||
             data.category == MessageCategory.PLAIN_IMAGE.name ||
             data.category == MessageCategory.PLAIN_VIDEO.name ||

@@ -15,6 +15,6 @@ interface JobDao : BaseDao<Job> {
     @Query("SELECT * FROM jobs WHERE `action` = 'CREATE_SESSION_MESSAGE' ORDER BY created_at ASC LIMIT 100")
     fun findCreatePlainSessionJobsSync(): List<Job>?
 
-    @Query("DELETE FROM jobs WHERE `action` = 'CREATE_SESSION_MESSAGE' OR `action` = 'ACKNOWLEDGE_SESSION_MESSAGE_RECEIPTS'")
+    @Query("DELETE FROM jobs WHERE `action` = 'CREATE_SESSION_MESSAGE'")
     fun removeExtensionSessionJob()
 }
