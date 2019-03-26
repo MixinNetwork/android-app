@@ -606,7 +606,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 closeTool()
                 true
             }
-            chat_control.getCurrentContainer()?.isVisible == true -> {
+            chat_control.getVisibleContainer()?.isVisible == true -> {
                 chat_control.reset()
                 true
             }
@@ -732,7 +732,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
         chat_rv.callback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
-                val currentContainer = chat_control.getCurrentContainer()
+                val currentContainer = chat_control.getDraggableContainer()
                 if (currentContainer != null) {
                     dragChatControl(dis)
                 }
@@ -1248,7 +1248,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         galleryAlbumFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
-                val currentContainer = chat_control.getCurrentContainer()
+                val currentContainer = chat_control.getDraggableContainer()
                 if (currentContainer != null) {
                     dragChatControl(dis)
                 }
@@ -1369,7 +1369,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         })
         stickerAlbumFragment.rvCallback = object : DraggableRecyclerView.Callback {
             override fun onScroll(dis: Float) {
-                val currentContainer = chat_control.getCurrentContainer()
+                val currentContainer = chat_control.getDraggableContainer()
                 if (currentContainer != null) {
                     dragChatControl(dis)
                 }
@@ -1542,7 +1542,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun dragChatControl(dis: Float) {
-        val currentContainer = chat_control.getCurrentContainer() ?: return
+        val currentContainer = chat_control.getDraggableContainer() ?: return
         val params = currentContainer.layoutParams
         val targetH = params.height - dis.toInt()
         val total = (requireContext().screenHeight() * 2) / 3
@@ -1553,7 +1553,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun releaseChatControl(fling: Int) {
-        val currentContainer = chat_control.getCurrentContainer() ?: return
+        val currentContainer = chat_control.getDraggableContainer() ?: return
         val curH = currentContainer.height
         val max = (requireContext().screenHeight() * 2) / 3
         val maxMid = input_layout.keyboardHeight + (max - input_layout.keyboardHeight) / 2

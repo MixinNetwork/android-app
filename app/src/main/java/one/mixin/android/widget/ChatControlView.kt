@@ -207,9 +207,16 @@ class ChatControlView : FrameLayout {
         setSend()
     }
 
-    fun getCurrentContainer() = when {
+    fun getDraggableContainer() = when {
         stickerContainer.isVisible -> stickerContainer
         galleryContainer.isVisible -> galleryContainer
+        else -> null
+    }
+
+    fun getVisibleContainer() = when {
+        stickerContainer.isVisible -> stickerContainer
+        galleryContainer.isVisible -> galleryContainer
+        menuContainer.isVisible -> menuContainer
         else -> null
     }
 
@@ -573,7 +580,7 @@ class ChatControlView : FrameLayout {
     override fun dispatchTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             ACTION_DOWN -> {
-                getCurrentContainer() ?: return super.dispatchTouchEvent(event)
+                getDraggableContainer() ?: return super.dispatchTouchEvent(event)
                 downY = event.rawY
                 startY = event.rawY
 
@@ -582,7 +589,7 @@ class ChatControlView : FrameLayout {
             }
             ACTION_MOVE -> {
                 val moveY = event.rawY
-                if (downY != 0f && getCurrentContainer() != null && !isRecording) {
+                if (downY != 0f && getDraggableContainer() != null && !isRecording) {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
                         Math.abs(dif) > touchSlop
@@ -622,7 +629,7 @@ class ChatControlView : FrameLayout {
     override fun onTouchEvent(event: MotionEvent): Boolean {
         when (event.action) {
             ACTION_DOWN -> {
-                getCurrentContainer() ?: return false
+                getDraggableContainer() ?: return false
                 downY = event.rawY
                 startY = event.rawY
                 velocityTracker = VelocityTracker.obtain()
