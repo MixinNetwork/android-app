@@ -45,7 +45,6 @@ import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.audio.SlidePanelView
 import one.mixin.android.widget.keyboard.InputAwareLayout
 import org.jetbrains.anko.dip
-import timber.log.Timber
 
 @SuppressLint("CheckResult")
 class ChatControlView : FrameLayout {
@@ -478,7 +477,6 @@ class ChatControlView : FrameLayout {
     }
 
     private val onStickerClickListener = OnClickListener {
-        Timber.d("@@@ click sticker")
         if (stickerStatus == KEYBOARD) {
             stickerStatus = STICKER
             inputLayout.showSoftKey(chat_et)
@@ -502,7 +500,6 @@ class ChatControlView : FrameLayout {
     }
 
     private val onChatImgClickListener = OnClickListener {
-        Timber.d("@@@ click image")
         RxPermissions(activity!!)
             .request(Manifest.permission.READ_EXTERNAL_STORAGE)
             .subscribe({ granted ->
