@@ -30,8 +30,8 @@ class GalleryAlbumAdapter(
     override fun getItem(position: Int): Fragment {
         val fragment = GalleryItemFragment.newInstance(albums!![position], position == 0)
         fragment.callback = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri) {
-                callback?.onItemClick(pos, uri)
+            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
+                callback?.onItemClick(pos, uri, isVideo)
             }
 
             override fun onCameraClick() {

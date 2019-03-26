@@ -1247,8 +1247,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun initGalleryLayout() {
         val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
         galleryAlbumFragment.callback = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri) {
-                sendImageMessage(uri)
+            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
+                if (isVideo) {
+                    sendVideoMessage(uri)
+                } else {
+                    sendImageMessage(uri)
+                }
             }
 
             override fun onCameraClick() {

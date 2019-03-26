@@ -70,8 +70,8 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
         adapter.size = (context!!.realSize().x - (COLUMN + 1) * padding) / COLUMN
         rv.adapter = adapter
         adapter.listener = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri) {
-                callback?.onItemClick(pos, uri)
+            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
+                callback?.onItemClick(pos, uri, isVideo)
             }
 
             override fun onCameraClick() {

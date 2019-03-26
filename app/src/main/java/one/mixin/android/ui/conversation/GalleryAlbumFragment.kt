@@ -48,8 +48,8 @@ class GalleryAlbumFragment : Fragment(), AlbumCollection.AlbumCallbacks {
         view_pager.currentItem = 0
         va.displayedChild = POS_LOADING
         albumAdapter.callback = object : GalleryCallback {
-            override fun onItemClick(pos: Int, uri: Uri) {
-                callback?.onItemClick(pos, uri)
+            override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
+                callback?.onItemClick(pos, uri, isVideo)
             }
 
             override fun onCameraClick() {

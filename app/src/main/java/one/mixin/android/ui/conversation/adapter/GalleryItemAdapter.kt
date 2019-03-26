@@ -88,7 +88,7 @@ class GalleryItemAdapter(
                 if (selectedUri == item.uri) {
                     selectedUri = null
                     selectedPos = null
-                    listener?.onItemClick(position, item.uri)
+                    listener?.onItemClick(position, item.uri, item.isVideo)
                     notifyItemChanged(position)
                 } else {
                     selectedPos?.let { notifyItemChanged(it) }
