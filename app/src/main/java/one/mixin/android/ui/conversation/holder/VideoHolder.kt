@@ -89,8 +89,12 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             })
         } else {
             notNullElse(messageItem.mediaSize, {
-                itemView.duration_tv.visibility = VISIBLE
-                itemView.duration_tv.text = it.fileSize()
+                if (it == 0L) {
+                    itemView.duration_tv.visibility = GONE
+                } else {
+                    itemView.duration_tv.visibility = VISIBLE
+                    itemView.duration_tv.text = it.fileSize()
+                }
             }, {
                 itemView.duration_tv.visibility = GONE
             })

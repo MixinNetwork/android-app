@@ -485,7 +485,8 @@ class ConversationAdapter(
                     oldItem.status == newItem.status &&
                     oldItem.userFullName == newItem.userFullName &&
                     oldItem.participantFullName == newItem.participantFullName &&
-                    oldItem.sharedUserFullName == newItem.sharedUserFullName
+                    oldItem.sharedUserFullName == newItem.sharedUserFullName &&
+                    oldItem.mediaSize == newItem.mediaSize
             }
         }
     }

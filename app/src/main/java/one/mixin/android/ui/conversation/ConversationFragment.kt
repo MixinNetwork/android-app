@@ -1253,6 +1253,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     sendImageMessage(uri)
                 }
+                releaseChatControl(FLING_DOWN)
             }
 
             override fun onCameraClick() {

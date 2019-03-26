@@ -218,16 +218,23 @@ internal constructor(
             }
             val videoFile = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
 
-            MediaController().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight, video
-                .originalWidth, video
-                .originalHeight, videoFile, video.needChange)
+            val uuid = UUID.randomUUID().toString()
+            val createdAt = nowInUtc()
+            var message = createVideoMessage(uuid, conversationId, sender.userId, category, null,
+                video.fileName, videoFile.toUri().toString(), video.duration, video.resultWidth,
+                video.resultHeight, video.thumbnail, "video/mp4",
+                0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING)
+            // insert message with mediaSize 0L
+            // for show video place holder in chat list before convert video
+            conversationRepository.insertMessage(message)
 
-            val message = createVideoMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-                category, null, video.fileName, videoFile.toUri().toString(), video.duration, video
-                .resultWidth,
-                video.resultHeight, video.thumbnail,
-                "video/mp4",
-                videoFile.length(), nowInUtc(), null, null, MediaStatus.PENDING, MessageStatus.SENDING)
+            MediaController().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
+                video.originalWidth, video.originalHeight, videoFile, video.needChange)
+
+            message = createVideoMessage(uuid, conversationId, sender.userId, category, null,
+                video.fileName, videoFile.toUri().toString(), video.duration, video.resultWidth,
+                video.resultHeight, video.thumbnail, "video/mp4",
+                videoFile.length(), createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING)
             jobManager.addJobInBackground(SendAttachmentMessageJob(message))
         }.observeOn(AndroidSchedulers.mainThread())!!
 
