@@ -19,7 +19,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
     private var velocityTracker: VelocityTracker? = null
     private val minVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
 
-    private var direction = DIRECTION_BOTH
+    private var direction = DIRECTION_NONE
 
     private var downY = 0f
     private var startY = 0f
@@ -29,7 +29,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
         val ta = context.obtainStyledAttributes(attrs, R.styleable.DraggableRecyclerView)
         if (ta != null) {
             if (ta.hasValue(R.styleable.DraggableRecyclerView_drag_direction)) {
-                direction = ta.getInteger(R.styleable.DraggableRecyclerView_drag_direction, DIRECTION_BOTH)
+                direction = ta.getInteger(R.styleable.DraggableRecyclerView_drag_direction, DIRECTION_NONE)
             }
             ta.recycle()
         }
@@ -61,8 +61,10 @@ class DraggableRecyclerView @JvmOverloads constructor(
                     val disY = moveY - downY
                     if (canDrag(disY)
                         || dragging
+                        // scroll bottom to top over view area
                         || (event.y < 0 && disY < 0 && direction < 1)
-                        || (event.y > height && disY > 0 && direction > -1)) {
+                        // scroll top to bottom over view area
+                        || (event.y > height && disY > 0 && direction < 1)) {
                         velocityTracker?.addMovement(event)
                         callback?.onScroll(disY)
                         downY = moveY
@@ -116,11 +118,13 @@ class DraggableRecyclerView @JvmOverloads constructor(
         return when (direction) {
             DIRECTION_TOP_2_BOTTOM -> !canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0
             DIRECTION_BOTTOM_2_TOP -> !canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0
-            else -> (!canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0) || (!canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0)
+            DIRECTION_BOTH -> (!canScrollVertically(DIRECTION_TOP_2_BOTTOM) && disY > 0) || (!canScrollVertically(DIRECTION_BOTTOM_2_TOP) && disY < 0)
+            else -> false
         }
     }
 
     companion object {
+        const val DIRECTION_NONE = -2
         const val DIRECTION_TOP_2_BOTTOM = -1
         const val DIRECTION_BOTH = 0
         const val DIRECTION_BOTTOM_2_TOP = 1

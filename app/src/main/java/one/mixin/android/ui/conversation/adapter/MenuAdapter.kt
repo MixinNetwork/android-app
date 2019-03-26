@@ -2,14 +2,14 @@ package one.mixin.android.ui.conversation.adapter
 
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_chat_menu.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.vo.App
-import org.jetbrains.anko.padding
 
 class MenuAdapter(
     private val isGroup: Boolean,
@@ -18,7 +18,6 @@ class MenuAdapter(
 ) : RecyclerView.Adapter<MenuAdapter.MenuHolder>() {
 
     private val buildInMenus = arrayListOf<Menu>().apply {
-        add(Menu(MenuType.Camera, R.string.camera, R.drawable.ic_menu_camera, null))
         val transferMenu = Menu(MenuType.Transfer, R.string.transfer, R.drawable.ic_menu_transfer, null)
         val voiceMenu = Menu(MenuType.Voice, R.string.voice, R.drawable.ic_menu_call, null)
         if (isBot) {
@@ -29,6 +28,7 @@ class MenuAdapter(
             add(transferMenu)
             add(voiceMenu)
         }
+        add(Menu(MenuType.Camera, R.string.camera, R.drawable.ic_menu_camera, null))
         add(Menu(MenuType.File, R.string.document, R.drawable.ic_menu_file, null))
         add(Menu(MenuType.Contact, R.string.contact, R.drawable.ic_menu_contact, null))
     }
@@ -64,15 +64,16 @@ class MenuAdapter(
         val ctx = view.context
         val menu = menus[position]
         if (menu.icon != null) {
+            view.menu_icon.visibility = VISIBLE
             view.menu_icon.setImageResource(menu.icon)
-            view.menu_icon.setBackgroundResource(R.drawable.bg_menu)
-            view.menu_icon.padding = ctx.dpToPx(20f)
+            view.app_icon.visibility = GONE
             menu.nameRes?.let {
                 view.menu_title.text = ctx.getString(it)
             }
         } else {
-            view.menu_icon.loadCircleImage(menu.iconUrl)
-            view.menu_icon.padding = 0
+            view.app_icon.visibility = VISIBLE
+            view.app_icon.loadCircleImage(menu.iconUrl)
+            view.menu_icon.visibility = GONE
             view.menu_title.text = menu.name
         }
         view.setOnClickListener {

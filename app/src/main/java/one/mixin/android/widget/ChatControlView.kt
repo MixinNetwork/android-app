@@ -209,7 +209,6 @@ class ChatControlView : FrameLayout {
 
     fun getCurrentContainer() = when {
         stickerContainer.isVisible -> stickerContainer
-        menuContainer.isVisible -> menuContainer
         galleryContainer.isVisible -> galleryContainer
         else -> null
     }
