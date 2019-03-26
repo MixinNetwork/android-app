@@ -11,8 +11,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.common.BaseFragment
@@ -24,6 +27,8 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
+import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -71,6 +76,8 @@ class StickerFragment : BaseFragment() {
     private val padding: Int by lazy {
         context!!.dip(PADDING)
     }
+
+    private var disposable: Disposable? = null
 
     var rvCallback: DraggableRecyclerView.Callback? = null
 
@@ -137,6 +144,16 @@ class StickerFragment : BaseFragment() {
                 rvCallback?.onRelease(fling)
             }
         }
+
+        disposable = RxBus.listen(DragReleaseEvent::class.java)
+            .subscribe {
+                sticker_rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
+            }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        disposable?.dispose()
     }
 
     @Synchronized

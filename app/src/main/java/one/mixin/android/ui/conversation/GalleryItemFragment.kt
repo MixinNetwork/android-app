@@ -10,14 +10,19 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_draggable_recycler_view.*
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.GalleryItemAdapter
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
+import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.internal.model.AlbumMediaCollection
@@ -39,6 +44,8 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
 
     var callback: GalleryCallback? = null
     var rvCallback: DraggableRecyclerView.Callback? = null
+
+    private var disposable: Disposable? = null
 
     private val album: Album by lazy { arguments!!.getParcelable<Album>(ARGS_ALBUM) }
     private val needCamera: Boolean by lazy { arguments!!.getBoolean(ARGS_NEED_CAMERA) }
@@ -90,10 +97,16 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
 
         albumMediaCollection.onCreate(this, this)
         albumMediaCollection.load(album)
+
+        disposable = RxBus.listen(DragReleaseEvent::class.java)
+            .subscribe {
+                rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
+            }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
+        disposable?.dispose()
         albumMediaCollection.onDestroy()
     }
 

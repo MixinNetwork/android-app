@@ -53,6 +53,7 @@ import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
+import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
@@ -1595,6 +1596,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.reset()
         }
         currentContainer.animateHeight(curH, targetH)
+        RxBus.publish(DragReleaseEvent(targetH == max))
     }
 
     private val chatControlCallback = object : ChatControlView.Callback {

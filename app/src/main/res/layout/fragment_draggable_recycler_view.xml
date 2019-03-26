@@ -4,5 +4,5 @@
     android:id="@+id/rv"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:drag_direction="-1"
+    app:over_direction="1"
     android:background="@color/white"/>

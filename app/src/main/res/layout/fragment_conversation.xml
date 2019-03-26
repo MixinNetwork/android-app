@@ -51,6 +51,7 @@
                 android:clipToPadding="false"
                 android:paddingBottom="6dp"
                 app:stackFromEnd="true"
+                app:over_direction="-1"
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"

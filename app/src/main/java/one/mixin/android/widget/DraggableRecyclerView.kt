@@ -19,7 +19,9 @@ class DraggableRecyclerView @JvmOverloads constructor(
     private var velocityTracker: VelocityTracker? = null
     private val minVelocity = ViewConfiguration.get(context).scaledMinimumFlingVelocity
 
-    private var direction = DIRECTION_NONE
+    var direction = DIRECTION_NONE
+
+    private var over = OVER_NONE
 
     private var downY = 0f
     private var startY = 0f
@@ -30,6 +32,9 @@ class DraggableRecyclerView @JvmOverloads constructor(
         if (ta != null) {
             if (ta.hasValue(R.styleable.DraggableRecyclerView_drag_direction)) {
                 direction = ta.getInteger(R.styleable.DraggableRecyclerView_drag_direction, DIRECTION_NONE)
+            }
+            if (ta.hasValue(R.styleable.DraggableRecyclerView_over_direction)) {
+                over = ta.getInteger(R.styleable.DraggableRecyclerView_over_direction, OVER_NONE)
             }
             ta.recycle()
         }
@@ -62,9 +67,9 @@ class DraggableRecyclerView @JvmOverloads constructor(
                     if (canDrag(disY)
                         || dragging
                         // scroll bottom to top over view area
-                        || (event.y < 0 && disY < 0 && direction < 1)
+                        || ((over == OVER_TOP || over == OVER_BOTH) && event.y < 0 && disY < 0 && direction < 1)
                         // scroll top to bottom over view area
-                        || (event.y > height && disY > 0 && direction < 1)) {
+                        || ((over == OVER_BOTTOM || over == OVER_BOTH) && event.y > height && disY > 0 && direction < 1)) {
                         velocityTracker?.addMovement(event)
                         callback?.onScroll(disY)
                         downY = moveY
@@ -128,6 +133,11 @@ class DraggableRecyclerView @JvmOverloads constructor(
         const val DIRECTION_TOP_2_BOTTOM = -1
         const val DIRECTION_BOTH = 0
         const val DIRECTION_BOTTOM_2_TOP = 1
+
+        const val OVER_NONE = -2
+        const val OVER_BOTTOM = -1
+        const val OVER_BOTH = 0
+        const val OVER_TOP = 1
 
         const val FLING_UP = -1
         const val FLING_NONE = 0
