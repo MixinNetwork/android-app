@@ -1460,13 +1460,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         try {
             messageItem.mediaUrl?.let {
                 val file = File(it)
-                if (!file.exists()) {
-                    context?.toast(R.string.error_file_exists)
+                val uri = if (!file.exists()) {
+                    Uri.parse(it)
                 } else {
-                    val uri = requireContext().getUriForFile(file)
-                    intent.setDataAndType(uri, messageItem.mediaMimeType)
-                    requireContext().startActivity(intent)
+                    requireContext().getUriForFile(file)
                 }
+                intent.setDataAndType(uri, messageItem.mediaMimeType)
+                requireContext().startActivity(intent)
             }
         } catch (e: ActivityNotFoundException) {
             context?.toast(R.string.error_unable_to_open_media)
