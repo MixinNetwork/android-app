@@ -348,19 +348,21 @@ class ChatControlView : FrameLayout {
     private fun createTransitions(): LayoutTransition {
         val scaleDownTransX = chat_send_ib.width
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
-            PropertyValuesHolder.ofFloat("scaleX", 1f, 0f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0f),
+            PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
+            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
+            PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
             PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())).apply {
-            duration = 100
+            duration = 50
             interpolator = DecelerateInterpolator()
         }
 
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
-            PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0f, 1f),
+            PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
+            PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
+            PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
             PropertyValuesHolder.ofFloat("translationX", 0f)).apply {
-            duration = 100
-            interpolator = AccelerateInterpolator()
+            duration = 50
+            interpolator = DecelerateInterpolator()
         }
 
         return getLayoutTransition(scaleUp, scaleDown)
@@ -370,18 +372,20 @@ class ChatControlView : FrameLayout {
     private fun createEditTransitions(): LayoutTransition {
         val scaleDownTransX = right - chat_menu_iv.width - chat_send_ib.width - edit_ll.width
         val scaleDown = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
-            PropertyValuesHolder.ofFloat("scaleX", 1f, 0f),
-            PropertyValuesHolder.ofFloat("scaleY", 1f, 0f),
+            PropertyValuesHolder.ofFloat("scaleX", 1f, 0.3f),
+            PropertyValuesHolder.ofFloat("scaleY", 1f, 0.3f),
+            PropertyValuesHolder.ofFloat("alpha", 1f, 0f),
             PropertyValuesHolder.ofFloat("translationX", scaleDownTransX.toFloat())).apply {
-            duration = 100
+            duration = 50
             interpolator = DecelerateInterpolator()
         }
 
         val scaleUp = ObjectAnimator.ofPropertyValuesHolder(null as Any?,
-            PropertyValuesHolder.ofFloat("scaleX", 0f, 1f),
-            PropertyValuesHolder.ofFloat("scaleY", 0f, 1f),
+            PropertyValuesHolder.ofFloat("scaleX", 0.3f, 1f),
+            PropertyValuesHolder.ofFloat("scaleY", 0.3f, 1f),
+            PropertyValuesHolder.ofFloat("alpha", 0f, 1f),
             PropertyValuesHolder.ofFloat("translationX", 0f)).apply {
-            duration = 100
+            duration = 50
             interpolator = DecelerateInterpolator()
         }
 
@@ -394,8 +398,8 @@ class ChatControlView : FrameLayout {
         layoutTransition.setAnimator(LayoutTransition.DISAPPEARING, scaleDown)
         layoutTransition.setStartDelay(LayoutTransition.APPEARING, 0)
         layoutTransition.setStartDelay(LayoutTransition.DISAPPEARING, 0)
-        layoutTransition.setDuration(LayoutTransition.CHANGE_APPEARING, 150)
-        layoutTransition.setDuration(LayoutTransition.CHANGE_DISAPPEARING, 150)
+        layoutTransition.setDuration(LayoutTransition.CHANGE_APPEARING, 100)
+        layoutTransition.setDuration(LayoutTransition.CHANGE_DISAPPEARING, 100)
         layoutTransition.setStartDelay(LayoutTransition.CHANGE_APPEARING, 0)
         layoutTransition.setStartDelay(LayoutTransition.CHANGE_DISAPPEARING, 0)
         return layoutTransition
