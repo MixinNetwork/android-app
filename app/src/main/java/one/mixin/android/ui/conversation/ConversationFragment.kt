@@ -114,6 +114,7 @@ import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
+import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
@@ -922,8 +923,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.showBot()
         } else {
             chat_control.hideBot()
-            chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer {
-                appList = it
+            chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer { list ->
+                val type = if (isGroup) {
+                    AppCap.GROUP.name
+                } else {
+                    AppCap.CONTACT.name
+                }
+                appList = list.filter {
+                    it.capabilites?.contains(type) == true
+                }
             })
         }
     }
