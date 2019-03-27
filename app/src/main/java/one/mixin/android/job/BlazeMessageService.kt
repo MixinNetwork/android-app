@@ -266,9 +266,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                         ))
                         val encoded = Base64.encodeBytes(plainText.toByteArray())
                         val bm = createParamSessionMessage(createPlainJsonParam(accountId!!, accountId, encoded, sessionId))
-                        deliver(bm).let {
-                            jobDao.deleteList(list)
-                        }
+                        jobManager.addJobInBackground(SendSessionStatusMessageJob(bm))
+                        jobDao.deleteList(list)
                     } catch (e: Exception) {
                         runAckJob()
                     } finally {
