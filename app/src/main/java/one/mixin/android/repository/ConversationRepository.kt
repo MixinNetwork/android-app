@@ -209,8 +209,4 @@ internal constructor(
     fun insertMessage(message: Message) {
         messageDao.insert(message)
     }
-
-    fun updateMediaSize(mediaSize: Long, id: String) {
-        messageDao.updateMediaSize(mediaSize, id)
-    }
 }

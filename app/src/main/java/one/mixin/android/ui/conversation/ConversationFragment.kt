@@ -1033,12 +1033,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun sendVideoMessage(uri: Uri) {
         createConversation {
-            chatViewModel.sendVideoMessage(conversationId, sender, uri, isPlainMessage()).autoDisposable(scopeProvider)
-                .subscribe({
-                    scrollToDown()
-                }, {
-                    Timber.e(it)
-                })
+            chatViewModel.sendVideoMessage(conversationId, sender.userId, uri, isPlainMessage())
+            chat_rv.postDelayed({
+                scrollToDown()
+            }, 1000)
         }
     }
 

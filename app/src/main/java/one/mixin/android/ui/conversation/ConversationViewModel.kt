@@ -30,21 +30,19 @@ import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getAttachment
-import one.mixin.android.extension.getFileNameNoEx
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
-import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RemoveStickersJob
@@ -62,7 +60,6 @@ import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.util.image.Compressor
-import one.mixin.android.util.video.MediaController
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
@@ -90,6 +87,7 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
@@ -205,38 +203,9 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
-    fun sendVideoMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean) =
-        Flowable.just(uri).subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).map {
-            val video = MixinApplication.appContext.getVideoModel(it)!!
-            val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-            val mimeType = getMimeType(uri)
-            if (mimeType != "video/mp4") {
-                video.needChange = true
-            }
-            if (!video.fileName.endsWith(".mp4")) {
-                video.fileName = "${video.fileName.getFileNameNoEx()}.mp4"
-            }
-            val videoFile = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
-
-            val uuid = UUID.randomUUID().toString()
-            val createdAt = nowInUtc()
-            var message = createVideoMessage(uuid, conversationId, sender.userId, category, null,
-                video.fileName, videoFile.toUri().toString(), video.duration, video.resultWidth,
-                video.resultHeight, video.thumbnail, "video/mp4",
-                0L, createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING)
-            // insert message with mediaSize 0L
-            // for show video place holder in chat list before convert video
-            conversationRepository.insertMessage(message)
-
-            MediaController().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
-                video.originalWidth, video.originalHeight, videoFile, video.needChange)
-
-            message = createVideoMessage(uuid, conversationId, sender.userId, category, null,
-                video.fileName, videoFile.toUri().toString(), video.duration, video.resultWidth,
-                video.resultHeight, video.thumbnail, "video/mp4",
-                videoFile.length(), createdAt, null, null, MediaStatus.PENDING, MessageStatus.SENDING)
-            jobManager.addJobInBackground(SendAttachmentMessageJob(message))
-        }.observeOn(AndroidSchedulers.mainThread())!!
+    fun sendVideoMessage(conversationId: String, senderId: String, uri: Uri, isPlain: Boolean, messageId: String? = null, createdAt: String? = null) {
+        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, messageId, createdAt))
+    }
 
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
@@ -384,7 +353,12 @@ internal constructor(
     fun retryUpload(id: String) {
         doAsync {
             conversationRepository.findMessageById(id)?.let {
-                jobManager.addJobInBackground(SendAttachmentMessageJob(it))
+                if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
+                    jobManager.addJobInBackground(ConvertVideoJob(it.conversationId, it.userId, Uri.parse(it.mediaUrl),
+                        it.category.startsWith("PLAIN"), it.id, it.createdAt))
+                } else {
+                    jobManager.addJobInBackground(SendAttachmentMessageJob(it))
+                }
             }
         }
     }
@@ -522,12 +496,7 @@ internal constructor(
                             }
                         }
                         ForwardCategory.VIDEO.name -> {
-                            sendVideoMessage(conversationId, sender,
-                                Uri.parse(item.mediaUrl), isPlainMessage)
-                                .subscribe({
-                                }, {
-                                    Timber.e(it)
-                                })
+                            sendVideoMessage(conversationId, sender.userId, Uri.parse(item.mediaUrl), isPlainMessage)
                         }
                         ForwardCategory.TEXT.name -> {
                             item.content?.let {

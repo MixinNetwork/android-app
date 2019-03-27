@@ -4,9 +4,14 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.media.*;
 import android.os.Build;
+import android.util.Pair;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.util.Path;
+import io.reactivex.Flowable;
+import io.reactivex.Scheduler;
+import io.reactivex.functions.Function;
+import io.reactivex.schedulers.Schedulers;
 import one.mixin.android.MixinApplication;
 import one.mixin.android.crypto.Util;
 import timber.log.Timber;
@@ -23,6 +28,21 @@ public class MediaController {
     private final static int PROCESSOR_TYPE_MTK = 3;
     private final static int PROCESSOR_TYPE_SEC = 4;
     private final static int PROCESSOR_TYPE_TI = 5;
+
+    private static volatile MediaController Instance;
+
+    public static MediaController getInstance() {
+        MediaController localInstance = Instance;
+        if (localInstance == null) {
+            synchronized (MediaController.class) {
+                localInstance = Instance;
+                if (localInstance == null) {
+                    Instance = localInstance = new MediaController();
+                }
+            }
+        }
+        return localInstance;
+    }
 
     private boolean videoConvertFirstWrite = true;
 
@@ -277,13 +297,9 @@ public class MediaController {
             rotateRender = 90;
         }*/
 
-        SharedPreferences preferences = MixinApplication.appContext.getSharedPreferences("videoconvert", Activity.MODE_PRIVATE);
         File inputFile = new File(videoPath);
-        boolean isPreviousOk = preferences.getBoolean("isPreviousOk", true);
-        preferences.edit().putBoolean("isPreviousOk", false).commit();
-        if (!inputFile.canRead() || !isPreviousOk) {
+        if (!inputFile.canRead()) {
             didWriteData(cacheFile, true, true);
-            preferences.edit().putBoolean("isPreviousOk", true).commit();
             return false;
         }
 
@@ -592,11 +608,9 @@ public class MediaController {
                 Timber.e("time = " + (System.currentTimeMillis() - time));
             }
         } else {
-            preferences.edit().putBoolean("isPreviousOk", true).commit();
             didWriteData(cacheFile, true, true);
             return false;
         }
-        preferences.edit().putBoolean("isPreviousOk", true).commit();
         didWriteData(cacheFile, true, error);
         return true;
     }
