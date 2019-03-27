@@ -11,7 +11,7 @@ import one.mixin.android.websocket.BlazeAckMessage
 import java.util.UUID
 
 @Entity(tableName = "jobs")
-class Job(
+data class Job(
     @PrimaryKey
     @SerializedName("job_id")
     @ColumnInfo(name = "job_id")

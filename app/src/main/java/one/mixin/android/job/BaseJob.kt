@@ -24,6 +24,7 @@ import one.mixin.android.db.AddressDao
 import one.mixin.android.db.AssetDao
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.HyperlinkDao
+import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.MixinDatabase
@@ -132,6 +133,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
     @Inject
     @Transient
     lateinit var topAssetDao: TopAssetDao
+    @Inject
+    @Transient
+    lateinit var jobDao: JobDao
     @Inject
     @Transient
     lateinit var signalProtocol: SignalProtocol
