@@ -37,9 +37,9 @@ class ShareHelper {
             } else if (type.startsWith("video/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                 generateShareMessage(imageUri, ForwardCategory.VIDEO.name)?.addTo(result)
-            } else if (type.startsWith("application/")) {
-                val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                ForwardMessage(ForwardCategory.DATA.name, mediaUrl = imageUri.getFilePath(MixinApplication.appContext)).addTo(result)
+            } else if (type.startsWith("application/") || type.startsWith("audio/")) {
+                val otherUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
+                ForwardMessage(ForwardCategory.DATA.name, mediaUrl = otherUri.getFilePath(MixinApplication.appContext)).addTo(result)
             }
         } else if (Intent.ACTION_SEND_MULTIPLE == action) {
             if (type.startsWith("image/")) {

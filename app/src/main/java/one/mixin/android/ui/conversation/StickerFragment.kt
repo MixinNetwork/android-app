@@ -11,18 +11,24 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.loadSticker
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_LIKE
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_NORMAL
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter.Companion.TYPE_RECENT
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_LIKE
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_NORMAL
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter.Companion.TYPE_RECENT
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.vo.Sticker
+import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
+import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
@@ -71,7 +77,11 @@ class StickerFragment : BaseFragment() {
         context!!.dip(PADDING)
     }
 
-    private var callback: AlbumAdapter.Callback? = null
+    private var disposable: Disposable? = null
+
+    var rvCallback: DraggableRecyclerView.Callback? = null
+
+    private var callback: StickerAlbumAdapter.Callback? = null
     private var personalAlbumId: String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -125,6 +135,25 @@ class StickerFragment : BaseFragment() {
                 StickerActivity.show(requireContext(), personalAlbumId)
             }
         })
+        sticker_rv.callback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
+            }
+        }
+
+        disposable = RxBus.listen(DragReleaseEvent::class.java)
+            .subscribe {
+                sticker_rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
+            }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        disposable?.dispose()
     }
 
     @Synchronized
@@ -135,7 +164,7 @@ class StickerFragment : BaseFragment() {
         stickerAdapter.notifyDataSetChanged()
     }
 
-    fun setCallback(callback: AlbumAdapter.Callback) {
+    fun setCallback(callback: StickerAlbumAdapter.Callback) {
         this.callback = callback
     }
 

@@ -1,7 +1,5 @@
 package one.mixin.android.extension
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
@@ -12,13 +10,18 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewOutlineProvider
+import android.view.animation.DecelerateInterpolator
+import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
 import android.widget.TextView
 import androidx.annotation.LayoutRes
+import androidx.core.animation.doOnEnd
+import androidx.core.animation.doOnStart
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
+import androidx.core.view.updateLayoutParams
 import org.jetbrains.anko.dip
 
 const val ANIMATION_DURATION_SHORTEST = 260L
@@ -123,33 +126,33 @@ fun View.animateWidth(form: Int, to: Int, duration: Long) {
     anim.start()
 }
 
-fun View.animateHeight(form: Int, to: Int) {
-    this.animateHeight(form, to, one.mixin.android.extension.ANIMATION_DURATION_SHORTEST)
-}
-
-fun View.animateHeight(form: Int, to: Int, duration: Long) {
-    val anim = ValueAnimator.ofInt(form, to)
-    anim.addUpdateListener { valueAnimator ->
-        layoutParams.height = valueAnimator.animatedValue as Int
-        requestLayout()
-    }
-    anim.duration = duration
-    if (to == 0 || form == 0) {
-        anim.addListener(object : AnimatorListenerAdapter() {
-
-            override fun onAnimationEnd(animation: Animator?) {
-                if (to == 0) {
-                    this@animateHeight.visibility = GONE
-                }
+fun View.animateHeight(
+    from: Int,
+    to: Int,
+    duration: Long = ANIMATION_DURATION_SHORTEST,
+    interpolator: Interpolator = DecelerateInterpolator(),
+    action: ((ValueAnimator) -> Unit)? = null
+) {
+    val anim = ValueAnimator.ofInt(from, to).apply {
+        this.duration = duration
+        this.interpolator = interpolator
+        addUpdateListener { valueAnimator ->
+            updateLayoutParams<ViewGroup.LayoutParams> {
+                this.height = valueAnimator.animatedValue as Int
             }
-
-            override fun onAnimationStart(animation: Animator?) {
-                if (form == 0) {
-                    this@animateHeight.visibility = VISIBLE
-                }
+        }
+        doOnEnd {
+            if (to == 0) {
+                this@animateHeight.visibility = GONE
             }
-        })
+        }
+        doOnStart {
+            if (from == 0) {
+                this@animateHeight.visibility = VISIBLE
+            }
+        }
     }
+    action?.invoke(anim)
     anim.start()
 }
 

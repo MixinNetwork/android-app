@@ -26,9 +26,10 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
-import one.mixin.android.ui.conversation.adapter.AlbumAdapter
+import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
@@ -54,7 +55,8 @@ class GiphyFragment : BaseFragment() {
     private val stickerViewModel: ConversationViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
-    var callback: AlbumAdapter.Callback? = null
+    var callback: StickerAlbumAdapter.Callback? = null
+    var rvCallback: DraggableRecyclerView.Callback? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_sticker, container, false)
@@ -92,6 +94,15 @@ class GiphyFragment : BaseFragment() {
                 }
             }
         })
+        sticker_rv.callback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
+            }
+        }
         sticker_progress.visibility = View.VISIBLE
         stickerViewModel.trendingGifs(26, 0)
             .autoDisposable(scopeProvider)

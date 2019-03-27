@@ -25,6 +25,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationItemMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Job
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
@@ -203,5 +204,9 @@ internal constructor(
             }
         } catch (e: IOException) {
         }
+    }
+
+    fun insertMessage(message: Message) {
+        messageDao.insert(message)
     }
 }

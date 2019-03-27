@@ -1,6 +1,7 @@
 package one.mixin.android.ui.sticker
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
@@ -90,6 +91,7 @@ class StickerManagementFragment : BaseFragment() {
         stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
+            @SuppressLint("CheckResult")
             override fun onAddClick() {
                 RxPermissions(activity!!)
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,

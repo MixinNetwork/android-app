@@ -164,6 +164,8 @@ fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
 
 fun Message.isCall() = category.startsWith("WEBRTC_")
 
+fun Message.isVideo() = category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
+
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,

@@ -107,6 +107,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET media_status = :status WHERE id = :id")
     fun updateMediaStatus(status: String, id: String)
 
+    @Query("UPDATE messages SET media_size = :mediaSize WHERE id = :id")
+    fun updateMediaSize(mediaSize: Long, id: String)
+
     @Query("UPDATE messages SET media_url = :mediaUrl WHERE id = :id")
     fun updateMediaMessageUrl(mediaUrl: String, id: String)
 

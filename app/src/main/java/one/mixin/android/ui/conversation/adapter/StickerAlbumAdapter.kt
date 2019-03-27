@@ -12,8 +12,9 @@ import one.mixin.android.ui.conversation.GiphyFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.vo.StickerAlbum
+import one.mixin.android.widget.DraggableRecyclerView
 
-class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm) {
+class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm) {
     companion object {
         const val TYPE_RECENT = 0
         const val TYPE_LIKE = 1
@@ -24,6 +25,7 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
     }
 
     var callback: StickerAlbumFragment.Callback? = null
+    var rvCallback: DraggableRecyclerView.Callback? = null
 
     override fun getItem(position: Int): Fragment {
         val fragment = when (position) {
@@ -31,6 +33,15 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
             TYPE_LIKE -> StickerFragment.newInstance(type = TYPE_LIKE)
             TYPE_GIPHY -> GiphyFragment.newInstance()
             else -> StickerFragment.newInstance(albums[position - UN_NORMAL_COUNT].albumId, TYPE_NORMAL)
+        }
+        val rvCallback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                rvCallback?.onScroll(dis)
+            }
+
+            override fun onRelease(fling: Int) {
+                rvCallback?.onRelease(fling)
+            }
         }
         if (fragment is GiphyFragment) {
             fragment.callback = object : Callback {
@@ -41,6 +52,7 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
                     callback?.onGiphyClick(url)
                 }
             }
+            fragment.rvCallback = rvCallback
         } else {
             fragment as StickerFragment
             fragment.setCallback(object : Callback {
@@ -51,6 +63,7 @@ class AlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) 
                     callback?.onStickerClick(stickerId)
                 }
             })
+            fragment.rvCallback = rvCallback
         }
         return fragment
     }

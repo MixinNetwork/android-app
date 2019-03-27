@@ -16,6 +16,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
+import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.TransferAttachmentData
 import java.io.InputStream
 
@@ -45,8 +46,17 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
 
     override fun onAdded() {
         super.onAdded()
-        messageDao.insert(message)
-        messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.id)
+        if (message.isVideo()) {
+            val mId = messageDao.findMessageIdById(message.id)
+            if (mId != null) {
+                messageDao.updateMediaSize(message.mediaSize ?: 0, mId)
+            } else {
+                messageDao.insert(message)
+            }
+        } else {
+            messageDao.insert(message)
+            messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.id)
+        }
     }
 
     override fun onCancel(cancelReason: Int, throwable: Throwable?) {

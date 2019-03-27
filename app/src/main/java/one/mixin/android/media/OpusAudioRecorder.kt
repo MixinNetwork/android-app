@@ -220,10 +220,10 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
 
     private fun stopRecordingInternal(send: Boolean) {
         callStop = true
-        fileEncodingQueue.postRunnable(Runnable {
-            stopRecord()
-
-            if (send) {
+        // if not send no need to stopping record after all encoding runnable run completed.
+        if (send) {
+            fileEncodingQueue.postRunnable(Runnable {
+                stopRecord()
                 val duration = recordTimeCount
                 val waveForm = getWaveform2(recordSamples, recordSamples.size)
                 GlobalScope.launch(Dispatchers.Main) {
@@ -233,8 +233,8 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
                     callback = null
                     recordingAudioFile = null
                 }
-            }
-        })
+            })
+        }
         state = STATE_IDLE
         try {
             audioRecord?.release()

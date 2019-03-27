@@ -78,11 +78,6 @@
         <attr name="blink_color" format="color"/>
     </declare-styleable>
 
-    <declare-styleable name="RadioButton">
-        <attr name="android:text" format="string"/>
-        <attr name="android:checked" format="boolean"/>
-    </declare-styleable>
-
     <declare-styleable name="CallButton">
         <attr name="android:checkable" format="boolean"/>
         <attr name="android:checked" format="boolean"/>
@@ -94,5 +89,9 @@
     </declare-styleable>
     <declare-styleable name="KerningTextView">
         <attr name="kv_spacing" format="float" />
+    </declare-styleable>
+    <declare-styleable name="DraggableRecyclerView">
+        <attr name="drag_direction" format="integer"/>
+        <attr name="over_direction" format="integer"/>
     </declare-styleable>
 </resources>
