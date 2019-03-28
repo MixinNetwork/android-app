@@ -55,7 +55,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 showEmpty(false)
                 adapter.submitList(pagedList)
                 val opponentIds = pagedList.filter {
-                    it.opponentId != null
+                    it?.opponentId != null
                 }.map {
                     it.opponentId!!
                 }
