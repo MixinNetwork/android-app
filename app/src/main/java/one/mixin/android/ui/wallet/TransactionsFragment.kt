@@ -125,16 +125,14 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
                 if (list != null && list.isNotEmpty()) {
                     updateHeaderBottomLayout(false)
                     snapshots = list
-                    doAsync {
-                        for (s in snapshots) {
-                            s.opponentId?.let {
-                                val u = walletViewModel.getUserById(it)
-                                if (u == null) {
-                                    jobManager.addJobInBackground(RefreshUserJob(arrayListOf(it)))
-                                }
-                            }
-                        }
+
+                    val opponentIds = snapshots.filter {
+                        it.opponentId != null
+                    }.map {
+                        it.opponentId!!
                     }
+
+                    jobManager.addJobInBackground(RefreshUserJob(opponentIds))
                 } else {
                     updateHeaderBottomLayout(true)
                 }
@@ -150,7 +148,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
         }
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
         doAsync {
-            asset.assetId.let { it ->
+            asset.assetId.let {
                 walletViewModel.clearPendingDepositsByAssetId(it)
             }
         }

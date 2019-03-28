@@ -22,6 +22,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findUser(id: String): User?
 
+    @Query("SELECT user_id FROM users WHERE user_id IN (:userIds)")
+    suspend fun findUserExist(userIds: List<String>): List<String>
+
     @Query("SELECT * FROM users WHERE user_id = :id AND relationship = 'FRIEND'")
     fun findFriend(id: String): User?
 

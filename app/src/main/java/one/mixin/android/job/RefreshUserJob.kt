@@ -1,6 +1,8 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 
 /**
  * @param conversationId NOT NULL means should generate the group avatar
@@ -14,16 +16,25 @@ class RefreshUserJob(private val userIds: List<String>, private val conversation
     }
 
     override fun onRun() {
-        if (userIds.isEmpty()) {
-            return
-        }
+        GlobalScope.launch {
+            if (userIds.isEmpty()) {
+                return@launch
+            }
+            val existUsers = userDao.findUserExist(userIds)
+            val queryUsers = userIds.filter {
+                !existUsers.contains(it)
+            }
+            if (queryUsers.isEmpty()) {
+                return@launch
+            }
 
-        val response = userService.getUsers(userIds).execute().body()
-        if (response != null && response.isSuccess) {
-            response.data?.let { data ->
-                userRepo.upsertList(data)
-                conversationId?.let {
-                    jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+            val response = userService.getUsers(queryUsers).execute().body()
+            if (response != null && response.isSuccess) {
+                response.data?.let { data ->
+                    userRepo.upsertList(data)
+                    conversationId?.let {
+                        jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
+                    }
                 }
             }
         }
