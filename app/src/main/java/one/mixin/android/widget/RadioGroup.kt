@@ -20,19 +20,30 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         private val mOnHierarchyChangeListener: ViewGroup.OnHierarchyChangeListener? = null
 
         override fun onChildViewAdded(parent: View, child: View) {
-            if (parent === this@RadioGroup && child is CompoundButton) {
-                var id = child.getId()
+            if (parent === this@RadioGroup) {
+                var id = child.id
                 // generates an id if it's missing
                 if (id == View.NO_ID) {
                     id = View.generateViewId()
-                    child.setId(id)
+                    child.id = id
                 } else {
-                    child.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, isChecked ->
-                        if (isChecked) {
-                            update(id)
-                            onCheckedListener?.onChecked(id)
-                        }
-                    })
+                    if (child is CompoundButton) {
+                        child.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { _, isChecked ->
+                            if (isChecked) {
+                                update(id)
+                                onCheckedListener?.onChecked(id)
+                            }
+                        })
+                    } else if (child is RadioButton) {
+                        child.setOnCheckedChangeListener(object : RadioButton.OnCheckedChangeListener {
+                            override fun onCheckedChanged(id: Int, checked: Boolean) {
+                                if (checked) {
+                                    update(id)
+                                    onCheckedListener?.onChecked(id)
+                                }
+                            }
+                        })
+                    }
                 }
             }
 
@@ -40,8 +51,12 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         }
 
         override fun onChildViewRemoved(parent: View, child: View) {
-            if (parent === this@RadioGroup && child is CompoundButton) {
-                child.setOnCheckedChangeListener(null)
+            if (parent === this@RadioGroup) {
+                if (child is CompoundButton) {
+                    child.setOnCheckedChangeListener(null)
+                } else if (child is RadioButton) {
+                    child.setOnCheckedChangeListener(null)
+                }
             }
 
             mOnHierarchyChangeListener?.onChildViewRemoved(parent, child)
@@ -58,8 +73,12 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         this.currentId = id
         for (i in 0 until childCount) {
             getChildAt(i).let {
-                if (it.id != id && it is CompoundButton) {
-                    it.isChecked = false
+                if (it.id != id) {
+                    if (it is CompoundButton) {
+                        it.isChecked = false
+                    } else if (it is RadioButton) {
+                        it.isChecked = false
+                    }
                 }
             }
         }
@@ -69,8 +88,12 @@ class RadioGroup(context: Context, attrs: AttributeSet) : LinearLayout(context, 
         this.currentId = id
         for (i in 0 until childCount) {
             getChildAt(i).let {
-                if (it.id == id && it is CompoundButton) {
-                    it.isChecked = true
+                if (it.id == id) {
+                    if (it is CompoundButton) {
+                        it.isChecked = true
+                    } else if (it is RadioButton) {
+                        it.isChecked = true
+                    }
                 }
             }
         }

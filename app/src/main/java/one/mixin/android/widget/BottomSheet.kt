@@ -8,6 +8,7 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
@@ -27,8 +28,11 @@ import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import one.mixin.android.R
+import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.realSize
+import one.mixin.android.extension.statusBarHeight
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
 import kotlin.math.abs
@@ -359,4 +363,18 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
             return bottomSheet
         }
     }
+}
+
+fun BottomSheet.getMaxCustomViewHeight(): Int {
+    val isNotchScreen = this.window?.isNotchScreen() ?: false
+    val totalHeight = if (isNotchScreen) {
+        val bottom = this.lastInsets?.systemWindowInsetBottom ?: 0
+        context.realSize().y - bottom
+    } else {
+        val size = Point()
+        val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        manager.defaultDisplay.getSize(size)
+        size.y
+    }
+    return totalHeight - context.statusBarHeight()
 }

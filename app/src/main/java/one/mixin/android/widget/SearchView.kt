@@ -59,6 +59,8 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
                     event.rawX >= right - (rightDrawable.bounds.width() + context.dpToPx(16f))) {
                     text.clear()
                     return true
+                } else {
+                    performClick()
                 }
             }
             return false
@@ -77,7 +79,11 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
         setOnTouchListener(onTouchListener)
         setOnFocusChangeListener(onFocusChangeListener)
 
-        // remove focus but remain focusable
+        remainFocusable()
+    }
+
+    // remove focus but remain focusable
+    fun remainFocusable() {
         post {
             isFocusableInTouchMode = false
             isFocusable = false
@@ -94,10 +100,10 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
             setHint(R.string.search)
         } else if (hasFocus) {
             setCompoundDrawables(null, null, null, null)
-            setHint("")
+            hint = ""
         } else if (hasText) {
             setCompoundDrawables(null, null, iconClear, null)
-            setHint("")
+            hint = ""
         } else {
             setCompoundDrawables(iconSearch, null, null, null)
             setHint(R.string.search)

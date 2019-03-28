@@ -1,70 +1,66 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                xmlns:tools="http://schemas.android.com/tools"
-                android:id="@+id/user_info_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/transfer_item_height">
-
-    <androidx.legacy.widget.Space
-            android:id="@+id/center_place_holder"
-            android:layout_width="1dp"
-            android:layout_height="1dp"
-            android:layout_centerVertical="true"/>
-
-    <one.mixin.android.widget.BadgeCircleImageView
-            android:id="@+id/type_avatar"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"/>
-
-    <TextView
-            android:id="@+id/name"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:ellipsize="end"
-            android:layout_above="@+id/center_place_holder"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_toEndOf="@+id/type_avatar"
-            android:textSize="@dimen/transfer_coin_size"/>
-
-    <TextView
-            android:id="@+id/value"
-            style="@style/DescTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:maxWidth="200dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:layout_below="@id/center_place_holder"
-            android:layout_toEndOf="@+id/type_avatar"
-            android:textSize="@dimen/transfer_coin_desc_size"/>
-
-    <TextView
-            android:id="@+id/value_end"
-            style="@style/DescTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/value"
-            android:layout_marginBottom="1dp"
-            android:layout_marginStart="8dp"
-            android:maxLines="1"
-            android:layout_toEndOf="@+id/value"
-            android:text="@string/balance"
-            android:textSize="12sp"/>
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/user_info_rl"
+    android:layout_width="match_parent"
+    android:layout_height="72dp">
 
     <ImageView
-            android:id="@+id/check_iv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_check_blue_24dp"
-            android:visibility="gone"
-            tools:ignore="ContentDescription"/>
+        android:id="@+id/check_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/margin20"
+        android:src="@drawable/ic_asset_add_checked"
+        tools:ignore="ContentDescription"/>
 
+    <androidx.legacy.widget.Space
+        android:id="@+id/center_place_holder"
+        android:layout_width="1dp"
+        android:layout_height="1dp"
+        android:layout_centerVertical="true"/>
+
+    <one.mixin.android.widget.BadgeCircleImageView
+        android:id="@+id/type_avatar"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@id/check_iv"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginStart="8dp"/>
+
+    <TextView
+        android:id="@+id/name"
+        style="@style/NormalTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_above="@+id/center_place_holder"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_toEndOf="@+id/type_avatar"/>
+
+    <TextView
+        android:id="@+id/value"
+        style="@style/DescTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:maxWidth="200dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:layout_below="@id/center_place_holder"
+        android:layout_toEndOf="@+id/type_avatar"/>
+
+    <TextView
+        android:id="@+id/value_end"
+        style="@style/DescTextStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/value"
+        android:layout_marginBottom="1dp"
+        android:layout_marginStart="8dp"
+        android:maxLines="1"
+        android:layout_toEndOf="@+id/value"
+        android:text="@string/balance"
+        android:textSize="12sp"/>
 </RelativeLayout>

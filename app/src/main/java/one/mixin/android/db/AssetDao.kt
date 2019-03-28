@@ -19,7 +19,7 @@ interface AssetDao : BaseDao<Asset> {
             "LEFT JOIN assets a2 ON a1.chain_id = a2.asset_id "
         const val POSTFIX = " ORDER BY balance * price_usd DESC, price_usd DESC, cast(balance AS REAL) DESC, name DESC"
         const val POSTFIX_ASSET_ITEM = " ORDER BY a1.balance * a1.price_usd DESC, a1.price_usd DESC, cast(a1.balance AS REAL) DESC, a1.name DESC"
-        const val POSTFIX_ASSET_ITEM_NOT_HIDDEN = " WHERE a1.hidden ISNULL OR NOT a1.hidden" + POSTFIX_ASSET_ITEM
+        const val POSTFIX_ASSET_ITEM_NOT_HIDDEN = " WHERE a1.hidden ISNULL OR NOT a1.hidden$POSTFIX_ASSET_ITEM"
     }
 
     @Query("SELECT * FROM assets $POSTFIX")
@@ -52,8 +52,7 @@ interface AssetDao : BaseDao<Asset> {
     fun assetItemsNotHidden(): LiveData<List<AssetItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.name LIKE :name OR a1.symbol LIKE :symbol " +
-        "ORDER BY a1.price_usd*a1.balance DESC")
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 AND (a1.name LIKE :name OR a1.symbol LIKE :symbol) ORDER BY a1.price_usd*a1.balance DESC")
     fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
