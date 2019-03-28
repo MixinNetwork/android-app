@@ -37,7 +37,6 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -124,6 +123,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     private var user: User? = null
 
+    private var swaped = false
+
     private val assetsView: View by lazy {
         val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null)
         view.type_rv.adapter = adapter
@@ -172,6 +173,12 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
 
             assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())
+        }
+        contentView.swap_iv.setOnClickListener {
+            currentAsset?.let {
+                swaped = !swaped
+                updateAssetUI(it)
+            }
         }
         assetsView.search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
@@ -263,8 +270,20 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         if (valuable) {
             contentView.amount_ll.visibility = VISIBLE
             contentView.transfer_amount_rl.visibility = GONE
-            contentView.amount_et.hint = "0.00 ${asset.symbol}"
-            contentView.amount_as_et.text = "0.00 USD"
+            if (contentView.amount_et.text.isNullOrEmpty()) {
+                if (swaped) {
+                    contentView.amount_et.hint = "0.00 USD"
+                    contentView.amount_as_tv.text = "0.00 ${asset.symbol}"
+                } else {
+                    contentView.amount_et.hint = "0.00 ${asset.symbol}"
+                    contentView.amount_as_tv.text = "0.00 USD"
+                }
+                contentView.symbol_tv.text = ""
+            } else {
+                contentView.amount_et.hint = ""
+                contentView.symbol_tv.text = getLeftSymbol()
+                contentView.amount_as_tv.text = getRightText()
+            }
             contentView.asset_name.updateLayoutParams<RelativeLayout.LayoutParams> {
                 above(R.id.center_place_holder)
                 addRule(0)
@@ -298,6 +317,43 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private fun getLeftValue(): String {
+        return if (contentView.transfer_amount_rl.isVisible) {
+            contentView.transfer_amount_et.text.toString().toDot()
+        } else {
+            val s = if (swaped) {
+                contentView.amount_as_tv
+            } else {
+                contentView.amount_et
+            }.text.toString()
+            val symbol = if (swaped) currentAsset?.symbol ?: "" else "USD"
+            val index = s.indexOf(symbol)
+            if (index != -1) {
+                s.substring(0, index)
+            } else {
+                s
+            }.trim().toDot()
+        }
+    }
+
+    private fun getLeftSymbol(): String {
+        return if (swaped) "USD" else currentAsset?.symbol ?: ""
+    }
+
+    private fun getRightText(): String {
+        val amount = try {
+            contentView.amount_et.text.toString().toDouble()
+        } catch (e: java.lang.NumberFormatException) {
+            0.0
+        }
+        val rightSymbol = if (swaped) currentAsset!!.symbol else "USD"
+        return if (swaped) {
+            "${(BigDecimal(amount) / BigDecimal(currentAsset!!.priceUsd)).numberFormat2()} $rightSymbol"
+        } else {
+            "${(BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd)).numberFormat2()} $rightSymbol"
+        }
+    }
+
     private fun operateKeyboard(show: Boolean) {
         val target = getAmountView()
         target.post {
@@ -310,7 +366,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showBiometricPrompt() {
-        biometricDialog = BiometricDialog(requireContext(), user!!, getAmountView().text.toString().toDot(),
+        biometricDialog = BiometricDialog(requireContext(), user!!, getLeftValue(),
             currentAsset!!.toAsset(), UUID.randomUUID().toString(), contentView.transfer_memo.text.toString())
         biometricDialog?.callback = biometricDialogCallback
         biometricDialog?.show()
@@ -318,7 +374,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     private fun showTransferBottom() {
         val bottom = TransferBottomSheetDialogFragment
-            .newInstance(user!!, getAmountView().text.toString().toDot(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
+            .newInstance(user!!, getLeftValue(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
                 contentView.transfer_memo.text.toString())
         bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
         bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
@@ -344,7 +400,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         @SuppressLint("SetTextI18n")
         override fun afterTextChanged(s: Editable) {
-            s.maxDecimal()
             if (s.isNotEmpty() && contentView.asset_rl.isEnabled && s.toString().checkNumber()) {
                 contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_wallet_blue_btn, null)
                 contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
@@ -354,12 +409,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 }
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.white)
                 if (contentView.amount_ll.isVisible && currentAsset != null) {
-                    val amount = try {
-                        contentView.amount_et.text.toString().toDouble()
-                    } catch (e: java.lang.NumberFormatException) {
-                        0.0
-                    }
-                    contentView.amount_as_et.text = "${(BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd)).numberFormat2()} USD"
+                    contentView.amount_et.hint = ""
+                    contentView.symbol_tv.text = getLeftSymbol()
+                    contentView.amount_as_tv.text = getRightText()
                 }
             } else {
                 contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_gray_btn, null)
@@ -370,7 +422,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 }
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 if (contentView.amount_ll.isVisible) {
-                    contentView.amount_as_et.text = "0.00 USD"
+                    contentView.amount_et.hint = "0.00 ${if (swaped) "USD" else currentAsset?.symbol}"
+                    contentView.symbol_tv.text = ""
+                    contentView.amount_as_tv.text = "0.00 ${if (swaped) currentAsset?.symbol else "USD"}"
                 }
             }
         }
@@ -408,7 +462,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         override fun onCancel() {}
     }
 
-    class TypeAdapter : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK)  {
+    class TypeAdapter : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {
         private var typeListener: OnTypeClickListener? = null
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemHolder =
