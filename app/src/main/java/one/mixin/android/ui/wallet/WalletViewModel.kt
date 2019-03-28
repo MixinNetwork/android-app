@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import androidx.collection.ArraySet
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Flowable
@@ -10,8 +11,8 @@ import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
@@ -73,8 +74,8 @@ internal constructor(
 
     fun getUserById(id: String): User? = userRepository.getUserById(id)
 
-    fun checkAndRefreshUsers(userIds: List<String>) {
-        GlobalScope.launch(Dispatchers.IO) {
+    fun checkAndRefreshUsers(userIds: List<String>) = runBlocking {
+        viewModelScope.launch(Dispatchers.IO) {
             val existUsers = userRepository.findUserExist(userIds)
             val queryUsers = userIds.filter {
                 !existUsers.contains(it)

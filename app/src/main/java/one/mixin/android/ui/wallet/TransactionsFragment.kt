@@ -131,8 +131,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
                     }.map {
                         it.opponentId!!
                     }
-
-                    jobManager.addJobInBackground(RefreshUserJob(opponentIds))
+                    walletViewModel.checkAndRefreshUsers(opponentIds)
                 } else {
                     updateHeaderBottomLayout(true)
                 }
