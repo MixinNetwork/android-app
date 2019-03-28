@@ -455,7 +455,7 @@ class ConversationListFragment : LinkFragment() {
                 itemView.avatar_iv.setGroup(conversationItem.iconUrl())
             } else {
                 itemView.avatar_iv.setInfo(conversationItem.getConversationName(),
-                    conversationItem.iconUrl(), conversationItem.ownerIdentityNumber)
+                    conversationItem.iconUrl(), conversationItem.ownerId)
             }
             itemView.setOnClickListener { onItemClickListener?.click(position, conversationItem) }
             itemView.setOnLongClickListener {

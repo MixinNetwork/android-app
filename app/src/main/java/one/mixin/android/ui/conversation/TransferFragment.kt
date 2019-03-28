@@ -194,7 +194,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
             } else {
                 user = u
-                contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.identityNumber)
+                contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
                 contentView.to_tv.text = getString(R.string.to, u.fullName)
             }
         })

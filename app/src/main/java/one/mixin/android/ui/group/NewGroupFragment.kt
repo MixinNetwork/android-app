@@ -219,7 +219,7 @@ class NewGroupFragment : BaseFragment() {
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(user: User) {
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             itemView.normal.text = user.fullName
         }
     }

@@ -103,7 +103,7 @@ class GroupInfoAdapter : HeaderFilterAdapter<User>() {
             self: User?,
             participantsMap: ArrayMap<String, Participant>?
         ) {
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             itemView.normal.text = user.fullName
             itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
             itemView.verify_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE

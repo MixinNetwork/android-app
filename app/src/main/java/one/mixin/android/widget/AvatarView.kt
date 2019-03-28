@@ -1,6 +1,7 @@
 package one.mixin.android.widget
 
 import android.content.Context
+import android.util.ArrayMap
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -13,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.loadImage
 import org.jetbrains.anko.sp
+import kotlin.math.abs
 
 class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context, attrs) {
     init {
@@ -59,6 +61,8 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
             }
             return if (builder.isEmpty()) name[0].toString() else builder.toString()
         }
+
+        val idCodeMap = ArrayMap<String, Int>()
     }
 
     fun setGroup(url: String?) {
@@ -77,7 +81,7 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
     fun setInfo(name: String?, url: String?, id: String) {
         avatar_tv.text = checkEmoji(name)
         try {
-            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(id.toInt()))
+            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(getCodeById(id)))
         } catch (e: NumberFormatException) {
         }
         displayedChild = if (url != null && url.isNotEmpty()) {
@@ -92,10 +96,18 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
         avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
     }
 
-    private fun getAvatarPlaceHolderById(id: Int): Int {
+    private fun getCodeById(id: String): Int {
+        var code = idCodeMap[id]
+        if (code != null) return code
+
+        code = abs(id.hashCode()).rem(24) + 1
+        idCodeMap[id] = code
+        return code
+    }
+
+    private fun getAvatarPlaceHolderById(code: Int): Int {
         try {
-            val num = id.rem(24) + 1
-            return resources.getIdentifier("bg_avatar_$num", "drawable", context.packageName)
+            return resources.getIdentifier("bg_avatar_$code", "drawable", context.packageName)
         } catch (e: Exception) {
         }
         return R.drawable.default_avatar

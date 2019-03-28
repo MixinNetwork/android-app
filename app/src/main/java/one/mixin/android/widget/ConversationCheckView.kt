@@ -54,7 +54,7 @@ class ConversationCheckView : LinearLayout, Checkable {
             avatar.setGroup(item.iconUrl())
         } else {
             normal.text = item.name
-            avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerIdentityNumber)
+            avatar.setInfo(item.getConversationName(), item.iconUrl(), item.ownerId)
         }
         bot_iv.visibility = if (item.isBot()) View.VISIBLE else View.GONE
         setOnClickListener {
@@ -65,7 +65,7 @@ class ConversationCheckView : LinearLayout, Checkable {
 
     fun bind(item: User, listener: ForwardAdapter.ForwardListener?) {
         normal.text = item.fullName
-        avatar.setInfo(item.fullName, item.avatarUrl, item.identityNumber)
+        avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
         setOnClickListener {
             toggle()
             listener?.onUserItemClick(item)
