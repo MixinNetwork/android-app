@@ -19,7 +19,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.job.RefreshSnapshotsJob
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
@@ -55,16 +54,12 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             if (pagedList != null && pagedList.isNotEmpty()) {
                 showEmpty(false)
                 adapter.submitList(pagedList)
-                GlobalScope.launch(Dispatchers.IO) {
-                    for (s in pagedList) {
-                        s?.opponentId?.let {
-                            val u = walletViewModel.getUserById(it)
-                            if (u == null) {
-                                jobManager.addJobInBackground(RefreshUserJob(arrayListOf(it)))
-                            }
-                        }
-                    }
+                val opponentIds = pagedList.filter {
+                    it.opponentId != null
+                }.map {
+                    it.opponentId!!
                 }
+                walletViewModel.checkAndRefreshUsers(opponentIds)
             } else {
                 showEmpty(true)
             }

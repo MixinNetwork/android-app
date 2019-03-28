@@ -9,6 +9,9 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
@@ -16,6 +19,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshTopAssetsJob
+import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
@@ -68,6 +72,19 @@ internal constructor(
     fun verifyPin(code: String) = accountRepository.verifyPin(code)
 
     fun getUserById(id: String): User? = userRepository.getUserById(id)
+
+    fun checkAndRefreshUsers(userIds: List<String>) {
+        GlobalScope.launch(Dispatchers.IO) {
+            val existUsers = userRepository.findUserExist(userIds)
+            val queryUsers = userIds.filter {
+                !existUsers.contains(it)
+            }
+            if (queryUsers.isEmpty()) {
+                return@launch
+            }
+            jobManager.addJobInBackground(RefreshUserJob(queryUsers))
+        }
+    }
 
     fun updateAssetHidden(id: String, hidden: Boolean) = assetRepository.updateHidden(id, hidden)
 
