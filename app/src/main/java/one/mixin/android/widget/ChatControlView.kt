@@ -592,12 +592,11 @@ class ChatControlView : FrameLayout {
                 if (downY != 0f && getDraggableContainer() != null && !isRecording) {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
-                        Math.abs(dif) > touchSlop
-                    } else {
-                        dif != 0f
-                    }
-                    if (dragging) {
-                        checkAudioRecord()
+                        Math.abs(moveY - startY) > touchSlop
+                    } else dragging
+                    if (dif != 0f) {
+                        triggeredCancel = true
+                        removeRecordRunnable()
                     }
                     callback.onDragChatControl(dif)
                 } else {
@@ -642,11 +641,10 @@ class ChatControlView : FrameLayout {
                     val dif = moveY - downY
                     dragging = if (!dragging) {
                         Math.abs(dif) > touchSlop
-                    } else {
-                        dif != 0f
-                    }
-                    if (dragging) {
-                        checkAudioRecord()
+                    } else dragging
+                    if (dif != 0f) {
+                        triggeredCancel = true
+                        removeRecordRunnable()
                     }
                     callback.onDragChatControl(dif)
                 } else {
@@ -668,7 +666,7 @@ class ChatControlView : FrameLayout {
         return false
     }
 
-    private fun checkAudioRecord() {
+    private fun removeRecordRunnable() {
         removeCallbacks(recordRunnable)
         removeCallbacks(checkReadyRunnable)
     }
@@ -728,8 +726,7 @@ class ChatControlView : FrameLayout {
                 if (moveX != 0f) {
                     chat_slide.slideText(startX - moveX)
                     if (originX - moveX > maxScrollX) {
-                        removeCallbacks(recordRunnable)
-                        removeCallbacks(checkReadyRunnable)
+                        removeRecordRunnable()
                         handleCancelOrEnd(true)
                         chat_slide.parent.requestDisallowInterceptTouchEvent(false)
                         triggeredCancel = true
@@ -746,15 +743,15 @@ class ChatControlView : FrameLayout {
                 }
 
                 if (!hasStartRecord) {
-                    removeCallbacks(recordRunnable)
-                    removeCallbacks(checkReadyRunnable)
+                    removeRecordRunnable()
                     cleanUp()
-                    if (event.action != ACTION_CANCEL && !post(sendClickRunnable)) {
-                        clickSend()
+                    if (event.action != ACTION_CANCEL) {
+                        if(!post(sendClickRunnable)) {
+                            clickSend()
+                        }
                     }
                 } else if (hasStartRecord && !locked && System.currentTimeMillis() - startTime < 500) {
-                    removeCallbacks(recordRunnable)
-                    removeCallbacks(checkReadyRunnable)
+                    removeRecordRunnable()
                     // delay check sendButtonVisible
                     postDelayed({
                         if (!recordCircle.sendButtonVisible) {
