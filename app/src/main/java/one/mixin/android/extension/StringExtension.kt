@@ -253,16 +253,6 @@ fun Editable.maxDecimal(bit: Int = 8) {
     }
 }
 
-fun String.toDot(): String {
-    for (i in 0 until this.length) {
-        val c = this[i]
-        if (!c.isDigit() && c != '.' && c != '-') {
-            return this.replace(c, '.')
-        }
-    }
-    return this
-}
-
 fun String.checkNumber(): Boolean {
     return try {
         BigDecimal(this)

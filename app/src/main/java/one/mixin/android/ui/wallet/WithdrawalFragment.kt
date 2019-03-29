@@ -1,12 +1,8 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.graphics.Typeface
 import android.os.Bundle
-import androidx.appcompat.view.ContextThemeWrapper
 import android.text.Editable
 import android.text.Spannable
 import android.text.SpannableStringBuilder
@@ -16,7 +12,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.edit
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_withdrawal.*
 import kotlinx.android.synthetic.main.layout_withdrawal_addr_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -26,7 +26,6 @@ import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.maxDecimal
 import one.mixin.android.extension.showKeyboard
-import one.mixin.android.extension.toDot
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.address.adapter.AddressAdapter
@@ -109,7 +108,7 @@ class WithdrawalFragment : BaseFragment() {
 
                 val amount = amount_et.text.toString()
                 val withdrawalItem = WithdrawalBottomSheetDialogFragment.WithdrawalItem(if (noPublicKey(it)) it.accountTag!! else it.publicKey!!,
-                    amount.toDot(), memo_et.text.toString(), it.addressId, if (noPublicKey(it)) it.accountName!! else it.label!!)
+                    amount, memo_et.text.toString(), it.addressId, if (noPublicKey(it)) it.accountName!! else it.label!!)
                 val bottom = WithdrawalBottomSheetDialogFragment.newInstance(withdrawalItem, asset)
                 bottom.setCallback(object : WithdrawalBottomSheetDialogFragment.Callback {
                     override fun onSuccess() {

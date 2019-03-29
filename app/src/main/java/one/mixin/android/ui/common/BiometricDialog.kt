@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.toDot
 import one.mixin.android.extension.toast
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.vo.Asset
@@ -59,7 +58,7 @@ class BiometricDialog(
     private fun getDescription(): String {
         val pre = "$amount ${asset.symbol}"
         val post = context.getString(R.string.wallet_unit_usd,
-            "≈ ${(BigDecimal(amount.toDot()) * BigDecimal(asset.priceUsd)).numberFormat2()}")
+            "≈ ${(BigDecimal(amount) * BigDecimal(asset.priceUsd)).numberFormat2()}")
         return "$pre ($post)"
     }
 
@@ -80,7 +79,7 @@ class BiometricDialog(
                 try {
                     val encrypt = context.defaultSharedPreferences.getString(Constants.BIOMETRICS_PIN, null)
                     val decryptByteArray = cipher.doFinal(Base64.decode(encrypt, Base64.URL_SAFE))
-                    callback?.onStartTransfer(asset.assetId, user.userId, amount.toDot(),
+                    callback?.onStartTransfer(asset.assetId, user.userId, amount,
                         decryptByteArray.toString(Charset.defaultCharset()), trace, memo)
                 } catch (e: Exception) {
                     Bugsnag.notify(BiometricException("onAuthenticationSucceeded  ${e.getStackTraceString()}"))
