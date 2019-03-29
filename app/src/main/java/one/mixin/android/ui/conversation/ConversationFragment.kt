@@ -92,7 +92,6 @@ import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -628,9 +627,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun hideIfShowBottomSheet() {
-        if (sticker_container.isVisible
-            && menu_container.isVisible
-            && gallery_container.isVisible) {
+        if (sticker_container.isVisible &&
+            menu_container.isVisible &&
+            gallery_container.isVisible) {
             chat_control.reset()
         }
         if (chat_control.isRecording) {

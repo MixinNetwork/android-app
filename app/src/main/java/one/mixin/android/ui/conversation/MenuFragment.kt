@@ -13,7 +13,7 @@ import one.mixin.android.ui.conversation.adapter.Menu
 import one.mixin.android.ui.conversation.adapter.MenuAdapter
 import one.mixin.android.vo.App
 
-class MenuFragment: Fragment() {
+class MenuFragment : Fragment() {
     companion object {
         const val TAG = "MenuFragment"
 

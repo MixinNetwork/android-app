@@ -746,7 +746,7 @@ class ChatControlView : FrameLayout {
                     removeRecordRunnable()
                     cleanUp()
                     if (event.action != ACTION_CANCEL) {
-                        if(!post(sendClickRunnable)) {
+                        if (!post(sendClickRunnable)) {
                             clickSend()
                         }
                     }

@@ -34,7 +34,7 @@ class ConvertVideoJob(
         const val GROUP_ID = "convert_video_group"
     }
 
-    private val video: VideoEditedInfo =  MixinApplication.appContext.getVideoModel(uri)!!
+    private val video: VideoEditedInfo = MixinApplication.appContext.getVideoModel(uri)!!
     private val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
     private val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
     private val messageId: String = messageId ?: UUID.randomUUID().toString()

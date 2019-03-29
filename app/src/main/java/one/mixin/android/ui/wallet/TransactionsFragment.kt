@@ -34,7 +34,6 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
-import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener

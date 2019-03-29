@@ -36,7 +36,6 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
 import one.mixin.android.extension.getMimeType
-import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
