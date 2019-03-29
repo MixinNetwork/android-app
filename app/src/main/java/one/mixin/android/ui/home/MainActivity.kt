@@ -18,6 +18,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
 import one.mixin.android.Constants
+import one.mixin.android.Constants.INTERVAL_24_HOURS
+import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.ConversationService
@@ -35,8 +37,10 @@ import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RotateSignedPreKeyJob
+import one.mixin.android.job.RotateSignedPreKeyJob.Companion.ROTATE_SIGNED_PRE_KEY
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
@@ -131,7 +135,6 @@ class MainActivity : BlazeBaseActivity() {
         Crashlytics.setUserIdentifier(account?.userId)
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
-        jobManager.addJobInBackground(RefreshStickerAlbumJob())
         jobManager.addJobInBackground(BackupJob())
 
         doAsync {
@@ -141,6 +144,7 @@ class MainActivity : BlazeBaseActivity() {
             WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
         }
 
+        refreshStickerAlbum()
         rotateSignalPreKey()
         checkRoot()
 
@@ -159,15 +163,29 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
-    private fun rotateSignalPreKey() {
-        val cur = System.currentTimeMillis()
-        val last = defaultSharedPreferences.getLong(RotateSignedPreKeyJob.ROTATE_SIGNED_PRE_KEY, 0)
-        if (last == 0.toLong()) {
-            defaultSharedPreferences.putLong(RotateSignedPreKeyJob.ROTATE_SIGNED_PRE_KEY, cur)
-        }
-        if (cur - last > Constants.INTERVAL_48_HOURS) {
+    private fun rotateSignalPreKey() =
+        runIntervalTask(ROTATE_SIGNED_PRE_KEY, INTERVAL_48_HOURS) {
             jobManager.addJobInBackground(RotateSignedPreKeyJob())
-            defaultSharedPreferences.putLong(RotateSignedPreKeyJob.ROTATE_SIGNED_PRE_KEY, cur)
+        }
+
+    private fun refreshStickerAlbum() =
+        runIntervalTask(REFRESH_STICKER_ALBUM_PRE_KEY, INTERVAL_24_HOURS) {
+            jobManager.addJobInBackground(RefreshStickerAlbumJob())
+        }
+
+    private fun runIntervalTask(
+        spKey: String,
+        interval: Long,
+        task: () -> Unit
+    ) {
+        val cur = System.currentTimeMillis()
+        val last = defaultSharedPreferences.getLong(spKey, 0)
+        if (last == 0L) {
+            defaultSharedPreferences.putLong(spKey, cur)
+        }
+        if (cur - last > interval) {
+            task.invoke()
+            defaultSharedPreferences.putLong(spKey, cur)
         }
     }
 
