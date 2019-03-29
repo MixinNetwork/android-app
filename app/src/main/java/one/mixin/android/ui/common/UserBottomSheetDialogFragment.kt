@@ -117,7 +117,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             dismiss()
         }
 
-        bottomViewModel.refreshUser(user.userId)
+        bottomViewModel.refreshUser(user.userId, true)
     }
 
     private fun initMenu() {
@@ -225,7 +225,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                     contentView.creator_tv.visibility = GONE
                                 }
                             } else {
-                                bottomViewModel.refreshUser(app.creatorId)
+                                bottomViewModel.refreshUser(app.creatorId, true)
                             }
                         })
                     }
