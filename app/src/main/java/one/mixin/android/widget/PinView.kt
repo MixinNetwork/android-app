@@ -105,6 +105,16 @@ class PinView : LinearLayout {
         listener?.onUpdate(index)
     }
 
+    fun set(s: String) {
+        if (s.length != count) return
+        for (i in 0 until count) {
+            val c = s[i]
+            toStar(views[i])
+            codes.append(i, c.toString())
+        }
+        listener?.onUpdate(count)
+    }
+
     fun delete() {
         if (index <= 0) return
         index--

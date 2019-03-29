@@ -99,7 +99,7 @@ class SingleFriendSelectAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
     open class FriendViewHolder(itemView: View) : ContactsAdapter.ViewHolder(itemView) {
         fun bind(user: User, listener: FriendSelectListener?) {
             itemView.normal.text = user.fullName
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             itemView.bot_iv.visibility = if (user.appId != null) View.VISIBLE else View.GONE
             itemView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) View.VISIBLE else View.GONE
             if (listener != null) {

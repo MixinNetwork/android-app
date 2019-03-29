@@ -85,7 +85,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
             isAdd: Boolean
         ) {
             itemView.name.text = user.fullName
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             if (isAdd) {
                 alreadyUserIds?.let {
                     if (it.contains(user.userId)) {

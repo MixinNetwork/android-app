@@ -33,7 +33,7 @@ class FriendAdapter : RecyclerView.Adapter<FriendAdapter.FriendViewHolder>() {
     class FriendViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(item: User, listener: FriendListener?) {
             itemView.normal.text = item.fullName
-            itemView.avatar.setInfo(item.fullName, item.avatarUrl, item.identityNumber)
+            itemView.avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
             itemView.setOnClickListener {
                 listener?.onFriendClick(item)
             }

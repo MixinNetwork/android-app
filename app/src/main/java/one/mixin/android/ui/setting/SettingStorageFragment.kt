@@ -316,7 +316,7 @@ class SettingStorageFragment : BaseFragment() {
                 itemView.normal.text = conversationStorageUsage.groupName
             } else {
                 itemView.normal.text = conversationStorageUsage.name
-                itemView.avatar.setInfo(conversationStorageUsage.name, conversationStorageUsage.avatarUrl, conversationStorageUsage.ownerIdentityNumber)
+                itemView.avatar.setInfo(conversationStorageUsage.name, conversationStorageUsage.avatarUrl, conversationStorageUsage.ownerId)
             }
             itemView.storage_tv.text = conversationStorageUsage.mediaSize.fileSize()
             itemView.setOnClickListener { action(conversationStorageUsage.conversationId) }

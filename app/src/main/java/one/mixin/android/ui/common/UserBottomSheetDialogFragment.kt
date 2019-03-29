@@ -190,7 +190,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun updateUserInfo(user: User) {
-        contentView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+        contentView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         contentView.name.text = user.fullName
         contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
         contentView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE

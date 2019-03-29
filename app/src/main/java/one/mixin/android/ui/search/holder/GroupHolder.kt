@@ -22,7 +22,7 @@ class GroupHolder constructor(containerView: View) : RecyclerView.ViewHolder(con
         isEnd: Boolean
     ) {
         itemView.search_name.text = conversation.groupName
-        itemView.search_avatar_iv.setInfo(conversation.groupName, conversation.groupIconUrl, conversation.ownerIdentityNumber)
+        itemView.search_avatar_iv.setInfo(conversation.groupName, conversation.groupIconUrl, conversation.conversationId)
         itemView.divider.visibility = View.VISIBLE
         itemView.setOnClickListener {
             onItemClickListener?.onGroupClick(conversation)

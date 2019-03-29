@@ -30,7 +30,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         } else {
             itemView.setBackgroundColor(Color.TRANSPARENT)
         }
-        itemView.avatar_iv.setInfo(item.sharedUserFullName, item.sharedUserAvatarUrl, item.sharedUserIdentityNumber
+        itemView.avatar_iv.setInfo(item.sharedUserFullName, item.sharedUserAvatarUrl, item.sharedUserId
             ?: "0")
         itemView.name_tv.text = item.sharedUserFullName
         itemView.id_tv.text = item.sharedUserIdentityNumber

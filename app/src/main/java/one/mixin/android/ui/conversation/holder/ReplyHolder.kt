@@ -256,7 +256,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
             quoteMessage.type.endsWith("_CONTACT") -> {
                 itemView.reply_content_tv.text = quoteMessage.sharedUserIdentityNumber
                 setIcon(R.drawable.ic_status_contact)
-                itemView.reply_avatar.setInfo(quoteMessage.sharedUserFullName, quoteMessage.sharedUserAvatarUrl, quoteMessage.sharedUserIdentityNumber
+                itemView.reply_avatar.setInfo(quoteMessage.sharedUserFullName, quoteMessage.sharedUserAvatarUrl, quoteMessage.sharedUserId
                     ?: "0")
                 itemView.reply_avatar.visibility = View.VISIBLE
                 itemView.reply_iv.visibility = View.INVISIBLE

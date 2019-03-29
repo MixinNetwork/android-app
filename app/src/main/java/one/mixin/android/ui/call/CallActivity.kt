@@ -80,7 +80,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         val answer = intent.getParcelableExtra<User?>(ARGS_ANSWER)
         if (answer != null) {
             name_tv.text = answer.fullName
-            avatar.setInfo(answer.fullName, answer.avatarUrl, answer.identityNumber)
+            avatar.setInfo(answer.fullName, answer.avatarUrl, answer.userId)
             avatar.setTextSize(48f)
             if (answer.avatarUrl != null) {
                 setBlurBg(answer.avatarUrl)

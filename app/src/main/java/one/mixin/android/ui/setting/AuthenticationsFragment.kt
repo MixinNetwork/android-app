@@ -99,7 +99,7 @@ class AuthenticationsFragment : BaseFragment() {
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bindTo(app: App, onAppClick: OnAppClick) {
-            itemView.avatar.setInfo(app.name, app.icon_url, app.appNumber)
+            itemView.avatar.setInfo(app.name, app.icon_url, app.appId)
             itemView.name_tv.text = app.name
             itemView.number_tv.text = app.appNumber
             itemView.deauthorize.setOnClickListener {

@@ -174,7 +174,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun bind(self: User?, listener: ContactListener?) {
             val account = Session.getAccount()
             if (self != null) {
-                itemView.contact_header_avatar.setInfo(self.fullName, self.avatarUrl, self.identityNumber)
+                itemView.contact_header_avatar.setInfo(self.fullName, self.avatarUrl, self.userId)
                 itemView.contact_header_name_tv.text = self.fullName
                 itemView.contact_header_id_tv.text =
                     itemView.context.getString(R.string.contact_mixin_id, self.identityNumber)
@@ -182,7 +182,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
                     itemView.context.getString(R.string.contact_mobile, self.phone)
             } else {
                 if (account != null) {
-                    itemView.contact_header_avatar.setInfo(account.full_name, account.avatar_url, account.identity_number)
+                    itemView.contact_header_avatar.setInfo(account.full_name, account.avatar_url, account.userId)
                     itemView.contact_header_name_tv.text = account.full_name
                     itemView.contact_header_id_tv.text =
                         itemView.context.getString(R.string.contact_mixin_id, account.identity_number)
@@ -211,7 +211,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
     class FriendViewHolder(itemView: View) : ViewHolder(itemView) {
         fun bind(user: User, listener: ContactListener?) {
             itemView.normal.text = user.fullName
-            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.identityNumber)
+            itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
             itemView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
             if (listener != null) {

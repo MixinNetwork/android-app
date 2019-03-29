@@ -176,7 +176,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     val avatarView = AvatarView(requireContext(), null)
                     contentView.avatar_container_ll.addView(avatarView, params)
                     avatarView.setTextSize(14f)
-                    avatarView.setInfo(u.fullName, u.avatarUrl, u.identityNumber)
+                    avatarView.setInfo(u.fullName, u.avatarUrl, u.userId)
                 }
                 if (participants.size >= DEFAULT_COUNT) {
                     val moreView = TextView(context).apply {
