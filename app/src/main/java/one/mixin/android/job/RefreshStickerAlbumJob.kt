@@ -14,6 +14,7 @@ class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshStickerAlbumJob"
+        const val REFRESH_STICKER_ALBUM_PRE_KEY = "refresh_sticker_album_pre_key"
     }
 
     override fun onRun() {
