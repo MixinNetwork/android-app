@@ -180,9 +180,6 @@ class MainActivity : BlazeBaseActivity() {
     ) {
         val cur = System.currentTimeMillis()
         val last = defaultSharedPreferences.getLong(spKey, 0)
-        if (last == 0L) {
-            defaultSharedPreferences.putLong(spKey, cur)
-        }
         if (cur - last > interval) {
             task.invoke()
             defaultSharedPreferences.putLong(spKey, cur)

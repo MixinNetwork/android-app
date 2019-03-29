@@ -83,7 +83,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         bottomViewModel.findUserById(userId).observe(this, Observer { user ->
             if (user == null) {
-                bottomViewModel.refreshUser(userId)
+                bottomViewModel.refreshUser(userId, true)
             } else {
                 contentView.badge_view.bg.setInfo(user.fullName, user.avatarUrl, user.userId)
                 if (type == TYPE_RECEIVE_QR) {

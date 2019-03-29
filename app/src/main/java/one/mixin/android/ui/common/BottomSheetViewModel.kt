@@ -166,8 +166,8 @@ class BottomSheetViewModel @Inject internal constructor(
             request = request, type = ConversationJob.TYPE_UPDATE))
     }
 
-    fun refreshUser(userId: String) {
-        jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
+    fun refreshUser(userId: String, forceRefresh: Boolean) {
+        jobManager.addJobInBackground(RefreshUserJob(listOf(userId), forceRefresh = forceRefresh))
     }
 
     fun verifyPin(code: String): Observable<MixinResponse<Account>> = accountRepository.verifyPin(code)
