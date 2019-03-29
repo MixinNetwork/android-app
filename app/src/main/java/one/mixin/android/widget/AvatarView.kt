@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.loadImage
 import org.jetbrains.anko.sp
+import java.util.UUID
 import kotlin.math.abs
 
 class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context, attrs) {
@@ -100,7 +101,12 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
         var code = idCodeMap[id]
         if (code != null) return code
 
-        code = abs(id.hashCode()).rem(24) + 1
+        val hashcode = try {
+            UUID.fromString(id).hashCode()
+        } catch (e: IllegalArgumentException) {
+            id.hashCode()
+        }
+        code = abs(hashcode).rem(24) + 1
         idCodeMap[id] = code
         return code
     }
