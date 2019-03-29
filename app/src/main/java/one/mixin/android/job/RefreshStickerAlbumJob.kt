@@ -20,16 +20,17 @@ class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
         val response = accountService.getStickerAlbums().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val albums = response.data as List<StickerAlbum>
+            stickerAlbumDao.insertList(albums)
             for (a in albums) {
-                stickerAlbumDao.insert(a)
-
                 val r = accountService.getStickersByAlbumId(a.albumId).execute().body()
                 if (r != null && r.isSuccess && r.data != null) {
                     val stickers = r.data as List<Sticker>
+                    val relationships = arrayListOf<StickerRelationship>()
                     for (s in stickers) {
                         stickerDao.insertUpdate(s)
-                        stickerRelationshipDao.insert(StickerRelationship(a.albumId, s.stickerId))
+                        relationships.add(StickerRelationship(a.albumId, s.stickerId))
                     }
+                    stickerRelationshipDao.insertList(relationships)
                 }
             }
             val sp = applicationContext.defaultSharedPreferences
