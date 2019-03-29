@@ -262,6 +262,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         if (valuable) {
             contentView.swap_iv.visibility = VISIBLE
         } else {
+            swaped = false
             contentView.swap_iv.visibility = GONE
         }
         if (contentView.amount_et.text.isNullOrEmpty()) {
@@ -315,13 +316,21 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             0.0
         }
         val rightSymbol = if (swaped) currentAsset!!.symbol else "USD"
-        return if (swaped) {
-            bottomValue = (BigDecimal(amount) / BigDecimal(currentAsset!!.priceUsd)).toDouble()
-            "${(BigDecimal(amount) / BigDecimal(currentAsset!!.priceUsd)).numberFormat2()} $rightSymbol"
-        } else {
-            bottomValue = (BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd)).toDouble()
-            "${(BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd)).numberFormat2()} $rightSymbol"
+        val value = try {
+            if (currentAsset == null || currentAsset!!.priceUsd.toDouble() == 0.0) {
+                BigDecimal(0)
+            } else if (swaped) {
+                BigDecimal(amount) / BigDecimal(currentAsset!!.priceUsd)
+            } else {
+                (BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd))
+            }
+        } catch (e: ArithmeticException) {
+            BigDecimal(0)
+        } catch (e: NumberFormatException) {
+            BigDecimal(0)
         }
+        bottomValue = value.toDouble()
+        return "${(value).numberFormat2()} $rightSymbol"
     }
 
     private fun operateKeyboard(show: Boolean) {
