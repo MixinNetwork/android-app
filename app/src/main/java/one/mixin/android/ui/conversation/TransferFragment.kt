@@ -13,8 +13,6 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.RelativeLayout
-import android.widget.TextView
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -42,7 +40,6 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.toDot
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.ui.common.BiometricDialog
@@ -57,8 +54,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import one.mixin.android.worker.RefreshAssetsWorker
-import org.jetbrains.anko.above
-import org.jetbrains.anko.centerVertically
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
@@ -122,6 +117,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     private var user: User? = null
 
     private var swaped = false
+    private var bottomValue = 0.0
 
     private val assetsView: View by lazy {
         val view = View.inflate(context, R.layout.view_wallet_transfer_type_bottom, null)
@@ -149,7 +145,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.amount_et.addTextChangedListener(mWatcher)
-        contentView.transfer_amount_et.addTextChangedListener(mWatcher)
+        contentView.amount_rl.setOnClickListener { operateKeyboard(true) }
         contentView.asset_rl.setOnClickListener {
             operateKeyboard(false)
             context?.let {
@@ -213,7 +209,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             if (r != null && r.isNotEmpty()) {
                 assets = r
                 adapter.submitList(r)
-                contentView.expand_iv.visibility = VISIBLE
                 contentView.asset_rl.isEnabled = true
 
                 notNullElse(r.find {
@@ -227,7 +222,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     currentAsset = a
                 })
             } else {
-                contentView.expand_iv.visibility = GONE
                 contentView.asset_rl.isEnabled = false
 
                 doAsync {
@@ -266,39 +260,25 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             false
         }
         if (valuable) {
-            contentView.amount_ll.visibility = VISIBLE
-            contentView.transfer_amount_rl.visibility = GONE
-            if (contentView.amount_et.text.isNullOrEmpty()) {
-                if (swaped) {
-                    contentView.amount_et.hint = "0.00 USD"
-                    contentView.amount_as_tv.text = "0.00 ${asset.symbol}"
-                } else {
-                    contentView.amount_et.hint = "0.00 ${asset.symbol}"
-                    contentView.amount_as_tv.text = "0.00 USD"
-                }
-                contentView.symbol_tv.text = ""
-            } else {
-                contentView.amount_et.hint = ""
-                contentView.symbol_tv.text = getLeftSymbol()
-                contentView.amount_as_tv.text = getRightText()
-            }
-            contentView.asset_name.updateLayoutParams<RelativeLayout.LayoutParams> {
-                above(R.id.center_place_holder)
-                addRule(0)
-            }
-            contentView.asset_desc.visibility = VISIBLE
-            contentView.desc_end.visibility = VISIBLE
+            contentView.swap_iv.visibility = VISIBLE
         } else {
-            contentView.amount_ll.visibility = GONE
-            contentView.transfer_amount_rl.visibility = VISIBLE
-            contentView.transfer_amount_tv.text = asset.balance
-            contentView.asset_name.updateLayoutParams<RelativeLayout.LayoutParams> {
-                above(0)
-                centerVertically()
-            }
-            contentView.asset_desc.visibility = GONE
-            contentView.desc_end.visibility = GONE
+            contentView.swap_iv.visibility = GONE
         }
+        if (contentView.amount_et.text.isNullOrEmpty()) {
+            if (swaped) {
+                contentView.amount_et.hint = "0.00 USD"
+                contentView.amount_as_tv.text = "0.00 ${asset.symbol}"
+            } else {
+                contentView.amount_et.hint = "0.00 ${asset.symbol}"
+                contentView.amount_as_tv.text = "0.00 USD"
+            }
+            contentView.symbol_tv.text = ""
+        } else {
+            contentView.amount_et.hint = ""
+            contentView.symbol_tv.text = getTopSymbol()
+            contentView.amount_as_tv.text = getBottomText()
+        }
+
         contentView.asset_name.text = asset.name
         contentView.asset_desc.text = asset.balance.numberFormat()
         contentView.asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
@@ -307,38 +287,28 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         operateKeyboard(true)
     }
 
-    private fun getAmountView(): TextView {
-        return if (contentView.transfer_amount_rl.isVisible) {
-            contentView.transfer_amount_et
-        } else {
-            contentView.amount_et
-        }
-    }
+    private fun getAmountView() = contentView.amount_et
 
-    private fun getLeftValue(): String {
-        return if (contentView.transfer_amount_rl.isVisible) {
-            contentView.transfer_amount_et.text.toString().toDot()
+    private fun getAmount(): String {
+        return if (swaped) {
+            bottomValue.toString()
         } else {
-            val s = if (swaped) {
-                contentView.amount_as_tv
-            } else {
-                contentView.amount_et
-            }.text.toString()
+            val s = contentView.amount_et.text.toString()
             val symbol = if (swaped) currentAsset?.symbol ?: "" else "USD"
             val index = s.indexOf(symbol)
-            if (index != -1) {
+            return if (index != -1) {
                 s.substring(0, index)
             } else {
                 s
-            }.trim().toDot()
+            }.trim()
         }
     }
 
-    private fun getLeftSymbol(): String {
+    private fun getTopSymbol(): String {
         return if (swaped) "USD" else currentAsset?.symbol ?: ""
     }
 
-    private fun getRightText(): String {
+    private fun getBottomText(): String {
         val amount = try {
             contentView.amount_et.text.toString().toDouble()
         } catch (e: java.lang.NumberFormatException) {
@@ -346,8 +316,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
         val rightSymbol = if (swaped) currentAsset!!.symbol else "USD"
         return if (swaped) {
+            bottomValue = (BigDecimal(amount) / BigDecimal(currentAsset!!.priceUsd)).toDouble()
             "${(BigDecimal(amount) / BigDecimal(currentAsset!!.priceUsd)).numberFormat2()} $rightSymbol"
         } else {
+            bottomValue = (BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd)).toDouble()
             "${(BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd)).numberFormat2()} $rightSymbol"
         }
     }
@@ -364,7 +336,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showBiometricPrompt() {
-        biometricDialog = BiometricDialog(requireContext(), user!!, getLeftValue(),
+        biometricDialog = BiometricDialog(requireContext(), user!!, getAmount(),
             currentAsset!!.toAsset(), UUID.randomUUID().toString(), contentView.transfer_memo.text.toString())
         biometricDialog?.callback = biometricDialogCallback
         biometricDialog?.show()
@@ -372,8 +344,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     private fun showTransferBottom(trace: String? = null, pin: String? = null) {
         val bottom = TransferBottomSheetDialogFragment
-            .newInstance(user!!, getLeftValue(), currentAsset!!.toAsset(), trace ?: UUID.randomUUID().toString(),
-            contentView.transfer_memo.text.toString(), pin)
+            .newInstance(user!!, getAmount(), currentAsset!!.toAsset(), trace ?: UUID.randomUUID().toString(),
+                contentView.transfer_memo.text.toString(), pin)
         bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
         bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
@@ -406,10 +378,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     bottomMargin = 0
                 }
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.white)
-                if (contentView.amount_ll.isVisible && currentAsset != null) {
+                if (contentView.amount_rl.isVisible && currentAsset != null) {
                     contentView.amount_et.hint = ""
-                    contentView.symbol_tv.text = getLeftSymbol()
-                    contentView.amount_as_tv.text = getRightText()
+                    contentView.symbol_tv.text = getTopSymbol()
+                    contentView.amount_as_tv.text = getBottomText()
                 }
             } else {
                 contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_gray_btn, null)
@@ -419,7 +391,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     bottomMargin = requireContext().dpToPx(16f)
                 }
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                if (contentView.amount_ll.isVisible) {
+                if (contentView.amount_rl.isVisible) {
                     contentView.amount_et.hint = "0.00 ${if (swaped) "USD" else currentAsset?.symbol}"
                     contentView.symbol_tv.text = ""
                     contentView.amount_as_tv.text = "0.00 ${if (swaped) currentAsset?.symbol else "USD"}"
