@@ -243,11 +243,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun filter(s: String) {
-        val assetList = arrayListOf<AssetItem>()
-        assets.forEach {
-            if (it.name.contains(s, true)) {
-                assetList.add(it)
-            }
+        val assetList = assets.filter {
+            it.name.contains(s, true) || it.symbol.contains(s, true)
         }
         adapter.submitList(assetList)
     }
