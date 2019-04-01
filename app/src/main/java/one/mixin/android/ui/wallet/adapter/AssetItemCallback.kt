@@ -6,13 +6,13 @@ import android.view.View.VISIBLE
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_wallet_asset.view.*
-import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.common.recyclerview.NormalHolder
 
 class AssetItemCallback(private val listener: ItemCallbackListener) :
     ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
 
     override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
-        val swipeFlags = if (viewHolder is HeaderAdapter.NormalHolder) {
+        val swipeFlags = if (viewHolder is NormalHolder) {
             ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
         } else {
             0

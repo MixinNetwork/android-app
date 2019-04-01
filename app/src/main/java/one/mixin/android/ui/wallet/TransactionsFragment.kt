@@ -11,6 +11,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
+import androidx.paging.PagedList
 import androidx.room.Transaction
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.kotlin.autoDisposable
@@ -25,8 +26,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getEpochNano
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
@@ -51,7 +54,7 @@ import one.mixin.android.widget.RadioGroup
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 
-class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnSnapshotListener {
+class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
     companion object {
         const val TAG = "TransactionsFragment"
@@ -66,8 +69,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
         }
     }
 
-    private var snapshots = listOf<SnapshotItem>()
-    private lateinit var adapter: TransactionsAdapter
+    private val adapter = TransactionsAdapter()
     private lateinit var asset: AssetItem
 
     private lateinit var headerView: View
@@ -83,7 +85,7 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
             showBottom()
         }
 
-        headerView = layoutInflater.inflate(R.layout.view_transactions_fragment_header, recycler_view, false)
+        headerView = layoutInflater.inflate(R.layout.view_transactions_fragment_header, transactions_rv, false)
         headerView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         headerView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         headerView.group_info_member_title_sort.setOnClickListener {
@@ -106,11 +108,11 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
             })
         }
 
-        adapter = TransactionsAdapter().apply { data = snapshots }
         adapter.listener = this
         adapter.headerView = headerView
-        recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
-        recycler_view.adapter = adapter
+        transactions_rv.itemAnimator = null
+        transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        transactions_rv.adapter = adapter
         headerView.post {
             if (!isAdded) return@post
 
@@ -119,14 +121,14 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
             }
         }
 
-        dataObserver = Observer { list ->
+        dataObserver = Observer { pagedList ->
             if (currentType == R.id.filters_radio_all) {
-                if (list != null && list.isNotEmpty()) {
+                if (pagedList != null && pagedList.isNotEmpty()) {
+                    lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
+                    adapter.submitList(pagedList)
                     updateHeaderBottomLayout(false)
-                    snapshots = list
-
-                    val opponentIds = snapshots.filter {
-                        it.opponentId != null
+                    val opponentIds = pagedList.filter {
+                        it?.opponentId != null
                     }.map {
                         it.opponentId!!
                     }
@@ -135,16 +137,16 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
                     updateHeaderBottomLayout(true)
                 }
             } else {
-                if (list != null && list.isNotEmpty()) {
+                if (pagedList != null && pagedList.isNotEmpty()) {
+                    lastCreatedAt = pagedList.last().createdAt
+                    adapter.submitList(pagedList)
                     updateHeaderBottomLayout(false)
                 } else {
                     updateHeaderBottomLayout(true)
                 }
             }
-            adapter.data = list
-            adapter.notifyDataSetChanged()
         }
-        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
+        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey))
         doAsync {
             asset.assetId.let {
                 walletViewModel.clearPendingDepositsByAssetId(it)
@@ -159,7 +161,6 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
 
         refreshPendingDeposits(asset)
         jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
-        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId))
     }
 
     @Transaction
@@ -274,32 +275,32 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
                 currentType = id
                 when (currentType) {
                     R.id.filters_radio_all -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId))
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey))
                         headerView.group_info_member_title.setText(R.string.wallet_transactions_title)
                         headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
                     }
                     R.id.filters_radio_transfer -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name))
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey))
                         headerView.group_info_member_title.setText(R.string.filters_transfer)
                         headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
                     }
                     R.id.filters_radio_deposit -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name))
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name, initialLoadKey = initialLoadKey))
                         headerView.group_info_member_title.setText(R.string.filters_deposit)
                         headerView.wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
                     }
                     R.id.filters_radio_withdrawal -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name))
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey))
                         headerView.group_info_member_title.setText(R.string.filters_withdrawal)
                         headerView.wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
                     }
                     R.id.filters_radio_fee -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name))
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey))
                         headerView.group_info_member_title.setText(R.string.filters_fee)
                         headerView.wallet_transactions_empty.setText(R.string.wallet_fees_empty)
                     }
                     R.id.filters_radio_rebate -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name))
+                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey))
                         headerView.group_info_member_title.setText(R.string.filters_rebate)
                         headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
                     }
@@ -307,6 +308,10 @@ class TransactionsFragment : BaseTransactionsFragment<List<SnapshotItem>>(), OnS
                 filtersSheet.dismiss()
             }
         })
+    }
+
+    override fun refreshSnapshots() {
+        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano(), LIMIT))
     }
 
     private fun updateHeaderBottomLayout(expand: Boolean) {

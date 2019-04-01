@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.paging.PagedList
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
@@ -18,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.extension.getEpochNano
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
@@ -27,6 +28,7 @@ import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.widget.RadioGroup
+import timber.log.Timber
 
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -37,7 +39,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     private val adapter = SnapshotPagedAdapter()
-    private var initialLoadKey: Int? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         layoutInflater.inflate(R.layout.fragment_all_transactions, container, false)
@@ -47,12 +48,13 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         title_view.left_ib.setOnClickListener { view?.findNavController()?.navigateUp() }
         title_view.right_animator.setOnClickListener { showFiltersSheet() }
         adapter.listener = this
-        transaction_rv.itemAnimator = null
-        transaction_rv.adapter = adapter
-        transaction_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        transactions_rv.itemAnimator = null
+        transactions_rv.adapter = adapter
+        transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         dataObserver = Observer { pagedList ->
             if (pagedList != null && pagedList.isNotEmpty()) {
                 showEmpty(false)
+                lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
                 adapter.submitList(pagedList)
                 val opponentIds = pagedList.filter {
                     it?.opponentId != null
@@ -65,12 +67,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             }
         }
         bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey))
-        jobManager.addJobInBackground(RefreshSnapshotsJob())
-    }
-
-    override fun onStop() {
-        super.onStop()
-        initialLoadKey = (transaction_rv.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition()
     }
 
     override fun <T> onNormalItemClick(item: T) {
@@ -126,20 +122,25 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         })
     }
 
+    override fun refreshSnapshots() {
+        jobManager.addJobInBackground(RefreshSnapshotsJob(limit = LIMIT,
+            offset = lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano()))
+    }
+
     private fun showEmpty(show: Boolean) {
         if (show) {
             if (empty_rl.visibility == GONE) {
                 empty_rl.visibility = VISIBLE
             }
-            if (transaction_rv.visibility == VISIBLE) {
-                transaction_rv.visibility = GONE
+            if (transactions_rv.visibility == VISIBLE) {
+                transactions_rv.visibility = GONE
             }
         } else {
             if (empty_rl.visibility == VISIBLE) {
                 empty_rl.visibility = GONE
             }
-            if (transaction_rv.visibility == GONE) {
-                transaction_rv.visibility = VISIBLE
+            if (transactions_rv.visibility == GONE) {
+                transactions_rv.visibility = VISIBLE
             }
         }
     }

@@ -70,13 +70,13 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
     @SuppressLint("CheckResult")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         title_view.right_animator.visibility = View.GONE
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserSnapshotsWorker>(
             workDataOf(RefreshUserSnapshotsWorker.USER_ID to userId))
         adapter.listener = this
-        recycler_view.adapter = adapter
+        transactions_rv.adapter = adapter
         walletViewModel.snapshotsByUserId(userId).observe(this, Observer {
             adapter.submitList(it)
         })

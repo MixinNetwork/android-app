@@ -27,7 +27,10 @@ interface AssetService {
     fun asset(@Path("id") id: String): Call<MixinResponse<Asset>>
 
     @GET("assets/{id}/snapshots")
-    fun snapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>
+    fun snapshots(@Path("id") id: String,
+        @Query("offset") offset: Long = 0L,
+        @Query("limit") limit: Int = 100
+    ): Call<MixinResponse<List<Snapshot>>>
 
     @POST("transfers")
     fun transfer(@Body request: TransferRequest): Observable<MixinResponse<Asset>>
@@ -45,7 +48,9 @@ interface AssetService {
     fun addresses(@Path("id") id: String): Call<MixinResponse<List<Address>>>
 
     @GET("snapshots")
-    fun allSnapshots(): Call<MixinResponse<List<Snapshot>>>
+    fun allSnapshots(@Query("offset") offset: Long = 0L,
+        @Query("limit") limit: Int = 100
+    ): Call<MixinResponse<List<Snapshot>>>
 
     @GET("mutual_snapshots/{id}")
     fun mutualSnapshots(@Path("id") id: String): Call<MixinResponse<List<Snapshot>>>

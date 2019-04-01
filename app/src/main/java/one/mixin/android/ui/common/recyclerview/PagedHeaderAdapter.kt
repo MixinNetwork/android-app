@@ -1,19 +1,20 @@
 package one.mixin.android.ui.common.recyclerview
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
-import one.mixin.android.extension.notNullElse
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 
-abstract class HeaderAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
+    PagedListAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0
         const val TYPE_NORMAL = 1
     }
 
     var headerView: View? = null
-    open var data: List<T>? = null
 
     var onItemListener: OnItemListener? = null
 
@@ -25,22 +26,21 @@ abstract class HeaderAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(data, {
-        if (headerView != null) it.size + 1 else it.size }, 0)
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_HEADER) {
-            getHeaderViewHolder()
-        } else {
-            getNormalViewHolder(parent.context, parent)
-        }
-    }
+    override fun getItemCount() = if (headerView != null) super.getItemCount() + 1 else super.getItemCount()
 
     protected fun getPos(position: Int): Int {
         return if (headerView != null) {
             position - 1
         } else {
             position
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return if (viewType == TYPE_HEADER) {
+            getHeaderViewHolder()
+        } else {
+            getNormalViewHolder(parent.context, parent)
         }
     }
 
