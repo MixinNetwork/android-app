@@ -124,6 +124,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
             uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
         }
         if (isCancel) {
+            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
             removeJob()
             return true
         }

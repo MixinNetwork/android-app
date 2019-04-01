@@ -17,16 +17,15 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
 import java.io.File
-import java.util.UUID
 
 class ConvertVideoJob(
     private val conversationId: String,
     private val senderId: String,
     private val uri: Uri,
     isPlain: Boolean,
-    messageId: String? = null,
+    private val messageId: String,
     createdAt: String? = null
-) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(TAG).groupBy(GROUP_ID)) {
+) : MixinJob(Params(PRIORITY_BACKGROUND).addTags(TAG).groupBy(GROUP_ID), messageId) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -37,7 +36,6 @@ class ConvertVideoJob(
     private val video: VideoEditedInfo = MixinApplication.appContext.getVideoModel(uri)!!
     private val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
     private val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
-    private val messageId: String = messageId ?: UUID.randomUUID().toString()
     private val createdAt: String = createdAt ?: nowInUtc()
 
     override fun onAdded() {
@@ -59,9 +57,13 @@ class ConvertVideoJob(
     }
 
     override fun onRun() {
+        jobManager.saveJob(this)
         val result = MediaController.getInstance().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
             video.originalWidth, video.originalHeight, videoFile, video.needChange)
-
+        if (isCancel) {
+            removeJob()
+            return
+        }
         val message = createVideoMessage(messageId, conversationId, senderId, category, null,
             video.fileName, videoFile.toUri().toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
@@ -69,6 +71,12 @@ class ConvertVideoJob(
             if (result) MediaStatus.PENDING else MediaStatus.CANCELED,
             if (result) MessageStatus.SENDING else MessageStatus.FAILED)
 
+        removeJob()
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+    }
+
+    override fun cancel() {
+        isCancel = true
+        messageDao.updateMediaStatus(MediaStatus.CANCELED.name, messageId)
     }
 }
