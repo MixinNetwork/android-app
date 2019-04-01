@@ -13,7 +13,6 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.Constants
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
@@ -108,7 +107,7 @@ internal constructor(
 
     fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(assetRepository.allSnapshots(type, otherType), PagedList.Config.Builder()
-            .setPrefetchDistance(PAGE_SIZE * 2)
+            .setPrefetchDistance(PAGE_SIZE)
             .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build())

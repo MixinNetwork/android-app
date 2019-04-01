@@ -138,7 +138,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 }
             } else {
                 if (pagedList != null && pagedList.isNotEmpty()) {
-                    lastCreatedAt = pagedList.last().createdAt
+                    lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
                     adapter.submitList(pagedList)
                     updateHeaderBottomLayout(false)
                 } else {
