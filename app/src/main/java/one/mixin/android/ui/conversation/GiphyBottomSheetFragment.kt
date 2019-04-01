@@ -23,6 +23,7 @@ import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
+import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration

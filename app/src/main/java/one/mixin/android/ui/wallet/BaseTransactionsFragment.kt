@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.widget.BottomSheet
+import timber.log.Timber
 import javax.inject.Inject
 
 abstract class BaseTransactionsFragment<C> : BaseFragment() {

@@ -9,13 +9,13 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.timeAgoDay
-import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.backgroundResource
 import org.jetbrains.anko.textColorResource
 
-class SnapshotHolder(itemView: View) : HeaderAdapter.NormalHolder(itemView) {
+class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
     private val padding = itemView.context.dpToPx(16f)
 
     fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?, isLast: Boolean) {

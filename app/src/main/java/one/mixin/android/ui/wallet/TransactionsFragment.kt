@@ -67,8 +67,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
     }
 
-    private var snapshots = listOf<SnapshotItem>()
-    private lateinit var adapter: TransactionsAdapter
+    private val adapter = TransactionsAdapter()
     private lateinit var asset: AssetItem
 
     private lateinit var headerView: View
@@ -107,9 +106,9 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             })
         }
 
-        adapter = TransactionsAdapter().apply { data = snapshots }
         adapter.listener = this
         adapter.headerView = headerView
+        transactions_rv.itemAnimator = null
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         transactions_rv.adapter = adapter
         headerView.post {
@@ -123,9 +122,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         dataObserver = Observer { pageList ->
             if (currentType == R.id.filters_radio_all) {
                 if (pageList != null && pageList.isNotEmpty()) {
+                    adapter.submitList(pageList)
                     updateHeaderBottomLayout(false)
-                    snapshots = pageList
-
                     val opponentIds = pageList.filter {
                         it?.opponentId != null
                     }.map {
@@ -137,13 +135,12 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 }
             } else {
                 if (pageList != null && pageList.isNotEmpty()) {
+                    adapter.submitList(pageList)
                     updateHeaderBottomLayout(false)
                 } else {
                     updateHeaderBottomLayout(true)
                 }
             }
-            adapter.data = pageList
-            adapter.notifyDataSetChanged()
         }
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey))
         doAsync {

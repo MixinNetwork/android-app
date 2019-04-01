@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.item_group_info.view.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.recyclerview.HeaderFilterAdapter
+import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.group.InviteActivity
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant

@@ -8,10 +8,11 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
-import one.mixin.android.ui.common.recyclerview.HeaderAdapter
+import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
+import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapterDataObserver
 import one.mixin.android.vo.SnapshotItem
 
-class TransactionsAdapter : HeaderAdapter<SnapshotItem>(), StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
+class TransactionsAdapter : PagedHeaderAdapter<SnapshotItem>(SnapshotItem.DIFF_CALLBACK), StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
     var listener: OnSnapshotListener? = null
 
@@ -19,8 +20,8 @@ class TransactionsAdapter : HeaderAdapter<SnapshotItem>(), StickyRecyclerHeaders
         return if (headerView != null && pos == TYPE_HEADER) {
             -1
         } else {
-            val snapshot = data!![getPos(pos)]
-            Math.abs(snapshot.createdAt.hashForDate())
+            val snapshot = getItem(getPos(pos))
+            Math.abs(snapshot?.createdAt?.hashForDate() ?: -1)
         }
     }
 
@@ -28,18 +29,22 @@ class TransactionsAdapter : HeaderAdapter<SnapshotItem>(), StickyRecyclerHeaders
         SnapshotHeaderViewHolder(parent.inflate(R.layout.item_transaction_header, false))
 
     override fun onBindHeaderViewHolder(vh: SnapshotHeaderViewHolder, pos: Int) {
-        val time = data!![getPos(pos)].createdAt
+        val time = getItem(getPos(pos))?.createdAt ?: return
         vh.bind(time)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is SnapshotHolder) {
-            val isLast = position == itemCount - 1
             val pos = getPos(position)
-            data!![pos].let {
+            val isLast = pos == itemCount - 1
+            getItem(pos)?.let {
                 holder.bind(it, listener, isLast)
             }
         }
+    }
+
+    override fun registerAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
+        super.registerAdapterDataObserver(PagedHeaderAdapterDataObserver(observer, 1))
     }
 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup) =

@@ -61,7 +61,7 @@ internal constructor(
         LivePagedListBuilder(assetRepository.snapshotsFromDb(id, type, otherType), PagedList.Config.Builder()
             .setPrefetchDistance(Constants.PAGE_SIZE * 2)
             .setPageSize(Constants.PAGE_SIZE)
-            .setEnablePlaceholders(false)
+            .setEnablePlaceholders(true)
             .build())
             .setInitialLoadKey(initialLoadKey)
             .build()
