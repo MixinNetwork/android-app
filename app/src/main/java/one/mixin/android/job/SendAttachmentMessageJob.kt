@@ -18,7 +18,8 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.TransferAttachmentData
-import java.io.InputStream
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 
 class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
     .addTags(message.id).groupBy("send_media_job").requireNetwork().persist(), message.id) {
@@ -32,7 +33,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
 
     override fun cancel() {
         isCancel = true
-        inputStream?.close()
+        connection?.disconnect()
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
         disposable?.let {
             if (!it.isDisposed) {
@@ -122,6 +123,10 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
         } else {
             uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
         }
+        if (isCancel) {
+            removeJob()
+            return true
+        }
         val attachmentId = attachResponse.attachment_id
         val width = message.mediaWidth
         val height = message.mediaHeight
@@ -145,18 +150,18 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
     }
 
     @Transient
-    private var inputStream: InputStream? = null
+    private var connection: HttpsURLConnection? = null
 
     private fun uploadPlainAttachment(url: String, size: Long, attachment: PushAttachmentData) {
-        inputStream = attachment.data
-        Util.uploadAttachment("PUT", url, attachment.data,
+        connection = URL(url).openConnection() as HttpsURLConnection
+        Util.uploadAttachment("PUT", connection, attachment.data,
             size, attachment.outputStreamFactory, attachment.listener)
     }
 
     private fun uploadAttachment(url: String, attachment: PushAttachmentData): ByteArray {
         val dataSize = attachment.outputStreamFactory.getCipherTextLength(attachment.dataSize)
-        inputStream = attachment.data
-        return Util.uploadAttachment("PUT", url, attachment.data,
+        connection = URL(url).openConnection() as HttpsURLConnection
+        return Util.uploadAttachment("PUT", connection, attachment.data,
             dataSize, attachment.outputStreamFactory, attachment.listener)
     }
 }
