@@ -5,7 +5,7 @@ import one.mixin.android.vo.Snapshot
 
 class RefreshSnapshotsJob(
     private val assetId: String? = null,
-    private val offset: Int = 0,
+    private val offset: Long = 0L,
     private val limit: Int = 100
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(RefreshSnapshotsJob.GROUP).requireNetwork()) {
 

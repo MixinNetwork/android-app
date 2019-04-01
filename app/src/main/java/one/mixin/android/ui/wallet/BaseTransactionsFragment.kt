@@ -27,7 +27,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
-    protected var offset = 0
+    protected var offset = 0L
     protected val limit = 100
     private var transactionsRv: RecyclerView? = null
     protected var initialLoadKey: Int? = null

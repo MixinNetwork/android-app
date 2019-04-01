@@ -310,7 +310,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun refreshSnapshots() {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, limit, offset))
+        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, offset, limit))
     }
 
     private fun updateHeaderBottomLayout(expand: Boolean) {
