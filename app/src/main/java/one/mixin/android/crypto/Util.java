@@ -1,20 +1,17 @@
 package one.mixin.android.crypto;
 
-import one.mixin.android.crypto.attachment.DigestingOutputStream;
-import one.mixin.android.crypto.attachment.OutputStreamFactory;
-import one.mixin.android.crypto.attachment.PushAttachmentData;
-
-import javax.net.ssl.HttpsURLConnection;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import javax.net.ssl.HttpsURLConnection;
+import one.mixin.android.crypto.attachment.DigestingOutputStream;
+import one.mixin.android.crypto.attachment.OutputStreamFactory;
+import one.mixin.android.crypto.attachment.PushAttachmentData;
 
 public class Util {
 
@@ -138,11 +135,10 @@ public class Util {
     }
 
 
-    public static byte[] uploadAttachment(String method, String url, InputStream data,
+    public static byte[] uploadAttachment(String method, HttpsURLConnection connection, InputStream data,
                                           long dataSize, OutputStreamFactory outputStreamFactory, PushAttachmentData.ProgressListener listener)
             throws IOException {
-        URL uploadUrl = new URL(url);
-        HttpsURLConnection connection = (HttpsURLConnection) uploadUrl.openConnection();
+
         connection.setDoOutput(true);
 
         if (dataSize > 0) {
