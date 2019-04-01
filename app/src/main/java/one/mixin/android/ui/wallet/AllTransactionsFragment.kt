@@ -17,6 +17,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.extension.getEpochNano
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
@@ -26,6 +28,7 @@ import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import one.mixin.android.widget.RadioGroup
+import timber.log.Timber
 
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -51,6 +54,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         dataObserver = Observer { pagedList ->
             if (pagedList != null && pagedList.isNotEmpty()) {
                 showEmpty(false)
+                lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
                 adapter.submitList(pagedList)
                 val opponentIds = pagedList.filter {
                     it?.opponentId != null
@@ -119,7 +123,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun refreshSnapshots() {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(limit = limit, offset = offset))
+        jobManager.addJobInBackground(RefreshSnapshotsJob(limit = LIMIT,
+            offset = lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano()))
     }
 
     private fun showEmpty(show: Boolean) {

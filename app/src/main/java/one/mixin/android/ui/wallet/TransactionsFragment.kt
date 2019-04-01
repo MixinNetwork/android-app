@@ -26,8 +26,10 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getEpochNano
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putString
@@ -119,12 +121,13 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             }
         }
 
-        dataObserver = Observer { pageList ->
+        dataObserver = Observer { pagedList ->
             if (currentType == R.id.filters_radio_all) {
-                if (pageList != null && pageList.isNotEmpty()) {
-                    adapter.submitList(pageList)
+                if (pagedList != null && pagedList.isNotEmpty()) {
+                    lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
+                    adapter.submitList(pagedList)
                     updateHeaderBottomLayout(false)
-                    val opponentIds = pageList.filter {
+                    val opponentIds = pagedList.filter {
                         it?.opponentId != null
                     }.map {
                         it.opponentId!!
@@ -134,8 +137,9 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     updateHeaderBottomLayout(true)
                 }
             } else {
-                if (pageList != null && pageList.isNotEmpty()) {
-                    adapter.submitList(pageList)
+                if (pagedList != null && pagedList.isNotEmpty()) {
+                    lastCreatedAt = pagedList.last().createdAt
+                    adapter.submitList(pagedList)
                     updateHeaderBottomLayout(false)
                 } else {
                     updateHeaderBottomLayout(true)
@@ -307,7 +311,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun refreshSnapshots() {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, offset, limit))
+        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano(), LIMIT))
     }
 
     private fun updateHeaderBottomLayout(expand: Boolean) {

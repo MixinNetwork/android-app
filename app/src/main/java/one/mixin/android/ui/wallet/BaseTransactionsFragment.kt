@@ -15,7 +15,6 @@ import one.mixin.android.R
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.widget.BottomSheet
-import timber.log.Timber
 import javax.inject.Inject
 
 abstract class BaseTransactionsFragment<C> : BaseFragment() {
@@ -28,8 +27,8 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
-    protected var offset = 0L
-    protected val limit = 100
+    protected var lastCreatedAt: String? = null
+    private var uiOffset = 0L
     private var transactionsRv: RecyclerView? = null
     protected var initialLoadKey: Int? = null
 
@@ -75,9 +74,9 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
         transactionsRv?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
-                if (lastPos >= offset) {
+                if (lastPos >= uiOffset) {
                     refreshSnapshots()
-                    offset += limit
+                    uiOffset += LIMIT
                 }
             }
         })
@@ -86,5 +85,10 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     override fun onStop() {
         super.onStop()
         initialLoadKey = (transactionsRv?.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+    }
+
+    companion object {
+        const val PAGE_SIZE = 33
+        const val LIMIT = 99
     }
 }

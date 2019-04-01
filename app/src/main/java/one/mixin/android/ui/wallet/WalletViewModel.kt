@@ -24,6 +24,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.PAGE_SIZE
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
@@ -59,8 +60,8 @@ internal constructor(
         initialLoadKey: Int? = 0
     ): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(assetRepository.snapshotsFromDb(id, type, otherType), PagedList.Config.Builder()
-            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-            .setPageSize(Constants.PAGE_SIZE)
+            .setPrefetchDistance(PAGE_SIZE)
+            .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build())
             .setInitialLoadKey(initialLoadKey)
@@ -107,8 +108,8 @@ internal constructor(
 
     fun allSnapshots(type: String? = null, otherType: String? = null, initialLoadKey: Int? = 0): LiveData<PagedList<SnapshotItem>> =
         LivePagedListBuilder(assetRepository.allSnapshots(type, otherType), PagedList.Config.Builder()
-            .setPrefetchDistance(Constants.PAGE_SIZE * 2)
-            .setPageSize(Constants.PAGE_SIZE)
+            .setPrefetchDistance(PAGE_SIZE * 2)
+            .setPageSize(PAGE_SIZE)
             .setEnablePlaceholders(true)
             .build())
             .setInitialLoadKey(initialLoadKey)
@@ -119,7 +120,7 @@ internal constructor(
     }
 
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
-        .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
+        .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
     fun pendingDeposits(asset: String, key: String? = null, name: String? = null, tag: String? = null) = assetRepository.pendingDeposits(asset, key, name, tag)
         .observeOn(Schedulers.io()).subscribeOn(Schedulers.io())!!
