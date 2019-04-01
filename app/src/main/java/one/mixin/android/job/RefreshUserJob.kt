@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 
 /**
  * @param conversationId NOT NULL means should generate the group avatar
@@ -27,14 +28,13 @@ class RefreshUserJob(
             return@runBlocking
         }
 
-        val existUsers = userDao.findUserExist(userIds)
-        val queryUsers = userIds.filter {
-            !existUsers.contains(it)
+        val queryUserIds = getQueryExistsUserIds(userIds) {
+            userDao.findUserExist(it)
         }
-        if (queryUsers.isEmpty()) {
+        if (queryUserIds.isEmpty()) {
             return@runBlocking
         }
-        refreshUsers(queryUsers)
+        refreshUsers(queryUserIds)
     }
 
     private fun refreshUsers(userIds: List<String>) {
@@ -48,4 +48,19 @@ class RefreshUserJob(
             }
         }
     }
+}
+
+fun getQueryExistsUserIds(
+    userIds: List<String>,
+    queryUsersAction: (List<String>) -> List<String>
+): List<String> {
+    val queryUserIds = arrayListOf<String>()
+    userIds.chunked(Constants.SQLITE_MAX_VARIABLE_NUMBER)
+        .forEach { list ->
+            val existsUserIds = queryUsersAction.invoke(list)
+            queryUserIds.addAll(userIds.filter { id ->
+                !existsUserIds.contains(id)
+            })
+        }
+    return queryUserIds
 }

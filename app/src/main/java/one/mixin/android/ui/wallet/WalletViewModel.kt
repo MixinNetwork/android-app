@@ -21,6 +21,7 @@ import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.job.getQueryExistsUserIds
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
@@ -76,14 +77,13 @@ internal constructor(
 
     fun checkAndRefreshUsers(userIds: List<String>) = runBlocking {
         viewModelScope.launch(Dispatchers.IO) {
-            val existUsers = userRepository.findUserExist(userIds)
-            val queryUsers = userIds.filter {
-                !existUsers.contains(it)
+            val queryUserIds = getQueryExistsUserIds(userIds) {
+                userRepository.findUserExist(it)
             }
-            if (queryUsers.isEmpty()) {
+            if (queryUserIds.isEmpty()) {
                 return@launch
             }
-            jobManager.addJobInBackground(RefreshUserJob(queryUsers))
+            jobManager.addJobInBackground(RefreshUserJob(queryUserIds))
         }
     }
 
