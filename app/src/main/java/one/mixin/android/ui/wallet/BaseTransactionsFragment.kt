@@ -1,11 +1,14 @@
 package one.mixin.android.ui.wallet
 
+import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -23,6 +26,11 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected val walletViewModel: WalletViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
     }
+
+    protected var offset = 0
+    protected val limit = 100
+    private var transactionsRv: RecyclerView? = null
+    protected var initialLoadKey: Int? = null
 
     protected lateinit var dataObserver: Observer<C>
 
@@ -56,4 +64,26 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     protected var currentType = R.id.filters_radio_all
 
     abstract fun setRadioGroupListener(view: View)
+    abstract fun refreshSnapshots()
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+        transactionsRv = view?.findViewById(R.id.transactions_rv)
+        val transactionLayoutManager = LinearLayoutManager(requireContext())
+        transactionsRv?.layoutManager = transactionLayoutManager
+        transactionsRv?.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                val lastPos = transactionLayoutManager.findLastVisibleItemPosition()
+                if (lastPos >= offset) {
+                    refreshSnapshots()
+                    offset += limit
+                }
+            }
+        })
+    }
+
+    override fun onStop() {
+        super.onStop()
+        initialLoadKey = (transactionsRv?.layoutManager as LinearLayoutManager).findFirstVisibleItemPosition()
+    }
 }

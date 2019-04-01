@@ -3,8 +3,11 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.vo.Snapshot
 
-class RefreshSnapshotsJob(private val assetId: String? = null)
-    : BaseJob(Params(PRIORITY_BACKGROUND).addTags(RefreshSnapshotsJob.GROUP).requireNetwork()) {
+class RefreshSnapshotsJob(
+    private val assetId: String? = null,
+    private val offset: Int = 0,
+    private val limit: Int = 100
+) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(RefreshSnapshotsJob.GROUP).requireNetwork()) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -13,9 +16,9 @@ class RefreshSnapshotsJob(private val assetId: String? = null)
 
     override fun onRun() {
         val response = if (assetId == null) {
-            assetService.allSnapshots().execute().body()
+            assetService.allSnapshots(offset, limit).execute().body()
         } else {
-            assetService.snapshots(assetId).execute().body()
+            assetService.snapshots(assetId, offset, limit).execute().body()
         }
         if (response != null && response.isSuccess && response.data != null) {
             val list = response.data as List<Snapshot>

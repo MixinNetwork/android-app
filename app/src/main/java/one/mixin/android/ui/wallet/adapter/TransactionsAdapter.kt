@@ -36,8 +36,9 @@ class TransactionsAdapter : HeaderAdapter<SnapshotItem>(), StickyRecyclerHeaders
         if (holder is SnapshotHolder) {
             val isLast = position == itemCount - 1
             val pos = getPos(position)
-            val snapshot = data!![pos]
-            holder.bind(snapshot, listener, isLast)
+            data!![pos].let {
+                holder.bind(it, listener, isLast)
+            }
         }
     }
 

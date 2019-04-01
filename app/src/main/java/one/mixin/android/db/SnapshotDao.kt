@@ -18,10 +18,10 @@ interface SnapshotDao : BaseDao<Snapshot> {
     }
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshots(assetId: String): LiveData<List<SnapshotItem>>
+    fun snapshots(assetId: String): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND (s.type = :type OR s.type =:otherType) ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshotsByType(assetId: String, type: String, otherType: String? = null): LiveData<List<SnapshotItem>>
+    fun snapshotsByType(assetId: String, type: String, otherType: String? = null): DataSource.Factory<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId and snapshot_id = :snapshotId")
     fun snapshotLocal(assetId: String, snapshotId: String): SnapshotItem?

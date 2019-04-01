@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.navigation.findNavController
 import androidx.paging.PagedList
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
@@ -37,7 +36,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     private val adapter = SnapshotPagedAdapter()
-    private var initialLoadKey: Int? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         layoutInflater.inflate(R.layout.fragment_all_transactions, container, false)
@@ -47,9 +45,9 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         title_view.left_ib.setOnClickListener { view?.findNavController()?.navigateUp() }
         title_view.right_animator.setOnClickListener { showFiltersSheet() }
         adapter.listener = this
-        transaction_rv.itemAnimator = null
-        transaction_rv.adapter = adapter
-        transaction_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        transactions_rv.itemAnimator = null
+        transactions_rv.adapter = adapter
+        transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         dataObserver = Observer { pagedList ->
             if (pagedList != null && pagedList.isNotEmpty()) {
                 showEmpty(false)
@@ -65,12 +63,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             }
         }
         bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey))
-        jobManager.addJobInBackground(RefreshSnapshotsJob())
-    }
-
-    override fun onStop() {
-        super.onStop()
-        initialLoadKey = (transaction_rv.layoutManager as? LinearLayoutManager)?.findFirstVisibleItemPosition()
     }
 
     override fun <T> onNormalItemClick(item: T) {
@@ -126,20 +118,24 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         })
     }
 
+    override fun refreshSnapshots() {
+        jobManager.addJobInBackground(RefreshSnapshotsJob(limit = limit, offset = offset))
+    }
+
     private fun showEmpty(show: Boolean) {
         if (show) {
             if (empty_rl.visibility == GONE) {
                 empty_rl.visibility = VISIBLE
             }
-            if (transaction_rv.visibility == VISIBLE) {
-                transaction_rv.visibility = GONE
+            if (transactions_rv.visibility == VISIBLE) {
+                transactions_rv.visibility = GONE
             }
         } else {
             if (empty_rl.visibility == VISIBLE) {
                 empty_rl.visibility = GONE
             }
-            if (transaction_rv.visibility == GONE) {
-                transaction_rv.visibility = VISIBLE
+            if (transactions_rv.visibility == GONE) {
+                transactions_rv.visibility = VISIBLE
             }
         }
     }

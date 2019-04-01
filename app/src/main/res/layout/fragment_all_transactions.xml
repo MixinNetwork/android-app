@@ -14,10 +14,9 @@
         app:titleText="@string/wallet_all_transactions"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/transaction_rv"
+        android:id="@+id/transactions_rv"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"/>
+        android:layout_height="match_parent"/>
 
     <RelativeLayout
         android:id="@+id/empty_rl"

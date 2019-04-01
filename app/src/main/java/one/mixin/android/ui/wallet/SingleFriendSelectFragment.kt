@@ -46,9 +46,9 @@ class SingleFriendSelectFragment : BaseFragment() {
             search_et.hideKeyboard()
             view?.findNavController()?.navigateUp()
         }
-        recycler_view.layoutManager = LinearLayoutManager(requireContext())
-        recycler_view.adapter = adapter
-        recycler_view.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
+        transactions_rv.layoutManager = LinearLayoutManager(requireContext())
+        transactions_rv.adapter = adapter
+        transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.listener = object : SingleFriendSelectAdapter.FriendSelectListener {
             override fun onItemClick(user: User) {
                 TransferFragment.newInstance(user.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
