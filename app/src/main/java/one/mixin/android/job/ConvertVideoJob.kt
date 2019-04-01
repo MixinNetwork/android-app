@@ -64,6 +64,9 @@ class ConvertVideoJob(
             removeJob()
             return
         }
+        if (result) {
+            messageDao.updateMediaMessageUrl(videoFile.toUri().toString(), messageId)
+        }
         val message = createVideoMessage(messageId, conversationId, senderId, category, null,
             video.fileName, videoFile.toUri().toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
