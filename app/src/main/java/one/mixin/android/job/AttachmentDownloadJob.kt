@@ -78,8 +78,10 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
         jobManager.saveJob(this)
         attachmentCall = conversationApi.getAttachment(notNullElse(attachmentId, { attachmentId!! }, message.content!!))
         val body = attachmentCall!!.execute().body()
-        if (body != null && (body.isSuccess || !isCancel)) {
-            decryptAttachment(body.data!!.view_url!!)
+        if (body != null && (body.isSuccess || !isCancel) && body.data != null) {
+            body.data!!.view_url?.let {
+                decryptAttachment(it)
+            }
             removeJob()
         } else {
             removeJob()
