@@ -76,6 +76,4 @@ object Constants {
     const val BIOMETRIC_INTERVAL = "biometric_interval"
     const val BIOMETRIC_INTERVAL_DEFAULT: Long = 1000 * 60 * 60 * 2
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
-
-    const val SQLITE_MAX_VARIABLE_NUMBER = 999
 }

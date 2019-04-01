@@ -35,7 +35,7 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun getUserById(id: String): User? = userDao.findUser(id)
 
-    fun findUserExist(userIds: List<String>): List<String> = userDao.findUserExist(userIds)
+    suspend fun findUserExist(userIds: List<String>): List<String> = userDao.findUserExist(userIds)
 
     fun getFriend(id: String): User? = userDao.findFriend(id)
 
