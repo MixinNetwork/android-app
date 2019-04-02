@@ -15,7 +15,6 @@ import androidx.paging.PagedList
 import androidx.room.Transaction
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.kotlin.autoDisposable
-import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
 import kotlinx.android.synthetic.main.fragment_transactions.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -24,6 +23,7 @@ import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getEpochNano
@@ -50,7 +50,6 @@ import one.mixin.android.vo.differentProcess
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toSnapshot
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.RadioGroup
 import org.jetbrains.anko.doAsync
 import timber.log.Timber
 
@@ -146,7 +145,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 }
             }
         }
-        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey))
+        refreshWithCurrentType()
+
         doAsync {
             asset.assetId.let {
                 walletViewModel.clearPendingDepositsByAssetId(it)
@@ -264,54 +264,53 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     override fun onUserClick(userId: String) {
         GlobalScope.launch(Dispatchers.IO) {
             walletViewModel.getUser(userId)?.let {
-                UserBottomSheetDialogFragment.newInstance(it).show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                val f = UserBottomSheetDialogFragment.newInstance(it)
+                f.showUserTransactionAction = {
+                    view?.findNavController()?.navigate(R.id.action_transactions_to_user_transactions,
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
+                }
+                f.show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
             }
         }
     }
 
-    override fun setRadioGroupListener(view: View) {
-        view.filters_radio_group.setOnCheckedListener(object : RadioGroup.OnCheckedListener {
-            override fun onChecked(id: Int) {
-                currentType = id
-                when (currentType) {
-                    R.id.filters_radio_all -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey))
-                        headerView.group_info_member_title.setText(R.string.wallet_transactions_title)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
-                    }
-                    R.id.filters_radio_transfer -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey))
-                        headerView.group_info_member_title.setText(R.string.filters_transfer)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
-                    }
-                    R.id.filters_radio_deposit -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name, initialLoadKey = initialLoadKey))
-                        headerView.group_info_member_title.setText(R.string.filters_deposit)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
-                    }
-                    R.id.filters_radio_withdrawal -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey))
-                        headerView.group_info_member_title.setText(R.string.filters_withdrawal)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
-                    }
-                    R.id.filters_radio_fee -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey))
-                        headerView.group_info_member_title.setText(R.string.filters_fee)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_fees_empty)
-                    }
-                    R.id.filters_radio_rebate -> {
-                        bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey))
-                        headerView.group_info_member_title.setText(R.string.filters_rebate)
-                        headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
-                    }
-                }
-                filtersSheet.dismiss()
-            }
-        })
-    }
-
     override fun refreshSnapshots() {
         jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano(), LIMIT))
+    }
+
+    override fun refreshWithCurrentType() {
+        when (currentType) {
+            R.id.filters_radio_all -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, initialLoadKey = initialLoadKey))
+                headerView.group_info_member_title.setText(R.string.wallet_transactions_title)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
+            }
+            R.id.filters_radio_transfer -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey))
+                headerView.group_info_member_title.setText(R.string.filters_transfer)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_transactions_empty)
+            }
+            R.id.filters_radio_deposit -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.deposit.name, initialLoadKey = initialLoadKey))
+                headerView.group_info_member_title.setText(R.string.filters_deposit)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_deposits_empty)
+            }
+            R.id.filters_radio_withdrawal -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey))
+                headerView.group_info_member_title.setText(R.string.filters_withdrawal)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_withdrawals_empty)
+            }
+            R.id.filters_radio_fee -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.fee.name, initialLoadKey = initialLoadKey))
+                headerView.group_info_member_title.setText(R.string.filters_fee)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_fees_empty)
+            }
+            R.id.filters_radio_rebate -> {
+                bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, SnapshotType.rebate.name, initialLoadKey = initialLoadKey))
+                headerView.group_info_member_title.setText(R.string.filters_rebate)
+                headerView.wallet_transactions_empty.setText(R.string.wallet_rebates_empty)
+            }
+        }
     }
 
     private fun updateHeaderBottomLayout(expand: Boolean) {

@@ -11,11 +11,11 @@ import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_all_transactions.*
-import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.extension.nowInUtc
@@ -27,7 +27,6 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
-import one.mixin.android.widget.RadioGroup
 
 class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(), OnSnapshotListener {
 
@@ -65,7 +64,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 showEmpty(true)
             }
         }
-        bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey))
+        refreshWithCurrentType()
     }
 
     override fun <T> onNormalItemClick(item: T) {
@@ -87,38 +86,38 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     override fun onUserClick(userId: String) {
         GlobalScope.launch(Dispatchers.IO) {
             walletViewModel.getUser(userId)?.let {
-                UserBottomSheetDialogFragment.newInstance(it).show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                val f = UserBottomSheetDialogFragment.newInstance(it)
+                f.showUserTransactionAction = {
+                    view?.findNavController()?.navigate(R.id.action_all_transactions_to_user_transactions,
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
+                }
+                f.show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
             }
         }
     }
 
-    override fun setRadioGroupListener(view: View) {
-        view.filters_radio_group.setOnCheckedListener(object : RadioGroup.OnCheckedListener {
-            override fun onChecked(id: Int) {
-                currentType = id
-                when (currentType) {
-                    R.id.filters_radio_all -> {
-                        bindLiveData(walletViewModel.allSnapshots())
-                    }
-                    R.id.filters_radio_transfer -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.transfer.name, SnapshotType.pending.name))
-                    }
-                    R.id.filters_radio_deposit -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name))
-                    }
-                    R.id.filters_radio_withdrawal -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.withdrawal.name))
-                    }
-                    R.id.filters_radio_fee -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.fee.name))
-                    }
-                    R.id.filters_radio_rebate -> {
-                        bindLiveData(walletViewModel.allSnapshots(SnapshotType.rebate.name))
-                    }
-                }
-                filtersSheet.dismiss()
+    override fun refreshWithCurrentType() {
+        when (currentType) {
+            R.id.filters_radio_all -> {
+                bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey))
             }
-        })
+            R.id.filters_radio_transfer -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.transfer.name, SnapshotType.pending.name, initialLoadKey = initialLoadKey))
+            }
+            R.id.filters_radio_deposit -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.deposit.name, initialLoadKey = initialLoadKey))
+            }
+            R.id.filters_radio_withdrawal -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.withdrawal.name, initialLoadKey = initialLoadKey))
+            }
+            R.id.filters_radio_fee -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.fee.name, initialLoadKey = initialLoadKey))
+            }
+            R.id.filters_radio_rebate -> {
+                bindLiveData(walletViewModel.allSnapshots(SnapshotType.rebate.name, initialLoadKey = initialLoadKey))
+            }
+        }
+        filtersSheet.dismiss()
     }
 
     override fun refreshSnapshots() {
