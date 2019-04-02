@@ -78,6 +78,12 @@
             app:destination="@id/single_friend_select_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_transactions_to_user_transactions"
+            app:destination="@id/user_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
 
     <fragment
@@ -106,6 +112,12 @@
         <action
             android:id="@+id/action_all_transactions_fragment_to_transaction_fragment"
             app:destination="@id/transaction_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+
+        <action
+            android:id="@+id/action_all_transactions_to_user_transactions"
+            app:destination="@id/user_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
     </fragment>
@@ -236,4 +248,19 @@
         android:id="@+id/asset_add_fragment"
         android:name="one.mixin.android.ui.wallet.AssetAddFragment"
         tools:layout="@layout/fragment_asset_add"/>
+
+    <fragment
+        android:id="@+id/user_transactions_fragment"
+        android:name="one.mixin.android.ui.conversation.UserTransactionsFragment"
+        tools:layout="@layout/fragment_transactions_user">
+
+        <argument
+            android:name="args_user_id"
+            app:argType="string"/>
+
+        <action android:id="@+id/action_user_transactions_to_transaction"
+            app:destination="@id/transaction_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"/>
+    </fragment>
 </navigation>

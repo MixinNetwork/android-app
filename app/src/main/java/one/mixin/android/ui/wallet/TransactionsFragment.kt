@@ -24,6 +24,7 @@ import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getEpochNano
@@ -264,7 +265,12 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     override fun onUserClick(userId: String) {
         GlobalScope.launch(Dispatchers.IO) {
             walletViewModel.getUser(userId)?.let {
-                UserBottomSheetDialogFragment.newInstance(it).show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                val f = UserBottomSheetDialogFragment.newInstance(it)
+                f.showUserTransactionAction = {
+                    view?.findNavController()?.navigate(R.id.action_transactions_to_user_transactions,
+                        Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
+                }
+                f.show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
             }
         }
     }

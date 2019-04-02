@@ -2,9 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import androidx.lifecycle.Observer
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
 import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.view.View
@@ -14,7 +12,9 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.Observer
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
@@ -67,6 +67,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private lateinit var menu: AlertDialog
 
     private var keepDialog = false
+
+    var showUserTransactionAction: (() -> Unit)? = null
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -145,7 +147,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         dismiss()
                     }
                     getString(R.string.contact_other_transactions) -> {
-                        activity?.addFragment(this, UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
+                        if (showUserTransactionAction != null) {
+                            showUserTransactionAction?.invoke()
+                        } else {
+                            activity?.addFragment(this, UserTransactionsFragment.newInstance(user.userId), UserTransactionsFragment.TAG)
+                        }
                         dismiss()
                     }
                     getString(R.string.edit_name) -> {

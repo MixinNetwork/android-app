@@ -8,22 +8,22 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.navigation.findNavController
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotListAdapter
@@ -35,14 +35,9 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
 
     companion object {
         const val TAG = "UserTransactionsFragment"
-        private const val ARGS_ID = "args_id"
 
-        fun newInstance(userId: String): UserTransactionsFragment {
-            val f = UserTransactionsFragment()
-            val b = Bundle()
-            b.putString(ARGS_ID, userId)
-            f.arguments = b
-            return f
+        fun newInstance(userId: String) = UserTransactionsFragment().withArgs {
+            putString(ARGS_USER_ID, userId)
         }
     }
 
@@ -64,7 +59,7 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
     }
 
     private val userId by lazy {
-        arguments!!.getString(ARGS_ID)!!
+        arguments!!.getString(ARGS_USER_ID)!!
     }
 
     @SuppressLint("CheckResult")
@@ -86,17 +81,21 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         val snapshot = item as SnapshotItem
         walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({ assetItem ->
             assetItem.let {
-                val fragment = TransactionFragment.newInstance(snapshot, it)
-                activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
+                try {
+                    view?.findNavController()?.navigate(R.id.action_user_transactions_to_transaction,
+                        Bundle().apply {
+                            putParcelable(TransactionFragment.ARGS_SNAPSHOT, snapshot)
+                            putParcelable(TransactionsFragment.ARGS_ASSET, it)
+                        })
+                } catch (e: IllegalStateException) {
+                    val fragment = TransactionFragment.newInstance(snapshot, it)
+                    activity?.addFragment(this@UserTransactionsFragment, fragment, TransactionFragment.TAG)
+                }
             }
         }, {})
     }
 
     override fun onUserClick(userId: String) {
-        GlobalScope.launch(Dispatchers.IO) {
-            walletViewModel.getUser(userId)?.let {
-                UserBottomSheetDialogFragment.newInstance(it).show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
-            }
-        }
+        // Do nothing, avoid recursively calling this page.
     }
 }
