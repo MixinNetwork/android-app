@@ -53,7 +53,8 @@ internal constructor(
 
     fun assetItems(): LiveData<List<AssetItem>> = assetRepository.assetItems()
 
-    fun snapshotsFromDb(id: String,
+    fun snapshotsFromDb(
+        id: String,
         type: String? = null,
         otherType: String? = null,
         initialLoadKey: Int? = 0
@@ -65,7 +66,6 @@ internal constructor(
             .build())
             .setInitialLoadKey(initialLoadKey)
             .build()
-
 
     fun snapshotsByUserId(opponentId: String): LiveData<List<SnapshotItem>> = assetRepository.snapshotsByUserId(opponentId)
 
