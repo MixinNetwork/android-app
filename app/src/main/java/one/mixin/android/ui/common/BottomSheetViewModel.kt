@@ -182,5 +182,5 @@ class BottomSheetViewModel @Inject internal constructor(
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 
-    fun logoutAsync() = accountRepository.logoutAsync()
+    fun logoutAsync(sessionId: String) = accountRepository.logoutAsync(sessionId)
 }

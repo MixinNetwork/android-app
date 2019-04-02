@@ -9,6 +9,7 @@ import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.DeauthorRequest
+import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
@@ -101,7 +102,7 @@ constructor(
     fun search(query: String): Observable<MixinResponse<User>> =
         userService.search(query)
 
-    fun logoutAsync() = accountService.logoutAsync()
+    fun logoutAsync(sessionId: String) = accountService.logoutAsync(LogoutRequest(sessionId))
 
     fun findUsersByType(relationship: String) = userDao.findUsersByType(relationship)
 

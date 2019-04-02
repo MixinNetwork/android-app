@@ -6,6 +6,7 @@ import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.request.StickerAddRequest
@@ -42,7 +43,7 @@ interface AccountService {
     fun getMe(): Call<MixinResponse<Account>>
 
     @POST("logout")
-    fun logoutAsync(): Deferred<MixinResponse<Unit>>
+    fun logoutAsync(@Body request: LogoutRequest): Deferred<MixinResponse<Unit>>
 
     @GET("codes/{id}")
     fun code(@Path("id") id: String): Observable<MixinResponse<JsonObject>>

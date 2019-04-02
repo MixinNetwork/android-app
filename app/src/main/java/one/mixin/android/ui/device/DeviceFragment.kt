@@ -69,7 +69,8 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
             if (loggedIn) {
                 loadOuting.show()
                 GlobalScope.launch(coroutineExceptionHandler) {
-                    val response = bottomViewModel.logoutAsync().await()
+                    val sessionId = Session.getExtensionSessionId() ?: return@launch
+                    val response = bottomViewModel.logoutAsync(sessionId).await()
                     if (response.isSuccess) {
                         withContext(Dispatchers.Main) {
                             loadOuting.dismiss()
