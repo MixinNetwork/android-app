@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.RadioGroup
 import javax.inject.Inject
 
 abstract class BaseTransactionsFragment<C> : BaseFragment() {
@@ -49,7 +50,13 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     private val filtersView: View by lazy {
         val view = View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.fragment_transaction_filters, null)
         view.filters_title.left_ib.setOnClickListener { filtersSheet.dismiss() }
-        setRadioGroupListener(view)
+        view.filters_radio_group.setOnCheckedListener(object : RadioGroup.OnCheckedListener {
+            override fun onChecked(id: Int) {
+                currentType = id
+                refreshWithCurrentType()
+                filtersSheet.dismiss()
+            }
+        })
         view
     }
 
@@ -63,7 +70,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
 
     protected var currentType = R.id.filters_radio_all
 
-    abstract fun setRadioGroupListener(view: View)
+    abstract fun refreshWithCurrentType()
     abstract fun refreshSnapshots()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
