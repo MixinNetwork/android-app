@@ -203,7 +203,8 @@ internal constructor(
     }
 
     fun sendVideoMessage(conversationId: String, senderId: String, uri: Uri, isPlain: Boolean, messageId: String? = null, createdAt: String? = null) {
-        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, messageId, createdAt))
+        val mid = messageId ?: UUID.randomUUID().toString()
+        jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, mid, createdAt))
     }
 
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
