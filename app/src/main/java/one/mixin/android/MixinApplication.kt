@@ -13,6 +13,16 @@ import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
 import com.jakewharton.threetenabp.AndroidThreeTen
+import com.tencent.matrix.Matrix
+import com.tencent.matrix.iocanary.IOCanaryPlugin
+import com.tencent.matrix.iocanary.config.IOConfig
+import com.tencent.matrix.resource.ResourcePlugin
+import com.tencent.matrix.resource.config.ResourceConfig
+import com.tencent.matrix.trace.TracePlugin
+import com.tencent.matrix.trace.config.TraceConfig
+import com.tencent.sqlitelint.SQLiteLint
+import com.tencent.sqlitelint.SQLiteLintPlugin
+import com.tencent.sqlitelint.config.SQLiteLintConfig
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.HasServiceInjector
@@ -75,6 +85,52 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         val wmConfig = Configuration.Builder().setWorkerFactory(mixinWorkerFactory).build()
         WorkManager.initialize(this, wmConfig)
         RxJavaPlugins.setErrorHandler {}
+
+        initMatrix()
+    }
+
+    private fun initMatrix() {
+        val dynamicConfig = DynamicConfigImpDemo()
+        val matrixEnable = dynamicConfig.isMatrixEnable()
+        val fpsEnable = dynamicConfig.isFPSEnable()
+        val traceEnable = dynamicConfig.isTraceEnable()
+        val traceConfig = TraceConfig.Builder()
+            .dynamicConfig(dynamicConfig)
+            .enableFPS(fpsEnable)
+            .enableMethodTrace(traceEnable)
+            .enableStartUp(traceEnable)
+            .build()
+        val tracePlugin = TracePlugin(traceConfig)
+        val matrixBuilder = Matrix.Builder(this)
+            .patchListener(TestPluginListener(this))
+            .plugin(tracePlugin)
+        if (matrixEnable) {
+            matrixBuilder.plugin(ResourcePlugin(ResourceConfig.Builder()
+                .dynamicConfig(dynamicConfig)
+                .setDumpHprof(false)
+                .setDetectDebuger(true)
+                .build()))
+            ResourcePlugin.activityLeakFixer(this)
+
+            val ioCanaryPlugin = IOCanaryPlugin(IOConfig.Builder()
+                .dynamicConfig(dynamicConfig)
+                .build())
+            matrixBuilder.plugin(ioCanaryPlugin)
+
+            val sqlConfig = initSQLiteLintConfig()
+            matrixBuilder.plugin(SQLiteLintPlugin(sqlConfig))
+        }
+        Matrix.init(matrixBuilder.build())
+        tracePlugin.start()
+        tracePlugin.fpsTracer.onDestroy()
+    }
+
+     private fun initSQLiteLintConfig(): SQLiteLintConfig {
+         return try {
+             SQLiteLintConfig(SQLiteLint.SqlExecutionCallbackMode.CUSTOM_NOTIFY)
+         } catch (t: Throwable) {
+             SQLiteLintConfig(SQLiteLint.SqlExecutionCallbackMode.CUSTOM_NOTIFY)
+         }
     }
 
     private fun init() {
