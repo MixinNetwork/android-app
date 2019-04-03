@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Base64
@@ -387,10 +388,25 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         bottomSheet.show()
     }
 
+    override fun onPause() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
+            contentView.chat_web_view.onResume()
+            contentView.chat_web_view.resumeTimers()
+        }
+        super.onPause()
+    }
+
+    override fun onResume() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
+            contentView.chat_web_view.onResume()
+            contentView.chat_web_view.resumeTimers()
+        }
+        super.onResume()
+    }
+
     @SuppressLint("CheckResult", "AutoDispose")
     private fun saveImageFromUrl(url: String?) {
         if (!isAdded) return
-
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .subscribe { granted ->
