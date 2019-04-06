@@ -182,6 +182,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             return null
         }
         val rtcConfig = PeerConnection.RTCConfiguration(iceServers).apply {
+            tcpCandidatePolicy = PeerConnection.TcpCandidatePolicy.DISABLED
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
