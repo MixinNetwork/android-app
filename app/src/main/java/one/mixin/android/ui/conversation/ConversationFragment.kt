@@ -932,6 +932,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 appList = list.filter {
                     it.capabilites?.contains(type) == true
                 }
+                appList?.let {
+                    (requireFragmentManager().findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
+                }
             })
         }
     }
