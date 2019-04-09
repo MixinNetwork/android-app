@@ -483,7 +483,7 @@
     <string name="gallery_all">全部</string>
     <string name="gallery_empty_text">还没有图片或视频</string>
     <string name="account_name">账号名</string>
-    <string name="account_memo">备注</string>
+    <string name="account_memo">备注(Memo)</string>
     <string name="deposit_tip">注意：账号名和备注同时使用才能充值 %1$s 到 Mixin，充值到账至少需要 %2$d 个区块确认。</string>
     <!--sticker-->
     <string name="sticker_manager">管理贴纸</string>
