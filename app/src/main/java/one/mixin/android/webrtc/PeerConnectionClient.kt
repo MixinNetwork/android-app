@@ -186,6 +186,7 @@ class PeerConnectionClient(private val context: Context, private val events: Pee
             bundlePolicy = PeerConnection.BundlePolicy.MAXBUNDLE
             rtcpMuxPolicy = PeerConnection.RtcpMuxPolicy.REQUIRE
             sdpSemantics = PeerConnection.SdpSemantics.UNIFIED_PLAN
+            enableDtlsSrtp = true
             continualGatheringPolicy = PeerConnection.ContinualGatheringPolicy.GATHER_CONTINUALLY
         }
         peerConnection = factory!!.createPeerConnection(rtcConfig, pcObserver)

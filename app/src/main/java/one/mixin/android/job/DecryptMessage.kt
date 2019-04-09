@@ -311,6 +311,7 @@ class DecryptMessage : Injector() {
         }
         snapshotDao.insert(snapshot)
         messageDao.insert(message)
+        sendToExtensionSession(message, data.data)
         if (assetDao.simpleAsset(snapshot.assetId) == null) {
             jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
         }
@@ -359,8 +360,7 @@ class DecryptMessage : Injector() {
             sendToExtensionSession(message, data.data)
             return
         } else if (systemMessage.action == SystemConversationAction.ROLE.name) {
-            participantDao.updateParticipantRole(data.conversationId,
-                systemMessage.participantId!!, systemMessage.role!!)
+            participantDao.updateParticipantRole(data.conversationId, systemMessage.participantId!!, systemMessage.role!!)
             if (message.participantId != accountId) {
                 return
             }

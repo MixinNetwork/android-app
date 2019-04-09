@@ -51,7 +51,7 @@ class SendSessionMessageJob(
             }
         }
 
-        val primitiveId = if (message.category.startsWith("SYSTEM_")) {
+        val primitiveId = if (message.category == MessageCategory.SYSTEM_CONVERSATION.name) {
             SYSTEM_USER
         } else {
             message.userId
