@@ -10,7 +10,7 @@ import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.createParamSessionMessage
-import java.util.*
+import java.util.UUID
 
 class SendSessionMessageJob(
     private val message: Message,
@@ -34,6 +34,7 @@ class SendSessionMessageJob(
             message.isPlain() -> sendPlainMessage(accountId, sessionId)
             message.isSignal() -> sendSignalMessage(accountId, sessionId)
             message.category.startsWith("SYSTEM_") -> sendPlainMessage(accountId, sessionId)
+            message.category.startsWith("APP_") -> sendPlainMessage(accountId, sessionId)
         }
         removeJob()
     }

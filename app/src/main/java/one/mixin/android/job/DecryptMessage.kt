@@ -106,6 +106,7 @@ class DecryptMessage : Injector() {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
+        sendToExtensionSession(message, data.data)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
@@ -113,6 +114,7 @@ class DecryptMessage : Injector() {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
         messageDao.insert(message)
+        sendToExtensionSession(message, data.data)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
     }
 
