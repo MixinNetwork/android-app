@@ -198,7 +198,7 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
         const val PRIORITY_UI_HIGH = 20
         const val PRIORITY_SEND_MESSAGE = 18
         const val PRIORITY_SEND_ATTACHMENT_MESSAGE = 17
-        const val PRIORITY_SEND_SESSION_MESSAGE = 16
+        const val PRIORITY_SEND_SESSION_MESSAGE = 18
         const val PRIORITY_RECEIVE_MESSAGE = 15
         const val PRIORITY_BACKGROUND = 10
         const val PRIORITY_DELIVERED_ACK_MESSAGE = 7
