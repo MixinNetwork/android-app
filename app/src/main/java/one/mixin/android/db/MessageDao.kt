@@ -92,7 +92,7 @@ interface MessageDao : BaseDao<Message> {
         "LEFT JOIN conversations c ON c.conversation_id = m.conversation_id " +
         "LEFT JOIN users u1 ON c.owner_id = u1.user_id " +
         "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
-        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) ORDER BY m.created_at DESC LIMIT 200")
+        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) ORDER BY m.created_at DESC LIMIT 100")
     fun fuzzySearchMessage(query: String): List<SearchMessageItem>
 
     @Query("DELETE FROM messages WHERE id = :id")
