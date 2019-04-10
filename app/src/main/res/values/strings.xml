@@ -111,6 +111,7 @@
     <string name="qr_code_camera_code">Use the built-in Camera to scan any QR Code. When a code is detected, tap the notification to view more information.</string>
     <!--search-->
     <string name="search_title_assets">ASSETS</string>
+    <string name="search_title_chat">CHAT</string>
     <string name="search_title_contacts">CONTACTS</string>
     <string name="search_title_group">GROUPS</string>
     <string name="search_title_messages">MESSAGES</string>

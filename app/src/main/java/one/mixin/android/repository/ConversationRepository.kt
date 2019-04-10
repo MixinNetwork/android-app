@@ -19,6 +19,7 @@ import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
+import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
@@ -96,6 +97,8 @@ internal constructor(
     fun getConversation(conversationId: String) = readConversationDao.getConversation(conversationId)
 
     fun fuzzySearchMessage(query: String): List<SearchMessageItem> = readMessageDao.fuzzySearchMessage(query)
+
+    fun fuzzySearchChat(query: String): List<ChatMinimal> = readConversationDao.fuzzySearchChat(query)
 
     fun fuzzySearchGroup(query: String): List<ConversationItemMinimal> = readConversationDao.fuzzySearchGroup(query)
 
