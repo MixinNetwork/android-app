@@ -13,6 +13,7 @@ import one.mixin.android.ui.search.holder.HeaderHolder
 import one.mixin.android.ui.search.holder.MessageHolder
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItemMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
@@ -59,17 +60,27 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     fun setUserData(list: List<User>?) {
-        data.userList = list
+        data.userList = list?.filter { item ->
+            data.chatList?.any { it.category == ConversationCategory.CONTACT.name && it.userId == item.userId } != true
+        }
         notifyDataSetChanged()
     }
 
     fun setGroupData(list: List<ConversationItemMinimal>?) {
-        data.groupList = list
+        data.groupList = list?.filter { item ->
+            data.chatList?.any { it.category == ConversationCategory.GROUP.name && it.conversationId == item.conversationId } != true
+        }
         notifyDataSetChanged()
     }
 
     fun setChatData(list: List<ChatMinimal>?) {
         data.chatList = list
+        data.userList = data.userList?.filter { item ->
+            data.chatList?.any { it.category == ConversationCategory.CONTACT.name && it.userId == item.userId } != true
+        }
+        data.groupList = data.groupList?.filter { item ->
+            data.chatList?.any { it.category == ConversationCategory.GROUP.name && it.conversationId == item.conversationId } != true
+        }
         notifyDataSetChanged()
     }
 
