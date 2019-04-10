@@ -10,7 +10,6 @@ import io.reactivex.Single
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
-import one.mixin.android.vo.ConversationItemMinimal
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
 
@@ -36,14 +35,6 @@ interface ConversationDao : BaseDao<Conversation> {
         "WHERE c.category IS NOT NULL " +
         "ORDER BY c.pin_time DESC, m.created_at DESC")
     fun conversationList(): LiveData<List<ConversationItem>>
-
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName, " +
-        "ou.identity_number AS ownerIdentityNumber " +
-        "FROM conversations c " +
-        "INNER JOIN users ou ON ou.user_id = c.owner_id " +
-        "WHERE c.category = 'GROUP' AND c.status != 'SUCCESS' AND c.name LIKE :query ORDER BY c.created_at DESC")
-    fun fuzzySearchGroup(query: String): List<ConversationItemMinimal>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName, " +
