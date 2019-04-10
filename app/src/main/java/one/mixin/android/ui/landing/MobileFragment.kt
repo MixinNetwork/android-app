@@ -159,7 +159,7 @@ class MobileFragment : BaseFragment() {
             } catch (e: NumberParseException) {
                 ""
             }
-            mobile_et.setText(phoneNum)
+            mobile_et?.setText(phoneNum)
         }
     }
 

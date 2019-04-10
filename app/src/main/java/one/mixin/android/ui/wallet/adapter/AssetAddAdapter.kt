@@ -51,7 +51,12 @@ internal class AssetAddAdapter : ListAdapter<TopAssetItem, AssetAddAdapter.ItemH
                     if (itemView.cb.isChecked) {
                         checkedAssets[asset.assetId] = asset
                     } else {
-                        checkedAssets.remove(asset.assetId, asset)
+                        try {
+                            checkedAssets.remove(asset.assetId, asset)
+                        } catch (e: NoSuchMethodError) {
+                            // Samsung Galaxy Note4 Android M
+                            checkedAssets.remove(asset.assetId)
+                        }
                     }
                     listener?.onItemClick(asset, itemView.cb.isChecked)
                 }
