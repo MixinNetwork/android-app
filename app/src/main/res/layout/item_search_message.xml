@@ -15,18 +15,22 @@
         android:layout_marginTop="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/search_name_tv"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:textColor="@color/text_black"
         android:textSize="16sp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_marginEnd="8dp"
+        app:layout_constraintEnd_toStartOf="@+id/search_time_tv"
         app:layout_constraintStart_toEndOf="@+id/search_avatar_iv"
-        app:layout_constraintTop_toTopOf="@id/search_avatar_iv"
-        tools:text="Senior Zhai" />
+        app:layout_constraintTop_toTopOf="@+id/search_avatar_iv"
+        tools:text="Senior Zhai"/>
 
     <TextView
         android:id="@+id/search_msg_tv"
@@ -39,11 +43,11 @@
         android:maxLines="1"
         android:textColor="@color/text_gray"
         android:textSize="13sp"
+        app:layout_constrainedWidth="true"
         app:layout_constraintBottom_toBottomOf="@id/search_avatar_iv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0"
-        app:layout_constraintStart_toEndOf="@+id/search_avatar_iv"
-        app:layout_constrainedWidth="true" />
+        app:layout_constraintStart_toEndOf="@+id/search_avatar_iv"/>
 
     <TextView
         android:id="@+id/search_time_tv"
@@ -54,8 +58,8 @@
         android:textColor="@color/text_gray"
         android:textSize="12sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/search_avatar_iv"
-        tools:text="yesterday" />
+        app:layout_constraintBottom_toBottomOf="@+id/search_name_tv"
+        tools:text="yesterday"/>
 
     <View
         android:id="@+id/divider"
@@ -64,5 +68,5 @@
         android:background="@color/divider"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/search_msg_tv" />
+        app:layout_constraintStart_toStartOf="@id/search_msg_tv"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
