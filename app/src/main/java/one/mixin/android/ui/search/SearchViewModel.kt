@@ -11,8 +11,8 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
-import one.mixin.android.vo.ConversationItemMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -62,12 +62,12 @@ internal constructor(
         }
     }
 
-    fun fuzzySearchGroup(query: String?): Deferred<List<ConversationItemMinimal>?> =
+    fun fuzzySearchChat(query: String?): Deferred<List<ChatMinimal>?> =
         GlobalScope.async {
             if (query.isNullOrBlank()) {
                 null
             } else {
-                conversationRepository.fuzzySearchGroup("%${query.trim()}%")
+                conversationRepository.fuzzySearchChat("%${query.trim()}%")
             }
         }
 }

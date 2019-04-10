@@ -6,12 +6,13 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import one.mixin.android.R
 import one.mixin.android.ui.search.holder.AssetHolder
+import one.mixin.android.ui.search.holder.ChatHolder
 import one.mixin.android.ui.search.holder.ContactHolder
-import one.mixin.android.ui.search.holder.GroupHolder
 import one.mixin.android.ui.search.holder.HeaderHolder
 import one.mixin.android.ui.search.holder.MessageHolder
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.ConversationItemMinimal
+import one.mixin.android.vo.ChatMinimal
+import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 
@@ -25,8 +26,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         val context = holder.itemView.context
         when {
             getItemViewType(position) == 0 -> holder.bind(context.getText(R.string.search_title_assets).toString())
-            getItemViewType(position) == 1 -> holder.bind(context.getText(R.string.search_title_contacts).toString())
-            getItemViewType(position) == 2 -> holder.bind(context.getText(R.string.search_title_group).toString())
+            getItemViewType(position) == 1 -> holder.bind(context.getText(R.string.search_title_chat).toString())
+            getItemViewType(position) == 2 -> holder.bind(context.getText(R.string.search_title_contacts).toString())
             else -> holder.bind(context.getText(R.string.search_title_messages).toString())
         }
     }
@@ -42,8 +43,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         data.contactList = list
         if (list != null) {
             data.assetList = null
+            data.chatList = null
             data.userList = null
-            data.groupList = null
             data.messageList = null
         }
         notifyDataSetChanged()
@@ -55,12 +56,18 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     fun setUserData(list: List<User>?) {
-        data.userList = list
+        data.userList = list?.filter { item ->
+            data.chatList?.any { it.category == ConversationCategory.CONTACT.name && it.userId == item.userId } != true
+        }
         notifyDataSetChanged()
     }
 
-    fun setGroupData(list: List<ConversationItemMinimal>?) {
-        data.groupList = list
+    fun setChatData(list: List<ChatMinimal>?) {
+        data.chatList = list
+        data.userList = data.userList?.filter { item ->
+            data.chatList?.any { it.category == ConversationCategory.CONTACT.name && it.userId == item.userId } != true
+        }
+
         notifyDataSetChanged()
     }
 
@@ -78,12 +85,12 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             }
             1 -> {
                 data.getItem(position).let {
-                    (holder as ContactHolder).bind(it as User, onItemClickListener, data.isUserEnd(position))
+                    (holder as ChatHolder).bind(it as ChatMinimal, onItemClickListener, data.isChatEnd(position))
                 }
             }
             2 -> {
                 data.getItem(position).let {
-                    (holder as GroupHolder).bind(it as ConversationItemMinimal, onItemClickListener, data.isGroupEnd(position))
+                    (holder as ContactHolder).bind(it as User, onItemClickListener, data.isUserEnd(position))
                 }
             }
             3 -> {
@@ -104,11 +111,11 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             }
             1 -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false)
-                ContactHolder(item)
+                ChatHolder(item)
             }
             2 -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false)
-                GroupHolder(item)
+                ContactHolder(item)
             }
             3 -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_message, parent, false)
@@ -123,8 +130,8 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun getItemViewType(position: Int): Int =
         when (data.getItem(position)) {
             is AssetItem -> 0
-            is User -> 1
-            is ConversationItemMinimal -> 2
+            is ChatMinimal -> 1
+            is User -> 2
             else -> 3
         }
 }

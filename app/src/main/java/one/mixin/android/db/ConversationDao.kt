@@ -7,9 +7,9 @@ import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import io.reactivex.Maybe
 import io.reactivex.Single
+import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
-import one.mixin.android.vo.ConversationItemMinimal
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
 
@@ -38,11 +38,14 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName, " +
-        "ou.identity_number AS ownerIdentityNumber " +
+        "ou.identity_number AS ownerIdentityNumber, c.owner_id AS userId, ou.full_name AS fullName, ou.avatar_url AS avatarUrl, " +
+        "ou.is_verified AS isVerified, ou.app_id AS appId "+
         "FROM conversations c " +
         "INNER JOIN users ou ON ou.user_id = c.owner_id " +
-        "WHERE c.category = 'GROUP' AND c.status != 'SUCCESS' AND c.name LIKE :query ORDER BY c.created_at DESC")
-    fun fuzzySearchGroup(query: String): List<ConversationItemMinimal>
+        "WHERE (c.category = 'GROUP' AND c.status != 'SUCCESS' AND c.name LIKE :query) " +
+        "OR (c.category = 'CONTACT' AND ou.full_name LIKE :query) " +
+        "ORDER BY c.created_at DESC")
+    fun fuzzySearchChat(query: String): List<ChatMinimal>
 
     @Query("SELECT DISTINCT c.conversation_id FROM conversations c WHERE c.owner_id = :recipientId and c.category = 'CONTACT'")
     fun getConversationIdIfExistsSync(recipientId: String): String?

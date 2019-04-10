@@ -107,6 +107,7 @@
     <string name="qr_code_camera_code">打开相机会默认开启二维码识别，当二维码被检测到时会显示一个通知，点击通知识别二维码。</string>
     <!--search-->
     <string name="search_title_assets">资产</string>
+    <string name="search_title_chat">会话</string>
     <string name="search_title_contacts">联系人</string>
     <string name="search_title_group">群组</string>
     <string name="search_title_messages">消息</string>

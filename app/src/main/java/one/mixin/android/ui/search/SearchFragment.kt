@@ -29,7 +29,7 @@ import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.onlyLast
 import one.mixin.android.vo.AssetItem
-import one.mixin.android.vo.ConversationItemMinimal
+import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -41,7 +41,7 @@ class SearchFragment : BaseFragment(), Injectable {
     private lateinit var searchContactChannel: Channel<Deferred<List<User>?>>
     private lateinit var searchAssetChannel: Channel<Deferred<List<AssetItem>?>>
     private lateinit var searchUserChannel: Channel<Deferred<List<User>?>>
-    private lateinit var searchGroupChannel: Channel<Deferred<List<ConversationItemMinimal>?>>
+    private lateinit var searchChatChannel: Channel<Deferred<List<ChatMinimal>?>>
     private lateinit var searchMessageChannel: Channel<Deferred<List<SearchMessageItem>?>>
 
     @Inject
@@ -103,7 +103,7 @@ class SearchFragment : BaseFragment(), Injectable {
         searchContactChannel = Channel()
         searchAssetChannel = Channel()
         searchUserChannel = Channel()
-        searchGroupChannel = Channel()
+        searchChatChannel = Channel()
         searchMessageChannel = Channel()
         search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         search_rv.addItemDecoration(StickyRecyclerHeadersDecoration(searchAdapter))
@@ -112,13 +112,6 @@ class SearchFragment : BaseFragment(), Injectable {
         searchAdapter.onItemClickListener = object : OnSearchClickListener {
             override fun onAsset(assetItem: AssetItem) {
                 activity?.let { WalletActivity.show(it, assetItem) }
-            }
-
-            override fun onGroupClick(conversationItemMinimal: ConversationItemMinimal) {
-                search_rv.hideKeyboard()
-                context?.let { ctx ->
-                    ConversationActivity.show(ctx, conversationItemMinimal.conversationId, null)
-                }
             }
 
             @SuppressLint("CheckResult")
@@ -130,6 +123,11 @@ class SearchFragment : BaseFragment(), Injectable {
                         messageId = message.messageId,
                         keyword = keyword)
                 }
+            }
+
+            override fun onChatClick(chatMinimal: ChatMinimal) {
+                search_rv.hideKeyboard()
+                context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
             }
 
             override fun onUserClick(user: User) {
@@ -146,8 +144,9 @@ class SearchFragment : BaseFragment(), Injectable {
         setUserListener {
             searchAdapter.setUserData(it)
         }
-        setGroupListener {
-            searchAdapter.setGroupData(it)
+
+        setChatListener {
+            searchAdapter.setChatData(it)
         }
         setMessageListener {
             searchAdapter.setMessageData(it)
@@ -160,7 +159,7 @@ class SearchFragment : BaseFragment(), Injectable {
         searchContactChannel.close()
         searchAssetChannel.close()
         searchUserChannel.close()
-        searchGroupChannel.close()
+        searchChatChannel.close()
         searchMessageChannel.close()
         searchContext.cancelChildren()
     }
@@ -169,7 +168,7 @@ class SearchFragment : BaseFragment(), Injectable {
         searchContactChannel.send(searchViewModel.contactList(keyword))
         searchAssetChannel.send(searchViewModel.fuzzySearchAsset(keyword))
         searchUserChannel.send(searchViewModel.fuzzySearchUser(keyword))
-        searchGroupChannel.send(searchViewModel.fuzzySearchGroup(keyword))
+        searchChatChannel.send(searchViewModel.fuzzySearchChat(keyword))
         searchMessageChannel.send(searchViewModel.fuzzySearchMessage(keyword))
     }
 
@@ -197,10 +196,10 @@ class SearchFragment : BaseFragment(), Injectable {
         }
     }
 
-    private fun setGroupListener(userListener: (List<ConversationItemMinimal>?) -> Unit) = GlobalScope.launch(searchContext) {
-        for (result in onlyLast(searchGroupChannel)) {
+    private fun setChatListener(chatListener: (List<ChatMinimal>?) -> Unit) = GlobalScope.launch(searchContext) {
+        for (result in onlyLast(searchChatChannel)) {
             withContext(Dispatchers.Main) {
-                userListener(result)
+                chatListener(result)
             }
         }
     }
@@ -215,7 +214,7 @@ class SearchFragment : BaseFragment(), Injectable {
 
     interface OnSearchClickListener {
         fun onUserClick(user: User)
-        fun onGroupClick(conversationItemMinimal: ConversationItemMinimal)
+        fun onChatClick(chatMinimal: ChatMinimal)
         fun onMessageClick(message: SearchMessageItem)
         fun onAsset(assetItem: AssetItem)
     }
