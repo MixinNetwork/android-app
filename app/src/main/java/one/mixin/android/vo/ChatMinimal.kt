@@ -12,6 +12,6 @@ data class ChatMinimal(
     val userId: String,
     val fullName: String?,
     val avatarUrl: String?,
-    val isVerified:Boolean?,
-    val appId:String?
+    val isVerified: Boolean?,
+    val appId: String?
 )
