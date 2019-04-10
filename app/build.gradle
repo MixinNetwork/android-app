@@ -233,6 +233,7 @@ dependencies {
     implementation "com.github.SeniorZhai:LargeImage:${largeImageViewVersion}"
     implementation "com.github.tougee:BiometricPromptCompat:${biometricpromptVersion}"
     implementation "org.webrtc:google-webrtc:${webrtcVersion}"
+    implementation project(':flutter')
 }
 
 task ktlint(type: JavaExec, group: "verification") {
