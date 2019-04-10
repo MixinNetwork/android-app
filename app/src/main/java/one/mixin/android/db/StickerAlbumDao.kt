@@ -8,7 +8,7 @@ import one.mixin.android.vo.StickerAlbum
 @Dao
 interface StickerAlbumDao : BaseDao<StickerAlbum> {
 
-    @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY created_at ASC")
+    @Query("SELECT * FROM sticker_albums WHERE category = 'SYSTEM' ORDER BY created_at DESC")
     fun getSystemAlbums(): LiveData<List<StickerAlbum>>
 
     @Query("SELECT * FROM sticker_albums WHERE category = 'PERSONAL' ORDER BY created_at ASC")
