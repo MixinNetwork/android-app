@@ -26,6 +26,16 @@ class ChatHolder constructor(containerView: View) : RecyclerView.ViewHolder(cont
             itemView.search_name.text = chat.fullName
             itemView.search_avatar_iv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)
             itemView.divider.visibility = View.VISIBLE
+            itemView.verified_iv.visibility = if (chat.isVerified == true) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
+            itemView.bot_iv.visibility = if (chat.appId != null) {
+                View.VISIBLE
+            } else {
+                View.GONE
+            }
             itemView.setOnClickListener {
                 onItemClickListener?.onChatClick(chat)
             }

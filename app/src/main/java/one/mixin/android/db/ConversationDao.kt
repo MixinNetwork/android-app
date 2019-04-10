@@ -47,7 +47,8 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, c.name AS groupName, " +
-        "ou.identity_number AS ownerIdentityNumber, c.owner_id AS userId, ou.full_name AS fullName, ou.avatar_url AS avatarUrl " +
+        "ou.identity_number AS ownerIdentityNumber, c.owner_id AS userId, ou.full_name AS fullName, ou.avatar_url AS avatarUrl, " +
+        "ou.is_verified AS isVerified, ou.app_id AS appId "+
         "FROM conversations c " +
         "INNER JOIN users ou ON ou.user_id = c.owner_id " +
         "WHERE (c.category = 'GROUP' AND c.status != 'SUCCESS' AND c.name LIKE :query) " +
