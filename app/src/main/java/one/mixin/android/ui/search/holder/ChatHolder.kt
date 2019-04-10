@@ -36,16 +36,15 @@ class ChatHolder constructor(containerView: View) : RecyclerView.ViewHolder(cont
             } else {
                 View.GONE
             }
-            itemView.setOnClickListener {
-                onItemClickListener?.onChatClick(chat)
-            }
         } else {
+            itemView.bot_iv.visibility = View.GONE
+            itemView.verified_iv.visibility = View.GONE
             itemView.search_name.text = chat.groupName
             itemView.search_avatar_iv.setInfo(chat.groupName, chat.groupIconUrl, chat.conversationId)
             itemView.divider.visibility = View.VISIBLE
-            itemView.setOnClickListener {
-                onItemClickListener?.onChatClick(chat)
-            }
+        }
+        itemView.setOnClickListener {
+            onItemClickListener?.onChatClick(chat)
         }
     }
 }
