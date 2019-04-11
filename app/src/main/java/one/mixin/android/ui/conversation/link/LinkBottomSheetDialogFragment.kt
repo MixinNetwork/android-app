@@ -14,6 +14,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.StringRes
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -49,6 +50,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
+import one.mixin.android.widget.BottomSheet
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import javax.inject.Inject
@@ -158,7 +160,10 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 if (r.isSuccess) {
                     val paymentResponse = r.data!!
                     if (paymentResponse.status == PaymentStatus.paid.name) {
-                        context?.toast(R.string.pay_paid)
+                        val builder = BottomSheet.Builder(requireActivity())
+                        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_paid_bottom, null)
+                        builder.setCustomView(view)
+                        builder.create().show()
                         dismiss()
                     } else {
                         authOrPay = true

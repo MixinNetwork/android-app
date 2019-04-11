@@ -6,6 +6,7 @@ import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
+import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
@@ -37,6 +38,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
@@ -146,6 +148,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.amount_et.addTextChangedListener(mWatcher)
+        contentView.amount_et.filters = arrayOf(inputFilter)
         contentView.amount_rl.setOnClickListener { operateKeyboard(true) }
         contentView.asset_rl.setOnClickListener {
             operateKeyboard(false)
@@ -263,6 +266,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             swaped = false
             contentView.swap_iv.visibility = GONE
         }
+        checkInputForbidden(contentView.amount_et.text)
         if (contentView.amount_et.text.isNullOrEmpty()) {
             if (swaped) {
                 contentView.amount_et.hint = "0.00 USD"
@@ -318,7 +322,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             if (currentAsset == null || currentAsset!!.priceUsd.toDouble() == 0.0) {
                 BigDecimal(0)
             } else if (swaped) {
-                BigDecimal(amount).divide(BigDecimal(currentAsset!!.priceUsd), 3, RoundingMode.HALF_UP)
+                BigDecimal(amount).divide(BigDecimal(currentAsset!!.priceUsd), 8, RoundingMode.HALF_UP)
             } else {
                 (BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd))
             }
@@ -328,7 +332,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             BigDecimal(0)
         }
         bottomValue = value.toDouble()
-        return "${(value).numberFormat2()} $rightSymbol"
+        return "${if(swaped) {
+            value.numberFormat8()
+        } else value.numberFormat2()} $rightSymbol"
     }
 
     private fun operateKeyboard(show: Boolean) {
@@ -368,7 +374,37 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private val inputFilter = InputFilter { source, _, _, _, _, _ ->
+        val s =  if (forbiddenInput and !ignoreFilter) "" else source
+        ignoreFilter = false
+        return@InputFilter s
+    }
+
+    private var forbiddenInput = false
+    private var ignoreFilter = false
+
+    private fun checkInputForbidden(s: CharSequence) {
+        val index = s.indexOf('.')
+        forbiddenInput = if (index == -1) {
+            false
+        } else {
+            val num = s.split('.')
+            val tail = num[1]
+            if (swaped) {
+                val tailLen = tail.length
+                if (tailLen > 2) {
+                    ignoreFilter = true
+                    contentView.amount_et.setText(s.subSequence(0, num[0].length + 3))
+                }
+                tailLen >= 2
+            } else {
+                tail.length >= 8
+            }
+        }
+    }
+
     private val mWatcher: TextWatcher = object : TextWatcher {
+
         override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
         }
 
@@ -377,6 +413,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         @SuppressLint("SetTextI18n")
         override fun afterTextChanged(s: Editable) {
+            checkInputForbidden(s)
             if (s.isNotEmpty() && contentView.asset_rl.isEnabled && s.toString().checkNumber()) {
                 contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_wallet_blue_btn, null)
                 contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
