@@ -6,6 +6,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SYSTEM_USER
+import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.BlazeMessageParam
@@ -24,6 +25,10 @@ class SendSessionMessageJob(
     }
 
     override fun onRun() {
+        val conversation = conversationDao.getConversation(message.conversationId) ?: return
+        if (conversation.isContact()) {
+            requestCreateConversation(conversation)
+        }
         jobManager.saveJob(this)
         val accountId = Session.getAccountId()!!
         val sessionId = Session.getExtensionSessionId()!!

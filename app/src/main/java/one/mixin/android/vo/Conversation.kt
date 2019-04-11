@@ -53,6 +53,10 @@ fun Conversation.isGroup(): Boolean {
     return category == ConversationCategory.GROUP.name
 }
 
+fun Conversation.isContact(): Boolean {
+    return category == ConversationCategory.CONTACT.name
+}
+
 fun createConversation(conversationId: String, category: String?, recipientId: String, status: Int) =
     ConversationBuilder(conversationId, nowInUtc(), status)
         .setCategory(category)

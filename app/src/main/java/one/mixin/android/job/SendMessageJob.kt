@@ -2,13 +2,10 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
-import one.mixin.android.api.request.ConversationRequest
-import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
-import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.Participant
@@ -125,21 +122,6 @@ open class SendMessageJob(
             }
         }
         deliver(encryptNormalMessage())
-    }
-
-    private fun requestCreateConversation(conversation: Conversation) {
-        if (conversation.status != ConversationStatus.SUCCESS.ordinal) {
-            val participantRequest = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
-            val request = ConversationRequest(conversationId = conversation.conversationId,
-                category = conversation.category, participants = participantRequest)
-            val response = conversationApi.create(request).execute().body()
-            if (response != null && response.isSuccess && response.data != null && !isCancel) {
-                conversationDao
-                    .updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
-            } else {
-                throw Exception("Create Conversation Exception")
-            }
-        }
     }
 
     private fun syncConversation(conversation: Conversation) {

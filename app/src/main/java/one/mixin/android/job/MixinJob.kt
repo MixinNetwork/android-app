@@ -10,12 +10,16 @@ import one.mixin.android.api.NetworkException
 import one.mixin.android.api.SignalKey
 import one.mixin.android.api.WebSocketException
 import one.mixin.android.api.createPreKeyBundle
+import one.mixin.android.api.request.ConversationRequest
+import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.Session
+import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -288,6 +292,21 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             MessageCategory.PLAIN_JSON.name, encoded, MessageStatus.SENDING.name)
         val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, params)
         deliverNoThrow(bm)
+    }
+
+    protected fun requestCreateConversation(conversation: Conversation) {
+        if (conversation.status != ConversationStatus.SUCCESS.ordinal) {
+            val participantRequest = arrayListOf(ParticipantRequest(conversation.ownerId!!, ""))
+            val request = ConversationRequest(conversationId = conversation.conversationId,
+                category = conversation.category, participants = participantRequest)
+            val response = conversationApi.create(request).execute().body()
+            if (response != null && response.isSuccess && response.data != null && !isCancel) {
+                conversationDao
+                    .updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
+            } else {
+                throw Exception("Create Conversation Exception")
+            }
+        }
     }
 
     internal abstract fun cancel()
