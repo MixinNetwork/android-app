@@ -58,6 +58,7 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.util.UUID
 import javax.inject.Inject
 
@@ -317,7 +318,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             if (currentAsset == null || currentAsset!!.priceUsd.toDouble() == 0.0) {
                 BigDecimal(0)
             } else if (swaped) {
-                BigDecimal(amount) / BigDecimal(currentAsset!!.priceUsd)
+                BigDecimal(amount).divide(BigDecimal(currentAsset!!.priceUsd), 3, RoundingMode.HALF_UP)
             } else {
                 (BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd))
             }
