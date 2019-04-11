@@ -398,7 +398,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 }
                 tailLen >= 2
             } else {
-                num[0].length + tail.length >= 9
+                tail.length >= 8
             }
         }
     }
