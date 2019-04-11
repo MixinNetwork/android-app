@@ -458,7 +458,7 @@
     <string name="video">Video</string>
     <string name="audio">Audio</string>
     <!--pay-->
-    <string name="pay_paid">Already paid</string>
+    <string name="pay_paid">This link has been paid</string>
 
     <string name="background_connection_enabled">Messaging node running</string>
 

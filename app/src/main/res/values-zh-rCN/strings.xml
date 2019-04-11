@@ -451,7 +451,7 @@
     <string name="video">视频</string>
     <string name="audio">语音</string>
     <!--pay-->
-    <string name="pay_paid">已支付完成</string>
+    <string name="pay_paid">此支付链接已被支付</string>
 
     <string name="background_connection_enabled">消息节点正在运行</string>
 
