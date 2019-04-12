@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.fragment.app.FragmentManager
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
@@ -13,7 +14,10 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.Session
+import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
 
 class UrlInterpreterActivity : BaseActivity() {
     companion object {
@@ -21,6 +25,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val PAY = "pay"
         private const val USER = "users"
         private const val TRANSFER = "transfer"
+        private const val SEND = "send"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,6 +59,12 @@ class UrlInterpreterActivity : BaseActivity() {
                     TransferFragment.newInstance(lastPathSegment).showNow(supportFragmentManager, TransferFragment.TAG)
                 }
             }
+            SEND -> {
+                uri.getQueryParameter("text")?.let {
+                    ForwardActivity.show(this@UrlInterpreterActivity, arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it)))
+                }
+                finish()
+            }
         }
     }
 }
@@ -63,7 +74,8 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
         url.startsWith(Scheme.PAY, true) ||
         url.startsWith(Scheme.USERS, true) ||
         url.startsWith(Scheme.HTTPS_USERS, true) ||
-        url.startsWith(Scheme.DEVICE, true)) {
+        url.startsWith(Scheme.DEVICE, true) ||
+        url.startsWith(Scheme.SEND, true)) {
         true
     } else {
         val segments = Uri.parse(url).pathSegments
@@ -93,6 +105,10 @@ inline fun openUrl(
             if (data.isUUID()) {
                 TransferFragment.newInstance(data).showNow(supportFragmentManager, TransferFragment.TAG)
             }
+        }
+    } else if (url.startsWith(Scheme.SEND, true)) {
+        Uri.parse(url).getQueryParameter("text")?.let {
+            ForwardActivity.show(MixinApplication.appContext, arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it)))
         }
     } else {
         if (isMixinUrl(url, false)) {
