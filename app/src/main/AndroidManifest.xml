@@ -65,6 +65,9 @@
                 <data
                     android:host="transfer"
                     android:scheme="mixin" />
+                <data
+                    android:host="send"
+                    android:scheme="mixin" />
             </intent-filter>
         </activity>
         <activity

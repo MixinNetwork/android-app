@@ -35,6 +35,7 @@ object Constants {
         const val USERS = "mixin://users"
         const val TRANSFER = "mixin://transfer"
         const val DEVICE = "mixin://device/auth"
+        const val SEND = "mixin://send"
 
         const val HTTPS_CODES = "https://mixin.one/codes"
         const val HTTPS_PAY = "https://mixin.one/pay"
