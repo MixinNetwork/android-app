@@ -24,6 +24,8 @@ import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
+import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -34,7 +36,6 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
@@ -136,19 +137,27 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             .load(url)
                             .submit()
                             .get(10, TimeUnit.SECONDS)
-                        val result = bitmap.decodeQR()
                         uiThread {
                             if (isDetached) {
                                 return@uiThread
                             }
-                            if (result != null) {
-                                openUrl(result, requireFragmentManager()) {
-                                    QrScanBottomSheetDialogFragment.newInstance(result)
-                                        .showNow(requireFragmentManager(), QrScanBottomSheetDialogFragment.TAG)
+                            val image = FirebaseVisionImage.fromBitmap(bitmap)
+                            val detector = FirebaseVision.getInstance().visionBarcodeDetector
+                            detector.detectInImage(image)
+                                .addOnSuccessListener { barcodes ->
+                                    val result = barcodes.firstOrNull()?.rawValue
+                                    if (result != null) {
+                                        openUrl(result, requireFragmentManager()) {
+                                            QrScanBottomSheetDialogFragment.newInstance(result)
+                                                .showNow(requireFragmentManager(), QrScanBottomSheetDialogFragment.TAG)
+                                        }
+                                    } else {
+                                        if (isAdded) toast(R.string.can_not_recognize)
+                                    }
                                 }
-                            } else {
-                                if (isAdded) toast(R.string.can_not_recognize)
-                            }
+                                .addOnFailureListener {
+                                    if (isAdded) toast(R.string.can_not_recognize)
+                                }
                         }
                     } catch (e: Exception) {
                         if (isAdded) toast(R.string.can_not_recognize)
