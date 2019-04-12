@@ -44,6 +44,8 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
+import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.shizhefei.view.largeimage.LargeImageView
 import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -59,7 +61,6 @@ import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -214,16 +215,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 })
             bottomSheet.dismiss()
         }
-        view.decode.setOnClickListener { _ ->
+        view.decode.setOnClickListener {
             findViewPagerChildByTag { viewGroup ->
                 val imageView = viewGroup.getChildAt(0) as ImageView
-                doAsync {
-                    if (imageView.drawable is BitmapDrawable) {
-                        val url = (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
-                        uiThread {
-                            if (isDestroyed) {
-                                return@uiThread
-                            }
+                if (imageView.drawable is BitmapDrawable) {
+                    val image = FirebaseVisionImage.fromBitmap((imageView.drawable as BitmapDrawable).bitmap)
+                    val detector = FirebaseVision.getInstance().visionBarcodeDetector
+                    detector.detectInImage(image)
+                        .addOnSuccessListener { barcodes ->
+                            val url = barcodes.firstOrNull()?.rawValue
                             if (url != null) {
                                 openUrl(url, supportFragmentManager) {
                                     QrScanBottomSheetDialogFragment.newInstance(url)
@@ -233,9 +233,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                                 toast(R.string.can_not_recognize)
                             }
                         }
-                    } else {
-                        toast(R.string.can_not_recognize)
-                    }
+                        .addOnFailureListener {
+                            toast(R.string.can_not_recognize)
+                        }
                 }
             }
             bottomSheet.dismiss()
@@ -602,7 +602,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             .apply {
                 addUpdateListener {
                     (it.animatedValue as Int).apply {
-                        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${view_pager.currentItem}") ?: return@addUpdateListener
+                        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${view_pager.currentItem}")
+                            ?: return@addUpdateListener
                         v.translationY = (realSize().y * this / 100).toFloat()
                         colorDrawable.alpha = ALPHA_MAX * (100 - this) / 100
                         if (it.animatedValue == 100) {
