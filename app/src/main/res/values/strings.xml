@@ -118,6 +118,7 @@
     <string name="search_title_contacts">CONTACTS</string>
     <string name="search_title_group">GROUPS</string>
     <string name="search_title_messages">MESSAGES</string>
+    <string name="search_related_message">%1$d related messages</string>
     <!--landing-->
     <string name="landing_back_content_desc" translatable="false">Landing back</string>
     <string name="landing_enter_mobile_number">Enter your mobile number</string>

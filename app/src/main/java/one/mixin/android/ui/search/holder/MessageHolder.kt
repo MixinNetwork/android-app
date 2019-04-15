@@ -3,14 +3,11 @@ package one.mixin.android.ui.search.holder
 import android.graphics.drawable.Drawable
 import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.core.widget.TextViewCompat
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_message.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.timeAgo
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.ConversationCategory
-import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SearchMessageItem
 import org.jetbrains.anko.dip
 
@@ -27,14 +24,7 @@ class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
 
     fun bind(message: SearchMessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean) {
         itemView.search_name_tv.text = message.userFullName
-        if (message.type == MessageCategory.SIGNAL_DATA.name || message.type == MessageCategory.PLAIN_DATA.name) {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, icon, null, null, null)
-            itemView.search_msg_tv.text = message.mediaName
-        } else {
-            TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, null, null, null, null)
-            itemView.search_msg_tv.text = message.content
-        }
-        itemView.search_time_tv.timeAgo(message.createdAt)
+        itemView.search_msg_tv.text = itemView.context.getString(R.string.search_related_message, message.messageCount)
         if (message.conversationCategory == ConversationCategory.CONTACT.name) {
             if (message.botUserId != null && message.botUserId != message.userId && message.botFullName != null) {
                 itemView.search_avatar_iv.setInfo(message.botFullName, message.botAvatarUrl, message.botUserId)
