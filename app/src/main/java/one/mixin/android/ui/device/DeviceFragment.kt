@@ -3,6 +3,7 @@ package one.mixin.android.ui.device
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +17,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -48,6 +52,14 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
     private var disposable: Disposable? = null
 
     private var loggedIn = false
+
+    private val sessionPref = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
+
+    private val sessionListener = SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
+        if (key == Constants.Account.PREF_EXTENSION_SESSION_ID) {
+            updateUI(sp.getString(key, null) != null)
+        }
+    }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -92,7 +104,6 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
                 activity?.overridePendingTransition(R.anim.slide_in_bottom, 0)
             }
         }
-        checkSession()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -104,6 +115,17 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        checkSession()
+        sessionPref.registerOnSharedPreferenceChangeListener(sessionListener)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sessionPref.unregisterOnSharedPreferenceChangeListener(sessionListener)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         disposable?.dispose()
@@ -111,9 +133,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
 
     private fun checkSession() {
         val sessionId = Session.getExtensionSessionId()
-        if (sessionId != null) {
-            updateUI(true)
-        }
+        updateUI(sessionId != null)
     }
 
     private fun updateUI(loggedIn: Boolean) {
