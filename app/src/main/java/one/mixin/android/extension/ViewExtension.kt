@@ -4,6 +4,7 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Outline
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -22,7 +23,10 @@ import androidx.core.animation.doOnStart
 import androidx.core.view.ViewCompat
 import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.updateLayoutParams
+import androidx.navigation.NavOptions
+import androidx.navigation.findNavController
 import org.jetbrains.anko.dip
+import timber.log.Timber
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 
@@ -198,4 +202,18 @@ fun TextView.timeAgoDate(str: String) {
 
 fun TextView.timeAgoDay(str: String) {
     text = str.timeAgoDay()
+}
+
+fun View.navigate(
+    resId: Int,
+    bundle: Bundle? = null,
+    navOptions: NavOptions? = null
+) {
+    try {
+        findNavController().navigate(resId, bundle, navOptions)
+    } catch (e: IllegalArgumentException) {
+        // Workaround with https://issuetracker.google.com/issues/128881182
+    } catch (e: IllegalStateException) {
+        Timber.w("View $this does not have a NavController set")
+    }
 }

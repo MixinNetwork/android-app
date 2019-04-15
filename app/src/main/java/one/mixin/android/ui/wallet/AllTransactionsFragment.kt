@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.getEpochNano
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -74,7 +75,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             a?.let {
                 if (!isAdded) return@launch
 
-                view?.findNavController()?.navigate(R.id.action_all_transactions_fragment_to_transaction_fragment,
+                view?.navigate(R.id.action_all_transactions_fragment_to_transaction_fragment,
                     Bundle().apply {
                         putParcelable(ARGS_SNAPSHOT, snapshot)
                         putParcelable(ARGS_ASSET, it)
@@ -88,7 +89,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             walletViewModel.getUser(userId)?.let {
                 val f = UserBottomSheetDialogFragment.newInstance(it)
                 f.showUserTransactionAction = {
-                    view?.findNavController()?.navigate(R.id.action_all_transactions_to_user_transactions,
+                    view?.navigate(R.id.action_all_transactions_to_user_transactions,
                         Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
                 }
                 f.show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)

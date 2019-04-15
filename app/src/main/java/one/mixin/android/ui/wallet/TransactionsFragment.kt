@@ -10,7 +10,6 @@ import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
-import androidx.navigation.findNavController
 import androidx.paging.PagedList
 import androidx.room.Transaction
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
@@ -29,6 +28,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
@@ -93,14 +93,14 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         updateHeader(headerView, asset)
         headerView.tranfer_tv.setOnClickListener {
             defaultSharedPreferences.putString(TransferFragment.ASSERT_PREFERENCE, asset.assetId)
-            view?.findNavController()?.navigate(R.id.action_transactions_to_single_friend_select)
+            view?.navigate(R.id.action_transactions_to_single_friend_select)
         }
         headerView.deposit_tv.setOnClickListener {
             asset.differentProcess({
-                view?.findNavController()?.navigate(R.id.action_transactions_to_deposit_public_key,
+                view?.navigate(R.id.action_transactions_to_deposit_public_key,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) })
             }, {
-                view?.findNavController()?.navigate(R.id.action_transactions_to_deposit_account,
+                view?.navigate(R.id.action_transactions_to_deposit_account,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) })
             }, {
                 toast(getString(R.string.error_bad_data, ErrorHandler.BAD_DATA))
@@ -237,8 +237,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         val bottomSheet = builder.create()
         view.withdrawal.setOnClickListener {
             bottomSheet.dismiss()
-            this@TransactionsFragment.view?.findNavController()?.navigate(R.id.action_transactions_to_withdrawal,
-                Bundle().apply { putParcelable(ARGS_ASSET, asset) })
+                this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_withdrawal,
+                    Bundle().apply { putParcelable(ARGS_ASSET, asset) })
         }
         view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
         view.hide.setOnClickListener {
@@ -254,7 +254,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        view?.findNavController()?.navigate(R.id.action_transactions_fragment_to_transaction_fragment,
+        view?.navigate(R.id.action_transactions_fragment_to_transaction_fragment,
             Bundle().apply {
                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, item as SnapshotItem)
                 putParcelable(ARGS_ASSET, asset)
@@ -266,7 +266,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             walletViewModel.getUser(userId)?.let {
                 val f = UserBottomSheetDialogFragment.newInstance(it)
                 f.showUserTransactionAction = {
-                    view?.findNavController()?.navigate(R.id.action_transactions_to_user_transactions,
+                    view?.navigate(R.id.action_transactions_to_user_transactions,
                         Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
                 }
                 f.show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
@@ -275,7 +275,8 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun refreshSnapshots() {
-        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getEpochNano() ?: nowInUtc().getEpochNano(), LIMIT))
+        jobManager.addJobInBackground(RefreshSnapshotsJob(asset.assetId, lastCreatedAt?.getEpochNano()
+            ?: nowInUtc().getEpochNano(), LIMIT))
     }
 
     override fun refreshWithCurrentType() {
