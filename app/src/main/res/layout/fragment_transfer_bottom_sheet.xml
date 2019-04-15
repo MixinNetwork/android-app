@@ -25,6 +25,7 @@
             android:id="@+id/asset_icon"
             android:layout_width="70dp"
             android:layout_height="70dp"
+            android:layout_marginTop="@dimen/margin16"
             tools:ignore="ContentDescription"/>
 
         <TextView
