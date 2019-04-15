@@ -106,6 +106,19 @@
             android:text="@string/wallet_pay_with_pwd"
             android:textColor="@color/text_gray"/>
 
+        <TextView
+            android:id="@+id/biometric_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin20"
+            android:layout_marginBottom="32dp"
+            android:drawableStart="@drawable/ic_biometric"
+            android:drawablePadding="@dimen/padding8"
+            android:text="@string/wallet_pay_with_biometric"
+            android:textSize="16sp"
+            android:visibility="gone"
+            android:textColor="@color/wallet_blue_secondary"/>
+
         <one.mixin.android.widget.Keyboard
             android:id="@+id/keyboard"
             android:layout_width="match_parent"
