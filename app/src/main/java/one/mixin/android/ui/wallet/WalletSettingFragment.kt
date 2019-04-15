@@ -6,7 +6,6 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.navigation.findNavController
 import kotlinx.android.synthetic.main.fragment_wallet_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
@@ -14,6 +13,7 @@ import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
@@ -35,13 +35,13 @@ class WalletSettingFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         change_tv.setOnClickListener {
-            it.findNavController().navigate(R.id.action_wallet_setting_to_old_password)
+            it.navigate(R.id.action_wallet_setting_to_old_password)
         }
 
         val isBiometricsSupport = BiometricUtil.isSupport(requireContext())
         if (isBiometricsSupport) {
             time_rl.setOnClickListener {
-                it.findNavController().navigate(R.id.action_wallet_setting_to_biometric_time)
+                    it.navigate(R.id.action_wallet_setting_to_biometric_time)
             }
             biometrics_sc.isClickable = false
             biometrics_rl.setOnClickListener(biometricsClickListener)

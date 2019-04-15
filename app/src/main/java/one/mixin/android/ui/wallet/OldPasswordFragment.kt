@@ -6,7 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.findNavController
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_old_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -14,6 +13,7 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
@@ -78,7 +78,7 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             if (r.isSuccess) {
                 context?.updatePinCheck()
                 r.data?.let {
-                    view?.findNavController()?.navigate(R.id.action_old_password_to_password,
+                    view?.navigate(R.id.action_old_password_to_password,
                         Bundle().apply {
                             putBoolean(ARGS_CHANGE, true)
                             putString(ARGS_OLD_PASSWORD, pin.code())

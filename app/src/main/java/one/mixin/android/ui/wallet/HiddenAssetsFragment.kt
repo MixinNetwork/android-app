@@ -9,13 +9,13 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.findNavController
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_hidden_assets.*
 import kotlinx.android.synthetic.main.view_title.*
 import one.mixin.android.R
+import one.mixin.android.extension.navigate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
@@ -85,7 +85,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     }
 
     override fun <T> onNormalItemClick(item: T) {
-        view?.findNavController()?.navigate(R.id.action_hidden_assets_to_transactions,
+        view?.navigate(R.id.action_hidden_assets_to_transactions,
             Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, item as AssetItem) })
     }
 }
