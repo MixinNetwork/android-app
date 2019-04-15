@@ -250,6 +250,7 @@
     <string name="wallet_fee_tip">The transaction fee is received by the miner</string>
     <string name="wallet_transfer_type">Transfer Type</string>
     <string name="wallet_pay_with_pwd">Pay with PIN</string>
+    <string name="wallet_pay_with_biometric">Biometric Payment</string>
     <string name="wallet_transfer_amount">Transfer Amount</string>
     <string name="wallet_transfer_memo">Memo (optional)</string>
     <string name="wallet_unit_btc">%1$s BTC</string>

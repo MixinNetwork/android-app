@@ -1,9 +1,7 @@
 package one.mixin.android.ui.conversation
 
 import android.annotation.SuppressLint
-import android.app.Activity.RESULT_OK
 import android.app.Dialog
-import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
@@ -44,12 +42,8 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.ui.common.BiometricDialog
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
-import one.mixin.android.util.BiometricUtil
-import one.mixin.android.util.BiometricUtil.REQUEST_CODE_CREDENTIALS
-import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -141,8 +135,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         bottomSheet
     }
 
-    private var biometricDialog: BiometricDialog? = null
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
@@ -201,12 +193,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             if (!isAdded || user == null) return@setOnClickListener
 
             operateKeyboard(false)
-
-            if (BiometricUtil.shouldShowBiometric(requireContext())) {
-                showBiometricPrompt()
-            } else {
-                showTransferBottom()
-            }
+            showTransferBottom()
         }
 
         chatViewModel.assetItemsWithBalance().observe(this, Observer { r: List<AssetItem>? ->
@@ -348,30 +335,16 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun showBiometricPrompt() {
-        biometricDialog = BiometricDialog(requireContext(), user!!, getAmount(),
-            currentAsset!!.toAsset(), UUID.randomUUID().toString(), contentView.transfer_memo.text.toString())
-        biometricDialog?.callback = biometricDialogCallback
-        biometricDialog?.show()
-    }
-
-    private fun showTransferBottom(trace: String? = null, pin: String? = null) {
+    private fun showTransferBottom() {
         val bottom = TransferBottomSheetDialogFragment
-            .newInstance(user!!, getAmount(), currentAsset!!.toAsset(), trace ?: UUID.randomUUID().toString(),
-                contentView.transfer_memo.text.toString(), pin)
+            .newInstance(user!!, getAmount(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
+                contentView.transfer_memo.text.toString())
         bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
         bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 dialog?.dismiss()
             }
         })
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE_CREDENTIALS && resultCode == RESULT_OK) {
-            showBiometricPrompt()
-        }
     }
 
     private val inputFilter = InputFilter { source, _, _, _, _, _ ->
@@ -442,29 +415,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         }
-    }
-
-    private val biometricDialogCallback = object : BiometricDialog.Callback {
-        override fun onStartTransfer(
-            assetId: String,
-            userId: String,
-            amount: String,
-            pin: String,
-            trace: String?,
-            memo: String?
-        ) {
-            showTransferBottom(trace, pin)
-        }
-
-        override fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
-            showTransferBottom()
-        }
-
-        override fun showAuthenticationScreen() {
-            BiometricUtil.showAuthenticationScreen(this@TransferFragment)
-        }
-
-        override fun onCancel() {}
     }
 
     class TypeAdapter : ListAdapter<AssetItem, ItemHolder>(AssetItem.DIFF_CALLBACK) {

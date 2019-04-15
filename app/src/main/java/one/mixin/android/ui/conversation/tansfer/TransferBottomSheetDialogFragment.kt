@@ -1,11 +1,14 @@
 package one.mixin.android.ui.conversation.tansfer
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import android.view.View.VISIBLE
+import androidx.core.view.isVisible
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -22,8 +25,10 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.BiometricDialog
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
@@ -42,7 +47,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_MEMO = "args_memo"
         const val ARGS_TRACE = "args_trace"
-        const val ARGS_PIN = "args_pin"
 
         const val POS_PIN = 0
         const val POS_PB = 1
@@ -52,8 +56,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             transferAmount: String,
             asset: Asset,
             trace: String?,
-            transferMemo: String?,
-            pin: String? = null
+            transferMemo: String?
         ) =
             TransferBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_USER, user)
@@ -61,7 +64,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 putString(ARGS_MEMO, transferMemo)
                 putParcelable(ARGS_ASSET, asset)
                 putString(ARGS_TRACE, trace)
-                pin?.let { putString(ARGS_PIN, pin) }
             }
     }
 
@@ -84,6 +86,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val trace: String? by lazy {
         arguments!!.getString(ARGS_TRACE)
     }
+
+    private var biometricDialog: BiometricDialog? = null
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -131,32 +135,70 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
                 if (index == contentView.pin.getCount()) {
-                    contentView.pin_va.displayedChild = POS_PB
-                    bottomViewModel.transfer(asset.assetId, user.userId, amount,
-                        contentView.pin.code(), trace, memo).autoDisposable(scopeProvider)
-                        .subscribe({
-                            contentView.pin_va.displayedChild = POS_PIN
-                            if (it.isSuccess) {
-                                defaultSharedPreferences.putLong(BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
-                                context?.updatePinCheck()
-                                dismiss()
-                                callback?.onSuccess()
-                            } else {
-                                contentView.pin.clear()
-                                ErrorHandler.handleMixinError(it.errorCode)
-                            }
-                        }, {
-                            ErrorHandler.handleError(it)
-                            contentView.pin.clear()
-                            contentView.pin_va.displayedChild = POS_PIN
-                        })
+                    startTransfer(contentView.pin.code())
                 }
             }
         })
-        val pin = arguments!!.getString(ARGS_PIN)
-        if (pin != null) {
-            contentView.pin.set(pin)
+        contentView.biometric_tv.setOnClickListener { showBiometricPrompt() }
+        contentView.biometric_tv.isVisible= BiometricUtil.shouldShowBiometric(requireContext())
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == BiometricUtil.REQUEST_CODE_CREDENTIALS && resultCode == Activity.RESULT_OK) {
+            showBiometricPrompt()
         }
+    }
+
+    private fun startTransfer(pin: String) {
+        contentView.pin_va?.displayedChild = POS_PB
+        bottomViewModel.transfer(asset.assetId, user.userId, amount, pin, trace, memo)
+            .autoDisposable(scopeProvider)
+            .subscribe({
+                contentView.pin_va?.displayedChild = POS_PIN
+                if (it.isSuccess) {
+                    defaultSharedPreferences.putLong(BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
+                    context?.updatePinCheck()
+                    dismiss()
+                    callback?.onSuccess()
+                } else {
+                    contentView.pin?.clear()
+                    ErrorHandler.handleMixinError(it.errorCode)
+                }
+            }, {
+                ErrorHandler.handleError(it)
+                contentView.pin?.clear()
+                contentView.pin_va?.displayedChild = POS_PIN
+            })
+    }
+
+    private fun showBiometricPrompt() {
+        biometricDialog = BiometricDialog(requireContext(), user, amount, asset, trace, memo)
+        biometricDialog?.callback = biometricDialogCallback
+        biometricDialog?.show()
+    }
+
+    private val biometricDialogCallback = object : BiometricDialog.Callback {
+        override fun onStartTransfer(
+            assetId: String,
+            userId: String,
+            amount: String,
+            pin: String,
+            trace: String?,
+            memo: String?
+        ) {
+            contentView.pin?.set(pin)
+            startTransfer(pin)
+        }
+
+        override fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
+        }
+
+        override fun showAuthenticationScreen() {
+            BiometricUtil.showAuthenticationScreen(this@TransferBottomSheetDialogFragment)
+        }
+
+        override fun onCancel() {}
     }
 
     private var callback: Callback? = null
