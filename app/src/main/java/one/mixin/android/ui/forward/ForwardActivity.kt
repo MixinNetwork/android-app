@@ -2,6 +2,7 @@ package one.mixin.android.ui.forward
 
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
@@ -22,6 +23,7 @@ class ForwardActivity : BlazeBaseActivity() {
                 putParcelableArrayListExtra(ARGS_MESSAGES, messages)
                 putExtra(ARGS_SHARE, isShare)
             }
+            intent.flags = FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
         }
 
