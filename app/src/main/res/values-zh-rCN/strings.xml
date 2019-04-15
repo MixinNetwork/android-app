@@ -114,6 +114,7 @@
     <string name="search_title_contacts">联系人</string>
     <string name="search_title_group">群组</string>
     <string name="search_title_messages">消息</string>
+    <string name="search_title_more">更多</string>
     <string name="search_related_message">%1$d 条相关的消息</string>
     <!--landing-->
     <string name="landing_enter_mobile_number">输入你的手机号码</string>

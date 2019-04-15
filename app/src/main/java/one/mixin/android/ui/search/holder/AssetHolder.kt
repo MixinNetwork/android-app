@@ -1,6 +1,5 @@
 package one.mixin.android.ui.search.holder
 
-import android.annotation.SuppressLint
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_asset.view.*
@@ -16,17 +15,7 @@ import org.jetbrains.anko.textColorResource
 import java.math.BigDecimal
 
 class AssetHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
-    fun bind(user: AssetItem, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        bind(user, onItemClickListener, false)
-    }
-
-    @SuppressLint("SetTextI18n")
-    fun bind(asset: AssetItem, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean) {
-        if (isEnd) {
-            itemView.divider.visibility = View.GONE
-        } else {
-            itemView.divider.visibility = View.VISIBLE
-        }
+    fun bind(asset: AssetItem, onItemClickListener: SearchFragment.OnSearchClickListener?) {
         itemView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         itemView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         itemView.setOnClickListener { onItemClickListener?.onAsset(asset) }

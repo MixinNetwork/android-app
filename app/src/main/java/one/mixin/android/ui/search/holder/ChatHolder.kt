@@ -13,15 +13,7 @@ class ChatHolder constructor(containerView: View) : RecyclerView.ViewHolder(cont
         itemView.verified_iv.visibility = View.GONE
     }
 
-    fun bind(conversation: ChatMinimal, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        bind(conversation, onItemClickListener, false)
-    }
-
-    fun bind(
-        chat: ChatMinimal,
-        onItemClickListener: SearchFragment.OnSearchClickListener?,
-        isEnd: Boolean
-    ) {
+    fun bind(chat: ChatMinimal, onItemClickListener: SearchFragment.OnSearchClickListener?) {
         if (chat.category == ConversationCategory.CONTACT.name) {
             itemView.search_name.text = chat.fullName
             itemView.search_avatar_iv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)

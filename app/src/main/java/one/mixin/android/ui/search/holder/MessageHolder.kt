@@ -19,11 +19,7 @@ class MessageHolder constructor(containerView: View) : RecyclerView.ViewHolder(c
     }
 
     fun bind(message: SearchMessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        bind(message, onItemClickListener, false)
-    }
-
-    fun bind(message: SearchMessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean) {
-        itemView.search_name_tv.text = message.userFullName
+        itemView.search_name_tv.text = message.conversationName ?: message.userFullName
         itemView.search_msg_tv.text = itemView.context.getString(R.string.search_related_message, message.messageCount)
         if (message.conversationCategory == ConversationCategory.CONTACT.name) {
             if (message.botUserId != null && message.botUserId != message.userId && message.botFullName != null) {

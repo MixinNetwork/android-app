@@ -25,10 +25,22 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun onBindHeaderViewHolder(holder: HeaderHolder, position: Int) {
         val context = holder.itemView.context
         when {
-            getItemViewType(position) == 0 -> holder.bind(context.getText(R.string.search_title_assets).toString())
-            getItemViewType(position) == 1 -> holder.bind(context.getText(R.string.search_title_chat).toString())
-            getItemViewType(position) == 2 -> holder.bind(context.getText(R.string.search_title_contacts).toString())
-            else -> holder.bind(context.getText(R.string.search_title_messages).toString())
+            getItemViewType(position) == 0 -> holder.bind(context.getText(R.string.search_title_assets).toString(), data.assetShowMore()) {
+                data.assetLimit = false
+                notifyDataSetChanged()
+            }
+            getItemViewType(position) == 1 -> holder.bind(context.getText(R.string.search_title_chat).toString(), data.chatShowMore()) {
+                data.chatLimit = false
+                notifyDataSetChanged()
+            }
+            getItemViewType(position) == 2 -> holder.bind(context.getText(R.string.search_title_contacts).toString(), data.userShowMore()) {
+                data.userLimit = false
+                notifyDataSetChanged()
+            }
+            else -> holder.bind(context.getText(R.string.search_title_messages).toString(), data.messageShowMore()) {
+                data.messageLimit = false
+                notifyDataSetChanged()
+            }
         }
     }
 
@@ -80,22 +92,22 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         when (getItemViewType(position)) {
             0 -> {
                 data.getItem(position).let {
-                    (holder as AssetHolder).bind(it as AssetItem, onItemClickListener, data.isAssetEnd(position))
+                    (holder as AssetHolder).bind(it as AssetItem, onItemClickListener)
                 }
             }
             1 -> {
                 data.getItem(position).let {
-                    (holder as ChatHolder).bind(it as ChatMinimal, onItemClickListener, data.isChatEnd(position))
+                    (holder as ChatHolder).bind(it as ChatMinimal, onItemClickListener)
                 }
             }
             2 -> {
                 data.getItem(position).let {
-                    (holder as ContactHolder).bind(it as User, onItemClickListener, data.isUserEnd(position))
+                    (holder as ContactHolder).bind(it as User, onItemClickListener)
                 }
             }
             3 -> {
                 data.getItem(position).let {
-                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener, data.isMessageEnd(position))
+                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
                 }
             }
         }
