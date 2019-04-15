@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/search_header_tv"
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@color/bg_gray"
     android:paddingStart="16dp"
     android:paddingTop="8dp"
     android:paddingBottom="8dp"
-    android:textColor="@color/gray_50" />
+    android:background="@color/bg_gray"
+    android:paddingEnd="16dp">
+
+    <TextView
+        android:id="@+id/search_header_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_alignParentStart="true"
+        android:textColor="@color/gray_50"/>
+
+    <TextView
+        android:id="@+id/search_header_more"
+        android:text="@string/search_title_more"
+        android:textColor="@color/selector_tv"
+        android:layout_centerVertical="true"
+        android:layout_alignParentEnd="true"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+</RelativeLayout>

@@ -8,17 +8,8 @@ import one.mixin.android.vo.User
 
 class ContactHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
     fun bind(user: User, onItemClickListener: SearchFragment.OnSearchClickListener?) {
-        bind(user, onItemClickListener, false)
-    }
-
-    fun bind(user: User, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean) {
         itemView.search_name.text = user.fullName
         itemView.search_avatar_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
-        if (isEnd) {
-            itemView.divider.visibility = View.GONE
-        } else {
-            itemView.divider.visibility = View.VISIBLE
-        }
         itemView.verified_iv.visibility = if (user.isVerified == true) {
             View.VISIBLE
         } else {
