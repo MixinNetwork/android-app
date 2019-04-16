@@ -16,6 +16,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.PermissionRequest
 import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebView
@@ -195,6 +196,18 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 super.onReceivedTitle(view, title)
                 if (!title.equals(url)) {
                     contentView.title_view.text = title
+                }
+            }
+
+            override fun onPermissionRequest(request: PermissionRequest?) {
+                request?.let {
+                    for (code in request.resources) {
+                        if (code != PermissionRequest.RESOURCE_VIDEO_CAPTURE && code != PermissionRequest.RESOURCE_AUDIO_CAPTURE) {
+                            request.deny()
+                            return@let
+                        }
+                    }
+                    request.grant(request.resources)
                 }
             }
 
