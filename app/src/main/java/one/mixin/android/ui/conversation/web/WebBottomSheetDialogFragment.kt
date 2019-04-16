@@ -212,16 +212,35 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
 
+            @SuppressLint("CheckResult")
             override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
                 uploadMessage?.onReceiveValue(null)
                 uploadMessage = filePathCallback
                 val intent: Intent? = fileChooserParams?.createIntent()
                 if (fileChooserParams?.isCaptureEnabled == true) {
                     if (intent?.type == "video/*") {
-                        startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.CAMERA)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                            })
                         return true
                     } else if (intent?.type == "image/*") {
-                        startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), FILE_CHOOSER)
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.CAMERA)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), FILE_CHOOSER)
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                            })
                         return true
                     }
                 }
