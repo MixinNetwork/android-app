@@ -4,6 +4,7 @@ package one.mixin.android.extension
 
 import android.graphics.Bitmap
 import android.text.Editable
+import android.util.ArrayMap
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -27,7 +28,9 @@ import java.security.MessageDigest
 import java.text.DecimalFormat
 import java.util.Formatter
 import java.util.Locale
+import java.util.UUID
 import kotlin.collections.set
+import kotlin.math.abs
 
 fun String.generateQRCode(size: Int): Bitmap? {
     val result: BitMatrix
@@ -260,4 +263,22 @@ fun String.checkNumber(): Boolean {
     } catch (e: NumberFormatException) {
         false
     }
+}
+
+val idCodeMap = ArrayMap<String, Int>()
+
+fun String.getColorCode(
+    count: Int
+): Int {
+    var code = idCodeMap[this]
+    if (code != null) return code
+
+    val hashcode = try {
+        UUID.fromString(this).hashCode()
+    } catch (e: IllegalArgumentException) {
+        hashCode()
+    }
+    code = abs(hashcode).rem(count)
+    idCodeMap[this] = code
+    return code
 }
