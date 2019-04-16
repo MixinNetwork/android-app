@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Base64
 import android.view.ContextMenu
 import android.view.KeyEvent
@@ -211,10 +212,38 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
 
+            @SuppressLint("CheckResult")
             override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
                 uploadMessage?.onReceiveValue(null)
                 uploadMessage = filePathCallback
                 val intent: Intent? = fileChooserParams?.createIntent()
+                if (fileChooserParams?.isCaptureEnabled == true) {
+                    if (intent?.type == "video/*") {
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.CAMERA)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                            })
+                        return true
+                    } else if (intent?.type == "image/*") {
+                        RxPermissions(requireActivity())
+                            .request(Manifest.permission.CAMERA)
+                            .subscribe({ granted ->
+                                if (granted) {
+                                    startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), FILE_CHOOSER)
+                                } else {
+                                    context?.openPermissionSetting()
+                                }
+                            }, {
+                            })
+                        return true
+                    }
+                }
                 try {
                     startActivityForResult(intent, FILE_CHOOSER)
                 } catch (e: ActivityNotFoundException) {
