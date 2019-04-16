@@ -48,7 +48,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
             } else {
                 itemView.chat_name.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(colors[item.userIdentityNumber.toLong().rem(colors.size).toInt()])
+            itemView.chat_name.setTextColor(getColorById(item.userId))
             itemView.chat_name.setOnClickListener { onItemListener.onUserClick(item.userId) }
         } else {
             itemView.chat_name.visibility = View.GONE

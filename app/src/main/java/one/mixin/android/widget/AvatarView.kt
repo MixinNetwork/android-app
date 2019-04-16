@@ -64,6 +64,23 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
         }
 
         val idCodeMap = ArrayMap<String, Int>()
+
+        fun getCodeById(
+            id: String,
+            count: Int
+        ): Int {
+            var code = idCodeMap[id]
+            if (code != null) return code
+
+            val hashcode = try {
+                UUID.fromString(id).hashCode()
+            } catch (e: IllegalArgumentException) {
+                id.hashCode()
+            }
+            code = abs(hashcode).rem(count)
+            idCodeMap[id] = code
+            return code
+        }
     }
 
     fun setGroup(url: String?) {
@@ -82,7 +99,7 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
     fun setInfo(name: String?, url: String?, id: String) {
         avatar_tv.text = checkEmoji(name)
         try {
-            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(getCodeById(id)))
+            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(getCodeById(id, 24) + 1))
         } catch (e: NumberFormatException) {
         }
         displayedChild = if (url != null && url.isNotEmpty()) {
@@ -95,20 +112,6 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
 
     fun setTextSize(size: Float) {
         avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
-    }
-
-    private fun getCodeById(id: String): Int {
-        var code = idCodeMap[id]
-        if (code != null) return code
-
-        val hashcode = try {
-            UUID.fromString(id).hashCode()
-        } catch (e: IllegalArgumentException) {
-            id.hashCode()
-        }
-        code = abs(hashcode).rem(24) + 1
-        idCodeMap[id] = code
-        return code
     }
 
     private fun getAvatarPlaceHolderById(code: Int): Int {

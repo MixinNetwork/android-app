@@ -43,8 +43,8 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
     var messageItem: MessageItem? = null
     fun bind(messageItem: MessageItem) {
         this.messageItem = messageItem
-        reply_start_view.setBackgroundColor(BaseViewHolder.colors[messageItem.userIdentityNumber.toLong().rem(BaseViewHolder.colors.size).toInt()])
-        reply_name_tv.setTextColor(BaseViewHolder.colors[messageItem.userIdentityNumber.toLong().rem(BaseViewHolder.colors.size).toInt()])
+        reply_start_view.setBackgroundColor(BaseViewHolder.getColorById(messageItem.userId))
+        reply_name_tv.setTextColor(BaseViewHolder.getColorById(messageItem.userId))
         when {
             messageItem.type.endsWith("_IMAGE") -> {
                 reply_view_tv.setText(R.string.photo)

@@ -160,7 +160,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
             } else {
                 itemView.chat_name.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(colors[messageItem.userIdentityNumber.toLong().rem(colors.size).toInt()])
+            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
             itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             itemView.chat_name.visibility = View.GONE
@@ -189,10 +189,10 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
 
         val quoteMessage = Gson().fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         itemView.reply_name_tv.text = quoteMessage.userFullName
-        itemView.reply_name_tv.setTextColor(colors[quoteMessage.userIdentityNumber.toLong().rem(colors.size).toInt()])
-        itemView.reply_layout.setBackgroundColor(colors[quoteMessage.userIdentityNumber.toLong().rem(colors.size).toInt()])
+        itemView.reply_name_tv.setTextColor(getColorById(quoteMessage.userId))
+        itemView.reply_layout.setBackgroundColor(getColorById(messageItem.userId))
         itemView.reply_layout.background.alpha = 0x0D
-        itemView.start_view.setBackgroundColor(colors[quoteMessage.userIdentityNumber.toLong().rem(colors.size).toInt()])
+        itemView.start_view.setBackgroundColor(getColorById(messageItem.userId))
         when {
             quoteMessage.type.endsWith("_TEXT") -> {
                 itemView.reply_content_tv.text = quoteMessage.content

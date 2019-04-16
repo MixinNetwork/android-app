@@ -16,13 +16,16 @@ import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.widget.AvatarView
 
 abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
     companion object {
-        val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
+        private val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
         val HIGHLIGHTED = Color.parseColor("#CCEF8C")
         val LINK_COLOR = Color.parseColor("#5FA7E4")
         val SELECT_COLOR = Color.parseColor("#660D94FC")
+
+        fun getColorById(id: String) = colors[AvatarView.getCodeById(id, colors.size)]
     }
 
     protected val dp10 by lazy {
