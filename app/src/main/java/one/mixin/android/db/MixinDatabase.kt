@@ -12,6 +12,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_17_18
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_18_19
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_19_20
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_20_21
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
@@ -51,7 +52,7 @@ import one.mixin.android.vo.User
     (ResendMessage::class),
     (StickerRelationship::class),
     (TopAsset::class),
-    (Job::class)], version = 20)
+    (Job::class)], version = 21)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -85,7 +86,7 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
+                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                         .build()
@@ -103,7 +104,7 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(readlock) {
                 if (READINSTANCE == null) {
                     READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20)
+                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21)
                         .enableMultiInstanceInvalidation()
                         .build()
                 }

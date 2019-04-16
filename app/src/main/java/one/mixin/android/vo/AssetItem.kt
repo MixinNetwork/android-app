@@ -24,8 +24,10 @@ data class AssetItem(
     val confirmations: Int,
     val chainIconUrl: String?,
     val chainSymbol: String?,
+    val chainName: String?,
     val accountName: String?,
-    val accountTag: String?
+    val accountTag: String?,
+    val assetKey: String?
 ) : Parcelable {
     fun usd(): BigDecimal {
         return BigDecimal(balance) * BigDecimal(priceUsd)
@@ -35,8 +37,8 @@ data class AssetItem(
         return BigDecimal(balance) * BigDecimal(priceBtc)
     }
 
-    fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden, confirmations,
-        accountName, accountTag)
+    fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd,
+        chainId, changeUsd, changeBtc, hidden, confirmations, accountName, accountTag, assetKey)
 
     fun isPublicKeyAsset(): Boolean {
         return !publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()
@@ -58,11 +60,9 @@ data class AssetItem(
 }
 
 fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
-    if (isPublicKeyAsset()) {
-        keyAction()
-    } else if (isAccountTagAsset()) {
-        memoAction()
-    } else {
-        errorAction()
+    when {
+        isPublicKeyAsset() -> keyAction()
+        isAccountTagAsset() -> memoAction()
+        else -> errorAction()
     }
 }
