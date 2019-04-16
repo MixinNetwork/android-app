@@ -55,6 +55,9 @@
     <string name="add_success">Add success</string>
     <string name="dont_remind">Don\'t remind me again</string>
     <string name="gif" translatable="false">GIF</string>
+    <string name="symbol">Symbol</string>
+    <string name="chain">Chain</string>
+    <string name="contract">Asset Key</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

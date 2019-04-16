@@ -49,5 +49,11 @@ class MixinDatabaseMigrations private constructor() {
                     "change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, confirmations INTEGER NOT NULL, account_name TEXT, account_tag TEXT, capitalization REAL) ")
             }
         }
+
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE assets ADD COLUMN asset_key TEXT")
+            }
+        }
     }
 }

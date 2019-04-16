@@ -52,6 +52,9 @@
     <string name="searching">搜索中</string>
     <string name="add_success">添加成功</string>
     <string name="dont_remind">不再提醒</string>
+    <string name="symbol">符号</string>
+    <string name="chain">所属公链</string>
+    <string name="contract">资产标识</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
