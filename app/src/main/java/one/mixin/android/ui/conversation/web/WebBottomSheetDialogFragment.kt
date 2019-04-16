@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Base64
 import android.view.ContextMenu
 import android.view.KeyEvent
@@ -215,6 +216,15 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 uploadMessage?.onReceiveValue(null)
                 uploadMessage = filePathCallback
                 val intent: Intent? = fileChooserParams?.createIntent()
+                if (fileChooserParams?.isCaptureEnabled == true) {
+                    if (intent?.type == "video/*") {
+                        startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
+                        return true
+                    } else if (intent?.type == "image/*") {
+                        startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), FILE_CHOOSER)
+                        return true
+                    }
+                }
                 try {
                     startActivityForResult(intent, FILE_CHOOSER)
                 } catch (e: ActivityNotFoundException) {
