@@ -191,7 +191,6 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             trace: String?,
             memo: String?
         ) {
-            contentView.pin?.set(pin)
             startTransfer(pin)
         }
 
