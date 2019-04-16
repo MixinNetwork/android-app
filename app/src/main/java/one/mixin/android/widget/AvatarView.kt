@@ -1,7 +1,6 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import android.util.ArrayMap
 import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.LayoutInflater
@@ -11,11 +10,10 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.loadImage
 import org.jetbrains.anko.sp
-import java.util.UUID
-import kotlin.math.abs
 
 class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context, attrs) {
     init {
@@ -62,8 +60,6 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
             }
             return if (builder.isEmpty()) name[0].toString() else builder.toString()
         }
-
-        val idCodeMap = ArrayMap<String, Int>()
     }
 
     fun setGroup(url: String?) {
@@ -82,7 +78,7 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
     fun setInfo(name: String?, url: String?, id: String) {
         avatar_tv.text = checkEmoji(name)
         try {
-            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(getCodeById(id)))
+            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(id.getColorCode(24) + 1))
         } catch (e: NumberFormatException) {
         }
         displayedChild = if (url != null && url.isNotEmpty()) {
@@ -95,20 +91,6 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
 
     fun setTextSize(size: Float) {
         avatar_tv.setTextSize(TypedValue.COMPLEX_UNIT_SP, size)
-    }
-
-    private fun getCodeById(id: String): Int {
-        var code = idCodeMap[id]
-        if (code != null) return code
-
-        val hashcode = try {
-            UUID.fromString(id).hashCode()
-        } catch (e: IllegalArgumentException) {
-            id.hashCode()
-        }
-        code = abs(hashcode).rem(24) + 1
-        idCodeMap[id] = code
-        return code
     }
 
     private fun getAvatarPlaceHolderById(code: Int): Int {

@@ -4,9 +4,9 @@ import android.animation.ArgbEvaluator
 import android.animation.ValueAnimator
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.view.View
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.RecyclerView
-import android.view.View
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import one.mixin.android.MixinApplication
@@ -14,15 +14,18 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getColorCode
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageStatus
 
 abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.ViewHolder(containerView) {
     companion object {
-        val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
+        private val colors: IntArray = MixinApplication.appContext.resources.getIntArray(R.array.name_colors)
         val HIGHLIGHTED = Color.parseColor("#CCEF8C")
         val LINK_COLOR = Color.parseColor("#5FA7E4")
         val SELECT_COLOR = Color.parseColor("#660D94FC")
+
+        fun getColorById(id: String) = colors[id.getColorCode(colors.size)]
     }
 
     protected val dp10 by lazy {

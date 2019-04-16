@@ -50,7 +50,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
             } else {
                 itemView.chat_name.setCompoundDrawables(null, null, null, null)
             }
-            itemView.chat_name.setTextColor(colors[messageItem.userIdentityNumber.toLong().rem(colors.size).toInt()])
+            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
             itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
             itemView.chat_name.visibility = View.GONE

@@ -75,7 +75,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
                 itemView.chat_name.setCompoundDrawables(null, null, null, null)
             }
             itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
-            itemView.chat_name.setTextColor(colors[messageItem.userIdentityNumber.toLong().rem(colors.size).toInt()])
+            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
         } else {
             itemView.chat_name.visibility = View.GONE
         }
