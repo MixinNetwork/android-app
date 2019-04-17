@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation.web
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -36,11 +37,14 @@ import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
+import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
@@ -235,7 +239,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             .request(Manifest.permission.CAMERA)
                             .subscribe({ granted ->
                                 if (granted) {
-                                    startActivityForResult(Intent(MediaStore.ACTION_IMAGE_CAPTURE), FILE_CHOOSER)
+                                    openCamera(getImageUri())
                                 } else {
                                     context?.openPermissionSetting()
                                 }
@@ -288,10 +292,24 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @Override
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == FILE_CHOOSER) {
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CAMERA) {
+            imageUri?.let {
+                uploadMessage?.onReceiveValue(arrayOf(it))
+                imageUri = null
+            }
+            uploadMessage = null
+        } else if (requestCode == FILE_CHOOSER) {
             uploadMessage?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
             uploadMessage = null
         }
+    }
+
+    private var imageUri: Uri? = null
+    private fun getImageUri(): Uri {
+        if (imageUri == null) {
+            imageUri = Uri.fromFile(requireContext().getImagePath().createImageTemp())
+        }
+        return imageUri!!
     }
 
     override fun onDestroyView() {
