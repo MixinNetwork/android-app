@@ -90,6 +90,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         headerView.group_info_member_title_sort.setOnClickListener {
             showFiltersSheet()
         }
+        headerView.top_rl.setOnClickListener {
+            AssetKeyBottomSheetDialogFragment.newInstance(asset)
+                .showNow(requireFragmentManager(), AssetKeyBottomSheetDialogFragment.TAG)
+        }
         updateHeader(headerView, asset)
         headerView.tranfer_tv.setOnClickListener {
             defaultSharedPreferences.putString(TransferFragment.ASSERT_PREFERENCE, asset.assetId)
