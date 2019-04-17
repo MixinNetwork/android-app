@@ -57,7 +57,7 @@
     <string name="gif" translatable="false">GIF</string>
     <string name="symbol">Symbol</string>
     <string name="chain">Chain</string>
-    <string name="contract">Contract</string>
+    <string name="contract">Asset Key</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
