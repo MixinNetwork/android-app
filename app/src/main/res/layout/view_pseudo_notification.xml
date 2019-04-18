@@ -12,7 +12,6 @@
             android:layout_marginStart="12dp"
             android:layout_marginTop="12dp"
             android:drawablePadding="8dp"
-            android:layout_toEndOf="@id/icon"
             android:textColor="@color/black"
             android:textSize="12sp"
             android:text="@string/text_qr"/>
