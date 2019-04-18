@@ -135,7 +135,8 @@ fun View.animateHeight(
     to: Int,
     duration: Long = ANIMATION_DURATION_SHORTEST,
     interpolator: Interpolator = DecelerateInterpolator(),
-    action: ((ValueAnimator) -> Unit)? = null
+    action: ((ValueAnimator) -> Unit)? = null,
+    onEndAction: (() -> Unit)? = null
 ) {
     val anim = ValueAnimator.ofInt(from, to).apply {
         this.duration = duration
@@ -149,6 +150,7 @@ fun View.animateHeight(
             if (to == 0) {
                 this@animateHeight.visibility = GONE
             }
+            onEndAction?.invoke()
         }
         doOnStart {
             if (from == 0) {

@@ -1,5 +1,7 @@
 package one.mixin.android.widget
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
@@ -17,6 +19,8 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.widget.textChanges
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
@@ -147,17 +151,34 @@ class MaterialSearchView : FrameLayout {
 
     var oldLeftX = 0f
     var oldSearchWidth = 0
+
+    fun dragSearch(progress: Float) {
+        right_ib.translationX = context.dpToPx(42f) * progress
+        search_tv.alpha = 1 - progress
+        left_ib.alpha = Math.max(1 - 2 * progress, 0f)
+        back_ib.alpha = (Math.max(progress, .5f) - .5f) * 2
+    }
+
     fun openSearch() {
         synchronized(this) {
-            if (isOpen) {
-                return
-            }
-            search_et.visibility = View.VISIBLE
-            search_tv.visibility = View.INVISIBLE
+            search_tv.animate().apply {
+                setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        setListener(null)
+                        search_et.isVisible = true
+                    }
+                })
+            }.alpha(0f).start()
             showKeyboard()
 
-            left_ib.visibility = View.GONE
-            back_ib.visibility = View.VISIBLE
+            left_ib.animate().apply {
+                setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        setListener(null)
+                        back_ib.animate().setDuration(150L).alpha(1f).start()
+                    }
+                })
+            }.setDuration(150L).alpha(0f).start()
             right_clear.visibility = View.GONE
 
             search_et.requestFocus()
@@ -165,7 +186,7 @@ class MaterialSearchView : FrameLayout {
             oldLeftX = left_ib.x
             oldSearchWidth = search_et.measuredWidth
             right_ib.translationX(context.dpToPx(42f).toFloat())
-            search_et.animateWidth(oldSearchWidth, oldSearchWidth + context.dpToPx(36f))
+            search_et.animateWidth(search_et.width, oldSearchWidth + context.dpToPx(36f))
             mSearchViewListener?.onSearchViewOpened()
             isOpen = true
             search_et.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
@@ -177,18 +198,26 @@ class MaterialSearchView : FrameLayout {
 
     fun closeSearch() {
         synchronized(this) {
-            if (!isOpen) {
-                return
-            }
-
-            search_et.visibility = View.INVISIBLE
-            search_tv.visibility = View.VISIBLE
-            left_ib.visibility = View.VISIBLE
-            back_ib.visibility = View.GONE
+            search_tv.animate().apply {
+                setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationStart(animation: Animator?) {
+                        setListener(null)
+                        search_et.isGone = true
+                    }
+                })
+            }.alpha(1f).start()
+            back_ib.animate().apply {
+                setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator?) {
+                        setListener(null)
+                        left_ib.animate().setDuration(150L).alpha(1f).start()
+                    }
+                })
+            }.setDuration(150L).alpha(0f).start()
             right_clear.visibility = View.GONE
 
             right_ib.translationX(0f)
-            search_et.animateWidth(oldSearchWidth + context.dpToPx(36f), oldSearchWidth)
+            search_et.animateWidth(search_et.width, oldSearchWidth)
             clearFocus()
             search_et.hideKeyboard()
             search_et.setText("")

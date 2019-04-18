@@ -21,6 +21,9 @@ class DraggableRecyclerView @JvmOverloads constructor(
 
     var direction = DIRECTION_NONE
 
+    var lastVelocityY = 0f
+        private set
+
     private var over = OVER_NONE
 
     private var downY = 0f
@@ -45,6 +48,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
                     downY = event.rawY
                     startY = event.rawY
 
+                    lastVelocityY = 0f
                     velocityTracker = VelocityTracker.obtain()
                     velocityTracker?.addMovement(event)
                 }
@@ -86,6 +90,7 @@ class DraggableRecyclerView @JvmOverloads constructor(
                         val vX = velocityTracker?.xVelocity
                         velocityTracker?.recycle()
                         velocityTracker = null
+                        vY?.let { lastVelocityY = it }
                         val fling = if (vY != null && Math.abs(vY) >= minVelocity) {
                             if (vX != null && Math.abs(vX) > Math.abs(vY)) {
                                 FLING_NONE

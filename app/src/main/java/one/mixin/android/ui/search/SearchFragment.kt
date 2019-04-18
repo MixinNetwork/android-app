@@ -55,6 +55,7 @@ class SearchFragment : BaseFragment(), Injectable {
     }
 
     companion object {
+        const val TAG = "SearchFragment"
         @Volatile
         private var INSTANCE: SearchFragment? = null
 
