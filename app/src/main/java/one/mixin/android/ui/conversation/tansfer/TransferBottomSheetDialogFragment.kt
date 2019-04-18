@@ -144,7 +144,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         })
         contentView.biometric_tv.setOnClickListener { showBiometricPrompt() }
-        contentView.biometric_tv.isVisible= BiometricUtil.shouldShowBiometric(requireContext())
+        contentView.biometric_tv.isVisible = BiometricUtil.shouldShowBiometric(requireContext())
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

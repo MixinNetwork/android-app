@@ -320,7 +320,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             BigDecimal(0)
         }
         bottomValue = value.toDouble()
-        return "${if(swaped) {
+        return "${if (swaped) {
             value.numberFormat8()
         } else value.numberFormat2()} $rightSymbol"
     }
@@ -354,7 +354,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val inputFilter = InputFilter { source, _, _, _, _, _ ->
-        val s =  if (forbiddenInput and !ignoreFilter) "" else source
+        val s = if (forbiddenInput and !ignoreFilter) "" else source
         ignoreFilter = false
         return@InputFilter s
     }
