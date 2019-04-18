@@ -53,6 +53,7 @@ import one.mixin.android.worker.RefreshAssetsWorker
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
 import org.jetbrains.anko.uiThread
+import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -336,6 +337,11 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showTransferBottom() {
+        if (user == null || currentAsset == null) {
+            Timber.w("showTransferBottom with wrong data, user: $user, currentAsset: $currentAsset")
+            return
+        }
+
         val bottom = TransferBottomSheetDialogFragment
             .newInstance(user!!, getAmount(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
                 contentView.transfer_memo.text.toString())
