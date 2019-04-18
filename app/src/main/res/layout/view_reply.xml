@@ -24,8 +24,9 @@
         android:lines="1"
         android:textColor="@color/text_black"
         android:textSize="16sp"
+        app:layout_constraintHorizontal_bias="0"
         app:layout_constraintBottom_toTopOf="@id/reply_view_tv"
-        app:layout_constraintEnd_toStartOf="@id/reply_iv"
+        app:layout_constraintEnd_toStartOf="@id/reply_view_iv"
         app:layout_constraintStart_toEndOf="@id/reply_start_view"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_chainStyle="packed"/>

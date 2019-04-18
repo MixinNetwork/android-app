@@ -38,9 +38,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "ConfirmBottomFragment"
 
         fun newInstance(url: String) = ConfirmBottomFragment().withArgs {
-            if (url != null) {
-                putString(AvatarActivity.ARGS_URL, url)
-            }
+            putString(AvatarActivity.ARGS_URL, url)
         }
     }
 
@@ -65,7 +63,7 @@ class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
             if (response.isSuccess) {
                 val success = encryptKey(requireContext(), url, response.data!!.code)
                 withContext(Dispatchers.Main) {
-                    confirmCallback?.let { it.invoke() }
+                    confirmCallback?.invoke()
                     if (success) {
                         context?.toast(R.string.setting_desktop_sigin_success)
                     } else {
