@@ -10,6 +10,7 @@ import android.content.Intent
 import android.database.Cursor
 import android.graphics.BitmapFactory
 import android.graphics.Point
+import android.hardware.SensorManager
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
@@ -495,3 +496,27 @@ inline fun belowOreo(code: () -> Unit) {
 
 inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
     this.apply { arguments = Bundle().apply(argsBuilder) }
+
+
+// Compute scroll by velocity
+
+const val INFLEXION = 0.35f
+
+private val flingFriction by lazy {
+    ViewConfiguration.getScrollFriction()
+}
+private val DECELERATION_RATE = Math.log(0.78) / Math.log(0.9)
+
+fun Context.getPPI() = displayMetrics.density * 160f
+
+fun Context.getPhysicalCoeff() = SensorManager.GRAVITY_EARTH * 39.37f * getPPI() * 0.84f
+
+fun Context.getSplineDeceleration(velocity: Int): Double {
+    return Math.log((INFLEXION * Math.abs(velocity) / (flingFriction * getPhysicalCoeff())).toDouble())
+}
+
+fun Context.getSplineFlingDistance(velocity: Int): Double {
+    val l = getSplineDeceleration(velocity)
+    val decelMinusOne = DECELERATION_RATE - 1.0
+    return flingFriction.toDouble() * getPhysicalCoeff().toDouble() * Math.exp(DECELERATION_RATE / decelMinusOne * l)
+}

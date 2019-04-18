@@ -313,7 +313,6 @@ class MainActivity : BlazeBaseActivity() {
         })
 
         search_bar.setOnBackClickListener(View.OnClickListener {
-            navigationController.hideSearch()
             search_bar.closeSearch()
         })
 
@@ -343,9 +342,20 @@ class MainActivity : BlazeBaseActivity() {
         }
     }
 
+    fun openSearch() {
+        search_bar?.openSearch()
+    }
+
+    fun closeSearch() {
+        search_bar?.closeSearch()
+    }
+
+    fun dragSearch(progress: Float) {
+        search_bar?.dragSearch(progress)
+    }
+
     override fun onBackPressed() {
         if (search_bar.isOpen) {
-            navigationController.hideSearch()
             search_bar.closeSearch()
         } else {
             super.onBackPressed()

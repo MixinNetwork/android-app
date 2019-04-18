@@ -101,7 +101,7 @@
     <string name="error_minimum_withdraw_amount">最小提现金额 %1$s</string>
     <!--home-->
     <string name="title_home">联系人</string>
-    <string name="search_hint">搜索</string>
+    <string name="search_hint">资产，联系人，消息</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="open_app">打开应用</string>
     <string name="text_qr">文本二维码</string>

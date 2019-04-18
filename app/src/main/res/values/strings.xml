@@ -105,7 +105,7 @@
     <string name="error_minimum_withdraw_amount">Minimum withdraw amount is %1$s</string>
     <!--home-->
     <string name="title_home">Contacts</string>
-    <string name="search_hint">Contacts and Chats</string>
+    <string name="search_hint">assets, contacts and messages</string>
     <string name="conversation_waiting">Waiting for this message.</string>
     <string name="open_app">Open App</string>
     <string name="text_qr">TEXT QR CODE</string>

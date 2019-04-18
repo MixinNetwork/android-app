@@ -9,15 +9,34 @@
     <include
         layout="@layout/view_link_state" />
 
-    <androidx.recyclerview.widget.RecyclerView
+    <FrameLayout
+        android:id="@+id/top_fl"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/state_layout">
+
+        <ImageView
+            android:id="@+id/down_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:layout_gravity="center_horizontal|bottom"
+            android:src="@drawable/ic_keyboard_arrow_down_gray_24dp"
+            tools:ignore="ContentDescription"/>
+    </FrameLayout>
+
+    <one.mixin.android.widget.DraggableRecyclerView
         android:id="@+id/message_rv"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        app:drag_direction="-1"
         app:layoutManager="LinearLayoutManager"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/state_layout"
+        app:layout_constraintTop_toBottomOf="@id/top_fl"
         tools:listitem="@layout/item_list_conversation" />
 
     <include
@@ -26,7 +45,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/state_layout" />
+        app:layout_constraintTop_toBottomOf="@id/top_fl" />
 
     <one.mixin.android.widget.ShadowCircleView
         android:id="@+id/shadow_view"

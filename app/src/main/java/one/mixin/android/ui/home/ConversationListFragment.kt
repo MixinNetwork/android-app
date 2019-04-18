@@ -12,6 +12,9 @@ import android.view.ViewConfiguration
 import android.view.ViewGroup
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -26,7 +29,9 @@ import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
+import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.getSplineFlingDistance
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyOrElse
 import one.mixin.android.extension.notNullElse
@@ -34,6 +39,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.timeAgo
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.vibrate
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.LinkFragment
@@ -49,6 +55,8 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
 import java.io.File
 import javax.inject.Inject
@@ -73,6 +81,9 @@ class ConversationListFragment : LinkFragment() {
     private val touchSlop: Int by lazy {
         ViewConfiguration.get(context).scaledTouchSlop
     }
+
+    private val vibrateDis by lazy { requireContext().dpToPx(128f) }
+    private var vibrated = false
 
     companion object {
         fun newInstance() = ConversationListFragment()
@@ -106,6 +117,46 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
         })
+        message_rv.callback = object : DraggableRecyclerView.Callback {
+            override fun onScroll(dis: Float) {
+                if (top_fl.isGone) {
+                    top_fl.isVisible = true
+                }
+                val targetH = top_fl.height + dis.toInt()
+                if (targetH <= 0) return
+
+                top_fl.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = targetH
+
+                    if (height >= vibrateDis) {
+                        if (!vibrated) {
+                            requireContext().vibrate(longArrayOf(0, 30))
+                            vibrated = true
+                        }
+                    }
+                }
+                val progress = Math.min(targetH / vibrateDis.toFloat(), 1f)
+                down_iv.scaleX = Math.min(1 + progress, 2f)
+                down_iv.scaleY = Math.min(1 + progress, 2f)
+                (requireActivity() as MainActivity).dragSearch(progress)
+            }
+
+            override fun onRelease(fling: Int) {
+                val dis = requireContext().getSplineFlingDistance(message_rv.lastVelocityY.toInt())
+                val open = (fling == FLING_DOWN && (top_fl.height + dis >= vibrateDis))
+                    || top_fl.height >= vibrateDis
+                if (open) {
+                    (requireActivity() as MainActivity).openSearch()
+                } else {
+                    (requireActivity() as MainActivity).closeSearch()
+                }
+                top_fl.animateHeight(top_fl.height, 0, onEndAction = {
+                    vibrated = false
+                })
+                down_iv.scaleX = 1f
+                down_iv.scaleY = 1f
+            }
+        }
         shadow_view.setOnClickListener {
             RxPermissions(activity!!)
                 .request(Manifest.permission.CAMERA)
