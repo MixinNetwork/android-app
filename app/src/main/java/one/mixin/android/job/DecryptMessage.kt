@@ -74,6 +74,8 @@ class DecryptMessage : Injector() {
     fun onRun(data: BlazeMessageData) {
         if (!isExistMessage(data.messageId)) {
             processMessage(data)
+        } else {
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         }
     }
 

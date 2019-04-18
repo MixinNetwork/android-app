@@ -61,6 +61,8 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
                 Timber.e("DecryptCallMessage failure, $e")
                 updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             }
+        } else {
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
         }
     }
 
