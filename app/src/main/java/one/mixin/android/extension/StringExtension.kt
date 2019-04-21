@@ -4,7 +4,6 @@ package one.mixin.android.extension
 
 import android.graphics.Bitmap
 import android.text.Editable
-import android.util.ArrayMap
 import com.google.android.exoplayer2.util.Util
 import com.google.gson.Gson
 import com.google.gson.JsonElement
@@ -29,6 +28,7 @@ import java.text.DecimalFormat
 import java.util.Formatter
 import java.util.Locale
 import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
 import kotlin.math.abs
 
@@ -265,11 +265,9 @@ fun String.checkNumber(): Boolean {
     }
 }
 
-val idCodeMap = ArrayMap<String, Int>()
+val idCodeMap = ConcurrentHashMap<String, Int>()
 
-fun String.getColorCode(
-    count: Int
-): Int {
+fun String.getColorCode(count: Int): Int {
     var code = idCodeMap[this]
     if (code != null) return code
 
