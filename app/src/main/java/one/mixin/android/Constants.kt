@@ -26,6 +26,8 @@ object Constants {
         const val PREF_SHOW_DEPOSIT_TIP = "pref_show_deposit_tip"
         const val PREF_FIRST_SHOW_DEPOSIT = "pref_first_show_deposit"
         const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
+
+        const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
     }
 
     object Scheme {
@@ -76,4 +78,6 @@ object Constants {
     const val BIOMETRIC_INTERVAL = "biometric_interval"
     const val BIOMETRIC_INTERVAL_DEFAULT: Long = 1000 * 60 * 60 * 2
     const val BIOMETRIC_PIN_CHECK = "biometric_pin_check"
+
+    const val RECENT_USED_BOTS_MAX_COUNT = 12
 }

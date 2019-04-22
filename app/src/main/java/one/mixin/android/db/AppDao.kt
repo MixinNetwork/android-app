@@ -17,4 +17,7 @@ interface AppDao : BaseDao<App> {
 
     @Query("SELECT * FROM apps WHERE app_id = :id")
     fun findAppById(id: String): App?
+
+    @Query("SELECT * FROM apps WHERE app_id IN(:appIds)")
+    fun findAppsByIds(appIds: List<String>): List<App>
 }

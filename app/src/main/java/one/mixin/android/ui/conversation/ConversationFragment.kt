@@ -45,7 +45,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.Constants.PAGE_SIZE
+import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -61,6 +63,8 @@ import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -77,10 +81,12 @@ import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.selectDocument
+import one.mixin.android.extension.serialize
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
@@ -537,6 +543,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recipient = arguments!!.getParcelable<User?>(RECIPIENT)
+
     }
 
     override fun onCreateView(
@@ -927,6 +934,26 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         if (isBot) {
+            GlobalScope.launch(conversationContext) {
+                val botsString = defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)
+                if (botsString != null) {
+                    botsString.deserialize<Array<String>>()?.let { botList ->
+                        val newBotsString = botList.filter { it != recipient!!.userId }
+                            .toMutableList()
+                            .also {
+                                if (it.size >= RECENT_USED_BOTS_MAX_COUNT) {
+                                    it.dropLast(1)
+                                }
+                                it.add(0, recipient!!.userId)
+                            }
+                            .toTypedArray()
+                            .serialize()
+                        defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, newBotsString)
+                    }
+                } else {
+                    defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, arrayOf(recipient!!.userId).serialize())
+                }
+            }
             chat_control.showBot()
         } else {
             chat_control.hideBot()
