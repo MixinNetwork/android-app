@@ -265,10 +265,20 @@ fun String.checkNumber(): Boolean {
     }
 }
 
-val idCodeMap = ConcurrentHashMap<String, Int>()
+val idAvatarCodeMap = ConcurrentHashMap<String, Int>()
+val idNameCodeMap = ConcurrentHashMap<String, Int>()
 
-fun String.getColorCode(count: Int): Int {
-    var code = idCodeMap[this]
+sealed class CodeType(val count: Int) {
+    class Name(count: Int) : CodeType(count)
+    object Avatar : CodeType(24)
+}
+
+fun String.getColorCode(codeType: CodeType): Int {
+    val cacheMap = when (codeType) {
+        is CodeType.Name -> idNameCodeMap
+        is CodeType.Avatar -> idAvatarCodeMap
+    }
+    var code = cacheMap[this]
     if (code != null) return code
 
     val hashcode = try {
@@ -276,7 +286,7 @@ fun String.getColorCode(count: Int): Int {
     } catch (e: IllegalArgumentException) {
         hashCode()
     }
-    code = abs(hashcode).rem(count)
-    idCodeMap[this] = code
+    code = abs(hashcode).rem(codeType.count)
+    cacheMap[this] = code
     return code
 }

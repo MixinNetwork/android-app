@@ -190,9 +190,9 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
         val quoteMessage = Gson().fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         itemView.reply_name_tv.text = quoteMessage.userFullName
         itemView.reply_name_tv.setTextColor(getColorById(quoteMessage.userId))
-        itemView.reply_layout.setBackgroundColor(getColorById(messageItem.userId))
+        itemView.reply_layout.setBackgroundColor(getColorById(quoteMessage.userId))
         itemView.reply_layout.background.alpha = 0x0D
-        itemView.start_view.setBackgroundColor(getColorById(messageItem.userId))
+        itemView.start_view.setBackgroundColor(getColorById(quoteMessage.userId))
         when {
             quoteMessage.type.endsWith("_TEXT") -> {
                 itemView.reply_content_tv.text = quoteMessage.content

@@ -10,6 +10,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.loadImage
@@ -78,7 +79,7 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
     fun setInfo(name: String?, url: String?, id: String) {
         avatar_tv.text = checkEmoji(name)
         try {
-            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(id.getColorCode(24) + 1))
+            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar) + 1))
         } catch (e: NumberFormatException) {
         }
         displayedChild = if (url != null && url.isNotEmpty()) {
