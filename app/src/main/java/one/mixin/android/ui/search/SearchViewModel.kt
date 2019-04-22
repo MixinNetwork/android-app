@@ -70,4 +70,6 @@ internal constructor(
                 conversationRepository.fuzzySearchChat("%${query.trim()}%")
             }
         }
+
+    fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
 }

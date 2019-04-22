@@ -16,4 +16,15 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_list_conversation" />
 
+    <com.google.android.material.circularreveal.CircularRevealGridLayout
+        android:id="@+id/app_gl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:rowCount="2"
+        android:columnCount="4"
+        android:useDefaultMargins="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

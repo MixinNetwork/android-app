@@ -5,6 +5,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.GridLayout
+import android.widget.Space
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_search.*
+import kotlinx.android.synthetic.main.item_search_app.view.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -21,9 +26,13 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.WalletActivity
@@ -110,6 +119,10 @@ class SearchFragment : BaseFragment(), Injectable {
         search_rv.addItemDecoration(StickyRecyclerHeadersDecoration(searchAdapter))
         search_rv.adapter = searchAdapter
 
+        search_rv.isGone = true
+        app_gl.isVisible = true
+        loadRecentUsedApps()
+
         searchAdapter.onItemClickListener = object : OnSearchClickListener {
             override fun onAsset(assetItem: AssetItem) {
                 activity?.let { WalletActivity.show(it, assetItem) }
@@ -163,6 +176,35 @@ class SearchFragment : BaseFragment(), Injectable {
         searchChatChannel.close()
         searchMessageChannel.close()
         searchContext.cancelChildren()
+    }
+
+    private fun loadRecentUsedApps() {
+        GlobalScope.launch(searchContext) {
+            defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.let { botsString ->
+                botsString.deserialize<Array<String>>()?.let { botList ->
+                    val apps = searchViewModel.findAppsByIds(botList.toList())
+                    withContext(Dispatchers.Main) {
+                        val phCount = if (apps.size >= 8) 0 else 8 - apps.size
+                        apps.take(8).forEachIndexed { i, app ->
+                            val v = if (i < 8 - phCount) {
+                                layoutInflater.inflate(R.layout.item_search_app, null).also {
+                                    it.icon_iv.loadCircleImage(app.icon_url)
+                                    it.name_tv.text = app.name
+                                }
+                            } else {
+                                Space(context)
+                            }
+                            val params = GridLayout.LayoutParams(
+                                GridLayout.spec(GridLayout.UNDEFINED, 1f),
+                                GridLayout.spec(GridLayout.UNDEFINED, 1f)).also {
+                                it.width = 0
+                            }
+                            app_gl.addView(v, params)
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun fuzzySearch(keyword: String?) = runBlocking(searchContext) {

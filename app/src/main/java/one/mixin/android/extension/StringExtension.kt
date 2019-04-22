@@ -21,7 +21,12 @@ import okio.Okio
 import okio.Source
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.io.Serializable
 import java.math.BigDecimal
 import java.security.MessageDigest
 import java.text.DecimalFormat
@@ -30,6 +35,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
+import kotlin.experimental.and
 import kotlin.math.abs
 
 fun String.generateQRCode(size: Int): Bitmap? {
@@ -289,4 +295,29 @@ fun String.getColorCode(codeType: CodeType): Int {
     code = abs(hashcode).rem(codeType.count)
     cacheMap[this] = code
     return code
+}
+
+
+inline fun <reified T : Serializable> String.deserialize(): T? {
+    if (isNullOrEmpty()) return null
+
+    try {
+        ObjectInputStream(ByteArrayInputStream(this.toByteArray(charset("ISO-8859-1")))).use {
+            return it.readObject() as T
+        }
+    } catch (e: Exception) {
+        throw IOException("Deserialization error: ${e.message}, $e")
+    }
+}
+
+inline fun <T : Serializable> T.serialize(): String? {
+    try {
+        val baos = ByteArrayOutputStream()
+        ObjectOutputStream(baos).use {
+            it.writeObject(this)
+        }
+        return baos.toString("ISO-8859-1")
+    } catch (e: Exception) {
+        throw IOException("Serialization error: ${e.message}, $e")
+    }
 }
