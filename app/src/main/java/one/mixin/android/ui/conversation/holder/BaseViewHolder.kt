@@ -13,6 +13,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.BlinkEvent
+import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.util.Session
@@ -25,7 +26,7 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
         val LINK_COLOR = Color.parseColor("#5FA7E4")
         val SELECT_COLOR = Color.parseColor("#660D94FC")
 
-        fun getColorById(id: String) = colors[id.getColorCode(colors.size)]
+        fun getColorById(id: String) = colors[id.getColorCode(CodeType.Name(colors.size))]
     }
 
     protected val dp10 by lazy {
