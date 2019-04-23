@@ -74,6 +74,7 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
     }
 
     init {
+        hint = resources.getString(R.string.search)
         addTextChangedListener(watcher)
         setOnEditorActionListener(onEditorActionListener)
         setOnTouchListener(onTouchListener)
@@ -97,16 +98,12 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
         val hasText = !text.isNullOrBlank()
         if (hasFocus && hasText) {
             setCompoundDrawables(null, null, iconClear, null)
-            setHint(R.string.search)
         } else if (hasFocus) {
             setCompoundDrawables(null, null, null, null)
-            hint = ""
         } else if (hasText) {
             setCompoundDrawables(null, null, iconClear, null)
-            hint = ""
         } else {
             setCompoundDrawables(iconSearch, null, null, null)
-            setHint(R.string.search)
         }
     }
 

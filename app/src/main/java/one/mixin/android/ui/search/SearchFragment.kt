@@ -2,11 +2,13 @@ package one.mixin.android.ui.search
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.GridLayout
-import android.widget.Space
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.LinearLayout
+import androidx.core.view.get
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
@@ -14,6 +16,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.item_search_app.view.*
@@ -28,7 +31,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.R
-import one.mixin.android.di.Injectable
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
@@ -41,10 +44,11 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
-class SearchFragment : BaseFragment(), Injectable {
+class SearchFragment : BaseFragment() {
 
     private lateinit var searchContext: CoroutineContext
     private lateinit var searchContactChannel: Channel<Deferred<List<User>?>>
@@ -84,6 +88,14 @@ class SearchFragment : BaseFragment(), Injectable {
 
     fun setQueryText(text: String) {
         if (isAdded && text != keyword) {
+
+            if (text.isNotBlank()) {
+                showSearch()
+            } else {
+                showBots()
+            }
+
+            searchAdapter.query = text
             keyword = text
         }
     }
@@ -116,27 +128,37 @@ class SearchFragment : BaseFragment(), Injectable {
         searchChatChannel = Channel()
         searchMessageChannel = Channel()
         search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        search_rv.addItemDecoration(StickyRecyclerHeadersDecoration(searchAdapter))
+        val decoration = StickyRecyclerHeadersDecoration(searchAdapter)
+        search_rv.addItemDecoration(decoration)
         search_rv.adapter = searchAdapter
+        search_rv.addOnItemTouchListener(StickyRecyclerHeadersTouchListener(search_rv, decoration).apply {
+            setOnHeaderClickListener { _, position, _ ->
+                searchAdapter.getTypeData(position)?.let {
+                    val f = SearchSingleFragment.newInstance(arrayListOf<Parcelable>().apply {
+                        addAll(it)
+                    }, keyword ?: "")
+                    requireActivity().addFragment(this@SearchFragment, f, SearchSingleFragment.TAG, R.id.root_view)
+                    search_rv.hideKeyboard()
+                }
+            }
+        })
 
-        search_rv.isGone = true
-        app_gl.isVisible = true
+        showBots()
         loadRecentUsedApps()
 
         searchAdapter.onItemClickListener = object : OnSearchClickListener {
+            override fun onTipClick() {
+
+            }
+
             override fun onAsset(assetItem: AssetItem) {
                 activity?.let { WalletActivity.show(it, assetItem) }
             }
 
             @SuppressLint("CheckResult")
             override fun onMessageClick(message: SearchMessageItem) {
-                searchViewModel.findConversationById(message.conversationId).subscribe {
-                    search_rv.hideKeyboard()
-                    ConversationActivity.show(context!!,
-                        conversationId = message.conversationId,
-                        messageId = message.messageId,
-                        keyword = keyword)
-                }
+                val f = SearchMessageFragment.newInstance(message, keyword ?: "")
+                requireActivity().addFragment(this@SearchFragment, f, SearchMessageFragment.TAG, R.id.root_view)
             }
 
             override fun onChatClick(chatMinimal: ChatMinimal) {
@@ -150,7 +172,7 @@ class SearchFragment : BaseFragment(), Injectable {
             }
         }
         setContactListener {
-            searchAdapter.setDefaultData(it)
+            //            searchAdapter.setDefaultData(it)
         }
         setAssetListener {
             searchAdapter.setAssetData(it)
@@ -170,6 +192,7 @@ class SearchFragment : BaseFragment(), Injectable {
 
     override fun onDetach() {
         super.onDetach()
+        // TODO channel closed bug
         searchContactChannel.close()
         searchAssetChannel.close()
         searchUserChannel.close()
@@ -185,21 +208,28 @@ class SearchFragment : BaseFragment(), Injectable {
                     val apps = searchViewModel.findAppsByIds(botList.toList())
                     withContext(Dispatchers.Main) {
                         val phCount = if (apps.size >= 8) 0 else 8 - apps.size
+                        for (j in 0 until 2) {
+                            val row = LinearLayout(context).also {
+                                it.weightSum = 4f
+                                it.layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, 0, 1f)
+                            }
+                            app_ll.addView(row)
+                        }
                         apps.take(8).forEachIndexed { i, app ->
-                            val v = if (i < 8 - phCount) {
-                                layoutInflater.inflate(R.layout.item_search_app, null).also {
+                            if (i < 8 - phCount) {
+                                val v = layoutInflater.inflate(R.layout.item_search_app, null).also {
                                     it.icon_iv.loadCircleImage(app.icon_url)
                                     it.name_tv.text = app.name
                                 }
-                            } else {
-                                Space(context)
+                                v.setOnClickListener {
+                                    ConversationActivity.show(requireContext(), null, app.appId)
+                                }
+                                if (i < 4) {
+                                    (app_ll[0] as ViewGroup)
+                                } else {
+                                    (app_ll[1] as ViewGroup)
+                                }.addView(v, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
                             }
-                            val params = GridLayout.LayoutParams(
-                                GridLayout.spec(GridLayout.UNDEFINED, 1f),
-                                GridLayout.spec(GridLayout.UNDEFINED, 1f)).also {
-                                it.width = 0
-                            }
-                            app_gl.addView(v, params)
                         }
                     }
                 }
@@ -207,12 +237,28 @@ class SearchFragment : BaseFragment(), Injectable {
         }
     }
 
+    private fun showSearch() {
+        search_rv.post {
+            search_rv.isVisible = true
+            recent_title_tv.isGone = true
+            app_ll.isGone = true
+        }
+    }
+
+    private fun showBots() {
+        search_rv.post {
+            search_rv.isGone = true
+            recent_title_tv.isVisible = true
+            app_ll.isVisible = true
+        }
+    }
+
+    @Suppress("UNCHECKED_CAST")
     private fun fuzzySearch(keyword: String?) = runBlocking(searchContext) {
-        searchContactChannel.send(searchViewModel.contactList(keyword))
-        searchAssetChannel.send(searchViewModel.fuzzySearchAsset(keyword))
-        searchUserChannel.send(searchViewModel.fuzzySearchUser(keyword))
-        searchChatChannel.send(searchViewModel.fuzzySearchChat(keyword))
-        searchMessageChannel.send(searchViewModel.fuzzySearchMessage(keyword))
+        searchAssetChannel.send(searchViewModel.fuzzySearchAsync<AssetItem>(keyword) as Deferred<List<AssetItem>?>)
+        searchUserChannel.send(searchViewModel.fuzzySearchAsync<User>(keyword) as Deferred<List<User>?>)
+        searchChatChannel.send(searchViewModel.fuzzySearchAsync<ChatMinimal>(keyword) as Deferred<List<ChatMinimal>?>)
+        searchMessageChannel.send(searchViewModel.fuzzySearchAsync<SearchMessageItem>(keyword) as Deferred<List<SearchMessageItem>?>)
     }
 
     private fun setContactListener(listener: (List<User>?) -> Unit) = GlobalScope.launch(searchContext) {
@@ -260,5 +306,6 @@ class SearchFragment : BaseFragment(), Injectable {
         fun onChatClick(chatMinimal: ChatMinimal)
         fun onMessageClick(message: SearchMessageItem)
         fun onAsset(assetItem: AssetItem)
+        fun onTipClick()
     }
 }

@@ -1,18 +1,25 @@
 package one.mixin.android.ui.search
 
+import android.os.Parcelable
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import javax.inject.Inject
@@ -28,48 +35,29 @@ internal constructor(
         conversationRepository.findConversationById(conversationId)
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun contactList(query: String?): Deferred<List<User>?> = GlobalScope.async {
-        if (query.isNullOrBlank()) {
-            userRepository.syncFindFriends()
-        } else {
-            null
-        }
-    }
-
-    fun fuzzySearchUser(query: String?): Deferred<List<User>?> =
-        GlobalScope.async {
+    inline fun <reified T> fuzzySearchAsync(query: String?, limit: Int = 4): Deferred<List<Parcelable>?> =
+        viewModelScope.async(Dispatchers.Default) {
             if (query.isNullOrBlank()) {
                 null
             } else {
-                userRepository.fuzzySearchUser("%${query.trim()}%")
-            }
-        }
-
-    fun fuzzySearchMessage(query: String?): Deferred<List<SearchMessageItem>?> =
-        GlobalScope.async {
-            if (query.isNullOrBlank()) {
-                null
-            } else {
-                conversationRepository.fuzzySearchMessage("%${query.trim()}%")
-            }
-        }
-
-    fun fuzzySearchAsset(query: String?): Deferred<List<AssetItem>?> = GlobalScope.async {
-        if (query.isNullOrBlank()) {
-            null
-        } else {
-            assetRepository.fuzzySearchAsset("%${query.trim()}%")
-        }
-    }
-
-    fun fuzzySearchChat(query: String?): Deferred<List<ChatMinimal>?> =
-        GlobalScope.async {
-            if (query.isNullOrBlank()) {
-                null
-            } else {
-                conversationRepository.fuzzySearchChat("%${query.trim()}%")
+                when (T::class) {
+                    AssetItem::class -> assetRepository.fuzzySearchAsset("%${query.trim()}%")
+                    User::class -> userRepository.fuzzySearchUser("%${query.trim()}%")
+                    ChatMinimal::class -> conversationRepository.fuzzySearchChat("%${query.trim()}%")
+                    else -> conversationRepository.fuzzySearchMessage("%${query.trim()}%", limit)
+                }
             }
         }
 
     fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
+
+    fun fuzzySearchMessageDetailAsync(query: String, conversationId: String): Deferred<LiveData<PagedList<SearchMessageDetailItem>>> =
+        viewModelScope.async(Dispatchers.Default) {
+            LivePagedListBuilder(conversationRepository.fuzzySearchMessageDetail("%${query.trim()}%", conversationId),
+                PagedList.Config.Builder()
+                    .setPageSize(30)
+                    .setEnablePlaceholders(true)
+                    .build())
+                .build()
+        }
 }

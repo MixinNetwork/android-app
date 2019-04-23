@@ -1,21 +1,20 @@
 package one.mixin.android.vo
 
-import androidx.room.Entity
+import android.annotation.SuppressLint
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-@Entity
+@SuppressLint("ParcelCreator")
+@Parcelize
 data class SearchMessageItem(
     val messageId: String,
-    val conversationCategory: String?,
     val conversationId: String,
-    val userFullName: String?,
-    val botFullName: String?,
+    val conversationCategory: String?,
     val conversationName: String?,
     val messageCount: Int,
     val type: String,
     val userId: String,
-    val botUserId: String?,
+    val userFullName: String?,
     val userAvatarUrl: String?,
-    val botAvatarUrl: String?,
     val conversationAvatarUrl: String?
-
-)
+) : Parcelable

@@ -10,6 +10,8 @@ import one.mixin.android.ui.search.holder.ChatHolder
 import one.mixin.android.ui.search.holder.ContactHolder
 import one.mixin.android.ui.search.holder.HeaderHolder
 import one.mixin.android.ui.search.holder.MessageHolder
+import one.mixin.android.ui.search.holder.TipHolder
+import one.mixin.android.ui.search.holder.TipItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationCategory
@@ -18,29 +20,30 @@ import one.mixin.android.vo.User
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
 
-    var onItemClickListener: SearchFragment.OnSearchClickListener? = null
+    // workaround with sticky header not refresh by self increment 4
+    private var headerRefreshFactor = 0L
 
-    override fun getHeaderId(position: Int): Long = getItemViewType(position).toLong()
+    var onItemClickListener: SearchFragment.OnSearchClickListener? = null
+    var query: String = ""
+        set(value) {
+            field = value
+            data.showTip = value.all { it.isDigit() }
+            headerRefreshFactor += 4
+        }
+
+    override fun getHeaderId(position: Int): Long = if (position == 0 && data.showTip) {
+        -1
+    } else {
+        getItemViewType(position).toLong() + headerRefreshFactor
+    }
 
     override fun onBindHeaderViewHolder(holder: HeaderHolder, position: Int) {
         val context = holder.itemView.context
-        when {
-            getItemViewType(position) == 0 -> holder.bind(context.getText(R.string.search_title_assets).toString(), data.assetShowMore()) {
-                data.assetLimit = false
-                notifyDataSetChanged()
-            }
-            getItemViewType(position) == 1 -> holder.bind(context.getText(R.string.search_title_chat).toString(), data.chatShowMore()) {
-                data.chatLimit = false
-                notifyDataSetChanged()
-            }
-            getItemViewType(position) == 2 -> holder.bind(context.getText(R.string.search_title_contacts).toString(), data.userShowMore()) {
-                data.userLimit = false
-                notifyDataSetChanged()
-            }
-            else -> holder.bind(context.getText(R.string.search_title_messages).toString(), data.messageShowMore()) {
-                data.messageLimit = false
-                notifyDataSetChanged()
-            }
+        when (getItemViewType(position)) {
+            TypeAsset.index -> holder.bind(context.getText(R.string.search_title_assets).toString(), data.assetShowMore())
+            TypeChat.index -> holder.bind(context.getText(R.string.search_title_chat).toString(), data.chatShowMore())
+            TypeUser.index -> holder.bind(context.getText(R.string.search_title_contacts).toString(), data.userShowMore())
+            TypeMessage.index -> holder.bind(context.getText(R.string.search_title_messages).toString(), data.messageShowMore())
         }
     }
 
@@ -51,13 +54,20 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     private var data = SearchDataPackage()
 
-    fun setDefaultData(list: List<User>?) {
-        data.contactList = list
-        if (list != null) {
-            data.assetList = null
-            data.chatList = null
-            data.userList = null
-            data.messageList = null
+    fun getTypeData(position: Int) =
+        when (getItemViewType(position)) {
+            TypeAsset.index -> if (data.assetShowMore()) data.assetList else null
+            TypeChat.index -> if (data.chatShowMore()) data.chatList else null
+            TypeUser.index -> if (data.userShowMore()) data.userList else null
+            else -> if (data.messageShowMore()) data.messageList else null
+        }
+
+    fun clickMore(position: Int) {
+        when (getItemViewType(position)) {
+            TypeAsset.index -> data.assetLimit = false
+            TypeChat.index -> data.chatLimit = false
+            TypeUser.index -> data.userLimit = false
+            TypeMessage.index -> data.messageLimit = false
         }
         notifyDataSetChanged()
     }
@@ -79,7 +89,6 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         data.userList = data.userList?.filter { item ->
             data.chatList?.any { it.category == ConversationCategory.CONTACT.name && it.userId == item.userId } != true
         }
-
         notifyDataSetChanged()
     }
 
@@ -91,23 +100,26 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             0 -> {
+                (holder as TipHolder).bind(query, onItemClickListener)
+            }
+            TypeAsset.index -> {
                 data.getItem(position).let {
-                    (holder as AssetHolder).bind(it as AssetItem, onItemClickListener)
+                    (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener)
                 }
             }
-            1 -> {
+            TypeChat.index -> {
                 data.getItem(position).let {
-                    (holder as ChatHolder).bind(it as ChatMinimal, onItemClickListener)
+                    (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
                 }
             }
-            2 -> {
+            TypeUser.index -> {
                 data.getItem(position).let {
-                    (holder as ContactHolder).bind(it as User, onItemClickListener)
+                    (holder as ContactHolder).bind(it as User, query, onItemClickListener)
                 }
             }
-            3 -> {
+            TypeMessage.index -> {
                 data.getItem(position).let {
-                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
+                    (holder as MessageHolder).bind(it as SearchMessageItem, query, onItemClickListener)
                 }
             }
         }
@@ -118,18 +130,22 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder =
         when (viewType) {
             0 -> {
+                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_tip, parent, false)
+                TipHolder(item)
+            }
+            TypeAsset.index -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_asset, parent, false)
                 AssetHolder(item)
             }
-            1 -> {
+            TypeChat.index -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false)
                 ChatHolder(item)
             }
-            2 -> {
+            TypeUser.index -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_contact, parent, false)
                 ContactHolder(item)
             }
-            3 -> {
+            TypeMessage.index -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_search_message, parent, false)
                 MessageHolder(item)
             }
@@ -139,11 +155,12 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             }
         }
 
-    override fun getItemViewType(position: Int): Int =
+    override fun getItemViewType(position: Int) =
         when (data.getItem(position)) {
-            is AssetItem -> 0
-            is ChatMinimal -> 1
-            is User -> 2
-            else -> 3
+            is TipItem -> 0
+            is AssetItem -> TypeAsset.index
+            is ChatMinimal -> TypeChat.index
+            is User -> TypeUser.index
+            else -> TypeMessage.index
         }
 }

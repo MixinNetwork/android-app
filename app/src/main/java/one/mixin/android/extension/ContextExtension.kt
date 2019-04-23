@@ -205,7 +205,7 @@ fun FragmentActivity.replaceFragment(fragment: Fragment, frameId: Int, tag: Stri
     supportFragmentManager.inTransaction { replace(frameId, fragment, tag) }
 }
 
-fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String) {
+fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String, id: Int = R.id.container) {
     val fm = supportFragmentManager
     fm?.let {
         val ft = it.beginTransaction()
@@ -213,7 +213,7 @@ fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String) {
         if (to.isAdded) {
             ft.show(to)
         } else {
-            ft.add(R.id.container, to, tag)
+            ft.add(id, to, tag)
         }
         ft.addToBackStack(null)
         ft.commitAllowingStateLoss()

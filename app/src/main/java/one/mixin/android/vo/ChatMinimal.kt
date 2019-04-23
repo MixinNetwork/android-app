@@ -1,8 +1,11 @@
 package one.mixin.android.vo
 
-import androidx.room.Entity
+import android.annotation.SuppressLint
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-@Entity
+@SuppressLint("ParcelCreator")
+@Parcelize
 data class ChatMinimal(
     val category: String,
     val conversationId: String,
@@ -14,4 +17,4 @@ data class ChatMinimal(
     val avatarUrl: String?,
     val isVerified: Boolean?,
     val appId: String?
-)
+) : Parcelable

@@ -95,7 +95,9 @@ internal constructor(
 
     fun getConversation(conversationId: String) = readConversationDao.getConversation(conversationId)
 
-    fun fuzzySearchMessage(query: String): List<SearchMessageItem> = readMessageDao.fuzzySearchMessage(query)
+    fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem> = readMessageDao.fuzzySearchMessage(query, limit)
+
+    fun fuzzySearchMessageDetail(query: String, conversationId: String) = readMessageDao.fuzzySearchMessageByConversationId(query, conversationId)
 
     fun fuzzySearchChat(query: String): List<ChatMinimal> = readConversationDao.fuzzySearchChat(query)
 
