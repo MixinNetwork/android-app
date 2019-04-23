@@ -155,6 +155,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                     }
                     imageFile.copyFromInputStream(attachmentCipherInputStream)
                     messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
+                    messageDao.updateMediaSize(imageFile.length(), message.id)
                     messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
                 }
             } else if (message.category.endsWith("_DATA")) {
@@ -164,10 +165,11 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                     FileInputStream(destination)
                 }
                 val extensionName = message.name?.getExtensionName()
-                val imageFile = MixinApplication.get().getDocumentPath()
+                val dataFile = MixinApplication.get().getDocumentPath()
                     .createDocumentTemp(extensionName)
-                imageFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(imageFile.absolutePath, message.id)
+                dataFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(dataFile.absolutePath, message.id)
+                messageDao.updateMediaSize(dataFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             } else if (message.category.endsWith("_VIDEO")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_VIDEO.name) {
@@ -178,10 +180,11 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                 val extensionName = message.name?.getExtensionName().let {
                     it ?: "mp4"
                 }
-                val imageFile = MixinApplication.get().getVideoPath()
+                val videoFile = MixinApplication.get().getVideoPath()
                     .createVideoTemp(extensionName)
-                imageFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
+                videoFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(Uri.fromFile(videoFile).toString(), message.id)
+                messageDao.updateMediaSize(videoFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             } else if (message.category.endsWith("_AUDIO")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_AUDIO.name) {
@@ -189,10 +192,11 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                 } else {
                     FileInputStream(destination)
                 }
-                val imageFile = MixinApplication.get().getAudioPath()
+                val audioFile = MixinApplication.get().getAudioPath()
                     .createAudioTemp("ogg")
-                imageFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
+                audioFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(Uri.fromFile(audioFile).toString(), message.id)
+                messageDao.updateMediaSize(audioFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             }
             return true
