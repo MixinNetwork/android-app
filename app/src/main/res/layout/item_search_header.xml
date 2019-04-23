@@ -20,7 +20,7 @@
     <TextView
         android:id="@+id/search_header_more"
         android:text="@string/search_title_more"
-        android:textColor="@color/selector_tv"
+        android:textColor="@color/wallet_blue_secondary"
         android:layout_centerVertical="true"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"

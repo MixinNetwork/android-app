@@ -11,6 +11,7 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
 
 @Dao
@@ -55,7 +56,7 @@ interface MessageDao : BaseDao<Message> {
         "m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.media_url AS mediaUrl, " +
         "m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
-        "and (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO') " +
+        "AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO') " +
         "AND m.media_status = 'DONE' " +
         "ORDER BY m.created_at DESC")
     fun getMediaMessages(conversationId: String): List<MessageItem>
@@ -82,18 +83,27 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
     fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
-        "u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, m.category AS type, count(m.id) as messageCount, " +
-        "u1.avatar_url AS botAvatarUrl, u1.full_name AS botFullName, u1.user_id AS botUserId," +
-        "c.icon_url AS conversationAvatarUrl, c.name AS conversationName, c.category AS conversationCategory " +
-        "FROM messages m INNER JOIN users u ON m.user_id = u.user_id " +
+    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl, " +
+        "c.name AS conversationName, c.category AS conversationCategory, m.category AS type, count(m.id) as messageCount, " +
+        "u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName " +
+        "FROM messages m " +
+        "INNER JOIN users u ON c.owner_id = u.user_id " +
         "LEFT JOIN conversations c ON c.conversation_id = m.conversation_id " +
-        "LEFT JOIN users u1 ON c.owner_id = u1.user_id " +
         "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
         "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) " +
-        "GROUP BY m.conversation_id ORDER BY messageCount DESC")
-    fun fuzzySearchMessage(query: String): List<SearchMessageItem>
+        "GROUP BY m.conversation_id " +
+        "LIMIT :limit")
+    fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
+
+    @Query("SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, " +
+        "m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName " +
+        "FROM messages m " +
+        "INNER JOIN users u ON m.user_id = u.user_id " +
+        "WHERE m.conversation_id = :conversationId " +
+        "AND (((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
+        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query)) " +
+        "ORDER BY m.created_at DESC")
+    fun fuzzySearchMessageByConversationId(query: String, conversationId: String): DataSource.Factory<Int, SearchMessageDetailItem>
 
     @Query("DELETE FROM messages WHERE id = :id")
     fun deleteMessage(id: String)

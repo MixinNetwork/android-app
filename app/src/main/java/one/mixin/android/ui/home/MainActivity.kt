@@ -53,6 +53,8 @@ import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.LoadingFragment
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.search.SearchFragment
+import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.ui.search.SearchSingleFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RootUtil
@@ -357,10 +359,13 @@ class MainActivity : BlazeBaseActivity() {
     }
 
     override fun onBackPressed() {
-        if (search_bar.isOpen) {
-            search_bar.closeSearch()
-        } else {
-            super.onBackPressed()
+        val searchMessageFragment = supportFragmentManager.findFragmentByTag(SearchMessageFragment.TAG)
+        val searchSingleFragment = supportFragmentManager.findFragmentByTag(SearchSingleFragment.TAG)
+        when {
+            searchMessageFragment != null -> super.onBackPressed()
+            searchSingleFragment != null -> super.onBackPressed()
+            search_bar.isOpen -> search_bar.closeSearch()
+            else -> super.onBackPressed()
         }
     }
 

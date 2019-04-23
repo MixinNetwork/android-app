@@ -1,5 +1,6 @@
 package one.mixin.android.ui.search
 
+import one.mixin.android.ui.search.holder.TipItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
@@ -7,7 +8,6 @@ import one.mixin.android.vo.User
 import kotlin.math.min
 
 class SearchDataPackage(
-    var contactList: List<User>? = null,
     var assetList: List<AssetItem>? = null,
     var userList: List<User>? = null,
     var chatList: List<ChatMinimal>? = null,
@@ -18,110 +18,88 @@ class SearchDataPackage(
         const val LIMIT_COUNT = 3
     }
 
+    var showTip = false
     var assetLimit = true
     var userLimit = true
     var chatLimit = true
     var messageLimit = true
 
-    fun assetShowMore(): Boolean {
-        return if (assetList == null) {
-            false
-        } else {
-            assetLimit && assetList!!.size > LIMIT_COUNT
-        }
+    fun assetShowMore() = if (assetList == null || !assetLimit) {
+        false
+    } else {
+        assetLimit && assetList!!.size > LIMIT_COUNT
     }
 
-    fun userShowMore(): Boolean {
-        return if (userList == null) {
-            false
-        } else {
-            userLimit && userList!!.size > LIMIT_COUNT
-        }
+    fun userShowMore() = if (userList == null || !userLimit) {
+        false
+    } else {
+        userLimit && userList!!.size > LIMIT_COUNT
     }
 
-    fun chatShowMore(): Boolean {
-        return if (chatList == null) {
-            false
-        } else {
-            chatLimit && chatList!!.size > LIMIT_COUNT
-        }
+    fun chatShowMore() = if (chatList == null || !chatLimit) {
+        false
+    } else {
+        chatLimit && chatList!!.size > LIMIT_COUNT
     }
 
-    fun messageShowMore(): Boolean {
-        return if (contactList == null) {
-            false
-        } else {
-            messageLimit && contactList!!.size > LIMIT_COUNT
-        }
+    fun messageShowMore() = if (messageList == null || !messageLimit) {
+        false
+    } else {
+        messageLimit && messageList!!.size > LIMIT_COUNT
     }
 
-    private fun assetCount(): Int {
-        return if (assetLimit) {
-            min(assetList?.size ?: 0, LIMIT_COUNT)
-        } else {
-            assetList?.size ?: 0
-        }
+    private fun assetCount() = if (assetLimit) {
+        min(assetList?.size ?: 0, LIMIT_COUNT)
+    } else {
+        assetList?.size ?: 0
     }
 
-    private fun userCount(): Int {
-        return if (userLimit) {
-            min(userList?.size ?: 0, LIMIT_COUNT)
-        } else {
-            userList?.size ?: 0
-        }
+    private fun userCount() = if (userLimit) {
+        min(userList?.size ?: 0, LIMIT_COUNT)
+    } else {
+        userList?.size ?: 0
     }
 
-    private fun chatCount(): Int {
-        return if (chatLimit) {
-            min(chatList?.size ?: 0, LIMIT_COUNT)
-        } else {
-            chatList?.size ?: 0
-        }
+    private fun chatCount() = if (chatLimit) {
+        min(chatList?.size ?: 0, LIMIT_COUNT)
+    } else {
+        chatList?.size ?: 0
     }
 
-    private fun messageCount(): Int {
-        return if (messageLimit) {
-            min(messageList?.size ?: 0, LIMIT_COUNT)
-        } else {
-            messageList?.size ?: 0
-        }
+    private fun messageCount() = if (messageLimit) {
+        min(messageList?.size ?: 0, LIMIT_COUNT)
+    } else {
+        messageList?.size ?: 0
     }
 
-    fun getCount(): Int {
-        return if (assetList == null && chatList == null && userList == null && messageList == null) {
-            contactList?.size ?: 0
-        } else {
-            assetCount() + chatCount() + userCount() + messageCount()
-        }
-    }
+    fun getCount() = assetCount() + chatCount() + userCount() + messageCount().incTip()
 
     private fun assetItem(position: Int): AssetItem {
-        return assetList!![position]
+        return assetList!![position.decTip()]
     }
 
     private fun chatItem(position: Int): ChatMinimal {
-        return chatList!![position - assetCount()]
+        return chatList!![position.decTip() - assetCount()]
     }
 
     private fun userItem(position: Int): User {
-        return userList!![position - assetCount() + chatCount()]
+        return userList!![position.decTip() - assetCount() - chatCount()]
     }
 
     private fun messageItem(position: Int): SearchMessageItem {
-        return messageList!![position - assetCount() - chatCount() - userCount()]
+        return messageList!![position.decTip() - assetCount() - chatCount() - userCount()]
     }
 
     fun getItem(position: Int): Any {
-        return if (assetList == null && chatList == null && userList == null && messageList == null) {
-            contactList!![position]
-        } else {
-            when {
-                position < assetCount() -> assetItem(position)
-                position < assetCount() + chatCount() -> chatItem(position)
-                position < assetCount() + chatCount() + userCount() -> userItem(position)
-                position < assetCount() + chatCount() + userCount() + messageCount() -> messageItem(position)
-                else -> throw ArrayIndexOutOfBoundsException()
-            }
+        return when {
+            showTip && position < 1 -> TipItem()
+            position < assetCount().incTip() -> assetItem(position)
+            position < assetCount().incTip() + chatCount() -> chatItem(position)
+            position < assetCount().incTip() + chatCount() + userCount() -> userItem(position)
+            else -> messageItem(position)
         }
     }
+
+    private fun Int.incTip() = this + if (showTip) 1 else 0
+    private fun Int.decTip() = this - if (showTip) 1 else 0
 }

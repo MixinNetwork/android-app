@@ -105,7 +105,6 @@ class MaterialSearchView : FrameLayout {
 
     @SuppressLint("CheckResult")
     private fun initSearchView() {
-        left_ib.setOnClickListener { closeSearch() }
         search_et.setOnEditorActionListener { _, _, _ ->
             onSubmitQuery()
             true
@@ -240,10 +239,6 @@ class MaterialSearchView : FrameLayout {
                 search_et.setText("")
             }
         }
-    }
-
-    fun setOnQueryTextListener(mOnQueryTextListener: OnQueryTextListener) {
-        this.mOnQueryTextListener = mOnQueryTextListener
     }
 
     fun setSearchViewListener(mSearchViewListener: SearchViewListener) {

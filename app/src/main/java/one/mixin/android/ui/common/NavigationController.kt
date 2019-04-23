@@ -10,6 +10,7 @@ import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import timber.log.Timber
 import javax.inject.Inject
 
 class NavigationController
