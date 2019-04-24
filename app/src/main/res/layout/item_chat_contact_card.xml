@@ -54,6 +54,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:layout_marginBottom="2dp"
+                    android:maxWidth="280dp"
+                    android:minWidth="30dp"
                     android:ellipsize="end"
                     android:singleLine="true"
                     android:textColor="@color/text_black"
