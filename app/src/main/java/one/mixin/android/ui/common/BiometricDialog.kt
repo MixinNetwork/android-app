@@ -10,13 +10,14 @@ import one.mixin.android.R
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.extension.toast
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
 import org.jetbrains.anko.getStackTraceString
+import org.jetbrains.anko.toast
 import java.math.BigDecimal
 import java.nio.charset.Charset
+import java.security.InvalidKeyException
 
 class BiometricDialog(
     private val context: Context,
@@ -41,10 +42,14 @@ class BiometricDialog(
         val cipher = try {
             BiometricUtil.getDecryptCipher(context)
         } catch (e: Exception) {
-            if (e is UserNotAuthenticatedException) {
-                callback?.showAuthenticationScreen()
-            } else {
-                Bugsnag.notify(BiometricException("getDecryptCipher. ${e.getStackTraceString()}"))
+            when (e) {
+                is UserNotAuthenticatedException -> callback?.showAuthenticationScreen()
+                is InvalidKeyException -> {
+                    BiometricUtil.deleteKey(context)
+                    context.toast(R.string.wallet_biometric_invalid)
+                    callback?.onCancel()
+                }
+                else -> Bugsnag.notify(BiometricException("getDecryptCipher. ${e.getStackTraceString()}"))
             }
             return
         }
@@ -70,6 +75,8 @@ class BiometricDialog(
                 errorCode == BiometricPromptCompat.BIOMETRIC_ERROR_LOCKOUT_PERMANENT) {
                 cancellationSignal?.cancel()
                 callback?.showTransferBottom(user, amount, asset, trace, memo)
+            } else {
+                errString?.let { context.toast(it) }
             }
         }
 

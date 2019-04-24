@@ -294,6 +294,7 @@
     <string name="wallet_add_asset_search_hint">Enter the token name</string>
     <string name="wallet_add_asset_hot">Hot assets</string>
     <string name="wallet_add_asset_already">Asset already added</string>
+    <string name="wallet_biometric_invalid">Invalid biometrics state, please reset in wallet setting.</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>

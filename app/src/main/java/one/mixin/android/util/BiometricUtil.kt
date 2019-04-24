@@ -17,10 +17,12 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BiometricException
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
 import java.nio.charset.Charset
+import java.security.InvalidKeyException
 import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -49,10 +51,13 @@ object BiometricUtil {
         val cipher = try {
             getEncryptCipher()
         } catch (e: Exception) {
-            if (e is UserNotAuthenticatedException) {
-                showAuthenticationScreen(fragment)
-            } else {
-                Bugsnag.notify(BiometricException("getEncryptCipher. ${e.getStackTraceString()}"))
+            when (e) {
+                is UserNotAuthenticatedException -> showAuthenticationScreen(fragment)
+                is InvalidKeyException -> {
+                    deleteKey(ctx)
+                    ctx.toast(R.string.wallet_biometric_invalid)
+                }
+                else -> Bugsnag.notify(BiometricException("getEncryptCipher. ${e.getStackTraceString()}"))
             }
             return false
         }

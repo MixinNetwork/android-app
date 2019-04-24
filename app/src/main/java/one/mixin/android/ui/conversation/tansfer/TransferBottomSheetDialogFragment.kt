@@ -201,7 +201,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             BiometricUtil.showAuthenticationScreen(this@TransferBottomSheetDialogFragment)
         }
 
-        override fun onCancel() {}
+        override fun onCancel() {
+            contentView.biometric_tv?.isVisible = BiometricUtil.shouldShowBiometric(requireContext())
+        }
     }
 
     private var callback: Callback? = null
