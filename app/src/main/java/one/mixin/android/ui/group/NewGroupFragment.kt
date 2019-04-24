@@ -121,7 +121,7 @@ class NewGroupFragment : BaseFragment() {
         if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_IMAGE) {
             var selectedImageUri: Uri?
             if (data == null || data.action != null &&
-                data.action == android.provider.MediaStore.ACTION_IMAGE_CAPTURE) {
+                data.action == MediaStore.ACTION_IMAGE_CAPTURE) {
                 selectedImageUri = imageUri
             } else {
                 selectedImageUri = data.data

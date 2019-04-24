@@ -212,7 +212,8 @@ class GroupFragment : BaseFragment() {
         }
 
         override fun afterTextChanged(s: Editable?) {
-            groupFriendAdapter.setData(users?.filter { it.fullName!!.contains(s.toString(), true) },
+            val keyword = s.toString().trim()
+            groupFriendAdapter.setData(users?.filter { it.fullName!!.contains(keyword, true) || it.identityNumber.contains(keyword, true) },
                 s.isNullOrEmpty())
         }
     }

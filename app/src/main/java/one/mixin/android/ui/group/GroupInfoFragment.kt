@@ -235,7 +235,7 @@ class GroupInfoFragment : BaseFragment() {
                     uiThread {
                         val s = search_et.text.toString()
                         if (s.isNotBlank()) {
-                            filter(s)
+                            filter(s.trim())
                         } else {
                             adapter.data = u
                         }
@@ -281,7 +281,7 @@ class GroupInfoFragment : BaseFragment() {
     private fun filter(s: String) {
         val us = arrayListOf<User>()
         users.forEach {
-            if (it.fullName?.contains(s, true) == true) {
+            if (it.fullName?.contains(s, true) == true || it.identityNumber.contains(s, true)) {
                 us.add(it)
             }
         }
