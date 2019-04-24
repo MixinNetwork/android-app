@@ -3,12 +3,16 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.vo.Asset
 
-class RefreshAssetsJob(private val assetId: String? = null) : BaseJob(Params(PRIORITY_UI_HIGH)
-    .addTags(RefreshAssetsJob.GROUP).persist().requireNetwork()) {
+class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PRIORITY_UI_HIGH)
+    .addTags(RefreshAssetsJob.GROUP).persist().requireNetwork(), assetId ?: "all-assets") {
 
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshAssetsJob"
+    }
+
+    override fun onAdded() {
+        jobManager.saveJob(this)
     }
 
     override fun onRun() {
@@ -28,5 +32,8 @@ class RefreshAssetsJob(private val assetId: String? = null) : BaseJob(Params(PRI
                 }
             }
         }
+        removeJob()
+    }
+    override fun cancel() {
     }
 }
