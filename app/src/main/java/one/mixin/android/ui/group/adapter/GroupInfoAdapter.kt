@@ -1,17 +1,19 @@
 package one.mixin.android.ui.group.adapter
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.collection.ArrayMap
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_group_info.view.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.recyclerview.HeaderFilterAdapter
+import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.group.InviteActivity
 import one.mixin.android.vo.Conversation
@@ -19,26 +21,46 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 
-class GroupInfoAdapter : HeaderFilterAdapter<User>() {
+class GroupInfoAdapter(private val rv: RecyclerView) : HeaderFilterAdapter<User>() {
 
     override var data: List<User>? = null
         set(value) {
-            field = value
-            notifyDataSetChanged()
+            if (field == null) {
+                field = value
+                notifyDataSetChanged()
+            } else {
+                val diffResult = DiffUtil.calculateDiff(object : DiffUtil.Callback() {
+                    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                        val old = field?.get(oldItemPosition)
+                        val new = value?.get(newItemPosition)
+                        return old?.userId == new?.userId && old?.relationship == new?.relationship
+                    }
+
+                    override fun getOldListSize() = field?.size ?: 0
+
+                    override fun getNewListSize() = value?.size ?: 0
+
+                    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+                        val old = field?.get(oldItemPosition)
+                        val new = value?.get(newItemPosition)
+                        return old == new
+                    }
+                })
+                field = value
+                val recyclerViewState = rv.layoutManager?.onSaveInstanceState()
+                if (headerView != null) {
+                    diffResult.dispatchUpdatesTo(HeaderListUpdateCallback(this))
+                } else {
+                    diffResult.dispatchUpdatesTo(this)
+                }
+                rv.layoutManager?.onRestoreInstanceState(recyclerViewState)
+            }
         }
 
     private var listener: GroupInfoListener? = null
-    private var conversation: Conversation? = null
+    var conversation: Conversation? = null
     var self: User? = null
     var participantsMap: ArrayMap<String, Participant>? = null
-
-    fun setConversation(conversation: Conversation) {
-        this.conversation = conversation
-    }
-
-    fun getConversation(): Conversation? {
-        return conversation
-    }
 
     override fun getHeaderViewHolder(): HeadHolder = HeaderHolder(headerView!!)
 
