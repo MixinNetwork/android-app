@@ -17,20 +17,23 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PermissionBottomSheetDialogFragment"
 
-        const val ARGS_PERMISSION = "args_permission"
+        private const val ARGS_PERMISSION = "args_permission"
+        private const val ARGS_TITLE = "args_title"
+
         private const val PERMISSION_CAMERA = 0
         private const val PERMISSION_VIDEO = 1
-        private fun newInstance(permission: Int) =
+        private fun newInstance(permission: Int, title: String) =
             PermissionBottomSheetDialogFragment().withArgs {
                 putInt(ARGS_SCOPES, permission)
+                putString(ARGS_TITLE, title)
             }
 
-        fun requestCamera(): PermissionBottomSheetDialogFragment {
-            return newInstance(PERMISSION_CAMERA)
+        fun requestCamera(title: String): PermissionBottomSheetDialogFragment {
+            return newInstance(PERMISSION_CAMERA, title)
         }
 
-        fun requestVideo(): PermissionBottomSheetDialogFragment {
-            return newInstance(PERMISSION_VIDEO)
+        fun requestVideo(title: String): PermissionBottomSheetDialogFragment {
+            return newInstance(PERMISSION_VIDEO, title)
         }
     }
 
@@ -38,11 +41,13 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments?.getInt(ARGS_PERMISSION)
     }
 
+    private val title by lazy {
+        arguments?.getString(ARGS_TITLE)
+    }
+
     private val miniHeight by lazy {
         context!!.realSize().y / 2
     }
-
-    private var success = false
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -67,6 +72,7 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.refuse.setOnClickListener {
             dismiss()
         }
+        contentView.name.text = title
     }
 
     private var grantedAction: (() -> Unit)? = null

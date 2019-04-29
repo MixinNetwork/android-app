@@ -223,7 +223,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val intent: Intent? = fileChooserParams?.createIntent()
                 if (fileChooserParams?.isCaptureEnabled == true) {
                     if (intent?.type == "video/*") {
-                        PermissionBottomSheetDialogFragment.requestVideo().setGrantedAction {
+                        PermissionBottomSheetDialogFragment.requestVideo(contentView.title_view.text.toString()).setGrantedAction {
                             RxPermissions(requireActivity())
                                 .request(Manifest.permission.CAMERA)
                                 .subscribe({ granted ->
@@ -237,7 +237,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     } else if (intent?.type == "image/*") {
-                        PermissionBottomSheetDialogFragment.requestCamera().setGrantedAction {
+                        PermissionBottomSheetDialogFragment.requestCamera(contentView.title_view.text.toString()).setGrantedAction {
                             RxPermissions(requireActivity())
                                 .request(Manifest.permission.CAMERA)
                                 .subscribe({ granted ->
