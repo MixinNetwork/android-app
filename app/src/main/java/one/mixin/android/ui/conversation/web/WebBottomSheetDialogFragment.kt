@@ -223,28 +223,32 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val intent: Intent? = fileChooserParams?.createIntent()
                 if (fileChooserParams?.isCaptureEnabled == true) {
                     if (intent?.type == "video/*") {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.CAMERA)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            }, {
-                            })
+                        PermissionBottomSheetDialogFragment.requestVideo().setGrantedAction {
+                            RxPermissions(requireActivity())
+                                .request(Manifest.permission.CAMERA)
+                                .subscribe({ granted ->
+                                    if (granted) {
+                                        startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
+                                    } else {
+                                        context?.openPermissionSetting()
+                                    }
+                                }, {
+                                })
+                        }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     } else if (intent?.type == "image/*") {
-                        RxPermissions(requireActivity())
-                            .request(Manifest.permission.CAMERA)
-                            .subscribe({ granted ->
-                                if (granted) {
-                                    openCamera(getImageUri())
-                                } else {
-                                    context?.openPermissionSetting()
-                                }
-                            }, {
-                            })
+                        PermissionBottomSheetDialogFragment.requestCamera().setGrantedAction {
+                            RxPermissions(requireActivity())
+                                .request(Manifest.permission.CAMERA)
+                                .subscribe({ granted ->
+                                    if (granted) {
+                                        openCamera(getImageUri())
+                                    } else {
+                                        context?.openPermissionSetting()
+                                    }
+                                }, {
+                                })
+                        }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     }
                 }
