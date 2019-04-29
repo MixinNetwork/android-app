@@ -23,14 +23,29 @@
         app:layout_constraintTop_toTopOf="@id/search_et"
         app:layout_constraintBottom_toBottomOf="@id/search_et"/>
 
-    <one.mixin.android.widget.SearchView
+    <ImageButton
+        android:id="@+id/clear_ib"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical|start"
+        android:background="@drawable/mixin_ripple"
+        android:layout_marginEnd="4dp"
+        android:layout_marginStart="4dp"
+        android:padding="8dp"
+        app:srcCompat="@drawable/ic_close_black_24dp"
+        tools:ignore="ContentDescription"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/search_et"
+        app:layout_constraintTop_toTopOf="@id/search_et"
+        app:layout_constraintBottom_toBottomOf="@id/search_et"/>
+
+    <EditText
         android:id="@+id/search_et"
         android:layout_width="0dp"
-        android:layout_height="64dp"
+        android:layout_height="?actionBarSize"
         android:background="@null"
         android:layout_marginStart="8dp"
         android:drawablePadding="8dp"
-        android:drawableStart="@drawable/ic_asset_add_search"
         android:imeOptions="actionDone"
         android:inputType="text"
         android:maxLines="1"
@@ -40,10 +55,9 @@
         android:textColorHint="@color/text_gray"
         android:textSize="14sp"
         android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/clear_ib"
         app:layout_constraintStart_toEndOf="@+id/back_ib"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/search_et"/>
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_rv"

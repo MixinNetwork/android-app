@@ -6,11 +6,14 @@ import android.os.Parcelable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_search_single.*
 import kotlinx.android.synthetic.main.view_head_search_single.view.*
 import kotlinx.coroutines.Dispatchers
@@ -22,6 +25,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
@@ -59,6 +63,8 @@ class SearchSingleFragment : BaseFragment() {
         arguments!!.getString(ARGS_QUERY)
     }
 
+    private var compositeDisposable = CompositeDisposable()
+
     private val type by lazy {
         when (data!![0]) {
             is AssetItem -> TypeAsset
@@ -75,7 +81,6 @@ class SearchSingleFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_search_single, container, false)
 
-    @SuppressLint("CheckResult")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         back_ib.setOnClickListener {
@@ -86,8 +91,8 @@ class SearchSingleFragment : BaseFragment() {
         val header = LayoutInflater.from(requireContext()).inflate(R.layout.view_head_search_single, search_rv, false)
         val text = when (type) {
             TypeAsset -> requireContext().getString(R.string.search_title_assets)
-            TypeChat -> requireContext().getText(R.string.search_title_chat)
             TypeUser -> requireContext().getText(R.string.search_title_contacts)
+            TypeChat -> requireContext().getText(R.string.search_title_chat)
             TypeMessage -> requireContext().getText(R.string.search_title_messages)
         }
         header.title_tv.text = text
@@ -104,6 +109,7 @@ class SearchSingleFragment : BaseFragment() {
 
             @SuppressLint("CheckResult")
             override fun onMessageClick(message: SearchMessageItem) {
+                search_rv.hideKeyboard()
                 val f = SearchMessageFragment.newInstance(message, adapter.query)
                 requireActivity().addFragment(this@SearchSingleFragment, f, SearchMessageFragment.TAG, R.id.root_view)
             }
@@ -119,22 +125,31 @@ class SearchSingleFragment : BaseFragment() {
             }
         }
 
+        clear_ib.setOnClickListener { search_et.setText("") }
         search_et.hint = text
         search_et.setText(query)
-        search_et.textChanges().debounce(300, TimeUnit.MILLISECONDS).subscribe {
-            onTextChanged(it.toString())
-        }
+        compositeDisposable.add(search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe ({
+                clear_ib.isVisible = it.isNotEmpty()
+                if (it == adapter.query) return@subscribe
+
+                adapter.query = it.toString()
+                onTextChanged(it.toString())
+            }, {}))
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        compositeDisposable.dispose()
     }
 
     private fun onTextChanged(s: String) {
-        if (s == adapter.query) return
-
-        adapter.query = s
-        searchViewModel.viewModelScope.launch {
+        searchViewModel.viewModelScope.launch(Dispatchers.Default) {
             val list: List<Parcelable>? = when (type) {
                 TypeAsset -> searchViewModel.fuzzySearchAsync<AssetItem>(s)
-                TypeChat -> searchViewModel.fuzzySearchAsync<ChatMinimal>(s)
                 TypeUser -> searchViewModel.fuzzySearchAsync<User>(s)
+                TypeChat -> searchViewModel.fuzzySearchAsync<ChatMinimal>(s)
                 TypeMessage -> searchViewModel.fuzzySearchAsync<SearchMessageItem>(s, -1)
             }.await()
 

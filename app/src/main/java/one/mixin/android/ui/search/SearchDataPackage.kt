@@ -78,24 +78,24 @@ class SearchDataPackage(
         return assetList!![position.decTip()]
     }
 
-    private fun chatItem(position: Int): ChatMinimal {
-        return chatList!![position.decTip() - assetCount()]
+    private fun userItem(position: Int): User {
+        return userList!![position.decTip() - assetCount()]
     }
 
-    private fun userItem(position: Int): User {
-        return userList!![position.decTip() - assetCount() - chatCount()]
+    private fun chatItem(position: Int): ChatMinimal {
+        return chatList!![position.decTip() - assetCount() - userCount()]
     }
 
     private fun messageItem(position: Int): SearchMessageItem {
-        return messageList!![position.decTip() - assetCount() - chatCount() - userCount()]
+        return messageList!![position.decTip() - assetCount() - userCount() - chatCount()]
     }
 
     fun getItem(position: Int): Any {
         return when {
             showTip && position < 1 -> TipItem()
             position < assetCount().incTip() -> assetItem(position)
-            position < assetCount().incTip() + chatCount() -> chatItem(position)
-            position < assetCount().incTip() + chatCount() + userCount() -> userItem(position)
+            position < assetCount().incTip() + userCount() -> userItem(position)
+            position < assetCount().incTip() + userCount() + chatCount() -> chatItem(position)
             else -> messageItem(position)
         }
     }

@@ -2,19 +2,13 @@ package one.mixin.android.widget
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import android.os.SystemClock
-import android.text.Editable
 import android.text.InputType
 import android.text.TextUtils
-import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.MotionEvent
 import android.view.View
-import android.view.View.OnFocusChangeListener
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
@@ -22,6 +16,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.widget.textChanges
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.animateWidth
@@ -30,6 +26,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
+import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import java.util.concurrent.TimeUnit
 
 class MaterialSearchView : FrameLayout {
@@ -40,6 +37,8 @@ class MaterialSearchView : FrameLayout {
     private var mCurrentQuery: CharSequence? = null
     var mOnQueryTextListener: OnQueryTextListener? = null
     private var mSearchViewListener: SearchViewListener? = null
+
+    private var disposable: Disposable? = null
 
     constructor(context: Context) : this(context, null)
     constructor(context: Context, attrs: AttributeSet?) : this(context, attrs, 0)
@@ -103,39 +102,17 @@ class MaterialSearchView : FrameLayout {
         }
     }
 
-    @SuppressLint("CheckResult")
     private fun initSearchView() {
         search_et.setOnEditorActionListener { _, _, _ ->
             onSubmitQuery()
             true
         }
 
-        search_et.addTextChangedListener(object : TextWatcher {
-
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {
-            }
-
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
-                // When the text changes, filter
-                if (search_et.text.isEmpty()) {
-                    right_clear.visibility = View.GONE
-                } else {
-                    right_clear.visibility = View.VISIBLE
-                }
-            }
-
-            override fun afterTextChanged(s: Editable) {}
-        })
-
-        search_et.textChanges().debounce(300, TimeUnit.MILLISECONDS).subscribe {
-            this@MaterialSearchView.onTextChanged(it)
-        }
-
-        search_et.onFocusChangeListener = OnFocusChangeListener { _, hasFocus ->
-            if (hasFocus) {
-                search_et.post { search_et.showKeyboard() }
-            }
-        }
+        disposable = search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe({
+                this@MaterialSearchView.onTextChanged(it)
+            }, {})
 
         right_clear.setOnClickListener {
             if (search_et.text.isNotEmpty()) {
@@ -148,85 +125,97 @@ class MaterialSearchView : FrameLayout {
         }
     }
 
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        disposable?.dispose()
+    }
+
     var oldLeftX = 0f
     var oldSearchWidth = 0
 
     fun dragSearch(progress: Float) {
         right_ib.translationX = context.dpToPx(42f) * progress
-        search_tv.alpha = 1 - progress
-        left_ib.alpha = Math.max(1 - 2 * progress, 0f)
-        back_ib.alpha = (Math.max(progress, .5f) - .5f) * 2
+        val fastFadeOut = Math.max(1 - 2 * progress, 0f)
+        val fastFadeIn = (Math.max(progress, .5f) - .5f) * 2
+        search_tv.isVisible = true
+        search_et.isVisible = true
+        search_tv.alpha = fastFadeOut
+        search_et.alpha = fastFadeIn
+        left_ib.isVisible = true
+        back_ib.isVisible = true
+        left_ib.alpha = fastFadeOut
+        back_ib.alpha = fastFadeIn
     }
 
     fun openSearch() {
-        synchronized(this) {
-            search_tv.animate().apply {
-                setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
-                        setListener(null)
-                        search_et.isVisible = true
-                    }
-                })
-            }.alpha(0f).start()
-            showKeyboard()
+        search_tv.animate().apply {
+            setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    setListener(null)
+                    search_tv.isGone = true
+                    search_et.isVisible = true
+                    search_et.showKeyboard()
+                    search_et.animate().setDuration(150L).alpha(1f).start()
+                }
+            })
+        }.alpha(0f).setDuration(150L).start()
 
-            left_ib.animate().apply {
-                setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
-                        setListener(null)
-                        back_ib.animate().setDuration(150L).alpha(1f).start()
-                    }
-                })
-            }.setDuration(150L).alpha(0f).start()
-            right_clear.visibility = View.GONE
+        left_ib.animate().apply {
+            setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    setListener(null)
+                    left_ib.isGone = true
+                    back_ib.isVisible = true
+                    back_ib.animate().setDuration(150L).alpha(1f).start()
+                }
+            })
+        }.setDuration(150L).alpha(0f).start()
+        right_clear.visibility = View.GONE
 
-            search_et.requestFocus()
-            search_et.setText("")
-            oldLeftX = left_ib.x
-            oldSearchWidth = search_et.measuredWidth
-            right_ib.translationX(context.dpToPx(42f).toFloat())
-            search_et.animateWidth(search_et.width, oldSearchWidth + context.dpToPx(36f))
-            mSearchViewListener?.onSearchViewOpened()
-            isOpen = true
-            search_et.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
-                SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN, 0F, 0F, 0))
-            search_et.dispatchTouchEvent(MotionEvent.obtain(SystemClock.uptimeMillis(),
-                SystemClock.uptimeMillis(), MotionEvent.ACTION_UP, 0F, 0F, 0))
-        }
+        search_et.setText("")
+        oldLeftX = left_ib.x
+        oldSearchWidth = search_et.measuredWidth
+        right_ib.translationX(context.dpToPx(42f).toFloat())
+        search_et.animateWidth(search_et.width, oldSearchWidth + context.dpToPx(36f))
+        mSearchViewListener?.onSearchViewOpened()
+        isOpen = true
     }
 
     fun closeSearch() {
-        synchronized(this) {
-            search_tv.animate().apply {
-                setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationStart(animation: Animator?) {
-                        setListener(null)
-                        search_et.isGone = true
-                    }
-                })
-            }.alpha(1f).start()
-            back_ib.animate().apply {
-                setListener(object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator?) {
-                        setListener(null)
-                        left_ib.animate().setDuration(150L).alpha(1f).start()
-                    }
-                })
-            }.setDuration(150L).alpha(0f).start()
-            right_clear.visibility = View.GONE
+        search_et.animate().apply {
+            setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    setListener(null)
+                    search_et.isGone = true
+                    search_tv.isVisible = true
+                    search_tv.animate().setDuration(150L).alpha(1f).start()
+                }
+            })
+        }.alpha(0f).setDuration(150L).start()
+        back_ib.animate().apply {
+            setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    setListener(null)
+                    back_ib.isGone = true
+                    left_ib.isVisible = true
+                    left_ib.animate().setDuration(150L).alpha(1f).start()
+                }
+            })
+        }.setDuration(150L).alpha(0f).start()
+        right_clear.visibility = View.GONE
 
-            right_ib.translationX(0f)
-            search_et.animateWidth(search_et.width, oldSearchWidth)
-            clearFocus()
-            search_et.hideKeyboard()
-            search_et.setText("")
-            mSearchViewListener?.onSearchViewClosed()
-            isOpen = false
-        }
+        right_ib.translationX(0f)
+        search_et.animateWidth(search_et.width, oldSearchWidth)
+        clearFocus()
+        search_et.hideKeyboard()
+        search_et.setText("")
+        mSearchViewListener?.onSearchViewClosed()
+        isOpen = false
     }
 
     private fun onTextChanged(newText: CharSequence) {
-        mCurrentQuery = search_et.text
+        mCurrentQuery = newText
+        right_clear.isVisible = newText.isNotEmpty()
         mOnQueryTextListener?.onQueryTextChange(newText.toString())
     }
 

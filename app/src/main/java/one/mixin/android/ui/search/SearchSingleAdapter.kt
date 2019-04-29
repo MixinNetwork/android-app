@@ -37,7 +37,7 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
                     TypeAsset -> (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener)
                     TypeChat -> (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
                     TypeUser -> (holder as ContactHolder).bind(it as User, query, onItemClickListener)
-                    TypeMessage -> (holder as MessageHolder).bind(it as SearchMessageItem, query, onItemClickListener)
+                    TypeMessage -> (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)
                 }
             }
         }
