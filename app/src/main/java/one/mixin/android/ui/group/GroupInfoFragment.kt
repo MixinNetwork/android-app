@@ -72,7 +72,9 @@ class GroupInfoFragment : BaseFragment() {
     private val groupViewModel: GroupViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(GroupViewModel::class.java)
     }
-    private val adapter: GroupInfoAdapter = GroupInfoAdapter()
+    private val adapter by lazy {
+        GroupInfoAdapter(group_info_rv)
+    }
 
     private val conversationId: String by lazy {
         arguments!!.getString(ARGS_CONVERSATION_ID)
@@ -93,10 +95,10 @@ class GroupInfoFragment : BaseFragment() {
             search_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        group_info_rv.adapter = adapter
         group_info_rv.addItemDecoration(SpaceItemDecoration(2))
         header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
         adapter.headerView = header
+        group_info_rv.adapter = adapter
         adapter.setGroupInfoListener(object : GroupInfoAdapter.GroupInfoListener {
             override fun onAdd() {
                 modifyMember(true)
@@ -136,7 +138,7 @@ class GroupInfoFragment : BaseFragment() {
                             }
                             2 -> {
                                 showConfirmDialog(getString(R.string.group_info_remove_tip,
-                                    user.fullName, adapter.getConversation()?.name), TYPE_REMOVE, user = user)
+                                    user.fullName, adapter.conversation?.name), TYPE_REMOVE, user = user)
                             }
                             3 -> {
                                 showPb()
@@ -148,7 +150,7 @@ class GroupInfoFragment : BaseFragment() {
 
             override fun onLongClick(name: View, user: User): Boolean {
                 val popMenu = PopupMenu(activity!!, name)
-                val c = adapter.getConversation()
+                val c = adapter.conversation
                 if (c == null || !c.isGroup()) {
                     return false
                 }
@@ -190,7 +192,7 @@ class GroupInfoFragment : BaseFragment() {
                         }
                         R.id.remove -> {
                             showConfirmDialog(getString(R.string.group_info_remove_tip,
-                                user.fullName, adapter.getConversation()?.name),
+                                user.fullName, adapter.conversation?.name),
                                 TYPE_REMOVE, user = user)
                         }
                         R.id.admin -> {
@@ -246,7 +248,7 @@ class GroupInfoFragment : BaseFragment() {
 
         groupViewModel.getConversationById(conversationId).observe(this, Observer {
             it?.let {
-                adapter.setConversation(it)
+                adapter.conversation = it
             }
         })
 
