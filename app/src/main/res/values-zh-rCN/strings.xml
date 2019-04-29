@@ -173,7 +173,6 @@
     <string name="week_friday">星期五</string>
     <string name="week_saturday">星期六</string>
     <string name="week_sunday">星期日</string>
-    <string name="yesterday">昨天</string>
     <string name="today">今天</string>
     <string name="chat_item_title">最近聊天</string>
     <string name="copy_success">已拷贝</string>
