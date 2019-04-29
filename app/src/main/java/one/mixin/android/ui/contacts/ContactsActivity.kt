@@ -12,8 +12,12 @@ class ContactsActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        val fragment = ContactsFragment.newInstance()
-        replaceFragment(fragment, R.id.container, ContactsFragment.TAG)
+        val showProfile = intent?.extras?.getBoolean(ARGS_SHOW_PROFILE) ?: false
+        if (showProfile) {
+            replaceFragment(ProfileFragment.newInstance(), R.id.container, ProfileFragment.TAG)
+        } else {
+            replaceFragment(ContactsFragment.newInstance(), R.id.container, ContactsFragment.TAG)
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -30,9 +34,13 @@ class ContactsActivity : BlazeBaseActivity() {
     }
 
     companion object {
-        fun show(activity: Activity) {
-            val myIntent = Intent(activity, ContactsActivity::class.java)
-            activity.startActivity(myIntent)
+        const val ARGS_SHOW_PROFILE = "args_show_profile"
+
+        fun show(activity: Activity, showProfile: Boolean = false) {
+            val intent = Intent(activity, ContactsActivity::class.java).apply {
+                putExtra(ARGS_SHOW_PROFILE, showProfile)
+            }
+            activity.startActivity(intent)
             activity.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
         }
     }

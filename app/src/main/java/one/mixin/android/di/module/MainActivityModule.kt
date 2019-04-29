@@ -1,6 +1,5 @@
 package one.mixin.android.di.module
 
-import android.os.Parcelable
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment

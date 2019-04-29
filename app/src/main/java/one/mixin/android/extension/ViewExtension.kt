@@ -123,7 +123,7 @@ fun View.shaking() {
 }
 
 fun View.animateWidth(form: Int, to: Int) {
-    this.animateWidth(form, to, one.mixin.android.extension.ANIMATION_DURATION_SHORTEST)
+    this.animateWidth(form, to, ANIMATION_DURATION_SHORTEST)
 }
 
 fun View.animateWidth(form: Int, to: Int, duration: Long) {

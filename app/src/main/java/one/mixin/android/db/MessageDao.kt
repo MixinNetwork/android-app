@@ -88,10 +88,11 @@ interface MessageDao : BaseDao<Message> {
         "u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName " +
         "FROM messages m " +
         "INNER JOIN users u ON c.owner_id = u.user_id " +
-        "LEFT JOIN conversations c ON c.conversation_id = m.conversation_id " +
+        "INNER JOIN conversations c ON c.conversation_id = m.conversation_id " +
         "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
         "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) " +
         "GROUP BY m.conversation_id " +
+        "ORDER BY c.pin_time DESC, m.created_at DESC " +
         "LIMIT :limit")
     fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
 

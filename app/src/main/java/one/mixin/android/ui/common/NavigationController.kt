@@ -10,7 +10,6 @@ import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.wallet.WalletActivity
-import timber.log.Timber
 import javax.inject.Inject
 
 class NavigationController
@@ -38,7 +37,7 @@ constructor(mainActivity: MainActivity) {
     fun showSearch() {
         var searchFragment = fragmentManager.findFragmentByTag(SearchFragment.TAG)
         if (searchFragment == null) {
-            searchFragment = SearchFragment.getInstance()
+            searchFragment = SearchFragment()
             fragmentManager.beginTransaction()
                 .setCustomAnimations(R.anim.fade_in, R.anim.fade_out, R.anim.fade_in, R.anim.fade_out)
                 .add(containerId, searchFragment, SearchFragment.TAG)
@@ -50,11 +49,12 @@ constructor(mainActivity: MainActivity) {
     }
 
     fun hideSearch() {
-        SearchFragment.getInstance().view?.animate()?.apply {
+        val f = fragmentManager.findFragmentByTag(SearchFragment.TAG)
+        f?.view?.animate()?.apply {
           setListener(object : AnimatorListenerAdapter() {
               override fun onAnimationEnd(animation: Animator?) {
                   setListener(null)
-                  SearchFragment.getInstance().view?.isVisible = false
+                  f.view?.isVisible = false
               }
           })
         }?.alpha(0f)?.start()

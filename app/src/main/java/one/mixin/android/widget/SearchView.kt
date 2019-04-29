@@ -9,7 +9,7 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
-import android.widget.TextView
+import android.widget.TextView.OnEditorActionListener
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
@@ -42,7 +42,7 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
         }
     }
 
-    private val onEditorActionListener = TextView.OnEditorActionListener { _, actionId, _ ->
+    private val onEditorActionListener = OnEditorActionListener { _, actionId, _ ->
         if (actionId == EditorInfo.IME_ACTION_SEARCH) {
             listener?.onSearch()
             hideKeyboard()

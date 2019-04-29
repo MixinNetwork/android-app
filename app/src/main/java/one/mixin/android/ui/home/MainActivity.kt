@@ -320,7 +320,7 @@ class MainActivity : BlazeBaseActivity() {
 
         search_bar.mOnQueryTextListener = object : MaterialSearchView.OnQueryTextListener {
             override fun onQueryTextChange(newText: String): Boolean {
-                SearchFragment.getInstance().setQueryText(newText)
+                (supportFragmentManager.findFragmentByTag(SearchFragment.TAG) as? SearchFragment)?.setQueryText(newText)
                 return true
             }
         }
