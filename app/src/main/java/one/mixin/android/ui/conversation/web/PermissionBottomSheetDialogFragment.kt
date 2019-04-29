@@ -6,6 +6,8 @@ import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_permission.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment.Companion.ARGS_SCOPES
@@ -22,18 +24,20 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         private const val PERMISSION_CAMERA = 0
         private const val PERMISSION_VIDEO = 1
-        private fun newInstance(permission: Int, title: String) =
+        private fun newInstance(permission: Int, title: String, appName: String? = null, appAvatar: String? = null) =
             PermissionBottomSheetDialogFragment().withArgs {
                 putInt(ARGS_SCOPES, permission)
                 putString(ARGS_TITLE, title)
+                putString(WebBottomSheetDialogFragment.APP_NAME, appName)
+                putString(WebBottomSheetDialogFragment.APP_AVATAR, appAvatar)
             }
 
-        fun requestCamera(title: String): PermissionBottomSheetDialogFragment {
-            return newInstance(PERMISSION_CAMERA, title)
+        fun requestCamera(title: String, appName: String? = null, appAvatar: String? = null): PermissionBottomSheetDialogFragment {
+            return newInstance(PERMISSION_CAMERA, title, appName, appAvatar)
         }
 
-        fun requestVideo(title: String): PermissionBottomSheetDialogFragment {
-            return newInstance(PERMISSION_VIDEO, title)
+        fun requestVideo(title: String, appName: String? = null, appAvatar: String? = null): PermissionBottomSheetDialogFragment {
+            return newInstance(PERMISSION_VIDEO, title, appName, appAvatar)
         }
     }
 
@@ -43,6 +47,13 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private val title by lazy {
         arguments?.getString(ARGS_TITLE)
+    }
+
+    private val appName: String? by lazy {
+        arguments!!.getString(WebBottomSheetDialogFragment.APP_NAME)
+    }
+    private val appAvatar: String? by lazy {
+        arguments!!.getString(WebBottomSheetDialogFragment.APP_AVATAR)
     }
 
     private val miniHeight by lazy {
@@ -72,7 +83,17 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.refuse.setOnClickListener {
             dismiss()
         }
-        contentView.name.text = title
+        if (!appAvatar.isNullOrBlank()) {
+            contentView.avatar.layoutParams.width = requireContext().dpToPx(36f)
+            contentView.avatar.loadCircleImage(appAvatar)
+        } else {
+            contentView.avatar.layoutParams.width = requireContext().dpToPx(0f)
+        }
+        if (!appName.isNullOrBlank()) {
+            contentView.name.text = appName
+        } else {
+            contentView.name.text = title
+        }
     }
 
     private var grantedAction: (() -> Unit)? = null
