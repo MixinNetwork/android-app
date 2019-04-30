@@ -67,8 +67,9 @@ fun String.timeAgoDate(context: Context): String {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
         timeAgoDate = when {
             (todayMilli <= date.toInstant().toEpochMilli()) -> context.getString(R.string.today)
-            (date.format(DateTimeFormatter.ofPattern("ww").withZone(LocaleZone)) == today.format(DateTimeFormatter.ofPattern("ww").withZone
-            (LocaleZone))) -> {
+            (today.year == date.year && date.format(DateTimeFormatter.ofPattern("ww").withZone(LocaleZone)) == today.format(DateTimeFormatter.ofPattern("ww")
+                .withZone
+                (LocaleZone))) -> {
                 when (date.dayOfWeek) {
                     DayOfWeek.MONDAY -> context.getString(R.string.week_monday)
                     DayOfWeek.TUESDAY -> context.getString(R.string.week_tuesday)
