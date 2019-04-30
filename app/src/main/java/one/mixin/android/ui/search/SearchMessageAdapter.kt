@@ -56,7 +56,7 @@ class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             itemView.search_msg_tv.text = message.content
         }
         message.content?.let {
-            itemView.search_msg_tv.text = beautifulContent(it, query)
+            itemView.search_msg_tv.text = beautifyContent(it, query)
         }
         itemView.search_time_tv.timeAgo(message.createdAt)
         itemView.search_msg_tv.highLight(query)
@@ -66,8 +66,8 @@ class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         }
     }
 
-    private fun beautifulContent(content: String, query: String): String {
-        val index = content.indexOf(query)
+    private fun beautifyContent(content: String, query: String): String {
+        val index = content.indexOf(query, ignoreCase = true)
         if (index == -1) return content
 
         val arr = content.split(query)

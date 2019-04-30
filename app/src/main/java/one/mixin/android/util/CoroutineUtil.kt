@@ -13,6 +13,10 @@ val SINGLE_DB_THREAD by lazy {
     Executors.newSingleThreadExecutor().asCoroutineDispatcher()
 }
 
+val HIGHLIGHT_THREAD by lazy {
+    Executors.newSingleThreadExecutor().asCoroutineDispatcher()
+}
+
 @kotlinx.coroutines.ExperimentalCoroutinesApi
 @kotlinx.coroutines.ObsoleteCoroutinesApi
 fun <T : Any?> onlyLast(input: ReceiveChannel<Deferred<T>>) = GlobalScope.produce {
