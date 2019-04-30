@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation.web
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_permission.view.*
@@ -69,8 +70,10 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         dialog.setCustomViewHeight(miniHeight)
     }
 
+    private var isHandle: Boolean = false
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        isHandle = false
         if (permission == PERMISSION_CAMERA) {
             contentView.info.setText(R.string.permission_camera)
         } else {
@@ -78,10 +81,10 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.authorization.setOnClickListener {
             grantedAction?.invoke()
+            isHandle = true
             dismiss()
         }
         contentView.refuse.setOnClickListener {
-            cancelAction?.invoke()
             dismiss()
         }
         if (!appAvatar.isNullOrBlank()) {
@@ -94,6 +97,13 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.name.text = appName
         } else {
             contentView.name.text = title
+        }
+    }
+
+    override fun onDismiss(dialog: DialogInterface?) {
+        super.onDismiss(dialog)
+        if (!isHandle) {
+            cancelAction?.invoke()
         }
     }
 
