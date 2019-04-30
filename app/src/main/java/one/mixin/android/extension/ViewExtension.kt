@@ -30,7 +30,12 @@ import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.util.HIGHLIGHT_THREAD
 import org.jetbrains.anko.dip
 import timber.log.Timber
 
@@ -231,18 +236,22 @@ fun TextView.highLight(
     ignoreCase: Boolean = true,
     @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null)
 ) {
-    if (target == null) {
+    if (target.isNullOrBlank()) {
         text = target
         return
     }
     val text = this.text.toString()
-    val spannable = SpannableString(text)
-    var index = text.indexOf(target, ignoreCase = ignoreCase)
-    while (index != -1) {
-        spannable.setSpan(
-            TextAppearanceSpan(null, 0, 0, ColorStateList.valueOf(color), null),
-            index, index + target.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
+    GlobalScope.launch(HIGHLIGHT_THREAD) {
+        val spannable = SpannableString(text)
+        var index = text.indexOf(target, ignoreCase = ignoreCase)
+        while (index != -1) {
+            spannable.setSpan(
+                TextAppearanceSpan(null, 0, 0, ColorStateList.valueOf(color), null),
+                index, index + target.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
+        }
+        withContext(Dispatchers.Main) {
+            setText(spannable)
+        }
     }
-    setText(spannable)
 }
