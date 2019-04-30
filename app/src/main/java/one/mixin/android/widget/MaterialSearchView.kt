@@ -4,6 +4,8 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.graphics.Color
+import android.os.Parcel
+import android.os.Parcelable
 import android.text.InputType
 import android.text.TextUtils
 import android.util.AttributeSet
@@ -20,13 +22,13 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.animateWidth
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
+import org.jetbrains.annotations.NotNull
 import java.util.concurrent.TimeUnit
 
 class MaterialSearchView : FrameLayout {
@@ -102,6 +104,19 @@ class MaterialSearchView : FrameLayout {
         }
     }
 
+    override fun onSaveInstanceState(): Parcelable? {
+        val parcelable = super.onSaveInstanceState() ?: return null
+        return SavedState(parcelable).apply {
+            this.isOpen = this@MaterialSearchView.isOpen
+        }
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+        isOpen = (state as? SavedState)?.isOpen ?: false
+        if (isOpen) openSearch() else closeSearch()
+        super.onRestoreInstanceState(state)
+    }
+
     private fun initSearchView() {
         search_et.setOnEditorActionListener { _, _, _ ->
             onSubmitQuery()
@@ -151,11 +166,25 @@ class MaterialSearchView : FrameLayout {
         search_tv.animate().apply {
             setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
+                    op()
+                }
+
+                override fun onAnimationCancel(animation: Animator?) {
+                    op()
+                }
+
+                private fun op() {
                     setListener(null)
                     search_tv.isGone = true
                     search_et.isVisible = true
                     search_et.showKeyboard()
-                    search_et.animate().setDuration(150L).alpha(1f).start()
+                    search_et.animate().apply {
+                        setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationCancel(animation: Animator?) {
+                                search_et.alpha = 1f
+                            }
+                        })
+                    }.setDuration(150L).alpha(1f).start()
                 }
             })
         }.alpha(0f).setDuration(150L).start()
@@ -163,10 +192,24 @@ class MaterialSearchView : FrameLayout {
         left_ib.animate().apply {
             setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
+                    op()
+                }
+
+                override fun onAnimationCancel(animation: Animator?) {
+                    op()
+                }
+
+                private fun op() {
                     setListener(null)
                     left_ib.isGone = true
                     back_ib.isVisible = true
-                    back_ib.animate().setDuration(150L).alpha(1f).start()
+                    back_ib.animate().apply {
+                        setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationCancel(animation: Animator?) {
+                                back_ib.alpha = 1f
+                            }
+                        })
+                    }.setDuration(150L).alpha(1f).start()
                 }
             })
         }.setDuration(150L).alpha(0f).start()
@@ -176,7 +219,6 @@ class MaterialSearchView : FrameLayout {
         oldLeftX = left_ib.x
         oldSearchWidth = search_et.measuredWidth
         right_ib.translationX(context.dpToPx(42f).toFloat())
-        search_et.animateWidth(search_et.width, oldSearchWidth + context.dpToPx(36f))
         mSearchViewListener?.onSearchViewOpened()
         isOpen = true
     }
@@ -185,27 +227,54 @@ class MaterialSearchView : FrameLayout {
         search_et.animate().apply {
             setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
+                    op()
+                }
+
+                override fun onAnimationCancel(animation: Animator?) {
+                    op()
+                }
+
+                private fun op() {
                     setListener(null)
                     search_et.isGone = true
                     search_tv.isVisible = true
-                    search_tv.animate().setDuration(150L).alpha(1f).start()
+                    search_tv.animate().apply {
+                        setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationCancel(animation: Animator?) {
+                                search_tv.alpha = 1f
+                            }
+                        })
+                    }.setDuration(150L).alpha(1f).start()
                 }
             })
         }.alpha(0f).setDuration(150L).start()
         back_ib.animate().apply {
             setListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator?) {
+                    op()
+                }
+
+                override fun onAnimationCancel(animation: Animator?) {
+                    op()
+                }
+
+                private fun op() {
                     setListener(null)
                     back_ib.isGone = true
                     left_ib.isVisible = true
-                    left_ib.animate().setDuration(150L).alpha(1f).start()
+                    left_ib.animate().apply {
+                        setListener(object : AnimatorListenerAdapter() {
+                            override fun onAnimationCancel(animation: Animator?) {
+                                left_ib.alpha = 1f
+                            }
+                        })
+                    }.setDuration(150L).alpha(1f).start()
                 }
             })
         }.setDuration(150L).alpha(0f).start()
         right_clear.visibility = View.GONE
 
         right_ib.translationX(0f)
-        search_et.animateWidth(search_et.width, oldSearchWidth)
         clearFocus()
         search_et.hideKeyboard()
         search_et.setText("")
@@ -316,5 +385,33 @@ class MaterialSearchView : FrameLayout {
         fun onSearchViewOpened()
 
         fun onSearchViewClosed()
+    }
+}
+
+internal class SavedState : View.BaseSavedState {
+    var isOpen: Boolean = false
+
+    constructor(source: Parcel) : super(source) {
+        isOpen = source.readInt() == 1
+    }
+    constructor(superState: Parcelable) : super(superState)
+
+    override fun writeToParcel(out: Parcel, flags: Int) {
+        super.writeToParcel(out, flags)
+        out.writeInt(if (isOpen) 1 else 0)
+    }
+
+    companion object {
+        @JvmField
+        @NotNull
+        val CREATOR: Parcelable.Creator<SavedState> = object : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(`in`: Parcel): SavedState {
+                return SavedState(`in`)
+            }
+
+            override fun newArray(size: Int): Array<SavedState?> {
+                return arrayOfNulls(size)
+            }
+        }
     }
 }
