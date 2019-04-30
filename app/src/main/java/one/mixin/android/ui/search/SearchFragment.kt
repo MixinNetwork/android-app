@@ -171,6 +171,7 @@ class SearchFragment : BaseFragment() {
 
             @SuppressLint("CheckResult")
             override fun onMessageClick(message: SearchMessageItem) {
+                search_rv.hideKeyboard()
                 val f = SearchMessageFragment.newInstance(message, keyword ?: "")
                 requireActivity().addFragment(this@SearchFragment, f, SearchMessageFragment.TAG, R.id.root_view)
             }
