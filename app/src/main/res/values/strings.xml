@@ -451,6 +451,11 @@
     <string name="auth_assets_more">%1$s and more</string>
     <string name="auth_permission_contacts_read">Read contacts</string>
     <string name="auth_permission_contacts_read_description">access your contacts list</string>
+    <string name="auth_authorization">Authorization</string>
+    <string name="auth_refuse">Refuse</string>
+
+    <string name="permission_video">Allow to record video?</string>
+    <string name="permission_camera">Allow to take pictures?</string>
 
     <string name="extensions">Extensions</string>
     <string name="camera">Camera</string>

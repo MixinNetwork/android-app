@@ -103,6 +103,7 @@ import one.mixin.android.ui.conversation.adapter.MenuType
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
+import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.url.openUrlWithExtraWeb
@@ -1655,7 +1656,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onBotClick() {
             hideIfShowBottomSheet()
             app?.let {
-                openUrlWithExtraWeb(it.homeUri, conversationId, requireFragmentManager())
+                val dialog = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId
+                    , appName = it.name, appAvatar = recipient?.avatarUrl)
+                dialog.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
             }
         }
 
