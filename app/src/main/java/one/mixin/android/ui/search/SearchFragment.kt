@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.LinearLayout
 import androidx.core.view.get
 import androidx.core.view.isGone
@@ -22,6 +23,7 @@ import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.item_search_app.view.*
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
@@ -135,7 +137,6 @@ class SearchFragment : BaseFragment() {
         })
 
         showBots()
-        loadRecentUsedApps()
 
         searchAdapter.onItemClickListener = object : OnSearchClickListener {
             override fun onTipClick() {
@@ -202,6 +203,11 @@ class SearchFragment : BaseFragment() {
         bindData()
     }
 
+    override fun onResume() {
+        super.onResume()
+        loadRecentUsedApps()
+    }
+
     override fun onDetach() {
         super.onDetach()
         searchAssetChannel.cancel()
@@ -212,6 +218,7 @@ class SearchFragment : BaseFragment() {
     }
 
     private fun loadRecentUsedApps() {
+        app_ll.removeAllViews()
         GlobalScope.launch(searchContext) {
             defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.let { botsString ->
                 botsString.deserialize<Array<String>>()?.let { botList ->
@@ -238,7 +245,7 @@ class SearchFragment : BaseFragment() {
                                     (app_ll[0] as ViewGroup)
                                 } else {
                                     (app_ll[1] as ViewGroup)
-                                }.addView(v, LinearLayout.LayoutParams(0, MATCH_PARENT, 1f))
+                                }.addView(v, LinearLayout.LayoutParams(0, WRAP_CONTENT, 1f))
                             }
                         }
                     }
@@ -280,6 +287,7 @@ class SearchFragment : BaseFragment() {
             }
         }
 
+    @ExperimentalCoroutinesApi
     private fun setUserListener(listener: (List<User>?) -> Unit) =
         GlobalScope.launch(searchContext) {
             for (result in onlyLast(searchUserChannel)) {
