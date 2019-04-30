@@ -70,13 +70,17 @@ class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val index = content.indexOf(query, ignoreCase = true)
         if (index == -1) return content
 
-        val arr = content.split(query)
+        val arr = content.split(query, ignoreCase = true)
         val cutIndex = if (arr[0].length > 10) {
             index - 10
         } else {
             index
         }
-        val preContent = content.substring(cutIndex)
+        val preContent = try {
+            content.substring(cutIndex)
+        } catch (e: IndexOutOfBoundsException) {
+            content
+        }
         return preContent.replace('\n', ' ')
     }
 }
