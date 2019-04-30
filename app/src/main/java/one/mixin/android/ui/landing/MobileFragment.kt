@@ -19,6 +19,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.gms.auth.api.Auth
 import com.google.android.gms.auth.api.credentials.Credential
+import com.google.android.gms.auth.api.credentials.CredentialPickerConfig
 import com.google.android.gms.auth.api.credentials.HintRequest
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
@@ -172,6 +173,7 @@ class MobileFragment : BaseFragment() {
             .build()
         val hintRequest = HintRequest.Builder()
             .setPhoneNumberIdentifierSupported(true)
+            .setHintPickerConfig(CredentialPickerConfig.Builder().setShowCancelButton(true).build())
             .build()
         val pendingIntent = Auth.CredentialsApi.getHintPickerIntent(apiClient, hintRequest)
         try {
