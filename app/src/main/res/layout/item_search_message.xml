@@ -57,9 +57,8 @@
         android:fontFamily="@font/sf_pro_light"
         android:textColor="@color/text_gray"
         android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="@+id/search_name_tv"
-        tools:text="yesterday"/>
+        app:layout_constraintEnd_toEndOf="parent"/>
 
     <View
         android:id="@+id/divider"

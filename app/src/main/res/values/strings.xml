@@ -181,7 +181,6 @@
     <string name="week_friday">Friday</string>
     <string name="week_saturday">Saturday</string>
     <string name="week_sunday">Sunday</string>
-    <string name="yesterday">Yesterday</string>
     <string name="today">Today</string>
     <string name="chat_item_title">CHATS</string>
     <string name="copy_success">Copy to clipboard</string>
