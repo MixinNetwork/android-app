@@ -233,32 +233,41 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 val intent: Intent? = fileChooserParams?.createIntent()
                 if (fileChooserParams?.isCaptureEnabled == true) {
                     if (intent?.type == "video/*") {
-                        PermissionBottomSheetDialogFragment.requestVideo(contentView.title_view.text.toString(), appName, appAvatar).setGrantedAction {
-                            RxPermissions(requireActivity())
-                                .request(Manifest.permission.CAMERA)
-                                .subscribe({ granted ->
-                                    if (granted) {
-                                        startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
-                                    } else {
-                                        context?.openPermissionSetting()
-                                    }
-                                }, {
-                                })
-                        }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                        PermissionBottomSheetDialogFragment.requestVideo(contentView.title_view.text.toString(), appName, appAvatar)
+                            .setCancelAction {
+                                uploadMessage?.onReceiveValue(null)
+                                uploadMessage = null
+                            }
+                            .setGrantedAction {
+                                RxPermissions(requireActivity())
+                                    .request(Manifest.permission.CAMERA)
+                                    .subscribe({ granted ->
+                                        if (granted) {
+                                            startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
+                                        } else {
+                                            context?.openPermissionSetting()
+                                        }
+                                    }, {
+                                    })
+                            }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     } else if (intent?.type == "image/*") {
-                        PermissionBottomSheetDialogFragment.requestCamera(contentView.title_view.text.toString(), appName, appAvatar).setGrantedAction {
-                            RxPermissions(requireActivity())
-                                .request(Manifest.permission.CAMERA)
-                                .subscribe({ granted ->
-                                    if (granted) {
-                                        openCamera(getImageUri())
-                                    } else {
-                                        context?.openPermissionSetting()
-                                    }
-                                }, {
-                                })
-                        }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                        PermissionBottomSheetDialogFragment.requestCamera(contentView.title_view.text.toString(), appName, appAvatar)
+                            .setCancelAction {
+                                uploadMessage?.onReceiveValue(null)
+                                uploadMessage = null
+                            }.setGrantedAction {
+                                RxPermissions(requireActivity())
+                                    .request(Manifest.permission.CAMERA)
+                                    .subscribe({ granted ->
+                                        if (granted) {
+                                            openCamera(getImageUri())
+                                        } else {
+                                            context?.openPermissionSetting()
+                                        }
+                                    }, {
+                                    })
+                            }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     }
                 }
@@ -312,8 +321,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 imageUri = null
             }
             uploadMessage = null
-        } else if (requestCode == FILE_CHOOSER) {
+        } else if (requestCode == FILE_CHOOSER && resultCode == Activity.RESULT_OK) {
             uploadMessage?.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data))
+            uploadMessage = null
+        } else {
+            uploadMessage?.onReceiveValue(null)
             uploadMessage = null
         }
     }
