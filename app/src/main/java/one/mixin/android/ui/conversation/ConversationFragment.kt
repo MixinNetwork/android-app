@@ -815,6 +815,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             closeTool()
         }
         tool_view.add_sticker_iv.setOnClickListener {
+            if (chatAdapter.selectSet.isEmpty()) {
+                return@setOnClickListener
+            }
             val messageItem = chatAdapter.selectSet.valueAt(0)
             messageItem?.let { m ->
                 val isSticker = messageItem.type.endsWith("STICKER")
@@ -857,6 +860,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         tool_view.reply_iv.setOnClickListener {
+            if (chatAdapter.selectSet.isEmpty()) {
+                return@setOnClickListener
+            }
             chatAdapter.selectSet.valueAt(0)?.let {
                 reply_view.bind(it)
             }
