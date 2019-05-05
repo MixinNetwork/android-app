@@ -14,13 +14,10 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.synthetic.main.fragment_setup_name.*
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
@@ -67,7 +64,6 @@ class SetupNameFragment : BaseFragment() {
                     }
 
                     name_et?.hideKeyboard()
-                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_SET_NAME, false)
                     startActivity(Intent(context, MainActivity::class.java))
                     activity?.finish()
                 }, { t: Throwable ->
@@ -87,10 +83,10 @@ class SetupNameFragment : BaseFragment() {
 
     private fun handleEditView(str: String) {
         name_et.setSelection(name_et.text.toString().length)
-        if (str.isNotEmpty()) {
-            name_fab.visibility = View.VISIBLE
+        if (str.isNotBlank()) {
+            name_fab.visibility = VISIBLE
         } else {
-            name_fab.visibility = View.INVISIBLE
+            name_fab.visibility = INVISIBLE
         }
     }
 
