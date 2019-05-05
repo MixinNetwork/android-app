@@ -22,21 +22,17 @@ import java.util.Locale
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
 
-    // workaround with sticky header not refresh by self increment 4
-    private var headerRefreshFactor = 0L
-
     var onItemClickListener: SearchFragment.OnSearchClickListener? = null
     var query: String = ""
         set(value) {
             field = value
             data.showTip = shouldTips(value)
-            headerRefreshFactor += 4
         }
 
     override fun getHeaderId(position: Int): Long = if (position == 0 && data.showTip) {
         -1
     } else {
-        getItemViewType(position).toLong() + headerRefreshFactor
+        getItemViewType(position).toLong() + data.getHeaderFactor(position)
     }
 
     override fun onBindHeaderViewHolder(holder: HeaderHolder, position: Int) {
