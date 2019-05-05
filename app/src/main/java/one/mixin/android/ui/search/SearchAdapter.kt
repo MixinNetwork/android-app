@@ -40,7 +40,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         when (getItemViewType(position)) {
             TypeAsset.index -> holder.bind(context.getText(R.string.search_title_assets).toString(), data.assetShowMore())
             TypeUser.index -> holder.bind(context.getText(R.string.search_title_contacts).toString(), data.userShowMore())
-            TypeChat.index -> holder.bind(context.getText(R.string.search_title_chat).toString(), data.chatShowMore())
+            TypeChat.index -> holder.bind(context.getText(R.string.search_title_group).toString(), data.chatShowMore())
             TypeMessage.index -> holder.bind(context.getText(R.string.search_title_messages).toString(), data.messageShowMore())
         }
     }
@@ -66,17 +66,12 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     }
 
     fun setUserData(list: List<User>?) {
-        data.userList = list?.filter { item ->
-            data.chatList?.any { it.category == ConversationCategory.CONTACT.name && it.userId == item.userId } != true
-        }
+        data.userList = list
         notifyDataSetChanged()
     }
 
     fun setChatData(list: List<ChatMinimal>?) {
         data.chatList = list
-        data.userList = data.userList?.filter { item ->
-            data.chatList?.any { it.category == ConversationCategory.CONTACT.name && it.userId == item.userId } != true
-        }
         notifyDataSetChanged()
     }
 
