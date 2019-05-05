@@ -15,7 +15,6 @@ object Constants {
         const val PREF_PIN_TOKEN = "pref_pin_token"
         const val PREF_NAME_ACCOUNT = "pref_name_account"
         const val PREF_NAME_TOKEN = "pref_name_token"
-        const val PREF_SET_NAME = "pref_set_name"
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_PIN_INTERVAL = "pref_pin_interval"
         const val PREF_PIN_ITERATOR = "pref_pin_iterator"

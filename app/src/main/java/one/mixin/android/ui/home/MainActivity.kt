@@ -103,8 +103,10 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_SET_NAME, false)) {
+        if (Session.getAccount()?.full_name.isNullOrBlank()) {
             InitializeActivity.showSetupName(this)
+            finish()
+            return
         }
 
         if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RESTORE, false)) {

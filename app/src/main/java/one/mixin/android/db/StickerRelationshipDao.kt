@@ -18,8 +18,11 @@ interface StickerRelationshipDao : BaseDao<StickerRelationship> {
         "WHERE sa.category = 'PERSONAL' ORDER BY s.created_at")
     fun observePersonalStickers(): LiveData<List<Sticker>>
 
-    @Query("DELETE FROM sticker_relationships WHERE sticker_id = :stickerId")
-    fun deleteByStickerId(stickerId: String)
+    @Query("DELETE FROM sticker_relationships  WHERE sticker_id = :stickerId AND album_id = :albumId")
+    fun deleteByStickerId(stickerId: String, albumId: String)
+
+    @Query("SELECT album_id FROM sticker_albums WHERE category = 'PERSONAL'")
+    fun getPersonalAlbumId(): String?
 
     @Query("UPDATE messages SET sticker_id = (" +
         "                SELECT s.sticker_id FROM stickers s " +
