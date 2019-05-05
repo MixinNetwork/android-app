@@ -48,10 +48,12 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.onlyLast
+import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import timber.log.Timber
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -222,7 +224,10 @@ class SearchFragment : BaseFragment() {
         GlobalScope.launch(searchContext) {
             defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.let { botsString ->
                 botsString.deserialize<Array<String>>()?.let { botList ->
-                    val apps = searchViewModel.findAppsByIds(botList.toList())
+                    val result = searchViewModel.findAppsByIds(botList.toList())
+                    val apps = result.sortedBy {
+                        botList.indexOf(it.appId)
+                    }
                     withContext(Dispatchers.Main) {
                         val phCount = if (apps.size >= 8) 0 else 8 - apps.size
                         for (j in 0 until 2) {
@@ -235,10 +240,11 @@ class SearchFragment : BaseFragment() {
                         apps.take(8).forEachIndexed { i, app ->
                             if (i < 8 - phCount) {
                                 val v = layoutInflater.inflate(R.layout.item_search_app, null).also {
-                                    it.icon_iv.loadCircleImage(app.icon_url)
+                                    it.icon_iv.setInfo(app.name, app.icon_url, app.appId)
                                     it.name_tv.text = app.name
                                 }
                                 v.setOnClickListener {
+                                    app_ll.hideKeyboard()
                                     ConversationActivity.show(requireContext(), null, app.appId)
                                 }
                                 if (i < 4) {
