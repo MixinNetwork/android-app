@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_message.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.highLight
-import one.mixin.android.extension.timeAgo
+import one.mixin.android.extension.timeAgoDate
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import org.jetbrains.anko.dip
@@ -58,7 +58,7 @@ class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         message.content?.let {
             itemView.search_msg_tv.text = beautifyContent(it, query)
         }
-        itemView.search_time_tv.timeAgo(message.createdAt)
+        itemView.search_time_tv.timeAgoDate(message.createdAt)
         itemView.search_msg_tv.highLight(query)
         itemView.search_avatar_iv.setInfo(message.userFullName, message.userAvatarUrl, message.userId)
         itemView.setOnClickListener {
