@@ -50,7 +50,7 @@ fun String.timeAgo(context: Context): String {
                 }
             }
             else -> {
-                date.format(DateTimeFormatter.ofPattern("/yyyy/MM/dd").withZone(LocaleZone))
+                date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd").withZone(LocaleZone))
             }
         }
         TimeCache.singleton.putTimeAgo(this, timeAgo)
