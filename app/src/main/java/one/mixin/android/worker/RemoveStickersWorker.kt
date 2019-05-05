@@ -22,8 +22,10 @@ class RemoveStickersWorker @AssistedInject constructor(
     override fun onRun(): Result {
         val stickerIds = inputData.getStringArray(STICKER_IDS)?.toList()
         if (stickerIds.isNullOrEmpty()) return Result.failure()
-        for (i in stickerIds) {
-            stickerRelationshipDao.deleteByStickerId(i)
+        stickerRelationshipDao.getPersonalAlbumId()?.let { albumId ->
+            for (i in stickerIds) {
+                stickerRelationshipDao.deleteByStickerId(i, albumId)
+            }
         }
         accountService.removeSticker(stickerIds).execute()
         return Result.success()
