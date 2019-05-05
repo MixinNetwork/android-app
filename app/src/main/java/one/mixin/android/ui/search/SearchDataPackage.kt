@@ -24,6 +24,15 @@ class SearchDataPackage(
     var chatLimit = true
     var messageLimit = true
 
+    fun getHeaderFactor(position: Int) =
+        when (getItem(position)) {
+            is TipItem -> 0
+            is AssetItem -> if (assetShowMore()) 10 else 0
+            is User -> if (userShowMore()) 10 else 0
+            is ChatMinimal -> if (chatShowMore()) 10 else 0
+            else -> if (messageShowMore()) 10 else 0
+        }
+
     fun assetShowMore() = if (assetList == null || !assetLimit) {
         false
     } else {

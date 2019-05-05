@@ -58,7 +58,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
-import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
