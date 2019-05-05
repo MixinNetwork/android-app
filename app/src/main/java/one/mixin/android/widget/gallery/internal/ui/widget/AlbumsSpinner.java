@@ -79,7 +79,9 @@ public class AlbumsSpinner {
         // tint dropdown arrow icon
         Drawable[] drawables = mSelected.getCompoundDrawables();
         Drawable right = drawables[2];
-        right.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
+        if (right != null) {
+            right.setColorFilter(Color.BLACK, PorterDuff.Mode.SRC_IN);
+        }
 
         mSelected.setVisibility(View.GONE);
         mSelected.setOnClickListener(v -> {

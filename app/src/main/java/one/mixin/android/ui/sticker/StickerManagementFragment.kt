@@ -160,10 +160,14 @@ class StickerManagementFragment : BaseFragment() {
         val checkedList = arrayListOf<String>()
 
         override fun onBindViewHolder(holder: StickerViewHolder, position: Int) {
-            val s = if (stickers.isNotEmpty() && position != 0) {
-                stickers[position - 1]
+            val s = if (editing) {
+                stickers[position]
             } else {
-                null
+                if (stickers.isNotEmpty() && position != 0) {
+                    stickers[position - 1]
+                } else {
+                    null
+                }
             }
             val v = holder.itemView
             val ctx = v.context
@@ -177,14 +181,8 @@ class StickerManagementFragment : BaseFragment() {
             val cb = v.getChildAt(2) as CheckBox
             if (editing) {
                 cb.visibility = VISIBLE
-                if (position == stickers.size) {
-                    v.visibility = GONE
-                } else {
-                    v.visibility = VISIBLE
-                }
             } else {
                 cb.visibility = GONE
-                v.visibility = VISIBLE
             }
             if (s != null && checkedList.contains(s.stickerId)) {
                 cb.isChecked = true
@@ -193,7 +191,7 @@ class StickerManagementFragment : BaseFragment() {
                 cb.isChecked = false
                 cover.visibility = GONE
             }
-            if (position == 0) {
+            if (!editing && position == 0) {
                 imageView.setImageResource(R.drawable.ic_add_stikcer)
                 imageView.setOnClickListener { listener?.onAddClick() }
                 imageView.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -233,7 +231,11 @@ class StickerManagementFragment : BaseFragment() {
             }
         }
 
-        override fun getItemCount(): Int = stickers.size + 1
+        override fun getItemCount() = if (editing) {
+            stickers.size
+        } else {
+            stickers.size + 1
+        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StickerViewHolder {
             val view = LayoutInflater.from(parent.context).inflate(R.layout.item_sticker_management, parent, false)
