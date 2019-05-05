@@ -58,6 +58,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
 
@@ -143,8 +144,12 @@ class ConversationListFragment : LinkFragment() {
 
             override fun onRelease(fling: Int) {
                 val dis = requireContext().getSplineFlingDistance(message_rv.lastVelocityY.toInt())
-                val open = (fling == FLING_DOWN && (top_fl.height + dis >= vibrateDis))
-                    || top_fl.height >= vibrateDis
+                val shouldVibrate = top_fl.height + dis >= vibrateDis
+                if (shouldVibrate && !vibrated) {
+                    requireContext().vibrate(longArrayOf(0, 30))
+                    vibrated = true
+                }
+                val open = (fling == FLING_DOWN && shouldVibrate) || top_fl.height >= vibrateDis
                 if (open) {
                     (requireActivity() as MainActivity).openSearch()
                 } else {
