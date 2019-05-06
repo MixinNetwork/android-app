@@ -15,7 +15,6 @@ import one.mixin.android.ui.search.holder.TipHolder
 import one.mixin.android.ui.search.holder.TipItem
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
-import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import java.util.Locale
@@ -27,6 +26,14 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         set(value) {
             field = value
             data.showTip = shouldTips(value)
+        }
+
+    var searchingId = false
+        set(value) {
+            field = value
+            if (data.showTip) {
+                notifyItemChanged(0)
+            }
         }
 
     override fun getHeaderId(position: Int): Long = if (position == 0 && data.showTip) {
@@ -67,6 +74,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     fun setUserData(list: List<User>?) {
         data.userList = list
+        data.showTip = shouldTips(query)
         notifyDataSetChanged()
     }
 
@@ -95,7 +103,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             0 -> {
-                (holder as TipHolder).bind(query, onItemClickListener)
+                (holder as TipHolder).bind(query, searchingId, onItemClickListener)
             }
             TypeAsset.index -> {
                 data.getItem(position).let {

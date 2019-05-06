@@ -10,6 +10,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewConfiguration
 import android.view.ViewGroup
+import android.view.animation.BounceInterpolator
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isGone
@@ -31,7 +32,6 @@ import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.getSplineFlingDistance
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyOrElse
 import one.mixin.android.extension.notNullElse
@@ -84,6 +84,7 @@ class ConversationListFragment : LinkFragment() {
 
     private val vibrateDis by lazy { requireContext().dpToPx(128f) }
     private var vibrated = false
+    private var expanded = false
 
     companion object {
         fun newInstance() = ConversationListFragment()
@@ -133,15 +134,11 @@ class ConversationListFragment : LinkFragment() {
                     if (height >= vibrateDis) {
                         if (!vibrated) {
                             requireContext().vibrate(longArrayOf(0, 30))
-                            down_iv.animate().scaleX(1.5f).setDuration(150).start()
-                            down_iv.animate().scaleY(1.5f).setDuration(150).start()
                             vibrated = true
                         }
+                        animDownIcon(true)
                     } else {
-                        if (vibrated) {
-                            down_iv.animate().scaleX(1f).setDuration(150).start()
-                            down_iv.animate().scaleY(1f).setDuration(150).start()
-                        }
+                        animDownIcon(false)
                     }
                 }
                 val progress = Math.min(targetH / vibrateDis.toFloat(), 1f)
@@ -217,6 +214,19 @@ class ConversationListFragment : LinkFragment() {
         start_bn.setOnClickListener {
             navigationController.pushContacts()
         }
+    }
+
+    private fun animDownIcon(expand: Boolean) {
+        val shouldAnim = if (expand) !expanded else expanded
+        if (!shouldAnim) return
+
+        down_iv.animate().apply {
+            interpolator = BounceInterpolator()
+        }.scaleX(if (expand) 1.5f else 1f).start()
+        down_iv.animate().apply {
+            interpolator = BounceInterpolator()
+        }.scaleY(if (expand) 1.5f else 1f).start()
+        expanded = expand
     }
 
     @SuppressLint("InflateParams")

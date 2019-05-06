@@ -1,22 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
     <View
+        android:id="@+id/top_divider"
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="@color/bg_gray"/>
+        android:background="@color/bg_gray"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
         android:id="@+id/search_tip_tv"
         android:layout_width="match_parent"
         android:layout_height="64dp"
+        android:layout_below="@id/top_divider"
         android:gravity="center_vertical"
+        android:foreground="?attr/selectableItemBackground"
         android:paddingStart="@dimen/margin12"
-        android:paddingEnd="@dimen/margin12"
+        android:paddingEnd="32dp"
         android:maxLines="2"
+        android:ellipsize="end"
         android:textColor="@color/wallet_text_dark"
-        android:text="@string/search_tip"/>
-</LinearLayout>
+        android:text="@string/search_tip"
+        app:layout_constraintTop_toBottomOf="@+id/top_divider"/>
+
+    <ProgressBar
+        android:id="@+id/pb"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:theme="@style/AppTheme.DarkBlueProgress"
+        android:layout_marginEnd="12dp"
+        app:layout_constraintBottom_toBottomOf="@+id/search_tip_tv"
+        app:layout_constraintEnd_toEndOf="@+id/search_tip_tv"
+        app:layout_constraintTop_toTopOf="@+id/search_tip_tv"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
