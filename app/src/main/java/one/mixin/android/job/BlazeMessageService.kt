@@ -19,6 +19,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -28,9 +29,6 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.findAckJobsDeferred
-import one.mixin.android.db.findCreatePlainSessionJobsDeferred
-import one.mixin.android.db.findSessionAckJobsDeferred
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.networkConnected
@@ -39,6 +37,7 @@ import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
 import one.mixin.android.websocket.BlazeAckMessage
@@ -219,7 +218,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     private var ackJob: Job? = null
 
     private suspend fun ackJobBlock() {
-        jobDao.findAckJobsDeferred().await()?.let { list ->
+        jobDao.findAckJobsSync()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     try {
@@ -237,7 +236,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     private suspend fun ackSessionJobBlock() {
-        jobDao.findSessionAckJobsDeferred().await()?.let { list ->
+        jobDao.findSessionAckJobsSync()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     try {
@@ -255,7 +254,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     private suspend fun syncMessageStatusToExtension(sessionId: String) {
-        jobDao.findCreatePlainSessionJobsDeferred().await()?.let { list ->
+        jobDao.findCreatePlainSessionJobsSync()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     try {
@@ -318,9 +317,8 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     private var floodJob: Job? = null
 
     private suspend fun floodJobBlock() {
-        val messages = floodMessageDao.findFloodMessages()?: return
         try {
-            messages.forEach { message ->
+            floodMessageDao.findFloodMessages()?.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                 if (data.category.startsWith("WEBRTC_")) {
                     callMessageDecrypt.onRun(data)
