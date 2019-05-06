@@ -46,6 +46,7 @@ import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
+import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.job.UpdateRelationshipJob
 import one.mixin.android.repository.AccountRepository
@@ -86,6 +87,7 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
+import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -216,6 +218,11 @@ internal constructor(
                 MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING, nowInUtc())
             jobManager.addJobInBackground(SendMessageJob(message, recallMessageId = messageItem.messageId))
         }
+    }
+
+    fun sendGiphyMessage(conversationId: String, senderId: String, image: Image, isPlain: Boolean) {
+        val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+        jobManager.addJobInBackground(SendGiphyJob(conversationId, senderId, image, category, UUID.randomUUID().toString()))
     }
 
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean, mime: String? = null): Flowable<Int>? {

@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
 import one.mixin.android.vo.StickerAlbum
+import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.backgroundResource
 import javax.inject.Inject
@@ -104,6 +105,6 @@ class StickerAlbumFragment : BaseFragment() {
 
     interface Callback {
         fun onStickerClick(stickerId: String)
-        fun onGiphyClick(url: String)
+        fun onGiphyClick(image: Image)
     }
 }

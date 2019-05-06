@@ -12,6 +12,7 @@ import one.mixin.android.ui.conversation.GiphyFragment
 import one.mixin.android.ui.conversation.StickerAlbumFragment
 import one.mixin.android.ui.conversation.StickerFragment
 import one.mixin.android.vo.StickerAlbum
+import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
 
 class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm) {
@@ -48,15 +49,15 @@ class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerA
                 override fun onStickerClick(stickerId: String) {
                 }
 
-                override fun onGiphyClick(url: String) {
-                    callback?.onGiphyClick(url)
+                override fun onGiphyClick(image: Image) {
+                    callback?.onGiphyClick(image)
                 }
             }
             fragment.rvCallback = rvCallback
         } else {
             fragment as StickerFragment
             fragment.setCallback(object : Callback {
-                override fun onGiphyClick(url: String) {
+                override fun onGiphyClick(image: Image) {
                 }
 
                 override fun onStickerClick(stickerId: String) {
@@ -83,6 +84,6 @@ class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerA
 
     interface Callback {
         fun onStickerClick(stickerId: String)
-        fun onGiphyClick(url: String)
+        fun onGiphyClick(image: Image)
     }
 }
