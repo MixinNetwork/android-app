@@ -82,7 +82,7 @@ class ConversationListFragment : LinkFragment() {
         ViewConfiguration.get(context).scaledTouchSlop
     }
 
-    private val vibrateDis by lazy { requireContext().dpToPx(100f) }
+    private val vibrateDis by lazy { requireContext().dpToPx(128f) }
     private var vibrated = false
 
     companion object {
@@ -149,8 +149,7 @@ class ConversationListFragment : LinkFragment() {
             }
 
             override fun onRelease(fling: Int) {
-                val dis = requireContext().getSplineFlingDistance(message_rv.lastVelocityY.toInt()) / DRAG_FRICTION
-                val shouldVibrate = top_fl.height + dis >= (vibrateDis * 4)
+                val shouldVibrate = false
                 if (shouldVibrate && !vibrated) {
                     requireContext().vibrate(longArrayOf(0, 30))
                     vibrated = true
