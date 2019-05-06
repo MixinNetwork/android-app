@@ -32,7 +32,6 @@ import one.mixin.android.ui.search.SearchSingleFragment.Companion.ARGS_QUERY
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
-import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 

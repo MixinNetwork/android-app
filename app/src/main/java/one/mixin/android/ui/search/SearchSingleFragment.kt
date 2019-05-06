@@ -130,7 +130,7 @@ class SearchSingleFragment : BaseFragment() {
         search_et.setText(query)
         compositeDisposable.add(search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe ({
+            .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 if (it == adapter.query) return@subscribe
 

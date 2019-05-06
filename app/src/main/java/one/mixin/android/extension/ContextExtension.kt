@@ -497,7 +497,6 @@ inline fun belowOreo(code: () -> Unit) {
 inline fun <T : Fragment> T.withArgs(argsBuilder: Bundle.() -> Unit): T =
     this.apply { arguments = Bundle().apply(argsBuilder) }
 
-
 // Compute scroll by velocity
 
 const val INFLEXION = 0.35f

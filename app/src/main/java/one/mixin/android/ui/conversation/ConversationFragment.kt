@@ -543,7 +543,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recipient = arguments!!.getParcelable<User?>(RECIPIENT)
-
     }
 
     override fun onCreateView(
@@ -1689,8 +1688,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onBotClick() {
             hideIfShowBottomSheet()
             app?.let {
-                val dialog = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId
-                    , appName = it.name, appAvatar = recipient?.avatarUrl)
+                val dialog = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId, appName = it.name, appAvatar = recipient?.avatarUrl)
                 dialog.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
             }
         }

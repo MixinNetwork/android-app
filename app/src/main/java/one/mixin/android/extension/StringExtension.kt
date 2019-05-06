@@ -297,7 +297,6 @@ fun String.getColorCode(codeType: CodeType): Int {
     return code
 }
 
-
 inline fun <reified T : Serializable> String.deserialize(): T? {
     if (isNullOrEmpty()) return null
 

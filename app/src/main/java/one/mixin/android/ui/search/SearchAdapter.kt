@@ -97,7 +97,6 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         } else {
             keyword.all { it.isDigit() }
         } && data.userList.isNullOrEmpty()
-
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {

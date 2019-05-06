@@ -82,7 +82,7 @@ class ConversationListFragment : LinkFragment() {
         ViewConfiguration.get(context).scaledTouchSlop
     }
 
-    private val vibrateDis by lazy { requireContext().dpToPx(128f) }
+    private val vibrateDis by lazy { requireContext().dpToPx(110f) }
     private var vibrated = false
     private var expanded = false
 

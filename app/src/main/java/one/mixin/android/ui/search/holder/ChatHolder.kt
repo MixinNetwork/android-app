@@ -1,7 +1,6 @@
 package one.mixin.android.ui.search.holder
 
 import android.view.View
-import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_contact.view.*
 import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.recyclerview.NormalHolder
