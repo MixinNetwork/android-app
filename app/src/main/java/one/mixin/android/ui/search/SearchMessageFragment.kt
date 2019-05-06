@@ -32,6 +32,7 @@ import one.mixin.android.ui.search.SearchSingleFragment.Companion.ARGS_QUERY
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -108,13 +109,16 @@ class SearchMessageFragment : BaseFragment() {
         search_rv.adapter = adapter
 
         clear_ib.setOnClickListener { search_et.setText("") }
+        search_et.setText(query)
         compositeDisposable.add(search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 onTextChanged(it.toString())
             }, {}))
-        search_et.setText(query)
+        search_et.postDelayed({
+            onTextChanged(query)
+        }, 50)
     }
 
     override fun onDetach() {

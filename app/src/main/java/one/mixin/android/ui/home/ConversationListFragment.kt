@@ -82,11 +82,13 @@ class ConversationListFragment : LinkFragment() {
         ViewConfiguration.get(context).scaledTouchSlop
     }
 
-    private val vibrateDis by lazy { requireContext().dpToPx(128f) }
+    private val vibrateDis by lazy { requireContext().dpToPx(100f) }
     private var vibrated = false
 
     companion object {
         fun newInstance() = ConversationListFragment()
+
+        private const val DRAG_FRICTION = 2
     }
 
     override fun onCreateView(
@@ -122,7 +124,7 @@ class ConversationListFragment : LinkFragment() {
                 if (top_fl.isGone) {
                     top_fl.isVisible = true
                 }
-                val targetH = top_fl.height + dis.toInt()
+                val targetH = top_fl.height + (dis / DRAG_FRICTION).toInt()
                 if (targetH <= 0) return
 
                 top_fl.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -131,19 +133,24 @@ class ConversationListFragment : LinkFragment() {
                     if (height >= vibrateDis) {
                         if (!vibrated) {
                             requireContext().vibrate(longArrayOf(0, 30))
+                            down_iv.animate().scaleX(1.5f).setDuration(150).start()
+                            down_iv.animate().scaleY(1.5f).setDuration(150).start()
                             vibrated = true
+                        }
+                    } else {
+                        if (vibrated) {
+                            down_iv.animate().scaleX(1f).setDuration(150).start()
+                            down_iv.animate().scaleY(1f).setDuration(150).start()
                         }
                     }
                 }
                 val progress = Math.min(targetH / vibrateDis.toFloat(), 1f)
-                down_iv.scaleX = Math.min(1 + progress, 2f)
-                down_iv.scaleY = Math.min(1 + progress, 2f)
                 (requireActivity() as MainActivity).dragSearch(progress)
             }
 
             override fun onRelease(fling: Int) {
-                val dis = requireContext().getSplineFlingDistance(message_rv.lastVelocityY.toInt())
-                val shouldVibrate = top_fl.height + dis >= vibrateDis
+                val dis = requireContext().getSplineFlingDistance(message_rv.lastVelocityY.toInt()) / DRAG_FRICTION
+                val shouldVibrate = top_fl.height + dis >= (vibrateDis * 4)
                 if (shouldVibrate && !vibrated) {
                     requireContext().vibrate(longArrayOf(0, 30))
                     vibrated = true
