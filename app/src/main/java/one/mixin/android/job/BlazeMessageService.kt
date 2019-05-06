@@ -30,7 +30,6 @@ import one.mixin.android.db.JobDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.findAckJobsDeferred
 import one.mixin.android.db.findCreatePlainSessionJobsDeferred
-import one.mixin.android.db.findFloodMessageDeferred
 import one.mixin.android.db.findSessionAckJobsDeferred
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
@@ -319,24 +318,23 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     private var floodJob: Job? = null
 
     private suspend fun floodJobBlock() {
-        floodMessageDao.findFloodMessageDeferred().await()?.let { list ->
-            try {
-                list.forEach { message ->
-                    val data = gson.fromJson(message.data, BlazeMessageData::class.java)
-                    if (data.category.startsWith("WEBRTC_")) {
-                        callMessageDecrypt.onRun(data)
-                    } else if (data.userId == accountId && !data.sessionId.isNullOrEmpty()) {
-                        sessionMessageDecrypt.onRun(data)
-                    } else {
-                        messageDecrypt.onRun(data)
-                    }
-                    floodMessageDao.delete(message)
+        val messages = floodMessageDao.findFloodMessages()?: return
+        try {
+            messages.forEach { message ->
+                val data = gson.fromJson(message.data, BlazeMessageData::class.java)
+                if (data.category.startsWith("WEBRTC_")) {
+                    callMessageDecrypt.onRun(data)
+                } else if (data.userId == accountId && !data.sessionId.isNullOrEmpty()) {
+                    sessionMessageDecrypt.onRun(data)
+                } else {
+                    messageDecrypt.onRun(data)
                 }
-            } catch (e: Exception) {
-                runFloodJob()
-            } finally {
-                floodJob = null
+                floodMessageDao.delete(message)
             }
+        } catch (e: Exception) {
+            runFloodJob()
+        } finally {
+            floodJob = null
         }
     }
 

@@ -90,10 +90,6 @@ fun JobDao.findCreatePlainSessionJobsDeferred(): Deferred<List<Job>?> = GlobalSc
     findCreatePlainSessionJobsSync()
 }
 
-fun FloodMessageDao.findFloodMessageDeferred(): Deferred<List<FloodMessage>?> = GlobalScope.async {
-    findFloodMessagesSync()
-}
-
 @Transaction
 fun MessageDao.batchMarkReadAndTake(conversationId: String, userId: String, createdAt: String) {
     batchMarkRead(conversationId, userId, createdAt)
