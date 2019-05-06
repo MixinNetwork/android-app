@@ -10,6 +10,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewConfiguration
 import android.view.ViewGroup
+import android.view.animation.BounceInterpolator
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isGone
@@ -31,7 +32,6 @@ import kotlinx.android.synthetic.main.view_empty.*
 import one.mixin.android.R
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.getSplineFlingDistance
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyOrElse
 import one.mixin.android.extension.notNullElse
@@ -84,9 +84,12 @@ class ConversationListFragment : LinkFragment() {
 
     private val vibrateDis by lazy { requireContext().dpToPx(128f) }
     private var vibrated = false
+    private var expanded = false
 
     companion object {
         fun newInstance() = ConversationListFragment()
+
+        private const val DRAG_FRICTION = 2
     }
 
     override fun onCreateView(
@@ -122,7 +125,7 @@ class ConversationListFragment : LinkFragment() {
                 if (top_fl.isGone) {
                     top_fl.isVisible = true
                 }
-                val targetH = top_fl.height + dis.toInt()
+                val targetH = top_fl.height + (dis / DRAG_FRICTION).toInt()
                 if (targetH <= 0) return
 
                 top_fl.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -133,17 +136,17 @@ class ConversationListFragment : LinkFragment() {
                             requireContext().vibrate(longArrayOf(0, 30))
                             vibrated = true
                         }
+                        animDownIcon(true)
+                    } else {
+                        animDownIcon(false)
                     }
                 }
                 val progress = Math.min(targetH / vibrateDis.toFloat(), 1f)
-                down_iv.scaleX = Math.min(1 + progress, 2f)
-                down_iv.scaleY = Math.min(1 + progress, 2f)
                 (requireActivity() as MainActivity).dragSearch(progress)
             }
 
             override fun onRelease(fling: Int) {
-                val dis = requireContext().getSplineFlingDistance(message_rv.lastVelocityY.toInt())
-                val shouldVibrate = top_fl.height + dis >= vibrateDis
+                val shouldVibrate = false
                 if (shouldVibrate && !vibrated) {
                     requireContext().vibrate(longArrayOf(0, 30))
                     vibrated = true
@@ -211,6 +214,19 @@ class ConversationListFragment : LinkFragment() {
         start_bn.setOnClickListener {
             navigationController.pushContacts()
         }
+    }
+
+    private fun animDownIcon(expand: Boolean) {
+        val shouldAnim = if (expand) !expanded else expanded
+        if (!shouldAnim) return
+
+        down_iv.animate().apply {
+            interpolator = BounceInterpolator()
+        }.scaleX(if (expand) 1.5f else 1f).start()
+        down_iv.animate().apply {
+            interpolator = BounceInterpolator()
+        }.scaleY(if (expand) 1.5f else 1f).start()
+        expanded = expand
     }
 
     @SuppressLint("InflateParams")

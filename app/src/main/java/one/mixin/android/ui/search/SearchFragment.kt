@@ -37,23 +37,20 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.onlyLast
-import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import timber.log.Timber
 import javax.inject.Inject
 import kotlin.coroutines.CoroutineContext
 
@@ -122,6 +119,11 @@ class SearchFragment : BaseFragment() {
         searchUserChannel = Channel()
         searchChatChannel = Channel()
         searchMessageChannel = Channel()
+        view?.setOnClickListener {
+            if (keyword.isNullOrBlank()) {
+                (requireActivity() as MainActivity).closeSearch()
+            }
+        }
         search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         val decoration = StickyRecyclerHeadersDecoration(searchAdapter)
         search_rv.addItemDecoration(decoration)
@@ -143,12 +145,9 @@ class SearchFragment : BaseFragment() {
         searchAdapter.onItemClickListener = object : OnSearchClickListener {
             override fun onTipClick() {
                 search_rv.hideKeyboard()
-                val dialog = indeterminateProgressDialog(message = R.string.searching).apply {
-                    setCancelable(false)
-                }
-                dialog.show()
+                searchAdapter.searchingId = true
                 searchViewModel.search(searchAdapter.query).autoDisposable(scopeProvider).subscribe({ r ->
-                    dialog.dismiss()
+                    searchAdapter.searchingId = false
                     when {
                         r.isSuccess -> r.data?.let { data ->
                             if (data.userId == Session.getAccountId()) {
@@ -163,7 +162,7 @@ class SearchFragment : BaseFragment() {
                         else -> ErrorHandler.handleMixinError(r.errorCode)
                     }
                 }, { t: Throwable ->
-                    dialog.dismiss()
+                    searchAdapter.searchingId = false
                     ErrorHandler.handleError(t)
                 })
             }
