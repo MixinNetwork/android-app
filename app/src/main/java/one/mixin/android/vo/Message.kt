@@ -168,6 +168,8 @@ fun Message.isRecall() = category == MessageCategory.MESSAGE_RECALL.name
 
 fun Message.isVideo() = category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
 
+fun Message.isImage() = category == MessageCategory.PLAIN_IMAGE.name || category == MessageCategory.SIGNAL_IMAGE.name
+
 enum class MessageCategory {
     SIGNAL_KEY,
     SIGNAL_TEXT,

@@ -88,6 +88,7 @@ import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -222,7 +223,8 @@ internal constructor(
 
     fun sendGiphyMessage(conversationId: String, senderId: String, image: Image, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
-        jobManager.addJobInBackground(SendGiphyJob(conversationId, senderId, image, category, UUID.randomUUID().toString()))
+        jobManager.addJobInBackground(SendGiphyJob(conversationId, senderId, image.url, image.width, image.height,
+            category, UUID.randomUUID().toString()))
     }
 
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean, mime: String? = null): Flowable<Int>? {
@@ -371,12 +373,24 @@ internal constructor(
         }
     }
 
-    fun retryUpload(id: String) {
+    fun retryUpload(id: String, onError: () -> Unit) {
         doAsync {
             conversationRepository.findMessageById(id)?.let {
                 if (it.isVideo() && it.mediaSize != null && it.mediaSize == 0L) {
-                    jobManager.addJobInBackground(ConvertVideoJob(it.conversationId, it.userId, Uri.parse(it.mediaUrl),
-                        it.category.startsWith("PLAIN"), it.id, it.createdAt))
+                    try {
+                        jobManager.addJobInBackground(ConvertVideoJob(it.conversationId, it.userId, Uri.parse(it.mediaUrl),
+                            it.category.startsWith("PLAIN"), it.id, it.createdAt))
+                    } catch (e: NullPointerException) {
+                        onError.invoke()
+                    }
+                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) {  // un-downloaded GIPHY
+                    val category = if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
+                    try {
+                        jobManager.addJobInBackground(SendGiphyJob(it.conversationId, it.userId, it.mediaUrl!!,
+                            it.mediaWidth!!, it.mediaHeight!!, category, it.id))
+                    } catch (e: NullPointerException) {
+                        onError.invoke()
+                    }
                 } else {
                     jobManager.addJobInBackground(SendAttachmentMessageJob(it))
                 }

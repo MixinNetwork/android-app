@@ -352,7 +352,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onRetryUpload(messageId: String) {
-                chatViewModel.retryUpload(messageId)
+                chatViewModel.retryUpload(messageId) {
+                    toast(R.string.error_retry_upload)
+                }
             }
 
             override fun onCancel(id: String) {
