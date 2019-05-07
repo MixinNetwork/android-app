@@ -3,7 +3,6 @@ package one.mixin.android.util.video
 import android.net.Uri
 import android.view.TextureView
 import com.google.android.exoplayer2.C
-import com.google.android.exoplayer2.DefaultRenderersFactory
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.PlaybackParameters
@@ -33,9 +32,8 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
 
     val player: SimpleExoPlayer by lazy {
         if (isAudio) {
-            val renderersFactory = DefaultRenderersFactory(MixinApplication.appContext, DefaultRenderersFactory.EXTENSION_RENDERER_MODE_OFF)
             val trackSelector = DefaultTrackSelector()
-            ExoPlayerFactory.newSimpleInstance(renderersFactory, trackSelector).apply {
+            ExoPlayerFactory.newSimpleInstance(MixinApplication.appContext, trackSelector).apply {
                 addListener(this@MixinPlayer)
                 addVideoListener(this@MixinPlayer)
             }
