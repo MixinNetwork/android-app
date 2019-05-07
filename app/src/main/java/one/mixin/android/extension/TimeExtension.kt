@@ -114,6 +114,11 @@ fun String.timeAgoDay(): String {
     return timeAgoDate as String
 }
 
+fun String.lateOneHours(): Boolean {
+    val offset = ZonedDateTime.now().toInstant().toEpochMilli() - ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone).toInstant().toEpochMilli()
+    return offset > 3600000L
+}
+
 fun String.hashForDate(): Long {
     var hashForDate = TimeCache.singleton.getHashForDate(this)
     if (hashForDate == null) {

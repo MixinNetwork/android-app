@@ -73,4 +73,7 @@ data class ConversationItem(
             contentType == MessageCategory.WEBRTC_AUDIO_END.name ||
             contentType == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
             contentType == MessageCategory.WEBRTC_AUDIO_FAILED.name
+
+    fun isReCall() =
+        contentType == MessageCategory.MESSAGE_RECALL.name
 }

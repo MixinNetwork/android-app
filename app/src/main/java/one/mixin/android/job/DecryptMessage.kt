@@ -1,5 +1,7 @@
 package one.mixin.android.job
 
+import android.app.Activity
+import android.app.NotificationManager
 import android.util.Log
 import com.bugsnag.android.Bugsnag
 import one.mixin.android.MixinApplication
@@ -11,6 +13,8 @@ import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.findLastUrl
+import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
@@ -59,6 +63,7 @@ import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
+import java.io.File
 import java.util.UUID
 
 class DecryptMessage : Injector() {
@@ -97,6 +102,8 @@ class DecryptMessage : Injector() {
                 processAppButton(data)
             } else if (data.category == MessageCategory.APP_CARD.name) {
                 processAppCard(data)
+            } else if (data.category == MessageCategory.MESSAGE_RECALL.name) {
+                processReCallMessage(data)
             }
         } catch (e: Exception) {
             Timber.e("Process error: $e")
@@ -138,6 +145,30 @@ class DecryptMessage : Injector() {
         }
 
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+    }
+
+    private val notificationManager: NotificationManager by lazy {
+        MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
+    }
+
+    private fun processReCallMessage(data: BlazeMessageData) {
+        if (data.category == MessageCategory.MESSAGE_RECALL.name) {
+            val messageId = String(Base64.decode(data.data))
+            messageDao.findMessageById(messageId)?.let { msg ->
+                if (!msg.createdAt.lateOneHours()) {
+                    messageDao.reCallMessage(msg.id)
+                    if (msg.mediaUrl != null) {
+                        File(msg.mediaUrl.getFilePath()).let { file ->
+                            if (file.exists() && file.isFile) {
+                                file.delete()
+                            }
+                        }
+                    }
+                    jobManager.cancelJobById(msg.id)
+                    notificationManager.cancel(msg.userId.hashCode())
+                }
+            }
+        }
     }
 
     private fun processPlainMessage(data: BlazeMessageData) {

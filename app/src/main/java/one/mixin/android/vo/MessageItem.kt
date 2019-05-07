@@ -1,9 +1,9 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.extension.nowInUtc
 
@@ -111,3 +111,5 @@ fun MessageItem.isCallMessage() =
 fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name
+
+fun MessageItem.isReCall() = type == MessageCategory.MESSAGE_RECALL.name

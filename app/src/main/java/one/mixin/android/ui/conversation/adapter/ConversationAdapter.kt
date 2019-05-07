@@ -29,6 +29,7 @@ import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.InfoHolder
 import one.mixin.android.ui.conversation.holder.MessageHolder
+import one.mixin.android.ui.conversation.holder.ReCallHolder
 import one.mixin.android.ui.conversation.holder.ReplyHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
@@ -44,6 +45,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.vo.isCallMessage
+import one.mixin.android.vo.isReCall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs
 
@@ -170,6 +172,9 @@ class ConversationAdapter(
                 }
                 CALL_TYPE -> {
                     (holder as CallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                }
+                RECALL_TYPE->{
+                    (holder as ReCallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 else -> {
                 }
@@ -399,6 +404,10 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_call, parent, false)
                 CallHolder(item)
             }
+            RECALL_TYPE->{
+                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_recall, parent, false)
+                ReCallHolder(item)
+            }
             else -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_transparent, parent, false)
                 TransparentHolder(item)
@@ -447,6 +456,7 @@ class ConversationAdapter(
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
                     item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
                 item.isCallMessage() -> CALL_TYPE
+                item.isReCall()-> RECALL_TYPE
                 else -> UNKNOWN_TYPE
             }
         }, NULL_TYPE)
@@ -474,6 +484,7 @@ class ConversationAdapter(
         const val VIDEO_TYPE = 16
         const val AUDIO_TYPE = 17
         const val CALL_TYPE = 18
+        const val RECALL_TYPE = 19
 
         private val diffCallback = object : DiffUtil.ItemCallback<MessageItem>() {
             override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
@@ -482,6 +493,7 @@ class ConversationAdapter(
 
             override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
                 return oldItem.mediaStatus == newItem.mediaStatus &&
+                    oldItem.type == newItem.type &&
                     oldItem.status == newItem.status &&
                     oldItem.userFullName == newItem.userFullName &&
                     oldItem.participantFullName == newItem.participantFullName &&

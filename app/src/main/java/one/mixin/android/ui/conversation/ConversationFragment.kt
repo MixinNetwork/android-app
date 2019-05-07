@@ -34,6 +34,7 @@ import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
@@ -77,6 +78,7 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
@@ -133,6 +135,8 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canNotForward
 import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.isCallMessage
+import one.mixin.android.vo.isReCall
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
@@ -591,6 +595,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onPause() {
+        deleteDialog?.dismiss()
         super.onPause()
         paused = true
         input_layout.removeOnKeyboardShownListener(this)
@@ -787,7 +792,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     AudioPlayer.get().pause()
                 }
             }
-            chatViewModel.deleteMessages(chatAdapter.selectSet)
+            deleteMessage(chatAdapter.selectSet.toList())
             closeTool()
         }
         reply_view.reply_close_iv.setOnClickListener {
@@ -889,6 +894,41 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
         bindData()
+    }
+
+    private var deleteDialog: AlertDialog? = null
+    private fun deleteMessage(messages: List<MessageItem>) {
+        deleteDialog?.dismiss()
+        val showReCall = messages.all { item ->
+            item.userId == sender.userId && !item.createdAt.lateOneHours() && !item.isReCall() && !item.isCallMessage()
+        }
+        val deleteDialogLayout = generateDeleteDialogLayout()
+        deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setMessage(getString(R.string.chat_delete_message, messages.size))
+            .setView(deleteDialogLayout)
+            .create()
+        if (showReCall) {
+            deleteDialogLayout.delete_everyone.setOnClickListener {
+                chatViewModel.sendReCallMessage(conversationId, sender, messages)
+                deleteDialog?.dismiss()
+            }
+            deleteDialogLayout.delete_everyone.visibility = VISIBLE
+        } else {
+            deleteDialogLayout.delete_everyone.visibility = GONE
+        }
+        deleteDialogLayout.delete_me.setOnClickListener {
+            chatViewModel.deleteMessages(messages)
+            deleteDialog?.dismiss()
+        }
+        deleteDialog?.show()
+    }
+
+    private fun generateDeleteDialogLayout(): View {
+        return LayoutInflater.from(requireActivity()).inflate(R.layout.dialog_delete, null, false).apply {
+            this.delete_cancel.setOnClickListener {
+                deleteDialog?.dismiss()
+            }
+        }
     }
 
     private fun liveDataMessage(unreadCount: Int) {

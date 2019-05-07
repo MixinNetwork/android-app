@@ -195,6 +195,11 @@
     <string name="chat_call_failed">呼叫失败</string>
     <string name="chat_call_warning_call">无法在 Mixin 通话时拨打电话</string>
     <string name="chat_call_warning_voice">无法在 Mixin 通话时录制语音消息</string>
+    <string name="chat_delete_message">删除 %1$d 条消息吗?</string>
+    <string name="chat_delete_for_me">为我删除</string>
+    <string name="chat_delete_for_everyone">在所有人设备上删除</string>
+    <string name="chat_recall_me">你删除了这条消息。</string>
+    <string name="chat_recall_other">%1$s删除了这条消息。</string>
     <!--contact-->
     <string name="contact_other_add">添加联系人</string>
     <string name="contact_other_send">发消息</string>

@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.annotation.WorkerThread
-import androidx.collection.ArraySet
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -81,6 +80,7 @@ import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createReCallMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
@@ -402,14 +402,22 @@ internal constructor(
         MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    fun deleteMessages(set: ArraySet<MessageItem>) {
-        val data = ArraySet(set)
+    fun deleteMessages(list: List<MessageItem>) {
         GlobalScope.launch(SINGLE_DB_THREAD) {
-            data.forEach { item ->
+            list.forEach { item ->
                 conversationRepository.deleteMessage(item.messageId)
                 jobManager.cancelJobById(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())
             }
+        }
+    }
+
+    fun sendReCallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
+        list.forEach { messageItem ->
+            val encoded = Base64.encodeBytes(messageItem.messageId.toByteArray())
+            val message = createReCallMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+                MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING, nowInUtc())
+            jobManager.addJobInBackground(SendMessageJob(message, recallMessageId = messageItem.messageId))
         }
     }
 

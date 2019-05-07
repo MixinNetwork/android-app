@@ -112,22 +112,25 @@ interface MessageDao : BaseDao<Message> {
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
     fun deleteMessageByConversationId(conversationId: String)
 
-    @Query("UPDATE messages SET status = :status WHERE id = :id")
+    @Query("UPDATE messages SET status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET media_status = :status WHERE id = :id")
+    @Query("UPDATE messages SET category = 'MESSAGE_RECALL' WHERE id = :id")
+    fun reCallMessage(id: String)
+
+    @Query("UPDATE messages SET media_status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET media_size = :mediaSize WHERE id = :id")
+    @Query("UPDATE messages SET media_size = :mediaSize WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaSize(mediaSize: Long, id: String)
 
-    @Query("UPDATE messages SET media_url = :mediaUrl WHERE id = :id")
+    @Query("UPDATE messages SET media_url = :mediaUrl WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaMessageUrl(mediaUrl: String, id: String)
 
-    @Query("UPDATE messages SET media_url = :mediaUrl WHERE media_url = :oldMediaUrl")
+    @Query("UPDATE messages SET media_url = :mediaUrl WHERE media_url = :oldMediaUrl AND category != 'MESSAGE_RECALL'")
     fun updateMediaUrl(mediaUrl: String, oldMediaUrl: String)
 
-    @Query("UPDATE messages SET hyperlink = :hyperlink WHERE id = :id")
+    @Query("UPDATE messages SET hyperlink = :hyperlink WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateHyperlink(hyperlink: String, id: String)
 
     @Query("SELECT id,created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
@@ -137,7 +140,8 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
         "thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, " +
-        "media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId")
+        "media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId " +
+        "AND category = 'MESSAGE_RECALL'")
     fun updateAttachmentMessage(
         messageId: String,
         content: String,
@@ -155,16 +159,16 @@ interface MessageDao : BaseDao<Message> {
         status: String
     )
 
-    @Query("UPDATE messages SET sticker_id = :stickerId, status = :status WHERE id = :messageId")
+    @Query("UPDATE messages SET sticker_id = :stickerId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
     fun updateStickerMessage(stickerId: String, status: String, messageId: String)
 
-    @Query("UPDATE messages SET shared_user_id = :sharedUserId, status = :status WHERE id = :messageId")
+    @Query("UPDATE messages SET shared_user_id = :sharedUserId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
     fun updateContactMessage(sharedUserId: String, status: String, messageId: String)
 
-    @Query("UPDATE messages SET content = :content, status = :status WHERE id = :id")
+    @Query("UPDATE messages SET content = :content, status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMessageContentAndStatus(content: String, status: String, id: String)
 
-    @Query("UPDATE messages SET content = :content WHERE id = :id")
+    @Query("UPDATE messages SET content = :content WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMessageContent(content: String, id: String)
 
     @Transaction
@@ -195,7 +199,7 @@ interface MessageDao : BaseDao<Message> {
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String): List<MediaMessageMinimal>?
 
     @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
-        "AND status = 'DELIVERED' AND created_at <= :createdAt")
+        "AND status = 'DELIVERED' AND created_at <= :createdAt AND category != 'MESSAGE_RECALL'")
     fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
 
     @Query("UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.user_id != :userId " +
