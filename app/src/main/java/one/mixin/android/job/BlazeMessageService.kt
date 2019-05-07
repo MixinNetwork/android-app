@@ -216,7 +216,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     private var ackJob: Job? = null
 
     private suspend fun ackJobBlock() {
-        jobDao.findAckJobsSync()?.let { list ->
+        jobDao.findAckJobs()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     try {
@@ -234,7 +234,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     private suspend fun ackSessionJobBlock() {
-        jobDao.findSessionAckJobsSync()?.let { list ->
+        jobDao.findSessionAckJobs()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     try {
@@ -252,7 +252,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     }
 
     private suspend fun syncMessageStatusToExtension(sessionId: String) {
-        jobDao.findCreatePlainSessionJobsSync()?.let { list ->
+        jobDao.findCreatePlainSessionJobs()?.let { list ->
             if (list.isNotEmpty()) {
                 list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
                     try {
