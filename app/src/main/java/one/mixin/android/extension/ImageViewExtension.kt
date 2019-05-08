@@ -148,32 +148,41 @@ fun ImageView.loadLongImageMark(uri: String?, mark: Int) {
     }).submit(layoutParams.width, layoutParams.height)
 }
 
-fun ImageView.loadVideoMark(uri: String?, holder: String?, mark: Int) {
-    Glide.with(this).load(uri).apply(RequestOptions().frame(0)
-        .signature(StringSignature("$uri$mark"))
-        .centerCrop().dontAnimate().apply {
-            if (holder != null) {
-                this.placeholder(holder.toDrawable())
+fun ImageView.loadVideoMark(
+    uri: String?,
+    holder: String?,
+    mark: Int
+) {
+    Glide.with(this).load(uri)
+        .apply(RequestOptions().frame(0)
+            .signature(StringSignature("$uri$mark"))
+            .centerCrop().dontAnimate().apply {
+                if (holder != null) {
+                    this.placeholder(holder.toDrawable())
+                }
+            }).listener(object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                return true
             }
-        }
-    ).into(this)
-}
 
-fun ImageView.loadVideoMark(uri: String?, mark: Int) {
-    Glide.with(this).load(uri).apply(RequestOptions().frame(0)
-        .signature(StringSignature("$uri$mark"))
-        .centerCrop().dontAnimate()).listener(object : RequestListener<Drawable> {
-        override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
-            return true
-        }
-
-        override fun onResourceReady(resource: Drawable?, model: Any?, target: Target<Drawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
-            this@loadVideoMark.context.runOnUiThread {
-                setImageDrawable(resource)
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                this@loadVideoMark.context.runOnUiThread {
+                    setImageDrawable(resource)
+                }
+                return true
             }
-            return true
-        }
-    }).submit(layoutParams.width, layoutParams.height)
+        }).submit(layoutParams.width, layoutParams.height)
 }
 
 fun ImageView.loadVideo(uri: String, @DrawableRes holder: Int) {
