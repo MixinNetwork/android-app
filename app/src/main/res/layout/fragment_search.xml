@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFF">
+    android:background="@color/wallet_light_bg">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/search_rv"
@@ -16,18 +16,30 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:listitem="@layout/item_list_conversation" />
 
+    <View
+        android:id="@+id/top_divider"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:background="@drawable/ic_shadow_divider"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
     <TextView
         android:id="@+id/recent_title_tv"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="@dimen/margin12"
-        android:layout_marginBottom="@dimen/margin12"
+        android:paddingStart="@dimen/margin20"
+        android:paddingEnd="@dimen/margin20"
+        android:paddingTop="@dimen/margin12"
+        android:paddingBottom="@dimen/margin12"
         android:text="@string/search_recently_used_bots"
+        android:background="@color/white"
         android:textColor="@color/wallet_text_dark"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintHorizontal_bias=".05"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/top_divider"
         app:layout_constraintBottom_toTopOf="@id/app_ll"/>
 
     <LinearLayout
@@ -37,8 +49,18 @@
         android:minHeight="256dp"
         android:orientation="vertical"
         android:weightSum="2"
+        android:background="@color/white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/recent_title_tv"/>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:background="@drawable/ic_shadow_bottom"
+        app:layout_constraintTop_toBottomOf="@id/app_ll"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

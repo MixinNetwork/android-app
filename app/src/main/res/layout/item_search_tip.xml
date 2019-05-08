@@ -3,13 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:background="@color/white">
 
     <View
         android:id="@+id/top_divider"
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="@color/bg_gray"
+        android:background="@drawable/ic_shadow_divider"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"/>
@@ -41,4 +42,13 @@
         app:layout_constraintBottom_toBottomOf="@+id/search_tip_tv"
         app:layout_constraintEnd_toEndOf="@+id/search_tip_tv"
         app:layout_constraintTop_toTopOf="@+id/search_tip_tv"/>
+
+    <View
+        android:id="@+id/bottom_divider"
+        android:layout_width="0dp"
+        android:layout_height="10dp"
+        android:background="@drawable/ic_shadow_divider"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/search_tip_tv"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

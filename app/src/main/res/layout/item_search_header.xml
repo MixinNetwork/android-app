@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingStart="@dimen/margin20"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
+    android:paddingTop="@dimen/margin16"
+    android:paddingBottom="@dimen/margin16"
     android:background="@color/white"
     android:paddingEnd="@dimen/margin20">
 

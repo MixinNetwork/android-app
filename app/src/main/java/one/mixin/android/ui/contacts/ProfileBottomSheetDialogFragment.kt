@@ -82,7 +82,7 @@ class ProfileBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }
                         }
                     }
-                    contentView.avatar.setInfo(self.fullName, self.avatarUrl, self.identityNumber)
+                    contentView.avatar.setInfo(self.fullName, self.avatarUrl, self.userId)
                 }
             })
         }

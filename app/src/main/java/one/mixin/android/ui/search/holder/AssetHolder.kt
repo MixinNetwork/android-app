@@ -35,6 +35,7 @@ class AssetHolder constructor(containerView: View) :NormalHolder(containerView) 
         }
         itemView.balance.highLight(target)
         itemView.symbol_tv.text = asset.symbol
+        itemView.symbol_tv.highLight(target)
         itemView.balance_as.text = "≈ $${asset.usd().numberFormat2()}"
         if (asset.priceUsd == "0") {
             itemView.price_tv.setText(R.string.asset_none)
