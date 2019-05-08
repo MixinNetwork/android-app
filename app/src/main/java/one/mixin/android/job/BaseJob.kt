@@ -45,6 +45,7 @@ import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
+import java.io.IOException
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
@@ -149,6 +150,9 @@ abstract class BaseJob(params: Params) : Job(params), Injectable {
 
     open fun shouldRetry(throwable: Throwable): Boolean {
         if (throwable is SocketTimeoutException) {
+            return true
+        }
+        if (throwable is IOException) {
             return true
         }
         return (throwable as? ServerErrorException)?.shouldRetry()
