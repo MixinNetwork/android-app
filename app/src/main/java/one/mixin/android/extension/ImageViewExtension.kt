@@ -167,6 +167,11 @@ fun ImageView.loadVideoMark(
                 target: Target<Drawable>?,
                 isFirstResource: Boolean
             ): Boolean {
+                this@loadVideoMark.context.runOnUiThread {
+                    holder?.toDrawable()?.let {
+                        setImageDrawable(it)
+                    }
+                }
                 return true
             }
 
