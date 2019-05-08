@@ -58,8 +58,8 @@ interface MessageDao : BaseDao<Message> {
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
         "AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO') " +
         "AND m.media_status = 'DONE' " +
-        "ORDER BY m.created_at DESC")
-    fun getMediaMessages(conversationId: String): List<MessageItem>
+        "ORDER BY m.created_at DESC LIMIT 50")
+    suspend fun getMediaMessages(conversationId: String): List<MessageItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +

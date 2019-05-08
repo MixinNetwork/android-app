@@ -35,6 +35,8 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
+import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.load.DataSource
@@ -52,10 +54,12 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
@@ -136,22 +140,21 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         setContentView(R.layout.activity_drag_media)
         colorDrawable = ColorDrawable(Color.BLACK)
         view_pager.backgroundDrawable = colorDrawable
-        Observable.just(conversationId).observeOn(Schedulers.io())
-            .map {
-                conversationRepository.getMediaMessages(it).filter { item ->
-                    val file = File(item.mediaUrl?.toUri()?.getFilePath())
-                    file.exists()
-                }.reversed()
-            }
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe { list ->
+
+        val model = ViewModelProviders.of(this).get(DragMediaViewModel::class.java)
+        model.viewModelScope.launch(Dispatchers.IO) {
+            val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
+                File(item.mediaUrl?.toUri()?.getFilePath()).exists()
+            }.reversed()
+
+            withContext(Dispatchers.Main) {
                 index = list.indexOfFirst { item -> messageId == item.messageId }
                 list.map {
                     if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
                         it.type == MessageCategory.PLAIN_VIDEO.name) {
                     }
                 }
-                pagerAdapter = MediaAdapter(list, this)
+                pagerAdapter = MediaAdapter(list, this@DragMediaActivity)
                 view_pager.adapter = pagerAdapter
                 if (index != -1) {
                     view_pager.currentItem = index
@@ -162,6 +165,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 }
                 play(index)
             }
+        }
+
         view_pager.addOnPageChangeListener(pageListener)
         window.decorView.systemUiVisibility =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

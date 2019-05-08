@@ -103,7 +103,7 @@ internal constructor(
 
     fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
 
-    fun getMediaMessages(conversationId: String): List<MessageItem> =
+    suspend fun getMediaMessages(conversationId: String): List<MessageItem> =
         readMessageDao.getMediaMessages(conversationId)
 
     fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
