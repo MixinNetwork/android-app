@@ -1,16 +1,16 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import androidx.annotation.DrawableRes
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
-import androidx.appcompat.content.res.AppCompatResources
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.TextViewCompat
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_reply.view.*
@@ -201,6 +201,14 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
                 (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
                 setIcon()
+            }
+            quoteMessage.type == MessageCategory.MESSAGE_RECALL.name -> {
+                itemView.reply_content_tv.setText(R.string.chat_recall_me)
+                itemView.reply_iv.visibility = View.GONE
+                itemView.reply_avatar.visibility = View.GONE
+                (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
+                (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
+                setIcon(R.drawable.ic_status_recall)
             }
             quoteMessage.type.endsWith("_IMAGE") -> {
                 itemView.reply_iv.loadImageCenterCrop(quoteMessage.mediaUrl, R.drawable.image_holder)

@@ -164,6 +164,10 @@ class DecryptMessage : Injector() {
                             }
                         }
                     }
+                    messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
+                        messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
+                    }
+
                     jobManager.cancelJobById(msg.id)
                     notificationManager.cancel(msg.userId.hashCode())
                 }

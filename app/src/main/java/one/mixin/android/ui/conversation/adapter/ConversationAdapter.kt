@@ -173,7 +173,7 @@ class ConversationAdapter(
                 CALL_TYPE -> {
                     (holder as CallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
-                RECALL_TYPE->{
+                RECALL_TYPE -> {
                     (holder as ReCallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 else -> {
@@ -404,7 +404,7 @@ class ConversationAdapter(
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_call, parent, false)
                 CallHolder(item)
             }
-            RECALL_TYPE->{
+            RECALL_TYPE -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_recall, parent, false)
                 ReCallHolder(item)
             }
@@ -456,7 +456,7 @@ class ConversationAdapter(
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
                     item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
                 item.isCallMessage() -> CALL_TYPE
-                item.isReCall()-> RECALL_TYPE
+                item.isReCall() -> RECALL_TYPE
                 else -> UNKNOWN_TYPE
             }
         }, NULL_TYPE)
@@ -498,7 +498,8 @@ class ConversationAdapter(
                     oldItem.userFullName == newItem.userFullName &&
                     oldItem.participantFullName == newItem.participantFullName &&
                     oldItem.sharedUserFullName == newItem.sharedUserFullName &&
-                    oldItem.mediaSize == newItem.mediaSize
+                    oldItem.mediaSize == newItem.mediaSize &&
+                    oldItem.quoteContent == newItem.quoteContent
             }
         }
     }

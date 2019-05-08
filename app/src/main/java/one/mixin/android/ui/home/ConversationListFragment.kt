@@ -398,7 +398,7 @@ class ConversationListFragment : LinkFragment() {
                     } else {
                         itemView.msg_tv.text = itemView.context.getString(R.string.chat_recall_other, conversationItem.name)
                     }
-                    null
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_recall)
                 }
                 conversationItem.contentType == MessageCategory.SYSTEM_CONVERSATION.name -> {
                     when (conversationItem.actionName) {
