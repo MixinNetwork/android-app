@@ -14,7 +14,6 @@ import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
@@ -36,6 +35,7 @@ import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createReCallMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
@@ -52,6 +52,7 @@ import one.mixin.android.websocket.SystemConversationData
 import one.mixin.android.websocket.TransferAttachmentData
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferPlainData
+import one.mixin.android.websocket.TransferReCallData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
@@ -153,25 +154,27 @@ class DecryptMessage : Injector() {
 
     private fun processReCallMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
-            val messageId = String(Base64.decode(data.data))
-            messageDao.findMessageById(messageId)?.let { msg ->
-                if (!msg.createdAt.lateOneHours()) {
-                    messageDao.reCallMessage(msg.id)
-                    if (msg.mediaUrl != null) {
-                        File(msg.mediaUrl.getFilePath()).let { file ->
-                            if (file.exists() && file.isFile) {
-                                file.delete()
-                            }
+            val decoded = Base64.decode(data.data);
+            val transferReCallData = gson.fromJson(String(decoded), TransferReCallData::class.java)
+            messageDao.findMessageById(transferReCallData.messageId)?.let { msg ->
+                messageDao.reCallMessage(msg.id)
+                if (msg.mediaUrl != null) {
+                    File(msg.mediaUrl.getFilePath()).let { file ->
+                        if (file.exists() && file.isFile) {
+                            file.delete()
                         }
                     }
-                    messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
-                        messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
-                    }
-
-                    jobManager.cancelJobById(msg.id)
-                    notificationManager.cancel(msg.userId.hashCode())
                 }
+                messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
+                    messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
+                }
+
+                jobManager.cancelJobById(msg.id)
+                notificationManager.cancel(msg.userId.hashCode())
             }
+            val msg = createReCallMessage(data.messageId, data.conversationId, data.userId,
+                MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
+            sendToExtensionSession(msg)
         }
     }
 
