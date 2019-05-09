@@ -3,7 +3,6 @@ package one.mixin.android.ui.search.holder
 import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_search_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
@@ -21,8 +20,13 @@ import java.math.BigDecimal
 class AssetHolder constructor(containerView: View) :NormalHolder(containerView) {
 
     @SuppressLint("SetTextI18n")
-    fun bind(asset: AssetItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean = false) {
+    fun bind(asset: AssetItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean = false, isLast: Boolean = false) {
         itemView.ph1.isVisible = isEnd
+        if (isLast) {
+            itemView.ph2.setBackgroundResource(R.drawable.ic_shadow_bottom)
+        } else {
+            itemView.ph2.setBackgroundResource(R.drawable.ic_shadow_divider)
+        }
         itemView.ph2.isVisible = isEnd
         itemView.balance.text = try {
             if (asset.balance.numberFormat8().toFloat() == 0f) {

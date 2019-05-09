@@ -24,6 +24,7 @@ import one.mixin.android.R
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.ConversationDao
+import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertConversation
@@ -41,6 +42,7 @@ import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RotateSignedPreKeyJob
 import one.mixin.android.job.RotateSignedPreKeyJob.Companion.ROTATE_SIGNED_PRE_KEY
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
@@ -58,9 +60,12 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.Session
+import one.mixin.android.util.StateManager
+import one.mixin.android.vo.CallState
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.isGroup
@@ -92,6 +97,12 @@ class MainActivity : BlazeBaseActivity() {
     lateinit var userRepo: UserRepository
     @Inject
     lateinit var participantDao: ParticipantDao
+    @Inject
+    lateinit var linkState: LinkState
+    @Inject
+    lateinit var callState: CallState
+    @Inject
+    lateinit var floodMessageDao: FloodMessageDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -153,6 +164,27 @@ class MainActivity : BlazeBaseActivity() {
 
         initView()
         handlerCode(intent)
+
+        StateManager(linkState, callState, floodMessageDao, this,
+            object : StateManager.Callback {
+                override fun onCalling() {
+                    action_bar?.setCalling {
+                        CallActivity.show(this@MainActivity, callState.user)
+                    }
+                }
+
+                override fun onConnecting() {
+                    action_bar?.setConnecting()
+                }
+
+                override fun onSyncing() {
+                    action_bar?.setSyncing()
+                }
+
+                override fun onNormal() {
+                    action_bar?.setNormal()
+                }
+            })
     }
 
     override fun onStart() {

@@ -265,6 +265,7 @@ class SearchFragment : BaseFragment() {
             recent_title_tv.isGone = true
             app_ll.isGone = true
             divider.isGone = true
+            top_divider.isGone = true
         }
     }
 
@@ -274,6 +275,7 @@ class SearchFragment : BaseFragment() {
             recent_title_tv.isVisible = true
             app_ll.isVisible = true
             divider.isVisible = true
+            top_divider.isVisible = true
         }
     }
 

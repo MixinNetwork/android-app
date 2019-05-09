@@ -102,26 +102,26 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             0 -> {
-                (holder as TipHolder).bind(query, searchingId, onItemClickListener)
+                (holder as TipHolder).bind(query, searchingId, onItemClickListener, data.isLast(position))
             }
             TypeAsset.index -> {
                 data.getItem(position).let {
-                    (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener, data.isAssetEnd(position))
+                    (holder as AssetHolder).bind(it as AssetItem, query, onItemClickListener, data.isAssetEnd(position), data.isLast(position))
                 }
             }
             TypeUser.index -> {
                 data.getItem(position).let {
-                    (holder as ContactHolder).bind(it as User, query, onItemClickListener, data.isUserEnd(position))
+                    (holder as ContactHolder).bind(it as User, query, onItemClickListener, data.isUserEnd(position), data.isLast(position))
                 }
             }
             TypeChat.index -> {
                 data.getItem(position).let {
-                    (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener, data.isChatEnd(position))
+                    (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener, data.isChatEnd(position), data.isLast(position))
                 }
             }
             TypeMessage.index -> {
                 data.getItem(position).let {
-                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener, data.isMessageEnd(position))
+                    (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener, data.isMessageEnd(position), data.isLast(position))
                 }
             }
         }

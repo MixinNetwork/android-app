@@ -43,6 +43,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -62,7 +63,7 @@ import org.jetbrains.anko.doAsync
 import java.io.File
 import javax.inject.Inject
 
-class ConversationListFragment : LinkFragment() {
+class ConversationListFragment : BaseFragment() {
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory

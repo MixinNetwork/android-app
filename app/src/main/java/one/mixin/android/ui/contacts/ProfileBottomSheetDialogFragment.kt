@@ -20,6 +20,7 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.kotlin.autoDisposable
 import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.fragment_profile_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -86,6 +87,7 @@ class ProfileBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             })
         }
+        contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.edit_fl.setOnClickListener { showDialog() }
         contentView.camera_fl.setOnClickListener { changeAvatar() }
         val choices = mutableListOf<String>()

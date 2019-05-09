@@ -10,7 +10,12 @@ import one.mixin.android.ui.search.SearchFragment
 
 class TipHolder(containerView: View) : RecyclerView.ViewHolder(containerView) {
 
-    fun bind(target: String, searching: Boolean, onItemClickListener: SearchFragment.OnSearchClickListener?) {
+    fun bind(target: String, searching: Boolean, onItemClickListener: SearchFragment.OnSearchClickListener?, isLast: Boolean) {
+        if (isLast) {
+            itemView.bottom_divider.setBackgroundResource(R.drawable.ic_shadow_bottom)
+        } else {
+            itemView.bottom_divider.setBackgroundResource(R.drawable.ic_shadow_divider)
+        }
         itemView.search_tip_tv.text = itemView.context.getString(R.string.search_tip, target)
         itemView.search_tip_tv.highLight(target)
         if (searching) {

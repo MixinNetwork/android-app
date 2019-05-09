@@ -62,6 +62,8 @@ class SearchDataPackage(
     fun isChatEnd(position: Int) = position == assetCount().decTip() + userCount() + chatCount() - 1
     fun isMessageEnd(position: Int) = position == assetCount().decTip() + userCount() + chatCount() + messageCount() - 1
 
+    fun isLast(position: Int) = position == getCount() - 1
+
     private fun assetCount() = if (assetLimit) {
         min(assetList?.size ?: 0, LIMIT_COUNT)
     } else {

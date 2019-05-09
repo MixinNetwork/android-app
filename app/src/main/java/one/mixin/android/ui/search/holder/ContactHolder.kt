@@ -1,16 +1,22 @@
 package one.mixin.android.ui.search.holder
 
 import android.view.View
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.item_search_contact.view.*
+import one.mixin.android.R
 import one.mixin.android.extension.highLight
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.User
 
 class ContactHolder constructor(containerView: View) : NormalHolder(containerView) {
-    fun bind(user: User, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean = false) {
+    fun bind(user: User, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?,
+        isEnd: Boolean = false, isLast: Boolean = false) {
+        if (isLast) {
+            itemView.ph2.setBackgroundResource(R.drawable.ic_shadow_bottom)
+        } else {
+            itemView.ph2.setBackgroundResource(R.drawable.ic_shadow_divider)
+        }
         itemView.search_name.text = user.fullName
         itemView.search_name.highLight(target)
         itemView.search_avatar_iv.setInfo(user.fullName, user.avatarUrl, user.userId)

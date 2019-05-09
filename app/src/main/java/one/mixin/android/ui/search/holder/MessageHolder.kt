@@ -11,8 +11,14 @@ import one.mixin.android.vo.SearchMessageItem
 
 class MessageHolder constructor(containerView: View) : NormalHolder(containerView) {
 
-    fun bind(message: SearchMessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?, isEnd: Boolean = false) {
+    fun bind(message: SearchMessageItem, onItemClickListener: SearchFragment.OnSearchClickListener?,
+        isEnd: Boolean = false, isLast: Boolean = false) {
         itemView.ph1.isVisible = isEnd
+        if (isLast) {
+            itemView.ph2.setBackgroundResource(R.drawable.ic_shadow_bottom)
+        } else {
+            itemView.ph2.setBackgroundResource(R.drawable.ic_shadow_divider)
+        }
         itemView.ph2.isVisible = isEnd
         itemView.search_name_tv.text = if (message.conversationName.isNullOrEmpty()) {
             message.userFullName
