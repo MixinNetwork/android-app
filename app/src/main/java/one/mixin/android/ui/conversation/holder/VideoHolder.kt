@@ -273,10 +273,6 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         itemView.chat_image.setShape(mark)
-        if (isBlink) {
-            itemView.chat_image.loadVideoMark(dataUrl, mark)
-        } else {
-            itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
-        }
+        itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
     }
 }
