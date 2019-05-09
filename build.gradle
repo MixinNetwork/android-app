@@ -2,7 +2,7 @@
 buildscript {
 
     ext {
-        ext.lifecycleVersion = '2.1.0-beta01'
+        ext.lifecycleVersion = '2.2.0-alpha01'
         ext.appcompatVersion = '1.0.2'
         ext.pagingVersion = '2.1.0'
         ext.roomVersion = '2.1.0-beta01'
@@ -12,7 +12,7 @@ buildscript {
         ext.supportLibVersion = '1.0.0'
         ext.daggerVersion = '2.22.1'
         ext.assistedinjectVersion = '0.3.2'
-        ext.ktxVersion = '1.0.1'
+        ext.ktxVersion = '1.0.2'
         ext.espressoVersion = '3.1.0-alpha4'
         ext.glideVersion = '4.9.0'
         ext.webpdecoderVesion = '1.4.4.9.0'
@@ -77,7 +77,7 @@ buildscript {
         maven { url "https://jitpack.io" }
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:3.4.0'
+        classpath 'com.android.tools.build:gradle:3.5.0-beta01'
         classpath 'com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta04'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.2.0'
