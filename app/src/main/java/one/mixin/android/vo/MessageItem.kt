@@ -127,3 +127,4 @@ fun MessageItem.canReCall(): Boolean {
         || this.type == MessageCategory.PLAIN_DATA.name
         || this.type == MessageCategory.PLAIN_CONTACT.name
         || this.type == MessageCategory.PLAIN_AUDIO.name
+}
