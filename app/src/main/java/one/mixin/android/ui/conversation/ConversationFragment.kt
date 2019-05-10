@@ -136,6 +136,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canNotForward
 import one.mixin.android.vo.canNotReply
+import one.mixin.android.vo.canReCall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isReCall
@@ -902,7 +903,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun deleteMessage(messages: List<MessageItem>) {
         deleteDialog?.dismiss()
         val showReCall = messages.all { item ->
-            item.userId == sender.userId && !item.createdAt.lateOneHours() && !item.isReCall() && !item.isCallMessage()
+            item.userId == sender.userId && !item.createdAt.lateOneHours() && item.canReCall()
         }
         val deleteDialogLayout = generateDeleteDialogLayout()
         deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
