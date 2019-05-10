@@ -9,12 +9,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
+import androidx.appcompat.app.AppCompatActivity
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_gallery.*
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.ReCallEvent
 import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.widget.gallery.internal.entity.Album
 import one.mixin.android.widget.gallery.internal.entity.Item
@@ -76,6 +80,23 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
         mAlbumCollection.onCreate(this, this)
         mAlbumCollection.onRestoreInstanceState(savedInstanceState)
         mAlbumCollection.loadAlbums()
+    }
+
+    private var reCallDisposable: Disposable? = null
+    override fun onResume() {
+        super.onResume()
+        reCallDisposable = RxBus.listen(ReCallEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+
+            }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        if (reCallDisposable?.isDisposed == false) {
+            reCallDisposable?.dispose()
+        }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {

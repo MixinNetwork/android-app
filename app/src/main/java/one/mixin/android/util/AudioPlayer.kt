@@ -13,12 +13,14 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.ProgressEvent
+import one.mixin.android.event.ReCallEvent
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isAudio
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 class AudioPlayer private constructor() {
@@ -35,6 +37,11 @@ class AudioPlayer private constructor() {
 
         fun release() {
             instance?.let {
+                it.reCallDisposable?.let { disposable ->
+                    if (!disposable.isDisposed) {
+                        disposable.dispose()
+                    }
+                }
                 it.player.release()
                 it.stopTimber()
             }
@@ -44,6 +51,19 @@ class AudioPlayer private constructor() {
         fun pause() {
             instance?.pause()
         }
+    }
+
+    private var reCallDisposable: Disposable? = null
+
+    init {
+        reCallDisposable = RxBus.listen(ReCallEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                Timber.d("recall:" + it.messageId)
+                if (id == it.messageId) {
+                    pause()
+                }
+            }
     }
 
     private val player: MixinPlayer = MixinPlayer(true).also {

@@ -112,10 +112,10 @@ interface MessageDao : BaseDao<Message> {
     @Query("DELETE FROM messages WHERE conversation_id = :conversationId")
     fun deleteMessageByConversationId(conversationId: String)
 
-    @Query("UPDATE messages SET status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
+    @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET category = 'MESSAGE_RECALL', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL, " +
+    @Query("UPDATE messages SET category = 'MESSAGE_RECALL', status = 'DELIVERED', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL, " +
         "media_duration = NULL, media_width = NULL, media_height = NULL, media_hash = NULL, thumb_image = NULL, media_key = NULL, " +
         "media_digest = NUll, media_status = NULL, action = NULL, participant_id = NULL, snapshot_id = NULL, hyperlink = NULL, name = NULL, " +
         "album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL WHERE id = :id")
@@ -137,7 +137,7 @@ interface MessageDao : BaseDao<Message> {
     fun updateHyperlink(hyperlink: String, id: String)
 
     @Query("SELECT id,created_at FROM messages WHERE conversation_id = :conversationId AND user_id != :userId " +
-        "AND status = 'DELIVERED' AND category != 'MESSAGE_RECALL' ORDER BY created_at ASC")
+        "AND status = 'DELIVERED' ORDER BY created_at ASC")
     fun getUnreadMessage(conversationId: String, userId: String): List<MessageMinimal>?
 
     @Query("UPDATE messages SET content = :content, media_mime_type = :mediaMimeType, " +
@@ -190,7 +190,7 @@ interface MessageDao : BaseDao<Message> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT id, created_at FROM messages WHERE conversation_id = :conversationId " +
-        "AND user_id != :userId AND status = 'DELIVERED' AND category != 'MESSAGE_RECALL' ORDER BY created_at ASC")
+        "AND user_id != :userId AND status = 'DELIVERED' ORDER BY created_at ASC")
     fun findUnreadMessagesSync(conversationId: String, userId: String = Session.getAccountId()!!): List<MessageMinimal>?
 
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND " +
@@ -202,11 +202,11 @@ interface MessageDao : BaseDao<Message> {
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String): List<MediaMessageMinimal>?
 
     @Query("UPDATE messages SET status = 'READ' WHERE conversation_id = :conversationId AND user_id != :userId " +
-        "AND status = 'DELIVERED' AND created_at <= :createdAt AND category != 'MESSAGE_RECALL'")
+        "AND status = 'DELIVERED' AND created_at <= :createdAt")
     fun batchMarkRead(conversationId: String, userId: String, createdAt: String)
 
     @Query("UPDATE conversations SET unseen_message_count = (SELECT count(1) FROM messages m WHERE m.user_id != :userId " +
-        "AND m.status = 'DELIVERED' AND m.conversation_id = :conversationId AND category != 'MESSAGE_RECALL') WHERE conversation_id = :conversationId ")
+        "AND m.status = 'DELIVERED' AND m.conversation_id = :conversationId) WHERE conversation_id = :conversationId ")
     fun takeUnseen(userId: String, conversationId: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
