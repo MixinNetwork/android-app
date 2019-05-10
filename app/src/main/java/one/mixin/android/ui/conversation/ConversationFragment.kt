@@ -46,6 +46,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
@@ -82,6 +83,7 @@ import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.removeEnd
@@ -909,8 +911,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             .create()
         if (showReCall) {
             deleteDialogLayout.delete_everyone.setOnClickListener {
-                chatViewModel.sendReCallMessage(conversationId, sender, messages)
-                deleteDialog?.dismiss()
+                if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
+                    deleteDialog?.dismiss()
+                    deleteAlert(messages)
+                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
+                } else {
+                    chatViewModel.sendReCallMessage(conversationId, sender, messages)
+                    deleteDialog?.dismiss()
+                }
             }
             deleteDialogLayout.delete_everyone.visibility = VISIBLE
         } else {
@@ -929,6 +937,23 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 deleteDialog?.dismiss()
             }
         }
+    }
+
+    private var deleteAlertDialog: AlertDialog? = null
+    private fun deleteAlert(messages: List<MessageItem>) {
+        deleteAlertDialog?.dismiss()
+        deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setMessage(getString(R.string.chat_recall_delete_alert))
+            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                chatViewModel.sendReCallMessage(conversationId, sender, messages)
+                dialog.dismiss()
+            }
+            .setNeutralButton(R.string.chat_recall_delete_more) { dialog, _ ->
+                context?.openUrl(getString(R.string.chat_delete_url))
+                dialog.dismiss()
+            }
+            .create()
+        deleteDialog?.show()
     }
 
     private fun liveDataMessage(unreadCount: Int) {

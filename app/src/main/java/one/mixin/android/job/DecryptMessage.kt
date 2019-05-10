@@ -175,6 +175,8 @@ class DecryptMessage : Injector() {
             val msg = createReCallMessage(data.messageId, data.conversationId, data.userId,
                 MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
             sendToExtensionSession(msg)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            messageHistoryDao.insert(MessageHistory(data.messageId))
         }
     }
 
