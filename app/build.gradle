@@ -132,6 +132,8 @@ dependencies {
     implementation "androidx.paging:paging-runtime:${pagingVersion}"
     implementation "androidx.lifecycle:lifecycle-extensions:${lifecycleVersion}"
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:${lifecycleVersion}"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:${lifecycleVersion}"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:${lifecycleVersion}"
     implementation "androidx.lifecycle:lifecycle-common-java8:${lifecycleVersion}"
     implementation "androidx.room:room-runtime:${roomVersion}"
     kapt "androidx.room:room-compiler:${roomVersion}"
