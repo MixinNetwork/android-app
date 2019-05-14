@@ -19,6 +19,7 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_transactions_fragment_header.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
+import kotlinx.android.synthetic.main.view_wallet_transactions_send_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -37,6 +38,7 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshSnapshotsJob
+import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
@@ -95,11 +97,10 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                 .showNow(requireFragmentManager(), AssetKeyBottomSheetDialogFragment.TAG)
         }
         updateHeader(headerView, asset)
-        headerView.tranfer_tv.setOnClickListener {
-            defaultSharedPreferences.putString(TransferFragment.ASSERT_PREFERENCE, asset.assetId)
-            view?.navigate(R.id.action_transactions_to_single_friend_select)
+        headerView.send_tv.setOnClickListener {
+            showSendBottom()
         }
-        headerView.deposit_tv.setOnClickListener {
+        headerView.receive_tv.setOnClickListener {
             asset.differentProcess({
                 view?.navigate(R.id.action_transactions_to_deposit_public_key,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) })
@@ -238,11 +239,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_transactions_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.withdrawal.setOnClickListener {
-            bottomSheet.dismiss()
-                this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_withdrawal,
-                    Bundle().apply { putParcelable(ARGS_ASSET, asset) })
-        }
         view.hide.setText(if (asset.hidden == true) R.string.wallet_transactions_show else R.string.wallet_transactions_hide)
         view.hide.setOnClickListener {
             doAsync {
@@ -252,6 +248,25 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             activity?.mainThreadDelayed({ activity?.onBackPressed() }, 200)
         }
         view.cancel.setOnClickListener { bottomSheet.dismiss() }
+
+        bottomSheet.show()
+    }
+
+    private fun showSendBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_transactions_send_bottom, null)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.contact.setOnClickListener {
+            bottomSheet.dismiss()
+            defaultSharedPreferences.putString(TransferFragment.ASSERT_PREFERENCE, asset.assetId)
+            this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_single_friend_select)
+        }
+        view.address.setOnClickListener {
+            bottomSheet.dismiss()
+            AddressActivity.show(requireContext(), false, asset)
+        }
+        view.send_cancel.setOnClickListener { bottomSheet.dismiss() }
 
         bottomSheet.show()
     }

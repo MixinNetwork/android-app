@@ -47,6 +47,8 @@ import com.bumptech.glide.request.target.Target
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcode
+import com.google.firebase.ml.vision.barcode.FirebaseVisionBarcodeDetectorOptions
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.shizhefei.view.largeimage.LargeImageView
 import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory

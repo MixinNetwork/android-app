@@ -5,10 +5,14 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.loadImage
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 
 class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
@@ -54,6 +58,15 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         avatar_iv.visibility = VISIBLE
         avatar_iv.setTextSize(16f)
         avatar_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
+        title_ll.updateLayoutParams<RelativeLayout.LayoutParams> {
+            marginStart = 0
+        }
+    }
+
+    fun showBadgeCircleView(asset: AssetItem) {
+        badge_circle_iv.isVisible = true
+        bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+        badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         title_ll.updateLayoutParams<RelativeLayout.LayoutParams> {
             marginStart = 0
         }

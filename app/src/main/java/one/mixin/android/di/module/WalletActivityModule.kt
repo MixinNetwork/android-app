@@ -19,8 +19,6 @@ import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.ui.wallet.WalletGetFreeFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.ui.wallet.WalletSettingFragment
-import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.WithdrawalFragment
 
 @Module
 abstract class WalletActivityModule {
@@ -50,12 +48,6 @@ abstract class WalletActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeHiddenAssetsFragment(): HiddenAssetsFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeWithdrawalFragment(): WithdrawalFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeWithdrawalBottomSheetDialogFragment(): WithdrawalBottomSheetDialogFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeAllTransactionsFragment(): AllTransactionsFragment

@@ -72,12 +72,12 @@
             android:weightSum="2">
 
             <TextView
-                android:id="@+id/tranfer_tv"
+                android:id="@+id/send_tv"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="@string/transfer_capital"
+                android:text="@string/transfer_send"
                 android:textColor="@color/wallet_blue_secondary"/>
 
             <View
@@ -87,12 +87,12 @@
                 android:background="#f3f3f3"/>
 
             <TextView
-                android:id="@+id/deposit_tv"
+                android:id="@+id/receive_tv"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:gravity="center"
-                android:text="@string/deposit_capital"
+                android:text="@string/receive"
                 android:textColor="@color/wallet_blue_secondary"/>
         </LinearLayout>
 

@@ -64,6 +64,10 @@
     <string name="failed">Failed</string>
     <string name="loading">Loading</string>
     <string name="no_result">NO RESULT</string>
+    <string name="send_to">Send to %1$s</string>
+    <string name="edit">Edit</string>
+    <string name="transfer_send">Send</string>
+    <string name="receive">Receive</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -496,7 +500,7 @@
     <string name="withdrawal_fee">A transaction fee of %1$s is required for withdrawing %2$s</string>
     <string name="withdrawal_fee_with_reserve">A transaction fee of %1$s is required for withdrawing %2$s. %3$s has a minimum %4$s %5$s reserve requirement.</string>
     <string name="withdrawal_addr_book">%1$s Address Book</string>
-    <string name="withdrawal_addr_add">Add Address</string>
+    <string name="withdrawal_addr_add">+ Add Address</string>
     <string name="withdrawal_addr_new">New %1$s Address</string>
     <string name="withdrawal_addr_modify">Modify %1$s Address</string>
     <string name="withdrawal_enter_pin">Enter your PIN</string>

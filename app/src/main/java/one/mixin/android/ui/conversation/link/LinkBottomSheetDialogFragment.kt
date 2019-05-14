@@ -38,12 +38,14 @@ import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.User
+import one.mixin.android.vo.toAssetItem
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import javax.inject.Inject
@@ -237,7 +239,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
 
     private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
         TransferBottomSheetDialogFragment
-            .newInstance(user, amount, asset, trace, memo)
+            .newInstance(TransferBiometricItem(user, asset.toAssetItem(), amount, null, trace, memo))
             .showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
     }
 

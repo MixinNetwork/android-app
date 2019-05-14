@@ -61,6 +61,10 @@
     <string name="failed">失败</string>
     <string name="loading">加载中</string>
     <string name="no_result">没有结果</string>
+    <string name="send_to">发送给 %1$s</string>
+    <string name="edit">编辑</string>
+    <string name="transfer_send">转出</string>
+    <string name="receive">转入</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -488,7 +492,7 @@
     <string name="withdrawal_fee">需要 %1$s 作为 %2$s 的提现手续费。</string>
     <string name="withdrawal_fee_with_reserve">需要 %1$s 作为 %2$s 的提现手续费。%3$s 最少需要保留 %4$s 个 %5$s。</string>
     <string name="withdrawal_addr_book">%1$s 地址簿</string>
-    <string name="withdrawal_addr_add">添加地址</string>
+    <string name="withdrawal_addr_add">+ 添加地址</string>
     <string name="withdrawal_addr_new">新 %1$s 地址</string>
     <string name="withdrawal_addr_modify">修改 %1$s 地址</string>
     <string name="withdrawal_enter_pin">输入你的密码</string>

@@ -17,6 +17,7 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/ph"
         app:left_icon="@drawable/ic_close_black_24dp"
+        app:need_divider="false"
         app:titleText="@string/transfer"/>
 
     <ScrollView
@@ -33,11 +34,26 @@
             android:baselineAligned="false"
             android:background="@android:color/white">
 
-            <one.mixin.android.widget.AvatarView
-                android:id="@+id/avatar"
+            <FrameLayout
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:layout_gravity="center_horizontal"/>
+                android:layout_marginTop="@dimen/margin12"
+                android:layout_gravity="center_horizontal">
+
+                <one.mixin.android.widget.AvatarView
+                    android:id="@+id/avatar"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"/>
+
+                <ImageView
+                    android:id="@+id/address_avatar"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:padding="@dimen/margin16"
+                    android:visibility="gone"
+                    android:src="@drawable/ic_transfer_address"
+                    android:background="@drawable/bg_circle_70_solid_gray"/>
+            </FrameLayout>
 
             <TextView
                 android:id="@+id/to_tv"
@@ -201,6 +217,20 @@
                 android:paddingEnd="@dimen/margin16"
                 android:paddingStart="@dimen/margin16"
                 android:inputType="text"/>
+
+            <TextView
+                android:id="@+id/fee_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="32dp"
+                android:layout_marginStart="32dp"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginBottom="@dimen/margin16"
+                android:visibility="gone"
+                android:text="@string/withdrawal_fee"
+                android:textColor="@color/text_black"
+                android:textSize="12sp"/>
 
             <ViewAnimator
                 android:id="@+id/continue_animator"

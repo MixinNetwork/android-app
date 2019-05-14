@@ -1,89 +1,140 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:layout_width="match_parent" android:layout_height="match_parent"
-              android:orientation="vertical"
-              android:background="@android:color/white">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
 
     <one.mixin.android.widget.TitleView
-            android:id="@+id/title_view"
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:titleText="@string/withdrawal_addr_new"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_gray"
+        android:fillViewport="true">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:titleText="@string/withdrawal_addr_new"
-            app:rightText="@string/save"/>
+            android:orientation="vertical"
+            android:baselineAligned="false"
+            android:background="@android:color/white">
 
-    <RelativeLayout
-            android:id="@+id/label_rl"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:orientation="vertical">
+            <one.mixin.android.widget.BadgeCircleImageView
+                android:id="@+id/avatar"
+                android:layout_width="70dp"
+                android:layout_height="70dp"
+                android:layout_gravity="center_horizontal"/>
 
-        <EditText
-                android:id="@+id/label_et"
+            <TextView
+                android:id="@+id/to_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/black"/>
+
+            <RelativeLayout
+                android:id="@+id/label_rl"
                 android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:background="@null"
-                android:hint="@string/label"
-                android:inputType="text"
-                android:maxLength="32"
-                android:maxLines="1"
-                android:layout_toStartOf="@+id/label_iv"
-                android:paddingEnd="8dp"
-                android:paddingStart="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="@android:color/black"
-                android:textSize="16sp"/>
+                android:layout_height="54dp"
+                android:layout_marginEnd="@dimen/margin20"
+                android:layout_marginStart="@dimen/margin20"
+                android:background="@drawable/bg_round_8_solid_gray"
+                android:orientation="vertical">
 
-        <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                   android:id="@+id/label_iv"
-                   android:layout_centerVertical="true"
-                   android:layout_alignParentEnd="true"
-                   android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                   android:src="@drawable/ic_addr_qr" android:contentDescription="@null"/>
+                <EditText
+                    android:id="@+id/label_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="60dp"
+                    android:background="@null"
+                    android:hint="@string/label"
+                    android:inputType="text"
+                    android:maxLength="32"
+                    android:maxLines="1"
+                    android:layout_toStartOf="@+id/label_iv"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"/>
 
-        <View
+                <ImageView
+                    android:id="@+id/label_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:src="@drawable/ic_addr_qr"
+                    android:contentDescription="@null"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/addr_rl"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginStart="8dp"
-                android:layout_alignParentBottom="true"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:background="@color/divider"/>
-    </RelativeLayout>
+                android:layout_height="54dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="@dimen/margin20"
+                android:layout_marginStart="@dimen/margin20"
+                android:background="@drawable/bg_round_8_solid_gray"
+                android:orientation="vertical">
 
-    <RelativeLayout
-            android:id="@+id/addr_rl"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:orientation="vertical">
+                <EditText
+                    android:id="@+id/addr_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@null"
+                    android:hint="@string/address"
+                    android:paddingEnd="8dp"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_toStartOf="@id/qr_iv"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"/>
 
-        <EditText
-                android:id="@+id/addr_et"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@null"
-                android:hint="@string/address"
-                android:paddingEnd="8dp"
-                android:paddingStart="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_toStartOf="@id/qr_iv"
-                android:textColor="@android:color/black"
-                android:textSize="16sp"/>
+                <ImageView
+                    android:id="@+id/qr_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:src="@drawable/ic_addr_qr"
+                    android:contentDescription="@null"/>
+            </RelativeLayout>
 
-        <ImageView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                   android:id="@+id/qr_iv"
-                   android:layout_centerVertical="true"
-                   android:layout_alignParentEnd="true"
-                   android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                   android:src="@drawable/ic_addr_qr" android:contentDescription="@null"/>
+            <ViewAnimator
+                android:id="@+id/save_animator"
+                android:layout_width="116dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="50dp"
+                android:enabled="false"
+                android:inAnimation="@anim/fade_in"
+                android:outAnimation="@anim/fade_out"
+                android:background="@drawable/bg_gray_btn">
 
-        <View
-                android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:layout_marginStart="8dp"
-                android:layout_alignParentBottom="true"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:background="@color/divider"/>
-    </RelativeLayout>
+                <TextView
+                    android:id="@+id/save_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="@string/save"
+                    android:textColor="@color/wallet_text_gray"/>
+
+                <ProgressBar
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:theme="@style/AppTheme.WhiteAccent"/>
+            </ViewAnimator>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

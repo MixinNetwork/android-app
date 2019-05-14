@@ -78,7 +78,7 @@ abstract class ActivityModule {
     @ContributesAndroidInjector(modules = [(CommonModule::class), (ConversationActivityModule::class)])
     internal abstract fun contributeSticker(): StickerActivity
 
-    @ContributesAndroidInjector(modules = [(AddressActivityModule::class)])
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (AddressActivityModule::class)])
     internal abstract fun contributeAddress(): AddressActivity
 
     @ContributesAndroidInjector

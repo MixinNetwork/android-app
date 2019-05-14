@@ -11,7 +11,7 @@ import com.uber.autodispose.kotlin.autoDisposable
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_withdrawal_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.formatPublicKey
@@ -42,13 +42,14 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val ARGS_WITHDRAWAL_ITEM = "args_withdrawal_item"
         const val ARGS_ASSET = "args_asset"
 
-        fun newInstance(withdrawalItem: WithdrawalItem, asset: AssetItem) = WithdrawalBottomSheetDialogFragment().apply {
-            val bundle = Bundle().apply {
-                putParcelable(ARGS_WITHDRAWAL_ITEM, withdrawalItem)
-                putParcelable(ARGS_ASSET, asset)
+        fun newInstance(withdrawalItem: WithdrawalItem, asset: AssetItem) =
+            WithdrawalBottomSheetDialogFragment().apply {
+                val bundle = Bundle().apply {
+                    putParcelable(ARGS_WITHDRAWAL_ITEM, withdrawalItem)
+                    putParcelable(ARGS_ASSET, asset)
+                }
+                arguments = bundle
             }
-            arguments = bundle
-        }
     }
 
     private val withdrawalItem: WithdrawalItem by lazy {
@@ -71,7 +72,8 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetJavaScriptEnabled", "SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title_view.left_ib.setOnClickListener { dismiss() }
+        contentView.title_view.right_iv.setOnClickListener { dismiss() }
+        contentView.title_view.showBadgeCircleView(asset)
         contentView.title_view.setSubTitle(getString(R.string.withdrawal_to, withdrawalItem.label),
             withdrawalItem.publicKey.formatPublicKey())
         if (!TextUtils.isEmpty(withdrawalItem.memo)) {
@@ -113,22 +115,22 @@ class WithdrawalBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     bottomViewModel.withdrawal(withdrawalItem.addressId, withdrawalItem.amount,
                         contentView.pin.code(), trace, withdrawalItem.memo)
                         .autoDisposable(scopeProvider).subscribe({
-                        if (it.isSuccess) {
-                            context?.updatePinCheck()
-                            context?.toast(R.string.withdrawal_success)
-                            callback?.onSuccess()
-                            bottomViewModel.insertSnapshot(it.data!!)
-                            dismiss()
-                        } else {
+                            if (it.isSuccess) {
+                                context?.updatePinCheck()
+                                context?.toast(R.string.withdrawal_success)
+                                callback?.onSuccess()
+                                bottomViewModel.insertSnapshot(it.data!!)
+                                dismiss()
+                            } else {
+                                contentView.pin.clear()
+                                contentView.pin_va.displayedChild = POS_PIN
+                                ErrorHandler.handleMixinError(it.errorCode)
+                            }
+                        }, {
+                            ErrorHandler.handleError(it)
                             contentView.pin.clear()
                             contentView.pin_va.displayedChild = POS_PIN
-                            ErrorHandler.handleMixinError(it.errorCode)
-                        }
-                    }, {
-                        ErrorHandler.handleError(it)
-                        contentView.pin.clear()
-                        contentView.pin_va.displayedChild = POS_PIN
-                    })
+                        })
                 }
             }
         })

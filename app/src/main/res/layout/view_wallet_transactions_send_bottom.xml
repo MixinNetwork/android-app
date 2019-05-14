@@ -5,7 +5,7 @@
     android:orientation="vertical">
 
     <TextView
-        android:id="@+id/hide"
+        android:id="@+id/contact"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="@drawable/bg_upper_round"
@@ -13,15 +13,15 @@
         android:gravity="center_vertical"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
-        android:text="@string/wallet_transactions_hide" />
+        android:text="@string/contact"/>
 
     <View
         android:layout_width="match_parent"
         android:layout_height=".5dp"
-        android:background="@color/divider" />
+        android:background="@color/divider"/>
 
     <TextView
-        android:id="@+id/cancel"
+        android:id="@+id/address"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:background="@android:color/white"
@@ -29,5 +29,21 @@
         android:gravity="center_vertical"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
-        android:text="@string/cancel" />
+        android:text="@string/address"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/divider"/>
+
+    <TextView
+        android:id="@+id/send_cancel"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:text="@string/cancel"/>
 </LinearLayout>
