@@ -115,7 +115,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET status = 'DELIVERED' WHERE status = 'FAILED' AND id = :id")
+    @Query("UPDATE messages SET status = 'DELIVERED' WHERE id = :id AND status = 'FAILED'")
     fun recallFailedMessage(id: String)
 
     @Query("UPDATE messages SET category = 'MESSAGE_RECALL', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL, " +
