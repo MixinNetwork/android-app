@@ -80,7 +80,7 @@ import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
-import one.mixin.android.vo.createReCallMessage
+import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
@@ -93,7 +93,7 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
 import one.mixin.android.websocket.TransferContactData
-import one.mixin.android.websocket.TransferReCallData
+import one.mixin.android.websocket.TransferRecallData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
@@ -208,11 +208,11 @@ internal constructor(
         jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, mid, createdAt))
     }
 
-    fun sendReCallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
+    fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
         list.forEach { messageItem ->
-            val transferReCallData = TransferReCallData(messageItem.messageId)
-            val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferReCallData).toByteArray())
-            val message = createReCallMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+            val transferRecallData = TransferRecallData(messageItem.messageId)
+            val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferRecallData).toByteArray())
+            val message = createRecallMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
                 MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING, nowInUtc())
             jobManager.addJobInBackground(SendMessageJob(message, recallMessageId = messageItem.messageId))
         }

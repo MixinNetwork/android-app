@@ -12,7 +12,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
-import one.mixin.android.event.ReCallEvent
+import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
@@ -37,7 +37,7 @@ import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
-import one.mixin.android.vo.createReCallMessage
+import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
@@ -54,7 +54,7 @@ import one.mixin.android.websocket.SystemConversationData
 import one.mixin.android.websocket.TransferAttachmentData
 import one.mixin.android.websocket.TransferContactData
 import one.mixin.android.websocket.TransferPlainData
-import one.mixin.android.websocket.TransferReCallData
+import one.mixin.android.websocket.TransferRecallData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
@@ -106,7 +106,7 @@ class DecryptMessage : Injector() {
             } else if (data.category == MessageCategory.APP_CARD.name) {
                 processAppCard(data)
             } else if (data.category == MessageCategory.MESSAGE_RECALL.name) {
-                processReCallMessage(data)
+                processRecallMessage(data)
             }
         } catch (e: Exception) {
             Timber.e("Process error: $e")
@@ -154,16 +154,16 @@ class DecryptMessage : Injector() {
         MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    private fun processReCallMessage(data: BlazeMessageData) {
+    private fun processRecallMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
             val decoded = Base64.decode(data.data)
-            val transferReCallData = gson.fromJson(String(decoded), TransferReCallData::class.java)
-            messageDao.findMessageById(transferReCallData.messageId)?.let { msg ->
-                messageDao.reCallFailedMessage(msg.id)
-                messageDao.reCallMessage(msg.id)
+            val transferRecallData = gson.fromJson(String(decoded), TransferRecallData::class.java)
+            messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
+                messageDao.recallFailedMessage(msg.id)
+                messageDao.recallMessage(msg.id)
                 messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
                 if (msg.mediaUrl != null) {
-                    RxBus.publish(ReCallEvent(msg.id))
+                    RxBus.publish(RecallEvent(msg.id))
                     File(msg.mediaUrl.getFilePath()).let { file ->
                         if (file.exists() && file.isFile) {
                             file.delete()
@@ -180,7 +180,7 @@ class DecryptMessage : Injector() {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
         }
-        val msg = createReCallMessage(data.messageId, data.conversationId, data.userId,
+        val msg = createRecallMessage(data.messageId, data.conversationId, data.userId,
             MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
         sendToExtensionSession(msg)
     }

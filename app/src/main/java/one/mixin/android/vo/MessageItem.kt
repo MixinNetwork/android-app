@@ -112,7 +112,7 @@ fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name
 
-fun MessageItem.canReCall(): Boolean {
+fun MessageItem.canRecall(): Boolean {
     return this.type == MessageCategory.SIGNAL_TEXT.name
         || this.type == MessageCategory.SIGNAL_IMAGE.name
         || this.type == MessageCategory.SIGNAL_VIDEO.name
@@ -129,4 +129,4 @@ fun MessageItem.canReCall(): Boolean {
         || this.type == MessageCategory.PLAIN_AUDIO.name
 }
 
-fun MessageItem.isReCall() = type == MessageCategory.MESSAGE_RECALL.name
+fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name

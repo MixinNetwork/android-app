@@ -29,7 +29,7 @@ import one.mixin.android.ui.conversation.holder.HyperlinkHolder
 import one.mixin.android.ui.conversation.holder.ImageHolder
 import one.mixin.android.ui.conversation.holder.InfoHolder
 import one.mixin.android.ui.conversation.holder.MessageHolder
-import one.mixin.android.ui.conversation.holder.ReCallHolder
+import one.mixin.android.ui.conversation.holder.RecallHolder
 import one.mixin.android.ui.conversation.holder.ReplyHolder
 import one.mixin.android.ui.conversation.holder.SecretHolder
 import one.mixin.android.ui.conversation.holder.StickerHolder
@@ -45,7 +45,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.vo.isCallMessage
-import one.mixin.android.vo.isReCall
+import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import kotlin.math.abs
 
@@ -174,7 +174,7 @@ class ConversationAdapter(
                     (holder as CallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 RECALL_TYPE -> {
-                    (holder as ReCallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as RecallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 else -> {
                 }
@@ -406,7 +406,7 @@ class ConversationAdapter(
             }
             RECALL_TYPE -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_recall, parent, false)
-                ReCallHolder(item)
+                RecallHolder(item)
             }
             else -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_transparent, parent, false)
@@ -456,7 +456,7 @@ class ConversationAdapter(
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
                     item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
                 item.isCallMessage() -> CALL_TYPE
-                item.isReCall() -> RECALL_TYPE
+                item.isRecall() -> RECALL_TYPE
                 else -> UNKNOWN_TYPE
             }
         }, NULL_TYPE)

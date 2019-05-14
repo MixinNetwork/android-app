@@ -391,7 +391,7 @@ class ConversationListFragment : LinkFragment() {
                     itemView.msg_tv.setText(R.string.conversation_status_voice)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_voice)
                 }
-                conversationItem.isReCall() -> {
+                conversationItem.isRecall() -> {
                     setConversationName(conversationItem)
                     if (id == conversationItem.senderId) {
                         itemView.msg_tv.setText(R.string.chat_recall_me)
@@ -478,7 +478,7 @@ class ConversationListFragment : LinkFragment() {
             if (conversationItem.senderId == Session.getAccountId() &&
                 conversationItem.contentType != MessageCategory.SYSTEM_CONVERSATION.name &&
                 conversationItem.contentType != MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name &&
-                !conversationItem.isCallMessage() && !conversationItem.isReCall()
+                !conversationItem.isCallMessage() && !conversationItem.isRecall()
             ) {
                 when (conversationItem.messageStatus) {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(itemView.context,

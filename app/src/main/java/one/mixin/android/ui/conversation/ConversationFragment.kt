@@ -136,10 +136,8 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canNotForward
 import one.mixin.android.vo.canNotReply
-import one.mixin.android.vo.canReCall
+import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.vo.isCallMessage
-import one.mixin.android.vo.isReCall
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
@@ -902,22 +900,22 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var deleteDialog: AlertDialog? = null
     private fun deleteMessage(messages: List<MessageItem>) {
         deleteDialog?.dismiss()
-        val showReCall = messages.all { item ->
-            item.userId == sender.userId && !item.createdAt.lateOneHours() && item.canReCall()
+        val showRecall = messages.all { item ->
+            item.userId == sender.userId && !item.createdAt.lateOneHours() && item.canRecall()
         }
         val deleteDialogLayout = generateDeleteDialogLayout()
         deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setMessage(getString(R.string.chat_delete_message, messages.size))
             .setView(deleteDialogLayout)
             .create()
-        if (showReCall) {
+        if (showRecall) {
             deleteDialogLayout.delete_everyone.setOnClickListener {
                 if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
                     deleteDialog?.dismiss()
                     deleteAlert(messages)
                     defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
                 } else {
-                    chatViewModel.sendReCallMessage(conversationId, sender, messages)
+                    chatViewModel.sendRecallMessage(conversationId, sender, messages)
                     deleteDialog?.dismiss()
                 }
             }
@@ -946,7 +944,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
             .setMessage(getString(R.string.chat_recall_delete_alert))
             .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                chatViewModel.sendReCallMessage(conversationId, sender, messages)
+                chatViewModel.sendRecallMessage(conversationId, sender, messages)
                 dialog.dismiss()
             }
             .setNeutralButton(R.string.chat_recall_delete_more) { dialog, _ ->

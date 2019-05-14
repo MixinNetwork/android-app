@@ -164,7 +164,7 @@ fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
 
 fun Message.isCall() = category.startsWith("WEBRTC_")
 
-fun Message.isReCall() = category == MessageCategory.MESSAGE_RECALL.name
+fun Message.isRecall() = category == MessageCategory.MESSAGE_RECALL.name
 
 fun Message.isVideo() = category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
 
@@ -395,7 +395,7 @@ fun createContactMessage(
     .setSharedUserId(sharedUserId)
     .build()
 
-fun createReCallMessage(messageId: String,
+fun createRecallMessage(messageId: String,
     conversationId: String,
     userId: String,
     category: String,

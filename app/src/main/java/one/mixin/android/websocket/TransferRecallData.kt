@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
 
-data class TransferReCallData(
+data class TransferRecallData(
     @SerializedName("message_id")
     val messageId: String
 )

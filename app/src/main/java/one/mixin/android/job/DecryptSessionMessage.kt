@@ -7,7 +7,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
-import one.mixin.android.event.ReCallEvent
+import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
@@ -19,7 +19,7 @@ import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
-import one.mixin.android.vo.createReCallMessage
+import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
@@ -31,7 +31,7 @@ import one.mixin.android.websocket.SystemConversationData
 import one.mixin.android.websocket.SystemExtensionSessionAction
 import one.mixin.android.websocket.TransferAttachmentData
 import one.mixin.android.websocket.TransferPlainAckData
-import one.mixin.android.websocket.TransferReCallData
+import one.mixin.android.websocket.TransferRecallData
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
 import java.io.File
@@ -57,19 +57,19 @@ class DecryptSessionMessage : Injector() {
         } else if (data.category.startsWith("PLAIN_")) {
             processPlainMessage(data)
         } else if (data.category == MessageCategory.MESSAGE_RECALL.name) {
-            processReCallMessage(data)
+            processRecallMessage(data)
         }
     }
 
-    private fun processReCallMessage(data: BlazeMessageData) {
+    private fun processRecallMessage(data: BlazeMessageData) {
         val decoded = Base64.decode(data.data)
-        val transferReCallData = gson.fromJson(String(decoded), TransferReCallData::class.java)
-        messageDao.findMessageById(transferReCallData.messageId)?.let { msg ->
-            messageDao.reCallFailedMessage(msg.id)
-            messageDao.reCallMessage(msg.id)
+        val transferRecallData = gson.fromJson(String(decoded), TransferRecallData::class.java)
+        messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
+            messageDao.recallFailedMessage(msg.id)
+            messageDao.recallMessage(msg.id)
             messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
             if (msg.mediaUrl != null) {
-                RxBus.publish(ReCallEvent(msg.id))
+                RxBus.publish(RecallEvent(msg.id))
                 File(msg.mediaUrl.getFilePath()).let { file ->
                     if (file.exists() && file.isFile) {
                         file.delete()
@@ -81,9 +81,9 @@ class DecryptSessionMessage : Injector() {
             }
             jobManager.cancelJobById(msg.id)
         }
-        val msg = createReCallMessage(UUID.randomUUID().toString(), data.conversationId, data.userId,
+        val msg = createRecallMessage(UUID.randomUUID().toString(), data.conversationId, data.userId,
             MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
-        jobManager.addJobInBackground(SendMessageJob(msg, recallMessageId = data.messageId, alreadyExistMessage = true))
+        jobManager.addJobInBackground(SendMessageJob(msg, recallMessageId = data.messageId))
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
     }
 

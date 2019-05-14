@@ -12,7 +12,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
-import one.mixin.android.vo.isReCall
+import one.mixin.android.vo.isRecall
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
@@ -51,8 +51,8 @@ open class SendMessageJob(
         }
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {
-            if (message.isReCall()) {
-                messageDao.reCallMessage(recallMessageId!!)
+            if (message.isRecall()) {
+                messageDao.recallMessage(recallMessageId!!)
             } else {
                 messageDao.insert(message)
                 parseHyperlink()
@@ -81,7 +81,7 @@ open class SendMessageJob(
 
     override fun onRun() {
         jobManager.saveJob(this)
-        if (message.isPlain() || message.isCall() || message.isReCall()) {
+        if (message.isPlain() || message.isCall() || message.isRecall()) {
             sendPlainMessage()
         } else {
             sendSignalMessage()

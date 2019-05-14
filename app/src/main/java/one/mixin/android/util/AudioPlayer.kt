@@ -13,7 +13,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.ProgressEvent
-import one.mixin.android.event.ReCallEvent
+import one.mixin.android.event.RecallEvent
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isAudio
@@ -37,7 +37,7 @@ class AudioPlayer private constructor() {
 
         fun release() {
             instance?.let {
-                it.reCallDisposable?.let { disposable ->
+                it.recallDisposable?.let { disposable ->
                     if (!disposable.isDisposed) {
                         disposable.dispose()
                     }
@@ -53,10 +53,10 @@ class AudioPlayer private constructor() {
         }
     }
 
-    private var reCallDisposable: Disposable? = null
+    private var recallDisposable: Disposable? = null
 
     init {
-        reCallDisposable = RxBus.listen(ReCallEvent::class.java)
+        recallDisposable = RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
                 Timber.d("recall:" + it.messageId)

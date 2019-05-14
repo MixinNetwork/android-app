@@ -11,7 +11,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
 
-class ReCallHolder constructor(containerView: View) : BaseViewHolder(containerView) {
+class RecallHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
     init {
         itemView.chat_flag.visibility = GONE
