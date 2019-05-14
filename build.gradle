@@ -45,7 +45,7 @@ buildscript {
         ext.jobqueueVersion = '2.0.7'
         ext.stickyheadersrecyclerviewVersion = '0.4.3@aar'
         ext.threetenabpVersion = '1.1.2'
-        ext.signalVersion = '2.7.0'
+        ext.signalVersion = '2.7.1'
         ext.fabVersion = '1.6'
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
