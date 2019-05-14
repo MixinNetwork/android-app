@@ -156,11 +156,12 @@ class DecryptMessage : Injector() {
 
     private fun processReCallMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.MESSAGE_RECALL.name) {
-            val decoded = Base64.decode(data.data);
+            val decoded = Base64.decode(data.data)
             val transferReCallData = gson.fromJson(String(decoded), TransferReCallData::class.java)
             messageDao.findMessageById(transferReCallData.messageId)?.let { msg ->
                 messageDao.reCallFailedMessage(msg.id)
                 messageDao.reCallMessage(msg.id)
+                messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
                 if (msg.mediaUrl != null) {
                     RxBus.publish(ReCallEvent(msg.id))
                     File(msg.mediaUrl.getFilePath()).let { file ->
@@ -176,12 +177,12 @@ class DecryptMessage : Injector() {
                 jobManager.cancelJobById(msg.id)
                 notificationManager.cancel(msg.userId.hashCode())
             }
-            val msg = createReCallMessage(data.messageId, data.conversationId, data.userId,
-                MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
-            sendToExtensionSession(msg)
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
             messageHistoryDao.insert(MessageHistory(data.messageId))
         }
+        val msg = createReCallMessage(data.messageId, data.conversationId, data.userId,
+            MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
+        sendToExtensionSession(msg)
     }
 
     private fun processPlainMessage(data: BlazeMessageData) {
@@ -199,7 +200,7 @@ class DecryptMessage : Injector() {
                         continue
                     }
                     val needResendMessage = messageDao.findMessageById(mId)
-                    if (needResendMessage != null) {
+                    if (needResendMessage != null && needResendMessage.category != MessageCategory.MESSAGE_RECALL.name) {
                         needResendMessage.id = UUID.randomUUID().toString()
                         jobManager.addJobInBackground(SendMessageJob(needResendMessage,
                             ResendData(data.userId, mId), true, messagePriority = PRIORITY_SEND_ATTACHMENT_MESSAGE))

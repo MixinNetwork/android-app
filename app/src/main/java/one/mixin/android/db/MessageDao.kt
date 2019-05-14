@@ -197,7 +197,7 @@ interface MessageDao : BaseDao<Message> {
     fun findUnreadMessagesSync(conversationId: String, userId: String = Session.getAccountId()!!): List<MessageMinimal>?
 
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND user_id = :userId AND " +
-        "status = 'FAILED' AND category != 'MESSAGE_RECALL' ORDER BY created_at DESC LIMIT 1000")
+        "status = 'FAILED' ORDER BY created_at DESC LIMIT 1000")
     fun findFailedMessages(conversationId: String, userId: String): List<String>?
 
     @Query("SELECT m.id as messageId, m.media_url as mediaUrl FROM messages m WHERE conversation_id = :conversationId " +
