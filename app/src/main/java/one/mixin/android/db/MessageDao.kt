@@ -115,7 +115,10 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET status = :status WHERE id = :id")
     fun updateMessageStatus(status: String, id: String)
 
-    @Query("UPDATE messages SET category = 'MESSAGE_RECALL', status = 'DELIVERED', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL, " +
+    @Query("UPDATE messages SET status = 'DELIVERED' WHERE status = 'FAILED' AND id = :id")
+    fun reCallFailedMessage(id: String)
+
+    @Query("UPDATE messages SET category = 'MESSAGE_RECALL', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL, " +
         "media_duration = NULL, media_width = NULL, media_height = NULL, media_hash = NULL, thumb_image = NULL, media_key = NULL, " +
         "media_digest = NUll, media_status = NULL, action = NULL, participant_id = NULL, snapshot_id = NULL, hyperlink = NULL, name = NULL, " +
         "album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL WHERE id = :id")

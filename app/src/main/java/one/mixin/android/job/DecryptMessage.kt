@@ -159,6 +159,7 @@ class DecryptMessage : Injector() {
             val decoded = Base64.decode(data.data);
             val transferReCallData = gson.fromJson(String(decoded), TransferReCallData::class.java)
             messageDao.findMessageById(transferReCallData.messageId)?.let { msg ->
+                messageDao.reCallFailedMessage(msg.id)
                 messageDao.reCallMessage(msg.id)
                 if (msg.mediaUrl != null) {
                     RxBus.publish(ReCallEvent(msg.id))
