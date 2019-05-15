@@ -64,23 +64,6 @@ class DecryptSessionMessage : Injector() {
     private fun processRecallMessage(data: BlazeMessageData) {
         val decoded = Base64.decode(data.data)
         val transferRecallData = gson.fromJson(String(decoded), TransferRecallData::class.java)
-        messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
-            RxBus.publish(RecallEvent(msg.id))
-            messageDao.recallFailedMessage(msg.id)
-            messageDao.recallMessage(msg.id)
-            messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
-            if (msg.mediaUrl != null) {
-                File(msg.mediaUrl.getFilePath()).let { file ->
-                    if (file.exists() && file.isFile) {
-                        file.delete()
-                    }
-                }
-            }
-            messageDao.findMessageItemById(data.conversationId, msg.id)?.let { quoteMsg ->
-                messageDao.updateQuoteContentByQuoteId(data.conversationId, msg.id, gson.toJson(quoteMsg))
-            }
-            jobManager.cancelJobById(msg.id)
-        }
         val msg = createRecallMessage(UUID.randomUUID().toString(), data.conversationId, data.userId,
             MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
         jobManager.addJobInBackground(SendMessageJob(msg, recallMessageId = data.messageId))
