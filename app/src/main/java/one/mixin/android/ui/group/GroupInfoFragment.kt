@@ -73,7 +73,7 @@ class GroupInfoFragment : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(GroupViewModel::class.java)
     }
     private val adapter by lazy {
-        GroupInfoAdapter(group_info_rv)
+        GroupInfoAdapter()
     }
 
     private val conversationId: String by lazy {
@@ -95,7 +95,7 @@ class GroupInfoFragment : BaseFragment() {
             search_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        group_info_rv.addItemDecoration(SpaceItemDecoration(2))
+        group_info_rv.addItemDecoration(SpaceItemDecoration(1))
         header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
         adapter.headerView = header
         group_info_rv.adapter = adapter
