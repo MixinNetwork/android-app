@@ -52,9 +52,9 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
         chatLayout(isMe, isLast)
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         itemView.recall_tv.text = if (isMe) {
-            ctx.getString(R.string.chat_recall_me)
+            ctx.getString(R.string.chat_recall_me) + " "
         } else {
-            ctx.getString(R.string.chat_recall_delete)
+            ctx.getString(R.string.chat_recall_delete) + " "
         }
 
         itemView.setOnLongClickListener {
