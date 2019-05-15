@@ -284,12 +284,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         try {
                             if (chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_TEXT.name ||
                                 chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_TEXT.name) {
-                                tool_view.copy_iv.visibility = View.VISIBLE
+                                tool_view.copy_iv.visibility = VISIBLE
                             } else {
-                                tool_view.copy_iv.visibility = View.GONE
+                                tool_view.copy_iv.visibility = GONE
                             }
                         } catch (e: ArrayIndexOutOfBoundsException) {
-                            tool_view.copy_iv.visibility = View.GONE
+                            tool_view.copy_iv.visibility = GONE
                         }
                         if (chatAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
                             tool_view.add_sticker_iv.visibility = VISIBLE
@@ -297,22 +297,22 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             tool_view.add_sticker_iv.visibility = GONE
                         }
                         if (chatAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
-                            tool_view.reply_iv.visibility = View.GONE
+                            tool_view.reply_iv.visibility = GONE
                         } else {
-                            tool_view.reply_iv.visibility = View.VISIBLE
+                            tool_view.reply_iv.visibility = VISIBLE
                         }
                     }
                     else -> {
-                        tool_view.forward_iv.visibility = View.VISIBLE
-                        tool_view.reply_iv.visibility = View.GONE
-                        tool_view.copy_iv.visibility = View.GONE
+                        tool_view.forward_iv.visibility = VISIBLE
+                        tool_view.reply_iv.visibility = GONE
+                        tool_view.copy_iv.visibility = GONE
                         tool_view.add_sticker_iv.visibility = GONE
                     }
                 }
                 if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
-                    tool_view.forward_iv.visibility = View.GONE
+                    tool_view.forward_iv.visibility = GONE
                 } else {
-                    tool_view.forward_iv.visibility = View.VISIBLE
+                    tool_view.forward_iv.visibility = VISIBLE
                 }
                 chatAdapter.notifyDataSetChanged()
             }
@@ -322,9 +322,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (b) {
                     if (messageItem.type == MessageCategory.SIGNAL_TEXT.name ||
                         messageItem.type == MessageCategory.PLAIN_TEXT.name) {
-                        tool_view.copy_iv.visibility = View.VISIBLE
+                        tool_view.copy_iv.visibility = VISIBLE
                     } else {
-                        tool_view.copy_iv.visibility = View.GONE
+                        tool_view.copy_iv.visibility = GONE
                     }
 
                     if (messageItem.supportSticker()) {
@@ -334,14 +334,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
 
                     if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
-                        tool_view.forward_iv.visibility = View.GONE
+                        tool_view.forward_iv.visibility = GONE
                     } else {
-                        tool_view.forward_iv.visibility = View.VISIBLE
+                        tool_view.forward_iv.visibility = VISIBLE
                     }
                     if (chatAdapter.selectSet.find { it.canNotReply() } != null) {
-                        tool_view.reply_iv.visibility = View.GONE
+                        tool_view.reply_iv.visibility = GONE
                     } else {
-                        tool_view.reply_iv.visibility = View.VISIBLE
+                        tool_view.reply_iv.visibility = VISIBLE
                     }
                     chatAdapter.notifyDataSetChanged()
                     tool_view.fadeIn()

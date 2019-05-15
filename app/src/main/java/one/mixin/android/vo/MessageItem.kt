@@ -88,7 +88,7 @@ fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name ||
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
     this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
     (this.mediaStatus != MediaStatus.DONE.name && this.isMedia()) ||
-    isCallMessage()
+    isCallMessage() || isRecall()
 
 fun MessageItem.supportSticker(): Boolean = this.type == MessageCategory.SIGNAL_STICKER.name ||
     this.type == MessageCategory.PLAIN_STICKER.name ||
@@ -99,7 +99,7 @@ fun MessageItem.canNotReply() =
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
         (this.mediaStatus != MediaStatus.DONE.name && this.isMedia()) ||
-        isCallMessage()
+        isCallMessage() || isRecall()
 
 fun MessageItem.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
