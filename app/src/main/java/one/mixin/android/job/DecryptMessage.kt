@@ -163,7 +163,7 @@ class DecryptMessage : Injector() {
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
                 messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
-                if (msg.mediaUrl != null) {
+                if (msg.mediaUrl != null && msg.mediaStatus == MediaStatus.DONE.name) {
                     File(msg.mediaUrl.getFilePath()).let { file ->
                         if (file.exists() && file.isFile) {
                             file.delete()

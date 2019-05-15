@@ -2,8 +2,12 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
+import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
+import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.findLastUrl
+import one.mixin.android.extension.getFilePath
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Message
@@ -18,6 +22,7 @@ import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.createCallMessage
 import one.mixin.android.websocket.createParamBlazeMessage
+import java.io.File
 
 open class SendMessageJob(
     val message: Message,
@@ -53,6 +58,23 @@ open class SendMessageJob(
         if (conversation != null) {
             if (message.isRecall()) {
                 messageDao.recallMessage(recallMessageId!!)
+                messageDao.findMessageById(recallMessageId)?.let { msg ->
+                    RxBus.publish(RecallEvent(msg.id))
+                    messageDao.recallFailedMessage(msg.id)
+                    messageDao.recallMessage(msg.id)
+                    messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
+                    if (msg.mediaUrl != null) {
+                        File(msg.mediaUrl.getFilePath()).let { file ->
+                            if (file.exists() && file.isFile) {
+                                file.delete()
+                            }
+                        }
+                    }
+                    messageDao.findMessageItemById(message.conversationId, msg.id)?.let { quoteMsg ->
+                        messageDao.updateQuoteContentByQuoteId(message.conversationId, msg.id, GsonHelper.customGson.toJson(quoteMsg))
+                    }
+                    jobManager.cancelJobById(msg.id)
+                }
             } else {
                 messageDao.insert(message)
                 parseHyperlink()

@@ -601,6 +601,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (chatAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
                 }
+                reply_view.messageItem?.let{
+                    if(it.messageId == event.messageId){
+                        reply_view.fadeOut()
+                        chat_control.showOtherInput()
+                        reply_view.messageItem = null
+                    }
+                }
             }
     }
 
