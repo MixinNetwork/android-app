@@ -174,7 +174,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET content = :content, status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMessageContentAndStatus(content: String, status: String, id: String)
 
-    @Query("UPDATE messages SET content = :content WHERE id = :id AND category != 'MESSAGE_RECALL'")
+    @Query("UPDATE messages SET content = :content WHERE id = :id")
     fun updateMessageContent(content: String, id: String)
 
     @Transaction
