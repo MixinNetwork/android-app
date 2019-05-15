@@ -210,7 +210,7 @@
     <string name="chat_recall_me">You deleted this message.</string>
     <string name="chat_recall_other">%1$s deleted this message.</string>
     <string name="chat_recall_delete">This message was deleted.</string>
-    <string name="chat_recall_delete_alert">Messages you selected will be deleted for everyone on the latest version of MiXin in this chat.</string>
+    <string name="chat_recall_delete_alert">Messages you selected will be deleted for everyone on the latest version of Mixin in this chat.</string>
     <string name="chat_recall_delete_more">Learn More</string>
     <!--contact-->
     <string name="contact_other_add">Add Contact</string>
