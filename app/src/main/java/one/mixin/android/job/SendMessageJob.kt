@@ -12,6 +12,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
+import one.mixin.android.vo.isRecall
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
@@ -23,6 +24,7 @@ open class SendMessageJob(
     private val resendData: ResendData? = null,
     private val alreadyExistMessage: Boolean = false,
     private val recipientId: String? = null,
+    private val recallMessageId: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).addTags(message.id).groupBy("send_message_group")
     .requireWebSocketConnected().persist(), message.id) {
@@ -49,8 +51,12 @@ open class SendMessageJob(
         }
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {
-            messageDao.insert(message)
-            parseHyperlink()
+            if (message.isRecall()) {
+                messageDao.recallMessage(recallMessageId!!)
+            } else {
+                messageDao.insert(message)
+                parseHyperlink()
+            }
         } else {
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
@@ -75,7 +81,7 @@ open class SendMessageJob(
 
     override fun onRun() {
         jobManager.saveJob(this)
-        if (message.isPlain() || message.isCall()) {
+        if (message.isPlain() || message.isCall() || message.isRecall()) {
             sendPlainMessage()
         } else {
             sendSignalMessage()

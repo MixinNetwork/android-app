@@ -34,6 +34,7 @@ import com.uber.autodispose.kotlin.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import kotlinx.android.synthetic.main.view_reply.view.*
@@ -45,6 +46,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
@@ -57,6 +59,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
@@ -77,9 +80,11 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.removeEnd
@@ -132,6 +137,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.canNotForward
 import one.mixin.android.vo.canNotReply
+import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
@@ -279,12 +285,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         try {
                             if (chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.SIGNAL_TEXT.name ||
                                 chatAdapter.selectSet.valueAt(0)?.type == MessageCategory.PLAIN_TEXT.name) {
-                                tool_view.copy_iv.visibility = View.VISIBLE
+                                tool_view.copy_iv.visibility = VISIBLE
                             } else {
-                                tool_view.copy_iv.visibility = View.GONE
+                                tool_view.copy_iv.visibility = GONE
                             }
                         } catch (e: ArrayIndexOutOfBoundsException) {
-                            tool_view.copy_iv.visibility = View.GONE
+                            tool_view.copy_iv.visibility = GONE
                         }
                         if (chatAdapter.selectSet.valueAt(0)?.supportSticker() == true) {
                             tool_view.add_sticker_iv.visibility = VISIBLE
@@ -292,22 +298,22 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             tool_view.add_sticker_iv.visibility = GONE
                         }
                         if (chatAdapter.selectSet.valueAt(0)?.canNotReply() == true) {
-                            tool_view.reply_iv.visibility = View.GONE
+                            tool_view.reply_iv.visibility = GONE
                         } else {
-                            tool_view.reply_iv.visibility = View.VISIBLE
+                            tool_view.reply_iv.visibility = VISIBLE
                         }
                     }
                     else -> {
-                        tool_view.forward_iv.visibility = View.VISIBLE
-                        tool_view.reply_iv.visibility = View.GONE
-                        tool_view.copy_iv.visibility = View.GONE
+                        tool_view.forward_iv.visibility = VISIBLE
+                        tool_view.reply_iv.visibility = GONE
+                        tool_view.copy_iv.visibility = GONE
                         tool_view.add_sticker_iv.visibility = GONE
                     }
                 }
                 if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
-                    tool_view.forward_iv.visibility = View.GONE
+                    tool_view.forward_iv.visibility = GONE
                 } else {
-                    tool_view.forward_iv.visibility = View.VISIBLE
+                    tool_view.forward_iv.visibility = VISIBLE
                 }
                 chatAdapter.notifyDataSetChanged()
             }
@@ -317,9 +323,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (b) {
                     if (messageItem.type == MessageCategory.SIGNAL_TEXT.name ||
                         messageItem.type == MessageCategory.PLAIN_TEXT.name) {
-                        tool_view.copy_iv.visibility = View.VISIBLE
+                        tool_view.copy_iv.visibility = VISIBLE
                     } else {
-                        tool_view.copy_iv.visibility = View.GONE
+                        tool_view.copy_iv.visibility = GONE
                     }
 
                     if (messageItem.supportSticker()) {
@@ -329,14 +335,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
 
                     if (chatAdapter.selectSet.find { it.canNotForward() } != null) {
-                        tool_view.forward_iv.visibility = View.GONE
+                        tool_view.forward_iv.visibility = GONE
                     } else {
-                        tool_view.forward_iv.visibility = View.VISIBLE
+                        tool_view.forward_iv.visibility = VISIBLE
                     }
                     if (chatAdapter.selectSet.find { it.canNotReply() } != null) {
-                        tool_view.reply_iv.visibility = View.GONE
+                        tool_view.reply_iv.visibility = GONE
                     } else {
-                        tool_view.reply_iv.visibility = View.VISIBLE
+                        tool_view.reply_iv.visibility = VISIBLE
                     }
                     chatAdapter.notifyDataSetChanged()
                     tool_view.fadeIn()
@@ -566,6 +572,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var disposable: Disposable? = null
     private var paused = false
     private var starTransition = false
+    private var recallDisposable: Disposable? = null
 
     override fun onResume() {
         super.onResume()
@@ -588,9 +595,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
+        recallDisposable = RxBus.listen(RecallEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { event ->
+                if (chatAdapter.selectSet.any { it.messageId == event.messageId }) {
+                    closeTool()
+                }
+            }
     }
 
     override fun onPause() {
+        deleteDialog?.dismiss()
         super.onPause()
         paused = true
         input_layout.removeOnKeyboardShownListener(this)
@@ -607,6 +622,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.cancelExternal()
         }
         MixinApplication.conversationId = null
+        recallDisposable?.let { disposable ->
+            if (!disposable.isDisposed) {
+                disposable.dispose()
+            }
+        }
     }
 
     override fun onBackPressed(): Boolean {
@@ -787,7 +807,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     AudioPlayer.get().pause()
                 }
             }
-            chatViewModel.deleteMessages(chatAdapter.selectSet)
+            deleteMessage(chatAdapter.selectSet.toList())
             closeTool()
         }
         reply_view.reply_close_iv.setOnClickListener {
@@ -889,6 +909,64 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
         bindData()
+    }
+
+    private var deleteDialog: AlertDialog? = null
+    private fun deleteMessage(messages: List<MessageItem>) {
+        deleteDialog?.dismiss()
+        val showRecall = messages.all { item ->
+            item.userId == sender.userId && !item.createdAt.lateOneHours() && item.canRecall()
+        }
+        val deleteDialogLayout = generateDeleteDialogLayout()
+        deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setMessage(getString(R.string.chat_delete_message, messages.size))
+            .setView(deleteDialogLayout)
+            .create()
+        if (showRecall) {
+            deleteDialogLayout.delete_everyone.setOnClickListener {
+                if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
+                    deleteDialog?.dismiss()
+                    deleteAlert(messages)
+                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
+                } else {
+                    chatViewModel.sendRecallMessage(conversationId, sender, messages)
+                    deleteDialog?.dismiss()
+                }
+            }
+            deleteDialogLayout.delete_everyone.visibility = VISIBLE
+        } else {
+            deleteDialogLayout.delete_everyone.visibility = GONE
+        }
+        deleteDialogLayout.delete_me.setOnClickListener {
+            chatViewModel.deleteMessages(messages)
+            deleteDialog?.dismiss()
+        }
+        deleteDialog?.show()
+    }
+
+    private fun generateDeleteDialogLayout(): View {
+        return LayoutInflater.from(requireActivity()).inflate(R.layout.dialog_delete, null, false).apply {
+            this.delete_cancel.setOnClickListener {
+                deleteDialog?.dismiss()
+            }
+        }
+    }
+
+    private var deleteAlertDialog: AlertDialog? = null
+    private fun deleteAlert(messages: List<MessageItem>) {
+        deleteAlertDialog?.dismiss()
+        deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setMessage(getString(R.string.chat_recall_delete_alert))
+            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                chatViewModel.sendRecallMessage(conversationId, sender, messages)
+                dialog.dismiss()
+            }
+            .setNeutralButton(R.string.chat_recall_delete_more) { dialog, _ ->
+                context?.openUrl(getString(R.string.chat_delete_url))
+                dialog.dismiss()
+            }
+            .create()
+        deleteDialog?.show()
     }
 
     private fun liveDataMessage(unreadCount: Int) {

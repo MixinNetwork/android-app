@@ -1,9 +1,9 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.extension.nowInUtc
 
@@ -88,7 +88,7 @@ fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name ||
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
     this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
     (this.mediaStatus != MediaStatus.DONE.name && this.isMedia()) ||
-    isCallMessage()
+    isCallMessage() || isRecall()
 
 fun MessageItem.supportSticker(): Boolean = this.type == MessageCategory.SIGNAL_STICKER.name ||
     this.type == MessageCategory.PLAIN_STICKER.name ||
@@ -99,7 +99,7 @@ fun MessageItem.canNotReply() =
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
         this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
         (this.mediaStatus != MediaStatus.DONE.name && this.isMedia()) ||
-        isCallMessage()
+        isCallMessage() || isRecall()
 
 fun MessageItem.isCallMessage() =
     type == MessageCategory.WEBRTC_AUDIO_CANCEL.name ||
@@ -111,3 +111,22 @@ fun MessageItem.isCallMessage() =
 fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name
+
+fun MessageItem.canRecall(): Boolean {
+    return this.type == MessageCategory.SIGNAL_TEXT.name
+        || this.type == MessageCategory.SIGNAL_IMAGE.name
+        || this.type == MessageCategory.SIGNAL_VIDEO.name
+        || this.type == MessageCategory.SIGNAL_STICKER.name
+        || this.type == MessageCategory.SIGNAL_DATA.name
+        || this.type == MessageCategory.SIGNAL_CONTACT.name
+        || this.type == MessageCategory.SIGNAL_AUDIO.name
+        || this.type == MessageCategory.PLAIN_TEXT.name
+        || this.type == MessageCategory.PLAIN_IMAGE.name
+        || this.type == MessageCategory.PLAIN_VIDEO.name
+        || this.type == MessageCategory.PLAIN_STICKER.name
+        || this.type == MessageCategory.PLAIN_DATA.name
+        || this.type == MessageCategory.PLAIN_CONTACT.name
+        || this.type == MessageCategory.PLAIN_AUDIO.name
+}
+
+fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name

@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.graphics.Bitmap
 import android.net.Uri
 import androidx.annotation.WorkerThread
-import androidx.collection.ArraySet
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -81,6 +80,7 @@ import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
+import one.mixin.android.vo.createRecallMessage
 import one.mixin.android.vo.createReplyMessage
 import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createVideoMessage
@@ -93,6 +93,7 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
 import one.mixin.android.websocket.TransferContactData
+import one.mixin.android.websocket.TransferRecallData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
 import one.mixin.android.widget.gallery.MimeType
@@ -205,6 +206,16 @@ internal constructor(
     fun sendVideoMessage(conversationId: String, senderId: String, uri: Uri, isPlain: Boolean, messageId: String? = null, createdAt: String? = null) {
         val mid = messageId ?: UUID.randomUUID().toString()
         jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, isPlain, mid, createdAt))
+    }
+
+    fun sendRecallMessage(conversationId: String, sender: User, list: List<MessageItem>) {
+        list.forEach { messageItem ->
+            val transferRecallData = TransferRecallData(messageItem.messageId)
+            val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferRecallData).toByteArray())
+            val message = createRecallMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
+                MessageCategory.MESSAGE_RECALL.name, encoded, MessageStatus.SENDING, nowInUtc())
+            jobManager.addJobInBackground(SendMessageJob(message, recallMessageId = messageItem.messageId))
+        }
     }
 
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
@@ -402,10 +413,9 @@ internal constructor(
         MixinApplication.appContext.getSystemService(Activity.NOTIFICATION_SERVICE) as NotificationManager
     }
 
-    fun deleteMessages(set: ArraySet<MessageItem>) {
-        val data = ArraySet(set)
+    fun deleteMessages(list: List<MessageItem>) {
         GlobalScope.launch(SINGLE_DB_THREAD) {
-            data.forEach { item ->
+            list.forEach { item ->
                 conversationRepository.deleteMessage(item.messageId)
                 jobManager.cancelJobById(item.messageId)
                 notificationManager.cancel(item.userId.hashCode())

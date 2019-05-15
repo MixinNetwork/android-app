@@ -164,6 +164,8 @@ fun Message.isRepresentativeMessage(conversation: ConversationItem): Boolean {
 
 fun Message.isCall() = category.startsWith("WEBRTC_")
 
+fun Message.isRecall() = category == MessageCategory.MESSAGE_RECALL.name
+
 fun Message.isVideo() = category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
 
 enum class MessageCategory {
@@ -183,6 +185,7 @@ enum class MessageCategory {
     PLAIN_CONTACT,
     PLAIN_AUDIO,
     PLAIN_JSON,
+    MESSAGE_RECALL,
     STRANGER,
     SECRET,
     SYSTEM_CONVERSATION,
@@ -390,6 +393,17 @@ fun createContactMessage(
 ) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
     .setContent(content)
     .setSharedUserId(sharedUserId)
+    .build()
+
+fun createRecallMessage(messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String,
+    status: MessageStatus,
+    createdAt: String
+) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    .setContent(content)
     .build()
 
 fun createAudioMessage(
