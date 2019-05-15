@@ -73,8 +73,6 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
         itemView.chat_layout.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-            } else {
-                onItemListener.onCallClick(messageItem)
             }
         }
         itemView.setOnClickListener {
