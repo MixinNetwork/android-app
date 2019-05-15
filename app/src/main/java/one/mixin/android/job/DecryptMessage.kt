@@ -159,11 +159,11 @@ class DecryptMessage : Injector() {
             val decoded = Base64.decode(data.data)
             val transferRecallData = gson.fromJson(String(decoded), TransferRecallData::class.java)
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
+                RxBus.publish(RecallEvent(msg.id))
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
                 messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
                 if (msg.mediaUrl != null) {
-                    RxBus.publish(RecallEvent(msg.id))
                     File(msg.mediaUrl.getFilePath()).let { file ->
                         if (file.exists() && file.isFile) {
                             file.delete()

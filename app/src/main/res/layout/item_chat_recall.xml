@@ -6,14 +6,14 @@
     android:clickable="true"
     android:focusable="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="1.5dp"
-        android:orientation="horizontal"
+        app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -22,6 +22,9 @@
         app:layout_goneMarginBottom="0dp">
 
         <TextView
+            app:layout_constraintTop_toBottomOf="@id/chat_name"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/time"
             android:id="@+id/recall_tv"
             android:textStyle="italic"
             android:gravity="center_vertical"
@@ -33,9 +36,26 @@
             android:drawableStart="@drawable/ic_status_recall"
             android:textSize="14sp"/>
 
-        <include layout="@layout/date_wrapper"/>
+        <include
+            android:id="@+id/time"
+            app:layout_constraintStart_toEndOf="@id/recall_tv"
+            app:layout_constraintBottom_toBottomOf="parent"
+            layout="@layout/date_wrapper"/>
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/chat_name"
+            android:minWidth="30dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:lines="1"
+            android:textColor="#19BEF1"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:textSize="14sp"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 

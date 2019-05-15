@@ -207,9 +207,8 @@
     <string name="chat_delete_message">Delete %1$d messages?</string>
     <string name="chat_delete_for_me">Delete for me</string>
     <string name="chat_delete_for_everyone">Delete for Everyone</string>
-    <string name="chat_recall_me">You deleted this message.</string>
-    <string name="chat_recall_other">%1$s deleted this message.</string>
-    <string name="chat_recall_delete">This message was deleted.</string>
+    <string name="chat_recall_me">You deleted this message</string>
+    <string name="chat_recall_delete">This message was deleted</string>
     <string name="chat_recall_delete_alert">Messages you selected will be deleted for everyone on the latest version of Mixin in this chat.</string>
     <string name="chat_recall_delete_more">Learn More</string>
     <!--contact-->

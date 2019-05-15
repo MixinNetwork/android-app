@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
+import org.jetbrains.anko.dip
 
 class RecallHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
@@ -19,6 +20,7 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
 
     fun bind(
         messageItem: MessageItem,
+        isFirst:Boolean,
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,
@@ -26,12 +28,33 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
     ) {
         val ctx = itemView.context
         val isMe = meId == messageItem.userId
+        if (isFirst && !isMe) {
+            itemView.chat_name.visibility = View.VISIBLE
+            itemView.chat_name.text = messageItem.userFullName
+            if (messageItem.appId != null) {
+                itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
+                itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+            } else {
+                itemView.chat_name.setCompoundDrawables(null, null, null, null)
+            }
+            itemView.chat_name.setTextColor(getColorById(messageItem.userId))
+            itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
+        } else {
+            itemView.chat_name.visibility = View.GONE
+        }
+
+        if (messageItem.appId != null) {
+            itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
+            itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
+        } else {
+            itemView.chat_name.setCompoundDrawables(null, null, null, null)
+        }
         chatLayout(isMe, isLast)
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         itemView.recall_tv.text = if (isMe) {
             ctx.getString(R.string.chat_recall_me)
         } else {
-            ctx.getString(R.string.chat_recall_other, messageItem.userFullName)
+            ctx.getString(R.string.chat_recall_delete)
         }
 
         itemView.setOnLongClickListener {

@@ -59,6 +59,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
@@ -571,6 +572,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var disposable: Disposable? = null
     private var paused = false
     private var starTransition = false
+    private var recallDisposable: Disposable? = null
 
     override fun onResume() {
         super.onResume()
@@ -593,6 +595,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
+        recallDisposable = RxBus.listen(RecallEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { event ->
+                if (chatAdapter.selectSet.any { it.messageId == event.messageId }) {
+                    closeTool()
+                }
+            }
     }
 
     override fun onPause() {
@@ -613,6 +622,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.cancelExternal()
         }
         MixinApplication.conversationId = null
+        recallDisposable?.let { disposable ->
+            if (!disposable.isDisposed) {
+                disposable.dispose()
+            }
+        }
     }
 
     override fun onBackPressed(): Boolean {

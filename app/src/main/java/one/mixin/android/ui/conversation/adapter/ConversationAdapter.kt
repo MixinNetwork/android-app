@@ -174,7 +174,7 @@ class ConversationAdapter(
                     (holder as CallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 RECALL_TYPE -> {
-                    (holder as RecallHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
+                    (holder as RecallHolder).bind(it, isFirst(position), isLast(position), selectSet.size > 0, isSelect(position), onItemListener)
                 }
                 else -> {
                 }

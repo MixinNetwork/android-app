@@ -396,7 +396,7 @@ class ConversationListFragment : LinkFragment() {
                     if (id == conversationItem.senderId) {
                         itemView.msg_tv.setText(R.string.chat_recall_me)
                     } else {
-                        itemView.msg_tv.text = itemView.context.getString(R.string.chat_recall_other, conversationItem.name)
+                        itemView.msg_tv.text = itemView.context.getString(R.string.chat_recall_delete)
                     }
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_recall)
                 }
