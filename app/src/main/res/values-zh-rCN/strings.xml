@@ -198,8 +198,8 @@
     <string name="chat_delete_message">删除 %1$d 条消息吗?</string>
     <string name="chat_delete_for_me">为我删除</string>
     <string name="chat_delete_for_everyone">在所有人设备上删除</string>
-    <string name="chat_recall_me">你撤回了一条消息。</string>
-    <string name="chat_recall_delete">此消息已撤回。</string>
+    <string name="chat_recall_me">你撤回了一条消息</string>
+    <string name="chat_recall_delete">此消息已撤回</string>
     <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的设备都将删除被选中的消息</string>
     <string name="chat_recall_delete_more">了解更多</string>
     <!--contact-->
