@@ -59,8 +59,10 @@
                     <Button
                         style="@style/AppTheme.MaterialButton"
                         android:id="@+id/account_name_copy_tv"
-                        android:layout_width="80dp"
-                        android:layout_height="40dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minHeight="30dp"
+                        android:minWidth="70dp"
                         android:layout_marginBottom="12dp"
                         android:layout_alignBottom="@+id/account_name_qr_fl"
                         android:layout_marginStart="32dp"
@@ -132,13 +134,15 @@
                     <Button
                         style="@style/AppTheme.MaterialButton"
                         android:id="@+id/account_memo_copy_tv"
-                        android:layout_width="80dp"
-                        android:layout_height="40dp"
-                        android:gravity="center"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minHeight="30dp"
+                        android:minWidth="70dp"
                         android:layout_marginStart="32dp"
                         android:layout_marginBottom="8dp"
                         android:layout_alignBottom="@+id/account_memo_qr_fl"
-                        android:textSize="14sp"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
                         android:text="@string/copy"/>
 
                     <FrameLayout
