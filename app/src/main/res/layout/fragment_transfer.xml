@@ -108,8 +108,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignBaseline="@id/asset_desc"
                     android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@+id/asset_desc"
-                    android:text="@string/balance"/>
+                    android:layout_toEndOf="@+id/asset_desc"/>
 
                 <ImageView
                     android:id="@+id/expand_iv"

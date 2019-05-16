@@ -32,8 +32,6 @@
             android:imeOptions="actionDone"
             android:inputType="text"
             android:maxLines="1"
-            android:paddingStart="@dimen/margin_start"
-            android:paddingEnd="@dimen/margin_start"
             android:textColor="@color/wallet_text_dark"
             android:textColorHint="@color/text_gray"
             android:textSize="14sp"/>

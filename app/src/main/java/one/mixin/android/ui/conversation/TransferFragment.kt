@@ -273,6 +273,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                             contentView.asset_avatar.bg.setImageResource(R.drawable.ic_avatar_place_holder)
                             contentView.asset_name.text = getString(R.string.app_name)
                             contentView.asset_desc.text = "0"
+                            contentView.desc_end.text = getString(R.string.symbol_xin)
                         })
                     }
                 }
@@ -318,6 +319,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         contentView.asset_name.text = asset.name
         contentView.asset_desc.text = asset.balance.numberFormat()
+        contentView.desc_end.text = asset.symbol
         contentView.asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
 
@@ -478,6 +480,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             holder.itemView.type_avatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.name.text = itemAssert.name
             holder.itemView.value.text = itemAssert.balance.numberFormat()
+            holder.itemView.value_end.text = itemAssert.symbol
             currentAsset?.let {
                 holder.itemView.check_iv.visibility = if (itemAssert.assetId == currentAsset?.assetId) VISIBLE else INVISIBLE
             }
