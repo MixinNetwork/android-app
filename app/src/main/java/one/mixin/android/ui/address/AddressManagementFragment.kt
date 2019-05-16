@@ -14,6 +14,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_address_management.*
+import kotlinx.android.synthetic.main.item_address.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
@@ -26,7 +27,6 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.MODIFY
-import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
@@ -88,7 +88,7 @@ class AddressManagementFragment : BaseFragment() {
         })
         val addrListener = object : AddressAdapter.SimpleAddressListener() {
             override fun onAddrLongClick(view: View, addr: Address) {
-                val popMenu = PopupMenu(activity!!, view)
+                val popMenu = PopupMenu(activity!!, view.addr_tv)
                 popMenu.menuInflater.inflate(R.menu.address_mamangement_item, popMenu.menu)
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {

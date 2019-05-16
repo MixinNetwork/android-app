@@ -55,13 +55,6 @@
                     android:visibility="gone"/>
             </FrameLayout>
 
-            <TextView
-                android:id="@+id/to_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:textColor="@color/black"/>
-
             <RelativeLayout
                 android:id="@+id/asset_rl"
                 android:layout_width="match_parent"
@@ -103,7 +96,6 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/center_place_holder"
-                    android:layout_marginTop="2dp"
                     android:layout_toEndOf="@+id/asset_avatar"
                     android:ellipsize="end"
                     android:maxWidth="150dp"

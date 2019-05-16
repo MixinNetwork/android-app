@@ -200,7 +200,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 } else {
                     user = u
                     contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                    contentView.to_tv.text = getString(R.string.to, u.fullName)
+                    contentView.title_view.setSubTitle(getString(R.string.send_to, u.fullName), u.identityNumber)
                 }
             })
         } else {
