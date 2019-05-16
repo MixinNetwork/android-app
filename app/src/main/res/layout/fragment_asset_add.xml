@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray"
+    android:background="@color/white"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -14,16 +15,13 @@
         app:rightText="@string/save"
         app:titleText="@string/wallet_add_asset"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/wallet_divider"/>
-
     <one.mixin.android.widget.SearchView
         android:id="@+id/search_et"
         android:layout_width="match_parent"
-        android:layout_height="70dp"
-        android:background="@color/white"
+        android:layout_height="?actionBarSize"
+        android:background="@null"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin20"
         android:drawablePadding="8dp"
         android:drawableStart="@drawable/ic_asset_add_search"
         android:hint="@string/search"
@@ -72,6 +70,29 @@
                 android:layout_marginTop="@dimen/margin16"
                 android:textColor="@color/wallet_text_gray"
                 android:text="@string/searching"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="48dp"
+            android:layout_gravity="center_horizontal"
+            android:orientation="vertical"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_no_result"
+                android:contentDescription="@string/no_result"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin16"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/wallet_text_gray"
+                android:text="@string/no_result"/>
         </LinearLayout>
     </ViewAnimator>
 </LinearLayout>

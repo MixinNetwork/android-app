@@ -14,7 +14,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_deposit_qr_bottom.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -61,11 +61,20 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title.left_ib.setOnClickListener { dismiss() }
+        contentView.title.right_iv.setOnClickListener { dismiss() }
         when (type) {
-            TYPE_NAME -> contentView.title.setSubTitle(getString(R.string.account_name), asset.accountName!!)
-            TYPE_TAG -> contentView.title.setSubTitle(getString(R.string.account_memo), asset.accountTag!!)
-            else -> contentView.title.setSubTitle(getString(R.string.address), asset.publicKey!!)
+            TYPE_NAME -> {
+                contentView.title.title_tv.text = getString(R.string.account_name)
+                contentView.addr_tv.text = asset.accountName!!
+            }
+            TYPE_TAG -> {
+                contentView.title.title_tv.text = getString(R.string.account_memo)
+                contentView.addr_tv.text = asset.accountTag!!
+            }
+            else -> {
+                contentView.title.title_tv.text = getString(R.string.address)
+                contentView.addr_tv.text = asset.publicKey!!
+            }
         }
         contentView.badge_view.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.badge_view.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)

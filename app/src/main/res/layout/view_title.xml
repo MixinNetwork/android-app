@@ -76,7 +76,6 @@
         android:layout_centerInParent="true"
         android:layout_marginStart="56dp"
         android:layout_marginEnd="56dp"
-        android:gravity="center"
         android:orientation="vertical">
 
         <TextView
@@ -93,9 +92,11 @@
             android:id="@+id/sub_title_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:gravity="center"
+            android:maxWidth="240dp"
+            android:layout_gravity="center_horizontal"
+            android:gravity="center_vertical"
             android:singleLine="true"
-            android:ellipsize="middle"
+            android:ellipsize="end"
             android:visibility="gone"
             android:textColor="@color/text_gray"
             android:textSize="10sp"

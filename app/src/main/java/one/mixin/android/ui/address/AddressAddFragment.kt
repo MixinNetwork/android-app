@@ -14,9 +14,11 @@ import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_address_add.*
+import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
@@ -39,14 +41,16 @@ class AddressAddFragment : BaseFragment() {
         const val TAG = "AddressAddFragment"
 
         const val ARGS_ADDRESS = "args_address"
-        const val ARGS_FROM_MANAGEMENT = "args_from_management"
 
-        fun newInstance(asset: AssetItem, address: Address? = null, type: Int = ADD, fromManagement: Boolean) = AddressAddFragment().apply {
+        fun newInstance(
+            asset: AssetItem,
+            address: Address? = null,
+            type: Int = ADD
+        ) = AddressAddFragment().apply {
             val b = Bundle().apply {
                 putParcelable(ARGS_ASSET, asset)
                 address?.let { putParcelable(ARGS_ADDRESS, it) }
                 putInt(ARGS_TYPE, type)
-                putBoolean(ARGS_FROM_MANAGEMENT, fromManagement)
             }
             arguments = b
         }
@@ -58,7 +62,6 @@ class AddressAddFragment : BaseFragment() {
     private val address: Address? by lazy {
         arguments!!.getParcelable<Address?>(ARGS_ADDRESS)
     }
-    private val fromManagement by lazy { arguments!!.getBoolean(ARGS_FROM_MANAGEMENT) }
 
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
 
@@ -76,8 +79,10 @@ class AddressAddFragment : BaseFragment() {
             activity?.onBackPressed()
         }
         title_view.title_tv.text = getString(if (type == ADD) R.string.withdrawal_addr_new
-            else R.string.withdrawal_addr_modify, asset.symbol)
-        title_view.right_animator.setOnClickListener {
+        else R.string.withdrawal_addr_modify, asset.symbol)
+        avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
+        avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        save_tv.setOnClickListener {
             val bottomSheet = if (noPublicKey()) {
                 PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, type = type,
                     accountName = label_et.text.toString(), accountTag = addr_et.text.toString())
@@ -88,11 +93,7 @@ class AddressAddFragment : BaseFragment() {
             bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
-                    if (fromManagement) {
-                        fragmentManager?.popBackStackImmediate()
-                    } else {
-                        activity?.onBackPressed()
-                    }
+                    activity?.onBackPressed()
                 }
             }
         }
@@ -161,11 +162,11 @@ class AddressAddFragment : BaseFragment() {
             if (!isAdded) return
 
             if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty()) {
-                title_view.right_tv.textColor = resources.getColor(R.color.colorBlue, null)
-                title_view.right_animator.isEnabled = true
+                save_tv.isEnabled = true
+                save_tv.textColor = requireContext().getColor(R.color.white)
             } else {
-                title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
-                title_view.right_animator.isEnabled = false
+                save_tv.isEnabled = false
+                save_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
             }
         }
     }

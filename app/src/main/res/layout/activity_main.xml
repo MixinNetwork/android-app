@@ -8,9 +8,9 @@
     tools:context="one.mixin.android.ui.home.MainActivity">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <one.mixin.android.widget.MaterialSearchView
             android:id="@+id/search_bar"

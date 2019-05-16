@@ -12,7 +12,7 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 
-class AddressAdapter(private val asset: AssetItem, private val showIcon: Boolean = false, private val canSwipe: Boolean = false) :
+class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean = false) :
     RecyclerView.Adapter<AddressAdapter.ItemHolder>() {
     var addresses: MutableList<Address>? = null
         set(value) {
@@ -30,10 +30,9 @@ class AddressAdapter(private val asset: AssetItem, private val showIcon: Boolean
             return
         }
         val addr = addresses!![position]
-        holder.itemView.icon.visibility = if (showIcon) VISIBLE else GONE
         holder.itemView.background_rl.visibility = if (canSwipe) VISIBLE else GONE
-        holder.itemView.name_tv.text = if (noPublicKey()) addr.accountName else addr.label
-        holder.itemView.addr_tv.text = if (noPublicKey()) addr.accountTag else addr.publicKey
+        holder.itemView.name_tv.text = if (asset.isAccountTagAsset()) addr.accountName else addr.label
+        holder.itemView.addr_tv.text = if (asset.isAccountTagAsset()) addr.accountTag else addr.publicKey
         holder.itemView.setOnClickListener { addrListener?.onAddrClick(addr) }
         holder.itemView.setOnLongClickListener {
             addrListener?.onAddrLongClick(holder.itemView, addr)
@@ -42,8 +41,6 @@ class AddressAdapter(private val asset: AssetItem, private val showIcon: Boolean
     }
 
     override fun getItemCount(): Int = notNullElse(addresses, { it.size }, 0)
-
-    private fun noPublicKey() = !asset.accountName.isNullOrEmpty()
 
     fun removeItem(pos: Int): Address? {
         val addr = addresses?.removeAt(pos)

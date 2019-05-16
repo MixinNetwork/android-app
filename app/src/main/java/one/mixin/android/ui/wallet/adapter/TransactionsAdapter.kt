@@ -36,9 +36,8 @@ class TransactionsAdapter : PagedHeaderAdapter<SnapshotItem>(SnapshotItem.DIFF_C
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         if (holder is SnapshotHolder) {
             val pos = getPos(position)
-            val isLast = pos == itemCount - 1
             getItem(pos)?.let {
-                holder.bind(it, listener, isLast)
+                holder.bind(it, listener)
             }
         }
     }

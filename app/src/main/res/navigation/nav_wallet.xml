@@ -68,12 +68,6 @@
             app:popExitAnim="@anim/slide_out_right"/>
 
         <action
-            android:id="@+id/action_transactions_to_withdrawal"
-            app:destination="@id/withdrawal_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
             android:id="@+id/action_transactions_to_single_friend_select"
             app:destination="@id/single_friend_select_fragment"
             app:enterAnim="@anim/slide_in_right"
@@ -227,16 +221,6 @@
             app:destination="@id/wallet_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/withdrawal_fragment"
-        android:name="one.mixin.android.ui.wallet.WithdrawalFragment"
-        tools:layout="@layout/fragment_withdrawal">
-
-        <argument
-            android:name="args_asset"
-            app:argType="one.mixin.android.vo.AssetItem"/>
     </fragment>
 
     <fragment

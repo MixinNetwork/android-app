@@ -18,7 +18,7 @@ import com.uber.autodispose.autoDisposable
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_auth.view.*
 import kotlinx.android.synthetic.main.item_third_login_scope.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.response.AuthorizationResponse
@@ -33,9 +33,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Asset
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.backgroundResource
 import org.jetbrains.anko.collections.forEachWithIndex
-import org.jetbrains.anko.imageResource
 
 class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -108,10 +106,6 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         ScopeAdapter(scopes)
     }
 
-    private val miniHeight by lazy {
-        context!!.realSize().y * 3 / 4
-    }
-
     private val maxHeight by lazy {
         context!!.realSize().y - context!!.statusBarHeight()
     }
@@ -122,26 +116,14 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun setupDialog(dialog: Dialog, style: Int) {
         super.setupDialog(dialog, style)
         contentView = View.inflate(context, R.layout.fragment_auth, null)
-        contentView.title_view.backgroundResource = R.drawable.bg_round_top_white
         dialog as BottomSheet
         dialog.setCustomView(contentView)
-        dialog.setCustomViewHeight(miniHeight)
+        dialog.setCustomViewHeight(maxHeight)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title_view.setSubTitle(auth.app.name, getString(R.string.auth_request))
-        contentView.title_view.left_ib.setOnClickListener { dialog.dismiss() }
-        contentView.title_view.right_animator.setOnClickListener {
-            val expand = (dialog as BottomSheet).getCustomViewHeight() == maxHeight
-            if (expand) {
-                contentView.title_view.right_ib.imageResource = R.drawable.ic_zoom_in
-                (dialog as BottomSheet).setCustomViewHeight(miniHeight)
-            } else {
-                contentView.title_view.right_ib.imageResource = R.drawable.ic_zoom_out
-                (dialog as BottomSheet).setCustomViewHeight(maxHeight)
-            }
-        }
+        contentView.title_view.right_iv.setOnClickListener { dialog.dismiss() }
         contentView.avatar.loadCircleImage(auth.app.icon_url, R.mipmap.ic_launcher_round)
         contentView.scope_rv.adapter = scopeAdapter
         scopeAdapter.onScopeListener = object : OnScopeListener {

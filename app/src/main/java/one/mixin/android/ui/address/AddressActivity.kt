@@ -6,7 +6,7 @@ import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
-import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
 
 class AddressActivity : BaseActivity() {
@@ -27,12 +27,7 @@ class AddressActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        if (intent.hasExtra(ARGS_SHOW_ADD) && intent.getBooleanExtra(ARGS_SHOW_ADD, false)) {
-            replaceFragment(AddressAddFragment.newInstance(intent.extras!!.getParcelable(ARGS_ASSET)!!, fromManagement = false),
-                R.id.container, AddressAddFragment.TAG)
-        } else {
-            replaceFragment(AddressManagementFragment.newInstance(intent.extras!!.getParcelable(ARGS_ASSET)!!),
-                R.id.container, AddressManagementFragment.TAG)
-        }
+        replaceFragment(AddressManagementFragment.newInstance(intent.extras!!.getParcelable(ARGS_ASSET)!!),
+            R.id.container, AddressManagementFragment.TAG)
     }
 }

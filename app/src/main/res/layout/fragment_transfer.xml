@@ -9,14 +9,14 @@
         android:id="@+id/ph"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"/>
+        android:background="@color/white"/>
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/ph"
-        app:leftIcon="@drawable/ic_close_black_24dp"
+        app:left_icon="@drawable/ic_close_black_24dp"
         app:need_divider="false"
         app:titleText="@string/transfer"/>
 
@@ -30,32 +30,40 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:background="@android:color/white"
             android:baselineAligned="false"
-            android:background="@android:color/white">
+            android:orientation="vertical">
 
-            <one.mixin.android.widget.AvatarView
-                android:id="@+id/avatar"
+            <FrameLayout
                 android:layout_width="70dp"
                 android:layout_height="70dp"
-                android:layout_gravity="center_horizontal"/>
-
-            <TextView
-                android:id="@+id/to_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:textColor="@color/black"/>
+                android:layout_marginTop="@dimen/margin12">
+
+                <one.mixin.android.widget.AvatarView
+                    android:id="@+id/avatar"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"/>
+
+                <ImageView
+                    android:id="@+id/address_avatar"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:background="@drawable/bg_circle_70_solid_gray"
+                    android:padding="@dimen/margin16"
+                    android:src="@drawable/ic_transfer_address"
+                    android:visibility="gone"/>
+            </FrameLayout>
 
             <RelativeLayout
                 android:id="@+id/asset_rl"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
-                android:background="@drawable/bg_round_8_solid_gray"
+                android:layout_marginStart="@dimen/margin20"
                 android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:layout_marginBottom="10dp"
                 android:layout_marginEnd="@dimen/margin20"
-                android:layout_marginStart="@dimen/margin20">
+                android:layout_marginBottom="10dp"
+                android:background="@drawable/bg_round_8_solid_gray">
 
                 <androidx.legacy.widget.Space
                     android:id="@+id/center_place_holder"
@@ -67,8 +75,8 @@
                     android:id="@+id/asset_avatar"
                     android:layout_width="32dp"
                     android:layout_height="32dp"
-                    android:layout_marginStart="@dimen/margin16"
                     android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/margin16"
                     android:layout_marginEnd="8dp"/>
 
                 <TextView
@@ -76,23 +84,22 @@
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:lines="1"
-                    android:ellipsize="end"
                     android:layout_above="@+id/center_place_holder"
+                    android:layout_toStartOf="@id/expand_iv"
                     android:layout_toEndOf="@+id/asset_avatar"
-                    android:layout_toStartOf="@id/expand_iv"/>
+                    android:ellipsize="end"
+                    android:lines="1"/>
 
                 <TextView
                     android:id="@+id/asset_desc"
                     style="@style/DescTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:maxWidth="150dp"
-                    android:maxLines="1"
-                    android:ellipsize="end"
                     android:layout_below="@id/center_place_holder"
-                    android:layout_marginTop="2dp"
-                    android:layout_toEndOf="@+id/asset_avatar"/>
+                    android:layout_toEndOf="@+id/asset_avatar"
+                    android:ellipsize="end"
+                    android:maxWidth="150dp"
+                    android:maxLines="1"/>
 
                 <TextView
                     android:id="@+id/desc_end"
@@ -101,8 +108,7 @@
                     android:layout_height="wrap_content"
                     android:layout_alignBaseline="@id/asset_desc"
                     android:layout_marginStart="8dp"
-                    android:layout_toEndOf="@+id/asset_desc"
-                    android:text="@string/balance"/>
+                    android:layout_toEndOf="@+id/asset_desc"/>
 
                 <ImageView
                     android:id="@+id/expand_iv"
@@ -136,15 +142,15 @@
                         android:id="@+id/amount_et"
                         android:layout_width="wrap_content"
                         android:layout_height="match_parent"
-                        android:hint="@string/wallet_transfer_amount"
-                        android:background="@null"
-                        android:inputType="numberDecimal"
                         android:layout_marginStart="@dimen/margin16"
                         android:layout_marginEnd="4dp"
-                        android:singleLine="true"
+                        android:background="@null"
                         android:ellipsize="end"
-                        android:textColorHint="@color/wallet_text_gray"
+                        android:hint="@string/wallet_transfer_amount"
+                        android:inputType="numberDecimal"
+                        android:singleLine="true"
                         android:textColor="@android:color/black"
+                        android:textColorHint="@color/wallet_text_gray"
                         android:textSize="16sp"/>
 
                     <TextView
@@ -159,12 +165,12 @@
                     android:id="@+id/swap_iv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:padding="8dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:layout_gravity="center"
                     android:layout_marginStart="@dimen/margin12"
                     android:layout_marginEnd="@dimen/margin12"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
+                    android:padding="8dp"
                     android:rotation="90"
                     android:src="@drawable/ic_as"
                     tools:ignore="ContentDescription"/>
@@ -172,19 +178,19 @@
                 <TextView
                     android:id="@+id/amount_as_tv"
                     style="@style/DescTextStyle"
-                    android:layout_below="@id/amount_ll"
                     android:layout_width="match_parent"
                     android:layout_height="24dp"
-                    android:gravity="center_vertical"
-                    android:singleLine="true"
-                    android:ellipsize="end"
-                    android:layout_toStartOf="@id/swap_iv"
+                    android:layout_below="@id/amount_ll"
                     android:layout_marginEnd="@dimen/margin12"
+                    android:layout_toStartOf="@id/swap_iv"
                     android:background="@drawable/bg_round_8_solid_gray"
-                    android:textColor="@color/wallet_text_gray"
-                    android:textSize="12sp"
+                    android:ellipsize="end"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/margin16"
                     android:paddingEnd="@dimen/margin16"
-                    android:paddingStart="@dimen/margin16"/>
+                    android:singleLine="true"
+                    android:textColor="@color/wallet_text_gray"
+                    android:textSize="12sp"/>
             </RelativeLayout>
 
             <EditText
@@ -192,43 +198,43 @@
                 style="@style/NormalTextStyle"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
-                android:layout_marginEnd="@dimen/margin20"
                 android:layout_marginStart="@dimen/margin20"
-                android:maxLength="140"
-                android:singleLine="true"
+                android:layout_marginEnd="@dimen/margin20"
                 android:background="@drawable/bg_round_8_solid_gray"
                 android:hint="@string/wallet_transfer_memo"
-                android:textColorHint="@color/wallet_text_gray"
-                android:paddingEnd="@dimen/margin16"
+                android:inputType="text"
+                android:maxLength="140"
                 android:paddingStart="@dimen/margin16"
-                android:inputType="text"/>
+                android:paddingEnd="@dimen/margin16"
+                android:singleLine="true"
+                android:textColorHint="@color/wallet_text_gray"/>
 
-            <ViewAnimator
-                android:id="@+id/continue_animator"
+            <TextView
+                android:id="@+id/fee_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="32dp"
+                android:layout_marginTop="@dimen/activity_vertical_margin"
+                android:layout_marginEnd="32dp"
+                android:layout_marginBottom="@dimen/margin16"
+                android:text="@string/withdrawal_fee"
+                android:textColor="@color/text_black"
+                android:textSize="12sp"
+                android:visibility="gone"/>
+
+            <Button
+                android:id="@+id/continue_tv"
+                style="@style/AppTheme.MaterialButton"
                 android:layout_width="116dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="50dp"
+                android:layout_marginBottom="20dp"
                 android:enabled="false"
-                android:inAnimation="@anim/fade_in"
-                android:outAnimation="@anim/fade_out"
-                android:background="@drawable/bg_gray_btn">
-
-                <TextView
-                    android:id="@+id/continue_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/common_continue"
-                    android:textColor="@color/wallet_text_gray"/>
-
-                <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:theme="@style/AppTheme.WhiteAccent"/>
-            </ViewAnimator>
+                android:text="@string/common_continue"
+                android:textColor="@color/wallet_text_gray"
+                android:textSize="14sp"/>
         </LinearLayout>
     </ScrollView>
 </RelativeLayout>

@@ -49,15 +49,6 @@ class WalletActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(RefreshAssetsJob())
     }
 
-    override fun finish() {
-        super.finish()
-        notNullElse(asset, {
-            overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
-        }, {
-            overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-        })
-    }
-
     private val asset: AssetItem? by lazy {
         intent.extras?.getParcelable<AssetItem>(ASSET)
     }
@@ -72,11 +63,7 @@ class WalletActivity : BlazeBaseActivity() {
                 myIntent.putExtras(bundle)
             }
             activity.startActivity(myIntent)
-            notNullElse(assetItem, {
-                activity.overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left)
-            }, {
-                activity.overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
-            })
+            activity.overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
     }
 }

@@ -5,13 +5,10 @@ import android.app.Dialog
 import android.content.ClipData
 import android.os.Bundle
 import android.view.View
-import android.view.View.VISIBLE
 import kotlinx.android.synthetic.main.fragment_asset_key_bottom.view.*
-import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
-import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -41,11 +38,9 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        contentView.title_view.left_ib.setOnClickListener { dismiss() }
+        contentView.title_view.right_iv.setOnClickListener { dismiss() }
         contentView.title_view.title_tv.text = asset.name
-        contentView.title_view.circle_iv.visibility = VISIBLE
-        contentView.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        contentView.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        contentView.title_view.showBadgeCircleView(asset)
         contentView.symbol_as_tv.text = asset.symbol
         contentView.chain_as_tv.text = asset.chainName
         contentView.asset_key_as_tv.text = asset.assetKey

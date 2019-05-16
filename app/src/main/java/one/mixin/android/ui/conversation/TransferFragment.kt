@@ -2,17 +2,20 @@ package one.mixin.android.ui.conversation
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
 import android.text.InputFilter
+import android.text.Spannable
+import android.text.SpannableStringBuilder
 import android.text.TextWatcher
+import android.text.style.StyleSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
@@ -29,8 +32,8 @@ import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullElse
@@ -40,20 +43,23 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
+import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.TransferBiometricItem
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import one.mixin.android.worker.RefreshAssetsWorker
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
-import org.jetbrains.anko.uiThread
-import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -65,10 +71,14 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "TransferFragment"
         const val ASSERT_PREFERENCE = "TRANSFER_ASSERT"
 
-        fun newInstance(userId: String) = TransferFragment().apply {
-            arguments = bundleOf(
-                ARGS_USER_ID to userId
-            )
+        fun newInstance(
+            userId: String? = null,
+            asset: AssetItem? = null,
+            address: Address? = null
+        ) = TransferFragment().withArgs {
+            userId?.let { putString(ARGS_USER_ID, it) }
+            asset?.let { putParcelable(ARGS_ASSET, it) }
+            address?.let { putParcelable(ARGS_ADDRESS, it) }
         }
     }
 
@@ -110,7 +120,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter = TypeAdapter()
 
-    private val userId: String by lazy { arguments!!.getString(ARGS_USER_ID) }
+    private val userId: String? by lazy { arguments!!.getString(ARGS_USER_ID) }
+    private val address: Address? by lazy { arguments!!.getParcelable<Address>(ARGS_ADDRESS) }
 
     private var user: User? = null
 
@@ -143,28 +154,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.amount_et.addTextChangedListener(mWatcher)
         contentView.amount_et.filters = arrayOf(inputFilter)
         contentView.amount_rl.setOnClickListener { operateKeyboard(true) }
-        contentView.asset_rl.setOnClickListener {
-            operateKeyboard(false)
-            context?.let {
-                adapter.submitList(assets)
-                adapter.setTypeListener(object : OnTypeClickListener {
-                    override fun onTypeClick(asset: AssetItem) {
-                        currentAsset = asset
-                        updateAssetUI(asset)
-                        adapter.notifyDataSetChanged()
-                        assetsBottomSheet.dismiss()
-                    }
-                })
-
-                assetsView.type_cancel.setOnClickListener {
-                    assetsBottomSheet.dismiss()
-                }
-                assetsBottomSheet.show()
-                assetsView.search_et.remainFocusable()
-            }
-
-            assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())
-        }
         contentView.swap_iv.setOnClickListener {
             currentAsset?.let {
                 swaped = !swaped
@@ -180,18 +169,73 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        chatViewModel.findUserById(userId).observe(this, Observer { u ->
-            if (u == null) {
-                jobManager.addJobInBackground(RefreshUserJob(listOf(userId)))
-            } else {
-                user = u
-                contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                contentView.to_tv.text = getString(R.string.to, u.fullName)
-            }
-        })
+        if (userId != null) {
+            contentView.asset_rl.setOnClickListener {
+                operateKeyboard(false)
+                context?.let {
+                    adapter.submitList(assets)
+                    adapter.setTypeListener(object : OnTypeClickListener {
+                        override fun onTypeClick(asset: AssetItem) {
+                            currentAsset = asset
+                            updateAssetUI(asset)
+                            adapter.notifyDataSetChanged()
+                            assetsBottomSheet.dismiss()
+                        }
+                    })
 
-        contentView.continue_animator.setOnClickListener {
-            if (!isAdded || user == null) return@setOnClickListener
+                    assetsView.close_iv.setOnClickListener {
+                        assetsBottomSheet.dismiss()
+                    }
+                    assetsBottomSheet.show()
+                    assetsView.search_et.remainFocusable()
+                }
+
+                assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())
+            }
+            chatViewModel.findUserById(userId!!).observe(this, Observer { u ->
+                if (u == null) {
+                    jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
+                } else {
+                    user = u
+                    contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                    contentView.title_view.setSubTitle(getString(R.string.send_to, u.fullName), u.identityNumber)
+                }
+            })
+        } else {
+            contentView.avatar.isVisible = false
+            contentView.address_avatar.isVisible = true
+            contentView.expand_iv.isVisible = false
+            contentView.asset_rl.setOnClickListener(null)
+            currentAsset = arguments!!.getParcelable(ARGS_ASSET)
+
+            if (address == null || currentAsset == null) return
+
+            if (currentAsset!!.isAccountTagAsset()) {
+                contentView.title_view.setSubTitle(getString(R.string.send_to, address!!.accountName), address!!.accountTag!!.formatPublicKey())
+            } else {
+                contentView.title_view.setSubTitle(getString(R.string.send_to, address!!.label), address!!.publicKey!!.formatPublicKey())
+            }
+            val bold = address!!.fee + " " + currentAsset!!.chainSymbol
+            val str = try {
+                val reserveDouble = address!!.reserve.toDouble()
+                if (reserveDouble > 0) {
+                    getString(R.string.withdrawal_fee_with_reserve, bold, currentAsset!!.symbol, currentAsset!!.name, address!!.reserve, currentAsset!!.symbol)
+                } else {
+                    getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
+                }
+            } catch (t: Throwable) {
+                getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
+            }
+            val ssb = SpannableStringBuilder(str)
+            val start = str.indexOf(bold)
+            ssb.setSpan(StyleSpan(Typeface.BOLD), start,
+                start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            contentView.fee_tv?.visibility = VISIBLE
+            contentView.fee_tv?.text = ssb
+        }
+
+        contentView.continue_tv.setOnClickListener {
+            if (!isAdded) return@setOnClickListener
 
             operateKeyboard(false)
             showTransferBottom()
@@ -215,21 +259,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 })
             } else {
                 contentView.asset_rl.isEnabled = false
-
-                doAsync {
-                    val xin = chatViewModel.getXIN()
-                    uiThread {
-                        if (!isAdded) return@uiThread
-
-                        notNullElse(xin, {
-                            updateAssetUI(it)
-                        }, {
-                            contentView.asset_avatar.bg.setImageResource(R.drawable.ic_avatar_place_holder)
-                            contentView.asset_name.text = getString(R.string.app_name)
-                            contentView.asset_desc.text = "0"
-                        })
-                    }
-                }
             }
         })
     }
@@ -272,6 +301,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         contentView.asset_name.text = asset.name
         contentView.asset_desc.text = asset.balance.numberFormat()
+        contentView.desc_end.text = asset.symbol
         contentView.asset_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.asset_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
 
@@ -337,20 +367,27 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showTransferBottom() {
-        if (user == null || currentAsset == null) {
-            Timber.w("showTransferBottom with wrong data, user: $user, currentAsset: $currentAsset")
+        if (currentAsset == null || (user == null && address == null)) {
             return
         }
-
-        val bottom = TransferBottomSheetDialogFragment
-            .newInstance(user!!, getAmount(), currentAsset!!.toAsset(), UUID.randomUUID().toString(),
+        val biometricItem = if (user != null) {
+            TransferBiometricItem(user!!, currentAsset!!, getAmount(), null, UUID.randomUUID().toString(),
                 contentView.transfer_memo.text.toString())
+        } else {
+            val noPublicKey = currentAsset!!.isAccountTagAsset()
+            WithdrawBiometricItem(if (noPublicKey) address!!.accountTag!! else address!!.publicKey!!, address!!.addressId,
+                if (noPublicKey) address!!.accountName!! else address!!.label!!,
+                currentAsset!!,  getAmount(), null, UUID.randomUUID().toString(),
+                contentView.transfer_memo.text.toString())
+        }
+
+        val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
         bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
-        bottom.setCallback(object : TransferBottomSheetDialogFragment.Callback {
+        bottom.callback = object : TransferBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 dialog?.dismiss()
             }
-        })
+        }
     }
 
     private val inputFilter = InputFilter { source, _, _, _, _, _ ->
@@ -394,12 +431,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         override fun afterTextChanged(s: Editable) {
             checkInputForbidden(s)
             if (s.isNotEmpty() && contentView.asset_rl.isEnabled && s.toString().checkNumber()) {
-                contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_wallet_blue_btn, null)
-                contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = requireContext().dpToPx(72f)
-                    topMargin = requireContext().dpToPx(32f)
-                    bottomMargin = 0
-                }
+                contentView.continue_tv.isEnabled = true
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.white)
                 if (contentView.amount_rl.isVisible && currentAsset != null) {
                     contentView.amount_et.hint = ""
@@ -407,12 +439,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     contentView.amount_as_tv.text = getBottomText()
                 }
             } else {
-                contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_gray_btn, null)
-                contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = requireContext().dpToPx(40f)
-                    topMargin = requireContext().dpToPx(50f)
-                    bottomMargin = requireContext().dpToPx(16f)
-                }
+                contentView.continue_tv.isEnabled = false
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 if (contentView.amount_rl.isVisible) {
                     contentView.amount_et.hint = "0.00 ${if (swaped) "USD" else currentAsset?.symbol}"
@@ -435,6 +462,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             holder.itemView.type_avatar.badge.loadImage(itemAssert.chainIconUrl, R.drawable.ic_avatar_place_holder)
             holder.itemView.name.text = itemAssert.name
             holder.itemView.value.text = itemAssert.balance.numberFormat()
+            holder.itemView.value_end.text = itemAssert.symbol
             currentAsset?.let {
                 holder.itemView.check_iv.visibility = if (itemAssert.assetId == currentAsset?.assetId) VISIBLE else INVISIBLE
             }

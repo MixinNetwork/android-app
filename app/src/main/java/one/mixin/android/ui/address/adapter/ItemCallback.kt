@@ -1,12 +1,15 @@
 package one.mixin.android.ui.address.adapter
 
 import android.graphics.Canvas
-import androidx.recyclerview.widget.RecyclerView
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_address.view.*
+import one.mixin.android.R
 
 class ItemCallback(private val listener: ItemCallbackListener) :
-    ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+    ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.START or ItemTouchHelper.END) {
 
     override fun onMove(p0: RecyclerView, p1: RecyclerView.ViewHolder, p2: RecyclerView.ViewHolder): Boolean {
         return false
@@ -34,6 +37,7 @@ class ItemCallback(private val listener: ItemCallbackListener) :
     }
 
     override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
+        direction = 0
         ItemTouchHelper.Callback.getDefaultUIUtil().clearView(viewHolder.itemView.foreground_rl)
     }
 
@@ -46,15 +50,32 @@ class ItemCallback(private val listener: ItemCallbackListener) :
         actionState: Int,
         isCurrentlyActive: Boolean
     ) {
+        if (dX > 0 && direction != ItemTouchHelper.START) {
+            direction = ItemTouchHelper.START
+            viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorRed)
+            viewHolder.itemView.delete_icon.isVisible = true
+            viewHolder.itemView.delete_tv.isVisible = true
+            viewHolder.itemView.edit_icon.isGone = true
+            viewHolder.itemView.edit_tv.isGone = true
+        } else if (dX < 0 && direction != ItemTouchHelper.END) {
+            direction = ItemTouchHelper.END
+            viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorBlue)
+            viewHolder.itemView.edit_icon.isVisible = true
+            viewHolder.itemView.edit_tv.isVisible = true
+            viewHolder.itemView.delete_icon.isGone = true
+            viewHolder.itemView.delete_tv.isGone = true
+        }
         ItemTouchHelper.Callback.getDefaultUIUtil()
             .onDraw(c, recyclerView, viewHolder.itemView.foreground_rl, dX, dY, actionState, isCurrentlyActive)
     }
 
+    private var direction: Int = 0
+
     override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-        listener.onSwiped(viewHolder)
+        listener.onSwiped(viewHolder, direction)
     }
 
     interface ItemCallbackListener {
-        fun onSwiped(viewHolder: RecyclerView.ViewHolder)
+        fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int)
     }
 }
