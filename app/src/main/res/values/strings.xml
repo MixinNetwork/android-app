@@ -68,7 +68,6 @@
     <string name="edit">Edit</string>
     <string name="transfer_send">Send</string>
     <string name="receive">Receive</string>
-    <string name="symbol_xin" translatable="false">XIN</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

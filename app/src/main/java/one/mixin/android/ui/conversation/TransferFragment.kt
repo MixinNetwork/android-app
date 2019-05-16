@@ -59,9 +59,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import one.mixin.android.worker.RefreshAssetsWorker
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
-import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -232,7 +230,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             val start = str.indexOf(bold)
             ssb.setSpan(StyleSpan(Typeface.BOLD), start,
                 start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            contentView.fee_tv?.visibility = View.VISIBLE
+            contentView.fee_tv?.visibility = VISIBLE
             contentView.fee_tv?.text = ssb
         }
 
@@ -261,22 +259,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 })
             } else {
                 contentView.asset_rl.isEnabled = false
-
-                doAsync {
-                    val xin = chatViewModel.getXIN()
-                    uiThread {
-                        if (!isAdded) return@uiThread
-
-                        notNullElse(xin, {
-                            updateAssetUI(it)
-                        }, {
-                            contentView.asset_avatar.bg.setImageResource(R.drawable.ic_avatar_place_holder)
-                            contentView.asset_name.text = getString(R.string.app_name)
-                            contentView.asset_desc.text = "0"
-                            contentView.desc_end.text = getString(R.string.symbol_xin)
-                        })
-                    }
-                }
             }
         })
     }
