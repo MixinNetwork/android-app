@@ -1,7 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences

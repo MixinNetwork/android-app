@@ -3,7 +3,7 @@ package one.mixin.android.ui.setting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.service.UserService
 import one.mixin.android.repository.AccountRepository

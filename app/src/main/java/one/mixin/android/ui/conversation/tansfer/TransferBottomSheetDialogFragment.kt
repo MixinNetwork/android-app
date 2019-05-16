@@ -9,7 +9,7 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.VISIBLE
 import androidx.core.view.isVisible
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
