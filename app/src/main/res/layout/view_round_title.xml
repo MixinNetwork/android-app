@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="70dp"
+    android:layout_height="?actionBarSize"
     android:background="@drawable/bg_upper_round">
 
     <FrameLayout
@@ -68,7 +68,7 @@
             android:maxWidth="240dp"
             android:singleLine="true"
             android:textColor="@android:color/black"
-            android:textSize="22sp" />
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/sub_title_tv"

@@ -32,7 +32,7 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
                 left_iv.setImageResource(ta.getResourceId(R.styleable.RoundTitleView_left_icon, 0))
                 left_iv.visibility = View.VISIBLE
             } else {
-                title_ll.updateLayoutParams<RelativeLayout.LayoutParams> {
+                title_ll.updateLayoutParams<LayoutParams> {
                     marginStart = context.dpToPx(20f)
                 }
             }
@@ -42,14 +42,14 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
 
     fun hideLeftIv() {
         left_iv.visibility = View.GONE
-        title_ll.updateLayoutParams<RelativeLayout.LayoutParams> {
+        title_ll.updateLayoutParams<LayoutParams> {
             marginStart = context.dpToPx(20f)
         }
     }
 
     fun showLeftIv() {
         left_iv.visibility = View.VISIBLE
-        title_ll.updateLayoutParams<RelativeLayout.LayoutParams> {
+        title_ll.updateLayoutParams<LayoutParams> {
             marginStart = 0
         }
     }
@@ -58,7 +58,7 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         avatar_iv.visibility = VISIBLE
         avatar_iv.setTextSize(16f)
         avatar_iv.setInfo(user.fullName, user.avatarUrl, user.userId)
-        title_ll.updateLayoutParams<RelativeLayout.LayoutParams> {
+        title_ll.updateLayoutParams<LayoutParams> {
             marginStart = 0
         }
     }
@@ -67,7 +67,7 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         badge_circle_iv.isVisible = true
         bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        title_ll.updateLayoutParams<RelativeLayout.LayoutParams> {
+        title_ll.updateLayoutParams<LayoutParams> {
             marginStart = 0
         }
     }
@@ -76,10 +76,8 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         title_tv.text = first
         if (second.isBlank()) {
             sub_title_tv.visibility = View.GONE
-            title_tv.textSize = 22f
         } else {
             sub_title_tv.visibility = View.VISIBLE
-            title_tv.textSize = 18f
             sub_title_tv.text = second
         }
     }
