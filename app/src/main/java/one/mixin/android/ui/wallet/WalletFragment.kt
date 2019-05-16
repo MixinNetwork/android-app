@@ -74,8 +74,8 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        title_view.right_animator.setOnClickListener { showBottom() }
-        title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
+        title_view.left_ib.setOnClickListener { showBottom() }
+        title_view.right_animator.setOnClickListener { activity?.onBackPressed() }
 
         header = layoutInflater.inflate(R.layout.view_wallet_fragment_header, coins_rv, false)
         assetsAdapter.headerView = header

@@ -9,11 +9,10 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightIcon="@drawable/ic_more"
+        app:leftIcon="@drawable/ic_more"
+        app:rightIcon="@drawable/ic_chat"
         app:need_divider="false"
         app:titleText="@string/wallet_title" />
-
-    <include layout="@layout/view_link_state" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/coins_rv"
