@@ -14,7 +14,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_search_message.*

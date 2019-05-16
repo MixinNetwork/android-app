@@ -16,7 +16,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse

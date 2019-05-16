@@ -6,7 +6,7 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_verify_pin.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R

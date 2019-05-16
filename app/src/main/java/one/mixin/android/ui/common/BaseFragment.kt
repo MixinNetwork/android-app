@@ -8,6 +8,7 @@ import one.mixin.android.di.Injectable
 
 open class BaseFragment : Fragment(), Injectable {
     protected val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+
     open fun onBackPressed() = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

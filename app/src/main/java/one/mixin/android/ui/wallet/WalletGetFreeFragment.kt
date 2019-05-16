@@ -15,7 +15,7 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_get_free.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R

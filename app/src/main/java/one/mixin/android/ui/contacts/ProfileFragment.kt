@@ -24,7 +24,7 @@ import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.view_title.view.*

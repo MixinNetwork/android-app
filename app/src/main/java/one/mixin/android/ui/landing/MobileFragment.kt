@@ -29,7 +29,7 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_mobile.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R

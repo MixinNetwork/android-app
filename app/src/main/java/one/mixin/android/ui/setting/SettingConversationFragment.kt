@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_setting_conversation.*
 import kotlinx.android.synthetic.main.view_title.view.*

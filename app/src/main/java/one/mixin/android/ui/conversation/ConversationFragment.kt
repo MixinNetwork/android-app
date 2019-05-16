@@ -30,7 +30,9 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.AutoDispose.autoDisposable
+import com.uber.autodispose.autoDisposable
+
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers

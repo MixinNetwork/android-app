@@ -11,7 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_authentications.*
 import kotlinx.android.synthetic.main.item_auth.view.*
 import kotlinx.android.synthetic.main.view_title.view.*

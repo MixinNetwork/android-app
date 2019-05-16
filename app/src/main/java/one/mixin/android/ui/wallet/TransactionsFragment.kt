@@ -13,7 +13,7 @@ import androidx.lifecycle.Observer
 import androidx.paging.PagedList
 import androidx.room.Transaction
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transactions.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*

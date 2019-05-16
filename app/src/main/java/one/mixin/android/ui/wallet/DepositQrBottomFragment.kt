@@ -8,7 +8,7 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers

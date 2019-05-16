@@ -11,7 +11,7 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_pin_check.view.*
 import one.mixin.android.Constants.KEYS

@@ -14,7 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_auth.view.*
 import kotlinx.android.synthetic.main.item_third_login_scope.view.*

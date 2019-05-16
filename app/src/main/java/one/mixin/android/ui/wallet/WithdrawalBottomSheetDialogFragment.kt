@@ -7,7 +7,7 @@ import android.os.Parcelable
 import android.text.TextUtils
 import android.view.View
 import android.view.View.VISIBLE
-import com.uber.autodispose.kotlin.autoDisposable
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_withdrawal_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
