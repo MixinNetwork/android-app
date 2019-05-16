@@ -27,12 +27,11 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.AutoDispose.autoDisposable
 import com.uber.autodispose.autoDisposable
-
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -43,9 +42,6 @@ import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -82,6 +78,7 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.openCamera
@@ -93,7 +90,6 @@ import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.selectDocument
-import one.mixin.android.extension.serialize
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
@@ -158,8 +154,9 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
+import java.lang.Exception
 import javax.inject.Inject
-import kotlin.coroutines.CoroutineContext
 import kotlin.math.abs
 
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -202,8 +199,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private lateinit var conversationContext: CoroutineContext
 
     private val chatViewModel: ConversationViewModel by lazy {
         ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
@@ -561,7 +556,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        conversationContext = Job()
         val messages = arguments!!.getParcelableArrayList<ForwardMessage>(MESSAGES)
         if (messages != null) {
             sendForwardMessages(messages)
@@ -603,8 +597,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (chatAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
                 }
-                reply_view.messageItem?.let{
-                    if(it.messageId == event.messageId){
+                reply_view.messageItem?.let {
+                    if (it.messageId == event.messageId) {
                         reply_view.fadeOut()
                         chat_control.showOtherInput()
                         reply_view.messageItem = null
@@ -712,11 +706,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onDestroy() {
         super.onDestroy()
         AudioPlayer.release()
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        conversationContext.cancelChildren()
     }
 
     private var firstPosition = 0
@@ -1005,7 +994,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var unreadCount = 0
     private fun bindData() {
-        GlobalScope.launch(conversationContext) {
+        lifecycleScope.launch(Dispatchers.IO) {
             unreadCount = if (!messageId.isNullOrEmpty()) {
                 chatViewModel.findMessageIndexSync(conversationId, messageId!!)
             } else {
@@ -1020,24 +1009,31 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         if (isBot) {
-            GlobalScope.launch(conversationContext) {
+            lifecycleScope.launch(Dispatchers.IO) {
                 val botsString = defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)
                 if (botsString != null) {
-                    botsString.deserialize<Array<String>>()?.let { botList ->
-                        val newBotsString = botList.filter { it != recipient!!.userId }
-                            .toMutableList()
-                            .also {
-                                if (it.size >= RECENT_USED_BOTS_MAX_COUNT) {
-                                    it.dropLast(1)
-                                }
-                                it.add(0, recipient!!.userId)
-                            }
-                            .toTypedArray()
-                            .serialize()
-                        defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, newBotsString)
+                    var botsList = botsString.split("=")
+                    if (botsList.size == 1 && !botsList[0].isUUID()) {
+                        getPreviousVersionBotsList()?.let {
+                            botsList = it
+                        }
                     }
+                    if (botsList.isNullOrEmpty()) {
+                        defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, recipient!!.userId)
+                        return@launch
+                    }
+
+                    val arr = botsList.filter { it != recipient!!.userId }
+                        .toMutableList()
+                        .also {
+                            if (it.size >= RECENT_USED_BOTS_MAX_COUNT) {
+                                it.dropLast(1)
+                            }
+                            it.add(0, recipient!!.userId)
+                        }
+                    defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, arr.joinToString("="))
                 } else {
-                    defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, arrayOf(recipient!!.userId).serialize())
+                    defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, recipient!!.userId)
                 }
             }
             chat_control.showBot()
@@ -1057,6 +1053,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             })
         }
+    }
+
+    private fun getPreviousVersionBotsList(): List<String>? {
+        defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.let { botsString ->
+            return botsString.deserialize<Array<String>>()?.toList()
+        } ?: return null
     }
 
     private var appList: List<App>? = null
