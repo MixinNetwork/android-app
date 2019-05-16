@@ -54,7 +54,6 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             }
             ta.recycle()
         }
-        elevation = context.dpToPx(4f).toFloat()
     }
 
     fun setSubTitle(first: String, second: String) {

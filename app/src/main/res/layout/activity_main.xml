@@ -8,16 +8,14 @@
     tools:context="one.mixin.android.ui.home.MainActivity">
 
     <LinearLayout
-        android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
         <one.mixin.android.widget.MaterialSearchView
             android:id="@+id/search_bar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:elevation="4dp"
-            android:background="@color/white"/>
+            android:layout_height="wrap_content"/>
 
         <FrameLayout
             android:id="@+id/container"

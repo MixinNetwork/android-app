@@ -32,7 +32,6 @@ import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
@@ -92,7 +91,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight()
         }
-        contentView.ph.elevation = requireContext().dpToPx(4f).toFloat()
         (dialog as BottomSheet).apply {
             fullScreen = true
             setCustomView(contentView)

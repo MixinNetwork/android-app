@@ -9,8 +9,7 @@
         android:id="@+id/ph"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:elevation="4dp"/>
+        android:background="@color/white"/>
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
