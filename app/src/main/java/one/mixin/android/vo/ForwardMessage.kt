@@ -13,7 +13,8 @@ data class ForwardMessage(
     val id: String? = null,
     val content: String? = null,
     val mediaUrl: String? = null,
-    val sharedUserId: String? = null
+    val sharedUserId: String? = null,
+    var mimeType: String? = null
 ) : Parcelable
 
 enum class ForwardCategory {

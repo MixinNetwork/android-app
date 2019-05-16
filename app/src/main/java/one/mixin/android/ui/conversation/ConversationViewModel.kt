@@ -218,12 +218,15 @@ internal constructor(
         }
     }
 
-    fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean): Flowable<Int>? {
+    fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean, mime: String? = null): Flowable<Int>? {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
-        val mimeType = getMimeType(uri)
-        if (mimeType?.isImageSupport() != true) {
-            MixinApplication.get().toast(R.string.error_format)
-            return null
+        var mimeType = mime
+        if (mimeType == null) {
+            mimeType = getMimeType(uri)
+            if (mimeType?.isImageSupport() != true) {
+                MixinApplication.get().toast(R.string.error_format)
+                return null
+            }
         }
         if (mimeType == MimeType.GIF.toString()) {
             return Flowable.just(uri).map {

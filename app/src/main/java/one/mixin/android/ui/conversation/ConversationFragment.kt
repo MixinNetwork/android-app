@@ -1074,7 +1074,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 sendContactMessage(item.sharedUserId!!)
                             }
                             ForwardCategory.IMAGE.name -> {
-                                sendImageMessage(Uri.parse(item.mediaUrl))
+                                sendImageMessage(Uri.parse(item.mediaUrl), item.mimeType)
                             }
                             ForwardCategory.DATA.name -> {
                                 context?.getAttachment(Uri.parse(item.mediaUrl))?.let {
@@ -1121,9 +1121,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     @SuppressLint("CheckResult")
-    private fun sendImageMessage(uri: Uri) {
+    private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
         createConversation {
-            chatViewModel.sendImageMessage(conversationId, sender, uri, isPlainMessage())
+            chatViewModel.sendImageMessage(conversationId, sender, uri, isPlainMessage(), mimeType)
                 ?.autoDisposable(scopeProvider)?.subscribe({
                     when (it) {
                         0 -> {

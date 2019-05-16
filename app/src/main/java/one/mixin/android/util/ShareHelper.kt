@@ -33,7 +33,9 @@ class ShareHelper {
                 ForwardMessage(ForwardCategory.TEXT.name, content = text).addTo(result)
             } else if (type.startsWith("image/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
-                generateShareMessage(imageUri)?.addTo(result)
+                val fm = generateShareMessage(imageUri)
+                fm?.mimeType = type
+                fm?.addTo(result)
             } else if (type.startsWith("video/")) {
                 val imageUri = intent.getParcelableExtra<Uri>(Intent.EXTRA_STREAM)
                 generateShareMessage(imageUri, ForwardCategory.VIDEO.name)?.addTo(result)
