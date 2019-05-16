@@ -68,7 +68,7 @@
             android:maxWidth="240dp"
             android:singleLine="true"
             android:textColor="@android:color/black"
-            android:textSize="18sp" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/sub_title_tv"
@@ -80,7 +80,7 @@
             android:ellipsize="end"
             android:visibility="gone"
             android:textColor="@color/text_gray"
-            android:textSize="14sp"
+            android:textSize="12sp"
             tools:ignore="SmallSp"/>
     </LinearLayout>
 </RelativeLayout>
