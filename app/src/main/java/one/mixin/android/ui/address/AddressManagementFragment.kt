@@ -54,7 +54,7 @@ class AddressManagementFragment : BaseFragment() {
 
     private var deleteSuccess = false
     private val asset: AssetItem by lazy {
-        arguments!!.getParcelable(TransactionsFragment.ARGS_ASSET) as AssetItem
+        arguments!!.getParcelable(ARGS_ASSET) as AssetItem
     }
     private var addresses: List<Address>? = null
 
@@ -112,6 +112,10 @@ class AddressManagementFragment : BaseFragment() {
                 val deletePos = viewHolder.adapterPosition
                 val addr = adapter.addresses!![deletePos]
                 if (direction == ItemTouchHelper.START) {
+                    adapter.notifyItemChanged(deletePos)
+                    activity?.addFragment(this@AddressManagementFragment,
+                        AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
+                } else if (direction == ItemTouchHelper.END) {
                     val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
                     val bottomSheet = showBottomSheet(addr)
                     fragmentManager?.executePendingTransactions()
@@ -121,10 +125,6 @@ class AddressManagementFragment : BaseFragment() {
                             adapter.restoreItem(deleteItem, deletePos)
                         }
                     }
-                } else if (direction == ItemTouchHelper.END) {
-                    adapter.notifyItemChanged(deletePos)
-                    activity?.addFragment(this@AddressManagementFragment,
-                        AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
                 }
             }
         })).apply { attachToRecyclerView(addr_rv) }

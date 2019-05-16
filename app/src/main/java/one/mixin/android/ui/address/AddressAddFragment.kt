@@ -10,7 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import com.google.zxing.integration.android.IntentIntegrator
 import com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -18,7 +17,6 @@ import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
@@ -84,7 +82,7 @@ class AddressAddFragment : BaseFragment() {
         else R.string.withdrawal_addr_modify, asset.symbol)
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        save_animator.setOnClickListener {
+        save_tv.setOnClickListener {
             val bottomSheet = if (noPublicKey()) {
                 PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, type = type,
                     accountName = label_et.text.toString(), accountTag = addr_et.text.toString())
@@ -164,20 +162,10 @@ class AddressAddFragment : BaseFragment() {
             if (!isAdded) return
 
             if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty()) {
-                save_animator.background = resources.getDrawable(R.drawable.bg_wallet_blue_btn, null)
-                save_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = requireContext().dpToPx(72f)
-                    topMargin = requireContext().dpToPx(32f)
-                    bottomMargin = 0
-                }
+                save_tv.isEnabled = true
                 save_tv.textColor = requireContext().getColor(R.color.white)
             } else {
-                save_animator.background = resources.getDrawable(R.drawable.bg_gray_btn, null)
-                save_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = requireContext().dpToPx(40f)
-                    topMargin = requireContext().dpToPx(50f)
-                    bottomMargin = requireContext().dpToPx(16f)
-                }
+                save_tv.isEnabled = false
                 save_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
             }
         }

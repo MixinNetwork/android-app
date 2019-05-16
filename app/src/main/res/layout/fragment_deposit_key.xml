@@ -46,16 +46,15 @@
                 android:layout_marginEnd="@dimen/margin20"
                 android:textColor="@color/wallet_text_dark"/>
 
-            <TextView
+            <Button
+                style="@style/AppTheme.MaterialButton"
                 android:id="@+id/copy_tv"
-                android:layout_width="75dp"
-                android:layout_height="50dp"
-                android:gravity="center"
+                android:layout_width="80dp"
+                android:layout_height="40dp"
                 android:layout_alignBottom="@+id/qr_fl"
-                android:background="@drawable/bg_wallet_blue_btn"
                 android:layout_marginStart="32dp"
                 android:layout_marginBottom="8dp"
-                android:textColor="@color/white"
+                android:textSize="14sp"
                 android:text="@string/copy"/>
 
             <FrameLayout

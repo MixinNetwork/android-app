@@ -147,15 +147,16 @@
                 android:text="@string/filters_rebate"/>
         </one.mixin.android.widget.CheckedFlowLayout>
 
-        <TextView
+        <Button
             android:id="@+id/apply_tv"
+            style="@style/AppTheme.MaterialButton"
             android:layout_width="116dp"
-            android:layout_height="72dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="@dimen/margin16"
             android:layout_marginBottom="@dimen/margin20"
             android:layout_gravity="center_horizontal"
+            android:textSize="14sp"
             android:text="@string/filters_apply"
-            android:gravity="center"
-            android:textColor="@color/white"
-            android:background="@drawable/bg_wallet_blue_btn"/>
+            android:textColor="@color/white"/>
     </LinearLayout>
 </LinearLayout>

@@ -15,19 +15,13 @@
         app:rightText="@string/save"
         app:titleText="@string/wallet_add_asset"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/wallet_divider"/>
-
     <one.mixin.android.widget.SearchView
         android:id="@+id/search_et"
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:background="@drawable/bg_search"
+        android:layout_height="?actionBarSize"
+        android:background="@null"
         android:layout_marginStart="@dimen/margin20"
         android:layout_marginEnd="@dimen/margin20"
-        android:layout_marginBottom="@dimen/margin16"
         android:drawablePadding="8dp"
         android:drawableStart="@drawable/ic_asset_add_search"
         android:hint="@string/search"
@@ -39,6 +33,11 @@
         android:textColor="@color/wallet_text_dark"
         android:textColorHint="@color/text_gray"
         android:textSize="14sp"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:background="@color/wallet_divider"/>
 
     <ViewAnimator
         android:id="@+id/va"

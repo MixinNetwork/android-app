@@ -63,6 +63,7 @@ class WalletActivity : BlazeBaseActivity() {
                 myIntent.putExtras(bundle)
             }
             activity.startActivity(myIntent)
+            activity.overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right)
         }
     }
 }

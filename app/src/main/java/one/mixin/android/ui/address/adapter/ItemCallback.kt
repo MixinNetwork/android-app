@@ -51,19 +51,19 @@ class ItemCallback(private val listener: ItemCallbackListener) :
         isCurrentlyActive: Boolean
     ) {
         if (dX > 0 && direction != ItemTouchHelper.END) {
-            direction = ItemTouchHelper.END
-            viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorDarkBlue)
-            viewHolder.itemView.edit_icon.isVisible = true
-            viewHolder.itemView.edit_tv.isVisible = true
-            viewHolder.itemView.delete_icon.isGone = true
-            viewHolder.itemView.delete_tv.isGone = true
-        } else if (dX < 0 && direction != ItemTouchHelper.START) {
             direction = ItemTouchHelper.START
             viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorRed)
             viewHolder.itemView.delete_icon.isVisible = true
             viewHolder.itemView.delete_tv.isVisible = true
             viewHolder.itemView.edit_icon.isGone = true
             viewHolder.itemView.edit_tv.isGone = true
+        } else if (dX < 0 && direction != ItemTouchHelper.START) {
+            direction = ItemTouchHelper.END
+            viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorBlue)
+            viewHolder.itemView.edit_icon.isVisible = true
+            viewHolder.itemView.edit_tv.isVisible = true
+            viewHolder.itemView.delete_icon.isGone = true
+            viewHolder.itemView.delete_tv.isGone = true
         }
         ItemTouchHelper.Callback.getDefaultUIUtil()
             .onDraw(c, recyclerView, viewHolder.itemView.foreground_rl, dX, dY, actionState, isCurrentlyActive)

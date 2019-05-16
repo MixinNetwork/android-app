@@ -109,7 +109,7 @@ class AssetAddFragment : BaseFragment() {
     }
 
     private fun checkTitle() {
-        if (adapter.checkedAssets.isEmpty()) {
+        if (adapter.checkedAssets.isEmpty) {
             title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
             title_view.right_animator.isEnabled = false
         } else {

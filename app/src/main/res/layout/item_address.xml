@@ -13,31 +13,11 @@
         android:visibility="gone">
 
         <ImageView
-            android:id="@+id/edit_icon"
+            android:id="@+id/delete_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:src="@drawable/ic_edit_white_24dp"
-            android:contentDescription="@null"/>
-
-        <TextView
-            android:id="@+id/edit_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="8dp"
-            android:layout_toEndOf="@id/edit_icon"
-            android:text="@string/edit"
-            android:textColor="@android:color/white"/>
-
-        <ImageView
-            android:id="@+id/delete_icon"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:src="@drawable/ic_delete_white_24dp"
             android:contentDescription="@null"/>
 
@@ -46,9 +26,29 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
-            android:layout_toStartOf="@id/delete_icon"
+            android:layout_marginStart="8dp"
+            android:layout_toEndOf="@id/delete_icon"
             android:text="@string/conversation_delete"
+            android:textColor="@android:color/white"/>
+
+        <ImageView
+            android:id="@+id/edit_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:src="@drawable/ic_edit_white_24dp"
+            android:contentDescription="@null"/>
+
+        <TextView
+            android:id="@+id/edit_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            android:layout_toStartOf="@id/edit_icon"
+            android:text="@string/edit"
             android:textColor="@android:color/white"/>
     </RelativeLayout>
 

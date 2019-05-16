@@ -92,6 +92,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
             height = requireContext().statusBarHeight()
         }
+        contentView.ph.elevation = requireContext().dpToPx(4f).toFloat()
         (dialog as BottomSheet).apply {
             fullScreen = true
             setCustomView(contentView)
@@ -186,7 +187,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                         }
                     })
 
-                    assetsView.type_cancel.setOnClickListener {
+                    assetsView.close_iv.setOnClickListener {
                         assetsBottomSheet.dismiss()
                     }
                     assetsBottomSheet.show()
@@ -237,7 +238,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             contentView.fee_tv?.text = ssb
         }
 
-        contentView.continue_animator.setOnClickListener {
+        contentView.continue_tv.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
             operateKeyboard(false)
@@ -448,12 +449,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         override fun afterTextChanged(s: Editable) {
             checkInputForbidden(s)
             if (s.isNotEmpty() && contentView.asset_rl.isEnabled && s.toString().checkNumber()) {
-                contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_wallet_blue_btn, null)
-                contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = requireContext().dpToPx(72f)
-                    topMargin = requireContext().dpToPx(32f)
-                    bottomMargin = 0
-                }
+                contentView.continue_tv.isEnabled = true
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.white)
                 if (contentView.amount_rl.isVisible && currentAsset != null) {
                     contentView.amount_et.hint = ""
@@ -461,12 +457,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                     contentView.amount_as_tv.text = getBottomText()
                 }
             } else {
-                contentView.continue_animator.background = resources.getDrawable(R.drawable.bg_gray_btn, null)
-                contentView.continue_animator.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = requireContext().dpToPx(40f)
-                    topMargin = requireContext().dpToPx(50f)
-                    bottomMargin = requireContext().dpToPx(16f)
-                }
+                contentView.continue_tv.isEnabled = false
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 if (contentView.amount_rl.isVisible) {
                     contentView.amount_et.hint = "0.00 ${if (swaped) "USD" else currentAsset?.symbol}"

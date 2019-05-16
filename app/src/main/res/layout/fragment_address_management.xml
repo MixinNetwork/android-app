@@ -32,7 +32,7 @@
         <one.mixin.android.widget.SearchView
             android:id="@+id/search_et"
             android:layout_width="match_parent"
-            android:layout_height="70dp"
+            android:layout_height="?actionBarSize"
             android:background="@android:color/white"
             android:drawablePadding="8dp"
             android:drawableStart="@drawable/ic_asset_add_search"

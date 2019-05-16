@@ -14,7 +14,8 @@
         <RelativeLayout
             android:id="@+id/top_rl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:foreground="?attr/selectableItemBackground">
 
             <one.mixin.android.widget.BadgeCircleImageView
                 android:id="@+id/avatar"
@@ -64,6 +65,16 @@
                 android:layout_marginBottom="@dimen/margin16"
                 android:layout_toEndOf="@id/avatar"
                 android:textColor="@color/wallet_text_gray"/>
+
+            <ImageView
+                android:id="@+id/contract_iv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:layout_marginEnd="@dimen/margin12"
+                android:src="@drawable/ic_keyboard_arrow_down_gray_24dp"
+                tools:ignore="ContentDescription"/>
         </RelativeLayout>
 
         <LinearLayout

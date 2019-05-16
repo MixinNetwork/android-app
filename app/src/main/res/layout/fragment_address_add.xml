@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@android:color/white">
+    android:background="@android:color/white"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
         android:id="@+id/title_view"
@@ -22,14 +22,15 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
+            android:background="@android:color/white"
             android:baselineAligned="false"
-            android:background="@android:color/white">
+            android:orientation="vertical">
 
             <one.mixin.android.widget.BadgeCircleImageView
                 android:id="@+id/avatar"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
+                android:layout_marginTop="@dimen/margin16"
                 android:layout_gravity="center_horizontal"/>
 
             <TextView
@@ -43,8 +44,8 @@
                 android:id="@+id/label_rl"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
-                android:layout_marginEnd="@dimen/margin20"
                 android:layout_marginStart="@dimen/margin20"
+                android:layout_marginEnd="@dimen/margin20"
                 android:background="@drawable/bg_round_8_solid_gray"
                 android:orientation="vertical">
 
@@ -52,15 +53,15 @@
                     android:id="@+id/label_et"
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_toStartOf="@+id/label_iv"
                     android:background="@null"
                     android:hint="@string/label"
                     android:inputType="text"
                     android:maxLength="32"
                     android:maxLines="1"
-                    android:layout_toStartOf="@+id/label_iv"
-                    android:paddingEnd="8dp"
                     android:paddingStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="8dp"
                     android:textColor="@android:color/black"
                     android:textSize="16sp"/>
 
@@ -68,20 +69,20 @@
                     android:id="@+id/label_iv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:src="@drawable/ic_addr_qr"
-                    android:contentDescription="@null"/>
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_addr_qr"/>
             </RelativeLayout>
 
             <RelativeLayout
                 android:id="@+id/addr_rl"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
+                android:layout_marginStart="@dimen/margin20"
                 android:layout_marginTop="10dp"
                 android:layout_marginEnd="@dimen/margin20"
-                android:layout_marginStart="@dimen/margin20"
                 android:background="@drawable/bg_round_8_solid_gray"
                 android:orientation="vertical">
 
@@ -89,12 +90,12 @@
                     android:id="@+id/addr_et"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@null"
-                    android:hint="@string/address"
-                    android:paddingEnd="8dp"
-                    android:paddingStart="@dimen/activity_horizontal_margin"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:layout_toStartOf="@id/qr_iv"
+                    android:background="@null"
+                    android:hint="@string/address"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="8dp"
                     android:textColor="@android:color/black"
                     android:textSize="16sp"/>
 
@@ -102,39 +103,24 @@
                     android:id="@+id/qr_iv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
                     android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:src="@drawable/ic_addr_qr"
-                    android:contentDescription="@null"/>
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_addr_qr"/>
             </RelativeLayout>
 
-            <ViewAnimator
-                android:id="@+id/save_animator"
+            <Button
+                android:id="@+id/save_tv"
+                style="@style/AppTheme.MaterialButton"
                 android:layout_width="116dp"
                 android:layout_height="40dp"
+                android:layout_marginTop="@dimen/margin16"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="50dp"
                 android:enabled="false"
-                android:inAnimation="@anim/fade_in"
-                android:outAnimation="@anim/fade_out"
-                android:background="@drawable/bg_gray_btn">
-
-                <TextView
-                    android:id="@+id/save_tv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:text="@string/save"
-                    android:textColor="@color/wallet_text_gray"/>
-
-                <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:theme="@style/AppTheme.WhiteAccent"/>
-            </ViewAnimator>
+                android:text="@string/save"
+                android:textColor="@color/wallet_text_gray"
+                android:textSize="14sp"/>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
