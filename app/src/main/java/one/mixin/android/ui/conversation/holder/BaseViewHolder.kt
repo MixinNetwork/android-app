@@ -134,9 +134,6 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_read)
                     else -> null
                 }
-            drawable.also {
-                it?.setBounds(0, 0, dp10, dp10)
-            }
             setIcon(drawable)
         } else {
             hideIcon()

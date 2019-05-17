@@ -4,12 +4,9 @@ import android.app.Activity
 import android.app.NotificationManager
 import android.util.Log
 import one.mixin.android.MixinApplication
-import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
-import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.findLastUrl
-import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
@@ -34,7 +31,6 @@ import one.mixin.android.websocket.TransferPlainAckData
 import one.mixin.android.websocket.TransferRecallData
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
-import java.io.File
 import java.util.UUID
 
 class DecryptSessionMessage : Injector() {
@@ -50,14 +46,15 @@ class DecryptSessionMessage : Injector() {
 
     fun onRun(data: BlazeMessageData) {
         syncConversation(data)
-        if (data.category.startsWith("SIGNAL_")) {
-            processSignalMessage(data)
-        } else if (data.category.startsWith("SYSTEM_")) {
-            processSystemMessage(data)
-        } else if (data.category.startsWith("PLAIN_")) {
-            processPlainMessage(data)
-        } else if (data.category == MessageCategory.MESSAGE_RECALL.name) {
-            processRecallMessage(data)
+        if (!isExistMessage(data.messageId)) {
+            when {
+                data.category.startsWith("SIGNAL_") -> processSignalMessage(data)
+                data.category.startsWith("SYSTEM_") -> processSystemMessage(data)
+                data.category.startsWith("PLAIN_") -> processPlainMessage(data)
+                data.category == MessageCategory.MESSAGE_RECALL.name -> processRecallMessage(data)
+            }
+        } else {
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
@@ -66,7 +63,7 @@ class DecryptSessionMessage : Injector() {
         val transferRecallData = gson.fromJson(String(decoded), TransferRecallData::class.java)
         val msg = createRecallMessage(UUID.randomUUID().toString(), data.conversationId, data.userId,
             MessageCategory.MESSAGE_RECALL.name, data.data, MessageStatus.DELIVERED, data.createdAt)
-        jobManager.addJobInBackground(SendMessageJob(msg, recallMessageId = data.messageId))
+        jobManager.addJobInBackground(SendMessageJob(msg, recallMessageId = transferRecallData.messageId))
         updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
     }
 

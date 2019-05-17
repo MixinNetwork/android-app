@@ -61,7 +61,6 @@ open class SendMessageJob(
                 messageDao.findMessageById(recallMessageId)?.let { msg ->
                     RxBus.publish(RecallEvent(msg.id))
                     messageDao.recallFailedMessage(msg.id)
-                    messageDao.recallMessage(msg.id)
                     messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
                     if (msg.mediaUrl != null) {
                         File(msg.mediaUrl.getFilePath()).let { file ->

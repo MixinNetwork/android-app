@@ -289,7 +289,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
     private fun setIcon(@DrawableRes icon: Int? = null) {
         notNullElse(icon, {
             AppCompatResources.getDrawable(itemView.context, it).let {
-                it?.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
+                it?.setBounds(0, 0, itemView.context.dpToPx(10f), itemView.context.dpToPx(10f))
                 TextViewCompat.setCompoundDrawablesRelative(itemView.reply_content_tv, it, null, null, null)
             }
         }, {

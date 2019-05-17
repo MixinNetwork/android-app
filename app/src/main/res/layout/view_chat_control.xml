@@ -16,8 +16,8 @@
 
         <ImageView
             android:id="@+id/chat_menu_iv"
-            android:layout_width="48dp"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:paddingTop="14dp"
@@ -57,8 +57,8 @@
 
             <ImageView
                 android:id="@+id/chat_sticker_ib"
-                android:layout_width="48dp"
-                android:layout_height="36dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:paddingStart="12dp"
                 android:paddingEnd="12dp"
                 android:paddingTop="6dp"
@@ -72,8 +72,8 @@
 
         <ImageView
             android:id="@+id/chat_bot_iv"
-            android:layout_width="48dp"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:paddingStart="18dp"
             android:paddingEnd="6dp"
             android:paddingTop="14dp"
@@ -85,8 +85,8 @@
 
         <ImageView
             android:id="@+id/chat_img_iv"
-            android:layout_width="48dp"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:paddingStart="18dp"
             android:paddingEnd="6dp"
             android:paddingTop="14dp"
@@ -98,8 +98,8 @@
 
         <ImageView
             android:id="@+id/chat_send_ib"
-            android:layout_width="48dp"
-            android:layout_height="@dimen/chat_control_height"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:paddingStart="12dp"
             android:paddingEnd="12dp"
             android:paddingTop="14dp"
