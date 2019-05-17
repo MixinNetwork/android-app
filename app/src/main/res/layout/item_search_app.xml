@@ -5,6 +5,7 @@
     android:orientation="vertical"
     android:layout_height="wrap_content"
     android:layout_gravity="center_horizontal"
+    android:foreground="?attr/selectableItemBackground"
     android:gravity="center_horizontal"
     tools:ignore="UseCompoundDrawables">
 
@@ -17,13 +18,13 @@
 
     <TextView
         android:id="@+id/name_tv"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin12"
         android:layout_marginBottom="@dimen/margin20"
         android:textSize="11sp"
         android:singleLine="true"
         android:ellipsize="end"
-        android:textColor="@color/gray_black"
-        android:maxWidth="64dp"/>
+        android:gravity="center"
+        android:textColor="@color/gray_black"/>
 </LinearLayout>
