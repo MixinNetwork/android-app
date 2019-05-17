@@ -171,7 +171,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
             }
         }
         setStatusIcon(isMe, messageItem.status, {
-            it?.setBounds(0, 0, dp10, dp10)
+            it?.setBounds(0, 0, dp12, dp12)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
         }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)

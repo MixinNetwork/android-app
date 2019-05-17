@@ -32,7 +32,7 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
     protected val dp10 by lazy {
         MixinApplication.appContext.dpToPx(10f)
     }
-    private val dp12 by lazy {
+    protected val dp12 by lazy {
         MixinApplication.appContext.dpToPx(12f)
     }
 

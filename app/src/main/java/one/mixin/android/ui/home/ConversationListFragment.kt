@@ -484,7 +484,7 @@ class ConversationListFragment : LinkFragment() {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(itemView.context,
                         R.drawable.ic_status_sending)
                     MessageStatus.SENT.name -> AppCompatResources.getDrawable(itemView.context,
-                        R.drawable.ic_status_sent)
+                        R.drawable.ic_status_sent_large)
                     MessageStatus.DELIVERED.name -> AppCompatResources.getDrawable(itemView.context,
                         R.drawable.ic_status_delivered)
                     MessageStatus.READ.name -> AppCompatResources.getDrawable(itemView.context,
@@ -493,7 +493,7 @@ class ConversationListFragment : LinkFragment() {
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
                     }
                 }.also {
-                    it?.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
+                    it?.setBounds(0, 0, itemView.context.dpToPx(14f), itemView.context.dpToPx(14f))
                     itemView.msg_flag.setImageDrawable(it)
                     itemView.msg_flag.visibility = VISIBLE
                 }
