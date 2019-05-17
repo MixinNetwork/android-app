@@ -493,7 +493,7 @@ class ConversationListFragment : LinkFragment() {
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_sending)
                     }
                 }.also {
-                    it?.setBounds(0, 0, itemView.context.dpToPx(12f), itemView.context.dpToPx(12f))
+                    it?.setBounds(0, 0, itemView.context.dpToPx(14f), itemView.context.dpToPx(14f))
                     itemView.msg_flag.setImageDrawable(it)
                     itemView.msg_flag.visibility = VISIBLE
                 }
