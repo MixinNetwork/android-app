@@ -69,16 +69,19 @@ import javax.inject.Inject
 class TransferFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "TransferFragment"
-        const val ASSERT_PREFERENCE = "TRANSFER_ASSERT"
+        const val ASSET_PREFERENCE = "TRANSFER_ASSET"
+        const val ARGS_SWITCH_ASSET = "args_switch_asset"
 
         fun newInstance(
             userId: String? = null,
             asset: AssetItem? = null,
-            address: Address? = null
+            address: Address? = null,
+            supportSwitchAsset: Boolean = false
         ) = TransferFragment().withArgs {
             userId?.let { putString(ARGS_USER_ID, it) }
             asset?.let { putParcelable(ARGS_ASSET, it) }
             address?.let { putParcelable(ARGS_ADDRESS, it) }
+            putBoolean(ARGS_SWITCH_ASSET, supportSwitchAsset)
         }
     }
 
@@ -115,13 +118,14 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         set(value) {
             field = value
             adapter.currentAsset = value
-            activity?.defaultSharedPreferences!!.putString(ASSERT_PREFERENCE, value?.assetId)
+            activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, value?.assetId)
         }
 
     private val adapter = TypeAdapter()
 
     private val userId: String? by lazy { arguments!!.getString(ARGS_USER_ID) }
     private val address: Address? by lazy { arguments!!.getParcelable<Address>(ARGS_ADDRESS) }
+    private val supportSwitchAsset by lazy { arguments!!.getBoolean(ARGS_SWITCH_ASSET) }
 
     private var user: User? = null
 
@@ -170,27 +174,31 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
 
         if (userId != null) {
-            contentView.asset_rl.setOnClickListener {
-                operateKeyboard(false)
-                context?.let {
-                    adapter.submitList(assets)
-                    adapter.setTypeListener(object : OnTypeClickListener {
-                        override fun onTypeClick(asset: AssetItem) {
-                            currentAsset = asset
-                            updateAssetUI(asset)
-                            adapter.notifyDataSetChanged()
+            if (supportSwitchAsset) {
+                contentView.asset_rl.setOnClickListener {
+                    operateKeyboard(false)
+                    context?.let {
+                        adapter.submitList(assets)
+                        adapter.setTypeListener(object : OnTypeClickListener {
+                            override fun onTypeClick(asset: AssetItem) {
+                                currentAsset = asset
+                                updateAssetUI(asset)
+                                adapter.notifyDataSetChanged()
+                                assetsBottomSheet.dismiss()
+                            }
+                        })
+
+                        assetsView.close_iv.setOnClickListener {
                             assetsBottomSheet.dismiss()
                         }
-                    })
-
-                    assetsView.close_iv.setOnClickListener {
-                        assetsBottomSheet.dismiss()
+                        assetsBottomSheet.show()
+                        assetsView.search_et.remainFocusable()
                     }
-                    assetsBottomSheet.show()
-                    assetsView.search_et.remainFocusable()
-                }
 
-                assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())
+                    assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())
+                }
+            } else {
+                contentView.expand_iv.isVisible = false
             }
             chatViewModel.findUserById(userId!!).observe(this, Observer { u ->
                 if (u == null) {
@@ -248,7 +256,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 contentView.asset_rl.isEnabled = true
 
                 notNullElse(r.find {
-                    it.assetId == activity?.defaultSharedPreferences!!.getString(ASSERT_PREFERENCE, "")
+                    it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
                 }, { a ->
                     updateAssetUI(a)
                     currentAsset = a

@@ -51,7 +51,8 @@ class SingleFriendSelectFragment : BaseFragment() {
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         adapter.listener = object : SingleFriendSelectAdapter.FriendSelectListener {
             override fun onItemClick(user: User) {
-                TransferFragment.newInstance(user.userId).showNow(requireFragmentManager(), TransferFragment.TAG)
+                TransferFragment.newInstance(user.userId)
+                    .showNow(requireFragmentManager(), TransferFragment.TAG)
                 view?.findNavController()?.navigateUp()
             }
         }

@@ -1422,7 +1422,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     MenuType.Transfer -> {
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
-                                TransferFragment.newInstance(it.userId)
+                                TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
                                     .showNow(requireFragmentManager(), TransferFragment.TAG)
                             }
                         } else {
