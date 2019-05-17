@@ -54,7 +54,7 @@ class DecryptSessionMessage : Injector() {
                 data.category == MessageCategory.MESSAGE_RECALL.name -> processRecallMessage(data)
             }
         } else {
-            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
         }
     }
 
