@@ -259,7 +259,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         val bottomSheet = builder.create()
         view.contact.setOnClickListener {
             bottomSheet.dismiss()
-            defaultSharedPreferences.putString(TransferFragment.ASSERT_PREFERENCE, asset.assetId)
+            defaultSharedPreferences.putString(TransferFragment.ASSET_PREFERENCE, asset.assetId)
             this@TransactionsFragment.view?.navigate(R.id.action_transactions_to_single_friend_select)
         }
         view.address.setOnClickListener {
