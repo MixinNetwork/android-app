@@ -23,8 +23,8 @@
 
     <ImageView
             android:id="@+id/chat_flag"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
             android:layout_gravity="bottom"
             android:layout_marginBottom="2dp"
             android:layout_marginStart="3dp"

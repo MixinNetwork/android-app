@@ -1,14 +1,14 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
 import android.view.Gravity
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -201,6 +201,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         setStatusIcon(isMe, messageItem.status, {
+            it?.setBounds(0, 0, dp10, dp10)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
         }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)

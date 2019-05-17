@@ -115,6 +115,7 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
             itemView.chat_name.visibility = View.GONE
         }
         setStatusIcon(isMe, messageItem.status, {
+            it?.setBounds(0, 0, dp10, dp10)
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, it, null)
         }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
