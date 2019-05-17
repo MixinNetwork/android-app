@@ -484,7 +484,7 @@ class ConversationListFragment : LinkFragment() {
                     MessageStatus.SENDING.name -> AppCompatResources.getDrawable(itemView.context,
                         R.drawable.ic_status_sending)
                     MessageStatus.SENT.name -> AppCompatResources.getDrawable(itemView.context,
-                        R.drawable.ic_status_sent)
+                        R.drawable.ic_status_sent_large)
                     MessageStatus.DELIVERED.name -> AppCompatResources.getDrawable(itemView.context,
                         R.drawable.ic_status_delivered)
                     MessageStatus.READ.name -> AppCompatResources.getDrawable(itemView.context,
