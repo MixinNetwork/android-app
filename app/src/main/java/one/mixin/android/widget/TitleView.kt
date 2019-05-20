@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.RelativeLayout
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.dpToPx
 
 class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context, attrs) {
 

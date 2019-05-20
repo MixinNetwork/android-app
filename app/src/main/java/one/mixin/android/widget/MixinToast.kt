@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.core.content.getSystemService
 import kotlinx.android.synthetic.main.layout_toast.view.*
 import one.mixin.android.R
@@ -57,7 +56,7 @@ class MixinToast {
                     toastLayout.iv.setImageResource(R.drawable.ic_toast_warning)
                     toastLayout.pb.visibility = GONE
                     toastLayout.iv.visibility = VISIBLE
-                    toastText = text  // no default text
+                    toastText = text // no default text
                 }
                 TYPE_LOADING -> {
                     toastLayout.pb.visibility = VISIBLE

@@ -12,7 +12,7 @@ open class BiometricItem(
     var pin: String?,
     val trace: String?,
     val memo: String?
-): Parcelable
+) : Parcelable
 
 class TransferBiometricItem(
     val user: User,

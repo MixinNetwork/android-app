@@ -154,8 +154,6 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
-import java.io.IOException
-import java.lang.Exception
 import javax.inject.Inject
 import kotlin.math.abs
 

@@ -395,7 +395,8 @@ fun createContactMessage(
     .setSharedUserId(sharedUserId)
     .build()
 
-fun createRecallMessage(messageId: String,
+fun createRecallMessage(
+    messageId: String,
     conversationId: String,
     userId: String,
     category: String,

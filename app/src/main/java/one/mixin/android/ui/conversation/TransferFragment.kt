@@ -385,7 +385,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             val noPublicKey = currentAsset!!.isAccountTagAsset()
             WithdrawBiometricItem(if (noPublicKey) address!!.accountTag!! else address!!.publicKey!!, address!!.addressId,
                 if (noPublicKey) address!!.accountName!! else address!!.label!!,
-                currentAsset!!,  getAmount(), null, UUID.randomUUID().toString(),
+                currentAsset!!, getAmount(), null, UUID.randomUUID().toString(),
                 contentView.transfer_memo.text.toString())
         }
 

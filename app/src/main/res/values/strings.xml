@@ -130,7 +130,6 @@
     <string name="search_title_messages">MESSAGES</string>
     <string name="search_title_more">More</string>
     <string name="search_related_message">%1$d related messages</string>
-    <string name="search_recently_used_bots">Recently used bots</string>
     <string name="search_tip">Search Mixin ID or Phone number: %1$s</string>
     <!--landing-->
     <string name="landing_back_content_desc" translatable="false">Landing back</string>

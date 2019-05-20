@@ -113,20 +113,20 @@ fun MessageItem.isAudio() =
         type == MessageCategory.SIGNAL_AUDIO.name
 
 fun MessageItem.canRecall(): Boolean {
-    return this.type == MessageCategory.SIGNAL_TEXT.name
-        || this.type == MessageCategory.SIGNAL_IMAGE.name
-        || this.type == MessageCategory.SIGNAL_VIDEO.name
-        || this.type == MessageCategory.SIGNAL_STICKER.name
-        || this.type == MessageCategory.SIGNAL_DATA.name
-        || this.type == MessageCategory.SIGNAL_CONTACT.name
-        || this.type == MessageCategory.SIGNAL_AUDIO.name
-        || this.type == MessageCategory.PLAIN_TEXT.name
-        || this.type == MessageCategory.PLAIN_IMAGE.name
-        || this.type == MessageCategory.PLAIN_VIDEO.name
-        || this.type == MessageCategory.PLAIN_STICKER.name
-        || this.type == MessageCategory.PLAIN_DATA.name
-        || this.type == MessageCategory.PLAIN_CONTACT.name
-        || this.type == MessageCategory.PLAIN_AUDIO.name
+    return this.type == MessageCategory.SIGNAL_TEXT.name ||
+        this.type == MessageCategory.SIGNAL_IMAGE.name ||
+        this.type == MessageCategory.SIGNAL_VIDEO.name ||
+        this.type == MessageCategory.SIGNAL_STICKER.name ||
+        this.type == MessageCategory.SIGNAL_DATA.name ||
+        this.type == MessageCategory.SIGNAL_CONTACT.name ||
+        this.type == MessageCategory.SIGNAL_AUDIO.name ||
+        this.type == MessageCategory.PLAIN_TEXT.name ||
+        this.type == MessageCategory.PLAIN_IMAGE.name ||
+        this.type == MessageCategory.PLAIN_VIDEO.name ||
+        this.type == MessageCategory.PLAIN_STICKER.name ||
+        this.type == MessageCategory.PLAIN_DATA.name ||
+        this.type == MessageCategory.PLAIN_CONTACT.name ||
+        this.type == MessageCategory.PLAIN_AUDIO.name
 }
 
 fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name

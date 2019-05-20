@@ -88,7 +88,6 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
         recallDisposable = RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe {
-
             }
     }
 
