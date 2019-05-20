@@ -203,13 +203,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
             override fun onPageFinished() {
-                if (contentView.chat_web_view.canGoBack()) {
-                    contentView.close_iv.setImageResource(R.drawable.ic_back)
-                    contentView.close_iv.setOnClickListener { contentView.chat_web_view.goBack() }
-                } else {
-                    contentView.close_iv.setImageResource(R.drawable.ic_close_black_24dp)
-                    contentView.close_iv.setOnClickListener { dialog.dismiss() }
-                }
                 contentView.progress.visibility = View.GONE
                 contentView.title_view.visibility = View.VISIBLE
             }
