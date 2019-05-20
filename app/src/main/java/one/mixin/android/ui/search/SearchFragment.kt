@@ -249,7 +249,6 @@ class SearchFragment : BaseFragment() {
     private fun showSearch() {
         search_rv.post {
             search_rv.isVisible = true
-            recent_title_tv.isGone = true
             app_rv.isGone = true
         }
     }
@@ -257,7 +256,6 @@ class SearchFragment : BaseFragment() {
     private fun showBots() {
         search_rv.post {
             search_rv.isGone = true
-            recent_title_tv.isVisible = true
             app_rv.isVisible = true
         }
     }

@@ -42,7 +42,8 @@ interface ConversationDao : BaseDao<Conversation> {
         "ou.is_verified AS isVerified, ou.app_id AS appId " +
         "FROM conversations c " +
         "INNER JOIN users ou ON ou.user_id = c.owner_id " +
-        "WHERE c.category = 'GROUP' AND c.name LIKE :query " +
+        "WHERE (c.category = 'GROUP' AND c.name LIKE :query) " +
+        "OR (c.category = 'CONTACT' AND ou.relationship != 'FRIEND' AND (ou.full_name LIKE :query OR ou.identity_number like :query))" +
         "ORDER BY c.created_at DESC")
     fun fuzzySearchChat(query: String): List<ChatMinimal>
 
