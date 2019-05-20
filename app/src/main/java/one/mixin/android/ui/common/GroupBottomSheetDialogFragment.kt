@@ -7,15 +7,19 @@ import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
@@ -38,9 +42,7 @@ import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.margin
-import org.jetbrains.anko.uiThread
 import org.threeten.bp.Instant
 import java.io.File
 
@@ -49,13 +51,14 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "ProfileBottomSheetDialogFragment"
 
-        fun newInstance(conversationId: String, code: String? = null, expand: Boolean = false) = GroupBottomSheetDialogFragment().apply {
-            arguments = Bundle().apply {
-                putString(ARGS_CONVERSATION_ID, conversationId)
-                putString(CODE, code)
-                putBoolean(ARGS_EXPAND, expand)
+        fun newInstance(conversationId: String, code: String? = null, expand: Boolean = false) =
+            GroupBottomSheetDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARGS_CONVERSATION_ID, conversationId)
+                    putString(CODE, code)
+                    putBoolean(ARGS_EXPAND, expand)
+                }
             }
-        }
     }
 
     private var menu: AlertDialog? = null
@@ -85,7 +88,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             menu?.show()
         }
 
-        contentView.join_fl.setOnClickListener {
+        contentView.join_tv.setOnClickListener {
             if (code == null) return@setOnClickListener
 
             bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
@@ -133,7 +136,12 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 bottomViewModel.startGenerateAvatar(c.conversationId)
             }
             contentView.name.text = c.name
-            contentView.detail_tv.text = c.announcement
+            if (c.announcement.isNullOrBlank()) {
+                contentView.detail_tv.isVisible = false
+            } else {
+                contentView.detail_tv.isVisible = true
+                contentView.detail_tv.text = c.announcement
+            }
             initParticipant()
         })
 
@@ -145,44 +153,39 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     @SuppressLint("SetTextI18n")
-    private fun initParticipant() {
-        doAsync {
+    private fun initParticipant() = lifecycleScope.launch {
+        withContext(Dispatchers.IO) {
             me = bottomViewModel.findParticipantByIds(conversationId, Session.getAccountId()!!)
-            uiThread {
-                if (!isAdded) return@uiThread
-                initMenu()
-                if (me != null) {
-                    contentView.join_fl.visibility = GONE
-                    contentView.member_fl.visibility = VISIBLE
-                    contentView.send_fl.visibility = VISIBLE
-                    contentView.more_fl.visibility = VISIBLE
-                } else {
-                    contentView.join_fl.visibility = VISIBLE
-                    contentView.member_fl.visibility = GONE
-                    contentView.send_fl.visibility = GONE
-                    contentView.more_fl.visibility = GONE
-                }
-            }
+        }
+        if (!isAdded) return@launch
+
+        initMenu()
+        if (me != null) {
+            contentView.join_tv.visibility = GONE
+        } else {
+            contentView.join_tv.isVisible = code != null
         }
     }
 
     private fun initMenu() {
         val choices = mutableListOf<String>()
         choices.add(getString(R.string.participants))
-        if (me != null && (me!!.role == ParticipantRole.OWNER.name || me!!.role == ParticipantRole.ADMIN.name)) {
-            if (TextUtils.isEmpty(conversation.announcement)) {
-                choices.add(getString(R.string.group_info_add))
-            } else {
-                choices.add(getString(R.string.group_info_edit))
+        if (me != null) {
+            if (me!!.role == ParticipantRole.OWNER.name || me!!.role == ParticipantRole.ADMIN.name) {
+                if (TextUtils.isEmpty(conversation.announcement)) {
+                    choices.add(getString(R.string.group_info_add))
+                } else {
+                    choices.add(getString(R.string.group_info_edit))
+                }
+                choices.add(getString(R.string.group_edit_name))
             }
-            choices.add(getString(R.string.group_edit_name))
-        }
-        if (notNullElse(conversation.muteUntil, {
-                Instant.now().isBefore(Instant.parse(it))
-            }, false)) {
-            choices.add(getString(R.string.un_mute))
-        } else {
-            choices.add(getString(R.string.mute))
+            if (notNullElse(conversation.muteUntil, {
+                    Instant.now().isBefore(Instant.parse(it))
+                }, false)) {
+                choices.add(getString(R.string.un_mute))
+            } else {
+                choices.add(getString(R.string.mute))
+            }
         }
         choices.add(getString(R.string.group_info_clear_chat))
         if (me != null) {

@@ -65,6 +65,7 @@
     <string name="edit">编辑</string>
     <string name="transfer_send">转出</string>
     <string name="receive">转入</string>
+    <string name="developer">开发者</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -339,7 +340,7 @@
     <string name="group_cant_send">您不能发送消息，因为您已经不再是此群组成员。</string>
     <string name="empty_info">你可以与你的 Mixin 好友一起聊天。</string>
     <string name="empty_start">开始聊天</string>
-    <string name="group_join">加入群组</string>
+    <string name="group_join">+ 加入群组</string>
     <string name="group_already_in">你已经在该群组里</string>
     <!--setting-->
     <string name="setting_title">设置</string>
