@@ -250,11 +250,14 @@
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/gray_light" />
         <meta-data
-                android:name="com.google.firebase.ml.vision.DEPENDENCIES"
-                android:value="barcode" />
+            android:name="com.google.firebase.ml.vision.DEPENDENCIES"
+            android:value="barcode" />
         <meta-data
             android:name="android.max_aspect"
             android:value="2.1" />
+        <meta-data
+            android:name="firebase_crashlytics_collection_enabled"
+            android:value="${FIREBASE_CRASHLYTICS_COLLECTION_ENABLED}" />
     </application>
 
 </manifest>

@@ -17,6 +17,7 @@ import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
@@ -136,7 +137,9 @@ class MainActivity : BlazeBaseActivity() {
 
         val account = Session.getAccount()
         Bugsnag.setUser(account?.userId, account?.identity_number, account?.full_name)
-        Crashlytics.setUserIdentifier(account?.userId)
+        if (!BuildConfig.DEBUG) {
+            Crashlytics.setUserIdentifier(account?.userId)
+        }
 
         jobManager.addJobInBackground(RefreshOneTimePreKeysJob())
         jobManager.addJobInBackground(BackupJob())
