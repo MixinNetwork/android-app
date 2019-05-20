@@ -317,9 +317,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         // workaround with realSize() not get the correct value in some device.
-        contentView.postDelayed({
-            (dialog as BottomSheet).setCustomViewHeight((dialog as BottomSheet).getMaxCustomViewHeight())
-        }, 100)
+        contentView.postDelayed(setCustomViewHeightRunnable, 100)
+    }
+
+    private val setCustomViewHeightRunnable = Runnable {
+        dialog?.let {
+            (it as BottomSheet).setCustomViewHeight(it.getMaxCustomViewHeight())
+        }
     }
 
     @Override
@@ -352,6 +356,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webViewClient = null
         contentView.chat_web_view.webChromeClient = null
         unregisterForContextMenu(contentView.chat_web_view)
+        contentView.removeCallbacks(setCustomViewHeightRunnable)
         super.onDestroyView()
     }
 
@@ -377,7 +382,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         bottomSheet.show()
     }
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "AutoDispose")
     private fun saveImageFromUrl(url: String?) {
         if (!isAdded) return
 
