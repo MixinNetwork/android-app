@@ -79,7 +79,7 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
     fun setInfo(name: String?, url: String?, id: String) {
         avatar_tv.text = checkEmoji(name)
         try {
-            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar) + 1))
+            avatar_tv.setBackgroundResource(getAvatarPlaceHolderById(id.getColorCode(CodeType.Avatar)))
         } catch (e: NumberFormatException) {
         }
         displayedChild = if (url != null && url.isNotEmpty()) {
@@ -96,9 +96,14 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
 
     private fun getAvatarPlaceHolderById(code: Int): Int {
         try {
-            return resources.getIdentifier("bg_avatar_$code", "drawable", context.packageName)
+           return avatarArray.getResourceId(code, -1)
         } catch (e: Exception) {
         }
         return R.drawable.default_avatar
+    }
+
+
+    private val avatarArray by lazy {
+        resources.obtainTypedArray(R.array.avatar)
     }
 }
