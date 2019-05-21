@@ -299,11 +299,14 @@ class GenerateAvatarWorker @AssistedInject constructor(
     private fun getAvatarPlaceHolderById(id: Long): Int {
         try {
             val num = id.rem(24) + 1
-            return applicationContext.resources.getIdentifier("bg_avatar_$num",
-                "drawable", applicationContext.packageName)
+            return avatarArray[num.toInt()]
         } catch (e: Exception) {
         }
         return R.drawable.default_avatar
+    }
+
+    private val avatarArray by lazy {
+        applicationContext.resources.getIntArray(R.array.avatar)
     }
 
     private fun getBitmapByPlaceHolder(placeHolder: Int): Bitmap {
