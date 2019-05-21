@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.GlobalScope
@@ -99,6 +100,11 @@ class BottomSheetViewModel @Inject internal constructor(
     fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
 
     fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
+
+    fun findAssetItem(id: String) =
+        Single.fromCallable {
+            assetRepository.simpleAssetItem(id)
+        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
 

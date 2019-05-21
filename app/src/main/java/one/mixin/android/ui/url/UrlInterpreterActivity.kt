@@ -6,7 +6,6 @@ import androidx.fragment.app.FragmentManager
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
@@ -15,6 +14,7 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
+import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -26,6 +26,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val USER = "users"
         private const val TRANSFER = "transfer"
         private const val SEND = "send"
+        private const val WITHDRAWAL = "withdrawal"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +37,7 @@ class UrlInterpreterActivity : BaseActivity() {
             return
         }
         if (Session.getAccount() == null) {
-            toast(R.string.not_logged_in)
+            toast(one.mixin.android.R.string.not_logged_in)
             finish()
             return
         }
@@ -65,8 +66,14 @@ class UrlInterpreterActivity : BaseActivity() {
                 }
                 finish()
             }
+            WITHDRAWAL -> {
+                checkMixin()
+            }
         }
     }
+}
+
+fun checkMixin() {
 }
 
 fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
@@ -110,6 +117,31 @@ inline fun openUrl(
         Uri.parse(url).getQueryParameter("text")?.let {
             ForwardActivity.show(MixinApplication.appContext, arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it)))
         }
+    } else if (url.startsWith("https://mixin.one/withdrawal")) {
+        val uri = Uri.parse(url)
+        if (Session.getAccount()?.hasPin == false) {
+
+        } else if (uri.queryParameterNames.size <= 0) {
+
+        }
+        val assetId = uri.getQueryParameter("asset")
+        val amount = uri.getQueryParameter("amount")
+        var memo = uri.getQueryParameter("memo")
+        val traceId = uri.getQueryParameter("trace")
+        val publicKey = uri.getQueryParameter("public_key")
+        val label = uri.getQueryParameter("label")
+        if (publicKey.isNullOrEmpty() || assetId.isNullOrEmpty() || amount.isNullOrEmpty() ||
+            traceId.isNullOrEmpty() || !assetId.isUUID() || !traceId.isUUID
+            ()) {
+            // Todo
+            return
+        }
+        if (!memo.isNullOrEmpty()) {
+            memo = Uri.decode(memo)
+        }
+        WithdrawalBottomSheetDialogFragment
+            .newInstance(WithdrawalBottomSheetDialogFragment.WithdrawalItem(publicKey, amount, memo, label), assetId)
+            .show(supportFragmentManager, WithdrawalBottomSheetDialogFragment.TAG)
     } else {
         if (isMixinUrl(url, false)) {
             LinkBottomSheetDialogFragment
