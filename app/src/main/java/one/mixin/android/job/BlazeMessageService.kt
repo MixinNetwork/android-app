@@ -141,7 +141,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
         runFloodJob()
     }
 
-    @SuppressLint("NewApi")
+    @SuppressLint("NewApi", "WrongConstant")
     private fun setForegroundIfNecessary() {
         val exitIntent = Intent(this, ExitBroadcastReceiver::class.java).apply {
             action = ACTION_TO_BACKGROUND
@@ -161,7 +161,7 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
             .setSmallIcon(R.drawable.ic_msg_default)
             .addAction(R.drawable.ic_close_black_24dp, getString(R.string.exit), exitPendingIntent)
 
-        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getSingleIntent(this), 0)
+        val pendingIntent = PendingIntent.getActivity(this, 0, MainActivity.getSingleIntent(this), Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
         builder.setContentIntent(pendingIntent)
 
         supportsOreo {

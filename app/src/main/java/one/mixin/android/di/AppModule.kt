@@ -21,7 +21,17 @@ import one.mixin.android.Constants.API.URL
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
-import one.mixin.android.api.service.*
+import one.mixin.android.api.service.AccountService
+import one.mixin.android.api.service.AddressService
+import one.mixin.android.api.service.AssetService
+import one.mixin.android.api.service.AuthorizationService
+import one.mixin.android.api.service.ContactService
+import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.GiphyService
+import one.mixin.android.api.service.MessageService
+import one.mixin.android.api.service.ProvisioningService
+import one.mixin.android.api.service.SignalKeyService
+import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.FloodMessageDao
@@ -107,7 +117,7 @@ internal class AppModule {
 
                 if (MixinApplication.get().onlining.get()) {
                     response.header("X-Server-Time")?.toLong()?.let { serverTime ->
-                        if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= 600000L) {
+                        if (abs(serverTime / 1000000 - System.currentTimeMillis()) >= 300000L) {
                             MixinApplication.get().gotoTimeWrong(serverTime)
                         }
                     }

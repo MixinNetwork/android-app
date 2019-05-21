@@ -33,7 +33,7 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.protocol.SignalMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
-import java.util.*
+import java.util.UUID
 
 class SignalProtocol(ctx: Context) {
 
@@ -45,7 +45,7 @@ class SignalProtocol(ctx: Context) {
 
     companion object {
 
-        val TAG = SignalProtocol::class.java.simpleName
+        val TAG = SignalProtocol::class.java.simpleName!!
         const val DEFAULT_DEVICE_ID = 1
 
         fun initSignal(context: Context) {

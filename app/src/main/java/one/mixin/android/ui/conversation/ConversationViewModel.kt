@@ -130,7 +130,7 @@ internal constructor(
 
     fun searchConversationById(id: String) =
         conversationRepository.searchConversationById(id)
-            .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())!!
+            .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 
     private fun getConversationIdIfExistsSync(recipientId: String) = conversationRepository.getConversationIdIfExistsSync(recipientId)
 

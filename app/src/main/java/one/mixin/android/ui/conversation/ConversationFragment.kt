@@ -130,6 +130,7 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.LinkState
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
@@ -911,7 +912,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun deleteMessage(messages: List<MessageItem>) {
         deleteDialog?.dismiss()
         val showRecall = messages.all { item ->
-            item.userId == sender.userId && !item.createdAt.lateOneHours() && item.canRecall()
+            item.userId == sender.userId && item.status != MessageStatus.SENDING.name && !item.createdAt.lateOneHours() && item.canRecall()
         }
         val deleteDialogLayout = generateDeleteDialogLayout()
         deleteDialog = AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
