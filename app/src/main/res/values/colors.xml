@@ -29,9 +29,6 @@
     <color name="button_blue">#0D94FC</color>
     <color name="button_blue_highlighted">#2CC3FA</color>
     <color name="avatar_place_holder">#efefef</color>
-    <color name="pie_item_first">#005EE4</color>
-    <color name="pie_item_second">#3387FF</color>
-    <color name="pie_item_third">#70BEFF</color>
     <color name="blue_highlight">#660D94FC</color>
     <color name="transparent_white">#CCFFFFFF</color>
     <color name="color_blink">#FF5E5E</color>
@@ -58,7 +55,6 @@
     <color name="wallet_pink">#f78181</color>
     <color name="wallet_green">#29be73</color>
     <color name="wallet_blue_secondary">#397ee4</color>
-    <color name="wallet_header_gray">#fcfcfc</color>
     <color name="wallet_blue_light">#f2faff</color>
     <color name="wallet_divider">#F8F8F8</color>
     <color name="wallet_bg_gray">#F5F7FA</color>
@@ -68,7 +64,6 @@
     <color name="gray_black_50">#AA3A3C3E</color>
     <color name="menu_bg_border">#E5E7EC</color>
     <color name="toast_bg">#3A3C3E</color>
-    <color name="toast_error">#F67070</color>
 
     <array name="name_colors">
         <item>#AA4848</item>
