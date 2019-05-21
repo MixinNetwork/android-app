@@ -6,7 +6,7 @@
     <TextView
         android:id="@+id/add"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="56dp"
         android:background="@drawable/bg_upper_round"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
@@ -14,31 +14,22 @@
         android:paddingStart="16dp"
         android:text="@string/wallet_add_asset" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider" />
-
+  
     <TextView
             android:id="@+id/hide"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-        android:background="@android:color/white"
+            android:layout_height="56dp"
+            android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:text="@string/wallet_bottom_show_hidden" />
 
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/divider" />
-
     <TextView
         android:id="@+id/setting"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="56dp"
         android:background="@android:color/white"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
@@ -46,15 +37,10 @@
         android:paddingStart="16dp"
         android:text="@string/wallet_setting" />
 
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/divider" />
-
     <TextView
             android:id="@+id/transactions_tv"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="56dp"
             android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center_vertical"
@@ -62,15 +48,10 @@
             android:paddingStart="16dp"
             android:text="@string/wallet_all_transactions" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider" />
-
     <TextView
         android:id="@+id/cancel"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="56dp"
         android:background="@android:color/white"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"

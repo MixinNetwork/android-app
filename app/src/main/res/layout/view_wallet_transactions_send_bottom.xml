@@ -7,7 +7,7 @@
     <TextView
         android:id="@+id/contact"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="56dp"
         android:background="@drawable/bg_upper_round"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
@@ -15,15 +15,10 @@
         android:paddingStart="16dp"
         android:text="@string/contact"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider"/>
-
     <TextView
         android:id="@+id/address"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="56dp"
         android:background="@android:color/white"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
@@ -31,15 +26,10 @@
         android:paddingStart="16dp"
         android:text="@string/address"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider"/>
-
     <TextView
         android:id="@+id/send_cancel"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="56dp"
         android:background="@android:color/white"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"

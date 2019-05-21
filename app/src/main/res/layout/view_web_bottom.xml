@@ -7,7 +7,7 @@
     <TextView
         android:id="@+id/share"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="56dp"
         android:background="@drawable/bg_upper_round"
         android:drawablePadding="16dp"
         android:layout_gravity="center"
@@ -17,15 +17,10 @@
         android:paddingStart="16dp"
         android:text="@string/share"/>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider"/>
-
     <TextView
             android:id="@+id/refresh"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="56dp"
             android:background="@android:color/white"
             android:drawablePadding="16dp"
             android:layout_gravity="center"
@@ -35,15 +30,11 @@
             android:paddingStart="16dp"
             android:text="@string/action_refresh"/>
 
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/divider"/>
-
+   
     <TextView
             android:id="@+id/open"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="56dp"
             android:drawablePadding="16dp"
             android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground"
@@ -51,16 +42,11 @@
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:text="@string/action_open"/>
-
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/divider"/>
-
+    
     <TextView
             android:id="@+id/cancel_tv"
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="56dp"
             android:background="@android:color/white"
             android:drawablePadding="16dp"
             android:foreground="?attr/selectableItemBackground"
