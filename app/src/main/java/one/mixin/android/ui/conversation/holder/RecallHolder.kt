@@ -20,7 +20,7 @@ class RecallHolder constructor(containerView: View) : BaseViewHolder(containerVi
 
     fun bind(
         messageItem: MessageItem,
-        isFirst:Boolean,
+        isFirst: Boolean,
         isLast: Boolean,
         hasSelect: Boolean,
         isSelect: Boolean,

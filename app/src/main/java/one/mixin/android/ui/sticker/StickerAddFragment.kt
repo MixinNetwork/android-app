@@ -1,8 +1,6 @@
 package one.mixin.android.ui.sticker
 
 import android.app.Dialog
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -15,11 +13,14 @@ import android.widget.ImageView
 import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.uber.autodispose.autoDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
@@ -205,7 +206,8 @@ class StickerAddFragment : BaseFragment() {
             } ?: return@doAsync
 
             disposable = stickerViewModel.addSticker(request)
-                .subscribeOn(Schedulers.io()).observeOn(Schedulers.io()).subscribe({ r ->
+                .subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
+                .autoDisposable(scopeProvider).subscribe({ r ->
                     if (r != null && r.isSuccess) {
                         val personalAlbum = stickerViewModel.getPersonalAlbums()
                         if (personalAlbum == null) { // not add any personal sticker yet

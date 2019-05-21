@@ -8,7 +8,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.timeAgoDay
-import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType

@@ -2,7 +2,6 @@ package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
-import androidx.paging.PagedList
 import androidx.room.Dao
 import androidx.room.Query
 import one.mixin.android.vo.Snapshot

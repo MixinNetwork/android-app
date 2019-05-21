@@ -21,7 +21,7 @@ import java.math.BigDecimal
 import java.nio.charset.Charset
 import java.security.InvalidKeyException
 
-class BiometricDialog<T: BiometricItem>(
+class BiometricDialog<T : BiometricItem>(
     private val context: Context,
     private val t: T
 ) {
@@ -30,7 +30,7 @@ class BiometricDialog<T: BiometricItem>(
 
     fun show() {
         val biometricPromptBuilder = BiometricPromptCompat.Builder(context)
-        when(t) {
+        when (t) {
             is TransferBiometricItem -> {
                 biometricPromptBuilder.setTitle(context.getString(R.string.wallet_bottom_transfer_to, t.user.fullName))
                     .setSubtitle(context.getString(R.string.contact_mixin_id, t.user.identityNumber))
@@ -107,7 +107,7 @@ class BiometricDialog<T: BiometricItem>(
         }
     }
 
-    interface Callback<T: BiometricItem> {
+    interface Callback<T : BiometricItem> {
         fun onStartTransfer(t: T)
 
         fun showTransferBottom(t: T)
