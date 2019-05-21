@@ -67,26 +67,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:layout_marginBottom="4dp"
+        android:layout_marginBottom="10dp"
         android:layout_gravity="center_horizontal"
         android:maxLines="1"
-        android:textColor="@color/text_gray"/>
-
-    <TextView
-        android:id="@+id/creator_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/bg_round_gray"
-        android:layout_marginTop="4dp"
-        android:layout_marginBottom="8dp"
-        android:paddingStart="8dp"
-        android:paddingEnd="8dp"
-        android:paddingTop="2dp"
-        android:paddingBottom="2dp"
-        android:layout_gravity="center_horizontal"
-        android:maxLines="1"
-        android:visibility="gone"
-        android:textSize="12sp"
         android:textColor="@color/text_gray"/>
 
     <TextView
@@ -95,6 +78,7 @@
         android:layout_height="28dp"
         android:paddingStart="8dp"
         android:paddingEnd="8dp"
+        android:drawablePadding="4dp"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
         android:background="@drawable/bg_round_gray_14dp"
@@ -124,7 +108,7 @@
         android:baselineAligned="false">
 
         <FrameLayout
-            android:id="@+id/add_fl"
+            android:id="@+id/transfer_fl"
             android:layout_width="0dp"
             android:layout_weight="1"
             android:layout_height="match_parent">
@@ -134,23 +118,8 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
                 android:background="@drawable/mixin_ripple"
-                android:src="@drawable/ic_user_add"
-                android:contentDescription="@string/contact_other_add"/>
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/share_fl"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:background="@drawable/mixin_ripple"
-                android:src="@drawable/ic_group_share"
-                android:contentDescription="@string/share"/>
+                android:src="@drawable/ic_menu_transfer"
+                android:contentDescription="@string/filters_transfer"/>
         </FrameLayout>
 
         <FrameLayout

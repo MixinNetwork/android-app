@@ -68,6 +68,7 @@
     <string name="edit">Edit</string>
     <string name="transfer_send">Send</string>
     <string name="receive">Receive</string>
+    <string name="developer">Developer</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -347,8 +348,9 @@
     <string name="group_cant_send">You can\'t send messages to this group because you\'re no longer a participant.</string>
     <string name="empty_info">You can chat with contacts who have\nMixin install on their phone</string>
     <string name="empty_start">Start Messaging</string>
-    <string name="group_join">Join the group</string>
+    <string name="group_join">+ Join the group</string>
     <string name="group_already_in">You already in the group</string>
+    <string name="group_participants_count">%1$d Participants</string>
     <!--setting-->
     <string name="setting_title">Setting</string>
     <string name="setting_blocked">Blocked</string>

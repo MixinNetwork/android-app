@@ -2,8 +2,8 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.graphics.drawable.Drawable
 import android.os.Bundle
-import android.text.TextUtils
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
@@ -13,8 +13,12 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipAction
@@ -24,6 +28,7 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
@@ -38,9 +43,7 @@ import one.mixin.android.vo.UserRelationship
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.margin
-import org.jetbrains.anko.uiThread
 import org.threeten.bp.Instant
 
 class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -64,6 +67,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     // bot need conversation id
     private var conversationId: String? = null
     private lateinit var menu: AlertDialog
+    private var creator: User? = null
 
     private var keepDialog = false
 
@@ -100,24 +104,16 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             user = u
             updateUserInfo(u)
-            initMenu()
+            initMenu(u)
         })
-        contentView.add_fl.setOnClickListener {
-            updateRelationship(UserRelationship.FRIEND.name)
+        contentView.transfer_fl.setOnClickListener {
+            TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
+                .showNow(requireFragmentManager(), TransferFragment.TAG)
         }
         contentView.send_fl.setOnClickListener {
             context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             dismiss()
         }
-        contentView.share_fl.setOnClickListener {
-            ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
-            dismiss()
-        }
-        contentView.add_tv.setOnClickListener {
-            updateRelationship(UserRelationship.FRIEND.name)
-            contentView.add_tv.visibility = GONE
-        }
-
         contentView.detail_tv.movementMethod = LinkMovementMethod()
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
@@ -129,8 +125,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         bottomViewModel.refreshUser(user.userId, true)
     }
 
-    private fun initMenu() {
+    private fun initMenu(u: User) {
         val choices = mutableListOf<String>()
+        if (u.isBot()) {
+            choices.add(getString(R.string.developer))
+        }
         choices.add(getString(R.string.contact_other_share))
         choices.add(getString(R.string.contact_other_transactions))
         when (user.relationship) {
@@ -150,6 +149,16 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         menu = AlertDialog.Builder(context!!)
             .setItems(choices.toTypedArray()) { _, which ->
                 when (choices[which]) {
+                    getString(R.string.developer) -> {
+                        creator?.let {
+                            if (it.userId == Session.getAccountId()) {
+                                activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
+                            } else {
+                                UserBottomSheetDialogFragment.newInstance(it).showNow(requireFragmentManager(), TAG)
+                            }
+                        }
+                        dismiss()
+                    }
                     getString(R.string.contact_other_share) -> {
                         ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
                         dismiss()
@@ -206,95 +215,71 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun updateUserInfo(user: User) {
+    private fun updateUserInfo(user: User) = lifecycleScope.launch {
         contentView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         contentView.name.text = user.fullName
         contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
         contentView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
         if (user.isBot()) {
             contentView.bot_iv.visibility = VISIBLE
-            doAsync {
-                bottomViewModel.findAppById(user.appId!!)?.let { app ->
-                    uiThread {
-                        contentView.detail_tv.visibility = VISIBLE
-                        contentView.detail_tv.text = app.description
-                        contentView.open_fl.setOnClickListener {
-                            dismiss()
-                            WebBottomSheetDialogFragment
-                                .newInstance(app.homeUri, conversationId, app.name)
-                                .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
-                        }
-                        bottomViewModel.findUserById(app.creatorId).observe(this@UserBottomSheetDialogFragment, Observer { u ->
-                            if (u != null) {
-                                if (!TextUtils.isEmpty(u.fullName)) {
-                                    contentView.creator_tv.visibility = VISIBLE
-                                    contentView.creator_tv.text = u.fullName
-                                    contentView.creator_tv.setOnClickListener {
-                                        if (app.creatorId == Session.getAccountId()) {
-                                            activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
-                                        } else {
-                                            UserBottomSheetDialogFragment.newInstance(u).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
-                                        }
-                                        dismiss()
-                                    }
-                                } else {
-                                    contentView.creator_tv.visibility = GONE
-                                }
-                            } else {
-                                bottomViewModel.refreshUser(app.creatorId, true)
-                            }
-                        })
-                    }
+            contentView.open_fl.visibility = VISIBLE
+            contentView.transfer_fl.visibility = GONE
+            withContext(Dispatchers.IO) {
+                bottomViewModel.findAppById(user.appId!!)
+            }?.let { app ->
+                contentView.detail_tv.visibility = VISIBLE
+                contentView.detail_tv.text = app.description
+                contentView.open_fl.setOnClickListener {
+                    dismiss()
+                    WebBottomSheetDialogFragment
+                        .newInstance(app.homeUri, conversationId, app.name)
+                        .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
                 }
+                bottomViewModel.findUserById(app.creatorId)
+                    .observe(this@UserBottomSheetDialogFragment, Observer { u ->
+                        creator = u
+                        if (u == null) {
+                            bottomViewModel.refreshUser(app.creatorId, true)
+                        }
+                    })
             }
         } else {
-            contentView.creator_tv.visibility = GONE
             contentView.bot_iv.visibility = GONE
             contentView.detail_tv.visibility = GONE
+            contentView.open_fl.visibility = GONE
+            contentView.transfer_fl.visibility = VISIBLE
         }
 
         updateUserStatus(user.relationship)
     }
 
+    private val blockDrawable: Drawable by lazy {
+        val d = resources.getDrawable(R.drawable.ic_bottom_block, null)
+        d.setBounds(0, 0, d.intrinsicWidth, d.intrinsicHeight)
+        d
+    }
+
     private fun updateUserStatus(relationship: String) {
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
-                contentView.share_fl.visibility = GONE
-                contentView.send_fl.visibility = GONE
-                contentView.more_fl.visibility = GONE
-                notFriend()
+                contentView.add_tv.visibility = VISIBLE
+                contentView.add_tv.text = getString(R.string.contact_other_unblock)
+                contentView.add_tv.setCompoundDrawables(blockDrawable, null, null, null)
+                contentView.add_tv.setOnClickListener {
+                    bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.UNBLOCK.name))
+                }
             }
             UserRelationship.FRIEND.name -> {
-                contentView.add_fl.visibility = GONE
                 contentView.add_tv.visibility = GONE
-                if (user.isBot()) {
-                    contentView.open_fl.visibility = VISIBLE
-                    contentView.share_fl.visibility = GONE
-                } else {
-                    contentView.share_fl.visibility = VISIBLE
-                    contentView.open_fl.visibility = GONE
-                }
-                contentView.send_fl.visibility = VISIBLE
-                contentView.more_fl.visibility = VISIBLE
             }
             UserRelationship.STRANGER.name -> {
-                contentView.share_fl.visibility = GONE
-                contentView.send_fl.visibility = VISIBLE
-                contentView.more_fl.visibility = VISIBLE
-                notFriend()
+                contentView.add_tv.visibility = VISIBLE
+                contentView.add_tv.setCompoundDrawables(null, null, null, null)
+                contentView.add_tv.text = getString(R.string.add_contact)
+                contentView.add_tv.setOnClickListener {
+                    updateRelationship(UserRelationship.FRIEND.name)
+                }
             }
-        }
-    }
-
-    private fun notFriend() {
-        if (user.isBot()) {
-            contentView.add_tv.visibility = VISIBLE
-            contentView.add_fl.visibility = GONE
-            contentView.open_fl.visibility = VISIBLE
-        } else {
-            contentView.add_tv.visibility = GONE
-            contentView.add_fl.visibility = VISIBLE
-            contentView.open_fl.visibility = GONE
         }
     }
 
