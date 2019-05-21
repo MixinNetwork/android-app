@@ -17,6 +17,8 @@ import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
 import one.mixin.android.R
 import one.mixin.android.api.LocalJobException
+import one.mixin.android.extension.CodeType
+import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
@@ -297,7 +299,7 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
             if (item.isNullOrEmpty()) {
                 val user = users[i]
                 texts[i] = AvatarView.checkEmoji(user.fullName)
-                bitmaps.add(getBitmapByPlaceHolder(getAvatarPlaceHolderById(user.identityNumber.toLong())))
+                bitmaps.add(getBitmapByPlaceHolder(getAvatarPlaceHolderById(user.userId)))
             } else {
                 bitmaps.add(Glide.with(applicationContext)
                     .asBitmap()
@@ -316,17 +318,17 @@ class GenerateAvatarJob(private val groupId: String, val list: List<User>? = nul
         m.mapRect(rectF, src)
     }
 
-    private fun getAvatarPlaceHolderById(id: Long): Int {
+    private fun getAvatarPlaceHolderById(id: String): Int {
         try {
-            val num = id.rem(24) + 1
-            return avatarArray[num.toInt()]
+            val num = id.getColorCode(CodeType.Avatar)
+            return avatarArray.getResourceId(num, -1)
         } catch (e: Exception) {
         }
         return R.drawable.default_avatar
     }
 
     private val avatarArray by lazy {
-        applicationContext.resources.getIntArray(R.array.avatar)
+        applicationContext.resources.obtainTypedArray(R.array.avatar)
     }
 
     private fun getBitmapByPlaceHolder(placeHolder: Int): Bitmap {

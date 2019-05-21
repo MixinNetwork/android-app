@@ -7,7 +7,7 @@
         <item>Monthly</item>
     </string-array>
 
-    <array name="avatar">
+    <integer-array name="avatar">
         <item>@drawable/bg_avatar_1</item>
         <item>@drawable/bg_avatar_2</item>
         <item>@drawable/bg_avatar_3</item>
@@ -32,5 +32,5 @@
         <item>@drawable/bg_avatar_22</item>
         <item>@drawable/bg_avatar_23</item>
         <item>@drawable/bg_avatar_24</item>
-    </array>
+    </integer-array>
 </resources>
