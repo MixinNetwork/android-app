@@ -10,8 +10,6 @@
     <dimen name="item_contact_height">60dp</dimen>
     <dimen name="item_contact_header_height">30dp</dimen>
     <dimen name="quick_camera_shutter_ring_size">52dp</dimen>
-    <dimen name="transfer_coin_size">24sp</dimen>
-    <dimen name="transfer_coin_desc_size">18sp</dimen>
     <dimen name="transfer_item_height">80dp</dimen>
     <dimen name="chat_date_size">10sp</dimen>
     <dimen name="item_divider">20dp</dimen>
@@ -21,8 +19,7 @@
     <dimen name="group_avatar_text_size">34sp</dimen>
     <dimen name="group_avatar_text_medium">28sp</dimen>
     <dimen name="group_avatar_text_small">22sp</dimen>
-    <dimen name="bottom_avatar_size">90dp</dimen>
-    <dimen name="bottom_group_avatar_size">40dp</dimen>
+    <dimen name="bottom_avatar_size">110dp</dimen>
     <dimen name="bottom_button_height">56dp</dimen>
     <dimen name="bottom_name_text_size">18sp</dimen>
     <dimen name="margin20">20dp</dimen>
@@ -31,13 +28,10 @@
     <dimen name="blink_size">8dp</dimen>
     <dimen name="padding8">8dp</dimen>
     <dimen name="chat_control_height">52dp</dimen>
-    <dimen name="chat_menu_height">87dp</dimen>
-    <dimen name="chat_app_height">103dp</dimen>
     <dimen name="media_grid_size">48dp</dimen>
     <dimen name="media_grid_spacing">4dp</dimen>
     <dimen name="btn_min_height">48dp</dimen>
 
     <dimen name="album_item_height">72dp</dimen>
     <dimen name="call_button_size">74dp</dimen>
-    <dimen name="call_button_icon_size">48dp</dimen>
 </resources>

@@ -14,7 +14,6 @@
     <string name="un_mute">取消静音</string>
     <string name="notification">通知</string>
     <string name="none">无</string>
-    <string name="to">To %1$s</string>
     <string name="fee">手续费</string>
     <string name="memo">备注</string>
     <string name="date">日期</string>
@@ -24,7 +23,6 @@
     <string name="address">地址</string>
     <string name="amount">金额</string>
     <string name="transfer">转账</string>
-    <string name="balance">余额</string>
     <string name="admin">管理员</string>
     <string name="share">分享</string>
     <string name="done">完成</string>
@@ -109,12 +107,10 @@
     <string name="error_duration_short">时间太短</string>
     <string name="error_too_many_stickers">错误 %1$d：贴纸数已达上限</string>
     <string name="error_too_small_withdraw_amount">错误 %1$d：提现金额太小</string>
-    <string name="error_minimum_withdraw_amount">最小提现金额 %1$s</string>
     <!--home-->
     <string name="title_home">联系人</string>
     <string name="search_hint">资产，联系人，消息</string>
     <string name="conversation_waiting">Waiting for this message.</string>
-    <string name="open_app">打开应用</string>
     <string name="text_qr">文本二维码</string>
     <string name="detect_qr_tip">检测到一个 Mixin 二维码，点击识别</string>
     <string name="qr_code_camera">自动识别二维码</string>
@@ -238,7 +234,6 @@
     <string name="wallet_get_free_redeem">兑换邀请码</string>
     <string name="wallet_redeem">兑换</string>
     <string name="wallet_get_free_redeem_tip">输入邀请码免费获得 10 个 XIN 代币。</string>
-    <string name="wallet_create_tip">Create a Wallet to transfer BTC, ETH, XIN, etc between friends.</string>
     <string name="wallet_password_set_pin">设置密码</string>
     <string name="wallet_password_set_new_pin">设置新的密码</string>
     <string name="wallet_password_set_pin_desc">设置 6 位数字密码。</string>
@@ -250,7 +245,6 @@
     <string name="wallet_password_unsafe">密码过于简单不安全</string>
     <string name="wallet_bottom_show_hidden">所有隐藏的资产</string>
     <string name="wallet_hidden_assets">隐藏资产</string>
-    <string name="wallet_bottom_password">修改密码</string>
     <string name="wallet_bottom_deposit">充值</string>
     <string name="wallet_bottom_transfer_to">转账给 %1$s</string>
     <string name="wallet_transactions_title">转账记录</string>
@@ -264,18 +258,15 @@
     <string name="wallet_fee_regular">Regular</string>
     <string name="wallet_fee_custom">Custom</string>
     <string name="wallet_fee_tip">The transaction fee is received by the miner</string>
-    <string name="wallet_transfer_type">转账类型</string>
     <string name="wallet_pay_with_pwd">用密码支付</string>
     <string name="wallet_pay_with_biometric">生物识别支付</string>
     <string name="wallet_transfer_amount">转账金额</string>
     <string name="wallet_transfer_memo">备注（可选）</string>
-    <string name="wallet_unit_btc">%1$s BTC</string>
     <string name="wallet_unit_usd">%1$s USD</string>
     <string name="wallet_verifying">验证中…</string>
     <string name="wallet_change_password_success">密码修改成功</string>
     <string name="wallet_set_password_success">密码设置成功</string>
     <string name="wallet_all_transactions">所有交易</string>
-    <string name="wallet_transactions_hash">%1$s......%2$s</string>
     <string name="pin_check_title">输入你的密码</string>
     <string name="pin_check_tip">定期输入密码有助于记住该密码</string>
     <string name="transactions_id">交易编号</string>
@@ -298,14 +289,10 @@
     <string name="wallet_withdrawals_empty">暂无提现记录</string>
     <string name="wallet_fees_empty">暂无手续费记录</string>
     <string name="wallet_rebates_empty">暂无退款记录</string>
-    <string name="transfer_capital">转账</string>
-    <string name="deposit_capital">充值</string>
     <string name="wallet_add_asset">添加资产</string>
     <string name="wallet_add_asset_symbol">+ 添加资产</string>
     <string name="wallet_already_hidden">已隐藏 %1$s</string>
     <string name="wallet_already_shown">已显示 %1$s</string>
-    <string name="wallet_add_asset_search_hint">输入一种资产的名字</string>
-    <string name="wallet_add_asset_hot">热门资产</string>
     <string name="wallet_add_asset_already">已添加过此资产</string>
     <string name="wallet_biometric_invalid">生物识别失效，请重新设置。</string>
     <!--group-->
@@ -383,8 +370,6 @@
     <string name="setting_auth_cancel_msg">取消 %1$s 授权?</string>
     <string name="setting_logout_desktop">退出桌面端</string>
     <string name="setting_scan_qr_code">扫描二维码</string>
-    <string name="setting_desktop_last_active">上次登录 %1$s %2$s</string>
-    <string name="setting_desktop_logging">登录中…</string>
     <string name="setting_desktop_logout">退出中…</string>
     <string name="setting_desktop_signed">已登录桌面端</string>
     <string name="setting_desktop_sigin_success">登录桌面端成功</string>
@@ -425,8 +410,6 @@
     <string name="conversation_pin">置顶</string>
     <string name="conversation_pin_clear">取消置顶</string>
     <string name="group_role">你现在成为管理员</string>
-    <string name="transfer_to">您转账给%1$s</string>
-    <string name="transfer_from">转账来自%1$s</string>
     <string name="loading_init">初始化…</string>
     <string name="loading_wait">请稍等</string>
     <string name="loading_time">检测到系统时间异常，请校正后再继续使用</string>
@@ -477,7 +460,6 @@
     <string name="camera">相机</string>
     <string name="voice">语音电话</string>
     <string name="document">文件</string>
-    <string name="gallery">相册</string>
     <string name="contact">联系人</string>
     <string name="sticker">贴纸</string>
     <string name="video">视频</string>
@@ -489,10 +471,8 @@
 
     <!--withdrawal-->
     <string name="withdrawal">提现</string>
-    <string name="withdrawal_tap_add_addr">点击添加地址</string>
     <string name="withdrawal_fee">需要 %1$s 作为 %2$s 的提现手续费。</string>
     <string name="withdrawal_fee_with_reserve">需要 %1$s 作为 %2$s 的提现手续费。%3$s 最少需要保留 %4$s 个 %5$s。</string>
-    <string name="withdrawal_addr_book">%1$s 地址簿</string>
     <string name="withdrawal_addr_add">+ 添加地址</string>
     <string name="withdrawal_addr_new">新 %1$s 地址</string>
     <string name="withdrawal_addr_modify">修改 %1$s 地址</string>
@@ -538,18 +518,14 @@
     <string name="filters_by">筛选</string>
     <string name="sort_by">排序</string>
     <!--Pending-->
-    <string name="pending">待入账</string>
     <string name="pending_confirmations">%1$d/%2$d 区块确认数</string>
     <!-- webrtc -->
     <string name="call_notification_outgoing">正在呼叫&#8230;</string>
     <string name="call_notification_incoming_voice">语音通话来电</string>
-    <string name="call_notification_missed_voice">未接语音通话</string>
     <string name="call_notification_connected">正在进行语音通话</string>
     <string name="call_notification_action_cancel">取消</string>
     <string name="call_notification_action_decline">挂断</string>
     <string name="call_notification_action_answer">接听</string>
-    <string name="call_notification_action_callback">回拨</string>
-    <string name="call_notification_action_reply">回复</string>
     <string name="call_notification_action_hang_up">挂断</string>
     <string name="call_connecting">正在连接&#8230;</string>
     <string name="call_speaker">扬声器</string>
@@ -566,7 +542,6 @@
     <string name="restore_restore">还原</string>
     <string name="restore_authorization">授权</string>
     <string name="restore_message">如果您之前曾备份到外部存储并且现在想要还原备份，请给与 Mixin 相应权限以检查您外部存储里的备份。</string>
-    <string name="restore_account">账户: %1$s</string>
     <string name="restore_size">备份大小: %1$s</string>
     <string name="restore_failure">错误</string>
     <string name="restore_not_found">未找到备份文件</string>
