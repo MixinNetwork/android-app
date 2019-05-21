@@ -92,15 +92,11 @@ android {
                 jniDebuggable false
                 proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
                 signingConfig signingConfigs.release
-
-                manifestPlaceholders = ["FIREBASE_CRASHLYTICS_COLLECTION_ENABLED": "true"]
             }
         }
         debug {
             signingConfig signingConfigs.debug
             jniDebuggable false
-
-            manifestPlaceholders = ["FIREBASE_CRASHLYTICS_COLLECTION_ENABLED": "false"]
         }
     }
 
