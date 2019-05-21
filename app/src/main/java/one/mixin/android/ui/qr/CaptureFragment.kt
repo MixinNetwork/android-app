@@ -124,10 +124,12 @@ class CaptureFragment : BaseFragment() {
             }
         }
         op.post {
+            if (!isAdded) return@post
+
             val b = op.bottom
-            val hasNavigationBar = context!!.hasNavigationBar(b)
+            val hasNavigationBar = requireContext().hasNavigationBar(b)
             if (hasNavigationBar) {
-                val navigationBarHeight = context!!.navigationBarHeight()
+                val navigationBarHeight = requireContext().navigationBarHeight()
                 op.translationY = -navigationBarHeight.toFloat()
             }
         }
