@@ -31,6 +31,7 @@
         <activity
             android:name=".ui.home.MainActivity"
             android:label="@string/app_name"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateUnchanged|stateAlwaysHidden">
@@ -91,8 +92,8 @@
 
         <activity
             android:name=".ui.conversation.ConversationActivity"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"
-            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="stateUnchanged" />
         <activity

@@ -46,7 +46,6 @@ import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.landing.InitializeActivity
@@ -213,10 +212,10 @@ class MainActivity : BlazeBaseActivity() {
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
             TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
-        } else if (intent.extras != null && intent.extras!!.getString(CONVERSATION_ID, null) != null) {
+        } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()
-            val conversationId = intent.extras!!.getString(CONVERSATION_ID)!!
+            val conversationId = intent.extras!!.getString("conversation_id")!!
             Maybe.just(conversationId).map {
                 val innerIntent: Intent?
                 var conversation = conversationDao.findConversationById(conversationId)
@@ -410,7 +409,8 @@ class MainActivity : BlazeBaseActivity() {
 
         fun getSingleIntent(context: Context): Intent {
             return Intent(context, MainActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
+                addCategory(Intent.CATEGORY_LAUNCHER)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }
         }
     }
