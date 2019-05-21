@@ -75,7 +75,7 @@ class SearchDataPackage(
         chatList?.size ?: 0
     }
 
-    private fun messageCount() = if (messageLimit) {
+    fun messageCount() = if (messageLimit) {
         min(messageList?.size ?: 0, LIMIT_COUNT)
     } else {
         messageList?.size ?: 0

@@ -53,7 +53,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 AND (a1.name LIKE :name OR a1.symbol LIKE :symbol) ORDER BY a1.price_usd*a1.balance DESC")
-    fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
+    suspend fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")

@@ -9,9 +9,10 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
+import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_search_single.*
@@ -130,6 +131,7 @@ class SearchSingleFragment : BaseFragment() {
         search_et.setText(query)
         compositeDisposable.add(search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(scopeProvider)
             .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 if (it == adapter.query) return@subscribe
@@ -145,13 +147,13 @@ class SearchSingleFragment : BaseFragment() {
     }
 
     private fun onTextChanged(s: String) {
-        searchViewModel.viewModelScope.launch(Dispatchers.Default) {
+        lifecycleScope.launch(Dispatchers.IO) {
             val list: List<Parcelable>? = when (type) {
-                TypeAsset -> searchViewModel.fuzzySearchAsync<AssetItem>(s)
-                TypeUser -> searchViewModel.fuzzySearchAsync<User>(s)
-                TypeChat -> searchViewModel.fuzzySearchAsync<ChatMinimal>(s)
-                TypeMessage -> searchViewModel.fuzzySearchAsync<SearchMessageItem>(s, -1)
-            }.await()
+                TypeAsset -> searchViewModel.fuzzySearch<AssetItem>(s)
+                TypeUser -> searchViewModel.fuzzySearch<User>(s)
+                TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(s)
+                TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(s, -1)
+            }
 
             withContext(Dispatchers.Main) {
                 adapter.data = list

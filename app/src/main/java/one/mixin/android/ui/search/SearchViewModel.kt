@@ -36,24 +36,22 @@ internal constructor(
         conversationRepository.findConversationById(conversationId)
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    inline fun <reified T> fuzzySearchAsync(query: String?, limit: Int = -1): Deferred<List<Parcelable>?> =
-        viewModelScope.async(Dispatchers.Default) {
-            if (query.isNullOrBlank()) {
-                null
-            } else {
-                when (T::class) {
-                    AssetItem::class -> assetRepository.fuzzySearchAsset("%${query.trim()}%")
-                    User::class -> userRepository.fuzzySearchUser("%${query.trim()}%")
-                    ChatMinimal::class -> conversationRepository.fuzzySearchChat("%${query.trim()}%")
-                    else -> conversationRepository.fuzzySearchMessage("%${query.trim()}%", limit)
-                }
+    suspend inline fun <reified T> fuzzySearch(query: String?, limit: Int = -1): List<Parcelable>? =
+        if (query.isNullOrBlank()) {
+            null
+        } else {
+            when (T::class) {
+                AssetItem::class -> assetRepository.fuzzySearchAsset("%${query.trim()}%")
+                User::class -> userRepository.fuzzySearchUser("%${query.trim()}%")
+                ChatMinimal::class -> conversationRepository.fuzzySearchChat("%${query.trim()}%")
+                else -> conversationRepository.fuzzySearchMessage("%${query.trim()}%", limit)
             }
         }
 
     fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
 
     fun fuzzySearchMessageDetailAsync(query: String, conversationId: String): Deferred<LiveData<PagedList<SearchMessageDetailItem>>> =
-        viewModelScope.async(Dispatchers.Default) {
+        viewModelScope.async(Dispatchers.IO) {
             LivePagedListBuilder(conversationRepository.fuzzySearchMessageDetail("%${query.trim()}%", conversationId),
                 PagedList.Config.Builder()
                     .setPageSize(30)

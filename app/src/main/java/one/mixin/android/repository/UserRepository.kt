@@ -29,7 +29,7 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun syncFindFriends(): List<User> = userDao.syncFindFriends()
 
-    fun fuzzySearchUser(query: String): List<User> = userDao.fuzzySearchUser(query, query)
+    suspend fun fuzzySearchUser(query: String): List<User> = userDao.fuzzySearchUser(query, query)
 
     fun findUserById(query: String): LiveData<User> = userDao.findUserById(query)
 

@@ -101,7 +101,7 @@ constructor(
 
     fun assetItems() = assetDao.assetItemsNotHidden()
 
-    fun fuzzySearchAsset(query: String) = assetDao.fuzzySearchAsset(query, query)
+    suspend fun fuzzySearchAsset(query: String) = assetDao.fuzzySearchAsset(query, query)
 
     fun assetItem(id: String) = assetDao.assetItem(id)
 

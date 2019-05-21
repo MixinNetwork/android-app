@@ -67,25 +67,21 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
             else -> if (data.messageShowMore()) data.messageList else null
         }
 
-    fun setAssetData(list: List<AssetItem>?) {
-        data.assetList = list
-        notifyDataSetChanged()
-    }
-
-    fun setUserData(list: List<User>?) {
-        data.userList = list
+    fun setData(assetItems: List<AssetItem>?, users: List<User>?, chatMinimals: List<ChatMinimal>?) {
+        data.assetList = assetItems
+        data.userList = users
         data.showTip = shouldTips(query)
+        data.chatList = chatMinimals
+
+        // for clear last query messages
+        data.messageList = null
         notifyDataSetChanged()
     }
 
-    fun setChatData(list: List<ChatMinimal>?) {
-        data.chatList = list
-        notifyDataSetChanged()
-    }
-
-    fun setMessageData(list: List<SearchMessageItem>?) {
-        data.messageList = list
-        notifyDataSetChanged()
+    fun setMessageData(searchMessageItems: List<SearchMessageItem>) {
+        data.messageList = searchMessageItems
+        val messageCount = data.messageCount()
+        notifyItemRangeChanged(data.getCount() - messageCount, messageCount)
     }
 
     private fun shouldTips(keyword: String): Boolean {

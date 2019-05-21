@@ -45,7 +45,7 @@ interface ConversationDao : BaseDao<Conversation> {
         "WHERE (c.category = 'GROUP' AND c.name LIKE :query) " +
         "OR (c.category = 'CONTACT' AND ou.relationship != 'FRIEND' AND (ou.full_name LIKE :query OR ou.identity_number like :query))" +
         "ORDER BY c.created_at DESC")
-    fun fuzzySearchChat(query: String): List<ChatMinimal>
+    suspend fun fuzzySearchChat(query: String): List<ChatMinimal>
 
     @Query("SELECT DISTINCT c.conversation_id FROM conversations c WHERE c.owner_id = :recipientId and c.category = 'CONTACT'")
     fun getConversationIdIfExistsSync(recipientId: String): String?
