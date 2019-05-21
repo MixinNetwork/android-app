@@ -154,11 +154,14 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun initParticipant() = lifecycleScope.launch {
+        var participantCount = 0
         withContext(Dispatchers.IO) {
             me = bottomViewModel.findParticipantByIds(conversationId, Session.getAccountId()!!)
+            participantCount = bottomViewModel.getParticipantsCount(conversationId)
         }
         if (!isAdded) return@launch
 
+        contentView.count_tv.text = getString(R.string.group_participants_count, participantCount)
         initMenu()
         if (me != null) {
             contentView.join_tv.visibility = GONE

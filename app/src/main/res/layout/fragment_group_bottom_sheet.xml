@@ -27,12 +27,21 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="4dp"
         android:ellipsize="end"
         android:maxLength="30"
         android:singleLine="true"
         android:textColor="@android:color/black"
         android:textSize="18sp"/>
+
+    <TextView
+        android:id="@+id/count_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="10dp"
+        android:textSize="12sp"
+        android:textColor="@color/wallet_text_gray"/>
 
     <TextView
         android:id="@+id/join_tv"
