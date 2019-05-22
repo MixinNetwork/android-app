@@ -1477,6 +1477,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     MenuType.App -> {
                         menu.homeUri?.let {
+                            chat_control.chat_et.hideKeyboard()
                             openWebBottomSheet(it, conversationId, requireFragmentManager())
                         }
                     }
@@ -1776,6 +1777,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onBotClick() {
             hideIfShowBottomSheet()
             app?.let {
+                chat_control.chat_et.hideKeyboard()
                 val dialog = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId, appName = it.name, appAvatar = recipient?.avatarUrl)
                 dialog.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
             }
