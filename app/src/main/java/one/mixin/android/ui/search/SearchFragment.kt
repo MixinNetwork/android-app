@@ -57,6 +57,7 @@ class SearchFragment : BaseFragment() {
     private val searchAdapter: SearchAdapter by lazy {
         SearchAdapter()
     }
+    private val decoration by lazy { StickyRecyclerHeadersDecoration(searchAdapter) }
 
     companion object {
         const val TAG = "SearchFragment"
@@ -108,7 +109,6 @@ class SearchFragment : BaseFragment() {
             }
         }
         search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        val decoration = StickyRecyclerHeadersDecoration(searchAdapter)
         search_rv.addItemDecoration(decoration)
         search_rv.adapter = searchAdapter
         search_rv.addOnItemTouchListener(StickyRecyclerHeadersTouchListener(search_rv, decoration).apply {
@@ -231,6 +231,7 @@ class SearchFragment : BaseFragment() {
         val users = searchViewModel.fuzzySearch<User>(keyword) as List<User>?
         val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(keyword) as List<ChatMinimal>?
         withContext(Dispatchers.Main) {
+            decoration.invalidateHeaders()
             searchAdapter.setData(assetItems, users, chatMinimals)
         }
         (searchViewModel.fuzzySearch<SearchMessageItem>(keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->

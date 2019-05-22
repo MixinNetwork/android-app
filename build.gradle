@@ -43,7 +43,7 @@ buildscript {
         ext.rxContactsVersion = '1.1'
         ext.glideTransformationsVersion = '3.2.0'
         ext.jobqueueVersion = '2.0.7'
-        ext.stickyheadersrecyclerviewVersion = '0.4.3@aar'
+        ext.stickyheadersrecyclerviewVersion = '0.5'
         ext.threetenabpVersion = '1.2.0'
         ext.signalVersion = '2.7.1'
         ext.fabVersion = '1.6'
