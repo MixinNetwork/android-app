@@ -11,6 +11,7 @@ import android.view.View.VISIBLE
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.animation.BounceInterpolator
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isGone
@@ -26,10 +27,17 @@ import com.google.gson.Gson
 import com.google.zxing.integration.android.IntentIntegrator
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
+import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
+import kotlinx.android.synthetic.main.item_list_conversation.view.bot_iv
+import kotlinx.android.synthetic.main.item_list_conversation.view.verified_iv
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
+import one.mixin.android.MixinApplication.Companion.conversationId
 import one.mixin.android.R
+import one.mixin.android.api.request.RelationshipAction
+import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
@@ -44,20 +52,29 @@ import one.mixin.android.job.GenerateAvatarJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.NavigationController
+import one.mixin.android.ui.common.UserBottomSheetDialogFragment
+import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.UserTransactionsFragment
+import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
+import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.User
+import one.mixin.android.vo.UserRelationship
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import org.jetbrains.anko.doAsync
+import org.threeten.bp.Instant
 import java.io.File
 import javax.inject.Inject
 
@@ -181,7 +198,7 @@ class ConversationListFragment : LinkFragment() {
         }
         messageAdapter.onItemClickListener = object : ConversationListFragment.OnItemClickListener {
             override fun longClick(conversation: ConversationItem): Boolean {
-                showBottomSheet(conversation.conversationId, conversation.pinTime != null)
+                showBottomSheet(conversation)
                 return true
             }
 
@@ -230,16 +247,31 @@ class ConversationListFragment : LinkFragment() {
     }
 
     @SuppressLint("InflateParams")
-    fun showBottomSheet(conversationId: String, hasPin: Boolean) {
+    fun showBottomSheet(conversationItem: ConversationItem) {
+        val conversationId = conversationItem.conversationId
+        val isMute = conversationItem.isMute()
+        val hasPin = conversationItem.pinTime != null
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_conversation_bottom, null)
         builder.setCustomView(view)
+        view.mute_tv.setText(if (isMute) {
+            R.string.un_mute
+        } else {
+            R.string.mute
+        })
         val bottomSheet = builder.create()
+        view.mute_tv.setOnClickListener {
+            if (isMute) {
+                unMute(conversationItem)
+            } else {
+                showMuteDialog(conversationItem)
+            }
+            bottomSheet.dismiss()
+        }
         view.delete_tv.setOnClickListener {
             messagesViewModel.deleteConversation(conversationId)
             bottomSheet.dismiss()
         }
-        view.cancel_tv.setOnClickListener { bottomSheet.dismiss() }
         if (hasPin) {
             view.pin_tv.setText(R.string.conversation_pin_clear)
             view.pin_tv.setOnClickListener {
@@ -553,6 +585,53 @@ class ConversationListFragment : LinkFragment() {
                 itemView.group_name_tv.visibility = GONE
             }
         }
+    }
+
+    private fun showMuteDialog(conversationItem: ConversationItem) {
+        val choices = arrayOf(getString(R.string.contact_mute_8hours),
+            getString(R.string.contact_mute_1week),
+            getString(R.string.contact_mute_1year))
+        var duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
+        var whichItem = 0
+        AlertDialog.Builder(context!!)
+            .setTitle(getString(R.string.contact_mute_title))
+            .setNegativeButton(R.string.cancel) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton(R.string.confirm) { dialog, _ ->
+                if (conversationItem.isGroup()) {
+                    messagesViewModel.mute(conversationItem.conversationId, duration.toLong())
+                    context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.name} " + choices[whichItem])
+                } else {
+                    val account = Session.getAccount()
+                    account?.let {
+                        messagesViewModel.mute(it.userId, conversationItem.ownerId, duration.toLong())
+                        context?.toast(getString(R.string.contact_mute_title) + "  ${conversationItem.name}  " + choices[whichItem])
+                    }
+                }
+
+                dialog.dismiss()
+            }
+            .setSingleChoiceItems(choices, 0) { _, which ->
+                whichItem = which
+                when (which) {
+                    0 -> duration = UserBottomSheetDialogFragment.MUTE_8_HOURS
+                    1 -> duration = UserBottomSheetDialogFragment.MUTE_1_WEEK
+                    2 -> duration = UserBottomSheetDialogFragment.MUTE_1_YEAR
+                }
+            }
+            .show()
+    }
+
+    private fun unMute(conversationItem: ConversationItem) {
+        if (conversationItem.isGroup()) {
+            messagesViewModel.mute(conversationItem.conversationId, 0)
+        } else {
+            Session.getAccount()?.let {
+                messagesViewModel.mute(it.userId, conversationItem.ownerId, 0)
+            }
+        }
+        context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
     }
 
     interface OnItemClickListener {
