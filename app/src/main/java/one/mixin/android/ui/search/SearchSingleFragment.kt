@@ -9,16 +9,14 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
+import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_search_single.*
 import kotlinx.android.synthetic.main.view_head_search_single.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
@@ -62,8 +60,6 @@ class SearchSingleFragment : BaseFragment() {
     private val query by lazy {
         arguments!!.getString(ARGS_QUERY)
     }
-
-    private var compositeDisposable = CompositeDisposable()
 
     private val type by lazy {
         when (data!![0]) {
@@ -128,35 +124,27 @@ class SearchSingleFragment : BaseFragment() {
         clear_ib.setOnClickListener { search_et.setText("") }
         search_et.hint = text
         search_et.setText(query)
-        compositeDisposable.add(search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(scopeProvider)
             .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 if (it == adapter.query) return@subscribe
 
                 adapter.query = it.toString()
                 onTextChanged(it.toString())
-            }, {}))
+            }, {})
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        compositeDisposable.dispose()
-    }
-
-    private fun onTextChanged(s: String) {
-        searchViewModel.viewModelScope.launch(Dispatchers.Default) {
-            val list: List<Parcelable>? = when (type) {
-                TypeAsset -> searchViewModel.fuzzySearchAsync<AssetItem>(s)
-                TypeUser -> searchViewModel.fuzzySearchAsync<User>(s)
-                TypeChat -> searchViewModel.fuzzySearchAsync<ChatMinimal>(s)
-                TypeMessage -> searchViewModel.fuzzySearchAsync<SearchMessageItem>(s, -1)
-            }.await()
-
-            withContext(Dispatchers.Main) {
-                adapter.data = list
-                adapter.notifyDataSetChanged()
-            }
+    private fun onTextChanged(s: String) = lifecycleScope.launch {
+        val list: List<Parcelable>? = when (type) {
+            TypeAsset -> searchViewModel.fuzzySearch<AssetItem>(s)
+            TypeUser -> searchViewModel.fuzzySearch<User>(s)
+            TypeChat -> searchViewModel.fuzzySearch<ChatMinimal>(s)
+            TypeMessage -> searchViewModel.fuzzySearch<SearchMessageItem>(s, -1)
         }
+
+        adapter.data = list
+        adapter.notifyDataSetChanged()
     }
 }

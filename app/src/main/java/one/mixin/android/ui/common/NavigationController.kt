@@ -24,7 +24,7 @@ constructor(mainActivity: MainActivity) {
     }
 
     fun pushWallet() {
-        WalletActivity.show(context)
+        WalletActivity.show(context, leftInAnim = true)
     }
 
     fun navigateToMessage() {

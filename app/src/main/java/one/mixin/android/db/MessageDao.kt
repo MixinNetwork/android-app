@@ -94,7 +94,7 @@ interface MessageDao : BaseDao<Message> {
         "GROUP BY m.conversation_id " +
         "ORDER BY c.pin_time DESC, m.created_at DESC " +
         "LIMIT :limit")
-    fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
+    suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
 
     @Query("SELECT m.id AS messageId, u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName, " +
         "m.category AS type, m.content AS content, m.created_at AS createdAt, m.name AS mediaName " +

@@ -17,6 +17,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.ControlledRunner
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
@@ -32,15 +33,17 @@ internal constructor(
     val accountRepository: AccountRepository
 ) : ViewModel() {
 
+    val controlledRunner = ControlledRunner<List<Parcelable>?>()
+
     fun findConversationById(conversationId: String): Observable<Conversation> =
         conversationRepository.findConversationById(conversationId)
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    inline fun <reified T> fuzzySearchAsync(query: String?, limit: Int = -1): Deferred<List<Parcelable>?> =
-        viewModelScope.async(Dispatchers.Default) {
-            if (query.isNullOrBlank()) {
-                null
-            } else {
+    suspend inline fun <reified T> fuzzySearch(query: String?, limit: Int = -1): List<Parcelable>? =
+        if (query.isNullOrBlank()) {
+            null
+        } else {
+            controlledRunner.cancelPreviousThenRun {
                 when (T::class) {
                     AssetItem::class -> assetRepository.fuzzySearchAsset("%${query.trim()}%")
                     User::class -> userRepository.fuzzySearchUser("%${query.trim()}%")
@@ -53,7 +56,7 @@ internal constructor(
     fun findAppsByIds(appIds: List<String>) = userRepository.findAppsByIds(appIds)
 
     fun fuzzySearchMessageDetailAsync(query: String, conversationId: String): Deferred<LiveData<PagedList<SearchMessageDetailItem>>> =
-        viewModelScope.async(Dispatchers.Default) {
+        viewModelScope.async(Dispatchers.IO) {
             LivePagedListBuilder(conversationRepository.fuzzySearchMessageDetail("%${query.trim()}%", conversationId),
                 PagedList.Config.Builder()
                     .setPageSize(30)

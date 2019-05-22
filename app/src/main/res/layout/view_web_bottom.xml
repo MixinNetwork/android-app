@@ -12,7 +12,7 @@
         android:drawablePadding="16dp"
         android:layout_gravity="center"
         android:foreground="?attr/selectableItemBackground"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:paddingEnd="16dp"
         android:paddingStart="16dp"
         android:text="@string/share"/>
@@ -25,7 +25,7 @@
             android:drawablePadding="16dp"
             android:layout_gravity="center"
             android:foreground="?attr/selectableItemBackground"
-            android:gravity="center"
+        android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:text="@string/action_refresh"/>
@@ -38,20 +38,8 @@
             android:drawablePadding="16dp"
             android:background="@android:color/white"
             android:foreground="?attr/selectableItemBackground"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:paddingEnd="16dp"
             android:paddingStart="16dp"
             android:text="@string/action_open"/>
-    
-    <TextView
-            android:id="@+id/cancel_tv"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:background="@android:color/white"
-            android:drawablePadding="16dp"
-            android:foreground="?attr/selectableItemBackground"
-            android:gravity="center"
-            android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:text="@string/cancel"/>
 </LinearLayout>

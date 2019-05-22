@@ -266,7 +266,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             rootView?.navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
             bottomSheet.dismiss()
         }
-        view.cancel.setOnClickListener { bottomSheet.dismiss() }
 
         bottomSheet.show()
     }

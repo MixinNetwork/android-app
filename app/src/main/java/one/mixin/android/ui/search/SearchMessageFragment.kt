@@ -10,13 +10,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_search_message.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -65,8 +64,6 @@ class SearchMessageFragment : BaseFragment() {
     private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
-    private var compositeDisposable = CompositeDisposable()
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_search_message, container, false)
 
@@ -109,20 +106,16 @@ class SearchMessageFragment : BaseFragment() {
 
         clear_ib.setOnClickListener { search_et.setText("") }
         search_et.setText(query)
-        compositeDisposable.add(search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(scopeProvider)
             .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 onTextChanged(it.toString())
-            }, {}))
+            }, {})
         search_et.postDelayed({
             onTextChanged(query)
         }, 50)
-    }
-
-    override fun onDetach() {
-        super.onDetach()
-        compositeDisposable.dispose()
     }
 
     private fun onTextChanged(s: String) {
@@ -139,20 +132,18 @@ class SearchMessageFragment : BaseFragment() {
             return
         }
 
-        searchViewModel.viewModelScope.launch(Dispatchers.Default) {
-            withContext(Dispatchers.Main) {
-                observer?.let {
-                    curLiveData?.removeObserver(it)
-                }
+        lifecycleScope.launch {
+            observer?.let {
+                curLiveData?.removeObserver(it)
             }
-            curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId).await()
-            withContext(Dispatchers.Main) {
-                observer = Observer {
-                    adapter.submitList(it)
-                }
-                observer?.let {
-                    curLiveData?.observe(this@SearchMessageFragment, it)
-                }
+            withContext(Dispatchers.IO) {
+                curLiveData = searchViewModel.fuzzySearchMessageDetailAsync(s, searchMessageItem.conversationId).await()
+            }
+            observer = Observer {
+                adapter.submitList(it)
+            }
+            observer?.let {
+                curLiveData?.observe(this@SearchMessageFragment, it)
             }
         }
     }

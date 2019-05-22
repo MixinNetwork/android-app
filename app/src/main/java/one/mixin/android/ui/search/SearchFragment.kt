@@ -20,12 +20,8 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.item_search_app.view.*
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.R
@@ -43,7 +39,6 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
-import one.mixin.android.util.onlyLast
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
@@ -52,11 +47,6 @@ import one.mixin.android.vo.User
 import javax.inject.Inject
 
 class SearchFragment : BaseFragment() {
-
-    private lateinit var searchAssetChannel: Channel<Deferred<List<AssetItem>?>>
-    private lateinit var searchUserChannel: Channel<Deferred<List<User>?>>
-    private lateinit var searchChatChannel: Channel<Deferred<List<ChatMinimal>?>>
-    private lateinit var searchMessageChannel: Channel<Deferred<List<SearchMessageItem>?>>
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -67,10 +57,11 @@ class SearchFragment : BaseFragment() {
     private val searchAdapter: SearchAdapter by lazy {
         SearchAdapter()
     }
+    private val decoration by lazy { StickyRecyclerHeadersDecoration(searchAdapter) }
 
     companion object {
         const val TAG = "SearchFragment"
-        const val SEARCH_DEBOUNCE = 500L
+        const val SEARCH_DEBOUNCE = 300L
     }
 
     private var keyword: String? = null
@@ -112,17 +103,12 @@ class SearchFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        searchAssetChannel = Channel()
-        searchUserChannel = Channel()
-        searchChatChannel = Channel()
-        searchMessageChannel = Channel()
         view?.setOnClickListener {
             if (keyword.isNullOrBlank()) {
                 (requireActivity() as MainActivity).closeSearch()
             }
         }
         search_rv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        val decoration = StickyRecyclerHeadersDecoration(searchAdapter)
         search_rv.addItemDecoration(decoration)
         search_rv.adapter = searchAdapter
         search_rv.addOnItemTouchListener(StickyRecyclerHeadersTouchListener(search_rv, decoration).apply {
@@ -138,6 +124,12 @@ class SearchFragment : BaseFragment() {
         })
 
         app_rv.layoutManager = GridLayoutManager(requireContext(), 4)
+        appAdapter.appListener = object : AppListener {
+            override fun onItemClick(app: App) {
+                (requireActivity() as MainActivity).closeSearch()
+                ConversationActivity.show(requireContext(), null, app.appId)
+            }
+        }
         app_rv.adapter = appAdapter
 
         showBots()
@@ -188,38 +180,15 @@ class SearchFragment : BaseFragment() {
                 context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             }
         }
-        setAssetListener {
-            searchAdapter.setAssetData(it)
-        }
-        setUserListener {
-            searchAdapter.setUserData(it)
-        }
-
-        setChatListener {
-            searchAdapter.setChatData(it)
-        }
-        setMessageListener {
-            searchAdapter.setMessageData(it)
-        }
         bindData()
     }
 
     override fun onResume() {
         super.onResume()
-        lifecycleScope.launch {
-            loadRecentUsedApps()
-        }
+        loadRecentUsedApps()
     }
 
-    override fun onDetach() {
-        super.onDetach()
-        searchAssetChannel.cancel()
-        searchUserChannel.cancel()
-        searchChatChannel.cancel()
-        searchMessageChannel.cancel()
-    }
-
-    private suspend fun loadRecentUsedApps() {
+    private fun loadRecentUsedApps() = lifecycleScope.launch {
         val apps = withContext(Dispatchers.IO) {
             var botsList = defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
                 ?: return@withContext null
@@ -235,7 +204,7 @@ class SearchFragment : BaseFragment() {
                 botsList.indexOf(it.appId)
             }
         }
-        if (apps.isNullOrEmpty()) return
+        if (apps.isNullOrEmpty()) return@launch
 
         appAdapter.submitList(apps)
     }
@@ -261,69 +230,42 @@ class SearchFragment : BaseFragment() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun fuzzySearch(keyword: String?) = runBlocking(Dispatchers.IO) {
-        searchAssetChannel.send(searchViewModel.fuzzySearchAsync<AssetItem>(keyword) as Deferred<List<AssetItem>?>)
-        searchUserChannel.send(searchViewModel.fuzzySearchAsync<User>(keyword) as Deferred<List<User>?>)
-        searchChatChannel.send(searchViewModel.fuzzySearchAsync<ChatMinimal>(keyword) as Deferred<List<ChatMinimal>?>)
-        searchMessageChannel.send(searchViewModel.fuzzySearchAsync<SearchMessageItem>(keyword, 10) as Deferred<List<SearchMessageItem>?>)
+    private fun fuzzySearch(keyword: String?) = lifecycleScope.launch {
+        val assetItems = searchViewModel.fuzzySearch<AssetItem>(keyword) as List<AssetItem>?
+        val users = searchViewModel.fuzzySearch<User>(keyword) as List<User>?
+        val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(keyword) as List<ChatMinimal>?
+        decoration.invalidateHeaders()
+        searchAdapter.setData(assetItems, users, chatMinimals)
+        (searchViewModel.fuzzySearch<SearchMessageItem>(keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
+            searchAdapter.setMessageData(searchMessageItems)
+        }
     }
 
-    private fun setAssetListener(userListener: (List<AssetItem>?) -> Unit) =
-        lifecycleScope.launch(Dispatchers.IO) {
-            for (result in onlyLast(searchAssetChannel)) {
-                withContext(Dispatchers.Main) {
-                    userListener(result)
-                }
-            }
-        }
-
-    @ExperimentalCoroutinesApi
-    private fun setUserListener(listener: (List<User>?) -> Unit) =
-        lifecycleScope.launch(Dispatchers.IO) {
-            for (result in onlyLast(searchUserChannel)) {
-                withContext(Dispatchers.Main) {
-                    listener(result)
-                }
-            }
-        }
-
-    private fun setChatListener(chatListener: (List<ChatMinimal>?) -> Unit) =
-        lifecycleScope.launch(Dispatchers.IO) {
-            for (result in onlyLast(searchChatChannel)) {
-                withContext(Dispatchers.Main) {
-                    chatListener(result)
-                }
-            }
-        }
-
-    private fun setMessageListener(listener: (List<SearchMessageItem>?) -> Unit) =
-        lifecycleScope.launch(Dispatchers.IO) {
-            for (result in onlyLast(searchMessageChannel)) {
-                withContext(Dispatchers.Main) {
-                    listener(result)
-                }
-            }
-        }
-
     internal class AppAdapter : ListAdapter<App, AppHolder>(App.DIFF_CALLBACK) {
+        var appListener: AppListener? = null
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
             AppHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_search_app, parent, false))
 
         override fun onBindViewHolder(holder: AppHolder, position: Int) {
             getItem(position)?.let {
-                holder.bind(it)
+                holder.bind(it, appListener)
             }
         }
     }
 
     internal class AppHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(app: App) {
+        fun bind(app: App, listener: AppListener?) {
             itemView.icon_iv.setInfo(app.name, app.icon_url, app.appId)
             itemView.name_tv.text = app.name
             itemView.setOnClickListener {
-                ConversationActivity.show(itemView.context, null, app.appId)
+                listener?.onItemClick(app)
             }
         }
+    }
+
+    interface AppListener {
+        fun onItemClick(app: App)
     }
 
     interface OnSearchClickListener {

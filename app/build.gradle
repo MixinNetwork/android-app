@@ -186,7 +186,7 @@ dependencies {
     implementation "com.google.firebase:firebase-ml-vision:${firebaseMLVersion}"
     implementation 'com.crashlytics.sdk.android:crashlytics:2.10.0'
     implementation "com.google.zxing:core:${zxingVersion}"
-    implementation "com.timehop.stickyheadersrecyclerview:library:${stickyheadersrecyclerviewVersion}"
+    implementation "com.github.tougee:sticky-headers-recyclerview:${stickyheadersrecyclerviewVersion}"
     implementation "org.whispersystems:signal-protocol-android:${signalVersion}"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlin_version}"
     implementation "org.jetbrains.anko:anko-commons:$anko_version"
