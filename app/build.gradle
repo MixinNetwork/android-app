@@ -213,7 +213,7 @@ dependencies {
     implementation "com.github.tougee:rx-contacts2:${rxContactsVersion}"
     implementation "com.github.tougee:zxing-android-embedded:${zxingEmbeddedVersion}"
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
-    implementation "com.tbruyelle.rxpermissions2:rxpermissions:${rxpermissionsVersion}"
+    implementation "com.github.tbruyelle:rxpermissions:${rxpermissionsVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }

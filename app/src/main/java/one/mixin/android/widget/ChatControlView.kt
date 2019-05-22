@@ -32,6 +32,7 @@ import androidx.core.animation.addListener
 import androidx.core.animation.doOnEnd
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
+import androidx.fragment.app.FragmentActivity
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -510,7 +511,7 @@ class ChatControlView : FrameLayout {
     }
 
     private val onChatImgClickListener = OnClickListener {
-        RxPermissions(activity!!)
+        RxPermissions(activity!! as FragmentActivity)
             .request(Manifest.permission.READ_EXTERNAL_STORAGE)
             .subscribe({ granted ->
                 if (granted) {
@@ -795,8 +796,8 @@ class ChatControlView : FrameLayout {
 
             if (activity == null || !currentAudio()) return@Runnable
 
-            if (!RxPermissions(activity!!).isGranted(Manifest.permission.RECORD_AUDIO)) {
-                RxPermissions(activity!!).request(Manifest.permission.RECORD_AUDIO)
+            if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO)) {
+                RxPermissions(activity!! as FragmentActivity).request(Manifest.permission.RECORD_AUDIO)
                     .subscribe({}, { Bugsnag.notify(it) })
                 return@Runnable
             }
