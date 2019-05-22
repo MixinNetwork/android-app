@@ -88,7 +88,7 @@ internal constructor(
     fun getUserById(id: String): User? = userRepository.getUserById(id)
 
     fun checkAndRefreshUsers(userIds: List<String>) = runBlocking {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             val existUsers = userRepository.findUserExist(userIds)
             val queryUsers = userIds.filter {
                 !existUsers.contains(it)

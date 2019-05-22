@@ -57,9 +57,7 @@ import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
@@ -142,29 +140,27 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         view_pager.backgroundDrawable = colorDrawable
 
         val model = ViewModelProviders.of(this).get(DragMediaViewModel::class.java)
-        model.viewModelScope.launch(Dispatchers.IO) {
+        model.viewModelScope.launch {
             val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
                 File(item.mediaUrl?.toUri()?.getFilePath()).exists()
             }.reversed()
 
-            withContext(Dispatchers.Main) {
-                index = list.indexOfFirst { item -> messageId == item.messageId }
-                list.map {
-                    if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
-                        it.type == MessageCategory.PLAIN_VIDEO.name) {
-                    }
+            index = list.indexOfFirst { item -> messageId == item.messageId }
+            list.map {
+                if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
+                    it.type == MessageCategory.PLAIN_VIDEO.name) {
                 }
-                pagerAdapter = MediaAdapter(list, this@DragMediaActivity)
-                view_pager.adapter = pagerAdapter
-                if (index != -1) {
-                    view_pager.currentItem = index
-                    lastPos = index
-                } else {
-                    view_pager.currentItem = 0
-                    lastPos = 0
-                }
-                play(index)
             }
+            pagerAdapter = MediaAdapter(list, this@DragMediaActivity)
+            view_pager.adapter = pagerAdapter
+            if (index != -1) {
+                view_pager.currentItem = index
+                lastPos = index
+            } else {
+                view_pager.currentItem = 0
+                lastPos = 0
+            }
+            play(index)
         }
 
         view_pager.addOnPageChangeListener(pageListener)
