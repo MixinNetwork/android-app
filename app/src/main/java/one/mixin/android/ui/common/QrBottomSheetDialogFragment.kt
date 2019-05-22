@@ -129,6 +129,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    @SuppressLint("AutoDispose")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireContext(), R.style.Custom), R.layout.view_qr_bottom, null)

@@ -21,7 +21,7 @@ import java.io.FileOutputStream
 
 class CameraActivity : AppCompatActivity(), CameraView.CameraViewListener {
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "AutoDispose")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_camera)

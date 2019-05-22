@@ -569,6 +569,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var starTransition = false
     private var recallDisposable: Disposable? = null
 
+    @SuppressLint("AutoDispose")
     override fun onResume() {
         super.onResume()
         input_layout.addOnKeyboardShownListener(this)
@@ -1598,7 +1599,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "AutoDispose")
     private fun openCamera() {
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)

@@ -215,7 +215,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
     }
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "AutoDispose")
     private fun handleAnswer() {
         RxPermissions(this)
             .request(Manifest.permission.RECORD_AUDIO)

@@ -99,6 +99,7 @@ class ConversationListFragment : LinkFragment() {
     ): View? =
         inflater.inflate(R.layout.fragment_conversation_list, container, false)
 
+    @SuppressLint("AutoDispose")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         message_rv.adapter = messageAdapter
