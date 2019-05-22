@@ -17,6 +17,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.util.ControlledRunner
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
@@ -32,6 +33,8 @@ internal constructor(
     val accountRepository: AccountRepository
 ) : ViewModel() {
 
+    val controlledRunner = ControlledRunner<List<Parcelable>?>()
+
     fun findConversationById(conversationId: String): Observable<Conversation> =
         conversationRepository.findConversationById(conversationId)
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
@@ -40,11 +43,13 @@ internal constructor(
         if (query.isNullOrBlank()) {
             null
         } else {
-            when (T::class) {
-                AssetItem::class -> assetRepository.fuzzySearchAsset("%${query.trim()}%")
-                User::class -> userRepository.fuzzySearchUser("%${query.trim()}%")
-                ChatMinimal::class -> conversationRepository.fuzzySearchChat("%${query.trim()}%")
-                else -> conversationRepository.fuzzySearchMessage("%${query.trim()}%", limit)
+            controlledRunner.cancelPreviousThenRun {
+                when (T::class) {
+                    AssetItem::class -> assetRepository.fuzzySearchAsset("%${query.trim()}%")
+                    User::class -> userRepository.fuzzySearchUser("%${query.trim()}%")
+                    ChatMinimal::class -> conversationRepository.fuzzySearchChat("%${query.trim()}%")
+                    else -> conversationRepository.fuzzySearchMessage("%${query.trim()}%", limit)
+                }
             }
         }
 

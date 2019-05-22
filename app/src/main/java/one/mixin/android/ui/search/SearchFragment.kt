@@ -61,7 +61,7 @@ class SearchFragment : BaseFragment() {
 
     companion object {
         const val TAG = "SearchFragment"
-        const val SEARCH_DEBOUNCE = 500L
+        const val SEARCH_DEBOUNCE = 300L
     }
 
     private var keyword: String? = null
@@ -226,18 +226,14 @@ class SearchFragment : BaseFragment() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun fuzzySearch(keyword: String?) = lifecycleScope.launch(Dispatchers.IO) {
+    private fun fuzzySearch(keyword: String?) = lifecycleScope.launch {
         val assetItems = searchViewModel.fuzzySearch<AssetItem>(keyword) as List<AssetItem>?
         val users = searchViewModel.fuzzySearch<User>(keyword) as List<User>?
         val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(keyword) as List<ChatMinimal>?
-        withContext(Dispatchers.Main) {
-            decoration.invalidateHeaders()
-            searchAdapter.setData(assetItems, users, chatMinimals)
-        }
+        decoration.invalidateHeaders()
+        searchAdapter.setData(assetItems, users, chatMinimals)
         (searchViewModel.fuzzySearch<SearchMessageItem>(keyword, 10) as? List<SearchMessageItem>)?.let { searchMessageItems ->
-            withContext(Dispatchers.Main) {
-                searchAdapter.setMessageData(searchMessageItems)
-            }
+            searchAdapter.setMessageData(searchMessageItems)
         }
     }
 
