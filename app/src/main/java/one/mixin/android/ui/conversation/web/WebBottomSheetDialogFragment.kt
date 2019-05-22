@@ -371,7 +371,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             context?.openUrl(contentView.chat_web_view.url)
             bottomSheet.dismiss()
         }
-        view.cancel_tv.setOnClickListener { bottomSheet.dismiss() }
+
         bottomSheet.show()
     }
 
