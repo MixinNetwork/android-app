@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
+import io.reactivex.Observable
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
@@ -59,7 +60,7 @@ interface MessageDao : BaseDao<Message> {
         "AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO') " +
         "AND m.media_status = 'DONE' " +
         "ORDER BY m.created_at DESC LIMIT 50")
-    suspend fun getMediaMessages(conversationId: String): List<MessageItem>
+    fun getMediaMessages(conversationId: String): Observable<List<MessageItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +

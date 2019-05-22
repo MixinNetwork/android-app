@@ -3,6 +3,8 @@ package one.mixin.android.repository
 import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
 import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.ConversationRequest
@@ -103,8 +105,8 @@ internal constructor(
 
     fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
 
-    suspend fun getMediaMessages(conversationId: String): List<MessageItem> =
-        readMessageDao.getMediaMessages(conversationId)
+    fun getMediaMessages(conversationId: String): Observable<List<MessageItem>> =
+        readMessageDao.getMediaMessages(conversationId).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
 

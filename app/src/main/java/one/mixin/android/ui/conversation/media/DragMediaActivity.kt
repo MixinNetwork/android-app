@@ -30,6 +30,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
+import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -51,13 +52,17 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.shizhefei.view.largeimage.LargeImageView
 import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
@@ -139,13 +144,16 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         colorDrawable = ColorDrawable(Color.BLACK)
         view_pager.backgroundDrawable = colorDrawable
 
-        val model = ViewModelProviders.of(this).get(DragMediaViewModel::class.java)
-        model.viewModelScope.launch {
-            val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
+        conversationRepository.getMediaMessages(conversationId).autoDisposable(scopeProvider).subscribe { list ->
+            list.filter { item ->
                 File(item.mediaUrl?.toUri()?.getFilePath()).exists()
             }.reversed()
 
             index = list.indexOfFirst { item -> messageId == item.messageId }
+            if (index == -1) {
+                toast(R.string.error_file_exists, Toast.LENGTH_SHORT)
+                finish()
+            }
             list.map {
                 if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
                     it.type == MessageCategory.PLAIN_VIDEO.name) {
@@ -162,7 +170,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             play(index)
         }
-
         view_pager.addOnPageChangeListener(pageListener)
         window.decorView.systemUiVisibility =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
