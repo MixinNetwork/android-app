@@ -156,11 +156,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             if (index != -1) {
                 view_pager.currentItem = index
                 lastPos = index
+                play(index)
             } else {
                 view_pager.currentItem = 0
                 lastPos = 0
+                this@DragMediaActivity.finish()
             }
-            play(index)
         }
 
         view_pager.addOnPageChangeListener(pageListener)
