@@ -31,15 +31,14 @@
             android:text="@string/conversation_delete"/>
 
     <TextView
-            android:id="@+id/cancel_tv"
+            android:id="@+id/mute_tv"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:background="@android:color/white"
             android:drawablePadding="16dp"
-            android:drawableStart="@drawable/ic_close_black_24dp"
+            android:drawableStart="@drawable/ic_menu_mute"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center_vertical"
             android:paddingEnd="16dp"
-            android:paddingStart="16dp"
-            android:text="@string/cancel"/>
+            android:paddingStart="16dp" />
 </LinearLayout>
