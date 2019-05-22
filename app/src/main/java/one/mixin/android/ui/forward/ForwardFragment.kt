@@ -171,7 +171,7 @@ class ForwardFragment : BaseFragment() {
         search_et.addTextChangedListener(mWatcher)
     }
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "AutoDispose")
     private fun sendMessages() {
         if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name || it.type == ForwardCategory.DATA.name } != null) {
             RxPermissions(requireActivity())
@@ -195,7 +195,7 @@ class ForwardFragment : BaseFragment() {
         }
     }
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "AutoDispose")
     private fun sendSingleMessage(conversationId: String?, userId: String?) {
         if (messages?.find { it.type == ForwardCategory.VIDEO.name || it.type == ForwardCategory.IMAGE.name || it.type == ForwardCategory.DATA.name } != null) {
             RxPermissions(requireActivity())

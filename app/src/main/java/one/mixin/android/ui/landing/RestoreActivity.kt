@@ -35,7 +35,7 @@ class RestoreActivity : BaseActivity() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    @SuppressLint("MissingPermission", "CheckResult")
+    @SuppressLint("MissingPermission", "CheckResult", "AutoDispose")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, true)
@@ -109,7 +109,7 @@ class RestoreActivity : BaseActivity() {
             }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint("MissingPermission", "AutoDispose")
     private fun initUI(data: File) {
         setContentView(R.layout.activity_restore)
         restore_time.text = data.lastModified().run {

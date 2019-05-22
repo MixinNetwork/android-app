@@ -184,6 +184,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         mixinPlayer.release()
     }
 
+    @SuppressLint("AutoDispose")
     private fun showBottom() {
         val builder = BottomSheet.Builder(this)
         val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_bottom, null)
@@ -628,6 +629,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
+    @SuppressLint("AutoDispose")
     private fun start() {
         view_pager.post {
             setPreviewIv(false, view_pager.currentItem)

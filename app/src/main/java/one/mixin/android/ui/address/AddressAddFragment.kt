@@ -132,7 +132,7 @@ class AddressAddFragment : BaseFragment() {
 
     private fun noPublicKey() = !asset.accountName.isNullOrEmpty()
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("CheckResult", "AutoDispose")
     private fun handleClick(isAddr: Boolean) {
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)
