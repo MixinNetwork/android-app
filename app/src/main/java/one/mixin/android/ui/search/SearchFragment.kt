@@ -124,6 +124,12 @@ class SearchFragment : BaseFragment() {
         })
 
         app_rv.layoutManager = GridLayoutManager(requireContext(), 4)
+        appAdapter.appListener = object : AppListener {
+            override fun onItemClick(app: App) {
+                (requireActivity() as MainActivity).closeSearch()
+                ConversationActivity.show(requireContext(), null, app.appId)
+            }
+        }
         app_rv.adapter = appAdapter
 
         showBots()
@@ -179,12 +185,10 @@ class SearchFragment : BaseFragment() {
 
     override fun onResume() {
         super.onResume()
-        lifecycleScope.launch {
-            loadRecentUsedApps()
-        }
+        loadRecentUsedApps()
     }
 
-    private suspend fun loadRecentUsedApps() {
+    private fun loadRecentUsedApps() = lifecycleScope.launch {
         val apps = withContext(Dispatchers.IO) {
             var botsList = defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
                 ?: return@withContext null
@@ -200,7 +204,7 @@ class SearchFragment : BaseFragment() {
                 botsList.indexOf(it.appId)
             }
         }
-        if (apps.isNullOrEmpty()) return
+        if (apps.isNullOrEmpty()) return@launch
 
         appAdapter.submitList(apps)
     }
@@ -238,24 +242,30 @@ class SearchFragment : BaseFragment() {
     }
 
     internal class AppAdapter : ListAdapter<App, AppHolder>(App.DIFF_CALLBACK) {
+        var appListener: AppListener? = null
+
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
             AppHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_search_app, parent, false))
 
         override fun onBindViewHolder(holder: AppHolder, position: Int) {
             getItem(position)?.let {
-                holder.bind(it)
+                holder.bind(it, appListener)
             }
         }
     }
 
     internal class AppHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        fun bind(app: App) {
+        fun bind(app: App, listener: AppListener?) {
             itemView.icon_iv.setInfo(app.name, app.icon_url, app.appId)
             itemView.name_tv.text = app.name
             itemView.setOnClickListener {
-                ConversationActivity.show(itemView.context, null, app.appId)
+                listener?.onItemClick(app)
             }
         }
+    }
+
+    interface AppListener {
+        fun onItemClick(app: App)
     }
 
     interface OnSearchClickListener {
