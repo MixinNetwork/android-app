@@ -92,7 +92,7 @@ interface MessageDao : BaseDao<Message> {
         "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
         "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) " +
         "GROUP BY m.conversation_id " +
-        "ORDER BY c.pin_time DESC, m.created_at DESC " +
+        "ORDER BY m.created_at DESC " +
         "LIMIT :limit")
     suspend fun fuzzySearchMessage(query: String, limit: Int): List<SearchMessageItem>
 

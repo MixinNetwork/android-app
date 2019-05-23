@@ -231,6 +231,7 @@ class SearchFragment : BaseFragment() {
 
     @Suppress("UNCHECKED_CAST")
     private fun fuzzySearch(keyword: String?) = lifecycleScope.launch {
+        searchAdapter.setData(null, null, null)
         val assetItems = searchViewModel.fuzzySearch<AssetItem>(keyword) as List<AssetItem>?
         val users = searchViewModel.fuzzySearch<User>(keyword) as List<User>?
         val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(keyword) as List<ChatMinimal>?
