@@ -61,7 +61,7 @@ class AddressManagementFragment : BaseFragment() {
     private val adapter: AddressAdapter by lazy { AddressAdapter(asset, true) }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
-            inflater.inflate(R.layout.fragment_address_management, container, false)
+        inflater.inflate(R.layout.fragment_address_management, container, false)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
@@ -92,7 +92,7 @@ class AddressManagementFragment : BaseFragment() {
                 popMenu.menuInflater.inflate(R.menu.address_mamangement_item, popMenu.menu)
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {
-                        showBottomSheet(addr)
+                        showBottomSheet(addr, asset)
                     } else if (it.itemId == R.id.edit) {
                         activity?.addFragment(this@AddressManagementFragment,
                             AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
@@ -117,7 +117,7 @@ class AddressManagementFragment : BaseFragment() {
                         AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
                 } else if (direction == ItemTouchHelper.END) {
                     val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
-                    val bottomSheet = showBottomSheet(addr)
+                    val bottomSheet = showBottomSheet(addr, asset)
                     fragmentManager?.executePendingTransactions()
                     bottomSheet.dialog.setOnDismissListener {
                         bottomSheet.dismiss()
@@ -143,8 +143,12 @@ class AddressManagementFragment : BaseFragment() {
         }
     }
 
-    private fun showBottomSheet(addr: Address): MixinBottomSheetDialogFragment {
-        val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(addressId = addr.addressId, type = DELETE)
+    private fun showBottomSheet(addr: Address, asset: AssetItem): MixinBottomSheetDialogFragment {
+        val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(addressId = addr.addressId,
+            assetUrl = asset.iconUrl,
+            chainIconUrl = asset.chainIconUrl,
+            publicKey = addr.publicKey,
+            assetName = asset.name, type = DELETE)
         bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
         bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
             override fun onSuccess() {

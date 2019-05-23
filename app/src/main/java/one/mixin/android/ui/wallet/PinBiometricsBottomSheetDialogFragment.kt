@@ -1,8 +1,15 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
+import android.view.View
+import android.view.ViewGroup
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.os.bundleOf
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
@@ -13,6 +20,8 @@ import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
+import one.mixin.android.widget.AndroidUtilities
+import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PinView
 
 class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
@@ -23,6 +32,22 @@ class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         fun newInstance(fromWalletSetting: Boolean) = PinBiometricsBottomSheetDialogFragment().apply {
             arguments = bundleOf(FROM_WALLET_SETTING to fromWalletSetting)
         }
+    }
+
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet, null)
+        val tipTv = View.inflate(context, R.layout.view_pin_bottom_sheet_tip, null) as TextView
+        tipTv.setText(getTipTextRes())
+        val lp = LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            gravity = Gravity.CENTER
+            val dp16 = AndroidUtilities.dp(16f)
+            topMargin = dp16
+            bottomMargin = dp16
+        }
+        (contentView.pin_ll as ViewGroup).addView(tipTv, 2, lp)
+        (dialog as BottomSheet).setCustomView(contentView)
     }
 
     private val fromWalletSetting by lazy { arguments!!.getBoolean(FROM_WALLET_SETTING) }

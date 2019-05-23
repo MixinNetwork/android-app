@@ -79,9 +79,9 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         }
     }
 
-    fun setSubTitle(first: String, second: String) {
+    fun setSubTitle(first: String, second: String? = null) {
         title_tv.text = first
-        if (second.isBlank()) {
+        if (second.isNullOrBlank()) {
             sub_title_tv.visibility = View.GONE
         } else {
             sub_title_tv.visibility = View.VISIBLE
