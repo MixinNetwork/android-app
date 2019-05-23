@@ -197,8 +197,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.chat_web_view.settings.javaScriptEnabled = true
         contentView.chat_web_view.settings.domStorageEnabled = true
-        contentView.chat_web_view.settings.useWideViewPort = true
-        contentView.chat_web_view.settings.loadWithOverviewMode = true
 
         contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {

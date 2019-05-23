@@ -3,7 +3,7 @@ package one.mixin.android.util
 import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.statusBarHeight
@@ -12,12 +12,12 @@ class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean
 
     private val mChildOfContent: View = content.getChildAt(0)
     private var usableHeightPrevious: Int = 0
-    private val frameLayoutParams: LinearLayout.LayoutParams
+    private val frameLayoutParams: FrameLayout.LayoutParams
     private var firstIn = true
 
     init {
         mChildOfContent.viewTreeObserver.addOnGlobalLayoutListener { possiblyResizeChildOfContent() }
-        frameLayoutParams = mChildOfContent.layoutParams as LinearLayout.LayoutParams
+        frameLayoutParams = mChildOfContent.layoutParams as FrameLayout.LayoutParams
     }
 
     private fun possiblyResizeChildOfContent() {
