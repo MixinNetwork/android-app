@@ -3,9 +3,14 @@ package one.mixin.android.extension
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.Intent
 import android.content.res.ColorStateList
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Outline
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.TextAppearanceSpan
@@ -33,6 +38,7 @@ import androidx.navigation.findNavController
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 import timber.log.Timber
+import java.io.FileNotFoundException
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 
@@ -245,4 +251,19 @@ fun TextView.highLight(
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }
     setText(spannable)
+}
+
+fun View.capture(context: Context) {
+    val outFile = context.getPublicPictyresPath().createImageTemp(noMedia = false)
+    val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+    val c = Canvas(b)
+    draw(c)
+    b.save(outFile)
+    try {
+        MediaStore.Images.Media.insertImage(context.contentResolver,
+            outFile.absolutePath, outFile.name, null)
+    } catch (e: FileNotFoundException) {
+        e.printStackTrace()
+    }
+    context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
 }
