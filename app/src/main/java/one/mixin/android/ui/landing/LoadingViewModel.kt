@@ -2,6 +2,7 @@ package one.mixin.android.ui.landing
 
 import android.app.Application
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -43,7 +44,7 @@ constructor(
     }
 
     fun pingServer(callback: () -> Unit, elseCallBack: (e: Exception?) -> Unit): Job {
-        return GlobalScope.launch {
+        return viewModelScope.launch {
             try {
                 val response = accountService.ping().execute()
 
