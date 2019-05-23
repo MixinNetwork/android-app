@@ -92,7 +92,6 @@
         android:id="@+id/notice_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:layout_marginTop=".5dp"
         android:background="@android:color/white"
         android:visibility="gone">
 

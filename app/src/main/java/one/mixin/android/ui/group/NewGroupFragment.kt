@@ -38,7 +38,6 @@ import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
@@ -107,7 +106,6 @@ class NewGroupFragment : BaseFragment() {
         }
         adapter.users = users
         user_rv.adapter = adapter
-        user_rv.addItemDecoration(SpaceItemDecoration())
         name_desc_et.addTextChangedListener(mWatcher)
         name_desc_et.showKeyboard()
     }

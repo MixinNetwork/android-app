@@ -8,6 +8,8 @@ import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
+import androidx.lifecycle.lifecycleScope
+import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -15,15 +17,20 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_deposit_qr_bottom.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
+import one.mixin.android.extension.capture
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.screenWidth
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.AssetItem
@@ -49,7 +56,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         fun getSize(context: Context) = context.screenWidth() - context.dpToPx(64f)
     }
 
-    private val asset: AssetItem by lazy { arguments!!.getParcelable<AssetItem>(TransactionsFragment.ARGS_ASSET) }
+    private val asset: AssetItem by lazy { arguments!!.getParcelable<AssetItem>(ARGS_ASSET) }
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
 
     @SuppressLint("RestrictedApi")
@@ -78,6 +85,22 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.badge_view.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         contentView.badge_view.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
+        contentView.save_iv.setOnClickListener {
+            RxPermissions(activity!!)
+                .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            contentView.content_ll.capture(requireContext())
+                        }
+                        requireContext().toast(R.string.save_success)
+                    } else {
+                        requireContext().openPermissionSetting()
+                    }
+                }, {
+                    requireContext().toast(R.string.save_failure)
+                })
+        }
 
         val name = when (type) {
             TYPE_NAME -> "${BuildConfig.VERSION_CODE}-${asset.accountName}"

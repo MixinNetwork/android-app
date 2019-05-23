@@ -2,17 +2,14 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
@@ -22,27 +19,24 @@ import kotlinx.android.synthetic.main.fragment_qr_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_avatar.view.*
 import kotlinx.android.synthetic.main.view_qr_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.Constants.MY_QR
 import one.mixin.android.Constants.Scheme.TRANSFER
 import one.mixin.android.R
-import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.capture
 import one.mixin.android.extension.generateQRCode
-import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.getQRCodePath
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.save
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BadgeCircleImageView.Companion.END_BOTTOM
 import one.mixin.android.widget.BottomSheet
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
-import java.io.FileNotFoundException
 
 class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
@@ -140,22 +134,10 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe({ granted ->
                     if (granted) {
-                        doAsync {
-                            val outFile = requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
-                            val b = Bitmap.createBitmap(contentView.bottom_ll.width, contentView.bottom_ll.height, Bitmap.Config.ARGB_8888)
-                            val c = Canvas(b)
-                            contentView.bottom_ll.draw(c)
-                            b.save(outFile)
-                            try {
-                                MediaStore.Images.Media.insertImage(requireContext().contentResolver,
-                                    outFile.absolutePath, outFile.name, null)
-                            } catch (e: FileNotFoundException) {
-                                e.printStackTrace()
-                            }
-                            requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-
-                            uiThread { context?.toast(R.string.save_success) }
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            contentView.bottom_ll.capture(requireContext())
                         }
+                        context?.toast(R.string.save_success)
                     } else {
                         requireContext().openPermissionSetting()
                     }

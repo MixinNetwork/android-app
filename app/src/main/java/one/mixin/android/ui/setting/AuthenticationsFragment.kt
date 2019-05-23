@@ -102,7 +102,7 @@ class AuthenticationsFragment : BaseFragment() {
             itemView.avatar.setInfo(app.name, app.icon_url, app.appId)
             itemView.name_tv.text = app.name
             itemView.number_tv.text = app.appNumber
-            itemView.deauthorize.setOnClickListener {
+            itemView.setOnClickListener {
                 onAppClick.onClick(app, adapterPosition)
             }
         }

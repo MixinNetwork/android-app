@@ -19,7 +19,6 @@ class ChatHolder constructor(containerView: View) : NormalHolder(containerView) 
             itemView.search_name.text = chat.fullName
             itemView.search_name.highLight(target)
             itemView.search_avatar_iv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)
-            itemView.divider.visibility = View.VISIBLE
             itemView.verified_iv.visibility = if (chat.isVerified == true) {
                 View.VISIBLE
             } else {
@@ -36,7 +35,6 @@ class ChatHolder constructor(containerView: View) : NormalHolder(containerView) 
             itemView.search_name.text = chat.groupName
             itemView.search_name.highLight(target)
             itemView.search_avatar_iv.setInfo(chat.groupName, chat.groupIconUrl, chat.conversationId)
-            itemView.divider.visibility = View.VISIBLE
         }
         itemView.setOnClickListener {
             onItemClickListener?.onChatClick(chat)

@@ -46,7 +46,6 @@
             android:id="@+id/time_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:layout_marginTop=".5dp"
             android:foreground="?attr/selectableItemBackground"
             android:background="@android:color/white">
 

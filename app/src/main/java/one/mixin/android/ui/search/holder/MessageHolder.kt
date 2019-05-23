@@ -23,7 +23,6 @@ class MessageHolder constructor(containerView: View) : NormalHolder(containerVie
             itemView.search_avatar_iv.setGroup(message.conversationAvatarUrl)
         }
 
-        itemView.divider.visibility = View.VISIBLE
         itemView.setOnClickListener {
             onItemClickListener?.onMessageClick(message)
         }

@@ -141,7 +141,7 @@ class ContactsFragment : BaseFragment() {
                 mutableList.addAll(0, contactAdapter.users)
                 contactAdapter.users = mutableList
                 contactAdapter.notifyDataSetChanged()
-            }, { _ -> })
+            }, { })
         jobManager.addJobInBackground(UploadContactsJob())
     }
 

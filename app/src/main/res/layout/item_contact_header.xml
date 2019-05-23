@@ -13,12 +13,4 @@
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:textColor="@color/text_gray"
         android:textSize="13sp" />
-
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:layout_gravity="bottom"
-        android:background="@color/divider" />
-
 </FrameLayout>
