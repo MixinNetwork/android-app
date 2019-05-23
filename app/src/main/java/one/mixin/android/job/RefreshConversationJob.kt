@@ -104,7 +104,8 @@ class RefreshConversationJob(val conversationId: String)
                 participantDao.insertList(participants)
                 if (userIdList.isNotEmpty()) {
                     jobManager.addJobInBackground(RefreshUserJob(userIdList, conversationId))
-                } else {
+                }
+                if (participants.size != local.size || userIdList.isNotEmpty() || needRemove.isNotEmpty()) {
                     jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
                 }
             }
