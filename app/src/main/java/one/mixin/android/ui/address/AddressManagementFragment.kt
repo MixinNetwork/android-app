@@ -148,6 +148,9 @@ class AddressManagementFragment : BaseFragment() {
             assetUrl = asset.iconUrl,
             chainIconUrl = asset.chainIconUrl,
             publicKey = addr.publicKey,
+            label = addr.label,
+            accountTag = addr.accountTag,
+            accountName = addr.accountName,
             assetName = asset.name, type = DELETE)
         bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
         bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {

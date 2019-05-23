@@ -14,7 +14,6 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
@@ -27,6 +26,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val TRANSFER = "transfer"
         private const val SEND = "send"
         private const val WITHDRAWAL = "withdrawal"
+        private const val ADDRESS = "address"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,13 +67,19 @@ class UrlInterpreterActivity : BaseActivity() {
                 finish()
             }
             WITHDRAWAL -> {
-                checkMixin()
+                processWithdrawal()
+            }
+            ADDRESS -> {
+                processAddress()
             }
         }
     }
 }
 
-fun checkMixin() {
+fun processWithdrawal() {
+}
+
+fun processAddress() {
 }
 
 fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
@@ -82,7 +88,9 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
         url.startsWith(Scheme.USERS, true) ||
         url.startsWith(Scheme.HTTPS_USERS, true) ||
         url.startsWith(Scheme.DEVICE, true) ||
-        url.startsWith(Scheme.SEND, true)) {
+        url.startsWith(Scheme.SEND, true) ||
+        url.startsWith(Scheme.ADDRESS, true) ||
+        url.startsWith(Scheme.WITHDRAWAL, true)) {
         true
     } else {
         val segments = Uri.parse(url).pathSegments
@@ -94,9 +102,9 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
             segments.size >= 1 && segments[0].isUUID()
         } else if (includeTransfer && url.startsWith(Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
-        } else {
-            false
-        }
+        } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true)) {
+            true
+        } else url.startsWith(Scheme.HTTPS_WITHDRAWAL, true)
     }
 }
 
@@ -117,31 +125,6 @@ inline fun openUrl(
         Uri.parse(url).getQueryParameter("text")?.let {
             ForwardActivity.show(MixinApplication.appContext, arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it)))
         }
-    } else if (url.startsWith("https://mixin.one/withdrawal")) {
-        val uri = Uri.parse(url)
-        if (Session.getAccount()?.hasPin == false) {
-
-        } else if (uri.queryParameterNames.size <= 0) {
-
-        }
-        val assetId = uri.getQueryParameter("asset")
-        val amount = uri.getQueryParameter("amount")
-        var memo = uri.getQueryParameter("memo")
-        val traceId = uri.getQueryParameter("trace")
-        val publicKey = uri.getQueryParameter("public_key")
-        val label = uri.getQueryParameter("label")
-        if (publicKey.isNullOrEmpty() || assetId.isNullOrEmpty() || amount.isNullOrEmpty() ||
-            traceId.isNullOrEmpty() || !assetId.isUUID() || !traceId.isUUID
-            ()) {
-            // Todo
-            return
-        }
-        if (!memo.isNullOrEmpty()) {
-            memo = Uri.decode(memo)
-        }
-        WithdrawalBottomSheetDialogFragment
-            .newInstance(WithdrawalBottomSheetDialogFragment.WithdrawalItem(publicKey, amount, memo, label), assetId)
-            .show(supportFragmentManager, WithdrawalBottomSheetDialogFragment.TAG)
     } else {
         if (isMixinUrl(url, false)) {
             LinkBottomSheetDialogFragment

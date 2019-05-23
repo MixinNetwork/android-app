@@ -85,12 +85,12 @@ class AddressAddFragment : BaseFragment() {
             val bottomSheet = if (noPublicKey()) {
                 PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, assetName = asset.name,
                     assetUrl = asset.iconUrl, chainIconUrl = asset.chainIconUrl, type = type,
-                    accountName = label_et.text.toString(), publicKey = addr_et.text.toString())
+                    accountName = label_et.text.toString(), accountTag = addr_et.text.toString())
             } else {
                 PinAddrBottomSheetDialogFragment.newInstance(asset.assetId, asset.name,
                     assetUrl = asset.iconUrl,
                     chainIconUrl = asset.chainIconUrl,
-                    accountName = label_et.text.toString(), publicKey = addr_et.text.toString(), type = type)
+                    label = label_et.text.toString(), publicKey = addr_et.text.toString(), type = type)
             }
             bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {

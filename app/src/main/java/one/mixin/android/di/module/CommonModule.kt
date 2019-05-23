@@ -12,6 +12,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment
 
 @Module
@@ -48,4 +49,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributePermissionBottomSheetDialogFragment(): PermissionBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePinAddrBottomSheetFragment(): PinAddrBottomSheetDialogFragment
 }

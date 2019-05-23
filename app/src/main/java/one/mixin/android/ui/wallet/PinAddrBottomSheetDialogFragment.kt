@@ -13,6 +13,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
@@ -47,7 +48,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
             assetUrl: String? = null,
             chainIconUrl: String? = null,
             label: String? = null,
-            publicKey: String?=null,
+            publicKey: String? = null,
             addressId: String? = null,
             type: Int = ADD,
             accountName: String? = null,
@@ -91,17 +92,29 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         super.onActivityCreated(savedInstanceState)
         contentView.info_tv.setText(getTipTextRes())
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
-        contentView.title_view.setSubTitle(getString(R.string.withdrawal_addr_new, assetName))
+        contentView.title_view.setSubTitle(getString(when (type) {
+            ADD -> R.string.withdrawal_addr_add
+            MODIFY -> R.string.withdrawal_addr_modify
+            else -> R.string.withdrawal_addr_delete
+        }, assetName))
         contentView.asset_icon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
         contentView.asset_icon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
-        contentView.asset_name.text = accountName
-        contentView.asset_address.text = publicKey
+        contentView.asset_name.text = if (!accountName.isNullOrBlank()) {
+            accountName
+        } else {
+            label
+        }
+        contentView.asset_address.text = if (!accountTag.isNullOrBlank()) {
+            accountTag
+        } else {
+            publicKey
+        }
 
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
                 if (index != contentView.pin.getCount()) return
 
-                contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PB
+                contentView.pin_va?.displayedChild = POS_PB
                 val observable = if (type == ADD || type == MODIFY) {
                     bottomViewModel.syncAddr(assetId!!, publicKey, label, contentView.pin.code(), accountName, accountTag)
                 } else {
@@ -119,9 +132,14 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                             uiThread {
                                 contentView.pin_va?.displayedChild = POS_PIN
                                 assetId?.let {
-                                    defaultSharedPreferences.putString(it, (r.data as Address).addressId)
+                                    if (r.data != null) {
+                                        defaultSharedPreferences.putString(it, (r.data as Address).addressId)
+                                    }
                                 }
                                 callback?.onSuccess()
+                                if (callback == null) {
+                                    toast(R.string.successful)
+                                }
                                 dismiss()
                             }
                         }

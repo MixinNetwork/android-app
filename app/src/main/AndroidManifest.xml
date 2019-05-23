@@ -71,6 +71,9 @@
                 <data
                     android:host="withdrawal"
                     android:scheme="mixin" />
+                <data
+                    android:host="address"
+                    android:scheme="mixin" />
             </intent-filter>
         </activity>
         <activity
