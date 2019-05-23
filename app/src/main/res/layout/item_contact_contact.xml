@@ -1,42 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             android:layout_width="match_parent"
-             android:layout_height="@dimen/item_contact_height"
-             android:background="@android:color/white"
-             android:foreground="?attr/selectableItemBackground">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/item_contact_height"
+    android:background="@android:color/white"
+    android:foreground="?attr/selectableItemBackground">
 
-    <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <TextView
+        android:id="@+id/index"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:background="@drawable/bg_circle_contact"
+        android:gravity="center"
+        android:textColor="@color/text_gray"
+        android:textSize="22sp"/>
 
-        <TextView
-                android:id="@+id/index"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_gravity="center_vertical"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:background="@drawable/bg_circle_contact"
-                android:gravity="center"
-                android:textColor="@color/text_gray"
-                android:textSize="22sp"/>
-
-        <TextView
-                android:id="@+id/contact_friend"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:ellipsize="end"
-                android:singleLine="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:maxLines="1"
-                android:textColor="@android:color/black"/>
-    </LinearLayout>
-
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:layout_gravity="bottom"
-            android:layout_marginStart="72dp"
-            android:background="@color/divider"/>
-</FrameLayout>
+    <TextView
+        android:id="@+id/contact_friend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:textColor="@android:color/black"/>
+</LinearLayout>

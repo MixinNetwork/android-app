@@ -58,11 +58,6 @@
             android:textSize="11sp"/>
     </RelativeLayout>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="@color/divider"/>
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
@@ -85,11 +80,6 @@
                 android:textColor="@color/black"
                 android:text="@string/contact_receive_money"/>
         </FrameLayout>
-
-        <View
-            android:layout_width=".5dp"
-            android:layout_height="match_parent"
-            android:background="@color/divider"/>
 
         <FrameLayout
             android:id="@+id/my_qr_fl"
@@ -152,13 +142,6 @@
             android:layout_below="@id/center_new_group"
             android:layout_toEndOf="@+id/new_group_iv"
             android:text="@string/contact_new_group_chat_desc"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:layout_alignParentBottom="true"
-            android:layout_toEndOf="@+id/new_group_iv"
-            android:background="@color/divider"/>
     </RelativeLayout>
 
     <RelativeLayout
@@ -201,12 +184,6 @@
             android:layout_below="@id/center_add_contact"
             android:layout_toEndOf="@+id/add_contact_iv"
             android:text="@string/contact_add_contact_desc"/>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:layout_alignParentBottom="true"
-            android:background="@color/divider"/>
     </RelativeLayout>
 
     <RelativeLayout

@@ -47,8 +47,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="@dimen/margin12"
-        android:src="@drawable/ic_close_gray"
+        android:layout_marginEnd="@dimen/margin16"
+        android:src="@drawable/ic_close_black_24dp"
         android:background="@drawable/mixin_ripple"
         tools:ignore="ContentDescription"/>
 

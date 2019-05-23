@@ -27,28 +27,15 @@
         android:paddingEnd="@dimen/activity_horizontal_margin"
         android:textSize="14sp" />
 
-    <View
-        android:id="@+id/divider"
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:layout_below="@id/search_et"
-        android:background="@color/divider" />
-
     <TextView
         android:id="@+id/tip_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/divider"
+        android:layout_below="@id/search_et"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:layout_marginTop="@dimen/activity_vertical_margin"
         android:text="@string/add_people_tip"
         android:textSize="12sp" />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:layout_above="@+id/search_animator"
-        android:background="@color/divider" />
 
     <ViewAnimator
         android:id="@+id/search_animator"

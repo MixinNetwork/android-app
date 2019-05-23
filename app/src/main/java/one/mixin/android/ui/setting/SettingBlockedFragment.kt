@@ -1,14 +1,14 @@
 package one.mixin.android.ui.setting
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
-import androidx.fragment.app.FragmentActivity
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_blocked.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -16,7 +16,6 @@ import one.mixin.android.R
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.vo.User
 import javax.inject.Inject
 
@@ -45,7 +44,6 @@ class SettingBlockedFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         blocked_rv.adapter = adapter
-        blocked_rv.addItemDecoration(SpaceItemDecoration(0))
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
     }
 

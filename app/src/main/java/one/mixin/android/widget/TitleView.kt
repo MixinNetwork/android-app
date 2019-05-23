@@ -44,7 +44,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
                 setBackgroundResource(android.R.color.white)
             }
             if (ta.hasValue(R.styleable.TitleView_need_divider)) {
-                divider.visibility = if (ta.getBoolean(R.styleable.TitleView_need_divider, true)) VISIBLE else GONE
+                divider.visibility = if (ta.getBoolean(R.styleable.TitleView_need_divider, false)) VISIBLE else GONE
             }
             if (ta.hasValue(R.styleable.TitleView_rightIcon) || ta.hasValue(R.styleable.TitleView_rightText)) {
                 right_animator.visibility = View.VISIBLE

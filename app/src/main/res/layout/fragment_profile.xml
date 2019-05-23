@@ -1,237 +1,223 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              xmlns:app="http://schemas.android.com/apk/res-auto"
-              xmlns:tools="http://schemas.android.com/tools"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
-            android:id="@+id/title_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:titleText="@string/profile_my_title"/>
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:titleText="@string/profile_my_title"/>
 
     <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_divider"
-            android:background="@color/bg_gray"/>
-
-    <View
-            android:layout_width="match_parent"
-            android:layout_height="0.5dp"
-            android:background="@color/divider"/>
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_divider"
+        android:background="@color/bg_gray"/>
 
     <RelativeLayout
-            android:id="@+id/photo_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
+        android:id="@+id/photo_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
 
         <TextView
-                android:id="@+id/photo_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/profile_photo"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/photo_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/profile_photo"
+            tools:ignore="RelativeOverlap"/>
 
         <ViewAnimator
-                android:id="@+id/photo_animator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_alignParentEnd="true"
-                android:inAnimation="@anim/fade_in"
-                android:outAnimation="@anim/fade_out"
-                tools:ignore="RelativeOverlap">
+            android:id="@+id/photo_animator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:inAnimation="@anim/fade_in"
+            android:outAnimation="@anim/fade_out"
+            tools:ignore="RelativeOverlap">
 
             <one.mixin.android.widget.AvatarView
-                    android:id="@+id/profile_avatar"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"/>
+                android:id="@+id/profile_avatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"/>
 
             <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical|end"
-                    android:theme="@style/AppTheme.BlueAccent"/>
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:theme="@style/AppTheme.BlueAccent"/>
         </ViewAnimator>
     </RelativeLayout>
 
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/bg_gray"/>
-
     <RelativeLayout
-            android:id="@+id/name_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
+        android:id="@+id/name_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
 
         <TextView
-                android:id="@+id/name_tv"
+            android:id="@+id/name_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/name"
+            tools:ignore="RelativeOverlap"/>
+
+        <ViewAnimator
+            android:id="@+id/name_animator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_toEndOf="@id/name_tv"
+            android:inAnimation="@anim/fade_in"
+            android:outAnimation="@anim/fade_out"
+            tools:ignore="RelativeOverlap">
+
+            <TextView
+                android:id="@+id/name_desc_tv"
                 style="@style/NormalTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/name"
-                tools:ignore="RelativeOverlap"/>
-
-        <ViewAnimator
-                android:id="@+id/name_animator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_alignParentEnd="true"
-                android:layout_toEndOf="@id/name_tv"
-                android:inAnimation="@anim/fade_in"
-                android:outAnimation="@anim/fade_out"
-                tools:ignore="RelativeOverlap">
-
-            <TextView
-                    android:id="@+id/name_desc_tv"
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center|end"
-                    android:ellipsize="end"
-                    android:singleLine="true"
-                    android:textColor="@color/text_gray"/>
+                android:layout_gravity="center|end"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="@color/text_gray"/>
 
             <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical|end"
-                    android:theme="@style/AppTheme.BlueProgress"/>
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:theme="@style/AppTheme.BlueProgress"/>
         </ViewAnimator>
     </RelativeLayout>
-
-    <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/bg_gray"/>
 
 
     <include layout="@layout/view_item_divider"/>
 
     <RelativeLayout
-            android:id="@+id/phone_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white">
+        android:id="@+id/phone_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
 
         <TextView
-                android:id="@+id/phone_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/profile_phone"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/phone_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/profile_phone"
+            tools:ignore="RelativeOverlap"/>
 
         <TextView
-                android:id="@+id/phone_desc_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="@color/text_gray"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/phone_desc_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:textColor="@color/text_gray"
+            tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 
     <RelativeLayout
-            android:id="@+id/invitation_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:visibility="gone"
-            android:background="@android:color/white">
+        android:id="@+id/invitation_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:visibility="gone">
 
         <TextView
-                android:id="@+id/invitation_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/profile_invitation"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/invitation_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/profile_invitation"
+            tools:ignore="RelativeOverlap"/>
 
         <TextView
-                android:id="@+id/invitation_desc_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:textColor="@color/colorBlue"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/invitation_desc_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:textColor="@color/colorBlue"
+            tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 
 
     <RelativeLayout
-            android:id="@+id/redeem_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:visibility="gone"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
+        android:id="@+id/redeem_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground"
+        android:visibility="gone">
 
         <TextView
-                android:id="@+id/redeem_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:paddingStart="@dimen/activity_horizontal_margin"
-                android:text="@string/wallet_get_free_redeem"
-                android:textColor="@color/colorBlue"
-                tools:ignore="RelativeOverlap"/>
+            android:id="@+id/redeem_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:paddingStart="@dimen/activity_horizontal_margin"
+            android:paddingEnd="@dimen/activity_horizontal_margin"
+            android:text="@string/wallet_get_free_redeem"
+            android:textColor="@color/colorBlue"
+            tools:ignore="RelativeOverlap"/>
 
         <ProgressBar
-                android:id="@+id/redeem_pb"
-                style="?android:attr/progressBarStyleSmall"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:visibility="gone"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:theme="@style/AppTheme.BlueAccent"/>
+            android:id="@+id/redeem_pb"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:theme="@style/AppTheme.BlueAccent"
+            android:visibility="gone"/>
     </RelativeLayout>
 
     <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@color/bg_gray">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_gray">
 
         <TextView
-                android:id="@+id/invitation_count_tv"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="8dp"
-                android:visibility="gone"
-                android:text="@string/profile_invitation_tip"
-                android:textColor="@color/colorGray"
-                android:textSize="12sp"/>
+            android:id="@+id/invitation_count_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_marginBottom="8dp"
+            android:text="@string/profile_invitation_tip"
+            android:textColor="@color/colorGray"
+            android:textSize="12sp"
+            android:visibility="gone"/>
     </FrameLayout>
 </LinearLayout>

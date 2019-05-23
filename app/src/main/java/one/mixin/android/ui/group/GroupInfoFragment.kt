@@ -36,7 +36,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
 import one.mixin.android.ui.group.GroupFragment.Companion.MAX_USER
@@ -95,7 +94,6 @@ class GroupInfoFragment : BaseFragment() {
             search_et.hideKeyboard()
             activity?.onBackPressed()
         }
-        group_info_rv.addItemDecoration(SpaceItemDecoration(1))
         header = LayoutInflater.from(context).inflate(R.layout.view_group_info_header, group_info_rv, false)
         adapter.headerView = header
         group_info_rv.adapter = adapter
