@@ -271,6 +271,7 @@
     <string name="wallet_pay_with_biometric">Biometric Payment</string>
     <string name="wallet_transfer_amount">Transfer Amount</string>
     <string name="wallet_transfer_memo">Memo (optional)</string>
+    <string name="wallet_transfer_tag" >Tag (optional)</string>
     <string name="wallet_unit_usd">%1$s USD</string>
     <string name="wallet_verifying">Verifying…</string>
     <string name="wallet_change_password_success">Change PIN successfully</string>
