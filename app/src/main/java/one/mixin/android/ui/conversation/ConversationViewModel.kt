@@ -8,6 +8,7 @@ import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import com.google.gson.Gson
@@ -15,7 +16,6 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -407,7 +407,7 @@ internal constructor(
     }
 
     fun markMessageRead(conversationId: String, accountId: String) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        viewModelScope.launch(SINGLE_DB_THREAD) {
             conversationRepository.getUnreadMessage(conversationId, accountId)?.also { list ->
                 if (list.isNotEmpty()) {
                     notificationManager.cancel(conversationId.hashCode())
@@ -438,7 +438,7 @@ internal constructor(
     }
 
     fun deleteMessages(list: List<MessageItem>) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        viewModelScope.launch(SINGLE_DB_THREAD) {
             list.forEach { item ->
                 conversationRepository.deleteMessage(item.messageId)
                 jobManager.cancelJobById(item.messageId)
@@ -544,7 +544,7 @@ internal constructor(
     }
 
     fun sendForwardMessages(selectItem: List<Any>, messages: List<ForwardMessage>?) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        viewModelScope.launch(SINGLE_DB_THREAD) {
             var conversationId: String? = null
             for (item in selectItem) {
                 if (item is User) {

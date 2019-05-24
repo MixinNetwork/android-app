@@ -1,7 +1,7 @@
 package one.mixin.android.ui.home
 
 import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.GlobalScope
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -54,7 +54,7 @@ internal constructor(
     }
 
     fun mute(senderId: String, recipientId: String, duration: Long) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        viewModelScope.launch(SINGLE_DB_THREAD) {
             var conversationId = messageRepository.getConversationIdIfExistsSync(recipientId)
             if (conversationId == null) {
                 conversationId = generateConversationId(senderId, recipientId)
