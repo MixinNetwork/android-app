@@ -262,7 +262,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
     }
 
     private fun handleGif(mark: Int) {
-        if (dataSize == null || dataSize == 0L) {  // un-downloaded giphy
+        if (dataSize == null || dataSize == 0L) { // un-downloaded giphy
             itemView.chat_image.loadGifMark(dataThumbImage, mark, false)
         } else {
             itemView.chat_image.loadGifMark(dataUrl, dataThumbImage, mark)

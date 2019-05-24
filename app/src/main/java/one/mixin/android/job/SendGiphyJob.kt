@@ -10,7 +10,6 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMediaMessage
@@ -54,5 +53,4 @@ class SendGiphyJob(
             time, MediaStatus.PENDING, MessageStatus.SENDING)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
-
 }

@@ -132,7 +132,7 @@ class ControlledRunner<T> {
 
             // Loop until we are sure that newTask is ready to execute (all previous tasks are
             // cancelled)
-            while(true) {
+            while (true) {
                 if (!activeTask.compareAndSet(null, newTask)) {
                     // some other task started before newTask got set to activeTask, so see if it's
                     // still running when we call get() here. If so, we can cancel it.
@@ -205,7 +205,7 @@ class ControlledRunner<T> {
 
             // Loop until we figure out if we need to run newTask, or if there is a task that's
             // already running we can join.
-            while(true) {
+            while (true) {
                 if (!activeTask.compareAndSet(null, newTask)) {
                     // some other task started before newTask got set to activeTask, so see if it's
                     // still running when we call get() here. There is a chance that it's already

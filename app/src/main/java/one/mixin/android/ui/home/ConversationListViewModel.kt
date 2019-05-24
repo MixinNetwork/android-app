@@ -71,5 +71,4 @@ internal constructor(
             request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration),
             type = ConversationJob.TYPE_MUTE))
     }
-
 }
