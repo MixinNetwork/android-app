@@ -138,6 +138,7 @@ import one.mixin.android.vo.canNotForward
 import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
@@ -351,7 +352,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onRetryUpload(messageId: String) {
-                chatViewModel.retryUpload(messageId)
+                chatViewModel.retryUpload(messageId) {
+                    toast(R.string.error_retry_upload)
+                }
             }
 
             override fun onCancel(id: String) {
@@ -1141,6 +1144,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
+    private fun sendGiphy(image: Image, previewUrl: String) {
+        createConversation {
+            chatViewModel.sendGiphyMessage(conversationId, sender.userId, image, isPlainMessage(), previewUrl)
+            chat_rv.postDelayed({
+                scrollToDown()
+            }, 1000)
+        }
+    }
+
     override fun onCancel() {
         chat_control?.cancelExternal()
     }
@@ -1500,9 +1512,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            override fun onGiphyClick(url: String) {
+            override fun onGiphyClick(image: Image, previewUrl: String) {
                 if (isAdded) {
-                    sendImageMessage(url.toUri())
+                    sendGiphy(image, previewUrl)
                 }
             }
         })

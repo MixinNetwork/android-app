@@ -181,6 +181,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         dataHeight = messageItem.mediaHeight
         dataUrl = messageItem.mediaUrl
         dataThumbImage = messageItem.thumbImage
+        dataSize = messageItem.mediaSize
         isGif = messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)
         chatLayout(isMe, isLast)
     }
@@ -190,6 +191,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
     private var dataThumbImage: String? = null
     private var dataWidth: Int? = null
     private var dataHeight: Int? = null
+    private var dataSize: Long? = null
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
         super.chatLayout(isMe, isLast, isBlink)
@@ -246,16 +248,24 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         itemView.chat_image.setShape(mark)
         if (isBlink) {
             when {
-                isGif -> itemView.chat_image.loadGifMark(dataUrl, mark)
+                isGif -> handleGif(mark)
                 itemView.chat_image.layoutParams.height == mediaHeight -> itemView.chat_image.loadLongImageMark(dataUrl, mark)
                 else -> itemView.chat_image.loadImageMark(dataUrl, mark)
             }
         } else {
             when {
-                isGif -> itemView.chat_image.loadGifMark(dataUrl, dataThumbImage, mark)
+                isGif -> handleGif(mark)
                 itemView.chat_image.layoutParams.height == mediaHeight -> itemView.chat_image.loadLongImageMark(dataUrl, dataThumbImage, mark)
                 else -> itemView.chat_image.loadImageMark(dataUrl, dataThumbImage, mark)
             }
+        }
+    }
+
+    private fun handleGif(mark: Int) {
+        if (dataSize == null || dataSize == 0L) {  // un-downloaded giphy
+            itemView.chat_image.loadGifMark(dataThumbImage, mark, false)
+        } else {
+            itemView.chat_image.loadGifMark(dataUrl, dataThumbImage, mark)
         }
     }
 }
