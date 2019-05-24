@@ -1,8 +1,5 @@
 package one.mixin.android.ui.conversation
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,13 +7,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.itemdecoration.SpaceItemDecoration
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.CONVERSATION_ID
 import one.mixin.android.ui.conversation.adapter.FriendAdapter
 import one.mixin.android.vo.ForwardCategory
@@ -28,14 +27,10 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
 
     companion object {
         const val TAG = "FriendsFragment"
-        const val ARGS_IS_GROUP = "args_is_group"
-        const val ARGS_IS_BOT = "args_is_bot"
 
-        fun newInstance(conversationId: String, isGroup: Boolean, isBot: Boolean) = FriendsFragment().apply {
+        fun newInstance(conversationId: String) = FriendsFragment().apply {
             arguments = bundleOf(
-                CONVERSATION_ID to conversationId,
-                ARGS_IS_GROUP to isGroup,
-                ARGS_IS_BOT to isBot
+                CONVERSATION_ID to conversationId
             )
         }
     }
@@ -50,8 +45,6 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
 
     private val adapter = FriendAdapter().apply { listener = this@FriendsFragment }
     private val conversationId: String by lazy { arguments!!.getString(CONVERSATION_ID) }
-    private val isGroup: Boolean by lazy { arguments!!.getBoolean(ARGS_IS_GROUP) }
-    private val isBot: Boolean by lazy { arguments!!.getBoolean(ARGS_IS_BOT) }
 
     private var users = arrayListOf<User>()
 
@@ -65,7 +58,6 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
             activity?.onBackPressed()
         }
         friends_rv.adapter = adapter
-        friends_rv.addItemDecoration(SpaceItemDecoration())
         conversationViewModel.getFriends().observe(this, Observer {
             if (it == null || it.isEmpty()) return@Observer
 

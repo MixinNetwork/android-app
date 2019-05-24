@@ -72,6 +72,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
         const val ARGS_SWITCH_ASSET = "args_switch_asset"
 
+        const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
+
         fun newInstance(
             userId: String? = null,
             asset: AssetItem? = null,
@@ -173,7 +175,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        if (userId != null) {
+        if (isInnerTransfer()) {
             if (supportSwitchAsset) {
                 contentView.asset_rl.setOnClickListener {
                     operateKeyboard(false)
@@ -307,6 +309,11 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             contentView.amount_as_tv.text = getBottomText()
         }
 
+        if (!isInnerTransfer() && asset.assetId == RIPPLE_CHAIN_ID) {
+            contentView.transfer_memo.setHint(R.string.wallet_transfer_tag)
+        } else {
+            contentView.transfer_memo.setHint(R.string.wallet_transfer_memo)
+        }
         contentView.asset_name.text = asset.name
         contentView.asset_desc.text = asset.balance.numberFormat()
         contentView.desc_end.text = asset.symbol
@@ -315,6 +322,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         operateKeyboard(true)
     }
+
+    private fun isInnerTransfer() = userId != null
 
     private fun getAmountView() = contentView.amount_et
 
