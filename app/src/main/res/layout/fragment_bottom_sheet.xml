@@ -12,7 +12,7 @@
             android:paddingEnd="10dp"
             android:gravity="center"
             android:visibility="gone"
-            android:text="@string/group_error"/>
+            android:text="@string/link_error"/>
 
     <RelativeLayout
             android:id="@+id/link_loading"

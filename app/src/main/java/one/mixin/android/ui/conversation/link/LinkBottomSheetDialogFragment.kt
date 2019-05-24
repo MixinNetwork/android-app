@@ -386,7 +386,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         }
     }
 
-    private fun error(@StringRes errorRes: Int = R.string.group_error) {
+    private fun error(@StringRes errorRes: Int = R.string.link_error) {
         contentView.link_error_info.setText(errorRes)
         contentView.link_loading.visibility = GONE
         contentView.link_error_info.visibility = VISIBLE

@@ -407,7 +407,7 @@
     <string name="chat_expired">Expired</string>
     <string name="unknown">Unknown type of Message, please upgrade the APP</string>
     <string name="group_ok">OK</string>
-    <string name="group_error">This invite link is invalid</string>
+    <string name="link_error">This link is invalid</string>
     <string name="bottom_sheet_check_payment_info">Checking payment info</string>
     <string name="bottom_sheet_invalid_payment">Invalid payment</string>
     <string name="group_wait">Please wait a moment</string>
