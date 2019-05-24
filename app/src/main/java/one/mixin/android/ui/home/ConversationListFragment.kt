@@ -24,16 +24,11 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
-import com.google.zxing.integration.android.IntentIntegrator
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
-import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
-import kotlinx.android.synthetic.main.item_list_conversation.view.bot_iv
-import kotlinx.android.synthetic.main.item_list_conversation.view.verified_iv
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
 import kotlinx.android.synthetic.main.view_empty.*
-import one.mixin.android.MixinApplication.Companion.conversationId
 import one.mixin.android.R
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
@@ -176,17 +171,13 @@ class ConversationListFragment : LinkFragment() {
                 .request(Manifest.permission.CAMERA)
                 .subscribe { granted ->
                     if (granted) {
-                        val intentIntegrator = IntentIntegrator(activity)
-                        intentIntegrator.captureActivity = CaptureActivity::class.java
-                        intentIntegrator.setBeepEnabled(false)
-                        intentIntegrator.initiateScan()
-                        activity?.overridePendingTransition(R.anim.slide_in_bottom, 0)
+                        CaptureActivity.show(requireActivity())
                     } else {
                         context?.openPermissionSetting()
                     }
                 }
         }
-        messageAdapter.onItemClickListener = object : ConversationListFragment.OnItemClickListener {
+        messageAdapter.onItemClickListener = object : OnItemClickListener {
             override fun longClick(conversation: ConversationItem): Boolean {
                 showBottomSheet(conversation)
                 return true

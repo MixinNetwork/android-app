@@ -84,7 +84,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    override fun onAttach(context: Context?) {
+    override fun onAttach(context: Context) {
         super.onAttach(context)
         shown = true
     }

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.qr
 
-import android.graphics.Bitmap
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
@@ -9,11 +10,9 @@ import one.mixin.android.ui.qr.CaptureFragment.Companion.ARGS_FOR_ACCOUNT_NAME
 import one.mixin.android.ui.qr.CaptureFragment.Companion.ARGS_FOR_ADDRESS
 import one.mixin.android.ui.qr.CaptureFragment.Companion.newInstance
 
-class CaptureActivity : BlazeBaseActivity(), CaptureFragment.Callback, EditFragment.Callback {
+class CaptureActivity : BlazeBaseActivity() {
 
     private lateinit var captureFragment: CaptureFragment
-
-    private var bitmap: Bitmap? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,25 +25,24 @@ class CaptureActivity : BlazeBaseActivity(), CaptureFragment.Callback, EditFragm
         replaceFragment(captureFragment, R.id.container, CaptureFragment.TAG)
     }
 
-    override fun onResume() {
-        super.onResume()
-        resumeCapture()
-    }
-
     override fun finish() {
         super.finish()
         overridePendingTransition(0, R.anim.slide_out_bottom)
     }
 
-    override fun getBitmap(): Bitmap? {
-        return bitmap
-    }
-
-    override fun setBitmap(bitmap: Bitmap) {
-        this.bitmap = bitmap
-    }
-
-    override fun resumeCapture() {
-        captureFragment.resume()
+    companion object {
+        fun show(
+            activity: Activity,
+            actionWithIntent: ((intent: Intent) -> Unit)? = null
+        ) {
+            Intent(activity, CaptureActivity::class.java).apply {
+                activity.overridePendingTransition(R.anim.slide_in_bottom, 0)
+                if (actionWithIntent == null) {
+                    activity.startActivity(this)
+                } else {
+                    actionWithIntent.invoke(this)
+                }
+            }
+        }
     }
 }

@@ -1,20 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
 
-    <com.journeyapps.barcodescanner.DecoratedBarcodeView
-        android:id="@+id/zxing_barcode_scanner"
+    <TextureView
+        android:id="@+id/view_finder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:zxing_framing_rect_height="200dp"
-        app:zxing_framing_rect_width="200dp"
-        app:zxing_preview_scaling_strategy="centerCrop"
-        app:zxing_scanner_layout="@layout/view_custom_barcode_scannner"
-        app:zxing_use_texture_view="true"/>
+        android:layout_height="match_parent"/>
 
     <ImageView
         android:id="@+id/close"
@@ -28,30 +23,29 @@
     <LinearLayout
         android:id="@+id/chronometer_layout"
         android:layout_width="wrap_content"
-        android:orientation="horizontal"
+        android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:gravity="center_vertical"
         android:layout_margin="@dimen/activity_horizontal_margin"
-        android:visibility="gone"
-        android:layout_height="wrap_content">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <one.mixin.android.widget.BlinkView
-            android:background="@drawable/bg_dot_rec"
             android:layout_width="8dp"
+            android:layout_height="8dp"
             android:layout_marginEnd="6dp"
-            android:layout_height="8dp"/>
+            android:background="@drawable/bg_dot_rec"/>
 
         <Chronometer
             android:id="@+id/chronometer"
-            android:textColor="@color/white"
-            android:shadowColor="@color/black"
-            android:textSize="16sp"
-            android:shadowRadius="3"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:shadowColor="@color/black"
+            android:shadowRadius="3"
+            android:textColor="@color/white"
+            android:textSize="16sp"/>
 
     </LinearLayout>
-
 
     <ImageView
         android:id="@+id/switch_camera"
@@ -77,20 +71,26 @@
         android:id="@+id/op"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentBottom="true"/>
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"/>
 
     <one.mixin.android.widget.PseudoNotificationView
         android:id="@+id/pseudo_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:layout_marginEnd="@dimen/activity_horizontal_margin"
-        android:layout_marginTop="@dimen/activity_vertical_margin"/>
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"/>
 
     <ViewStub
         android:id="@+id/stub"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout="@layout/view_camera_tip"/>
+
+    <one.mixin.android.widget.CaptureBorderView
+        android:id="@+id/capture_border_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"/>
 </RelativeLayout>

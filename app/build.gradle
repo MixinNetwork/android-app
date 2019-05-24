@@ -127,6 +127,9 @@ dependencies {
     implementation "androidx.collection:collection:${collectionx}"
     implementation "androidx.collection:collection-ktx:${collectionx}"
 
+    implementation "androidx.camera:camera-core:${cameraxVersion}"
+    implementation "androidx.camera:camera-camera2:${cameraxVersion}"
+
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
     implementation "androidx.navigation:navigation-ui-ktx:${navigationVersion}"
@@ -217,7 +220,6 @@ dependencies {
     implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"
     implementation "com.googlecode.libphonenumber:libphonenumber:${libphonenumberVersion}"
     implementation "com.github.tougee:rx-contacts2:${rxContactsVersion}"
-    implementation "com.github.tougee:zxing-android-embedded:${zxingEmbeddedVersion}"
     implementation "com.github.tougee:android-priority-jobqueue:${jobqueueVersion}"
     implementation "com.github.tbruyelle:rxpermissions:${rxpermissionsVersion}"
     implementation("com.github.yalantis:ucrop:${ucropVersion}") {

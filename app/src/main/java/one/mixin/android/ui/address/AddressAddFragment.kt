@@ -10,8 +10,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
-import com.google.zxing.integration.android.IntentIntegrator
-import com.google.zxing.integration.android.IntentIntegrator.REQUEST_CODE
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -24,6 +22,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureFragment
+import one.mixin.android.ui.qr.CaptureFragment.Companion.REQUEST_CODE
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ADD
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ARGS_TYPE
@@ -117,7 +116,7 @@ class AddressAddFragment : BaseFragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == IntentIntegrator.REQUEST_CODE && resultCode == CaptureFragment.RESULT_CODE) {
+        if (requestCode == REQUEST_CODE && resultCode == CaptureFragment.RESULT_CODE) {
             val addr = data?.getStringExtra(CaptureFragment.ARGS_ADDRESS_RESULT)
             if (addr != null) {
                 if (isIcapAddress(addr)) {
@@ -140,13 +139,10 @@ class AddressAddFragment : BaseFragment() {
             .request(Manifest.permission.CAMERA)
             .subscribe { granted ->
                 if (granted) {
-                    val intentIntegrator = IntentIntegrator(activity)
-                    intentIntegrator.captureActivity = CaptureActivity::class.java
-                    intentIntegrator.setBeepEnabled(false)
-                    val intent = intentIntegrator.createScanIntent()
-                        .putExtra(if (isAddr) CaptureFragment.ARGS_FOR_ADDRESS else CaptureFragment.ARGS_FOR_ACCOUNT_NAME, true)
-                    startActivityForResult(intent, REQUEST_CODE)
-                    activity?.overridePendingTransition(R.anim.slide_in_bottom, 0)
+                    CaptureActivity.show(requireActivity()) {
+                        it.putExtra(if (isAddr) CaptureFragment.ARGS_FOR_ADDRESS else CaptureFragment.ARGS_FOR_ACCOUNT_NAME, true)
+                        startActivityForResult(it, REQUEST_CODE)
+                    }
                 } else {
                     context?.openPermissionSetting()
                 }

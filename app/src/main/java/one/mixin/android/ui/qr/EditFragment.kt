@@ -2,9 +2,7 @@ package one.mixin.android.ui.qr
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.net.Uri
 import android.os.Bundle
@@ -13,6 +11,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import com.bumptech.glide.Glide
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_edit.*
 import one.mixin.android.R
@@ -56,16 +55,6 @@ class EditFragment : BaseFragment() {
 
     private val isVideo by lazy {
         arguments!!.getBoolean(PreviewDialogFragment.IS_VIDEO)
-    }
-
-    private var callback: Callback? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context !is Callback) {
-            throw IllegalArgumentException("")
-        }
-        callback = context
     }
 
     private val mixinPlayer: MixinPlayer by lazy {
@@ -148,7 +137,7 @@ class EditFragment : BaseFragment() {
             mixinPlayer.start()
         } else {
             preview_iv.visibility = VISIBLE
-            preview_iv.setImageBitmap(callback?.getBitmap())
+            Glide.with(preview_iv).load(path).into(preview_iv)
         }
     }
 
@@ -165,15 +154,5 @@ class EditFragment : BaseFragment() {
             }
             preview_video_texture.setTransform(matrix)
         }
-    }
-
-    override fun onBackPressed(): Boolean {
-        callback?.resumeCapture()
-        return super.onBackPressed()
-    }
-
-    interface Callback {
-        fun getBitmap(): Bitmap?
-        fun resumeCapture()
     }
 }

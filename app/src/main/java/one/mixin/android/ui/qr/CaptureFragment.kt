@@ -1,32 +1,41 @@
 package one.mixin.android.ui.qr
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Point
 import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
 import android.os.SystemClock
+import android.util.DisplayMetrics
+import android.util.Rational
+import android.util.Size
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.camera.core.CameraX
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.ImageAnalysisConfig
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureConfig
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
+import androidx.camera.core.PreviewConfig
+import androidx.core.view.isVisible
 import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig.fromOrigamiTensionAndFriction
 import com.facebook.rebound.SpringSystem
-import com.journeyapps.barcodescanner.BarcodeResult
-import com.journeyapps.barcodescanner.CaptureManager
-import com.journeyapps.barcodescanner.CaptureManagerCallback
-import com.journeyapps.barcodescanner.Size
-import com.journeyapps.barcodescanner.SourceData
+import com.google.firebase.ml.vision.FirebaseVision
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
+import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import kotlinx.android.synthetic.main.fragment_capture.*
 import kotlinx.android.synthetic.main.view_camera_tip.view.*
-import kotlinx.android.synthetic.main.view_custom_barcode_scannner.*
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
@@ -43,11 +52,8 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.rotate
-import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.extension.xYuv2Simple
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.home.MainActivity
@@ -55,9 +61,8 @@ import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.CameraOpView
 import one.mixin.android.widget.PseudoNotificationView
-import org.jetbrains.anko.doAsync
 import java.io.File
-import java.io.FileOutputStream
+import java.util.concurrent.atomic.AtomicBoolean
 
 class CaptureFragment : BaseFragment() {
     companion object {
@@ -69,6 +74,7 @@ class CaptureFragment : BaseFragment() {
         const val ARGS_ADDRESS_RESULT = "args_address_result"
         const val ARGS_FOR_ACCOUNT_NAME = "args_for_account_name"
         const val ARGS_ACCOUNT_NAME_RESULT = "args_account_name_result"
+        const val REQUEST_CODE = 0x0000c0ff
         const val RESULT_CODE = 0x0000c0df
 
         val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "ASSETS:READ", "APPS:READ", "APPS:WRITE", "CONTACTS:READ")
@@ -82,38 +88,30 @@ class CaptureFragment : BaseFragment() {
         }
     }
 
-    private enum class Mode {
-        SCAN,
-        CAPTURE,
-        RECORD
-    }
-
-    private val mCaptureManager: CaptureManager by lazy {
-        CaptureManager(activity, zxing_barcode_scanner, captureCallback)
-    }
-
     private val springSystem = SpringSystem.create()
     private val sprintConfig = fromOrigamiTensionAndFriction(80.0, 4.0)
 
     private val forAddress: Boolean by lazy { arguments!!.getBoolean(ARGS_FOR_ADDRESS) }
     private val forAccountName: Boolean by lazy { arguments!!.getBoolean(ARGS_FOR_ACCOUNT_NAME) }
 
-    private var mode = Mode.SCAN
-    private var flashOpen = false
+    private var lensFacing = CameraX.LensFacing.BACK
 
-    private var callback: Callback? = null
+    private var preview: Preview? = null
+    private var imageCapture: ImageCapture? = null
 
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context !is Callback) {
-            throw IllegalArgumentException("")
-        }
-        callback = context
+    private val detector = FirebaseVision.getInstance().visionBarcodeDetector
+
+    private var alreadyDetected = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        retainInstance = true
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_capture, container, false)
 
+    @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_CAMERA_TIP, false)) {
@@ -134,92 +132,43 @@ class CaptureFragment : BaseFragment() {
             }
         }
         close.setOnClickListener { activity?.onBackPressed() }
-        mCaptureManager.initializeFromIntent(activity!!.intent, savedInstanceState)
-        mCaptureManager.decode()
         flash.setOnClickListener {
-            if (flashOpen) {
+            if (preview?.isTorchOn == true) {
                 flash.setImageResource(R.drawable.ic_flash_off)
-                zxing_barcode_scanner.setTorchOff()
+                preview?.enableTorch(false)
             } else {
                 flash.setImageResource(R.drawable.ic_flash_on)
-                zxing_barcode_scanner.setTorchOn()
+                preview?.enableTorch(true)
             }
-
             anim(flash)
-            flashOpen = !flashOpen
         }
         close.setOnClickListener { activity?.onBackPressed() }
         switch_camera.setOnClickListener {
             anim(switch_camera)
-            zxing_barcode_scanner.switchCamera()
+            lensFacing = if (CameraX.LensFacing.FRONT == lensFacing) {
+                CameraX.LensFacing.BACK
+            } else {
+                CameraX.LensFacing.FRONT
+            }
             checkFlash()
+            try {
+                CameraX.getCameraWithLensFacing(lensFacing)
+                bindCameraUseCase()
+            } catch (ignored: Exception) {
+            }
         }
         checkFlash()
         op.setMaxDuration(MAX_DURATION)
-        op.setCameraOpCallback(object : CameraOpView.CameraOpCallback {
-            val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
-            var oldStreamVolume = 0
-            override fun onClick() {
-                mCaptureManager.capture()
-                mode = Mode.CAPTURE
-            }
-
-            private var videoFile: File? = null
-
-            override fun onProgressStart() {
-                close.fadeOut()
-                flash.fadeOut()
-                switch_camera.fadeOut()
-                chronometer_layout.fadeIn()
-                chronometer.base = SystemClock.elapsedRealtime()
-                chronometer.start()
-                videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
-                try {
-                    oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
-                    audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
-                } catch (ignored: SecurityException) {
-                }
-                mCaptureManager.record(videoFile, MAX_DURATION)
-                mode = Mode.RECORD
-            }
-
-            override fun onProgressStop(time: Float) {
-                close.fadeIn()
-                flash.fadeIn()
-                switch_camera.fadeIn()
-                chronometer_layout.fadeOut()
-                chronometer.stop()
-                if (time < MIN_DURATION) {
-                    mCaptureManager.stopRecord()
-                    mCaptureManager.resume()
-                    mode = Mode.SCAN
-                    toast(R.string.error_duration_short)
-                } else {
-                    videoFile?.let {
-                        mCaptureManager.stopRecord()
-                        mCaptureManager.pause()
-                        mode = Mode.SCAN
-                        activity?.supportFragmentManager?.inTransaction {
-                            add(R.id.container, EditFragment.newInstance(it.absolutePath, true), EditFragment.TAG)
-                                .addToBackStack(null)
-                        }
-                    }
-                }
-                if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
-                    requireContext().mainThreadDelayed({ audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0) }, 300)
-                }
-            }
-        })
+        op.setCameraOpCallback(opCallback)
+        view_finder.post {
+            bindCameraUseCase()
+        }
         pseudo_view.translationY = -dp(300f).toFloat()
         pseudo_view.callback = pseudoViewCallback
-
-        val p = Point()
-        activity?.windowManager?.defaultDisplay?.getSize(p)
-        zxing_barcode_surface.framingRectSize = Size(p.x, p.y)
     }
 
     private fun checkFlash() {
-        if (zxing_barcode_scanner.isFacingBack) {
+        if (CameraX.LensFacing.BACK == lensFacing) {
             flash.visibility = VISIBLE
         } else {
             flash.visibility = GONE
@@ -239,32 +188,47 @@ class CaptureFragment : BaseFragment() {
         spring.endValue = 1.0
     }
 
-    override fun onResume() {
-        super.onResume()
-        mCaptureManager.onResume()
+    private fun bindCameraUseCase() {
+        CameraX.unbindAll()
+        val metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
+        val screenSize = Size(metrics.widthPixels, metrics.heightPixels)
+        val screenAspectRatio = Rational(metrics.widthPixels, metrics.heightPixels)
+
+        val previewConfig = PreviewConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            setTargetResolution(screenSize)
+            setTargetAspectRatio(screenAspectRatio)
+            setTargetRotation(view_finder.display.rotation)
+        }.build()
+        preview = Preview(previewConfig).apply {
+            onPreviewOutputUpdateListener = previewListener
+        }
+
+        val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
+            setTargetAspectRatio(screenAspectRatio)
+            setTargetRotation(view_finder.display.rotation)
+        }.build()
+        imageCapture = ImageCapture(imageCaptureConfig)
+
+        val imageAnalysisConfig = ImageAnalysisConfig.Builder().apply {
+            setLensFacing(lensFacing)
+            val analysisThread = HandlerThread("ImageAnalysis").apply { start() }
+            setCallbackHandler(Handler(analysisThread.looper))
+            setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
+        }.build()
+        val imageAnalysis = ImageAnalysis(imageAnalysisConfig).apply {
+            analyzer = imageAnalyzer
+        }
+
+        CameraX.bindToLifecycle(this, preview, imageCapture, imageAnalysis)
     }
 
-    override fun onPause() {
-        super.onPause()
-        mCaptureManager.onPause()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mCaptureManager.onDestroy()
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        mCaptureManager.onSaveInstanceState(outState)
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        mCaptureManager.onRequestPermissionsResult(requestCode, permissions, grantResults)
-    }
-
-    fun resume() {
-        mCaptureManager.resume()
+    override fun onDestroyView() {
+        super.onDestroyView()
+        detector.closeSilently()
+        CameraX.unbindAll()
     }
 
     fun handleScanResult(data: String) {
@@ -282,25 +246,28 @@ class CaptureFragment : BaseFragment() {
         } else {
             MainActivity.showUrl(requireContext(), data)
         }
-        mCaptureManager.closeAndFinish()
     }
 
-    private fun handleCapture(sourceData: SourceData) {
-        val imageBytes = sourceData.data.xYuv2Simple(sourceData.dataWidth, sourceData.dataHeight)
-        val rawBitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
-        val bitmap = rawBitmap.rotate(sourceData.dataWidth, sourceData.dataHeight,
-            sourceData.rotation, zxing_barcode_scanner.isFacingBack)
-        val outFile = context!!.getImageCachePath().createImageTemp()
-        doAsync {
-            val out = FileOutputStream(outFile)
-            out.write(bitmap.toBytes())
-            out.closeSilently()
-        }
+    private fun handleAnalysis(analysisResult: String) {
+        if (!isAdded) return
 
-        callback?.setBitmap(bitmap)
-        activity?.supportFragmentManager?.inTransaction {
-            add(R.id.container, EditFragment.newInstance(outFile.absolutePath), EditFragment.TAG)
-                .addToBackStack(null)
+        requireContext().defaultSharedPreferences.putBoolean(SHOW_QR_CODE, false)
+        if (forAddress || forAccountName) {
+            val result = Intent().apply {
+                putExtra(if (forAddress) ARGS_ADDRESS_RESULT else ARGS_ACCOUNT_NAME_RESULT, analysisResult)
+            }
+            activity?.setResult(RESULT_CODE, result)
+            activity?.finish()
+            return
+        }
+        if (analysisResult.startsWith(Constants.Scheme.DEVICE)) {
+            val confirmBottomFragment = ConfirmBottomFragment.newInstance(analysisResult)
+            confirmBottomFragment.setCallBack {
+                activity?.finish()
+            }
+            confirmBottomFragment.show(fragmentManager, ConfirmBottomFragment.TAG)
+        } else {
+            pseudo_view.addContent(analysisResult)
         }
     }
 
@@ -310,41 +277,106 @@ class CaptureFragment : BaseFragment() {
         }
     }
 
-    private val captureCallback = object : CaptureManagerCallback {
-        override fun onScanResult(barcodeResult: BarcodeResult) {
-            requireContext().defaultSharedPreferences.putBoolean(SHOW_QR_CODE, false)
-            if (forAddress || forAccountName) {
-                val result = Intent().apply {
-                    putExtra(if (forAddress) ARGS_ADDRESS_RESULT else ARGS_ACCOUNT_NAME_RESULT, barcodeResult.text)
-                }
-                activity?.setResult(RESULT_CODE, result)
-                activity?.finish()
-                return
+    private val opCallback = object : CameraOpView.CameraOpCallback {
+        val audioManager by lazy { requireContext().getSystemService(Context.AUDIO_SERVICE) as AudioManager }
+        var oldStreamVolume = 0
+        override fun onClick() {
+            val outFile = requireContext().getImageCachePath().createImageTemp()
+            val metadata = ImageCapture.Metadata().apply {
+                isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
             }
-            if (barcodeResult.text.startsWith(Constants.Scheme.DEVICE)) {
-                val confirmBottomFragment = ConfirmBottomFragment.newInstance(barcodeResult.text)
-                confirmBottomFragment.setCallBack {
-                    activity?.finish()
-                }
-                confirmBottomFragment.show(fragmentManager, ConfirmBottomFragment.TAG)
-            } else {
-                pseudo_view.addContent(barcodeResult.text)
-                requireContext().mainThreadDelayed({
-                    mCaptureManager.decode()
-                }, 1000)
+            imageCapture?.takePicture(outFile, imageSavedListener, metadata)
+            capture_border_view?.isVisible = true
+            capture_border_view?.postDelayed({
+                capture_border_view?.isVisible = false
+            }, 100)
+        }
+
+        private var videoFile: File? = null
+
+        override fun onProgressStart() {
+            close.fadeOut()
+            flash.fadeOut()
+            switch_camera.fadeOut()
+            chronometer_layout.fadeIn()
+            chronometer.base = SystemClock.elapsedRealtime()
+            chronometer.start()
+            videoFile = requireContext().getVideoPath().createVideoTemp("mp4")
+            try {
+                oldStreamVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING)
+                audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, 0, 0)
+            } catch (ignored: SecurityException) {
             }
         }
 
-        override fun onPreview(sourceData: SourceData) {
-            if (mode == Mode.CAPTURE) {
-                handleCapture(sourceData)
-                mCaptureManager.pause()
-            } else if (mode == Mode.RECORD) {
+        override fun onProgressStop(time: Float) {
+            close.fadeIn()
+            flash.fadeIn()
+            switch_camera.fadeIn()
+            chronometer_layout.fadeOut()
+            chronometer.stop()
+            if (time < MIN_DURATION) {
+                toast(R.string.error_duration_short)
+            } else {
+                videoFile?.let {
+                    activity?.supportFragmentManager?.inTransaction {
+                        add(R.id.container, EditFragment.newInstance(it.absolutePath, true), EditFragment.TAG)
+                            .addToBackStack(null)
+                    }
+                }
+            }
+            if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N && Build.VERSION.SDK_INT != Build.VERSION_CODES.N_MR1) {
+                requireContext().mainThreadDelayed({
+                    audioManager.setStreamVolume(AudioManager.STREAM_SYSTEM, oldStreamVolume, 0)
+                }, 300)
             }
         }
     }
 
-    interface Callback {
-        fun setBitmap(bitmap: Bitmap)
+    private val previewListener = Preview.OnPreviewOutputUpdateListener {
+        view_finder?.surfaceTexture = it.surfaceTexture
+    }
+
+    private val imageSavedListener = object : ImageCapture.OnImageSavedListener {
+        override fun onImageSaved(file: File) {
+            activity?.supportFragmentManager?.inTransaction {
+                add(R.id.container, EditFragment.newInstance(file.absolutePath), EditFragment.TAG)
+                    .addToBackStack(null)
+            }
+        }
+
+        override fun onError(useCaseError: ImageCapture.UseCaseError, message: String, cause: Throwable?) {
+            context?.toast("Photo capture failed: $message")
+            cause?.printStackTrace()
+        }
+    }
+
+    private val imageAnalyzer = object : ImageAnalysis.Analyzer {
+        private val detecting = AtomicBoolean(false)
+
+        override fun analyze(image: ImageProxy, rotationDegrees: Int) {
+            if (!alreadyDetected && !image.planes.isNullOrEmpty() && detecting.compareAndSet(false, true)) {
+                val buffer = image.planes[0].buffer
+                val imageMetadata = FirebaseVisionImageMetadata.Builder().apply {
+                    setWidth(image.width)
+                    setHeight(image.height)
+                    setRotation(FirebaseVisionImageMetadata.ROTATION_90)
+                    setFormat(FirebaseVisionImageMetadata.IMAGE_FORMAT_NV21)
+                }.build()
+                val visionImage = FirebaseVisionImage.fromByteBuffer(buffer, imageMetadata)
+                detector.use { d ->
+                    d.detectInImage(visionImage)
+                        .addOnSuccessListener { result ->
+                            result.firstOrNull()?.rawValue?.let {
+                                alreadyDetected = true
+                                handleAnalysis(it)
+                            }
+                        }
+                        .addOnCompleteListener {
+                            detecting.set(false)
+                        }
+                }
+            }
+        }
     }
 }
