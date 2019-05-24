@@ -7,9 +7,7 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
@@ -195,11 +193,15 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun logoutAsync(sessionId: String) = accountRepository.logoutAsync(sessionId)
 
-    suspend fun findAddressById(addressId: String, assetId: String) = assetRepository.findAddressById(addressId, assetId)
+    suspend fun findAddressById(addressId: String, assetId: String) =
+        viewModelScope.async(Dispatchers.IO) { assetRepository.findAddressById(addressId, assetId) }.await()
 
-    suspend fun findAssetItemById(assetId: String) = assetRepository.findAssetItemById(assetId)
+    suspend fun findAssetItemById(assetId: String): AssetItem? =
+        viewModelScope.async(Dispatchers.IO) {
+            return@async assetRepository.findAssetItemById(assetId)
+        }.await()
 
-    suspend fun refreshAsset(assetId: String): Deferred<AssetItem?> {
+    suspend fun refreshAsset(assetId: String): AssetItem? {
         return viewModelScope.async(Dispatchers.IO) {
             val response = assetRepository.asset(assetId).execute().body()
             if (response != null && response.isSuccess && response.data != null) {
@@ -209,6 +211,6 @@ class BottomSheetViewModel @Inject internal constructor(
                 }
             }
             null
-        }
+        }.await()
     }
 }

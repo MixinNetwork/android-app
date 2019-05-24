@@ -41,11 +41,11 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Asset
@@ -248,8 +248,8 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             error(R.string.error_address_exists)
                         } else {
                             var asset = linkViewModel.findAssetItemById(assetId)
-                            if (asset == null || (!asset.isPublicKeyAsset() && !asset.isPublicKeyAsset())) {
-                                asset = linkViewModel.refreshAsset(assetId).await()
+                            if (asset == null || (!asset.isPublicKeyAsset() && !asset.isAccountTagAsset())) {
+                                asset = linkViewModel.refreshAsset(assetId)
                             }
                             if (asset != null) {
                                 PinAddrBottomSheetDialogFragment.newInstance(
@@ -290,7 +290,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     linkViewModel.viewModelScope.launch {
                         var asset = linkViewModel.findAssetItemById(assetId)
                         if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isPublicKeyAsset() == false)) {
-                            asset = linkViewModel.refreshAsset(assetId).await()
+                            asset = linkViewModel.refreshAsset(assetId)
                         }
                         if (asset != null && (asset?.isPublicKeyAsset() == true || asset?.isAccountTagAsset() == true)) {
                             PinAddrBottomSheetDialogFragment.newInstance(
@@ -336,19 +336,21 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 linkViewModel.viewModelScope.launch {
                     val address = linkViewModel.findAddressById(addressId, assetId)
                     var asset = linkViewModel.findAssetItemById(assetId)
-                    if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isPublicKeyAsset() == false)) {
-                        asset = linkViewModel.refreshAsset(assetId).await()
+                    if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isAccountTagAsset() == false)) {
+                        asset = linkViewModel.refreshAsset(assetId)
                     }
                     if (asset != null) {
                         when {
                             address == null -> error(R.string.error_address_exists)
                             asset == null -> error(R.string.error_asset_exists)
                             else -> {
-                                WithdrawalBottomSheetDialogFragment
-                                    .newInstance(WithdrawalBottomSheetDialogFragment.WithdrawalItem(amount, memo, asset!!.name, addressId,
-                                        if (!address.accountTag.isNullOrBlank()) address.accountTag else address.publicKey!!),
-                                        assetId, traceId)
-                                    .show(requireFragmentManager(), WithdrawalBottomSheetDialogFragment.TAG)
+                                val noPublicKey = asset!!.isAccountTagAsset()
+                                val biometricItem =
+                                    WithdrawBiometricItem(if (noPublicKey) address.accountTag!! else address.publicKey!!, address.addressId,
+                                        if (noPublicKey) address.accountName!! else address.label!!,
+                                        asset!!, amount, null, traceId, memo)
+                                val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+                                bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
                                 dismiss()
                             }
                         }

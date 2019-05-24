@@ -13,7 +13,6 @@ import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragme
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.WithdrawalBottomSheetDialogFragment
 
 @Module
 abstract class CommonModule {
@@ -34,9 +33,6 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeTransferFragment(): TransferFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeWithdrawalBottomSheetDialogFragment(): WithdrawalBottomSheetDialogFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeAuthBottomSheetDialogFragment(): AuthBottomSheetDialogFragment

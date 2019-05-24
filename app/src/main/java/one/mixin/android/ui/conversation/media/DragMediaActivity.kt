@@ -30,7 +30,6 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
-import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -58,11 +57,7 @@ import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
@@ -151,14 +146,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }.reversed()
 
             index = list.indexOfFirst { item -> messageId == item.messageId }
-            if (index != -1) {
-                toast(R.string.error_file_exists, Toast.LENGTH_SHORT)
-                delay(200)
-                withContext(Dispatchers.Main) {
-                    this@DragMediaActivity.finish()
-                }
-                return@launch
-            }
             list.map {
                 if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
                     it.type == MessageCategory.PLAIN_VIDEO.name) {
