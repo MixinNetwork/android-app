@@ -39,6 +39,19 @@
             android:layout_gravity="center_vertical"
             android:layout_marginStart="@dimen/margin20"
             android:layout_marginEnd="10dp"/>
+
+        <ImageView
+            android:id="@+id/address_avatar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:visibility="gone"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/margin20"
+            android:layout_marginEnd="10dp"
+            android:background="@drawable/bg_circle_70_solid_gray"
+            android:padding="6dp"
+            android:src="@drawable/ic_transfer_address"
+            tools:ignore="ContentDescription"/>
     </FrameLayout>
 
     <ImageView

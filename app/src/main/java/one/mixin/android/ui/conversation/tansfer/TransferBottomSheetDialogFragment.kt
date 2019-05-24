@@ -9,10 +9,14 @@ import android.text.TextUtils
 import android.view.View
 import android.view.View.VISIBLE
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -35,8 +39,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -79,7 +81,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             is WithdrawBiometricItem -> {
                 (t as WithdrawBiometricItem).let {
-                    contentView.title_view.showBadgeCircleView(t.asset)
+                    contentView.title_view.showAddressAvatar()
                     contentView.title_view.setSubTitle(getString(R.string.withdrawal_to, it.label),
                         it.publicKey.formatPublicKey())
                 }
@@ -90,9 +92,12 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.memo.text = t.memo
         }
         contentView.asset_icon.bg.loadImage(t.asset.iconUrl, R.drawable.ic_avatar_place_holder)
-        doAsync {
-            val a = bottomViewModel.simpleAssetItem(t.asset.assetId)
-            uiThread { a?.let { contentView.asset_icon.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder) } }
+        lifecycleScope.launch(Dispatchers.IO) {
+            bottomViewModel.simpleAssetItem(t.asset.assetId)?.let {
+                withContext(Dispatchers.Main) {
+                    contentView.asset_icon.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder)
+                }
+            }
         }
         contentView.balance.text = t.amount.numberFormat() + " " + t.asset.symbol
         contentView.balance_as.text = getString(R.string.wallet_unit_usd,
@@ -144,8 +149,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             else ->
                 (t as WithdrawBiometricItem).let {
-                    bottomViewModel.withdrawal(it.addressId, it.amount,
-                        contentView.pin.code(), it.trace!!, it.memo)
+                    bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.memo)
                 }
         }.autoDisposable(scopeProvider)
             .subscribe({

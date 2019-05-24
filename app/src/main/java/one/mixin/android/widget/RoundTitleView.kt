@@ -72,6 +72,13 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
         }
     }
 
+    fun showAddressAvatar() {
+        address_avatar.isVisible = true
+        title_ll.updateLayoutParams<LayoutParams> {
+            marginStart = 0
+        }
+    }
+
     fun setSubTitle(first: String, second: String) {
         title_tv.text = first
         if (second.isBlank()) {
