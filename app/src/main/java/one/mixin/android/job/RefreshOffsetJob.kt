@@ -17,9 +17,14 @@ class RefreshOffsetJob : MixinJob(Params(PRIORITY_UI_HIGH)
         const val GROUP = "RefreshOffsetJob"
     }
 
+    private val firstInstallTime by lazy {
+        applicationContext.packageManager.getPackageInfo(applicationContext.packageName, 0).firstInstallTime * 1000000
+    }
+
     override fun onRun() {
+
         val statusOffset = offsetDao.getStatusOffset()
-        var status = statusOffset?.getEpochNano() ?: nowInUtc().getEpochNano()
+        var status = statusOffset?.getEpochNano() ?: firstInstallTime
         while (true) {
             val response = messageService.messageStatusOffset(status).execute().body()
             if (response != null && response.isSuccess && response.data != null) {
