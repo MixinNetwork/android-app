@@ -14,6 +14,7 @@ import androidx.paging.PagedList
 import com.google.gson.Gson
 import io.reactivex.Flowable
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
@@ -383,7 +384,7 @@ internal constructor(
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
-                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) {  // un-downloaded GIPHY
+                } else if (it.isImage() && it.mediaSize != null && it.mediaSize == 0L) { // un-downloaded GIPHY
                     val category = if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
                     try {
                         jobManager.addJobInBackground(SendGiphyJob(it.conversationId, it.userId, it.mediaUrl!!,
@@ -481,6 +482,11 @@ internal constructor(
     fun findAppById(id: String) = userRepository.findAppById(id)
 
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
+
+    fun simpleAssetItem(assetId: String): Single<AssetItem?> =
+        Single.fromCallable {
+            assetRepository.simpleAssetItem(assetId)
+        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun addSticker(stickerAddRequest: StickerAddRequest) = accountRepository.addSticker(stickerAddRequest)
 

@@ -1,16 +1,23 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
+import android.app.Dialog
 import android.os.Bundle
+import android.view.View
+import androidx.core.os.bundleOf
 import com.uber.autodispose.autoDisposable
-import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
+import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet_address.view.*
+import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
+import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putString
+import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Address
+import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PinView
-import androidx.core.os.bundleOf
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
@@ -24,6 +31,9 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         const val MODIFY = 2
 
         const val ARGS_ASSET_ID = "args_asset_id"
+        const val ARGS_ASSET_NAME = "args_asset_name"
+        const val ARGS_ASSET_URL = "args_asset_url"
+        const val ARGS_CHAIN_URL = "args_chain_url"
         const val ARGS_LABEL = "args_label"
         const val ARGS_PUBLIC_KEY = "args_public_key"
         const val ARGS_ADDRESS_ID = "args_address_id"
@@ -33,6 +43,9 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
         fun newInstance(
             assetId: String? = null,
+            assetName: String? = null,
+            assetUrl: String? = null,
+            chainIconUrl: String? = null,
             label: String? = null,
             publicKey: String? = null,
             addressId: String? = null,
@@ -42,6 +55,9 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         ) = PinAddrBottomSheetDialogFragment().apply {
             val b = bundleOf(
                 ARGS_ASSET_ID to assetId,
+                ARGS_ASSET_NAME to assetName,
+                ARGS_ASSET_URL to assetUrl,
+                ARGS_CHAIN_URL to chainIconUrl,
                 ARGS_LABEL to label,
                 ARGS_PUBLIC_KEY to publicKey,
                 ARGS_ADDRESS_ID to addressId,
@@ -54,6 +70,9 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
     }
 
     private val assetId: String? by lazy { arguments!!.getString(ARGS_ASSET_ID) }
+    private val assetName: String? by lazy { arguments!!.getString(ARGS_ASSET_NAME) }
+    private val assetUrl: String? by lazy { arguments!!.getString(ARGS_ASSET_URL) }
+    private val chainIconUrl: String? by lazy { arguments!!.getString(ARGS_CHAIN_URL) }
     private val label: String? by lazy { arguments!!.getString(ARGS_LABEL) }
     private val publicKey: String? by lazy { arguments!!.getString(ARGS_PUBLIC_KEY) }
     private val addressId: String? by lazy { arguments!!.getString(ARGS_ADDRESS_ID) }
@@ -61,13 +80,40 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
     private val accountName: String? by lazy { arguments!!.getString(ARGS_ACCOUNT_NAME) }
     private val accountTag: String? by lazy { arguments!!.getString(ARGS_ACCOUNT_TAG) }
 
+    @SuppressLint("RestrictedApi")
+    override fun setupDialog(dialog: Dialog, style: Int) {
+        super.setupDialog(dialog, style)
+        contentView = View.inflate(context, R.layout.fragment_pin_bottom_sheet_address, null)
+        (dialog as BottomSheet).setCustomView(contentView)
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        contentView.info_tv.setText(getTipTextRes())
+        contentView.title_view.right_iv.setOnClickListener { dismiss() }
+        contentView.title_view.setSubTitle(getString(when (type) {
+            ADD -> R.string.withdrawal_addr_add
+            MODIFY -> R.string.withdrawal_addr_modify
+            else -> R.string.withdrawal_addr_delete
+        }, assetName))
+        contentView.asset_icon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
+        contentView.asset_icon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
+        contentView.asset_name.text = if (!accountName.isNullOrBlank()) {
+            accountName
+        } else {
+            label
+        }
+        contentView.asset_address.text = if (!accountTag.isNullOrBlank()) {
+            accountTag
+        } else {
+            publicKey
+        }
+
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
                 if (index != contentView.pin.getCount()) return
 
-                contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PB
+                contentView.pin_va?.displayedChild = POS_PB
                 val observable = if (type == ADD || type == MODIFY) {
                     bottomViewModel.syncAddr(assetId!!, publicKey, label, contentView.pin.code(), accountName, accountTag)
                 } else {
@@ -83,11 +129,10 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                             }
 
                             uiThread {
-                                contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
-                                assetId?.let {
-                                    defaultSharedPreferences.putString(it, (r.data as Address).addressId)
-                                }
-                                callback?.onSuccess()
+                                contentView.pin_va?.displayedChild = POS_PIN
+                                notNullElse(callback, { action -> action.onSuccess() }, {
+                                    toast(R.string.successful)
+                                })
                                 dismiss()
                             }
                         }
@@ -95,13 +140,13 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                         if (r.errorCode != ErrorHandler.PIN_INCORRECT) {
                             dismiss()
                         } else {
-                            contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
+                            contentView.pin_va?.displayedChild = POS_PIN
                             contentView.pin?.clear()
                         }
                         ErrorHandler.handleMixinError(r.errorCode)
                     }
                 }, { t ->
-                    contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
+                    contentView.pin_va?.displayedChild = POS_PIN
                     contentView.pin.clear()
                     ErrorHandler.handleError(t)
                 })

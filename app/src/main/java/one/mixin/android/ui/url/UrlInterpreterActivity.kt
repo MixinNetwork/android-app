@@ -6,7 +6,6 @@ import androidx.fragment.app.FragmentManager
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseActivity
@@ -26,6 +25,8 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val USER = "users"
         private const val TRANSFER = "transfer"
         private const val SEND = "send"
+        private const val WITHDRAWAL = "withdrawal"
+        private const val ADDRESS = "address"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,7 +37,7 @@ class UrlInterpreterActivity : BaseActivity() {
             return
         }
         if (Session.getAccount() == null) {
-            toast(R.string.not_logged_in)
+            toast(one.mixin.android.R.string.not_logged_in)
             finish()
             return
         }
@@ -65,6 +66,16 @@ class UrlInterpreterActivity : BaseActivity() {
                 }
                 finish()
             }
+            WITHDRAWAL -> {
+                LinkBottomSheetDialogFragment
+                    .newInstance(uri.toString())
+                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            }
+            ADDRESS -> {
+                LinkBottomSheetDialogFragment
+                    .newInstance(uri.toString())
+                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+            }
         }
     }
 }
@@ -75,7 +86,9 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
         url.startsWith(Scheme.USERS, true) ||
         url.startsWith(Scheme.HTTPS_USERS, true) ||
         url.startsWith(Scheme.DEVICE, true) ||
-        url.startsWith(Scheme.SEND, true)) {
+        url.startsWith(Scheme.SEND, true) ||
+        url.startsWith(Scheme.ADDRESS, true) ||
+        url.startsWith(Scheme.WITHDRAWAL, true)) {
         true
     } else {
         val segments = Uri.parse(url).pathSegments
@@ -87,9 +100,9 @@ fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {
             segments.size >= 1 && segments[0].isUUID()
         } else if (includeTransfer && url.startsWith(Scheme.HTTPS_TRANSFER, true)) {
             segments.size >= 2 && segments[1].isUUID()
-        } else {
-            false
-        }
+        } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true)) {
+            true
+        } else url.startsWith(Scheme.HTTPS_WITHDRAWAL, true)
     }
 }
 

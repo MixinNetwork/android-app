@@ -14,6 +14,7 @@ import android.view.ViewGroup
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDisposable
@@ -21,6 +22,7 @@ import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.request.TransferRequest
@@ -39,8 +41,11 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
+import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Asset
@@ -138,6 +143,11 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 })
             }
         } else if (url.startsWith(Scheme.HTTPS_PAY, true) || url.startsWith(Scheme.PAY, true)) {
+            if (Session.getAccount()?.hasPin == false) {
+                MainActivity.showWallet(requireContext())
+                dismiss()
+                return
+            }
             val uri = Uri.parse(url)
             val userId = uri.getQueryParameter("recipient")
             val assetId = uri.getQueryParameter("asset")
@@ -220,6 +230,135 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
             }, {
                 error()
             })
+        } else if (url.startsWith(Scheme.HTTPS_ADDRESS, true) || url.startsWith(Scheme.ADDRESS, true)) {
+            if (Session.getAccount()?.hasPin == false) {
+                MainActivity.showWallet(requireContext())
+                dismiss()
+                return
+            }
+            val uri = Uri.parse(url)
+            val action = uri.getQueryParameter("action")
+            if (action != null && action == "delete") {
+                val assetId = uri.getQueryParameter("asset")
+                val addressId = uri.getQueryParameter("address")
+                if (assetId != null && assetId.isUUID() && addressId != null && addressId.isUUID()) {
+                    linkViewModel.viewModelScope.launch {
+                        val address = linkViewModel.findAddressById(addressId, assetId)
+                        if (address == null) {
+                            error(R.string.error_address_exists)
+                        } else {
+                            var asset = linkViewModel.findAssetItemById(assetId)
+                            if (asset == null || (!asset.isPublicKeyAsset() && !asset.isAccountTagAsset())) {
+                                asset = linkViewModel.refreshAsset(assetId)
+                            }
+                            if (asset != null) {
+                                PinAddrBottomSheetDialogFragment.newInstance(
+                                    assetId = assetId,
+                                    assetUrl = asset.iconUrl,
+                                    chainIconUrl = asset.chainIconUrl,
+                                    assetName = asset.name,
+                                    addressId = addressId,
+                                    label = address.label,
+                                    publicKey = address.publicKey,
+                                    accountName = address.accountName,
+                                    accountTag = address.accountTag,
+                                    type = PinAddrBottomSheetDialogFragment.DELETE
+                                ).showNow(this@LinkBottomSheetDialogFragment.requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
+                                dismiss()
+                            } else {
+                                error()
+                            }
+                        }
+                    }
+                } else {
+                    error()
+                }
+            } else {
+                val assetId = uri.getQueryParameter("asset")
+                val publicKey = uri.getQueryParameter("public_key")
+                val label = uri.getQueryParameter("label").run {
+                    Uri.decode(this)
+                }
+                val accountName = uri.getQueryParameter("account_name")?.run {
+                    Uri.decode(this)
+                }
+
+                val accountTag = uri.getQueryParameter("account_tag")
+                if (assetId != null && assetId.isUUID() &&
+                    ((publicKey != null && label != null && accountName == null && accountTag == null) ||
+                        (publicKey == null && label == null && accountName != null && accountTag != null))) {
+                    linkViewModel.viewModelScope.launch {
+                        var asset = linkViewModel.findAssetItemById(assetId)
+                        if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isPublicKeyAsset() == false)) {
+                            asset = linkViewModel.refreshAsset(assetId)
+                        }
+                        if (asset != null && (asset?.isPublicKeyAsset() == true || asset?.isAccountTagAsset() == true)) {
+                            PinAddrBottomSheetDialogFragment.newInstance(
+                                assetId = assetId,
+                                assetUrl = asset!!.iconUrl,
+                                chainIconUrl = asset!!.chainIconUrl,
+                                assetName = asset!!.name,
+                                label = label,
+                                publicKey = publicKey,
+                                accountName = accountName,
+                                accountTag = accountTag,
+                                type = PinAddrBottomSheetDialogFragment.ADD)
+                                .showNow(this@LinkBottomSheetDialogFragment.requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
+                            dismiss()
+                        } else {
+                            error()
+                        }
+                    }
+                } else {
+                    error()
+                }
+            }
+        } else if (url.startsWith(Scheme.HTTPS_WITHDRAWAL, true) || url.startsWith(Scheme.WITHDRAWAL, true)) {
+            if (Session.getAccount()?.hasPin == false) {
+                MainActivity.showWallet(requireContext())
+                dismiss()
+                return
+            }
+            val uri = Uri.parse(url)
+
+            val assetId = uri.getQueryParameter("asset")
+            val amount = uri.getQueryParameter("amount")
+            val memo = uri.getQueryParameter("memo")?.run {
+                Uri.decode(this)
+            }
+            val traceId = uri.getQueryParameter("trace")
+            val addressId = uri.getQueryParameter("address")
+            if (assetId.isNullOrEmpty() || addressId.isNullOrEmpty() ||
+                amount.isNullOrEmpty() || traceId.isNullOrEmpty() || !assetId.isUUID() ||
+                !traceId.isUUID()) {
+                error()
+            } else {
+                linkViewModel.viewModelScope.launch {
+                    val address = linkViewModel.findAddressById(addressId, assetId)
+                    var asset = linkViewModel.findAssetItemById(assetId)
+                    if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isAccountTagAsset() == false)) {
+                        asset = linkViewModel.refreshAsset(assetId)
+                    }
+                    if (asset != null) {
+                        when {
+                            address == null -> error(R.string.error_address_exists)
+                            asset == null -> error(R.string.error_asset_exists)
+                            else -> {
+                                val noPublicKey = asset!!.isAccountTagAsset()
+                                val biometricItem =
+                                    WithdrawBiometricItem(if (noPublicKey) address.accountTag!! else address.publicKey!!, address.addressId,
+                                        if (noPublicKey) address.accountName!! else address.label!!,
+                                        asset!!, amount, null, traceId, memo)
+                                val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+                                bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
+                                dismiss()
+                            }
+                        }
+                    } else {
+                        error()
+                    }
+                }
+            }
         } else {
             error()
         }

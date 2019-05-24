@@ -209,6 +209,8 @@ class MainActivity : BlazeBaseActivity() {
             bottomSheet?.dismiss()
             bottomSheet = LinkBottomSheetDialogFragment.newInstance(url)
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
+        } else if (intent.hasExtra(WALLET)) {
+            navigationController.pushWallet()
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
             TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
@@ -373,6 +375,7 @@ class MainActivity : BlazeBaseActivity() {
         private const val URL = "url"
         private const val SCAN = "scan"
         private const val TRANSFER = "transfer"
+        private const val WALLET = "wallet"
 
         fun showUrl(context: Context, url: String) {
             Intent(context, MainActivity::class.java).apply {
@@ -386,6 +389,15 @@ class MainActivity : BlazeBaseActivity() {
         fun showTransfer(context: Context, userId: String) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(TRANSFER, userId)
+                addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+            }.run {
+                context.startActivity(this)
+            }
+        }
+
+        fun showWallet(context: Context) {
+            Intent(context, MainActivity::class.java).apply {
+                putExtra(WALLET, true)
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
             }.run {
                 context.startActivity(this)

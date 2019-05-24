@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import one.mixin.android.extension.getEpochNano
-import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import java.util.UUID

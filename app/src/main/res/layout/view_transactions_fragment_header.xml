@@ -97,14 +97,28 @@
                 android:layout_gravity="center_vertical"
                 android:background="#f3f3f3"/>
 
-            <TextView
-                android:id="@+id/receive_tv"
+            <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:text="@string/receive"
-                android:textColor="@color/wallet_blue_secondary"/>
+                android:layout_weight="1">
+
+                <TextView
+                    android:id="@+id/receive_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:text="@string/receive"
+                    android:textColor="@color/wallet_blue_secondary"/>
+
+                <ProgressBar
+                    android:id="@+id/receive_progress"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:theme="@style/AppTheme.BlueProgress"
+                    android:visibility="gone"/>
+            </FrameLayout>
         </LinearLayout>
 
         <View
@@ -126,8 +140,8 @@
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
             android:layout_marginEnd="@dimen/margin12"
-            android:padding="8dp"
             android:background="@drawable/mixin_ripple_small"
+            android:padding="8dp"
             android:src="@drawable/ic_sort"/>
 
         <TextView

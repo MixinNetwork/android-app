@@ -27,7 +27,6 @@ import one.mixin.android.ui.qr.CaptureFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ADD
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ARGS_TYPE
-import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.decodeICAP
 import one.mixin.android.util.isIcapAddress
@@ -57,7 +56,7 @@ class AddressAddFragment : BaseFragment() {
     }
 
     private val asset: AssetItem by lazy {
-        arguments!!.getParcelable<AssetItem>(TransactionsFragment.ARGS_ASSET)
+        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)
     }
     private val address: Address? by lazy {
         arguments!!.getParcelable<Address?>(ARGS_ADDRESS)
@@ -84,11 +83,14 @@ class AddressAddFragment : BaseFragment() {
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {
             val bottomSheet = if (noPublicKey()) {
-                PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, type = type,
+                PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, assetName = asset.name,
+                    assetUrl = asset.iconUrl, chainIconUrl = asset.chainIconUrl, type = type,
                     accountName = label_et.text.toString(), accountTag = addr_et.text.toString())
             } else {
-                PinAddrBottomSheetDialogFragment.newInstance(asset.assetId,
-                    label_et.text.toString(), addr_et.text.toString(), type = type)
+                PinAddrBottomSheetDialogFragment.newInstance(asset.assetId, asset.name,
+                    assetUrl = asset.iconUrl,
+                    chainIconUrl = asset.chainIconUrl,
+                    label = label_et.text.toString(), publicKey = addr_et.text.toString(), type = type)
             }
             bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {

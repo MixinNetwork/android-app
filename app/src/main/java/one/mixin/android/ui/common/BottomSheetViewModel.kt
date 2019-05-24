@@ -4,9 +4,11 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AddressRequest
@@ -34,6 +36,7 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.User
@@ -99,6 +102,11 @@ class BottomSheetViewModel @Inject internal constructor(
     fun deleteLocalAddr(id: String) = assetRepository.deleteLocalAddr(id)
 
     fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
+
+    fun findAssetItem(id: String) =
+        Single.fromCallable {
+            assetRepository.simpleAssetItem(id)
+        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
 
@@ -184,4 +192,25 @@ class BottomSheetViewModel @Inject internal constructor(
             .observeOn(AndroidSchedulers.mainThread())
 
     fun logoutAsync(sessionId: String) = accountRepository.logoutAsync(sessionId)
+
+    suspend fun findAddressById(addressId: String, assetId: String) =
+        viewModelScope.async(Dispatchers.IO) { assetRepository.findAddressById(addressId, assetId) }.await()
+
+    suspend fun findAssetItemById(assetId: String): AssetItem? =
+        viewModelScope.async(Dispatchers.IO) {
+            return@async assetRepository.findAssetItemById(assetId)
+        }.await()
+
+    suspend fun refreshAsset(assetId: String): AssetItem? {
+        return viewModelScope.async(Dispatchers.IO) {
+            val response = assetRepository.asset(assetId).execute().body()
+            if (response != null && response.isSuccess && response.data != null) {
+                response.data?.let {
+                    assetRepository.upsert(it)
+                    return@async assetRepository.findAssetItemById(assetId)
+                }
+            }
+            null
+        }.await()
+    }
 }

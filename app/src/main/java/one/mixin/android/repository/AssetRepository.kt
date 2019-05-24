@@ -142,4 +142,8 @@ constructor(
     fun observeTopAssets() = hotAssetDao.topAssets()
 
     fun checkExists(id: String) = assetDao.checkExists(id)
+
+    suspend fun findAddressById(addressId: String, assetId: String) = addressDao.findAddressById(addressId, assetId)
+
+    suspend fun findAssetItemById(assetId: String) = assetDao.findAssetItemById(assetId)
 }

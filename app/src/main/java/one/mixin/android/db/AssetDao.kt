@@ -72,4 +72,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @Query("SELECT asset_id FROM assets WHERE asset_id = :id")
     fun checkExists(id: String): String?
+
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
+    suspend fun findAssetItemById(assetId: String): AssetItem?
 }

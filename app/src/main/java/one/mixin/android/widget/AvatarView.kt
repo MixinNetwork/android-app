@@ -102,7 +102,6 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
         return R.drawable.default_avatar
     }
 
-
     private val avatarArray by lazy {
         resources.obtainTypedArray(R.array.avatar)
     }

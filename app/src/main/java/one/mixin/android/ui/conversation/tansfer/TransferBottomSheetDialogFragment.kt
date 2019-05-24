@@ -23,6 +23,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putLong
@@ -39,6 +40,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
+import org.jetbrains.anko.support.v4.toast
 import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -158,7 +160,9 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     defaultSharedPreferences.putLong(BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                     context?.updatePinCheck()
                     dismiss()
-                    callback?.onSuccess()
+                    notNullElse(callback, { action -> action.onSuccess() }, {
+                        toast(R.string.successful)
+                    })
                 } else {
                     contentView.pin?.clear()
                     ErrorHandler.handleMixinError(it.errorCode)

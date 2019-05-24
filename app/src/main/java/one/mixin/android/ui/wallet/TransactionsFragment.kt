@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
+import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
@@ -215,8 +216,12 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     ErrorHandler.handleError(it)
                 })
         }, {
+            headerView.receive_tv.visibility = INVISIBLE
+            headerView.receive_progress.visibility = VISIBLE
             walletViewModel.getAsset(asset.assetId).autoDisposable(scopeProvider).subscribe({ response ->
                 if (response?.isSuccess == true) {
+                    headerView.receive_tv.visibility = VISIBLE
+                    headerView.receive_progress.visibility = GONE
                     response.data?.let { asset ->
                         asset.toAssetItem().let { assetItem ->
                             assetItem.differentProcess({
