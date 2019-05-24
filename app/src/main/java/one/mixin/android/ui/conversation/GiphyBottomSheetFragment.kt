@@ -54,8 +54,8 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         GiphyAdapter(
             (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN,
             object : GifListener {
-                override fun onGifClick(image: Image) {
-                    callback?.onGiphyClick(image)
+                override fun onGifClick(image: Image, previewUrl: String) {
+                    callback?.onGiphyClick(image, previewUrl)
                     dismiss()
                 }
             })
@@ -71,7 +71,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         requireContext().dip(PADDING)
     }
 
-    var callback: GiphyBottomSheetFragment.Callback? = null
+    var callback: Callback? = null
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -192,7 +192,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     }
 
     interface Callback {
-        fun onGiphyClick(image: Image)
+        fun onGiphyClick(image: Image, previewUrl: String)
     }
 
     class GiphyAdapter(private val size: Int, private val listener: GifListener) : FooterListAdapter<Gif, RecyclerView.ViewHolder>(Gif.DIFF_CALLBACK) {
@@ -216,11 +216,11 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                 height = (size * (3f / 4)).toInt()
             }
             item.loadGif(previewImage.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
-            holder.itemView.setOnClickListener { listener.onGifClick(sendImage) }
+            holder.itemView.setOnClickListener { listener.onGifClick(sendImage, previewImage.url) }
         }
     }
 
     interface GifListener {
-        fun onGifClick(image: Image)
+        fun onGifClick(image: Image, previewUrl: String)
     }
 }

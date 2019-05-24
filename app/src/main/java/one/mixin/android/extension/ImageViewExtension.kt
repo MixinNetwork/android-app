@@ -70,21 +70,37 @@ fun ImageView.loadGif(uri: String?, requestListener: RequestListener<GifDrawable
 }
 
 fun ImageView.loadGifMark(uri: String?, holder: String?, mark: Int) {
-    Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform().signature(StringSignature("$uri$mark")).apply {
-        if (holder != null) {
-            this.placeholder(holder.toDrawable())
-        }
-    }).into(this)
+    Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform()
+        .signature(StringSignature("$uri$mark")).apply {
+            if (holder != null) {
+                this.placeholder(holder.toDrawable())
+            }
+        }).into(this)
 }
 
-fun ImageView.loadGifMark(uri: String?, mark: Int) {
-    Glide.with(this).asGif().load(uri).apply(RequestOptions().dontTransform().signature(StringSignature("$uri$mark")))
+fun ImageView.loadGifMark(uri: String?, mark: Int, useSignature: Boolean = true) {
+    var options = RequestOptions().dontTransform()
+    if (useSignature) {
+        options = options.signature(StringSignature("$uri$mark"))
+    }
+    Glide.with(this).asGif().load(uri).apply(options)
         .listener(object : RequestListener<GifDrawable> {
-            override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<GifDrawable>?, isFirstResource: Boolean): Boolean {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<GifDrawable>?,
+                isFirstResource: Boolean
+            ): Boolean {
                 return true
             }
 
-            override fun onResourceReady(resource: GifDrawable?, model: Any?, target: Target<GifDrawable>?, dataSource: DataSource?, isFirstResource: Boolean): Boolean {
+            override fun onResourceReady(
+                resource: GifDrawable?,
+                model: Any?,
+                target: Target<GifDrawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
                 this@loadGifMark.context.runOnUiThread {
                     setImageDrawable(resource)
                 }

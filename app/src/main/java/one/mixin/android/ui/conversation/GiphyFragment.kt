@@ -13,9 +13,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-
 import com.uber.autodispose.autoDisposable
-import com.uber.autodispose.android.lifecycle.autoDisposable
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadGif
@@ -75,16 +73,16 @@ class GiphyFragment : BaseFragment() {
         giphyAdapter.size = (context!!.realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = giphyAdapter
         giphyAdapter.setOnGiphyListener(object : GiphyListener {
-            override fun onItemClick(pos: Int, image: Image) {
-                callback?.onGiphyClick(image)
+            override fun onItemClick(pos: Int, image: Image, previewUrl: String) {
+                callback?.onGiphyClick(image, previewUrl)
             }
 
             override fun onSearchClick() {
                 val f = GiphyBottomSheetFragment.newInstance()
                 f.showNow(requireFragmentManager(), GiphyBottomSheetFragment.TAG)
                 f.callback = object : GiphyBottomSheetFragment.Callback {
-                    override fun onGiphyClick(image: Image) {
-                        callback?.onGiphyClick(image)
+                    override fun onGiphyClick(image: Image, previewUrl: String) {
+                        callback?.onGiphyClick(image, previewUrl)
                     }
                 }
             }
@@ -143,7 +141,7 @@ class GiphyFragment : BaseFragment() {
                 val previewImage = images.fixed_width_downsampled
                 val sendImage = images.fixed_width
                 item.loadGif(previewImage.url, centerCrop = true, holder = R.drawable.ic_giphy_place_holder)
-                item.setOnClickListener { listener?.onItemClick(position, sendImage) }
+                item.setOnClickListener { listener?.onItemClick(position, sendImage, previewImage.url) }
                 item.updateLayoutParams<ViewGroup.LayoutParams> {
                     width = size
                     height = (size * (3f / 4)).toInt()
@@ -166,7 +164,7 @@ class GiphyFragment : BaseFragment() {
     }
 
     interface GiphyListener {
-        fun onItemClick(pos: Int, image: Image)
+        fun onItemClick(pos: Int, image: Image, previewUrl: String)
         fun onSearchClick()
     }
 }

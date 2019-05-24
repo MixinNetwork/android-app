@@ -221,10 +221,10 @@ internal constructor(
         }
     }
 
-    fun sendGiphyMessage(conversationId: String, senderId: String, image: Image, isPlain: Boolean) {
+    fun sendGiphyMessage(conversationId: String, senderId: String, image: Image, isPlain: Boolean, previewUrl: String) {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         jobManager.addJobInBackground(SendGiphyJob(conversationId, senderId, image.url, image.width, image.height,
-            category, UUID.randomUUID().toString()))
+            category, UUID.randomUUID().toString(), previewUrl, nowInUtc()))
     }
 
     fun sendImageMessage(conversationId: String, sender: User, uri: Uri, isPlain: Boolean, mime: String? = null): Flowable<Int>? {
@@ -387,7 +387,7 @@ internal constructor(
                     val category = if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
                     try {
                         jobManager.addJobInBackground(SendGiphyJob(it.conversationId, it.userId, it.mediaUrl!!,
-                            it.mediaWidth!!, it.mediaHeight!!, category, it.id))
+                            it.mediaWidth!!, it.mediaHeight!!, category, it.id, it.thumbImage ?: "", it.createdAt))
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }

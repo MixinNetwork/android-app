@@ -49,15 +49,15 @@ class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerA
                 override fun onStickerClick(stickerId: String) {
                 }
 
-                override fun onGiphyClick(image: Image) {
-                    callback?.onGiphyClick(image)
+                override fun onGiphyClick(image: Image, previewUrl: String) {
+                    callback?.onGiphyClick(image, previewUrl)
                 }
             }
             fragment.rvCallback = rvCallback
         } else {
             fragment as StickerFragment
             fragment.setCallback(object : Callback {
-                override fun onGiphyClick(image: Image) {
+                override fun onGiphyClick(image: Image, previewUrl: String) {
                 }
 
                 override fun onStickerClick(stickerId: String) {
@@ -84,6 +84,6 @@ class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerA
 
     interface Callback {
         fun onStickerClick(stickerId: String)
-        fun onGiphyClick(image: Image)
+        fun onGiphyClick(image: Image, previewUrl: String)
     }
 }

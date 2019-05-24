@@ -25,7 +25,9 @@ class SendGiphyJob(
     private val width: Int,
     private val height: Int,
     private val category: String,
-    private val messageId: String
+    private val messageId: String,
+    private val previewUrl: String,
+    private val time: String
 ) : BaseJob(Params(PRIORITY_BACKGROUND).addTags(TAG)) {
 
     companion object {
@@ -35,8 +37,8 @@ class SendGiphyJob(
 
     override fun onAdded() {
         val message = createMediaMessage(messageId, conversationId, senderId, category, null, url,
-            MimeType.GIF.toString(), 0, width, height, null, null, null,
-            nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
+            MimeType.GIF.toString(), 0, width, height, previewUrl, null, null,
+            time, MediaStatus.PENDING, MessageStatus.SENDING)
         messageDao.insert(message)
     }
 
@@ -49,7 +51,7 @@ class SendGiphyJob(
         val thumbnail = file.blurThumbnail(size)?.bitmap2String()
         val message = createMediaMessage(messageId, conversationId, senderId, category, null, Uri.fromFile(file).toString(),
             MimeType.GIF.toString(), file.length(), width, height, thumbnail, null, null,
-            nowInUtc(), MediaStatus.PENDING, MessageStatus.SENDING)
+            time, MediaStatus.PENDING, MessageStatus.SENDING)
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 

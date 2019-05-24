@@ -1144,9 +1144,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun sendGiphy(image: Image) {
+    private fun sendGiphy(image: Image, previewUrl: String) {
         createConversation {
-            chatViewModel.sendGiphyMessage(conversationId, sender.userId, image, isPlainMessage())
+            chatViewModel.sendGiphyMessage(conversationId, sender.userId, image, isPlainMessage(), previewUrl)
             chat_rv.postDelayed({
                 scrollToDown()
             }, 1000)
@@ -1512,9 +1512,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            override fun onGiphyClick(image: Image) {
+            override fun onGiphyClick(image: Image, previewUrl: String) {
                 if (isAdded) {
-                    sendGiphy(image)
+                    sendGiphy(image, previewUrl)
                 }
             }
         })
