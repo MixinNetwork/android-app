@@ -1443,7 +1443,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                                 .anim.slide_in_bottom, R.anim.slide_out_bottom)
                                 .add(R.id.container,
-                                    FriendsFragment.newInstance(conversationId, isGroup, isBot).apply {
+                                    FriendsFragment.newInstance(conversationId).apply {
                                         setOnFriendClick {
                                             sendContactMessage(it.userId)
                                         }
