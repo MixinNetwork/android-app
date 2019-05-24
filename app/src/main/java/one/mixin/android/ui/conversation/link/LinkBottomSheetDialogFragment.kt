@@ -333,31 +333,47 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 !traceId.isUUID()) {
                 error()
             } else {
-                linkViewModel.viewModelScope.launch {
-                    val address = linkViewModel.findAddressById(addressId, assetId)
-                    var asset = linkViewModel.findAssetItemById(assetId)
-                    if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isAccountTagAsset() == false)) {
-                        asset = linkViewModel.refreshAsset(assetId)
-                    }
-                    if (asset != null) {
-                        when {
-                            address == null -> error(R.string.error_address_exists)
-                            asset == null -> error(R.string.error_asset_exists)
-                            else -> {
-                                val noPublicKey = asset!!.isAccountTagAsset()
-                                val biometricItem =
-                                    WithdrawBiometricItem(if (noPublicKey) address.accountTag!! else address.publicKey!!, address.addressId,
-                                        if (noPublicKey) address.accountName!! else address.label!!,
-                                        asset!!, amount, null, traceId, memo)
-                                val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-                                bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
-                                dismiss()
+                val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
+                linkViewModel.pay(transferRequest).autoDisposable(scopeProvider).subscribe({ r ->
+                    if (r.isSuccess) {
+                        val paymentResponse = r.data!!
+                        if (paymentResponse.status == PaymentStatus.paid.name) {
+                            error(R.string.pay_paid)
+                        } else {
+                            linkViewModel.viewModelScope.launch {
+                                val address = linkViewModel.findAddressById(addressId, assetId)
+                                var asset = linkViewModel.findAssetItemById(assetId)
+                                if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isAccountTagAsset() == false)) {
+                                    asset = linkViewModel.refreshAsset(assetId)
+                                }
+                                if (asset != null) {
+                                    when {
+                                        address == null -> error(R.string.error_address_exists)
+                                        asset == null -> error(R.string.error_asset_exists)
+                                        else -> {
+                                            val noPublicKey = asset!!.isAccountTagAsset()
+                                            val biometricItem =
+                                                WithdrawBiometricItem(if (noPublicKey) address.accountTag!! else address.publicKey!!, address.addressId,
+                                                    if (noPublicKey) address.accountName!! else address.label!!,
+                                                    asset!!, amount, null, traceId, memo)
+                                            val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
+                                            bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
+                                            dismiss()
+                                        }
+                                    }
+                                } else {
+                                    error()
+                                }
                             }
                         }
                     } else {
-                        error()
+                        ErrorHandler.handleMixinError(r.errorCode)
+                        error(R.string.bottom_sheet_invalid_payment)
                     }
-                }
+                }, {
+                    error(R.string.bottom_sheet_check_payment_info)
+                    ErrorHandler.handleError(it)
+                })
             }
         } else {
             error()
