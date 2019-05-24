@@ -67,19 +67,17 @@ class UrlInterpreterActivity : BaseActivity() {
                 finish()
             }
             WITHDRAWAL -> {
-                processWithdrawal()
+                LinkBottomSheetDialogFragment
+                    .newInstance(uri.toString())
+                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
             ADDRESS -> {
-                processAddress()
+                LinkBottomSheetDialogFragment
+                    .newInstance(uri.toString())
+                    .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
         }
     }
-}
-
-fun processWithdrawal() {
-}
-
-fun processAddress() {
 }
 
 fun isMixinUrl(url: String, includeTransfer: Boolean = true): Boolean {

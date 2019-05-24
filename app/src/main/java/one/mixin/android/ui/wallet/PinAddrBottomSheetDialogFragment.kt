@@ -131,11 +131,6 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
                             uiThread {
                                 contentView.pin_va?.displayedChild = POS_PIN
-                                assetId?.let {
-                                    if (r.data != null) {
-                                        defaultSharedPreferences.putString(it, (r.data as Address).addressId)
-                                    }
-                                }
                                 callback?.onSuccess()
                                 if (callback == null) {
                                     toast(R.string.successful)
