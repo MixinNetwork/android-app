@@ -55,32 +55,11 @@ class SearchMessageHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
             TextViewCompat.setCompoundDrawablesRelative(itemView.search_msg_tv, null, null, null, null)
             itemView.search_msg_tv.text = message.content
         }
-        message.content?.let {
-            itemView.search_msg_tv.text = beautifyContent(it, query)
-        }
         itemView.search_time_tv.timeAgoDate(message.createdAt)
         itemView.search_msg_tv.highLight(query)
         itemView.search_avatar_iv.setInfo(message.userFullName, message.userAvatarUrl, message.userId)
         itemView.setOnClickListener {
             searchMessageCallback?.onItemClick(message)
         }
-    }
-
-    private fun beautifyContent(content: String, query: String): String {
-        val index = content.indexOf(query, ignoreCase = true)
-        if (index == -1) return content
-
-        val arr = content.split(query, ignoreCase = true)
-        val cutIndex = if (arr[0].length > 10) {
-            index - 10
-        } else {
-            index
-        }
-        val preContent = try {
-            content.substring(cutIndex)
-        } catch (e: IndexOutOfBoundsException) {
-            content
-        }
-        return preContent.replace('\n', ' ')
     }
 }
