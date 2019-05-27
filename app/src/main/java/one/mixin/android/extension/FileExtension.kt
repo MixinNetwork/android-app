@@ -395,7 +395,7 @@ fun File.moveChileFileToDir(dir: File, eachCallback: ((newFile: File, oldFile: F
 }
 
 fun File.deleteDir() {
-    if (isDirectory()) {
+    if (isDirectory) {
         val children = listFiles()
         for (child in children) {
             child.deleteDir()

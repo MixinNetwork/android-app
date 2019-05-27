@@ -5,9 +5,6 @@ import kotlinx.android.synthetic.main.item_chat_stranger.view.*
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 
 class StrangerHolder constructor(containerView: View) : BaseViewHolder(containerView) {
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
-        super.chatLayout(isMe, isLast, isBlink)
-    }
 
     fun bind(onItemListener: ConversationAdapter.OnItemListener) {
         itemView.stranger_block_bn.setOnClickListener { onItemListener.onBlockClick() }

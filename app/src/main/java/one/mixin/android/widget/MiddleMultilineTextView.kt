@@ -2,9 +2,9 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.TextView
+import androidx.appcompat.widget.AppCompatTextView
 
-class MiddleMultilineTextView(context: Context, attributeSet: AttributeSet) : TextView(context, attributeSet) {
+class MiddleMultilineTextView(context: Context, attributeSet: AttributeSet) : AppCompatTextView(context, attributeSet) {
     companion object {
         private const val SYMBOL = "..."
         private const val SYMBOL_LENGTH = SYMBOL.length

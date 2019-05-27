@@ -10,9 +10,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.websocket.SystemConversationAction
 
 class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView) {
-    override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
-        super.chatLayout(isMe, isLast, isBlink)
-    }
 
     var context: Context = itemView.context
     private fun getText(id: Int) = context.getText(id).toString()

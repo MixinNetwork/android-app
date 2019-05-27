@@ -72,7 +72,7 @@ class MessageProvider {
                             val cursorIndexOfSharedUserIsVerified = cursor.getColumnIndexOrThrow("sharedUserIsVerified")
                             val cursorIndexOfSharedUserAppId = cursor.getColumnIndexOrThrow("sharedUserAppId")
                             val cursorIndexOfGroupName = cursor.getColumnIndexOrThrow("groupName")
-                            val res = ArrayList<MessageItem>(cursor.getCount())
+                            val res = ArrayList<MessageItem>(cursor.count)
                             while (cursor.moveToNext()) {
                                 val item: MessageItem
                                 val tmpMessageId: String = cursor.getString(cursorIndexOfMessageId)
