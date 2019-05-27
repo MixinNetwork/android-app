@@ -40,7 +40,7 @@ open class BaseActivity : AppCompatActivity(), HasSupportFragmentInjector {
             fragments.indices.reversed()
                 .map { fragments[it] }
                 .filter { it != null && it is BaseFragment && it.onBackPressed() }
-                .forEach { return }
+                .forEach { _ -> return }
         }
         super.onBackPressed()
     }
