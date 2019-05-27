@@ -48,7 +48,7 @@
             android:layout_toEndOf="@id/back_ib"
             android:background="@null"
             android:drawablePadding="8dp"
-            android:imeOptions="actionDone"
+            android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1"
             android:paddingStart="@dimen/margin_start"
