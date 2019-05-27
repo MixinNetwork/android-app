@@ -36,7 +36,7 @@
         android:layout_height="?actionBarSize"
         android:background="@null"
         android:drawablePadding="8dp"
-        android:imeOptions="actionDone"
+        android:imeOptions="actionSearch"
         android:inputType="text"
         android:maxLines="1"
         android:paddingEnd="@dimen/margin_start"
