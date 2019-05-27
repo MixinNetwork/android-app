@@ -11,6 +11,17 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
 
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:background="@drawable/camera_cover_top"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/camera_cover_bottom"/>
+
     <ImageView
         android:id="@+id/close"
         android:layout_width="wrap_content"
@@ -48,31 +59,48 @@
     </LinearLayout>
 
     <ImageView
-        android:id="@+id/switch_camera"
+        android:id="@+id/flash"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:padding="8dp"
-        android:src="@drawable/ic_switch_camera"
-        tools:ignore="ContentDescription"/>
-
-    <ImageView
-        android:id="@+id/flash"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/activity_horizontal_margin"
-        android:layout_toStartOf="@id/switch_camera"
-        android:padding="8dp"
         android:src="@drawable/ic_flash_off"
         tools:ignore="ContentDescription"/>
 
-    <one.mixin.android.widget.CameraOpView
-        android:id="@+id/op"
-        android:layout_width="100dp"
+    <RelativeLayout
+        android:id="@+id/bottom_ll"
+        android:layout_width="match_parent"
         android:layout_height="100dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"/>
+        android:layout_alignParentBottom="true">
+
+        <ImageView
+            android:id="@+id/gallery_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/margin12"
+            android:padding="8dp"
+            android:src="@drawable/ic_camera_gallery"
+            tools:ignore="ContentDescription"/>
+
+        <one.mixin.android.widget.CameraOpView
+            android:id="@+id/op"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:layout_centerHorizontal="true"/>
+
+        <ImageView
+            android:id="@+id/switch_camera"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/margin12"
+            android:padding="8dp"
+            android:src="@drawable/ic_switch_camera"
+            tools:ignore="ContentDescription"/>
+    </RelativeLayout>
 
     <one.mixin.android.widget.PseudoNotificationView
         android:id="@+id/pseudo_view"

@@ -2,13 +2,13 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <ImageView
         android:id="@+id/preview_iv"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:scaleType="centerCrop"
         android:visibility="gone"
         tools:ignore="ContentDescription" />
 
@@ -18,6 +18,22 @@
         android:layout_height="match_parent"
         android:visibility="gone"
         android:layout_gravity="center" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black_20"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:background="@drawable/camera_cover_top"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="190dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/camera_cover_bottom"/>
 
     <ImageView
         android:id="@+id/close_iv"
@@ -35,7 +51,8 @@
         android:layout_alignParentBottom="true"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:padding="8dp"
-        android:src="@drawable/ic_save"
+        android:background="@drawable/bg_circle_white_80"
+        android:src="@drawable/ic_save_white"
         tools:ignore="ContentDescription" />
 
     <FrameLayout
@@ -54,4 +71,12 @@
             android:src="@drawable/ic_send_white_24dp"
             tools:ignore="ContentDescription" />
     </FrameLayout>
+
+    <one.mixin.android.widget.PseudoNotificationView
+        android:id="@+id/pseudo_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="@dimen/activity_vertical_margin"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"/>
 </RelativeLayout>

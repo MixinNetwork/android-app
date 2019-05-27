@@ -1,10 +1,11 @@
 package one.mixin.android.ui.qr
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -31,40 +32,38 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig.fromOrigamiTensionAndFriction
 import com.facebook.rebound.SpringSystem
-import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
+import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_capture.*
 import kotlinx.android.synthetic.main.view_camera_tip.view.*
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Scheme
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.extension.closeSilently
+import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.navigationBarHeight
+import one.mixin.android.extension.openGallery
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
-import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.url.isMixinUrl
-import one.mixin.android.widget.AndroidUtilities.dp
 import one.mixin.android.widget.CameraOpView
-import one.mixin.android.widget.PseudoNotificationView
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 
-class CaptureFragment : BaseFragment() {
+class CaptureFragment : BaseCaptureFragment() {
     companion object {
         const val TAG = "CaptureFragment"
 
@@ -99,8 +98,6 @@ class CaptureFragment : BaseFragment() {
     private var preview: Preview? = null
     private var imageCapture: ImageCapture? = null
 
-    private val detector = FirebaseVision.getInstance().visionBarcodeDetector
-
     private var alreadyDetected = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,7 +108,7 @@ class CaptureFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_capture, container, false)
 
-    @SuppressLint("RestrictedApi")
+    @SuppressLint("RestrictedApi", "AutoDispose")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_CAMERA_TIP, false)) {
@@ -124,11 +121,11 @@ class CaptureFragment : BaseFragment() {
         op.post {
             if (!isAdded) return@post
 
-            val b = op.bottom
+            val b = bottom_ll.bottom
             val hasNavigationBar = requireContext().hasNavigationBar(b)
             if (hasNavigationBar) {
                 val navigationBarHeight = requireContext().navigationBarHeight()
-                op.translationY = -navigationBarHeight.toFloat()
+                bottom_ll.translationY = -navigationBarHeight.toFloat()
             }
         }
         close.setOnClickListener { activity?.onBackPressed() }
@@ -144,18 +141,30 @@ class CaptureFragment : BaseFragment() {
         }
         close.setOnClickListener { activity?.onBackPressed() }
         switch_camera.setOnClickListener {
-            anim(switch_camera)
             lensFacing = if (CameraX.LensFacing.FRONT == lensFacing) {
                 CameraX.LensFacing.BACK
             } else {
                 CameraX.LensFacing.FRONT
             }
-            checkFlash()
             try {
                 CameraX.getCameraWithLensFacing(lensFacing)
                 bindCameraUseCase()
             } catch (ignored: Exception) {
             }
+            checkFlash()
+            anim(switch_camera)
+        }
+        gallery_iv.setOnClickListener {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .subscribe({ granted ->
+                    if (granted) {
+                        openGallery()
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }, {
+                })
         }
         checkFlash()
         op.setMaxDuration(MAX_DURATION)
@@ -163,8 +172,19 @@ class CaptureFragment : BaseFragment() {
         view_finder.post {
             bindCameraUseCase()
         }
-        pseudo_view.translationY = -dp(300f).toFloat()
-        pseudo_view.callback = pseudoViewCallback
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_GALLERY && resultCode == Activity.RESULT_OK) {
+            data?.data?.let {
+                val path = it.getFilePath(MixinApplication.get())
+                if (path == null) {
+                    context?.toast(R.string.error_image)
+                } else {
+                    openEdit(path, true)
+                }
+            }
+        }
     }
 
     private fun checkFlash() {
@@ -227,25 +247,7 @@ class CaptureFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        detector.closeSilently()
         CameraX.unbindAll()
-    }
-
-    fun handleScanResult(data: String) {
-        if (!isMixinUrl(data)) {
-            MainActivity.showScan(requireContext(), data)
-        } else if (data.startsWith(Scheme.TRANSFER, true) ||
-            data.startsWith(Scheme.HTTPS_TRANSFER, true)) {
-            val segments = Uri.parse(data).pathSegments
-            val userId = if (segments.size >= 2) {
-                segments[1]
-            } else {
-                segments[0]
-            }
-            MainActivity.showTransfer(requireContext(), userId)
-        } else {
-            MainActivity.showUrl(requireContext(), data)
-        }
     }
 
     private fun handleAnalysis(analysisResult: String) {
@@ -267,13 +269,14 @@ class CaptureFragment : BaseFragment() {
             }
             confirmBottomFragment.show(fragmentManager, ConfirmBottomFragment.TAG)
         } else {
-            pseudo_view.addContent(analysisResult)
+            pseudoNotificationView.addContent(analysisResult)
         }
     }
 
-    private val pseudoViewCallback = object : PseudoNotificationView.Callback {
-        override fun onClick(content: String) {
-            handleScanResult(content)
+    private fun openEdit(path: String, needScan: Boolean) {
+        activity?.supportFragmentManager?.inTransaction {
+            add(R.id.container, EditFragment.newInstance(path, needScan = needScan), EditFragment.TAG)
+                .addToBackStack(null)
         }
     }
 
@@ -339,10 +342,7 @@ class CaptureFragment : BaseFragment() {
 
     private val imageSavedListener = object : ImageCapture.OnImageSavedListener {
         override fun onImageSaved(file: File) {
-            activity?.supportFragmentManager?.inTransaction {
-                add(R.id.container, EditFragment.newInstance(file.absolutePath), EditFragment.TAG)
-                    .addToBackStack(null)
-            }
+            openEdit(file.absolutePath, false)
         }
 
         override fun onError(useCaseError: ImageCapture.UseCaseError, message: String, cause: Throwable?) {
