@@ -81,7 +81,7 @@ public abstract class MixinLimitOffsetDataSource<T> extends PositionalDataSource
                             @NonNull LoadInitialCallback<T> callback) {
         int totalCount = countItems();
         if (totalCount == 0) {
-            callback.onResult(Collections.<T>emptyList(), 0, 0);
+            callback.onResult(Collections.emptyList(), 0, 0);
             return;
         }
 

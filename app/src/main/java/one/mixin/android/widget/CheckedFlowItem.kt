@@ -3,7 +3,7 @@ package one.mixin.android.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.ViewGroup
-import android.widget.CheckedTextView
+import androidx.appcompat.widget.AppCompatCheckedTextView
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 
@@ -11,7 +11,7 @@ class CheckedFlowItem @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
     defStyle: Int = 0
-) : CheckedTextView(context, attrs, defStyle) {
+) : AppCompatCheckedTextView(context, attrs, defStyle) {
     init {
         layoutParams = ViewGroup.MarginLayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)

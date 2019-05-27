@@ -109,14 +109,14 @@ class PermissionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private var grantedAction: (() -> Unit)? = null
 
-    public fun setGrantedAction(action: () -> Unit): PermissionBottomSheetDialogFragment {
+    fun setGrantedAction(action: () -> Unit): PermissionBottomSheetDialogFragment {
         grantedAction = action
         return this
     }
 
     private var cancelAction: (() -> Unit)? = null
 
-    public fun setCancelAction(action: () -> Unit): PermissionBottomSheetDialogFragment {
+    fun setCancelAction(action: () -> Unit): PermissionBottomSheetDialogFragment {
         cancelAction = action
         return this
     }

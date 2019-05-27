@@ -45,7 +45,7 @@ class SignalProtocol(ctx: Context) {
 
     companion object {
 
-        val TAG = SignalProtocol::class.java.simpleName!!
+        val TAG = SignalProtocol::class.java.simpleName
         const val DEFAULT_DEVICE_ID = 1
 
         fun initSignal(context: Context) {

@@ -8,13 +8,13 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.EditText
 import android.widget.TextView.OnEditorActionListener
+import androidx.appcompat.widget.AppCompatEditText
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hideKeyboard
 
-class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, attrs) {
+class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(context, attrs) {
 
     private val iconClear: Drawable by lazy {
         val size = context.dpToPx(16f)
@@ -57,7 +57,7 @@ class SearchView(context: Context, attrs: AttributeSet?) : EditText(context, att
                 val rightDrawable = compoundDrawables[2]
                 if (rightDrawable != null &&
                     event.rawX >= right - (rightDrawable.bounds.width() + context.dpToPx(16f))) {
-                    text.clear()
+                    text?.clear()
                     return true
                 } else {
                     performClick()
