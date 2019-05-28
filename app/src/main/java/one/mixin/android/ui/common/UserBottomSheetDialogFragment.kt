@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.ClipData
 import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.text.method.LinkMovementMethod
@@ -24,6 +25,7 @@ import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.contacts.ProfileFragment
@@ -219,6 +221,11 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         contentView.name.text = user.fullName
         contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
+        contentView.id_tv.setOnLongClickListener {
+            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, user.identityNumber)
+            context?.toast(R.string.copy_success)
+            true
+        }
         contentView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
         if (user.isBot()) {
             contentView.bot_iv.visibility = VISIBLE
