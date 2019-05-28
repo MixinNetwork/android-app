@@ -120,7 +120,7 @@ constructor(
 
     fun getSystemAlbums() = stickerAlbumDao.getSystemAlbums()
 
-    fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
+    suspend fun getPersonalAlbums() = stickerAlbumDao.getPersonalAlbums()
 
     fun observeStickers(id: String) = stickerRelationshipDao.observeStickersByAlbumId(id)
 
@@ -130,7 +130,7 @@ constructor(
 
     fun updateUsedAt(stickerId: String, at: String) = stickerDao.updateUsedAt(stickerId, at)
 
-    fun addSticker(request: StickerAddRequest) = accountService.addSticker(request)
+    fun addStickerAsync(request: StickerAddRequest) = accountService.addStickerAsync(request)
 
     fun addStickerLocal(sticker: Sticker, albumId: String) {
         stickerDao.insertUpdate(sticker)

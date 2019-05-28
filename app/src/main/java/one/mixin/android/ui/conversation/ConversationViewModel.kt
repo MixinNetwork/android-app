@@ -456,7 +456,7 @@ internal constructor(
 
     fun getSystemAlbums() = accountRepository.getSystemAlbums()
 
-    fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
+    suspend fun getPersonalAlbums() = accountRepository.getPersonalAlbums()
 
     fun observeStickers(id: String) = accountRepository.observeStickers(id)
 
@@ -488,7 +488,7 @@ internal constructor(
             assetRepository.simpleAssetItem(assetId)
         }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun addSticker(stickerAddRequest: StickerAddRequest) = accountRepository.addSticker(stickerAddRequest)
+    fun addStickerAsync(stickerAddRequest: StickerAddRequest) = accountRepository.addStickerAsync(stickerAddRequest)
 
     fun addStickerLocal(sticker: Sticker, albumId: String) = accountRepository.addStickerLocal(sticker, albumId)
 

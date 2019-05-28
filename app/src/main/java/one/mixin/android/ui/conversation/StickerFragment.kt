@@ -9,10 +9,12 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_sticker.*
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.DragReleaseEvent
@@ -30,8 +32,6 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
 import org.jetbrains.anko.dip
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import javax.inject.Inject
 
 class StickerFragment : BaseFragment() {
@@ -99,21 +99,18 @@ class StickerFragment : BaseFragment() {
                     r?.let { updateStickers(r) }
                 })
             } else {
-                doAsync {
+                lifecycleScope.launch {
                     personalAlbumId = stickerViewModel.getPersonalAlbums()?.albumId
-
-                    uiThread { _ ->
-                        if (personalAlbumId == null) { // not add any personal sticker yet
-                            stickerViewModel.observePersonalStickers()
-                                .observe(this@StickerFragment, Observer { list ->
+                    if (personalAlbumId == null) { // not add any personal sticker yet
+                        stickerViewModel.observePersonalStickers()
+                            .observe(this@StickerFragment, Observer { list ->
                                 list?.let { updateStickers(it) }
                             })
-                        } else {
-                            stickerViewModel.observeStickers(personalAlbumId!!)
-                                .observe(this@StickerFragment, Observer { list ->
+                    } else {
+                        stickerViewModel.observeStickers(personalAlbumId!!)
+                            .observe(this@StickerFragment, Observer { list ->
                                 list?.let { updateStickers(it) }
                             })
-                        }
                     }
                 }
             }
