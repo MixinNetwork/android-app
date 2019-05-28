@@ -2,11 +2,13 @@ package one.mixin.android.db
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import one.mixin.android.Constants.DataBase.CURRENT_VERSION
+import one.mixin.android.Constants.DataBase.MINI_VERSION
 
 class MixinDatabaseMigrations private constructor() {
 
     companion object {
-        val MIGRATION_15_16: Migration = object : Migration(15, 16) {
+        val MIGRATION_15_16: Migration = object : Migration(MINI_VERSION, 16) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("DROP TABLE IF EXISTS assets")
                 database.execSQL("CREATE TABLE IF NOT EXISTS assets(asset_id TEXT PRIMARY KEY NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, " +
@@ -50,7 +52,7 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
+        val MIGRATION_20_21: Migration = object : Migration(20, CURRENT_VERSION) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE assets ADD COLUMN asset_key TEXT")
             }

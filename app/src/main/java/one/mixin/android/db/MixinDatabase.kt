@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Transaction
 import androidx.sqlite.db.SupportSQLiteDatabase
+import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_15_16
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
@@ -52,7 +53,7 @@ import one.mixin.android.vo.User
     (ResendMessage::class),
     (StickerRelationship::class),
     (TopAsset::class),
-    (Job::class)], version = 21)
+    (Job::class)], version = CURRENT_VERSION)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
