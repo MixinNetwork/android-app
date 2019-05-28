@@ -230,9 +230,7 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
     }
 
     override fun capture() {
-        if (mMediaStoreCompat != null) {
-            mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE)
-        }
+        mMediaStoreCompat.dispatchCaptureIntent(this, REQUEST_CODE_CAPTURE)
     }
 
     companion object {

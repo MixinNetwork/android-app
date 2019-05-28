@@ -108,7 +108,7 @@ abstract class PorterImageView : AppCompatImageView {
 
     override fun onDraw(canvas: Canvas) {
         if (!isInEditMode) {
-            val saveCount = canvas.saveLayer(0.0f, 0.0f, width.toFloat(), height.toFloat(), null, Canvas.ALL_SAVE_FLAG)
+            val saveCount = canvas.saveLayer(0.0f, 0.0f, width.toFloat(), height.toFloat(), null)
             try {
                 if (invalidated) {
                     val drawable = drawable

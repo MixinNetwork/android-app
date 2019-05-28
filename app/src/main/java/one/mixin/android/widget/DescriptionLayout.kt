@@ -100,7 +100,11 @@ class DescriptionLayout : ViewGroup {
     }
 
     private fun initTextParams(text: CharSequence, maxWidth: Int, paint: TextPaint) {
-        val staticLayout = StaticLayout(text.trim(), paint, maxWidth, Layout.Alignment.ALIGN_NORMAL, 1.0f, 0.0f, false)
+        val string = text.trim()
+        val staticLayout = StaticLayout.Builder.obtain(string, 0, string.length, paint, maxWidth)
+            .setAlignment(Layout.Alignment.ALIGN_NORMAL).setIncludePad(false)
+            .setLineSpacing(0.0f, 1.0f).build()
+
         lineCount = staticLayout.lineCount
         val lastLine = if (lineCount > 3) {
             2

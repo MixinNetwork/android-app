@@ -142,10 +142,10 @@ class MainActivity : BlazeBaseActivity() {
         jobManager.addJobInBackground(BackupJob())
 
         doAsync {
-            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
-            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
-            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
-            WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
+            WorkManager.getInstance(this@MainActivity).enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
+            WorkManager.getInstance(this@MainActivity).enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+            WorkManager.getInstance(this@MainActivity).enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+            WorkManager.getInstance(this@MainActivity).enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>()
         }
 
         refreshStickerAlbum()

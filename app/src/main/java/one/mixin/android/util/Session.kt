@@ -71,7 +71,7 @@ class Session {
             return preference.getString(Constants.Account.PREF_EXTENSION_SESSION_ID, null)
         }
 
-        fun deleteExtensionSessionId(extensionSession: String) {
+        fun deleteExtensionSessionId() {
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
             preference.remove(Constants.Account.PREF_EXTENSION_SESSION_ID)
         }

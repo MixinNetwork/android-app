@@ -155,7 +155,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
+        WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshAssetsWorker>()
         contentView.title_view.left_ib.setOnClickListener { dismiss() }
         contentView.amount_et.addTextChangedListener(mWatcher)
         contentView.amount_et.filters = arrayOf(inputFilter)

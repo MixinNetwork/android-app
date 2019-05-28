@@ -68,7 +68,7 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
         title_view.right_animator.visibility = View.GONE
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserSnapshotsWorker>(
+        WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshUserSnapshotsWorker>(
             workDataOf(RefreshUserSnapshotsWorker.USER_ID to userId))
         adapter.listener = this
         transactions_rv.adapter = adapter
