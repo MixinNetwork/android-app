@@ -11,8 +11,8 @@ import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory
 import com.google.android.exoplayer2.source.BehindLiveWindowException
-import com.google.android.exoplayer2.source.ExtractorMediaSource
 import com.google.android.exoplayer2.source.MediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
@@ -107,13 +107,13 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     fun loadVideo(url: String) {
-        val mediaSource = ExtractorMediaSource.Factory(buildDataSourceFactory(BANDWIDTH_METER))
+        val mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory(BANDWIDTH_METER))
             .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
 
     fun loadAudio(url: String) {
-        val mediaSource = ExtractorMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
+        val mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
             .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
@@ -247,7 +247,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     companion object {
-        private val BANDWIDTH_METER = DefaultBandwidthMeter()
+        private val BANDWIDTH_METER = DefaultBandwidthMeter.Builder(MixinApplication.appContext).build()
 
         private fun isBehindLiveWindow(e: ExoPlaybackException): Boolean {
             if (e.type != ExoPlaybackException.TYPE_SOURCE) {
