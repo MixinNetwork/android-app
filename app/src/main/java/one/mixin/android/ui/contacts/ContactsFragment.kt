@@ -161,14 +161,16 @@ class ContactsFragment : BaseFragment() {
 
         @SuppressLint("CheckResult")
         override fun onEmptyRl() {
-            RxPermissions(activity!!)
+            RxPermissions(requireActivity())
                 .request(Manifest.permission.READ_CONTACTS)
                 .subscribe { granted ->
                     if (granted) {
                         contactAdapter.removeFooter()
                         jobManager.addJobInBackground(UploadContactsJob())
                         fetchContacts()
-                        WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+                        context?.let { context ->
+                            WorkManager.getInstance(context).enqueueOneTimeNetworkWorkRequest<RefreshContactWorker>()
+                        }
                     } else {
                         context?.openPermissionSetting()
                     }

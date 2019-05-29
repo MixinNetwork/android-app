@@ -95,7 +95,7 @@ class DecryptSessionMessage : Injector() {
                     updateRemoteMessageStatus(data.messageId, MessageStatus.DELIVERED)
                     return
                 }
-                Session.deleteExtensionSessionId(data.sessionId)
+                Session.deleteExtensionSessionId()
                 signalProtocol.deleteSession(data.userId)
                 jobDao.removeExtensionSessionJob()
             }

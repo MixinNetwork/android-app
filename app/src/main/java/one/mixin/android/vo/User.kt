@@ -1,13 +1,14 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
+import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import android.os.Parcelable
 import com.google.gson.annotations.SerializedName
+import kotlinx.android.parcel.IgnoredOnParcel
 import kotlinx.android.parcel.Parcelize
 
 @SuppressLint("ParcelCreator")
@@ -54,6 +55,7 @@ data class User(
 ) : Parcelable {
     @SerializedName("app")
     @Ignore
+    @IgnoredOnParcel
     var app: App? = null
 
     fun isBot(): Boolean {

@@ -6,6 +6,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
+import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
@@ -107,11 +108,11 @@ class RefreshConversationWorker @AssistedInject constructor(
                 }
                 participantDao.insertList(participants)
                 if (userIdList.isNotEmpty()) {
-                    WorkManager.getInstance().enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
+                    WorkManager.getInstance(MixinApplication.appContext).enqueueOneTimeNetworkWorkRequest<RefreshUserWorker>(
                         workDataOf(RefreshUserWorker.USER_IDS to userIdList.toTypedArray(),
                             RefreshUserWorker.CONVERSATION_ID to conversationId))
                 } else {
-                    WorkManager.getInstance().enqueueAvatarWorkRequest(
+                    WorkManager.getInstance(MixinApplication.appContext).enqueueAvatarWorkRequest(
                         workDataOf(GROUP_ID to conversationId))
                 }
             }
