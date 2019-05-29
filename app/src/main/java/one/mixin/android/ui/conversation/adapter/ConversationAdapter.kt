@@ -8,6 +8,9 @@ import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
+import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import com.uber.autodispose.autoDisposable
+import io.reactivex.Flowable
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -47,6 +50,7 @@ import one.mixin.android.vo.create
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 class ConversationAdapter(
@@ -75,6 +79,12 @@ class ConversationAdapter(
         }
     } else {
         null
+    }
+
+    fun submitList(scope: AndroidLifecycleScopeProvider, pagedList: PagedList<MessageItem>?) {
+        Flowable.just(pagedList).throttleLast(100, TimeUnit.MILLISECONDS).autoDisposable(scope).subscribe {
+            super.submitList(pagedList)
+        }
     }
 
     override fun onCreateAttach(parent: ViewGroup): View =

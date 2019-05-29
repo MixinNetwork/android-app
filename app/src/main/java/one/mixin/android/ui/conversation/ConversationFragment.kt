@@ -990,7 +990,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     chatViewModel.markMessageRead(conversationId, sender.userId)
                 }
             }
-            chatAdapter.submitList(it)
+            chatAdapter.submitList(scopeProvider, it)
         })
     }
 
