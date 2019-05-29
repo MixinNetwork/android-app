@@ -211,4 +211,6 @@ internal constructor(
     fun insertMessage(message: Message) {
         messageDao.insert(message)
     }
+
+    suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String? = messageDao.findFirstUnreadMessageId(conversationId, userId)
 }

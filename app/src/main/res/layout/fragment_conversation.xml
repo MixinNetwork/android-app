@@ -38,11 +38,6 @@
             android:layout_height="match_parent"
             android:layout_below="@id/bar_fl">
 
-            <include
-                layout="@layout/view_link_state"
-                app:layout_constraintTop_toTopOf="parent"
-                tools:ignore="MissingConstraints"/>
-
             <one.mixin.android.widget.DraggableRecyclerView
                 android:id="@+id/chat_rv"
                 android:layout_width="0dp"
@@ -50,21 +45,25 @@
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingBottom="6dp"
-                app:stackFromEnd="true"
-                app:over_direction="-1"
                 app:layout_constraintBottom_toTopOf="@id/chat_control"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/state_layout"
+                app:layout_constraintTop_toTopOf="parent"
+                app:over_direction="-1"
+                app:stackFromEnd="true"
                 tools:listitem="@layout/item_chat_message"/>
 
+            <include
+                layout="@layout/view_link_state"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="MissingConstraints"/>
 
             <LinearLayout
                 android:id="@+id/bg_quick_flag"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
                 android:layout_marginEnd="8dp"
+                android:layout_marginBottom="8dp"
                 android:clipChildren="false"
                 android:clipToPadding="false"
                 android:orientation="vertical"
@@ -121,15 +120,15 @@
 
                     <TextView
                         android:id="@+id/down_unread"
-                        android:visibility="gone"
-                        android:layout_gravity="center_horizontal"
-                        android:textColor="@color/white"
-                        android:background="@drawable/bg_unread_small"
-                        android:textSize="12sp"
-                        android:fontFamily="monospace"
                         android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@drawable/bg_unread_small"
+                        android:fontFamily="monospace"
+                        android:textColor="@color/white"
+                        android:textSize="12sp"
                         android:translationZ="1dp"
-                        android:layout_height="wrap_content"/>
+                        android:visibility="gone"/>
 
                 </FrameLayout>
 
@@ -166,8 +165,8 @@
                     android:layout_gravity="center"
                     android:background="@color/white"
                     android:gravity="center_vertical"
-                    android:paddingEnd="16dp"
                     android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:text="@string/group_cant_send"
                     android:textColor="@color/black"
                     android:textSize="12sp"
@@ -180,8 +179,8 @@
                     android:layout_gravity="center"
                     android:background="@color/white"
                     android:gravity="center"
-                    android:paddingEnd="16dp"
                     android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
                     android:text="@string/setting_unblock"
                     android:textColor="@color/colorBlue"
                     android:textSize="16sp"
@@ -198,24 +197,24 @@
                 app:layout_constraintTop_toBottomOf="@id/chat_rv"/>
 
             <one.mixin.android.widget.RecordCircleView
-                    android:id="@+id/record_circle"
-                    android:layout_width="124dp"
-                    android:layout_height="194dp"
-                    android:visibility="gone"
-                    android:translationX="36dp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
+                android:id="@+id/record_circle"
+                android:layout_width="124dp"
+                android:layout_height="194dp"
+                android:translationX="36dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
 
             <TextView
                 android:id="@+id/record_tip_tv"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/white"
                 android:layout_marginEnd="8dp"
                 android:layout_marginBottom="44dp"
-                android:visibility="invisible"
                 android:background="@drawable/bg_record_tip"
                 android:text="@string/hold_to_record_audio"
+                android:textColor="@color/white"
+                android:visibility="invisible"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"/>
 

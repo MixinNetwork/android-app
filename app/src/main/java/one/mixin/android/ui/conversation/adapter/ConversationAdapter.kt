@@ -10,7 +10,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
 import com.uber.autodispose.autoDisposable
-import io.reactivex.Flowable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.R
@@ -50,6 +51,7 @@ import one.mixin.android.vo.create
 import one.mixin.android.vo.isCallMessage
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
@@ -60,7 +62,7 @@ class ConversationAdapter(
     private val isSecret: Boolean = true
 ) : PagedListAdapter<MessageItem, RecyclerView.ViewHolder>(diffCallback), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     var selectSet: ArraySet<MessageItem> = ArraySet()
-    var unreadIndex: Int? = null
+    var unreadMsgId: String? = null
     var recipient: User? = null
 
     var hasBottomView = false
@@ -71,34 +73,45 @@ class ConversationAdapter(
             }
         }
 
-    override fun getAttachIndex(): Int? = if (unreadIndex != null) {
-        if (hasBottomView) {
-            unreadIndex
-        } else {
-            unreadIndex!! - 1
-        }
+    override fun getAttachIndex(position: Int): Boolean = if (unreadMsgId != null) {
+        getItem(position)?.messageId == unreadMsgId
     } else {
-        null
+        false
     }
 
-    fun submitList(scope: AndroidLifecycleScopeProvider, pagedList: PagedList<MessageItem>?) {
-        Flowable.just(pagedList).throttleLast(100, TimeUnit.MILLISECONDS).autoDisposable(scope).subscribe {
-            super.submitList(pagedList)
+    private val publisher = PublishSubject.create<PagedList<MessageItem>>()
+    override fun submitList(pagedList: PagedList<MessageItem>?) {
+        if (pagedList == null) {
+            super.submitList(null)
+        } else {
+            publisher.onNext(pagedList)
         }
+    }
+
+    fun listen(scope: AndroidLifecycleScopeProvider) {
+        publisher.throttleLast(120, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(scope)
+            .subscribe({
+                super.submitList(it)
+            }, {
+                Timber.e(it)
+            })
     }
 
     override fun onCreateAttach(parent: ViewGroup): View =
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
 
     override fun onBindAttachView(view: View) {
-        unreadIndex?.let {
-            view.unread_tv.text = view.context.getString(R.string.unread, it)
+        unreadMsgId?.let {
+            view.unread_tv.text = view.context.getString(R.string.unread)
         }
     }
 
     fun markRead() {
-        unreadIndex?.let {
-            unreadIndex = null
+        unreadMsgId?.let {
+            unreadMsgId = null
         }
     }
 

@@ -28,6 +28,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -588,6 +589,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
+        chatAdapter.listen(scopeProvider)
         recallDisposable = RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { event ->
@@ -969,28 +971,32 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         deleteDialog?.show()
     }
 
-    private fun liveDataMessage(unreadCount: Int) {
-        chatViewModel.getMessages(conversationId, unreadCount).observe(this@ConversationFragment, Observer {
-            it?.let {
-                if (it.size > 0) {
-                    isFirstMessage = false
+    private fun liveDataMessage(unreadCount: Int, unreadMessageId: String?) {
+        chatViewModel.getMessages(conversationId, unreadCount).observe(this@ConversationFragment, Observer { data ->
+            data?.let { list ->
+                if (!isFirstLoad && !isBottom && list.size > chatAdapter.getRealItemCount()) {
+                    unreadTipCount += (list.size - chatAdapter.getRealItemCount())
                 }
-                if (!isFirstLoad && !isBottom && it.size > chatAdapter.getRealItemCount()) {
-                    unreadTipCount += (it.size - chatAdapter.getRealItemCount())
+                chatViewModel.viewModelScope.launch {
+                    chatAdapter.hasBottomView = !isGroup &&
+                        recipient?.relationship == UserRelationship.STRANGER.name &&
+                        list.find { item -> item != null && item.userId == sender.userId } == null
                 }
-                chatAdapter.hasBottomView = !isGroup &&
-                    recipient?.relationship == UserRelationship.STRANGER.name &&
-                    it.find { it != null && it.userId == sender.userId } == null
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
-                    chatAdapter.unreadIndex = unreadCount
-                } else if (it.size != chatAdapter.getRealItemCount()) {
-                    chatAdapter.unreadIndex = null
+                    chatAdapter.unreadMsgId = unreadMessageId
+                    if (isBottom && unreadCount > 20) {
+                        isBottom = false
+                        showAlert()
+                    }
                 }
-                if (it.size > 0) {
+                if (list.size > 0) {
+                    if (isFirstMessage) {
+                        isFirstMessage = false
+                    }
                     chatViewModel.markMessageRead(conversationId, sender.userId)
                 }
             }
-            chatAdapter.submitList(scopeProvider, it)
+            chatAdapter.submitList(data)
         })
     }
 
@@ -1002,7 +1008,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 chatViewModel.indexUnread(conversationId)
             }
-            liveDataMessage(unreadCount)
+            val msgId = messageId ?: chatViewModel.findFirstUnreadMessageId(conversationId, Session.getAccountId()!!)
+            liveDataMessage(unreadCount, msgId)
         }
 
         if (isBot) {
