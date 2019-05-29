@@ -34,7 +34,6 @@ import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -849,28 +848,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             messageItem?.let { m ->
                 val isSticker = messageItem.type.endsWith("STICKER")
                 if (isSticker && m.stickerId != null) {
-                    val request = StickerAddRequest(stickerId = m.stickerId)
-                    chatViewModel.addSticker(request)
-                        .subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-                        .map { r ->
-                            if (r.isSuccess) {
-                                val personalAlbum = chatViewModel.getPersonalAlbums()
-                                if (personalAlbum == null) { // not add any personal sticker yet
-                                    chatViewModel.refreshStickerAlbums()
-                                } else {
-                                    chatViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
-                                }
-                            }
-                        }
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDisposable(scopeProvider)
-                        .subscribe({
-                            closeTool()
-                            requireContext().toast(R.string.add_success)
-                        }, {
-                            ErrorHandler.handleError(it)
-                            requireContext().toast(R.string.sticker_add_failed)
-                        })
+                    addSticker(m)
                 } else {
                     val url = m.mediaUrl
                     url?.let {
@@ -910,6 +888,32 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             chat_control.calling = info.callState != CallService.CallState.STATE_IDLE
         })
         bindData()
+    }
+
+    private fun addSticker(m: MessageItem) = lifecycleScope.launch(Dispatchers.IO) {
+        val request = StickerAddRequest(stickerId = m.stickerId)
+        val r = try {
+            chatViewModel.addStickerAsync(request).await()
+        } catch (e: Exception) {
+            ErrorHandler.handleError(e)
+            return@launch
+        }
+        if (r.isSuccess) {
+            val personalAlbum = chatViewModel.getPersonalAlbums()
+            if (personalAlbum == null) { // not add any personal sticker yet
+                chatViewModel.refreshStickerAlbums()
+            } else {
+                chatViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
+            }
+            withContext(Dispatchers.Main) {
+                closeTool()
+                requireContext().toast(R.string.add_success)
+            }
+        } else {
+            withContext(Dispatchers.Main) {
+                requireContext().toast(R.string.sticker_add_failed)
+            }
+        }
     }
 
     private var deleteDialog: AlertDialog? = null

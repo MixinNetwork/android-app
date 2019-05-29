@@ -12,5 +12,5 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
     fun getSystemAlbums(): LiveData<List<StickerAlbum>>
 
     @Query("SELECT * FROM sticker_albums WHERE category = 'PERSONAL' ORDER BY created_at ASC")
-    fun getPersonalAlbums(): StickerAlbum?
+    suspend fun getPersonalAlbums(): StickerAlbum?
 }

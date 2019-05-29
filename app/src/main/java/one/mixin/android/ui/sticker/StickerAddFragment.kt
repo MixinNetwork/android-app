@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Base64
 import android.view.LayoutInflater
@@ -15,18 +16,20 @@ import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import com.uber.autodispose.autoDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_add_sticker.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getFilePath
@@ -44,9 +47,7 @@ import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Sticker
 import one.mixin.android.widget.gallery.MimeType
-import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColor
-import org.jetbrains.anko.uiThread
 import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -76,7 +77,6 @@ class StickerAddFragment : BaseFragment() {
     private val dp100 by lazy {
         requireContext().dpToPx(100f)
     }
-    private var disposable: Disposable? = null
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
@@ -102,8 +102,12 @@ class StickerAddFragment : BaseFragment() {
             dialog?.show()
             addSticker()
         }
-        doAsync {
-            val w = try {
+        loadImage()
+    }
+
+    private fun loadImage() = lifecycleScope.launch {
+        val w = withContext(Dispatchers.IO) {
+            try {
                 val byteArray = Glide.with(MixinApplication.appContext)
                     .`as`(ByteArray::class.java)
                     .load(url)
@@ -118,150 +122,130 @@ class StickerAddFragment : BaseFragment() {
             } catch (e: Exception) {
                 0
             }
-            uiThread {
-                if (w == dp100) {
-                    sticker_iv.updateLayoutParams<ViewGroup.LayoutParams> {
-                        width = w
-                        height = w
-                    }
-                } else {
-                    sticker_iv.scaleType = ImageView.ScaleType.CENTER_INSIDE
-                }
-                sticker_iv.loadImage(url)
+        }
+
+        if (w == dp100) {
+            sticker_iv.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = w
+                height = w
             }
+        } else {
+            sticker_iv.scaleType = ImageView.ScaleType.CENTER_INSIDE
         }
+        sticker_iv.loadImage(url)
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        disposable?.dispose()
-    }
+    private fun addSticker() = lifecycleScope.launch {
+        val request = try {
+            val uri = url.toUri()
+            val mimeType = getMimeType(uri)
+            if (mimeType?.isStickerSupport() != true) {
+                handleBack(R.string.sticker_add_invalid_format)
+                return@launch
+            }
+            getStickerAddRequest(mimeType, uri)
+        } catch (e: Exception) {
+            handleBack(R.string.sticker_add_failed)
+            null
+        } ?: return@launch
 
-    private fun addSticker() {
-        doAsync {
-            val request = try {
-                val uri = url.toUri()
-                val mimeType = getMimeType(uri)
-                if (mimeType?.isStickerSupport() != true) {
-                    dialog?.dismiss()
-                    uiThread {
-                        requireContext().toast(R.string.sticker_add_invalid_format)
-                        handleBack()
-                    }
-                    return@doAsync
-                }
-                val stickerAddRequest = if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
-                    val f = File(uri.getFilePath(requireContext()))
-                    if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
-                        dialog?.dismiss()
-                        uiThread {
-                            requireContext().toast(R.string.sticker_add_invalid_size)
-                            handleBack()
-                        }
-                        return@doAsync
-                    }
-
-                    val byteArray = if (mimeType == MimeType.GIF.toString()) {
-                        Glide.with(MixinApplication.appContext)
-                            .`as`(ByteArray::class.java)
-                            .load(url)
-                            .submit()
-                            .get(10, TimeUnit.SECONDS)
-                    } else {
-                        Glide.with(MixinApplication.appContext)
-                            .asFile()
-                            .load(url)
-                            .submit()
-                            .get(10, TimeUnit.SECONDS).toByteArray()
-                    }
-
-                    StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
-                } else {
-                    var bitmap = Glide.with(MixinApplication.appContext)
-                        .asBitmap()
-                        .load(url)
-                        .submit()
-                        .get(10, TimeUnit.SECONDS)
-                    if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
-                        dialog?.dismiss()
-                        uiThread {
-                            requireContext().toast(R.string.sticker_add_invalid_size)
-                            handleBack()
-                        }
-                        return@doAsync
-                    }
-
-                    bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
-                    StickerAddRequest(Base64.encodeToString(
-                        if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(), Base64.NO_WRAP))
-                }
-                stickerAddRequest
-            } catch (e: Exception) {
-                dialog?.dismiss()
-                uiThread {
-                    requireContext().toast(R.string.sticker_add_failed)
-                    handleBack()
-                }
-                null
-            } ?: return@doAsync
-
-            disposable = stickerViewModel.addSticker(request)
-                .subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-                .autoDisposable(scopeProvider).subscribe({ r ->
-                    if (r != null && r.isSuccess) {
-                        val personalAlbum = stickerViewModel.getPersonalAlbums()
-                        if (personalAlbum == null) { // not add any personal sticker yet
-                            stickerViewModel.refreshStickerAlbums()
-                        } else {
-                            stickerViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
-                        }
-                        Glide.with(requireContext()).load(r.data?.assetUrl).listener(object : RequestListener<Drawable> {
-                            override fun onLoadFailed(e: GlideException?, model: Any?, target: Target<Drawable>?, isFirstResource: Boolean): Boolean {
-                                dialog?.dismiss()
-                                uiThread {
-                                    requireContext().toast(R.string.add_success)
-                                    handleBack()
-                                }
-                                return true
-                            }
-
-                            override fun onResourceReady(
-                                resource: Drawable?,
-                                model: Any?,
-                                target: Target<Drawable>?,
-                                dataSource: DataSource?,
-                                isFirstResource: Boolean
-                            ): Boolean {
-                                dialog?.dismiss()
-                                uiThread {
-                                    requireContext().toast(R.string.add_success)
-                                    handleBack()
-                                }
-                                return true
-                            }
-                        }).submit(r.data!!.assetWidth, r.data!!.assetHeight)
-                    } else {
-                        dialog?.dismiss()
-                        uiThread {
-                            toast(R.string.error_image)
-                            handleBack()
-                        }
-                    }
-                }, {
-                    ErrorHandler.handleError(it)
-                    dialog?.dismiss()
-                    uiThread { requireContext().toast(R.string.sticker_add_failed) }
-                })
+        val r = try {
+            stickerViewModel.addStickerAsync(request).await()
+        } catch (e: Exception) {
+            ErrorHandler.handleError(e)
+            dialog?.dismiss()
+            return@launch
         }
+        if (r.isSuccess) {
+            doAfterStickerAdded(r)
+        } else {
+            handleBack(R.string.error_image)
+        }
+
     }
 
-    private fun handleBack() {
-        if (isAdded) {
-            if (fromManagement) {
-                requireFragmentManager().popBackStackImmediate()
+    private suspend fun doAfterStickerAdded(r: MixinResponse<Sticker>) = withContext(Dispatchers.IO) {
+        val personalAlbum = stickerViewModel.getPersonalAlbums()
+        if (personalAlbum == null) { // not add any personal sticker yet
+            stickerViewModel.refreshStickerAlbums()
+        } else {
+            stickerViewModel.addStickerLocal(r.data as Sticker, personalAlbum.albumId)
+        }
+        Glide.with(requireContext()).load(r.data?.assetUrl).listener(object : RequestListener<Drawable> {
+            override fun onLoadFailed(
+                e: GlideException?,
+                model: Any?,
+                target: Target<Drawable>?,
+                isFirstResource: Boolean
+            ): Boolean {
+                handleBack(R.string.add_success)
+                return true
+            }
+
+            override fun onResourceReady(
+                resource: Drawable?,
+                model: Any?,
+                target: Target<Drawable>?,
+                dataSource: DataSource?,
+                isFirstResource: Boolean
+            ): Boolean {
+                handleBack(R.string.add_success)
+                return true
+            }
+        }).submit(r.data!!.assetWidth, r.data!!.assetHeight)
+    }
+
+    private suspend fun getStickerAddRequest(
+        mimeType: String?,
+        uri: Uri
+    ): StickerAddRequest? = withContext(Dispatchers.IO) {
+        return@withContext if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
+            val f = File(uri.getFilePath(requireContext()))
+            if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
+                handleBack(R.string.sticker_add_invalid_size)
+                return@withContext null
+            }
+            val byteArray = if (mimeType == MimeType.GIF.toString()) {
+                Glide.with(MixinApplication.appContext)
+                    .`as`(ByteArray::class.java)
+                    .load(url)
+                    .submit()
+                    .get(10, TimeUnit.SECONDS)
             } else {
-                requireActivity().finish()
+                Glide.with(MixinApplication.appContext)
+                    .asFile()
+                    .load(url)
+                    .submit()
+                    .get(10, TimeUnit.SECONDS).toByteArray()
             }
+
+            StickerAddRequest(Base64.encodeToString(byteArray, Base64.NO_WRAP))
+        } else {
+            var bitmap = Glide.with(MixinApplication.appContext)
+                .asBitmap()
+                .load(url)
+                .submit()
+                .get(10, TimeUnit.SECONDS)
+            if (bitmap.width < MIN_SIZE || bitmap.height < MIN_SIZE) {
+                handleBack(R.string.sticker_add_invalid_size)
+                return@withContext null
+            }
+
+            bitmap = bitmap.maxSizeScale(MAX_SIZE, MAX_SIZE)
+            StickerAddRequest(Base64.encodeToString(
+                if (mimeType == MimeType.PNG.toString()) bitmap.toPNGBytes() else bitmap.toBytes(), Base64.NO_WRAP))
+        }
+    }
+
+    private fun handleBack(toastRes: Int) = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
+        dialog?.dismiss()
+        requireContext().toast(toastRes)
+        if (fromManagement) {
+            requireFragmentManager().popBackStackImmediate()
+        } else {
+            requireActivity().finish()
         }
     }
 }
