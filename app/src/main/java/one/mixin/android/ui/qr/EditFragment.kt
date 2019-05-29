@@ -12,6 +12,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -20,6 +21,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.extension.bounce
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
@@ -42,16 +44,16 @@ class EditFragment : BaseCaptureFragment() {
     companion object {
         const val TAG = "EditFragment"
         const val ARGS_PATH = "args_path"
-        const val ARGS_NEED_SCAN = "args_need_scan"
+        const val ARGS_FROM_GALLERY = "args_from_gallery"
         private const val IS_VIDEO: String = "IS_VIDEO"
         fun newInstance(
             path: String,
             isVideo: Boolean = false,
-            needScan: Boolean = false
+            fromGallery: Boolean = false
         ) = EditFragment().withArgs {
             putString(ARGS_PATH, path)
             putBoolean(IS_VIDEO, isVideo)
-            putBoolean(ARGS_NEED_SCAN, needScan)
+            putBoolean(ARGS_FROM_GALLERY, fromGallery)
         }
     }
 
@@ -63,8 +65,8 @@ class EditFragment : BaseCaptureFragment() {
         arguments!!.getBoolean(IS_VIDEO)
     }
 
-    private val needScan by lazy {
-        arguments!!.getBoolean(ARGS_NEED_SCAN)
+    private val fromGallery by lazy {
+        arguments!!.getBoolean(ARGS_FROM_GALLERY)
     }
 
     private val mixinPlayer: MixinPlayer by lazy {
@@ -121,6 +123,7 @@ class EditFragment : BaseCaptureFragment() {
                         context?.openPermissionSetting()
                     }
                 }
+            download_iv.bounce()
         }
         send_fl.setOnClickListener {
             if (isVideo) {
@@ -139,20 +142,16 @@ class EditFragment : BaseCaptureFragment() {
         } else {
             preview_iv.visibility = VISIBLE
             preview_iv.loadImage(path)
-            if (needScan) {
-                download_iv.setImageResource(R.drawable.ic_save)
-                download_iv.setBackgroundResource(R.drawable.bg_circle_black_40)
-                download_iv.isEnabled = false
+            if (fromGallery) {
                 scan()
-            } else {
-                download_iv.setImageResource(R.drawable.ic_save_white)
-                download_iv.setBackgroundResource(R.drawable.bg_circle_white_80)
             }
         }
+        download_iv.isVisible = !fromGallery
     }
 
     private fun scan() = lifecycleScope.launch(Dispatchers.IO) {
-        val visionImage = FirebaseVisionImage.fromBitmap(BitmapFactory.decodeFile(path))
+        val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
+        val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
         detector.use { d ->
             d.detectInImage(visionImage)
                 .addOnSuccessListener { result ->

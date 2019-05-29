@@ -28,10 +28,6 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.core.view.isVisible
-import com.facebook.rebound.SimpleSpringListener
-import com.facebook.rebound.Spring
-import com.facebook.rebound.SpringConfig.fromOrigamiTensionAndFriction
-import com.facebook.rebound.SpringSystem
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -41,6 +37,7 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_GALLERY
+import one.mixin.android.extension.bounce
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.defaultSharedPreferences
@@ -60,6 +57,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.widget.CameraOpView
+import one.mixin.android.widget.gallery.ui.GalleryActivity
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -86,9 +84,6 @@ class CaptureFragment : BaseCaptureFragment() {
             putBoolean(ARGS_FOR_ACCOUNT_NAME, forAccountName)
         }
     }
-
-    private val springSystem = SpringSystem.create()
-    private val sprintConfig = fromOrigamiTensionAndFriction(80.0, 4.0)
 
     private val forAddress: Boolean by lazy { arguments!!.getBoolean(ARGS_FOR_ADDRESS) }
     private val forAccountName: Boolean by lazy { arguments!!.getBoolean(ARGS_FOR_ACCOUNT_NAME) }
@@ -137,7 +132,7 @@ class CaptureFragment : BaseCaptureFragment() {
                 flash.setImageResource(R.drawable.ic_flash_on)
                 preview?.enableTorch(true)
             }
-            anim(flash)
+            flash.bounce()
         }
         close.setOnClickListener { activity?.onBackPressed() }
         switch_camera.setOnClickListener {
@@ -152,7 +147,7 @@ class CaptureFragment : BaseCaptureFragment() {
             } catch (ignored: Exception) {
             }
             checkFlash()
-            anim(switch_camera)
+            switch_camera.bounce()
         }
         gallery_iv.setOnClickListener {
             RxPermissions(requireActivity())
@@ -181,7 +176,11 @@ class CaptureFragment : BaseCaptureFragment() {
                 if (path == null) {
                     context?.toast(R.string.error_image)
                 } else {
-                    openEdit(path, true)
+                    if (data.hasExtra(GalleryActivity.IS_VIDEO)) {
+                        openEdit(path, true, fromGallery = true)
+                    } else {
+                        openEdit(path, false, fromGallery = true)
+                    }
                 }
             }
         }
@@ -193,19 +192,6 @@ class CaptureFragment : BaseCaptureFragment() {
         } else {
             flash.visibility = GONE
         }
-    }
-
-    private fun anim(view: View) {
-        val spring = springSystem.createSpring()
-            .setSpringConfig(sprintConfig)
-            .addListener(object : SimpleSpringListener() {
-                override fun onSpringUpdate(spring: Spring) {
-                    val value = spring.currentValue.toFloat()
-                    view.scaleX = value
-                    view.scaleY = value
-                }
-            })
-        spring.endValue = 1.0
     }
 
     private fun bindCameraUseCase() {
@@ -220,9 +206,7 @@ class CaptureFragment : BaseCaptureFragment() {
             setTargetAspectRatio(screenAspectRatio)
             setTargetRotation(view_finder.display.rotation)
         }.build()
-        preview = Preview(previewConfig).apply {
-            onPreviewOutputUpdateListener = previewListener
-        }
+        preview = AutoFitPreviewBuilder.build(previewConfig, view_finder)
 
         val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
             setLensFacing(lensFacing)
@@ -273,9 +257,9 @@ class CaptureFragment : BaseCaptureFragment() {
         }
     }
 
-    private fun openEdit(path: String, needScan: Boolean) {
+    private fun openEdit(path: String, isVideo: Boolean, fromGallery: Boolean = false) {
         activity?.supportFragmentManager?.inTransaction {
-            add(R.id.container, EditFragment.newInstance(path, needScan = needScan), EditFragment.TAG)
+            add(R.id.container, EditFragment.newInstance(path, isVideo, fromGallery), EditFragment.TAG)
                 .addToBackStack(null)
         }
     }
@@ -334,10 +318,6 @@ class CaptureFragment : BaseCaptureFragment() {
                 }, 300)
             }
         }
-    }
-
-    private val previewListener = Preview.OnPreviewOutputUpdateListener {
-        view_finder?.surfaceTexture = it.surfaceTexture
     }
 
     private val imageSavedListener = object : ImageCapture.OnImageSavedListener {

@@ -13,6 +13,11 @@
 
     <View
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/black_10"/>
+
+    <View
+        android:layout_width="match_parent"
         android:layout_height="88dp"
         android:background="@drawable/camera_cover_top"/>
 
@@ -28,6 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:padding="8dp"
+        android:background="@drawable/mixin_ripple"
         android:src="@drawable/ic_close_white_24dp"
         tools:ignore="ContentDescription"/>
 
@@ -55,7 +61,6 @@
             android:shadowRadius="3"
             android:textColor="@color/white"
             android:textSize="16sp"/>
-
     </LinearLayout>
 
     <ImageView
@@ -65,6 +70,7 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="@dimen/activity_horizontal_margin"
         android:padding="8dp"
+        android:background="@drawable/mixin_ripple"
         android:src="@drawable/ic_flash_off"
         tools:ignore="ContentDescription"/>
 
@@ -79,8 +85,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/margin12"
+            android:layout_marginStart="@dimen/margin20"
             android:padding="8dp"
+            android:background="@drawable/mixin_ripple"
             android:src="@drawable/ic_camera_gallery"
             tools:ignore="ContentDescription"/>
 
@@ -96,8 +103,9 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="@dimen/margin12"
+            android:layout_marginEnd="@dimen/margin20"
             android:padding="8dp"
+            android:background="@drawable/mixin_ripple"
             android:src="@drawable/ic_switch_camera"
             tools:ignore="ContentDescription"/>
     </RelativeLayout>
