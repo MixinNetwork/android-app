@@ -13,9 +13,9 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.textColorResource
 
-class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
+open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
 
-    fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
+    open fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
         val isPositive = snapshot.amount.toFloat() > 0
         when {
             snapshot.type == SnapshotType.pending.name -> {
