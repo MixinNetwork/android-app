@@ -131,12 +131,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textIsSelectable="true" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height=".5dp"
-                        android:layout_marginStart="@dimen/margin12"
-                        android:background="@color/wallet_divider" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -158,12 +152,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textIsSelectable="true" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height=".5dp"
-                        android:layout_marginStart="@dimen/margin12"
-                        android:background="@color/wallet_divider" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -185,12 +173,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textIsSelectable="true" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height=".5dp"
-                        android:layout_marginStart="@dimen/margin12"
-                        android:background="@color/wallet_divider" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -210,12 +192,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textIsSelectable="true" />
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height=".5dp"
-                        android:layout_marginStart="@dimen/margin12"
-                        android:background="@color/wallet_divider" />
                 </LinearLayout>
 
                 <LinearLayout

@@ -169,11 +169,6 @@
             android:layout_height="1dp"
             android:layout_centerInParent="true"/>
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height=".5dp"
-            android:background="@color/wallet_divider"/>
-
         <ImageView
             android:id="@+id/bottom_iv"
             android:layout_width="125dp"
