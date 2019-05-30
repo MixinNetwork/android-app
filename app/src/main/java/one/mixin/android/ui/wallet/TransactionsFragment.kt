@@ -130,7 +130,6 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
             if (currentType == R.id.filters_radio_all) {
                 if (pagedList != null && pagedList.isNotEmpty()) {
                     lastCreatedAt = pagedList[pagedList.loadedCount - 1]?.createdAt
-                    adapter.submitList(pagedList)
                     updateHeaderBottomLayout(false)
                     val opponentIds = pagedList.filter {
                         it?.opponentId != null
@@ -150,6 +149,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     updateHeaderBottomLayout(true)
                 }
             }
+            adapter.submitList(pagedList)
         }
         bindLiveData(walletViewModel.snapshotsFromDb(asset.assetId, orderByAmount = currentOrder == R.id.sort_amount))
         doAsync {
