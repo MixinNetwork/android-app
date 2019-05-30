@@ -3,8 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="60dp"
-    android:paddingTop="8dp"
-    android:paddingBottom="8dp"
     android:foreground="?attr/selectableItemBackground">
 
     <View
