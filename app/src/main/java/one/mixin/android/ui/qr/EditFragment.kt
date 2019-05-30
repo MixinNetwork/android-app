@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,6 +15,10 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_edit.*
@@ -135,19 +140,19 @@ class EditFragment : BaseCaptureFragment() {
             }
         }
         if (isVideo) {
-            root_view.setBackgroundColor(resources.getColor(R.color.white, null))
+            setBg()
             mixinPlayer.loadVideo(path)
             preview_video_texture.visibility = VISIBLE
             mixinPlayer.setVideoTextureView(preview_video_texture)
             mixinPlayer.start()
         } else {
             preview_iv.visibility = VISIBLE
-            preview_iv.loadImage(path)
             if (fromGallery) {
+                preview_iv.loadImage(path)
                 scan()
-                root_view.setBackgroundColor(resources.getColor(R.color.white, null))
+                setBg()
             } else {
-                root_view.setBackgroundColor(resources.getColor(android.R.color.transparent, null))
+                preview_iv.loadImage(path, glideRequestListener)
             }
         }
         download_iv.isVisible = !fromGallery
@@ -166,6 +171,10 @@ class EditFragment : BaseCaptureFragment() {
                     }
                 }
         }
+    }
+
+    private fun setBg() {
+        root_view?.setBackgroundColor(resources.getColor(R.color.white, null))
     }
 
     private fun save() = lifecycleScope.launch {
@@ -193,6 +202,29 @@ class EditFragment : BaseCaptureFragment() {
                 matrix.postScale(1f, screenWidth / ratio / screenHeight, screenWidth / 2f, screenHeight / 2f)
             }
             preview_video_texture.setTransform(matrix)
+        }
+    }
+
+    private val glideRequestListener = object : RequestListener<Drawable?> {
+        override fun onLoadFailed(
+            e: GlideException?,
+            model: Any?,
+            target: Target<Drawable?>?,
+            isFirstResource: Boolean
+        ): Boolean {
+            setBg()
+            return false
+        }
+
+        override fun onResourceReady(
+            resource: Drawable?,
+            model: Any?,
+            target: Target<Drawable?>?,
+            dataSource: DataSource?,
+            isFirstResource: Boolean
+        ): Boolean {
+            setBg()
+            return false
         }
     }
 }
