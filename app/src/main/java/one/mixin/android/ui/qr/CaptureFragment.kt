@@ -231,6 +231,7 @@ class CaptureFragment : BaseCaptureFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        preview?.enableTorch(false)
         CameraX.unbindAll()
     }
 

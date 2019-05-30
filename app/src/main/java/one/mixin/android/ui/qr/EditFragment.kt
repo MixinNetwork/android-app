@@ -135,6 +135,7 @@ class EditFragment : BaseCaptureFragment() {
             }
         }
         if (isVideo) {
+            root_view.setBackgroundColor(resources.getColor(R.color.white, null))
             mixinPlayer.loadVideo(path)
             preview_video_texture.visibility = VISIBLE
             mixinPlayer.setVideoTextureView(preview_video_texture)
@@ -144,6 +145,9 @@ class EditFragment : BaseCaptureFragment() {
             preview_iv.loadImage(path)
             if (fromGallery) {
                 scan()
+                root_view.setBackgroundColor(resources.getColor(R.color.white, null))
+            } else {
+                root_view.setBackgroundColor(resources.getColor(android.R.color.transparent, null))
             }
         }
         download_iv.isVisible = !fromGallery
