@@ -59,6 +59,9 @@ fun backup(
 
             val db = SQLiteDatabase.openDatabase("$backupDir${File.separator}$name", null, SQLiteDatabase.OPEN_READWRITE)
             db.execSQL("DELETE FROM sent_sender_keys")
+            db.execSQL("DELETE FROM jobs")
+            db.execSQL("DELETE FROM flood_messages")
+            db.execSQL("DELETE FROM offsets")
             db.close()
 
             withContext(Dispatchers.Main) {
