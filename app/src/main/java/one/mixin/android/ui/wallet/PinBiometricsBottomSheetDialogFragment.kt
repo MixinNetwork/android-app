@@ -58,7 +58,7 @@ class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
             override fun onUpdate(index: Int) {
                 if (index != contentView.pin.getCount()) return
 
-                contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PB
+                contentView.pin_va?.displayedChild = POS_PB
                 bottomViewModel.verifyPin(contentView.pin.code()).autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
                     dialog.dismiss()
                     if (r.isSuccess) {
@@ -74,13 +74,13 @@ class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                         }
                         dismiss()
                     } else {
-                        contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
+                        contentView.pin_va?.displayedChild = POS_PIN
                         contentView.pin.clear()
                         ErrorHandler.handleMixinError(r.errorCode)
                     }
                 }, { t ->
                     dialog.dismiss()
-                    contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
+                    contentView.pin_va?.displayedChild = POS_PIN
                     contentView.pin.clear()
                     ErrorHandler.handleError(t)
                 })

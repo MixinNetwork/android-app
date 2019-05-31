@@ -15,7 +15,6 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshAddressJob
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
@@ -42,9 +41,6 @@ internal constructor(
     private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
-
-    fun redeem(code: String): Observable<MixinResponse<Account>> = accountRepository.redeem(code)
-        .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun insertUser(user: User) {
         userRepository.upsert(user)
