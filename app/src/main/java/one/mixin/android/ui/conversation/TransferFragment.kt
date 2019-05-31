@@ -126,7 +126,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     private val adapter = TypeAdapter()
 
     private val userId: String? by lazy { arguments!!.getString(ARGS_USER_ID) }
-    private val address: Address? by lazy { arguments!!.getParcelable<Address>(ARGS_ADDRESS) }
+    private var address: Address? = null
     private val supportSwitchAsset by lazy { arguments!!.getBoolean(ARGS_SWITCH_ASSET) }
 
     private var user: User? = null
@@ -176,72 +176,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
 
         if (isInnerTransfer()) {
-            if (supportSwitchAsset) {
-                contentView.asset_rl.setOnClickListener {
-                    operateKeyboard(false)
-                    context?.let {
-                        adapter.submitList(assets)
-                        adapter.setTypeListener(object : OnTypeClickListener {
-                            override fun onTypeClick(asset: AssetItem) {
-                                currentAsset = asset
-                                updateAssetUI(asset)
-                                adapter.notifyDataSetChanged()
-                                assetsBottomSheet.dismiss()
-                            }
-                        })
-
-                        assetsView.close_iv.setOnClickListener {
-                            assetsBottomSheet.dismiss()
-                        }
-                        assetsBottomSheet.show()
-                        assetsView.search_et.remainFocusable()
-                    }
-
-                    assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())
-                }
-            } else {
-                contentView.expand_iv.isVisible = false
-            }
-            chatViewModel.findUserById(userId!!).observe(this, Observer { u ->
-                if (u == null) {
-                    jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
-                } else {
-                    user = u
-                    contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                    contentView.title_view.setSubTitle(getString(R.string.send_to, u.fullName), u.identityNumber)
-                }
-            })
+            handleInnerTransfer()
         } else {
-            contentView.avatar.isVisible = false
-            contentView.address_avatar.isVisible = true
-            contentView.expand_iv.isVisible = false
-            contentView.asset_rl.setOnClickListener(null)
-            currentAsset = arguments!!.getParcelable(ARGS_ASSET)
-
-            if (address == null || currentAsset == null) return
-
-            if (currentAsset!!.isAccountTagAsset()) {
-                contentView.title_view.setSubTitle(getString(R.string.send_to, address!!.accountName), address!!.accountTag!!.formatPublicKey())
-            } else {
-                contentView.title_view.setSubTitle(getString(R.string.send_to, address!!.label), address!!.publicKey!!.formatPublicKey())
-            }
-            val bold = address!!.fee + " " + currentAsset!!.chainSymbol
-            val str = try {
-                val reserveDouble = address!!.reserve.toDouble()
-                if (reserveDouble > 0) {
-                    getString(R.string.withdrawal_fee_with_reserve, bold, currentAsset!!.symbol, currentAsset!!.name, address!!.reserve, currentAsset!!.symbol)
-                } else {
-                    getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
-                }
-            } catch (t: Throwable) {
-                getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
-            }
-            val ssb = SpannableStringBuilder(str)
-            val start = str.indexOf(bold)
-            ssb.setSpan(StyleSpan(Typeface.BOLD), start,
-                start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-            contentView.fee_tv?.visibility = VISIBLE
-            contentView.fee_tv?.text = ssb
+            handleAddressTransfer()
         }
 
         contentView.continue_tv.setOnClickListener {
@@ -269,6 +206,81 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 })
             } else {
                 contentView.asset_rl.isEnabled = false
+            }
+        })
+    }
+
+    private fun handleAddressTransfer() {
+        contentView.avatar.isVisible = false
+        contentView.address_avatar.isVisible = true
+        contentView.expand_iv.isVisible = false
+        contentView.asset_rl.setOnClickListener(null)
+        currentAsset = arguments!!.getParcelable(ARGS_ASSET)
+
+        address = arguments!!.getParcelable(ARGS_ADDRESS)
+        if (address == null || currentAsset == null) return
+
+        chatViewModel.observeAddress(address!!.addressId).observe(this, Observer {
+            address = it
+            if (currentAsset!!.isAccountTagAsset()) {
+                contentView.title_view.setSubTitle(getString(R.string.send_to, it.accountName), it.accountTag!!.formatPublicKey())
+            } else {
+                contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.publicKey!!.formatPublicKey())
+            }
+            val bold = it.fee + " " + currentAsset!!.chainSymbol
+            val str = try {
+                val reserveDouble = it.reserve.toDouble()
+                if (reserveDouble > 0) {
+                    getString(R.string.withdrawal_fee_with_reserve, bold, currentAsset!!.symbol, currentAsset!!.name, it.reserve, currentAsset!!.symbol)
+                } else {
+                    getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
+                }
+            } catch (t: Throwable) {
+                getString(R.string.withdrawal_fee, bold, currentAsset!!.name)
+            }
+            val ssb = SpannableStringBuilder(str)
+            val start = str.indexOf(bold)
+            ssb.setSpan(StyleSpan(Typeface.BOLD), start,
+                start + bold.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            contentView.fee_tv?.visibility = VISIBLE
+            contentView.fee_tv?.text = ssb
+        })
+    }
+
+    private fun handleInnerTransfer() {
+        if (supportSwitchAsset) {
+            contentView.asset_rl.setOnClickListener {
+                operateKeyboard(false)
+                context?.let {
+                    adapter.submitList(assets)
+                    adapter.setTypeListener(object : OnTypeClickListener {
+                        override fun onTypeClick(asset: AssetItem) {
+                            currentAsset = asset
+                            updateAssetUI(asset)
+                            adapter.notifyDataSetChanged()
+                            assetsBottomSheet.dismiss()
+                        }
+                    })
+
+                    assetsView.close_iv.setOnClickListener {
+                        assetsBottomSheet.dismiss()
+                    }
+                    assetsBottomSheet.show()
+                    assetsView.search_et.remainFocusable()
+                }
+
+                assetsBottomSheet.setCustomViewHeight(assetsBottomSheet.getMaxCustomViewHeight())
+            }
+        } else {
+            contentView.expand_iv.isVisible = false
+        }
+        chatViewModel.findUserById(userId!!).observe(this, Observer { u ->
+            if (u == null) {
+                jobManager.addJobInBackground(RefreshUserJob(listOf(userId!!)))
+            } else {
+                user = u
+                contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
+                contentView.title_view.setSubTitle(getString(R.string.send_to, u.fullName), u.identityNumber)
             }
         })
     }

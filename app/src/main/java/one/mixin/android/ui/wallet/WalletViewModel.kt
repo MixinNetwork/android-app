@@ -115,10 +115,6 @@ internal constructor(
             .setInitialLoadKey(initialLoadKey)
             .build()
 
-    fun refreshAddressesByAssetId(assetId: String) {
-        jobManager.addJobInBackground(RefreshAddressJob(assetId))
-    }
-
     fun getAssetItem(assetId: String) = Flowable.just(assetId).map { assetRepository.simpleAssetItem(it) }
         .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
 

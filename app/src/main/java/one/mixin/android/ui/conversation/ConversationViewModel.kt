@@ -596,4 +596,6 @@ internal constructor(
         accountRepository.searchGifs(query, limit, offset).map { it.data }
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
+
+    fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
 }

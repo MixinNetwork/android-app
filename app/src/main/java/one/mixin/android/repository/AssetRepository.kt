@@ -89,6 +89,8 @@ constructor(
 
     fun addresses(id: String) = addressDao.addresses(id)
 
+    fun observeAddress(addressId: String) = addressDao.observeById(addressId)
+
     fun withdrawal(withdrawalRequest: WithdrawalRequest) = assetService.withdrawals(withdrawalRequest)
 
     fun saveAddr(addr: Address) = addressDao.insert(addr)

@@ -103,6 +103,7 @@ class AddressManagementFragment : BaseFragment() {
             }
 
             override fun onAddrClick(addr: Address) {
+                addressViewModel.refreshAddressesByAssetId(asset.assetId)
                 TransferFragment.newInstance(asset = asset, address = addr)
                     .showNow(requireFragmentManager(), TransferFragment.TAG)
             }
