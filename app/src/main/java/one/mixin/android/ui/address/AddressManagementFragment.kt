@@ -103,7 +103,6 @@ class AddressManagementFragment : BaseFragment() {
             }
 
             override fun onAddrClick(addr: Address) {
-                addressViewModel.refreshAddressesByAssetId(asset.assetId)
                 TransferFragment.newInstance(asset = asset, address = addr)
                     .showNow(requireFragmentManager(), TransferFragment.TAG)
             }
@@ -142,6 +141,7 @@ class AddressManagementFragment : BaseFragment() {
             override fun onSearch() {
             }
         }
+        addressViewModel.refreshAddressesByAssetId(asset.assetId)
     }
 
     private fun showBottomSheet(addr: Address, asset: AssetItem): MixinBottomSheetDialogFragment {
