@@ -47,7 +47,12 @@ class AssetAddFragment : BaseFragment() {
                     searchCheckedAssetIds.add(topAsset.assetId)
                 }
             } else {
-                adapter.checkedAssets.remove(topAsset.assetId, topAsset)
+                try {
+                    adapter.checkedAssets.remove(topAsset.assetId, topAsset)
+                } catch (e: NoSuchMethodError) {
+                    // Samsung Galaxy Note4 Android M
+                    adapter.checkedAssets.remove(topAsset.assetId)
+                }
             }
             checkTitle()
         }

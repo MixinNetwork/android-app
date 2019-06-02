@@ -1708,6 +1708,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun releaseChatControl(fling: Int) {
+        if (!isAdded) return
+
         val currentContainer = chat_control.getDraggableContainer() ?: return
         val curH = currentContainer.height
         val max = (requireContext().screenHeight() * 2) / 3
