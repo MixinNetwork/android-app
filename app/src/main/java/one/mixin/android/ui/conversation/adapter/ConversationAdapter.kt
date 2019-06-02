@@ -81,7 +81,9 @@ class ConversationAdapter(
         LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unread, parent, false)
 
     override fun onBindAttachView(view: View) {
-        view.unread_tv.text = view.context.getString(R.string.unread, unreadIndex!!)
+        unreadIndex?.let {
+            view.unread_tv.text = view.context.getString(R.string.unread, it)
+        }
     }
 
     fun markRead() {
