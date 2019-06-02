@@ -16,7 +16,7 @@ interface AppDao : BaseDao<App> {
     fun getConversationApp(userId: String?): LiveData<List<App>>
 
     @Query("SELECT * FROM apps WHERE app_id = :id")
-    fun findAppById(id: String): App?
+    suspend fun findAppById(id: String): App?
 
     @Query("SELECT * FROM apps WHERE app_id IN(:appIds)")
     fun findAppsByIds(appIds: List<String>): List<App>

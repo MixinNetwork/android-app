@@ -141,7 +141,7 @@ class BottomSheetViewModel @Inject internal constructor(
             type = ConversationJob.TYPE_MUTE))
     }
 
-    fun findAppById(id: String) = userRepository.findAppById(id)
+    suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
     fun getUserById(id: String) = userRepository.getUserById(id)
 

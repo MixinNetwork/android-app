@@ -231,9 +231,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.bot_iv.visibility = VISIBLE
             contentView.open_fl.visibility = VISIBLE
             contentView.transfer_fl.visibility = GONE
-            withContext(Dispatchers.IO) {
-                bottomViewModel.findAppById(user.appId!!)
-            }?.let { app ->
+            bottomViewModel.findAppById(user.appId!!)?.let { app ->
                 contentView.detail_tv.visibility = VISIBLE
                 contentView.detail_tv.text = app.description
                 contentView.open_fl.setOnClickListener {

@@ -78,7 +78,7 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun updatePhone(id: String, phone: String) = userDao.updatePhone(id, phone)
 
-    fun findAppById(id: String) = appDao.findAppById(id)
+    suspend fun findAppById(id: String) = appDao.findAppById(id)
 
     fun findContactUsers() = userDao.findContactUsers()
 

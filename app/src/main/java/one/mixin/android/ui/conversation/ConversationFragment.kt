@@ -1334,12 +1334,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
 
         if (user.isBot()) {
-            doAsync {
+            lifecycleScope.launch {
                 app = chatViewModel.findAppById(user.appId!!)
                 if (app != null && app!!.creatorId == Session.getAccountId()) {
-                    uiThread {
-                        initMenuLayout(true)
-                    }
+                    initMenuLayout(true)
                 }
             }
         }

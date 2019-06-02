@@ -479,7 +479,7 @@ internal constructor(
         }
     }
 
-    fun findAppById(id: String) = userRepository.findAppById(id)
+    suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
     fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 
