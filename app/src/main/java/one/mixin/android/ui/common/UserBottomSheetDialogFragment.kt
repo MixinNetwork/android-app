@@ -267,6 +267,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun updateUserStatus(relationship: String) {
+        if (!isAdded) return
+
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
                 contentView.add_tv.visibility = VISIBLE
