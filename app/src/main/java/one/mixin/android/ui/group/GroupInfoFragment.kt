@@ -233,11 +233,13 @@ class GroupInfoFragment : BaseFragment() {
                     adapter.participantsMap = participantsMap
 
                     uiThread {
-                        val s = search_et.text.toString()
-                        if (s.isNotBlank()) {
-                            filter(s.trim())
-                        } else {
-                            adapter.data = u
+                        if (isAdded) {
+                            val s = search_et.text.toString()
+                            if (s.isNotBlank()) {
+                                filter(s.trim())
+                            } else {
+                                adapter.data = u
+                            }
                         }
                     }
                 }
