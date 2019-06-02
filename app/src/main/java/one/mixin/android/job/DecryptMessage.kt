@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.app.Activity
 import android.app.NotificationManager
 import android.util.Log
+import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
@@ -13,7 +14,6 @@ import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.event.RecallEvent
-import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc

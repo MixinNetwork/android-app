@@ -5,12 +5,12 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
+import androidx.collection.arrayMapOf
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_asset_add.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.arrayMapOf
 import one.mixin.android.extension.loadImage
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.widget.MixinToast

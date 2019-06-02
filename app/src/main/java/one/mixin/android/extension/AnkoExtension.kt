@@ -2,7 +2,6 @@ package one.mixin.android.extension
 
 import android.app.ProgressDialog
 import android.content.DialogInterface
-import androidx.collection.ArrayMap
 import androidx.fragment.app.Fragment
 import org.jetbrains.anko.AlertBuilder
 import org.jetbrains.anko.alert
@@ -32,5 +31,3 @@ fun Fragment.indeterminateProgressDialog(message: String? = null, title: String?
 fun Fragment.indeterminateProgressDialog(message: Int? = null, title: Int? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
     return requireActivity().indeterminateProgressDialog(message?.let { requireActivity().getString(it) }, title?.let { requireActivity().getString(it) }, init)
 }
-
-fun <K, V> arrayMapOf(): ArrayMap<K, V> = ArrayMap()

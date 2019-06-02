@@ -123,6 +123,8 @@ dependencies {
     implementation "androidx.browser:browser:${supportLibVersion}"
     implementation "androidx.constraintlayout:constraintlayout:${constraintLayoutVersion}"
     implementation "androidx.core:core-ktx:${ktxVersion}"
+    implementation "androidx.collection:collection:${collectionx}"
+    implementation "androidx.collection:collection-ktx:${collectionx}"
 
     implementation "androidx.work:work-runtime-ktx:${workManagerVersion}"
     implementation "androidx.navigation:navigation-fragment-ktx:${navigationVersion}"
