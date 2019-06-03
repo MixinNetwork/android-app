@@ -17,9 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.api.request.RelationshipAction
@@ -265,8 +263,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun updateUserStatus(relationship: String) {
-        if (!isAdded) return
-
         when (relationship) {
             UserRelationship.BLOCKING.name -> {
                 contentView.add_tv.visibility = VISIBLE
@@ -365,7 +361,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private fun updateRelationship(relationship: String) {
+    private fun updateRelationship(relationship: String) = lifecycleScope.launch {
         updateUserStatus(relationship)
         val request = RelationshipRequest(user.userId,
             if (relationship == UserRelationship.FRIEND.name)

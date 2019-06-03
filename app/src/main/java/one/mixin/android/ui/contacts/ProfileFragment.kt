@@ -218,7 +218,6 @@ class ProfileFragment : BaseFragment() {
                 r.data?.let {
                     Session.storeAccount(it)
                     contactsViewModel.insertUser(it.toUser())
-//                    renderInvitation(it)
                 }
             } else {
                 ErrorHandler.handleMixinError(r.errorCode)
@@ -244,7 +243,9 @@ class ProfileFragment : BaseFragment() {
     }
 
     private fun update(content: String, isPhoto: Boolean) {
-        if (isAdded && isPhoto) {
+        if (!isAdded) return
+
+        if (isPhoto) {
             photo_animator.displayedChild = POS_PROGRESS
         } else {
             name_animator.displayedChild = POS_PROGRESS
@@ -256,7 +257,9 @@ class ProfileFragment : BaseFragment() {
         }
         contactsViewModel.update(accountUpdateRequest)
             .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
-                if (isAdded && isPhoto) {
+                if (!isAdded) return@subscribe
+
+                if (isPhoto) {
                     photo_animator.displayedChild = POS_CONTENT
                 } else {
                     name_animator.displayedChild = POS_CONTENT
@@ -270,7 +273,9 @@ class ProfileFragment : BaseFragment() {
                     contactsViewModel.insertUser(data.toUser())
                 }
             }, { t: Throwable ->
-                if (isAdded && isPhoto) {
+                if (!isAdded) return@subscribe
+
+                if (isPhoto) {
                     photo_animator.displayedChild = POS_CONTENT
                 } else {
                     name_animator.displayedChild = POS_CONTENT

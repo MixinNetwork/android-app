@@ -44,9 +44,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.Constants.PAGE_SIZE
-import one.mixin.android.Constants.RECENT_USED_BOTS_MAX_COUNT
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -64,7 +62,6 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -77,14 +74,12 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.removeEnd
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.screenHeight
@@ -151,8 +146,6 @@ import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -441,26 +434,26 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onMessageClick(messageId: String?) {
                 messageId?.let {
-                    chatViewModel.findMessageIndex(conversationId, it).autoDisposable(scopeProvider).subscribe({
-                        if (it == 0) {
+                    lifecycleScope.launch {
+                        val index = chatViewModel.findMessageIndex(conversationId, it)
+                        if (index == 0) {
                             toast(R.string.error_not_found)
                         } else {
-                            if (it == chatAdapter.itemCount - 1) {
-                                scrollTo(it, 0, action = {
+                            if (index == chatAdapter.itemCount - 1) {
+                                scrollTo(index, 0, action = {
                                     requireContext().mainThreadDelayed({
                                         RxBus.publish(BlinkEvent(messageId))
                                     }, 60)
                                 })
                             } else {
-                                scrollTo(it + 1, chat_rv.measuredHeight * 3 / 4, action = {
+                                scrollTo(index + 1, chat_rv.measuredHeight * 3 / 4, action = {
                                     requireContext().mainThreadDelayed({
                                         RxBus.publish(BlinkEvent(messageId))
                                     }, 60)
                                 })
                             }
                         }
-                    }, {
-                    })
+                    }
                 }
             }
 
@@ -1001,71 +994,38 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var unreadCount = 0
     private fun bindData() {
-        lifecycleScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch {
             unreadCount = if (!messageId.isNullOrEmpty()) {
-                chatViewModel.findMessageIndexSync(conversationId, messageId!!)
+                chatViewModel.findMessageIndex(conversationId, messageId!!)
             } else {
                 chatViewModel.indexUnread(conversationId)
             }
-            withContext(Dispatchers.Main) {
-                if (!isAdded) {
-                    return@withContext
-                }
-                liveDataMessage(unreadCount)
-            }
+            liveDataMessage(unreadCount)
         }
 
         if (isBot) {
-            lifecycleScope.launch(Dispatchers.IO) {
-                val botsString = defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)
-                if (botsString != null) {
-                    var botsList = botsString.split("=")
-                    if (botsList.size == 1 && !botsList[0].isUUID()) {
-                        getPreviousVersionBotsList()?.let {
-                            botsList = it
-                        }
-                    }
-                    if (botsList.isNullOrEmpty()) {
-                        defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, recipient!!.userId)
-                        return@launch
-                    }
-
-                    val arr = botsList.filter { it != recipient!!.userId }
-                        .toMutableList()
-                        .also {
-                            if (it.size >= RECENT_USED_BOTS_MAX_COUNT) {
-                                it.dropLast(1)
-                            }
-                            it.add(0, recipient!!.userId)
-                        }
-                    defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, arr.joinToString("="))
-                } else {
-                    defaultSharedPreferences.putString(PREF_RECENT_USED_BOTS, recipient!!.userId)
-                }
-            }
+            chatViewModel.updateRecentUsedBots(defaultSharedPreferences, recipient!!.userId)
             chat_control.showBot()
         } else {
+            liveDataAppList()
             chat_control.hideBot()
-            chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer { list ->
-                val type = if (isGroup) {
-                    AppCap.GROUP.name
-                } else {
-                    AppCap.CONTACT.name
-                }
-                appList = list.filter {
-                    it.capabilites?.contains(type) == true
-                }
-                appList?.let {
-                    (requireFragmentManager().findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
-                }
-            })
         }
     }
 
-    private fun getPreviousVersionBotsList(): List<String>? {
-        defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.let { botsString ->
-            return botsString.deserialize<Array<String>>()?.toList()
-        } ?: return null
+    private fun liveDataAppList() {
+        chatViewModel.getApp(conversationId, recipient?.userId).observe(this, Observer { list ->
+            val type = if (isGroup) {
+                AppCap.GROUP.name
+            } else {
+                AppCap.CONTACT.name
+            }
+            appList = list.filter {
+                it.capabilites?.contains(type) == true
+            }
+            appList?.let {
+                (requireFragmentManager().findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
+            }
+        })
     }
 
     private var appList: List<App>? = null
@@ -1104,21 +1064,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private inline fun createConversation(crossinline action: () -> Unit) {
+    private inline fun createConversation(crossinline action: () -> Unit) = lifecycleScope.launch {
         if (isFirstMessage) {
-            doAsync {
+            withContext(Dispatchers.IO) {
                 chatViewModel.initConversation(conversationId, recipient!!, sender)
                 isFirstMessage = false
-
-                uiThread {
-                    if (isAdded) {
-                        action()
-                    }
-                }
             }
-        } else {
-            action()
         }
+        action()
     }
 
     private fun isPlainMessage(): Boolean {
