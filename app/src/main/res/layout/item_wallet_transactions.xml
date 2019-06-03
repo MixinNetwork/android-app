@@ -2,13 +2,13 @@
 <one.mixin.android.widget.ConfirmationBgView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/bg"
     android:layout_width="match_parent"
-    android:layout_height="60dp"
+    android:layout_height="62dp"
     android:background="@android:color/white">
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
-        android:layout_width="30dp"
-        android:layout_height="30dp"
+        android:layout_width="42dp"
+        android:layout_height="42dp"
         android:layout_centerVertical="true"
         android:layout_marginStart="@dimen/margin20"
         android:layout_marginEnd="@dimen/margin20" />
@@ -23,19 +23,33 @@
         android:maxWidth="200dp"
         android:singleLine="true"
         android:textColor="@color/wallet_text_dark"
-        android:textSize="12sp" />
+        android:textSize="14sp" />
 
     <TextView
         android:id="@+id/value"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="@dimen/margin20"
+        android:layout_toStartOf="@id/symbol_tv"
+        android:layout_marginEnd="4dp"
         android:ellipsize="end"
         android:fontFamily="@font/mixin_condensed"
         android:maxWidth="200dp"
         android:singleLine="true"
         android:textColor="@color/wallet_pink"
         android:textSize="22sp" />
+
+    <TextView
+        android:id="@+id/symbol_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minWidth="20dp"
+        android:maxWidth="200dp"
+        android:layout_alignBaseline="@id/value"
+        android:translationY="-1dp"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="@dimen/margin20"
+        android:textSize="12sp"
+        android:textColor="@color/wallet_text_dark"/>
 </one.mixin.android.widget.ConfirmationBgView>

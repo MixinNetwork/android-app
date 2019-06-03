@@ -20,12 +20,12 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
         when {
             snapshot.type == SnapshotType.pending.name -> {
                 itemView.name.text = itemView.context.getString(R.string.pending_confirmations, snapshot.confirmations, snapshot.assetConfirmations)
-                itemView.avatar.setUrl(null, R.drawable.ic_transaction_up)
+                itemView.avatar.setNet()
                 itemView.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
             }
             snapshot.type == SnapshotType.deposit.name -> {
                 itemView.name.setText(R.string.filters_deposit)
-                itemView.avatar.setUrl(null, R.drawable.ic_transaction_down)
+                itemView.avatar.setNet()
             }
             snapshot.type == SnapshotType.transfer.name -> {
                 itemView.name.setText(R.string.filters_transfer)
@@ -37,29 +37,30 @@ open class SnapshotHolder(itemView: View) : NormalHolder(itemView) {
             }
             snapshot.type == SnapshotType.withdrawal.name -> {
                 itemView.name.setText(R.string.filters_withdrawal)
-                itemView.avatar.setUrl(null, R.drawable.ic_transaction_up)
+                itemView.avatar.setNet()
             }
             snapshot.type == SnapshotType.fee.name -> {
                 itemView.name.setText(R.string.filters_fee)
-                itemView.avatar.setUrl(null, R.drawable.ic_transaction_up)
+                itemView.avatar.setNet()
             }
             snapshot.type == SnapshotType.rebate.name -> {
                 itemView.name.setText(R.string.filters_rebate)
-                itemView.avatar.setUrl(null, R.drawable.ic_transaction_down)
+                itemView.avatar.setNet()
             }
             else -> {
                 itemView.name.text = snapshot.receiver!!.formatPublicKey()
-                itemView.avatar.setUrl(null, R.drawable.ic_transaction_down)
+                itemView.avatar.setNet()
             }
         }
 
         itemView.value.text = if (isPositive) "+${snapshot.amount.numberFormat()}"
         else snapshot.amount.numberFormat()
         itemView.value.textColorResource = when {
-            snapshot.type == SnapshotType.pending.name -> R.color.wallet_text_dark
+            snapshot.type == SnapshotType.pending.name -> R.color.wallet_pending_text_color
             isPositive -> R.color.wallet_green
             else -> R.color.wallet_pink
         }
+        itemView.symbol_tv.text = snapshot.assetSymbol
 
         itemView.setOnClickListener {
             if (snapshot.type != SnapshotType.pending.name) {

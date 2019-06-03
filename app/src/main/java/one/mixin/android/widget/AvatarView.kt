@@ -6,13 +6,14 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.ViewAnimator
 import androidx.core.content.ContextCompat
+import androidx.core.view.setPadding
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.view_avatar.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.CodeType
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
-import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.loadImage
 import org.jetbrains.anko.sp
 
@@ -71,9 +72,11 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
             .into(avatar_simple)
     }
 
-    fun setUrl(url: String?, placeHolder: Int) {
+    fun setNet(padding: Int = context.dpToPx(8f)) {
         displayedChild = POS_AVATAR
-        avatar_simple.loadCircleImage(url, placeHolder)
+        avatar_simple.setBackgroundResource(R.drawable.bg_circle_70_solid_gray)
+        avatar_simple.setImageResource(R.drawable.ic_transfer_address)
+        avatar_simple.setPadding(padding)
     }
 
     fun setInfo(name: String?, url: String?, id: String) {
@@ -83,6 +86,9 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
         } catch (e: NumberFormatException) {
         }
         displayedChild = if (url != null && url.isNotEmpty()) {
+            avatar_simple.setBackgroundResource(0)
+            avatar_simple.setImageResource(0)
+            avatar_simple.setPadding(0)
             avatar_simple.loadImage(url, R.drawable.ic_avatar_place_holder)
             POS_AVATAR
         } else {

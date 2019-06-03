@@ -1,11 +1,9 @@
 package one.mixin.android.ui.wallet.adapter
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_user_transactions.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
@@ -42,14 +40,7 @@ class SnapshotListAdapter : ListAdapter<SnapshotItem, SnapshotHolder>(DIFF_CALLB
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SnapshotHolder {
-        return UserSnapshotHolder(LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_user_transactions, parent, false))
-    }
-}
-
-class UserSnapshotHolder(itemView: View) : SnapshotHolder(itemView) {
-    override fun bind(snapshot: SnapshotItem, listener: OnSnapshotListener?) {
-        super.bind(snapshot, listener)
-        itemView.symbol_tv.text = snapshot.assetSymbol
+        return SnapshotHolder(LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_wallet_transactions, parent, false))
     }
 }
