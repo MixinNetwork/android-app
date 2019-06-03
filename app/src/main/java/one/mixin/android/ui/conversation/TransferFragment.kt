@@ -399,14 +399,21 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         if (currentAsset == null || (user == null && address == null)) {
             return
         }
+        val amount = getAmount()
+        try {
+            BigDecimal(amount)
+        } catch (e: NumberFormatException) {
+            return
+        }
+
         val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, getAmount(), null, UUID.randomUUID().toString(),
+            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(),
                 contentView.transfer_memo.text.toString())
         } else {
             val noPublicKey = currentAsset!!.isAccountTagAsset()
             WithdrawBiometricItem(if (noPublicKey) address!!.accountTag!! else address!!.publicKey!!, address!!.addressId,
                 if (noPublicKey) address!!.accountName!! else address!!.label!!,
-                currentAsset!!, getAmount(), null, UUID.randomUUID().toString(),
+                currentAsset!!, amount, null, UUID.randomUUID().toString(),
                 contentView.transfer_memo.text.toString())
         }
 
