@@ -32,6 +32,7 @@ import one.mixin.android.Constants.ARGS_USER_ID
 import one.mixin.android.R
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
@@ -211,8 +212,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun handleAddressTransfer() {
-        contentView.avatar.isVisible = false
-        contentView.address_avatar.isVisible = true
+        contentView.avatar.setNet(requireContext().dpToPx(16f))
         contentView.expand_iv.isVisible = false
         contentView.asset_rl.setOnClickListener(null)
         currentAsset = arguments!!.getParcelable(ARGS_ASSET)

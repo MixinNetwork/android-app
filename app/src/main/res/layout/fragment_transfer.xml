@@ -34,26 +34,12 @@
             android:baselineAligned="false"
             android:orientation="vertical">
 
-            <FrameLayout
+            <one.mixin.android.widget.AvatarView
+                android:id="@+id/avatar"
                 android:layout_width="70dp"
                 android:layout_height="70dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/margin12">
-
-                <one.mixin.android.widget.AvatarView
-                    android:id="@+id/avatar"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"/>
-
-                <ImageView
-                    android:id="@+id/address_avatar"
-                    android:layout_width="70dp"
-                    android:layout_height="70dp"
-                    android:background="@drawable/bg_circle_70_solid_gray"
-                    android:padding="@dimen/margin16"
-                    android:src="@drawable/ic_transfer_address"
-                    android:visibility="gone"/>
-            </FrameLayout>
+                android:layout_marginTop="@dimen/margin12"/>
 
             <RelativeLayout
                 android:id="@+id/asset_rl"
