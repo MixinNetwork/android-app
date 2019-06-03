@@ -101,7 +101,7 @@ internal constructor(
 
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal> = readConversationDao.fuzzySearchChat(query)
 
-    fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
+    suspend fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
 
     suspend fun getMediaMessages(conversationId: String): List<MessageItem> =
         readMessageDao.getMediaMessages(conversationId)
@@ -145,7 +145,7 @@ internal constructor(
         }
     }
 
-    fun getRealParticipants(conversationId: String) = readAppDatabase.participantDao().getRealParticipants(conversationId)
+    suspend fun getRealParticipants(conversationId: String) = readAppDatabase.participantDao().getRealParticipantsSuspend(conversationId)
 
     fun getGroupConversationApp(conversationId: String) = readAppDatabase.appDao().getGroupConversationApp(conversationId)
 
@@ -173,7 +173,7 @@ internal constructor(
     fun getMediaByConversationIdAndCategory(conversationId: String, category: String) = readMessageDao
         .getMediaByConversationIdAndCategory(conversationId, category)
 
-    fun findMessageIndex(conversationId: String, messageId: String) = readMessageDao.findMessageIndex(conversationId, messageId)
+    suspend fun findMessageIndex(conversationId: String, messageId: String) = readMessageDao.findMessageIndex(conversationId, messageId)
 
     fun findUnreadMessagesSync(conversationId: String) = readMessageDao.findUnreadMessagesSync(conversationId)
 

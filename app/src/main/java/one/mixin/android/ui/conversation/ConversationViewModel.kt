@@ -2,9 +2,9 @@ package one.mixin.android.ui.conversation
 
 import android.app.Activity
 import android.app.NotificationManager
+import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.annotation.WorkerThread
 import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
@@ -17,7 +17,10 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -30,6 +33,7 @@ import one.mixin.android.extension.blurThumbnail
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.fileExists
 import one.mixin.android.extension.getAttachment
 import one.mixin.android.extension.getFilePath
@@ -37,9 +41,11 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
 import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
@@ -129,8 +135,8 @@ internal constructor(
             .build()
     }
 
-    fun indexUnread(conversationId: String) =
-        conversationRepository.indexUnread(conversationId)
+    suspend fun indexUnread(conversationId: String) =
+        conversationRepository.indexUnread(conversationId) ?: 0
 
     fun searchConversationById(id: String) =
         conversationRepository.searchConversationById(id)
@@ -350,8 +356,7 @@ internal constructor(
     fun getGroupParticipantsLiveData(conversationId: String) =
         conversationRepository.getGroupParticipantsLiveData(conversationId)
 
-    @WorkerThread
-    fun initConversation(conversationId: String, recipient: User, sender: User) {
+    suspend fun initConversation(conversationId: String, recipient: User, sender: User) = withContext(Dispatchers.IO) {
         val createdAt = nowInUtc()
         val conversation = createConversation(conversationId, ConversationCategory.CONTACT.name,
             recipient.userId, ConversationStatus.START.ordinal)
@@ -500,13 +505,8 @@ internal constructor(
         jobManager.addJobInBackground(RefreshStickerAlbumJob())
     }
 
-    fun findMessageIndexSync(conversationId: String, messageId: String) =
+    suspend fun findMessageIndex(conversationId: String, messageId: String) =
         conversationRepository.findMessageIndex(conversationId, messageId)
-
-    fun findMessageIndex(conversationId: String, messageId: String) =
-        Observable.just(1).map {
-            conversationRepository.findMessageIndex(conversationId, messageId)
-        }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
 
     private fun findUnreadMessagesSync(conversationId: String) = conversationRepository.findUnreadMessagesSync(conversationId)
 
@@ -598,4 +598,41 @@ internal constructor(
             .observeOn(AndroidSchedulers.mainThread())
 
     fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
+
+    fun updateRecentUsedBots(
+        defaultSharedPreferences: SharedPreferences,
+        userId: String
+    ) = viewModelScope.launch(Dispatchers.IO) {
+        val botsString = defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_USED_BOTS, null)
+        if (botsString != null) {
+            var botsList = botsString.split("=")
+            if (botsList.size == 1 && !botsList[0].isUUID()) {
+                getPreviousVersionBotsList(defaultSharedPreferences)?.let {
+                    botsList = it
+                }
+            }
+            if (botsList.isNullOrEmpty()) {
+                defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
+                return@launch
+            }
+
+            val arr = botsList.filter { it != userId }
+                .toMutableList()
+                .also {
+                    if (it.size >= Constants.RECENT_USED_BOTS_MAX_COUNT) {
+                        it.dropLast(1)
+                    }
+                    it.add(0, userId)
+                }
+            defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, arr.joinToString("="))
+        } else {
+            defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
+        }
+    }
+
+    private fun getPreviousVersionBotsList(defaultSharedPreferences: SharedPreferences): List<String>? {
+        defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_USED_BOTS, null)?.let { botsString ->
+            return botsString.deserialize<Array<String>>()?.toList()
+        } ?: return null
+    }
 }

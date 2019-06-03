@@ -55,7 +55,7 @@ interface ConversationDao : BaseDao<Conversation> {
     fun getConversationById(conversationId: String): LiveData<Conversation>
 
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
-    fun indexUnread(conversationId: String): Int
+    suspend fun indexUnread(conversationId: String): Int?
 
     @Transaction
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")

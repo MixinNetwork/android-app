@@ -16,11 +16,13 @@ import androidx.collection.ArrayMap
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_group_info.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ConversationEvent
@@ -45,8 +47,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 import one.mixin.android.vo.isGroup
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import javax.inject.Inject
 
 class GroupInfoFragment : BaseFragment() {
@@ -219,7 +219,7 @@ class GroupInfoFragment : BaseFragment() {
                     (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name))
                     GONE else VISIBLE
 
-                doAsync {
+                lifecycleScope.launch {
                     val participants = groupViewModel.getRealParticipants(conversationId)
                     participantsMap.clear()
                     for (item in it) {
@@ -231,16 +231,11 @@ class GroupInfoFragment : BaseFragment() {
                         }
                     }
                     adapter.participantsMap = participantsMap
-
-                    uiThread {
-                        if (isAdded) {
-                            val s = search_et.text.toString()
-                            if (s.isNotBlank()) {
-                                filter(s.trim())
-                            } else {
-                                adapter.data = u
-                            }
-                        }
+                    val s = search_et.text.toString()
+                    if (s.isNotBlank()) {
+                        filter(s.trim())
+                    } else {
+                        adapter.data = u
                     }
                 }
             }

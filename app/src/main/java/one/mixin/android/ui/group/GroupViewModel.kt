@@ -101,7 +101,7 @@ internal constructor(
             participantRequests = participantRequests, type = type))
     }
 
-    fun getRealParticipants(conversationId: String) = conversationRepository.getRealParticipants(conversationId)
+    suspend fun getRealParticipants(conversationId: String) = conversationRepository.getRealParticipants(conversationId)
 
     fun exitGroup(conversationId: String) {
         jobManager.addJobInBackground(ConversationJob(conversationId = conversationId, type = TYPE_EXIT))

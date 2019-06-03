@@ -47,7 +47,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT count(*) FROM messages WHERE conversation_id = :conversationId " +
         "AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)")
-    fun findMessageIndex(conversationId: String, messageId: String): Int
+    suspend fun findMessageIndex(conversationId: String, messageId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
