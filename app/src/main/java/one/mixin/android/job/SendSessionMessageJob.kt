@@ -26,13 +26,18 @@ class SendSessionMessageJob(
     }
 
     override fun onRun() {
+        val sessionId = Session.getExtensionSessionId()
+        if (sessionId == null) {
+            removeJob()
+            return
+        }
+
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
         if (conversation.isContact()) {
             requestCreateConversation(conversation)
         }
         jobManager.saveJob(this)
         val accountId = Session.getAccountId()!!
-        val sessionId = Session.getExtensionSessionId()!!
         if (content != null) {
             message.content = content
         }
