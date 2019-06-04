@@ -42,6 +42,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import com.google.android.gms.common.ConnectionResult
+import com.google.android.gms.common.GoogleApiAvailability
 import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.receiver.ShareBroadcastReceiver
@@ -519,3 +521,6 @@ fun Context.getSplineFlingDistance(velocity: Int): Double {
     val decelMinusOne = DECELERATION_RATE - 1.0
     return flingFriction.toDouble() * getPhysicalCoeff().toDouble() * Math.exp(DECELERATION_RATE / decelMinusOne * l)
 }
+
+fun Context.isGooglePlayServicesAvailable() =
+    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
