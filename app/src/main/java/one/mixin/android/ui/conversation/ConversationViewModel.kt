@@ -19,7 +19,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -356,7 +355,7 @@ internal constructor(
     fun getGroupParticipantsLiveData(conversationId: String) =
         conversationRepository.getGroupParticipantsLiveData(conversationId)
 
-    suspend fun initConversation(conversationId: String, recipient: User, sender: User) = withContext(Dispatchers.IO) {
+    fun initConversation(conversationId: String, recipient: User, sender: User) {
         val createdAt = nowInUtc()
         val conversation = createConversation(conversationId, ConversationCategory.CONTACT.name,
             recipient.userId, ConversationStatus.START.ordinal)
