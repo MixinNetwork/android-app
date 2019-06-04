@@ -70,6 +70,7 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.getUriForFile
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadVideo
@@ -219,6 +220,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             bottomSheet.dismiss()
         }
         view.decode.setOnClickListener {
+            if (!this.isGooglePlayServicesAvailable()) {
+                toast(R.string.can_not_recognize)
+                bottomSheet.dismiss()
+                return@setOnClickListener
+            }
+
             findViewPagerChildByTag { viewGroup ->
                 val imageView = viewGroup.getChildAt(0) as ImageView
                 if (imageView.drawable is BitmapDrawable) {
