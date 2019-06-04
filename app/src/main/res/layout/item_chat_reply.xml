@@ -9,30 +9,30 @@
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingTop="1.5dp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingTop="1.5dp">
 
         <TextView
             android:id="@+id/chat_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="1.5dp"
             android:ellipsize="end"
             android:gravity="start|center_vertical"
             android:lines="1"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:textColor="#19BEF1"
             android:maxWidth="280dp"
             android:minWidth="30dp"
-            android:textSize="14sp"
-            android:layout_marginBottom="1.5dp"/>
+            android:textColor="#19BEF1"
+            android:textSize="14sp"/>
 
         <FrameLayout
             android:id="@+id/chat_msg_layout"
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
-            android:layout_marginEnd="4dp"
-            android:layout_height="wrap_content">
+            android:layout_marginEnd="4dp">
 
             <one.mixin.android.widget.MessageLayout
                 android:layout_width="wrap_content"
@@ -81,11 +81,11 @@
                         android:id="@+id/reply_avatar"
                         android:layout_width="0dp"
                         android:layout_height="0dp"
-                        android:src="@drawable/image_holder"
-                        android:gravity="center"
-                        android:layout_marginEnd="6dp"
                         android:layout_marginTop="6dp"
+                        android:layout_marginEnd="6dp"
                         android:layout_marginBottom="6dp"
+                        android:gravity="center"
+                        android:src="@drawable/image_holder"
                         android:visibility="gone"
                         app:border_text_size="14sp"
                         app:layout_constraintBottom_toBottomOf="parent"
@@ -99,10 +99,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="4dp"
-                        android:layout_marginTop="3dp"
+                        android:layout_marginTop="4dp"
                         android:layout_marginEnd="16dp"
                         android:singleLine="true"
                         android:textColor="@color/text_black"
+                        android:textSize="14sp"
                         app:layout_constraintEnd_toStartOf="@id/reply_iv"
                         app:layout_constraintHorizontal_bias="0"
                         app:layout_constraintStart_toEndOf="@id/start_view"
@@ -111,15 +112,16 @@
 
                     <TextView
                         android:id="@+id/reply_content_tv"
-                        android:ellipsize="end"
-                        android:drawablePadding="3dp"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="3dp"
+                        android:layout_marginTop="4dp"
                         android:layout_marginEnd="16dp"
+                        android:layout_marginBottom="4dp"
+                        android:drawablePadding="4dp"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/sf_pro_light"
                         android:singleLine="true"
                         android:textColor="@color/text_gray"
-                        android:fontFamily="@font/sf_pro_light"
                         android:textSize="12sp"
                         app:layout_constrainedWidth="true"
                         app:layout_constraintBottom_toBottomOf="parent"
