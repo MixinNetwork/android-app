@@ -53,6 +53,7 @@ buildscript {
         ext.ktlintVersion = '0.33.0'
         ext.exoplayerVersion = '2.10.1'
         ext.gcmVersion = '16.0.1'
+        ext.perfVersion = '17.0.2'
 
         ext.junitVersion = '4.12'
         ext.leakcanaryVerison = '1.5.1'
@@ -83,6 +84,7 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlin_version}"
         classpath 'com.google.gms:google-services:4.2.0'
         classpath 'io.fabric.tools:gradle:1.29.0'
+        classpath 'com.google.firebase:perf-plugin:1.2.1'
     }
 }
 
