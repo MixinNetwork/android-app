@@ -146,6 +146,8 @@ import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import javax.inject.Inject
@@ -1064,14 +1066,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private inline fun createConversation(crossinline action: () -> Unit) = lifecycleScope.launch {
+    private inline fun createConversation(crossinline action: () -> Unit) {
         if (isFirstMessage) {
-            withContext(Dispatchers.IO) {
+            doAsync {
                 chatViewModel.initConversation(conversationId, recipient!!, sender)
                 isFirstMessage = false
+
+                uiThread {
+                    if (isAdded) {
+                        action()
+                    }
+                }
             }
+        } else {
+            action()
         }
-        action()
     }
 
     private fun isPlainMessage(): Boolean {
