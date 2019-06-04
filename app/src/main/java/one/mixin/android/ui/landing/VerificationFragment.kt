@@ -14,9 +14,10 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_verification.*
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
@@ -43,7 +44,6 @@ import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
-import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
@@ -201,14 +201,7 @@ class VerificationFragment : BaseFragment() {
 
                 account = r.data!!
                 if (account.code_id.isNotEmpty()) {
-                    GlobalScope.launch(SINGLE_DB_THREAD) {
-                        val p = Point()
-                        val ctx = MixinApplication.appContext
-                        ctx.windowManager.defaultDisplay?.getSize(p)
-                        val size = minOf(p.x, p.y)
-                        val b = account.code_url.generateQRCode(size)
-                        b?.saveQRCode(ctx, account.userId)
-                    }
+                    saveQrCode()
                 }
                 Session.storeAccount(account)
                 Session.storeToken(sessionKey.getPrivateKeyPem())
@@ -227,6 +220,15 @@ class VerificationFragment : BaseFragment() {
             }, { t: Throwable ->
                 handleError(t)
             })
+    }
+
+    private fun saveQrCode() = lifecycleScope.launch(Dispatchers.IO) {
+        val p = Point()
+        val ctx = MixinApplication.appContext
+        ctx.windowManager.defaultDisplay?.getSize(p)
+        val size = minOf(p.x, p.y)
+        val b = account.code_url.generateQRCode(size)
+        b?.saveQRCode(ctx, account.userId)
     }
 
     private fun handleFailure(r: MixinResponse<Account>) {
