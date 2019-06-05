@@ -213,6 +213,6 @@ interface MessageDao : BaseDao<Message> {
     fun takeUnseen(userId: String, conversationId: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_MESSAGE_ITEM AND m.created_at > :createdAt LIMIT 1")
-    fun findNextMessage(conversationId: String, createdAt: String): MessageItem?
+    @Query("$PREFIX_MESSAGE_ITEM AND m.created_at >= :createdAt AND m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1")
+    fun findNextMessage(conversationId: String, createdAt: String, messageId: String): MessageItem?
 }

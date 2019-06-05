@@ -153,7 +153,7 @@ class AudioPlayer private constructor() {
             GlobalScope.launch {
                 val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
                     .messageDao()
-                    .findNextMessage(item.conversationId, item.createdAt) ?: return@launch
+                    .findNextMessage(item.conversationId, item.createdAt, item.messageId) ?: return@launch
                 if (nextMessage.userId != item.userId || !nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
 
                 withContext(Dispatchers.Main) {
