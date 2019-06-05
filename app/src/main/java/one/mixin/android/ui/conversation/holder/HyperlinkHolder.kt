@@ -1,15 +1,17 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import androidx.constraintlayout.widget.ConstraintLayout
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_hyperlink.view.*
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.timeAgoClock
@@ -20,12 +22,17 @@ import org.jetbrains.anko.dip
 
 class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containerView) {
 
+    private val dp24 by lazy {
+        MixinApplication.appContext.dpToPx(30f)
+    }
+
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-        (itemView.chat_layout.layoutParams as ConstraintLayout.LayoutParams).also {
-            it.matchConstraintMaxWidth = itemView.context.maxItemWidth()
-        }
+        itemView.chat_tv.maxWidth = itemView.context.maxItemWidth() - dp24
+        itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp24
+        itemView.chat_name_tv.maxWidth = itemView.context.maxItemWidth() - dp24
+        itemView.chat_description_tv.maxWidth = itemView.context.maxItemWidth() - dp24
 
         itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {

@@ -193,7 +193,7 @@ private var maxItemWidth: Int? = null
 
 fun Context.maxItemWidth(): Int {
     if (maxItemWidth == null) {
-        maxItemWidth = realSize().x - dpToPx(66f)
+        maxItemWidth = realSize().x * 4 / 5
     }
     return maxItemWidth!!
 }

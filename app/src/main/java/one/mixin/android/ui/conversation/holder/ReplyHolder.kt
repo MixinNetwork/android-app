@@ -18,6 +18,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
@@ -36,7 +37,8 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-
+        itemView.chat_name.maxWidth = itemView.context.maxItemWidth() - dp16
+        itemView.chat_msg_content.setMaxWidth(itemView.context.maxItemWidth() - dp16)
         itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
