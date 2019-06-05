@@ -30,8 +30,10 @@ import one.mixin.android.extension.bounce
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hasNavigationBar
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
@@ -44,7 +46,7 @@ import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import java.io.File
 
-class EditFragment : BaseCaptureFragment() {
+class EditFragment : CaptureVisionFragment() {
 
     companion object {
         const val TAG = "EditFragment"
@@ -99,6 +101,11 @@ class EditFragment : BaseCaptureFragment() {
         if (isVideo) {
             mixinPlayer.release()
         }
+    }
+
+    override fun onBackPressed(): Boolean {
+        (activity as CaptureActivity).resumeCapture()
+        return super.onBackPressed()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -160,16 +167,24 @@ class EditFragment : BaseCaptureFragment() {
 
     private fun scan() = lifecycleScope.launch(Dispatchers.IO) {
         val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
-        val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
-        detector.use { d ->
-            d.detectInImage(visionImage)
-                .addOnSuccessListener { result ->
-                    result.firstOrNull()?.rawValue?.let {
-                        lifecycleScope.launch {
-                            pseudoNotificationView.addContent(it)
+        if (requireContext().isGooglePlayServicesAvailable()) {
+            val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
+            detector.use { d ->
+                d.detectInImage(visionImage)
+                    .addOnSuccessListener { result ->
+                        result.firstOrNull()?.rawValue?.let {
+                            lifecycleScope.launch {
+                                pseudoNotificationView.addContent(it)
+                            }
                         }
                     }
+            }
+        } else {
+            bitmap.decodeQR()?.let {
+                withContext(Dispatchers.Main) {
+                    pseudoNotificationView.addContent(it)
                 }
+            }
         }
     }
 

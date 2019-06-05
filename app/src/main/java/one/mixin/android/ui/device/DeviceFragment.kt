@@ -27,9 +27,10 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.AvatarActivity.Companion.ARGS_URL
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureFragment
-import one.mixin.android.ui.qr.CaptureFragment.Companion.ARGS_FOR_ADDRESS
-import one.mixin.android.ui.qr.CaptureFragment.Companion.REQUEST_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ADDRESS_RESULT
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
+import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.widget.BottomSheet
@@ -106,8 +107,8 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE && resultCode == CaptureFragment.RESULT_CODE) {
-            val url = data?.getStringExtra(CaptureFragment.ARGS_ADDRESS_RESULT)
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
+            val url = data?.getStringExtra(ARGS_ADDRESS_RESULT)
             url?.let {
                 confirm(it)
             }

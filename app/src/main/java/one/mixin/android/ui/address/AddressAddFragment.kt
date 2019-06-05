@@ -21,8 +21,12 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureFragment
-import one.mixin.android.ui.qr.CaptureFragment.Companion.REQUEST_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ACCOUNT_NAME_RESULT
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ADDRESS_RESULT
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ACCOUNT_NAME
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
+import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ADD
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.ARGS_TYPE
@@ -116,8 +120,8 @@ class AddressAddFragment : BaseFragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_CODE && resultCode == CaptureFragment.RESULT_CODE) {
-            val addr = data?.getStringExtra(CaptureFragment.ARGS_ADDRESS_RESULT)
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
+            val addr = data?.getStringExtra(ARGS_ADDRESS_RESULT)
             if (addr != null) {
                 if (isIcapAddress(addr)) {
                     addr_et.setText(decodeICAP(addr))
@@ -126,7 +130,7 @@ class AddressAddFragment : BaseFragment() {
                 }
                 return
             }
-            val label = data?.getStringExtra(CaptureFragment.ARGS_ACCOUNT_NAME_RESULT) ?: return
+            val label = data?.getStringExtra(ARGS_ACCOUNT_NAME_RESULT) ?: return
             label_et.setText(label)
         }
     }
@@ -140,7 +144,7 @@ class AddressAddFragment : BaseFragment() {
             .subscribe { granted ->
                 if (granted) {
                     CaptureActivity.show(requireActivity()) {
-                        it.putExtra(if (isAddr) CaptureFragment.ARGS_FOR_ADDRESS else CaptureFragment.ARGS_FOR_ACCOUNT_NAME, true)
+                        it.putExtra(if (isAddr) ARGS_FOR_ADDRESS else ARGS_FOR_ACCOUNT_NAME, true)
                         startActivityForResult(it, REQUEST_CODE)
                     }
                 } else {

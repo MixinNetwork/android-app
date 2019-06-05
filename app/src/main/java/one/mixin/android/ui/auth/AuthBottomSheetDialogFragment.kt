@@ -28,7 +28,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.qr.CaptureFragment
+import one.mixin.android.ui.qr.CaptureActivity.Companion.SCOPES
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Asset
@@ -61,12 +61,12 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             val user = Session.getAccount() ?: return scopes
             for (s in authorization.scopes) {
                 when (s) {
-                    CaptureFragment.SCOPES[0] ->
+                    SCOPES[0] ->
                         scopes.add(Scope(s, ctx.getString(R.string.auth_profile_content,
                             user.full_name, user.identity_number)))
-                    CaptureFragment.SCOPES[1] ->
+                    SCOPES[1] ->
                         scopes.add(Scope(s, user.phone))
-                    CaptureFragment.SCOPES[2] -> {
+                    SCOPES[2] -> {
                         val sb = StringBuilder()
                         assets.forEachWithIndex { i, a ->
                             if (i > 1) return@forEachWithIndex
@@ -82,11 +82,11 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             scopes.add(Scope(s, sb.toString()))
                         }
                     }
-                    CaptureFragment.SCOPES[3] ->
+                    SCOPES[3] ->
                         scopes.add(Scope(s, ctx.getString(R.string.auth_apps_read_description)))
-                    CaptureFragment.SCOPES[4] ->
+                    SCOPES[4] ->
                         scopes.add(Scope(s, ctx.getString(R.string.auth_apps_write_description)))
-                    CaptureFragment.SCOPES[5] ->
+                    SCOPES[5] ->
                         scopes.add(Scope(s, ctx.getString(R.string.auth_permission_contacts_read_description)))
                 }
             }
@@ -192,7 +192,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private class ScopeAdapter(val scopes: List<Scope>) : RecyclerView.Adapter<ScopeViewHolder>() {
         val checkedScopes = ArraySet<String>().apply {
-            addAll(CaptureFragment.SCOPES)
+            addAll(SCOPES)
         }
         var onScopeListener: OnScopeListener? = null
 
@@ -203,7 +203,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             holder.itemView.title.text = x(holder.itemView.context, scope.name)
             holder.itemView.desc.text = scope.desc
             holder.itemView.cb.isChecked = checkedScopes.contains(scope.name)
-            if (scope.name == CaptureFragment.SCOPES[0]) {
+            if (scope.name == SCOPES[0]) {
                 holder.itemView.cb.isEnabled = false
             } else {
                 holder.itemView.cb.isEnabled = true
@@ -216,12 +216,12 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         private fun x(ctx: Context, scope: String): String {
             val id = when (scope) {
-                CaptureFragment.SCOPES[0] -> R.string.auth_public_profile
-                CaptureFragment.SCOPES[1] -> R.string.auth_phone_number
-                CaptureFragment.SCOPES[2] -> R.string.auth_assets
-                CaptureFragment.SCOPES[3] -> R.string.auth_app_read
-                CaptureFragment.SCOPES[4] -> R.string.auth_apps_write
-                CaptureFragment.SCOPES[5] -> R.string.auth_permission_contacts_read
+                SCOPES[0] -> R.string.auth_public_profile
+                SCOPES[1] -> R.string.auth_phone_number
+                SCOPES[2] -> R.string.auth_assets
+                SCOPES[3] -> R.string.auth_app_read
+                SCOPES[4] -> R.string.auth_apps_write
+                SCOPES[5] -> R.string.auth_permission_contacts_read
                 else -> R.string.auth_public_profile
             }
             return ctx.getString(id)
