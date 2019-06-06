@@ -238,7 +238,7 @@ class DecryptMessage : Injector() {
         when {
             data.category.endsWith("_TEXT") -> {
                 val plain = if (data.category == MessageCategory.PLAIN_TEXT.name) String(Base64.decode(plainText)) else plainText
-                val message = if (data.quoteMessageId == null) {
+                val message = if (data.quoteMessageId.isNullOrEmpty()) {
                     createMessage(data.messageId, data.conversationId, data.userId, data.category,
                         plain, data.createdAt, MessageStatus.DELIVERED)
                         .apply {
