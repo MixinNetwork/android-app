@@ -22,7 +22,7 @@ buildscript {
         ext.rxJavaVersion = '2.2.9'
         ext.rxAndroidVersion = '2.1.1'
         ext.rxbindingVersion = '3.0.0-alpha2'
-        ext.retrofitVersion = '2.5.0'
+        ext.retrofitVersion = '2.6.0'
         ext.coroutineAdapterVersion = '0.9.2'
         ext.stethoVersion = '1.5.1'
         ext.loggerVersion = '2.2.0'
