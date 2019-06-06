@@ -2,11 +2,11 @@ package one.mixin.android.widget
 
 import android.graphics.Canvas
 import android.graphics.Rect
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.util.SparseArray
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.HeaderPositionCalculator
 import com.timehop.stickyheadersrecyclerview.caching.HeaderProvider
 import com.timehop.stickyheadersrecyclerview.caching.HeaderViewCache
@@ -59,7 +59,7 @@ class MixinHeadersDecoration private constructor(
             val header = getHeaderView(parent, itemPosition)
             setItemOffsetsForHeader(outRect, header, mOrientationProvider.getOrientation(parent))
         }
-        if (itemPosition == mAdapter.getAttachIndex()) {
+        if (mAdapter.getAttachIndex(itemPosition)) {
             getAttachView(parent)?.let {
                 outRect.top += it.measuredHeight
                 mAdapter.onBindAttachView(it)
@@ -108,7 +108,7 @@ class MixinHeadersDecoration private constructor(
 
                 mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader)
                 mRenderer.drawHeader(parent, canvas, header, headerOffset)
-                if (position == mAdapter.getAttachIndex()) {
+                if (mAdapter.getAttachIndex(position)) {
                     getAttachView(parent)?.let { view ->
                         val top = (headerOffset.top - view.measuredHeight)
                         canvas.save()
@@ -118,7 +118,7 @@ class MixinHeadersDecoration private constructor(
                     }
                 }
             } else {
-                if (position == mAdapter.getAttachIndex()) {
+                if (mAdapter.getAttachIndex(position)) {
                     getAttachView(parent)?.let { view ->
                         val top = (itemView.y - view.measuredHeight).toInt()
                         canvas.save()

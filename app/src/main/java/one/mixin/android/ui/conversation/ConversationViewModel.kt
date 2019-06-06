@@ -137,6 +137,8 @@ internal constructor(
     suspend fun indexUnread(conversationId: String) =
         conversationRepository.indexUnread(conversationId) ?: 0
 
+    suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String? = conversationRepository.findFirstUnreadMessageId(conversationId, userId)
+
     fun searchConversationById(id: String) =
         conversationRepository.searchConversationById(id)
             .observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())

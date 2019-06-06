@@ -435,7 +435,7 @@
     <string name="alert_key_contact_contact_message">分享了一个联系人</string>
     <string name="alert_key_contact_audio_call_message">发起了语音通话</string>
 
-    <string name="unread">%1$d 条新消息</string>
+    <string name="unread">未读消息</string>
     <string name="stranger_from">他/她不是你的联系人</string>
     <string name="notification_group">群组通知</string>
     <string name="notification_message">消息通知</string>

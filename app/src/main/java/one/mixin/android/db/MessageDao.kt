@@ -215,4 +215,7 @@ interface MessageDao : BaseDao<Message> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("$PREFIX_MESSAGE_ITEM AND m.created_at >= :createdAt AND m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1")
     fun findNextMessage(conversationId: String, createdAt: String, messageId: String): MessageItem?
+
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status = 'DELIVERED' ORDER BY created_at ASC LIMIT 1")
+    suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String?
 }
