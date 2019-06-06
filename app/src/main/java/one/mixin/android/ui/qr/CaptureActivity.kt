@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import one.mixin.android.R
-import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 
@@ -15,33 +14,12 @@ class CaptureActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
-        val isGooglePlayServicesAvailable = isGooglePlayServicesAvailable()
-        captureFragment = if (isGooglePlayServicesAvailable) {
-            when {
+        captureFragment = when {
                 intent.hasExtra(ARGS_FOR_ADDRESS) -> CameraXCaptureFragment.newInstance(true)
                 intent.hasExtra(ARGS_FOR_ACCOUNT_NAME) -> CameraXCaptureFragment.newInstance(forAccountName = true)
                 else -> CameraXCaptureFragment.newInstance()
             }
-        } else {
-            when {
-                intent.hasExtra(ARGS_FOR_ADDRESS) -> ZxingCaptureFragment.newInstance(true)
-                intent.hasExtra(ARGS_FOR_ACCOUNT_NAME) -> ZxingCaptureFragment.newInstance(forAccountName = true)
-                else -> ZxingCaptureFragment.newInstance()
-            }
-        }
-        val tag = if (isGooglePlayServicesAvailable) CameraXCaptureFragment.TAG else ZxingCaptureFragment.TAG
-        replaceFragment(captureFragment, R.id.container, tag)
-    }
-
-    override fun onResume() {
-        super.onResume()
-        resumeCapture()
-    }
-
-    fun resumeCapture() {
-        if (!isGooglePlayServicesAvailable()) {
-            (captureFragment as? ZxingCaptureFragment)?.resume()
-        }
+        replaceFragment(captureFragment, R.id.container, CameraXCaptureFragment.TAG)
     }
 
     override fun finish() {

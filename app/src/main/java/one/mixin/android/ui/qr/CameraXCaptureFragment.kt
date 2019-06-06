@@ -1,6 +1,7 @@
 package one.mixin.android.ui.qr
 
 import android.annotation.SuppressLint
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
@@ -18,12 +19,17 @@ import androidx.camera.core.ImageCaptureConfig
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
+import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getImageCachePath
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ACCOUNT_NAME
@@ -150,32 +156,61 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         }
     }
 
+    private val isGooglePlayServicesAvailable by lazy {
+        requireContext().isGooglePlayServicesAvailable()
+    }
+
     private val imageAnalyzer = object : ImageAnalysis.Analyzer {
         private val detecting = AtomicBoolean(false)
 
         override fun analyze(image: ImageProxy, rotationDegrees: Int) {
             if (!alreadyDetected && !image.planes.isNullOrEmpty() && detecting.compareAndSet(false, true)) {
-                val buffer = image.planes[0].buffer
-                val imageMetadata = FirebaseVisionImageMetadata.Builder().apply {
-                    setWidth(image.width)
-                    setHeight(image.height)
-                    setRotation(FirebaseVisionImageMetadata.ROTATION_90)
-                    setFormat(FirebaseVisionImageMetadata.IMAGE_FORMAT_NV21)
-                }.build()
-                val visionImage = FirebaseVisionImage.fromByteBuffer(buffer, imageMetadata)
-                detector.use { d ->
-                    d.detectInImage(visionImage)
-                        .addOnSuccessListener { result ->
-                            result.firstOrNull()?.rawValue?.let {
-                                alreadyDetected = true
-                                handleAnalysis(it)
-                            }
-                        }
-                        .addOnCompleteListener {
-                            detecting.set(false)
-                        }
+                if (isGooglePlayServicesAvailable) {
+                    decodeWithFirebaseVision(image)
+                } else {
+                    decodeWithZxing(image)
                 }
             }
+        }
+
+        private fun decodeWithFirebaseVision(image: ImageProxy) {
+            val buffer = image.planes[0].buffer
+            val imageMetadata = FirebaseVisionImageMetadata.Builder().apply {
+                setWidth(image.width)
+                setHeight(image.height)
+                setRotation(FirebaseVisionImageMetadata.ROTATION_90)
+                setFormat(FirebaseVisionImageMetadata.IMAGE_FORMAT_NV21)
+            }.build()
+            val visionImage = FirebaseVisionImage.fromByteBuffer(buffer, imageMetadata)
+            detector.use { d ->
+                d.detectInImage(visionImage)
+                    .addOnSuccessListener { result ->
+                        result.firstOrNull()?.rawValue?.let {
+                            alreadyDetected = true
+                            handleAnalysis(it)
+                        }
+                    }
+                    .addOnCompleteListener {
+                        detecting.set(false)
+                    }
+            }
+        }
+
+        private fun decodeWithZxing(imageProxy: ImageProxy) {
+            val byteArray = ImageUtil.imageToJpegByteArray(imageProxy)
+            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            if (bitmap == null) {
+                detecting.set(false)
+                return
+            }
+            val result = bitmap.decodeQR()
+            if (result != null) {
+                alreadyDetected = true
+                lifecycleScope.launch(Dispatchers.Main) {
+                    handleAnalysis(result)
+                }
+            }
+            detecting.set(false)
         }
     }
 }

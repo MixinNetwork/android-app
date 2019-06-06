@@ -2,13 +2,10 @@ package one.mixin.android.extension
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageFormat
-import android.graphics.Matrix
-import android.graphics.Rect
-import android.graphics.YuvImage
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
+import com.google.zxing.LuminanceSource
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.ReaderException
@@ -65,30 +62,15 @@ fun Bitmap.save(file: File) {
     fos.closeSilently()
 }
 
-fun ByteArray.xYuv2Simple(w: Int, h: Int): ByteArray {
-    val out = ByteArrayOutputStream()
-    val yuvImage = YuvImage(this, ImageFormat.NV21, w, h, null)
-    yuvImage.compressToJpeg(Rect(0, 0, w, h), 100, out)
-    return out.toByteArray()
-}
-
-fun Bitmap.rotate(w: Int, h: Int, rotation: Int, isFacingBack: Boolean = false): Bitmap {
-    val matrix = Matrix().apply {
-        postRotate(rotation.toFloat())
-        if (!isFacingBack) { // resolve mirror problem
-            preScale(-1f, 1f)
-        }
-    }
-    return Bitmap.createBitmap(this, 0, 0, w, h, matrix, true)
-}
-
 fun Bitmap.decodeQR(): String? {
     val width = width
     val height = height
     val pixels = IntArray(width * height)
     getPixels(pixels, 0, width, 0, 0, width, height)
+    return decodeLuminanceSource(RGBLuminanceSource(width, height, pixels))
+}
 
-    val source = RGBLuminanceSource(width, height, pixels)
+private fun decodeLuminanceSource(source: LuminanceSource): String? {
     val binaryBitmap = BinaryBitmap(GlobalHistogramBinarizer(source))
     val reader = MultiFormatReader()
     val hints = EnumMap<DecodeHintType, Any>(DecodeHintType::class.java)

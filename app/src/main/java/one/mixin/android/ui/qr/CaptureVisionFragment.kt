@@ -48,11 +48,6 @@ abstract class CaptureVisionFragment : BaseFragment() {
             } else {
                 MainActivity.showUrl(requireContext(), content)
             }
-            afterPseudoClick()
         }
-    }
-
-    open fun afterPseudoClick() {
-        // Left empty
     }
 }

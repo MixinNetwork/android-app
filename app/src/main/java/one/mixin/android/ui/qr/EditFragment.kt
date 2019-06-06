@@ -103,11 +103,6 @@ class EditFragment : CaptureVisionFragment() {
         }
     }
 
-    override fun onBackPressed(): Boolean {
-        (activity as CaptureActivity).resumeCapture()
-        return super.onBackPressed()
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_edit, container, false)
 
