@@ -1,15 +1,16 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import androidx.constraintlayout.widget.ConstraintLayout
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.BackgroundColorSpan
 import android.view.View
+import androidx.constraintlayout.widget.ConstraintLayout
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_message.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.maxItemWidth
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -22,7 +23,7 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
-
+        itemView.chat_layout.setMaxWidth(itemView.context.maxItemWidth())
         itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {

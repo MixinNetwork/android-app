@@ -30,6 +30,13 @@ class MessageLayout : ViewGroup {
         }
     }
 
+    fun setMaxWidth(maxWidth: Int) {
+        if (this.maxWidth != maxWidth) {
+            this.maxWidth = maxWidth
+            requestLayout()
+        }
+    }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val childCount = childCount
         if (childCount < 2) {
@@ -41,7 +48,7 @@ class MessageLayout : ViewGroup {
         val paddingWidth = paddingStart + paddingEnd
         val paddingHeight = paddingTop + paddingBottom
 
-        measureChildren(MeasureSpec.makeMeasureSpec(maxWidth - contentPadding * 2 - paddingWidth, MeasureSpec.AT_MOST), heightMeasureSpec)
+        measureChildren(MeasureSpec.makeMeasureSpec(maxWidth, MeasureSpec.AT_MOST), heightMeasureSpec)
         val firstView = getChildAt(0) as TextView
         val secondView = getChildAt(1)
         val third = getThird()
