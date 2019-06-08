@@ -184,7 +184,7 @@ class EditFragment : CaptureVisionFragment() {
     }
 
     private fun setBg() {
-        root_view?.setBackgroundColor(resources.getColor(R.color.white, null))
+        root_view?.setBackgroundColor(resources.getColor(R.color.black, null))
     }
 
     private fun save() = lifecycleScope.launch {
