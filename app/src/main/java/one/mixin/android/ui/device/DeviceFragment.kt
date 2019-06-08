@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
-import com.google.zxing.integration.android.IntentIntegrator
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -28,7 +27,10 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.AvatarActivity.Companion.ARGS_URL
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
-import one.mixin.android.ui.qr.CaptureFragment
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_ADDRESS_RESULT
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
+import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.widget.BottomSheet
@@ -96,19 +98,17 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             } else {
-                val intentIntegrator = IntentIntegrator(activity)
-                intentIntegrator.captureActivity = CaptureActivity::class.java
-                intentIntegrator.setBeepEnabled(false)
-                val intent = intentIntegrator.createScanIntent().putExtra(CaptureFragment.ARGS_FOR_ADDRESS, true)
-                startActivityForResult(intent, IntentIntegrator.REQUEST_CODE)
-                activity?.overridePendingTransition(R.anim.slide_in_bottom, 0)
+                CaptureActivity.show(requireActivity()) {
+                    it.putExtra(ARGS_FOR_ADDRESS, true)
+                    startActivityForResult(it, REQUEST_CODE)
+                }
             }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == IntentIntegrator.REQUEST_CODE && resultCode == CaptureFragment.RESULT_CODE) {
-            val url = data?.getStringExtra(CaptureFragment.ARGS_ADDRESS_RESULT)
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
+            val url = data?.getStringExtra(ARGS_ADDRESS_RESULT)
             url?.let {
                 confirm(it)
             }

@@ -36,6 +36,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
@@ -57,12 +58,15 @@ import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
@@ -220,39 +224,55 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             bottomSheet.dismiss()
         }
         view.decode.setOnClickListener {
-            if (!this.isGooglePlayServicesAvailable()) {
-                toast(R.string.can_not_recognize)
-                bottomSheet.dismiss()
-                return@setOnClickListener
-            }
-
             findViewPagerChildByTag { viewGroup ->
-                val imageView = viewGroup.getChildAt(0) as ImageView
-                if (imageView.drawable is BitmapDrawable) {
-                    val image = FirebaseVisionImage.fromBitmap((imageView.drawable as BitmapDrawable).bitmap)
-                    val detector = FirebaseVision.getInstance().visionBarcodeDetector
-                    detector.detectInImage(image)
-                        .addOnSuccessListener { barcodes ->
-                            val url = barcodes.firstOrNull()?.rawValue
-                            if (url != null) {
-                                openUrl(url, supportFragmentManager) {
-                                    QrScanBottomSheetDialogFragment.newInstance(url)
-                                        .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-                                }
-                            } else {
-                                toast(R.string.can_not_recognize)
-                            }
-                        }
-                        .addOnFailureListener {
-                            toast(R.string.can_not_recognize)
-                        }
-                }
+                decodeQRCode(viewGroup)
             }
             bottomSheet.dismiss()
         }
         view.cancel.setOnClickListener { bottomSheet.dismiss() }
 
         bottomSheet.show()
+    }
+
+    private fun decodeQRCode(viewGroup: ViewGroup) {
+        val imageView = viewGroup.getChildAt(0) as ImageView
+        if (imageView.drawable is BitmapDrawable) {
+            if (isGooglePlayServicesAvailable()) {
+                val image = FirebaseVisionImage.fromBitmap((imageView.drawable as BitmapDrawable).bitmap)
+                val detector = FirebaseVision.getInstance().visionBarcodeDetector
+                detector.detectInImage(image)
+                    .addOnSuccessListener { barcodes ->
+                        val url = barcodes.firstOrNull()?.rawValue
+                        if (url != null) {
+                            openUrl(url, supportFragmentManager) {
+                                QrScanBottomSheetDialogFragment.newInstance(url)
+                                    .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                            }
+                        } else {
+                            toast(R.string.can_not_recognize)
+                        }
+                    }
+                    .addOnFailureListener {
+                        toast(R.string.can_not_recognize)
+                    }
+            } else {
+                lifecycleScope.launch {
+                    val url = withContext(Dispatchers.IO) {
+                        (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
+                    }
+                    if (url != null) {
+                        openUrl(url, supportFragmentManager) {
+                            QrScanBottomSheetDialogFragment.newInstance(url)
+                                .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                        }
+                    } else {
+                        toast(R.string.can_not_recognize)
+                    }
+                }
+            }
+        } else {
+            toast(R.string.can_not_recognize)
+        }
     }
 
     private fun shareVideo() {

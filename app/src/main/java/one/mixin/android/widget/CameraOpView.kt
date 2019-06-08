@@ -184,9 +184,9 @@ class CameraOpView : View, GestureDetector.OnGestureListener {
     }
 
     override fun onLongPress(e: MotionEvent?) {
-        mode = Mode.PROGRESS
-        start()
-        callback?.onProgressStart()
+//        mode = Mode.PROGRESS
+//        start()
+//        callback?.onProgressStart()
     }
 
     private fun clean() {

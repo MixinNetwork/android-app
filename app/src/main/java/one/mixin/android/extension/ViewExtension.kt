@@ -35,12 +35,24 @@ import androidx.core.view.ViewPropertyAnimatorListener
 import androidx.core.view.updateLayoutParams
 import androidx.navigation.NavOptions
 import androidx.navigation.findNavController
+import com.facebook.rebound.SimpleSpringListener
+import com.facebook.rebound.Spring
+import com.facebook.rebound.SpringConfig
+import com.facebook.rebound.SpringSystem
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 import timber.log.Timber
 import java.io.FileNotFoundException
 
 const val ANIMATION_DURATION_SHORTEST = 260L
+
+const val FLAGS_FULLSCREEN =
+    View.SYSTEM_UI_FLAG_LOW_PROFILE or
+        View.SYSTEM_UI_FLAG_FULLSCREEN or
+        View.SYSTEM_UI_FLAG_LAYOUT_STABLE or
+        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
+        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
+        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
 
 fun View.hideKeyboard() {
     val inputMethodManager = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
@@ -266,4 +278,20 @@ fun View.capture(context: Context) {
         e.printStackTrace()
     }
     context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+}
+
+private val springSystem = SpringSystem.create()
+private val sprintConfig = SpringConfig.fromOrigamiTensionAndFriction(80.0, 4.0)
+
+fun View.bounce() {
+    val spring = springSystem.createSpring()
+        .setSpringConfig(sprintConfig)
+        .addListener(object : SimpleSpringListener() {
+            override fun onSpringUpdate(spring: Spring) {
+                val value = spring.currentValue.toFloat()
+                scaleX = value
+                scaleY = value
+            }
+        })
+    spring.endValue = 1.0
 }

@@ -200,6 +200,9 @@ class GalleryActivity : AppCompatActivity(), AlbumCollection.AlbumCallbacks, Ada
         if (!mSpec.preview) {
             val result = Intent()
             result.data = item.uri
+            if (item.isVideo) {
+                result.putExtra(IS_VIDEO, true)
+            }
             setResult(Activity.RESULT_OK, result)
             finish()
         } else if (item.isVideo) {

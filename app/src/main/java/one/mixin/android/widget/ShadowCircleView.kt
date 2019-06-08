@@ -8,13 +8,13 @@ import android.graphics.LinearGradient
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.ui.qr.CaptureFragment
+import one.mixin.android.ui.qr.CaptureActivity.Companion.SHOW_QR_CODE
 import org.jetbrains.anko.dip
 
 class ShadowCircleView : View {
@@ -62,7 +62,7 @@ class ShadowCircleView : View {
     override fun onDraw(canvas: Canvas) {
         canvas.drawPaint(framePaint)
         canvas.drawCircle(midX, midY, radius, ringPaint)
-        if (context.defaultSharedPreferences.getBoolean(CaptureFragment.SHOW_QR_CODE, true)) {
+        if (context.defaultSharedPreferences.getBoolean(SHOW_QR_CODE, true)) {
             icon?.draw(canvas)
         }
     }

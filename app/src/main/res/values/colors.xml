@@ -8,9 +8,16 @@
     <color name="colorGray">#9B9B9B</color>
 
     <color name="white">#ffffffff</color>
+    <color name="white_45">#73ffffff</color>
     <color name="black">#ff000000</color>
+    <color name="black_10">#1A000000</color>
+    <color name="black_20">#33000000</color>
+    <color name="black_30">#4D000000</color>
+    <color name="black_40">#66000000</color>
     <color name="black_50">#88000000</color>
+    <color name="black_60">#99000000</color>
     <color name="black_70">#B2000000</color>
+    <color name="black_80">#CC000000</color>
     <color name="gray_50">#88888888</color>
     <color name="gray_light">#757575</color>
     <color name="color_chat_date">#ff7799A9</color>
@@ -65,6 +72,7 @@
     <color name="gray_black_50">#AA3A3C3E</color>
     <color name="menu_bg_border">#E5E7EC</color>
     <color name="toast_bg">#3A3C3E</color>
+    <color name="camera_notification_bg">#D8D8D8</color>
 
     <array name="name_colors">
         <item>#AA4848</item>

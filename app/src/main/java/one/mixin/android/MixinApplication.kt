@@ -69,7 +69,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         init()
         FirebaseApp.initializeApp(this)
         SignalProtocolLoggerProvider.setProvider(MixinSignalProtocolLogger())
-        MixinApplication.appContext = applicationContext
+        appContext = applicationContext
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
         val wmConfig = Configuration.Builder().setWorkerFactory(mixinWorkerFactory).build()

@@ -2,10 +2,10 @@ package one.mixin.android.ui.qr
 
 import android.Manifest
 import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Matrix
+import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,40 +13,54 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.load.DataSource
+import com.bumptech.glide.load.engine.GlideException
+import com.bumptech.glide.request.RequestListener
+import com.bumptech.glide.request.target.Target
+import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import kotlinx.android.synthetic.main.fragment_edit.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.extension.bounce
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
+import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.getPublicPictyresPath
 import one.mixin.android.extension.hasNavigationBar
+import one.mixin.android.extension.isGooglePlayServicesAvailable
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.preview.PreviewDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import org.jetbrains.anko.doAsync
-import org.jetbrains.anko.uiThread
 import java.io.File
 
-class EditFragment : BaseFragment() {
+class EditFragment : CaptureVisionFragment() {
 
     companion object {
         const val TAG = "EditFragment"
         const val ARGS_PATH = "args_path"
+        const val ARGS_FROM_GALLERY = "args_from_gallery"
         private const val IS_VIDEO: String = "IS_VIDEO"
-        fun newInstance(path: String, isVideo: Boolean = false): EditFragment {
-            return EditFragment().withArgs {
-                putString(ARGS_PATH, path)
-                putBoolean(IS_VIDEO, isVideo)
-            }
+        fun newInstance(
+            path: String,
+            isVideo: Boolean = false,
+            fromGallery: Boolean = false
+        ) = EditFragment().withArgs {
+            putString(ARGS_PATH, path)
+            putBoolean(IS_VIDEO, isVideo)
+            putBoolean(ARGS_FROM_GALLERY, fromGallery)
         }
     }
 
@@ -55,17 +69,11 @@ class EditFragment : BaseFragment() {
     }
 
     private val isVideo by lazy {
-        arguments!!.getBoolean(PreviewDialogFragment.IS_VIDEO)
+        arguments!!.getBoolean(IS_VIDEO)
     }
 
-    private var callback: Callback? = null
-
-    override fun onAttach(context: Context) {
-        super.onAttach(context)
-        if (context !is Callback) {
-            throw IllegalArgumentException("")
-        }
-        callback = context
+    private val fromGallery by lazy {
+        arguments!!.getBoolean(ARGS_FROM_GALLERY)
     }
 
     private val mixinPlayer: MixinPlayer by lazy {
@@ -117,20 +125,12 @@ class EditFragment : BaseFragment() {
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .subscribe { granted ->
                     if (granted) {
-                        doAsync {
-                            val outFile = if (isVideo) {
-                                requireContext().getPublicPictyresPath().createVideoTemp("mp4", false)
-                            } else {
-                                requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
-                            }
-                            File(path).copy(outFile)
-                            requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
-                            uiThread { requireContext().toast(R.string.save_success) }
-                        }
+                        save()
                     } else {
                         context?.openPermissionSetting()
                     }
                 }
+            download_iv.bounce()
         }
         send_fl.setOnClickListener {
             if (isVideo) {
@@ -142,14 +142,62 @@ class EditFragment : BaseFragment() {
             }
         }
         if (isVideo) {
+            setBg()
             mixinPlayer.loadVideo(path)
             preview_video_texture.visibility = VISIBLE
             mixinPlayer.setVideoTextureView(preview_video_texture)
             mixinPlayer.start()
         } else {
             preview_iv.visibility = VISIBLE
-            preview_iv.setImageBitmap(callback?.getBitmap())
+            if (fromGallery) {
+                preview_iv.loadImage(path)
+                scan()
+                setBg()
+            } else {
+                preview_iv.loadImage(path, glideRequestListener)
+            }
         }
+        download_iv.isVisible = !fromGallery
+    }
+
+    private fun scan() = lifecycleScope.launch(Dispatchers.IO) {
+        val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
+        if (requireContext().isGooglePlayServicesAvailable()) {
+            val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
+            detector.use { d ->
+                d.detectInImage(visionImage)
+                    .addOnSuccessListener { result ->
+                        result.firstOrNull()?.rawValue?.let {
+                            lifecycleScope.launch {
+                                pseudoNotificationView.addContent(it)
+                            }
+                        }
+                    }
+            }
+        } else {
+            bitmap.decodeQR()?.let {
+                withContext(Dispatchers.Main) {
+                    pseudoNotificationView.addContent(it)
+                }
+            }
+        }
+    }
+
+    private fun setBg() {
+        root_view?.setBackgroundColor(resources.getColor(R.color.black, null))
+    }
+
+    private fun save() = lifecycleScope.launch {
+        val outFile = if (isVideo) {
+            requireContext().getPublicPictyresPath().createVideoTemp("mp4", false)
+        } else {
+            requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
+        }
+        withContext(Dispatchers.IO) {
+            File(path).copy(outFile)
+        }
+        requireContext().sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+        requireContext().toast(R.string.save_success)
     }
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
@@ -167,13 +215,26 @@ class EditFragment : BaseFragment() {
         }
     }
 
-    override fun onBackPressed(): Boolean {
-        callback?.resumeCapture()
-        return super.onBackPressed()
-    }
+    private val glideRequestListener = object : RequestListener<Drawable?> {
+        override fun onLoadFailed(
+            e: GlideException?,
+            model: Any?,
+            target: Target<Drawable?>?,
+            isFirstResource: Boolean
+        ): Boolean {
+            setBg()
+            return false
+        }
 
-    interface Callback {
-        fun getBitmap(): Bitmap?
-        fun resumeCapture()
+        override fun onResourceReady(
+            resource: Drawable?,
+            model: Any?,
+            target: Target<Drawable?>?,
+            dataSource: DataSource?,
+            isFirstResource: Boolean
+        ): Boolean {
+            setBg()
+            return false
+        }
     }
 }
