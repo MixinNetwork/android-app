@@ -2,6 +2,7 @@ package one.mixin.android.ui.setting
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import com.bugsnag.android.Bugsnag
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -26,10 +27,14 @@ internal constructor(
             ?.let {
                 for (item in it) {
                     if (item.mediaUrl != null) {
-                        File(item.mediaUrl.getFilePath()).let { file ->
-                            if (file.exists() && file.isFile) {
-                                file.delete()
+                        try {
+                            File(item.mediaUrl.getFilePath()).let { file ->
+                                if (file.exists() && file.isFile) {
+                                    file.delete()
+                                }
                             }
+                        } catch (e: Exception) {
+                            Bugsnag.notify(e)
                         }
                     }
                     conversationRepository.deleteMessage(item.messageId)
