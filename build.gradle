@@ -54,7 +54,8 @@ buildscript {
         ext.exoplayerVersion = '2.10.1'
         ext.gcmVersion = '16.0.1'
         ext.perfVersion = '17.0.2'
-
+        ext.viewPager2Version = '1.0.0-alpha05'
+        
         ext.junitVersion = '4.12'
         ext.leakcanaryVerison = '1.5.1'
         ext.mockitoVersion = '1.10.19'

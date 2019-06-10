@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.PhotoView.DismissFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/large_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.shizhefei.view.largeimage.LargeImageView
+        android:id="@+id/large_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+</one.mixin.android.widget.PhotoView.DismissFrameLayout>

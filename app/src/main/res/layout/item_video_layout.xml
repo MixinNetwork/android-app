@@ -1,50 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
-             android:layout_width="match_parent"
-             android:layout_height="match_parent">
+<one.mixin.android.widget.PhotoView.DismissFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/video_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <TextureView
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextureView
             android:id="@+id/video_texture"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"/>
 
-    <ImageView
+        <ImageView
             android:id="@+id/preview_iv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             tools:ignore="ContentDescription"/>
 
-    <one.mixin.android.widget.PlayView
+        <one.mixin.android.widget.PlayView
             android:id="@+id/play_view"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:visibility="invisible"
-            android:layout_gravity="center"/>
+            android:layout_gravity="center"
+            android:visibility="invisible"/>
 
-    <RelativeLayout
+        <RelativeLayout
             android:id="@+id/controller"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginBottom="24dp"
-            android:paddingEnd="16dp"
             android:paddingStart="16dp"
+            android:paddingEnd="16dp"
             android:visibility="invisible">
 
-        <TextView
+            <TextView
                 android:id="@+id/duration_tv"
                 android:layout_width="48dp"
                 android:layout_height="wrap_content"
-                android:gravity="end"
                 android:layout_centerVertical="true"
                 android:fontFamily="monospace"
+                android:gravity="end"
                 android:text="@string/default_time"
                 android:textColor="@color/transparent_white"/>
 
-        <TextView
+            <TextView
                 android:id="@+id/remain_tv"
                 android:layout_width="48dp"
                 android:layout_height="wrap_content"
@@ -54,29 +59,29 @@
                 android:text="@string/default_time"
                 android:textColor="@color/transparent_white"/>
 
-        <one.mixin.android.widget.PagerSeekBar
-                style="@style/SeekBar"
+            <one.mixin.android.widget.PagerSeekBar
                 android:id="@+id/seek_bar"
+                style="@style/SeekBar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
-                android:layout_toEndOf="@id/duration_tv"
                 android:layout_toStartOf="@id/remain_tv"
+                android:layout_toEndOf="@id/duration_tv"
                 android:max="200"
                 android:progress="0"/>
-    </RelativeLayout>
+        </RelativeLayout>
 
-    <ImageView
+        <ImageView
             android:id="@+id/close_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:padding="8dp"
             android:src="@drawable/ic_close_white_24dp"
-            tools:ignore="ContentDescription"
-            android:visibility="invisible"/>
+            android:visibility="invisible"
+            tools:ignore="ContentDescription"/>
 
-    <ImageView
+        <ImageView
             android:id="@+id/share_iv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -84,6 +89,7 @@
             android:layout_marginEnd="8dp"
             android:padding="8dp"
             android:src="@drawable/ic_share_white_24dp"
-            tools:ignore="ContentDescription"
-            android:visibility="invisible"/>
-</FrameLayout>
+            android:visibility="invisible"
+            tools:ignore="ContentDescription"/>
+    </FrameLayout>
+</one.mixin.android.widget.PhotoView.DismissFrameLayout>

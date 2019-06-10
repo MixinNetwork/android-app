@@ -16,6 +16,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
@@ -38,8 +39,8 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import androidx.viewpager.widget.PagerAdapter
-import androidx.viewpager.widget.ViewPager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
@@ -49,13 +50,14 @@ import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
-import com.shizhefei.view.largeimage.LargeImageView
 import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_drag_media.*
+import kotlinx.android.synthetic.main.item_media_image.view.*
+import kotlinx.android.synthetic.main.item_media_large_image.view.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import kotlinx.coroutines.Dispatchers
@@ -93,11 +95,8 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
-import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.PlayView
-import one.mixin.android.widget.PlayView.Companion.STATUS_BUFFERING
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
-import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import one.mixin.android.widget.gallery.MimeType
@@ -156,7 +155,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     it.type == MessageCategory.PLAIN_VIDEO.name) {
                 }
             }
-            pagerAdapter = MediaAdapter(list, this@DragMediaActivity)
+            pagerAdapter = MediaAdapter(list)
             view_pager.adapter = pagerAdapter
             if (index != -1) {
                 view_pager.currentItem = index
@@ -168,8 +167,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 this@DragMediaActivity.finish()
             }
         }
-
-        view_pager.addOnPageChangeListener(pageListener)
+        view_pager.registerOnPageChangeCallback(pageListener)
         window.decorView.systemUiVisibility =
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 SYSTEM_UI_FLAG_FULLSCREEN or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
@@ -292,74 +290,135 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         startActivity(Intent.createChooser(sendIntent, "Share video to.."))
     }
 
-    inner class MediaAdapter(
-        val list: List<MessageItem>?,
-        private val onDismissListener: DismissFrameLayout.OnDismissListener
-    ) : PagerAdapter(), TextureView.SurfaceTextureListener {
+    abstract inner class MediaHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        abstract fun bind(position: Int, messageItem: MessageItem)
+    }
 
-        fun getItem(position: Int): MessageItem = list!![position]
+    inner class ImageHolder(itemView: View) : MediaHolder(itemView) {
+        override fun bind(position: Int, messageItem: MessageItem) {
+            itemView.tag = "$PREFIX$position"
+            itemView.image_layout.setDismissListener(this@DragMediaActivity)
+            if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
+                itemView.image.loadGif(messageItem.mediaUrl, object : RequestListener<GifDrawable?> {
+                    override fun onResourceReady(
+                        resource: GifDrawable?,
+                        model: Any?,
+                        target: Target<GifDrawable?>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        if (position == index) {
+                            ViewCompat.setTransitionName(itemView.image, "transition")
+                            setStartPostTransition(itemView.image)
+                        }
+                        return false
+                    }
 
-        override fun getCount(): Int = notNullElse(list, { it.size }, 0)
-
-        override fun isViewFromObject(view: View, obj: Any): Boolean = view === obj
-
-        override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            val messageItem = getItem(position)
-            val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
-                messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
-                if (messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f) {
-                    createLargeImageView(container, position, messageItem)
-                } else {
-                    createPhotoView(container, position, messageItem)
-                }
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<GifDrawable?>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+                })
             } else {
-                createVideoView(container, position, messageItem)
+                itemView.image.loadImage(messageItem.mediaUrl, object : RequestListener<Drawable?> {
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable?>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        if (position == index) {
+                            ViewCompat.setTransitionName(itemView.image, "transition")
+                            setStartPostTransition(itemView.image)
+                        }
+                        return false
+                    }
+
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable?>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+                })
             }
-            val layout = DismissFrameLayout(container.context)
-            layout.setDismissListener(onDismissListener)
-            layout.layoutParams = ViewPager.LayoutParams()
-            layout.addView(innerView)
-            layout.tag = "$PREFIX$position"
-            container.addView(layout)
-            return layout
+            itemView.image.setOnClickListener {
+                finishAfterTransition()
+            }
+            itemView.image.setOnLongClickListener {
+                showBottom()
+                return@setOnLongClickListener true
+            }
         }
+    }
 
-        private fun createVideoView(container: ViewGroup, position: Int, messageItem: MessageItem): View {
-            val view = View.inflate(container.context, R.layout.item_video_layout, null)
-            view.close_iv.setOnClickListener { finishAfterTransition() }
-            view.share_iv.setOnClickListener { shareVideo() }
-            view.close_iv.post {
-                val statusBarHeight = statusBarHeight().toFloat()
-                view.close_iv.translationY = statusBarHeight
-                view.share_iv.translationY = statusBarHeight
+    inner class LargeImageHolder(itemView: View) : MediaHolder(itemView) {
+        override fun bind(position: Int, messageItem: MessageItem) {
+            itemView.tag = "$PREFIX$position"
+            itemView.large_layout.setDismissListener(this@DragMediaActivity)
+            itemView.large_image.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
+            if (messageItem.mediaWidth!! < screenWidth()) {
+                itemView.large_image.scale = (screenWidth().toFloat() / messageItem.mediaWidth)
             }
-            view.video_texture.surfaceTextureListener = this
-            setSize(messageItem, view, false)
-            view.post { setSize(messageItem, view, true) }
-            view.preview_iv.visibility = VISIBLE
+            if (position == index) {
+                ViewCompat.setTransitionName(itemView.large_image, "transition")
+                setStartPostTransition(itemView.large_image)
+            }
+            itemView.large_image.setOnClickListener {
+                finishAfterTransition()
+            }
+            itemView.large_image.setOnLongClickListener {
+                showBottom()
+                return@setOnLongClickListener true
+            }
+        }
+    }
 
-            view.preview_iv.loadVideo(messageItem.mediaUrl ?: "", R.drawable.image_holder)
+    inner class VideoHolder(itemView: View) : MediaHolder(itemView),TextureView.SurfaceTextureListener  {
+        override fun bind(position: Int, messageItem: MessageItem) {
+            itemView.tag = "$PREFIX$position"
+            itemView.video_layout.setDismissListener(this@DragMediaActivity)
+            itemView.close_iv.setOnClickListener { finishAfterTransition() }
+            itemView.share_iv.setOnClickListener { shareVideo() }
+            itemView.close_iv.post {
+                val statusBarHeight = statusBarHeight().toFloat()
+                itemView.close_iv.translationY = statusBarHeight
+                itemView.share_iv.translationY = statusBarHeight
+            }
+            itemView.video_texture.surfaceTextureListener = this
+            setSize(messageItem, itemView, false)
+            itemView.post { setSize(messageItem, itemView, true) }
+            itemView.preview_iv.visibility = VISIBLE
 
-            view.seek_bar.progress = 0
-            view.duration_tv.text = 0L.formatMillis()
-            view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
+            itemView.preview_iv.loadVideo(messageItem.mediaUrl ?: "", R.drawable.image_holder)
+
+            itemView.seek_bar.progress = 0
+            itemView.duration_tv.text = 0L.formatMillis()
+            itemView.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
 
             if (position == index) {
-                ViewCompat.setTransitionName(view.video_texture, "transition")
-                setStartPostTransition(view.video_texture)
+                ViewCompat.setTransitionName(itemView.video_texture, "transition")
+                setStartPostTransition(itemView.video_texture)
             }
 
             if (position != view_pager.currentItem) {
-                view.play_view.visibility = VISIBLE
+                itemView.play_view.visibility = VISIBLE
             }
 
-            view.play_view.setOnClickListener {
-                when (view.play_view.status) {
+            itemView.play_view.setOnClickListener {
+                when (itemView.play_view.status) {
                     STATUS_IDLE -> {
                         setPreviewIv(false, view_pager.currentItem)
                         play(view_pager.currentItem)
                     }
-                    STATUS_LOADING, STATUS_PLAYING, STATUS_BUFFERING -> {
+                    PlayView.STATUS_LOADING, STATUS_PLAYING, PlayView.STATUS_BUFFERING -> {
                         pause()
                     }
                     STATUS_PAUSING -> {
@@ -367,23 +426,23 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     }
                 }
             }
-            view.setOnClickListener {
-                if (view.controller.isVisible) {
-                    fadeOut(view)
+            itemView.setOnClickListener {
+                if (itemView.controller.isVisible) {
+                    fadeOut(itemView)
                 } else {
-                    fadeIn(view)
+                    fadeIn(itemView)
                 }
             }
-            view.video_texture.setOnClickListener {
-                if (view.controller.isVisible) {
-                    fadeOut(view)
+            itemView.video_texture.setOnClickListener {
+                if (itemView.controller.isVisible) {
+                    fadeOut(itemView)
                 } else {
-                    fadeIn(view)
+                    fadeIn(itemView)
                 }
             }
 
             var isPlaying = false
-            view.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            itemView.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
                     isPlaying = mixinPlayer.isPlaying()
                     mixinPlayer.pause()
@@ -402,9 +461,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 }
             })
 
-            return view
         }
-
         private fun setSize(messageItem: MessageItem, view: View, post: Boolean) {
             val w = if (post) container.width else container.measuredWidth
             val h = if (post) container.height else container.measuredHeight
@@ -436,102 +493,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.preview_iv.layoutParams = previewParams
         }
 
-        private fun createLargeImageView(container: ViewGroup, position: Int, messageItem: MessageItem): LargeImageView {
-            val imageView = LargeImageView(container.context)
-            imageView.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
-            if (messageItem.mediaWidth!! < screenWidth()) {
-                imageView.scale = (screenWidth().toFloat() / messageItem.mediaWidth)
-            }
-            if (position == index) {
-                ViewCompat.setTransitionName(imageView, "transition")
-                setStartPostTransition(imageView)
-            }
-            imageView.setOnClickListener {
-                finishAfterTransition()
-            }
-            imageView.setOnLongClickListener {
-                showBottom()
-                return@setOnLongClickListener true
-            }
-            return imageView
-        }
-
-        private fun createPhotoView(container: ViewGroup, position: Int, messageItem: MessageItem): PhotoView {
-            val imageView = PhotoView(container.context)
-            imageView.layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
-            if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
-                imageView.loadGif(messageItem.mediaUrl, object : RequestListener<GifDrawable?> {
-                    override fun onResourceReady(
-                        resource: GifDrawable?,
-                        model: Any?,
-                        target: Target<GifDrawable?>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        if (position == index) {
-                            ViewCompat.setTransitionName(imageView, "transition")
-                            setStartPostTransition(imageView)
-                        }
-                        return false
-                    }
-
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<GifDrawable?>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
-                })
-            } else {
-                imageView.loadImage(messageItem.mediaUrl, object : RequestListener<Drawable?> {
-                    override fun onResourceReady(
-                        resource: Drawable?,
-                        model: Any?,
-                        target: Target<Drawable?>?,
-                        dataSource: DataSource?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        if (position == index) {
-                            ViewCompat.setTransitionName(imageView, "transition")
-                            setStartPostTransition(imageView)
-                        }
-                        return false
-                    }
-
-                    override fun onLoadFailed(
-                        e: GlideException?,
-                        model: Any?,
-                        target: Target<Drawable?>?,
-                        isFirstResource: Boolean
-                    ): Boolean {
-                        return false
-                    }
-                })
-            }
-            imageView.setOnClickListener {
-                finishAfterTransition()
-            }
-            imageView.setOnLongClickListener {
-                showBottom()
-                return@setOnLongClickListener true
-            }
-            return imageView
-        }
-
-        override fun destroyItem(container: ViewGroup, position: Int, obj: Any) {
-            if (obj is View) {
-                obj.tag?.let {
-                    if (it is Disposable && !it.isDisposed) {
-                        it.dispose()
-                    }
-                }
-            }
-            container.removeView(obj as View)
-        }
-
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {}
 
         override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {}
@@ -540,6 +501,53 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
             setTextureView()
+        }
+    }
+
+    inner class MediaAdapter(
+        val list: List<MessageItem>?
+    ) : RecyclerView.Adapter<MediaHolder>(){
+
+        fun getItem(position: Int): MessageItem = list!![position]
+
+        override fun getItemCount(): Int = notNullElse(list, { it.size }, 0)
+
+        override fun getItemViewType(position: Int): Int {
+            val messageItem = getItem(position)
+            return if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
+                messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
+                if (messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f) {
+                    1
+                } else {
+                    0
+                }
+            } else {
+                2
+            }
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MediaHolder {
+            return when (viewType) {
+                0 ->
+                    ImageHolder(LayoutInflater.from(this@DragMediaActivity.baseContext).inflate(R.layout.item_media_image, parent, false))
+                1 ->
+                    LargeImageHolder(LayoutInflater.from(this@DragMediaActivity.baseContext).inflate(R.layout.item_media_large_image, parent, false))
+                else ->
+                    VideoHolder(LayoutInflater.from(this@DragMediaActivity.baseContext).inflate(R.layout.item_video_layout, parent, false))
+            }
+        }
+
+        override fun onBindViewHolder(holder: MediaHolder, position: Int) {
+            holder.bind(position, getItem(position))
+        }
+
+        override fun onViewDetachedFromWindow(holder: MediaHolder) {
+            holder.itemView.tag?.let {
+                if (it is Disposable && !it.isDisposed) {
+                    it.dispose()
+                }
+            }
+            super.onViewDetachedFromWindow(holder)
         }
     }
 
@@ -727,7 +735,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private val pageListener = object : ViewPager.OnPageChangeListener {
+    private val pageListener = object : OnPageChangeCallback() {
         override fun onPageScrollStateChanged(state: Int) {
         }
 
