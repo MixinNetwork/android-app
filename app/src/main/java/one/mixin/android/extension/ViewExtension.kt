@@ -4,16 +4,12 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Outline
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.TextAppearanceSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -26,7 +22,6 @@ import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
 import android.widget.TextView
-import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
@@ -39,7 +34,6 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
-import one.mixin.android.R
 import org.jetbrains.anko.dip
 import timber.log.Timber
 import java.io.FileNotFoundException
@@ -214,22 +208,6 @@ fun ViewGroup.inflate(
     attachToRoot: Boolean = false
 ) = LayoutInflater.from(context).inflate(layoutRes, this, attachToRoot)!!
 
-fun TextView.timeAgo(str: String) {
-    text = str.timeAgo(context)
-}
-
-fun TextView.timeAgoClock(str: String) {
-    text = str.timeAgoClock()
-}
-
-fun TextView.timeAgoDate(str: String) {
-    text = str.timeAgoDate(context)
-}
-
-fun TextView.timeAgoDay(str: String) {
-    text = str.timeAgoDay()
-}
-
 fun View.navigate(
     resId: Int,
     bundle: Bundle? = null,
@@ -242,27 +220,6 @@ fun View.navigate(
     } catch (e: IllegalStateException) {
         Timber.w("View $this does not have a NavController set")
     }
-}
-
-fun TextView.highLight(
-    target: String?,
-    ignoreCase: Boolean = true,
-    @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null)
-) {
-    if (target.isNullOrBlank()) {
-        text = target
-        return
-    }
-    val text = this.text.toString()
-    val spannable = SpannableString(text)
-    var index = text.indexOf(target, ignoreCase = ignoreCase)
-    while (index != -1) {
-        spannable.setSpan(
-            TextAppearanceSpan(null, 0, 0, ColorStateList.valueOf(color), null),
-            index, index + target.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-        index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
-    }
-    setText(spannable)
 }
 
 fun View.capture(context: Context) {

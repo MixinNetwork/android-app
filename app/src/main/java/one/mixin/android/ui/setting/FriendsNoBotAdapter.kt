@@ -1,24 +1,25 @@
-package one.mixin.android.ui.conversation.adapter
+package one.mixin.android.ui.setting
 
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.android.synthetic.main.item_contact_normal.view.*
+import kotlinx.android.synthetic.main.item_friends_no_bot.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.friends.AbsFriendsAdapter
 import one.mixin.android.ui.common.friends.BaseFriendsViewHolder
 import one.mixin.android.ui.common.friends.FriendsListener
 import one.mixin.android.vo.User
-import one.mixin.android.vo.showVerifiedOrBot
 
-class FriendsAdapter : AbsFriendsAdapter<FriendsViewHolder>() {
+class FriendsNoBotAdapter : AbsFriendsAdapter<FriendsNoBotViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
-        FriendsViewHolder(parent.inflate(R.layout.item_contact_normal))
+        FriendsNoBotViewHolder(parent.inflate(R.layout.item_friends_no_bot))
 }
 
-class FriendsViewHolder(itemView: View) : BaseFriendsViewHolder(itemView) {
+class FriendsNoBotViewHolder(itemView: View) : BaseFriendsViewHolder(itemView) {
     override fun bind(item: User, filter: String, listener: FriendsListener?) {
         super.bind(item, filter, listener)
-        item.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
+        itemView.identity.text = item.identityNumber
+        itemView.identity.highLight(filter)
     }
 }

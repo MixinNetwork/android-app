@@ -1,17 +1,13 @@
 package one.mixin.android.ui.conversation.holder
 
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.method.LinkMovementMethod
-import android.text.style.ForegroundColorSpan
 import android.view.View
 import kotlinx.android.synthetic.main.item_chat_waiting.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
-import one.mixin.android.widget.NoUnderLineSpan
 import org.jetbrains.anko.dip
 
 class WaitingHolder constructor(
@@ -28,32 +24,6 @@ class WaitingHolder constructor(
         }
     }
 
-    init {
-        itemView.chat_tv.movementMethod = LinkMovementMethod.getInstance()
-    }
-
-    private fun highlightLinkText(
-        source: String,
-        color: Int,
-        texts: Array<String>,
-        links: Array<String>
-    ): SpannableString {
-        if (texts.size != links.size) {
-            throw IllegalArgumentException("texts's length should equals with links")
-        }
-        val sp = SpannableString(source)
-        for (i in texts.indices) {
-            val text = texts[i]
-            val link = links[i]
-            val start = source.indexOf(text)
-            sp.setSpan(NoUnderLineSpan(link, onItemListener), start,
-                start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            sp.setSpan(ForegroundColorSpan(color), start, start + text.length,
-                Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        return sp
-    }
-
     fun bind(
         messageItem: MessageItem,
         isLast: Boolean,
@@ -62,13 +32,11 @@ class WaitingHolder constructor(
     ) {
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
 
-        val colorPrimary = MixinApplication.get().getColor(R.color.colorBlue)
         val learn: String = MixinApplication.get().getString(R.string.chat_learn)
         val info = MixinApplication.get().getString(R.string.chat_waiting, messageItem.userFullName, learn)
         val learnUrl = MixinApplication.get().getString(R.string.chat_waiting_url)
-        itemView.chat_tv.text = highlightLinkText(
+        itemView.chat_tv.highlightLinkText(
             info,
-            colorPrimary,
             arrayOf(learn),
             arrayOf(learnUrl))
 

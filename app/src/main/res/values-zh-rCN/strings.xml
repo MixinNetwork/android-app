@@ -143,6 +143,9 @@
     <string name="landing_agree">同意并继续</string>
     <string name="landing_privacy_policy">隐私政策</string>
     <string name="landing_terms_service">服务条款</string>
+    <string name="landing_verification_need_help">需要帮助？</string>
+    <string name="landing_verification_cant_receive">接收不到验证码?</string>
+    <string name="landing_verification_lost_mobile">手机丢失?</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">新群聊</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
@@ -163,6 +166,7 @@
     <string name="contact_receive_money">我的收款码</string>
     <string name="contact_receive_tip">用 Mixin 扫描二维码给我转账</string>
     <string name="add_contact">+ 添加联系人</string>
+    <string name="contact_search_hint">昵称, Mixin ID</string>
     <!--profile-->
     <string name="profile_my_title">我的</string>
     <string name="profile_photo">个人头像</string>
@@ -370,6 +374,17 @@
     <string name="conversation_status_unknown">未知</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_authentications">授权</string>
+    <string name="setting_emergency">紧急联系人</string>
+    <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
+    <string name="setting_emergency_desc">Please be assured that even if your mobile phone number is lost, it is safe to find your wallet asset. Read our 紧急联系人 to learn more. \n\n We won\'t spam your contact.</string>
+    <string name="setting_emergency_bottom_current">View current emergency contact</string>
+    <string name="setting_emergency_bottom_change">Change emergency contact</string>
+    <string name="setting_emergency_bottom_create">Create emergency contact</string>
+    <string name="setting_emergency_select_contact">选择紧急联系人</string>
+    <string name="setting_emergency_contact_mixin_id">请输入紧急联系人的 Mixin ID</string>
+    <string name="setting_emergency_send_code">请输入发送至以下Mixin ID的 4 位验证码：%1$s</string>
+    <string name="setting_emergency_change_success">修改紧急联系人成功</string>
+    <string name="setting_emergency_set">Set emergency contact</string>
     <string name="setting_deauthorize">取消授权</string>
     <string name="setting_backup">备份</string>
     <string name="setting_clearing">正在清理…</string>
@@ -398,6 +413,7 @@
     <string name="setting_desktop_logout_failed">退出桌面端失败</string>
     <string name="setting_desktop_confirm">确认登录 Mixin Messenger 桌面端</string>
     <string name="setting_desktop_login">登录</string>
+    <string name="setting_privacy_security">隐私和安全</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>

@@ -6,20 +6,17 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_blocked.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.notNullElse
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.vo.User
-import javax.inject.Inject
 
-class SettingBlockedFragment : BaseFragment() {
+class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() {
     companion object {
         const val TAG = "SettingBlockedFragment"
         const val POS_LIST = 0
@@ -30,12 +27,8 @@ class SettingBlockedFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    override fun getModelClass() = SettingBlockedViewModel::class.java
 
-    private val settingBlockedViewModel: SettingBlockedViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(SettingBlockedViewModel::class.java)
-    }
     private val adapter = BlockedAdapter()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -49,7 +42,7 @@ class SettingBlockedFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        settingBlockedViewModel.blockingUsers(stopScope).observe(this, Observer {
+        viewModel.blockingUsers(stopScope).observe(this, Observer {
             if (it != null && it.isNotEmpty()) {
                 block_va.displayedChild = POS_LIST
                 adapter.setUsers(it)

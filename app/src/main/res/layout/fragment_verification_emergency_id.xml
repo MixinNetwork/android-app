@@ -3,58 +3,62 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:clickable="true"
-    android:focusable="true"
-    android:background="@android:color/white"
-    android:orientation="vertical">
+    android:background="@android:color/white">
 
     <ImageView
-        android:id="@+id/close_iv"
+        android:id="@+id/back_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:padding="8dp"
+        android:layout_marginTop="@dimen/margin12"
+        android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
         android:contentDescription="@string/landing_back_content_desc"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.023"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_close_black_24dp"/>
+        app:srcCompat="@drawable/ic_arrow_back_black_24dp"/>
 
     <TextView
-        android:id="@+id/title_tv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        android:gravity="center_horizontal"
-        android:layout_below="@id/close_iv"
-        android:text="@string/verify_pin"
-        android:textColor="@android:color/black"
-        android:textSize="18sp"/>
-
-    <one.mixin.android.widget.PinView
-        android:id="@+id/pin"
-        android:layout_width="180dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_centerHorizontal="true"
-        android:layout_below="@id/title_tv"/>
-
-    <com.github.jorgecastilloprz.FABProgressCircle
-        android:id="@+id/verify_fab"
+        android:id="@+id/id_title_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/keyboard"
+        android:layout_below="@+id/back_iv"
+        android:layout_centerHorizontal="true"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="@dimen/margin12"
+        android:layout_marginEnd="16dp"
+        android:text="@string/setting_emergency_contact_mixin_id"
+        android:textColor="@android:color/black"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/id_til"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/id_title_tv"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp">
+
+        <EditText
+            android:id="@+id/id_et"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/mixin_id"
+            android:inputType="number"
+            android:lines="1"
+            android:textSize="16sp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.github.jorgecastilloprz.FABProgressCircle
+        android:id="@+id/id_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/id_keyboard"
         android:layout_alignParentEnd="true"
-        android:visibility="invisible"
-        app:arcColor="@android:color/holo_blue_dark"
-        app:layout_constraintBottom_toTopOf="@+id/keyboard"
-        app:layout_constraintEnd_toEndOf="parent">
+        android:layout_alignParentBottom="true"
+        app:arcColor="@android:color/holo_blue_dark">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:layout_width="wrap_content"
@@ -65,21 +69,18 @@
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <one.mixin.android.widget.Keyboard
-        android:id="@+id/keyboard"
+        android:id="@+id/id_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:translationY="300dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
     <View
-        android:id="@+id/verify_cover"
+        android:id="@+id/id_cover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
-        android:clickable="true"
-        android:focusable="true"
         android:visibility="invisible"/>
 </RelativeLayout>

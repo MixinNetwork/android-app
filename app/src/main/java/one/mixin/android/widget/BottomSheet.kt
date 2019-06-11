@@ -239,7 +239,10 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         fakeDismiss(false)
     }
 
-    fun fakeDismiss(fake: Boolean = true) {
+    fun fakeDismiss(
+        fake: Boolean = true,
+        doOnEnd: (() -> Unit)? = null
+    ) {
         cancelSheetAnimation()
         val animatorSet = AnimatorSet()
         animatorSet.playTogether(
@@ -259,6 +262,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
                             } catch (e: Exception) {
                             }
                         }
+                        doOnEnd?.invoke()
                     }
                 }
             }

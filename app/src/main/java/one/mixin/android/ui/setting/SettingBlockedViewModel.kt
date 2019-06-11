@@ -17,8 +17,7 @@ internal constructor(
     private val userService: UserService,
     private val accountRepository: AccountRepository,
     private val userRepository: UserRepository
-) :
-    ViewModel() {
+) : ViewModel() {
 
     fun blockingUsers(scopeProvider: ScopeProvider): LiveData<List<User>> {
         userService.blockingUsers().subscribeOn(Schedulers.io()).observeOn(Schedulers.io())

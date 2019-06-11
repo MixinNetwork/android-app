@@ -81,6 +81,11 @@ object Constants {
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
     }
+    
+    object EmergencyContact {
+        const val SHOWN_EMERGENCY_TIP = "shown_emergency_tip"
+        const val HAS_EMERGENCY_CONTACT = "has_emergency_contact"
+    }
 
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24

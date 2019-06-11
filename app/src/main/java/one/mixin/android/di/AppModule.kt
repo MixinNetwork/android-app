@@ -27,6 +27,7 @@ import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.api.service.ProvisioningService
@@ -191,6 +192,10 @@ internal class AppModule {
     @Singleton
     @Provides
     fun provideProvisioningService(retrofit: Retrofit) = retrofit.create(ProvisioningService::class.java) as ProvisioningService
+
+    @Singleton
+    @Provides
+    fun provideEmergencyService(retrofit: Retrofit) = retrofit.create(EmergencyService::class.java) as EmergencyService
 
     @Singleton
     @Provides

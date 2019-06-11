@@ -67,6 +67,7 @@
     <string name="transfer_send">Send</string>
     <string name="receive">Receive</string>
     <string name="developer">Developer</string>
+    <string name="mixin_id" translatable="false">Mixin ID</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -151,6 +152,10 @@
     <string name="landing_privacy_policy_url" translatable="false">https://mixin.one/pages/privacy</string>
     <string name="landing_terms_url" translatable="false">https://mixin.one/pages/terms</string>
     <string name="chat_delete_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360028209571</string>
+    <string name="landing_verification_need_help">Need help?</string>
+    <string name="landing_verification_cant_receive">Can\'t receive code?</string>
+    <string name="landing_verification_lost_mobile">Lost your mobile number?</string>
+    <string name="landing_verification_tip_url" translatable="false">https://mixinmessenger.zendesk.com/hc/articles/360024114492</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">New Group Chat</string>
     <string name="contact_new_group_chat_desc">Create a group chat with up to  friends</string>
@@ -172,6 +177,7 @@
     <string name="contact_receive_money">Receive Money</string>
     <string name="contact_receive_tip">Scan the QR Code to pay me</string>
     <string name="add_contact">+ Add Contact</string>
+    <string name="contact_search_hint">Name, Mixin ID</string>
     <!--profile-->
     <string name="profile_my_title">My Profile</string>
     <string name="profile_photo">Profile Photo</string>
@@ -379,6 +385,18 @@
     <string name="conversation_status_sticker">Sticker</string>
     <string name="setting_no_blocked">No blocked users</string>
     <string name="setting_authentications">Authentications</string>
+    <string name="setting_emergency">Emergency Contact</string>
+    <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
+    <string name="setting_emergency_desc">Please be assured that even if your mobile phone number is lost, it is safe to find your wallet asset. Read our Emergency Contact to learn more. \n\n We won\'t spam your contact.</string>
+    <string name="setting_emergency_bottom_current">View current emergency contact</string>
+    <string name="setting_emergency_bottom_change">Change emergency contact</string>
+    <string name="setting_emergency_bottom_create">Create emergency contact</string>
+    <string name="setting_emergency_select_contact">Select Emergency Contact</string>
+    <string name="setting_emergency_url" translatable="false">https://mixin.one/pages/privacy</string>
+    <string name="setting_emergency_contact_mixin_id">Enter your emergency contact Mixin ID</string>
+    <string name="setting_emergency_send_code">Enter the 4-digit code send to Mixin ID: %1$s</string>
+    <string name="setting_emergency_change_success">Change emergency contact successfully</string>
+    <string name="setting_emergency_set">Set emergency contact</string>
     <string name="setting_deauthorize">Deauthorize</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>
@@ -407,6 +425,7 @@
     <string name="setting_desktop_logout_failed">Logout of desktop failed.</string>
     <string name="setting_desktop_confirm"> Confirm login to\nMixin Messenger Desktop</string>
     <string name="setting_desktop_login">Log in</string>
+    <string name="setting_privacy_security">Privacy and Security</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>

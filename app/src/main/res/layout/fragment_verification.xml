@@ -10,63 +10,83 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/margin12"
-        android:padding="@dimen/margin12"
         android:background="@drawable/mixin_ripple"
         android:contentDescription="@string/landing_back_content_desc"
+        android:padding="@dimen/margin12"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.023"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/ic_arrow_back_black_24dp"/>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:orientation="vertical"
-        android:layout_below="@+id/back_iv"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_above="@id/verification_keyboard"
+        android:layout_below="@+id/back_iv">
 
-        <TextView
-            android:id="@+id/pin_verification_title_tv"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="12dp"
-            android:text="@string/landing_validation_title"
-            android:textColor="@android:color/black"
-            android:textSize="18sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
-
-        <one.mixin.android.widget.VerificationCodeView
-            android:id="@+id/pin_verification_view"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:layout_marginStart="8dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pin_verification_title_tv"
-            app:vcv_inputWidth="30dp"
-            app:vcv_spacing="10dp"
-            app:vcv_textColor="@android:color/black"/>
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/pin_verification_tip_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="center_vertical"
-            android:textColor="@color/colorRed"
-            android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/pin_verification_view"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            <TextView
+                android:id="@+id/pin_verification_title_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="16dp"
+                android:gravity="center_horizontal"
+                android:text="@string/landing_validation_title"
+                android:textColor="@android:color/black"
+                android:textSize="18sp"/>
+
+            <one.mixin.android.widget.VerificationCodeView
+                android:id="@+id/pin_verification_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/margin16"
+                android:layout_marginTop="32dp"
+                android:layout_marginEnd="@dimen/margin16"
+                android:layout_marginBottom="8dp"
+                android:gravity="center_horizontal"
+                app:vcv_inputWidth="30dp"
+                app:vcv_spacing="10dp"
+                app:vcv_textColor="@android:color/black"/>
+
+            <TextView
+                android:id="@+id/pin_verification_tip_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:textColor="@color/colorRed"/>
+
+            <TextView
+                android:id="@+id/verification_resend_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:padding="@dimen/margin12"
+                android:text="@string/landing_resend_code_enable"
+                android:textColor="@color/text_gray"/>
+
+            <TextView
+                android:id="@+id/verification_need_help_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="32dp"
+                android:layout_marginBottom="@dimen/margin20"
+                android:padding="@dimen/margin12"
+                android:text="@string/landing_verification_need_help"
+                android:visibility="gone"
+                android:textColor="@color/colorRed"/>
+        </LinearLayout>
+    </ScrollView>
 
     <com.github.jorgecastilloprz.FABProgressCircle
         android:id="@+id/verification_next_fab"
@@ -87,36 +107,18 @@
             app:backgroundTint="@color/colorBlue"/>
     </com.github.jorgecastilloprz.FABProgressCircle>
 
-    <TextView
-        android:id="@+id/verification_left_bottom_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="25dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_above="@+id/verification_keyboard"
-        android:text="@string/landing_resend_code_enable"
-        android:textColor="@color/text_gray"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintVertical_bias="0.489"/>
-
     <one.mixin.android.widget.Keyboard
         android:id="@+id/verification_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:layout_alignParentBottom="true"/>
 
     <View
         android:id="@+id/verification_cover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:visibility="invisible"
-        android:clickable="true"
         android:background="@android:color/transparent"
-        android:focusable="true"/>
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="invisible"/>
 </RelativeLayout>

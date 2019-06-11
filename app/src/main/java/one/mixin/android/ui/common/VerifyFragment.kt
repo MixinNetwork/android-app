@@ -11,10 +11,14 @@ import kotlinx.android.synthetic.main.fragment_verify_pin.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.widget.Keyboard
@@ -26,8 +30,17 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
     companion object {
         val TAG = VerifyFragment::class.java.simpleName
 
-        fun newInstance() = VerifyFragment()
+        const val FROM_PHONE = 0
+        const val FROM_EMERGENCY = 1
+
+        const val ARGS_FROM = "args_from"
+
+        fun newInstance(from: Int) = VerifyFragment().withArgs {
+            putInt(ARGS_FROM, from)
+        }
     }
+
+    private val from by lazy { arguments!!.getInt(ARGS_FROM) }
 
     @Inject
     lateinit var accountRepository: AccountRepository
@@ -57,7 +70,15 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
                     verify_cover?.visibility = GONE
                     if (r.isSuccess) {
                         context?.updatePinCheck()
-                        LandingActivity.show(context!!, pin.code())
+                        if (from == FROM_PHONE) {
+                            LandingActivity.show(context!!, pin.code())
+                        } else if (from == FROM_EMERGENCY) {
+                            activity?.supportFragmentManager?.inTransaction {
+                                remove(this@VerifyFragment)
+                            }
+                            val f = FriendsNoBotFragment.newInstance(pin.code())
+                            activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
+                        }
                     } else {
                         pin.clear()
                         ErrorHandler.handleMixinError(r.errorCode)

@@ -25,6 +25,9 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT * FROM users WHERE user_id = :id")
     fun findUser(id: String): User?
 
+    @Query("SELECT * FROM users WHERE user_id = :id")
+    suspend fun suspendFindUserById(id: String): User?
+
     @Query("SELECT user_id FROM users WHERE user_id IN (:userIds)")
     suspend fun findUserExist(userIds: List<String>): List<String>
 
@@ -67,6 +70,9 @@ interface UserDao : BaseDao<User> {
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
     @Query("SELECT * FROM users u INNER JOIN conversations c ON c.owner_id = u.user_id WHERE c.category = 'CONTACT' AND u.app_id IS NULL")
     fun findContactUsers(): LiveData<List<User>>
+
+    @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL")
+    fun getFriendsNotBot(): List<User>
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL")
     fun findFriendsNotBot(): LiveData<List<User>>

@@ -9,6 +9,7 @@ import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.DeauthorRequest
+import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.request.LogoutRequest
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.StickerAddRequest
@@ -19,6 +20,7 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
+import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
@@ -50,7 +52,8 @@ constructor(
     private val stickerDao: StickerDao,
     private val stickerAlbumDao: StickerAlbumDao,
     private val stickerRelationshipDao: StickerRelationshipDao,
-    private val giphyService: GiphyService
+    private val giphyService: GiphyService,
+    private val emergencyService: EmergencyService
 ) {
 
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
@@ -140,4 +143,10 @@ constructor(
     fun trendingGifs(limit: Int, offset: Int) = giphyService.trendingGifs(limit, offset)
 
     fun searchGifs(query: String, limit: Int, offset: Int) = giphyService.searchGifs(query, limit, offset)
+
+    suspend fun createEmergency(request: EmergencyRequest) = emergencyService.create(request)
+
+    suspend fun verifyEmergency(id: String, request: EmergencyRequest) = emergencyService.verify(id, request)
+
+    suspend fun showEmergency() = emergencyService.show()
 }

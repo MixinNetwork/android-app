@@ -224,6 +224,10 @@ fun FragmentActivity.addFragment(from: Fragment, to: Fragment, tag: String, id: 
     }
 }
 
+fun Fragment.navTo(fragment: Fragment, tag: String) {
+    activity?.addFragment(this, fragment, tag)
+}
+
 inline fun FragmentManager.inTransaction(func: FragmentTransaction.() -> Unit) {
     val fragmentTransaction = beginTransaction()
     fragmentTransaction.func()

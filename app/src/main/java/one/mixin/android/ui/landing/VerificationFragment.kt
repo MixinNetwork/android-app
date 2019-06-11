@@ -1,24 +1,23 @@
 package one.mixin.android.ui.landing
 
+import android.annotation.SuppressLint
 import android.graphics.Point
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
-import android.view.View.INVISIBLE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.os.bundleOf
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_verification.*
+import kotlinx.android.synthetic.main.view_verification_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.KEYS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -35,28 +34,26 @@ import one.mixin.android.crypto.getPublicKey
 import one.mixin.android.crypto.rsaDecrypt
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.saveQRCode
-import one.mixin.android.extension.vibrate
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
+import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
-import one.mixin.android.widget.Keyboard
+import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RecaptchaView
-import one.mixin.android.widget.VerificationCodeView.OnCodeEnteredListener
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import org.jetbrains.anko.windowManager
 import org.jetbrains.anko.yesButton
-import javax.inject.Inject
 
-class VerificationFragment : BaseFragment() {
-
+class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     companion object {
         const val TAG: String = "VerificationFragment"
         private const val ARGS_ID = "args_id"
@@ -73,13 +70,7 @@ class VerificationFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    @Inject
-    lateinit var jobManager: MixinJobManager
-    private val mobileViewModel: MobileViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(MobileViewModel::class.java)
-    }
+    override fun getModelClass() = MobileViewModel::class.java
 
     private var mCountDownTimer: CountDownTimer? = null
     private lateinit var account: Account
@@ -87,6 +78,7 @@ class VerificationFragment : BaseFragment() {
     private val pin: String? by lazy {
         arguments!!.getString(ARGS_PIN)
     }
+    private val phoneNum by lazy { arguments!!.getString(ARGS_PHONE_NUM) }
 
     private lateinit var recaptchaView: RecaptchaView
 
@@ -107,15 +99,9 @@ class VerificationFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        back_iv.setOnClickListener { activity?.onBackPressed() }
-        pin_verification_view.setOnCodeEnteredListener(mPinVerificationListener)
-        pin_verification_title_tv.text =
-            getString(R.string.landing_validation_title, arguments!!.getString(ARGS_PHONE_NUM))
-        verification_left_bottom_tv.setOnClickListener { sendVerification() }
-        verification_keyboard.setKeyboardKeys(KEYS)
-        verification_keyboard.setOnClickKeyboardListener(mKeyboardListener)
-        verification_cover.isClickable = true
-        verification_next_fab.setOnClickListener { handlePinVerification() }
+        pin_verification_title_tv.text = getString(R.string.landing_validation_title, phoneNum)
+        verification_resend_tv.setOnClickListener { sendVerification() }
+        verification_need_help_tv.setOnClickListener { showBottom() }
 
         startCountDown()
     }
@@ -133,7 +119,7 @@ class VerificationFragment : BaseFragment() {
         return false
     }
 
-    private fun handlePinVerification() {
+    override fun clickNextFab() {
         if (pin == null) {
             handleLogin()
         } else {
@@ -141,9 +127,26 @@ class VerificationFragment : BaseFragment() {
         }
     }
 
+    @SuppressLint("InflateParams")
+    private fun showBottom() {
+        val builder = BottomSheet.Builder(requireActivity())
+        val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_verification_bottom, null)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.cant_tv.setOnClickListener {
+            requireContext().openUrl(getString(R.string.landing_verification_tip_url))
+            bottomSheet.dismiss()
+        }
+        view.lost_tv.setOnClickListener {
+            navTo(VerificationEmergencyIdFragment.newInstance(phoneNum), VerificationEmergencyIdFragment.TAG)
+            bottomSheet.dismiss()
+        }
+        bottomSheet.show()
+    }
+
     private fun handlePhoneModification() {
         showLoading()
-        mobileViewModel.changePhone(arguments!!.getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
+        viewModel.changePhone(arguments!!.getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
             .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                 verification_next_fab.hide()
                 verification_cover.visibility = GONE
@@ -155,7 +158,7 @@ class VerificationFragment : BaseFragment() {
                     val a = Session.getAccount()
                     a?.let {
                         val phone = arguments!!.getString(ARGS_PHONE_NUM) ?: return@doAsync
-                        mobileViewModel.updatePhone(a.userId, phone)
+                        viewModel.updatePhone(a.userId, phone)
                         a.phone = phone
                         Session.storeAccount(a)
                     }
@@ -185,7 +188,7 @@ class VerificationFragment : BaseFragment() {
             purpose = VerificationPurpose.SESSION.name,
             pin = pin,
             session_secret = sessionSecret)
-        mobileViewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest)
+        viewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest)
             .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                 if (!isAdded) {
                     return@subscribe
@@ -209,7 +212,7 @@ class VerificationFragment : BaseFragment() {
                 verification_keyboard.animate().translationY(300f).start()
                 MixinApplication.get().onlining.set(true)
                 if (account.full_name.isNullOrBlank()) {
-                    mobileViewModel.insertUser(r.data!!.toUser())
+                    viewModel.insertUser(r.data!!.toUser())
                     InitializeActivity.showSetupName(context!!)
                 } else {
                     RestoreActivity.show(requireContext())
@@ -231,33 +234,8 @@ class VerificationFragment : BaseFragment() {
         b?.saveQRCode(ctx, account.userId)
     }
 
-    private fun handleFailure(r: MixinResponse<Account>) {
-        pin_verification_view.error()
-        pin_verification_tip_tv.visibility = VISIBLE
-        pin_verification_tip_tv.text = getString(R.string.landing_validation_error)
-        if (r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
-            r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED) {
-            verification_next_fab.visibility = View.INVISIBLE
-        }
-        ErrorHandler.handleMixinError(r.errorCode)
-    }
-
-    private fun handleError(t: Throwable) {
-        verification_next_fab.hide()
-        verification_cover.visibility = GONE
-        ErrorHandler.handleError(t)
-    }
-
-    private fun showLoading() {
-        verification_next_fab.visibility = View.VISIBLE
-        verification_next_fab.show()
-        verification_cover.visibility = VISIBLE
-    }
-
-    private fun hideLoading() {
-        verification_next_fab.hide()
-        verification_next_fab.visibility = GONE
-        verification_cover.visibility = GONE
+    override fun hideLoading() {
+        super.hideLoading()
         recaptchaView.webView.visibility = GONE
     }
 
@@ -268,7 +246,7 @@ class VerificationFragment : BaseFragment() {
             null,
             if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
             gRecaptchaResponse)
-        mobileViewModel.verification(verificationRequest)
+        viewModel.verification(verificationRequest)
             .autoDisposable(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
                 if (!r.isSuccess) {
                     if (r.errorCode == NEED_RECAPTCHA) {
@@ -294,8 +272,8 @@ class VerificationFragment : BaseFragment() {
         mCountDownTimer = object : CountDownTimer(60000, 1000) {
 
             override fun onTick(l: Long) {
-                if (verification_left_bottom_tv != null)
-                    verification_left_bottom_tv.text = getString(R.string.landing_resend_code_disable, l / 1000)
+                if (verification_resend_tv != null)
+                    verification_resend_tv.text = getString(R.string.landing_resend_code_disable, l / 1000)
             }
 
             override fun onFinish() {
@@ -303,48 +281,16 @@ class VerificationFragment : BaseFragment() {
             }
         }
         mCountDownTimer?.start()
-        verification_left_bottom_tv.isEnabled = false
-        context?.getColor(R.color.colorGray)?.let { verification_left_bottom_tv.setTextColor(it) }
+        verification_resend_tv.isEnabled = false
+        context?.getColor(R.color.colorGray)?.let { verification_resend_tv.setTextColor(it) }
     }
 
     private fun resetCountDown() {
-        if (verification_left_bottom_tv != null) {
-            verification_left_bottom_tv.setText(R.string.landing_resend_code_enable)
-            verification_left_bottom_tv.isEnabled = true
-            context?.getColor(R.color.colorBlue)?.let { verification_left_bottom_tv.setTextColor(it) }
+        if (verification_resend_tv != null) {
+            verification_resend_tv.setText(R.string.landing_resend_code_enable)
+            verification_resend_tv.isEnabled = true
+            context?.getColor(R.color.colorBlue)?.let { verification_resend_tv.setTextColor(it) }
         }
-    }
-
-    private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
-        override fun onKeyClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
-            if (position == 11) {
-                pin_verification_view?.delete()
-            } else {
-                pin_verification_view?.append(value)
-            }
-        }
-
-        override fun onLongClick(position: Int, value: String) {
-            context?.vibrate(longArrayOf(0, 30))
-            if (position == 11) {
-                pin_verification_view?.clear()
-            } else {
-                pin_verification_view?.append(value)
-            }
-        }
-    }
-
-    private val mPinVerificationListener: OnCodeEnteredListener = object : OnCodeEnteredListener {
-        override fun onCodeEntered(code: String) {
-            pin_verification_tip_tv.visibility = INVISIBLE
-            if (code.isEmpty() || code.length != pin_verification_view.count) {
-                if (isAdded) {
-                    hideLoading()
-                }
-                return
-            }
-            handlePinVerification()
-        }
+        verification_need_help_tv?.isVisible = true
     }
 }

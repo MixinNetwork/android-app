@@ -15,6 +15,7 @@ import one.mixin.android.ui.home.ConversationListViewModel
 import one.mixin.android.ui.landing.LoadingViewModel
 import one.mixin.android.ui.landing.MobileViewModel
 import one.mixin.android.ui.search.SearchViewModel
+import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.SettingBlockedViewModel
 import one.mixin.android.ui.setting.SettingConversationViewModel
 import one.mixin.android.ui.setting.SettingStorageViewModel
@@ -105,6 +106,11 @@ internal abstract class ViewModelModule {
     @IntoMap
     @ViewModelKey(AddressViewModel::class)
     internal abstract fun bindAddressViewModel(addressViewModel: AddressViewModel): ViewModel
+
+    @Binds
+    @IntoMap
+    @ViewModelKey(EmergencyViewModel::class)
+    internal abstract fun bindEmergencyViewModel(emergencyViewModel: EmergencyViewModel): ViewModel
 
     @Binds
     internal abstract fun bindViewModelFactory(factory: ViewModelFactory): ViewModelProvider.Factory
