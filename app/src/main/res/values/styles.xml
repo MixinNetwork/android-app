@@ -59,6 +59,10 @@
         <item name="colorAccent">@color/colorDarkBlue</item>
         <item name="android:textColorPrimary">@android:color/black</item>
         <item name="android:background">@android:color/white</item>
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+    </style>
+    <style name="PositiveButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/selector_dialog_tv</item>
     </style>
 
     <style name="TransparentDialog" parent="@style/AppTheme.Dialog">
