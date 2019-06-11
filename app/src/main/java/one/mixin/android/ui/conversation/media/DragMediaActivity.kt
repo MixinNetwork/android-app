@@ -36,9 +36,14 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
+import androidx.paging.LivePagedListBuilder
+import androidx.paging.PagedList
+import androidx.paging.PagedListAdapter
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.bumptech.glide.load.DataSource
@@ -80,7 +85,6 @@ import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadVideo
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.screenWidth
@@ -141,31 +145,35 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         setContentView(R.layout.activity_drag_media)
         colorDrawable = ColorDrawable(Color.BLACK)
+        pagerAdapter = MediaAdapter()
         view_pager.backgroundDrawable = colorDrawable
 
         val model = ViewModelProviders.of(this).get(DragMediaViewModel::class.java)
         model.viewModelScope.launch {
-            val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
-                File(item.mediaUrl?.toUri()?.getFilePath()).exists()
-            }.reversed()
+            withContext(coroutineContext + Dispatchers.IO) {
+                index = conversationRepository.indexMediaMessages(conversationId, messageId)
+                val data = LivePagedListBuilder(conversationRepository.getMediaMessages(conversationId), PagedList.Config.Builder()
+                    .setPrefetchDistance(6)
+                    .setPageSize(3)
+                    .setEnablePlaceholders(true)
+                    .build())
+                    .setInitialLoadKey(index)
+                    .build()
+                withContext(coroutineContext + Dispatchers.Main) {
+                    data.observe(this@DragMediaActivity, Observer {
+                        if (view_pager.adapter == null) {
+                            view_pager.adapter = pagerAdapter
+                            pagerAdapter.submitList(it) {
+                                view_pager.setCurrentItem(index, false)
+                            }
+                        } else {
+                            pagerAdapter.submitList(it)
+                        }
 
-            index = list.indexOfFirst { item -> messageId == item.messageId }
-            list.map {
-                if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
-                    it.type == MessageCategory.PLAIN_VIDEO.name) {
+                    })
                 }
             }
-            pagerAdapter = MediaAdapter(list)
-            view_pager.adapter = pagerAdapter
-            if (index != -1) {
-                view_pager.currentItem = index
-                lastPos = index
-                play(index)
-            } else {
-                view_pager.currentItem = 0
-                lastPos = 0
-                this@DragMediaActivity.finish()
-            }
+
         }
         view_pager.registerOnPageChangeCallback(pageListener)
         window.decorView.systemUiVisibility =
@@ -200,8 +208,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {
-                            pagerAdapter.list?.let { list ->
-                                val item = list[view_pager.currentItem]
+                            pagerAdapter.getItem(view_pager.currentItem)?.let { item ->
                                 val file = File(item.mediaUrl?.toUri()?.getFilePath())
                                 val outFile = if (item.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
                                     this@DragMediaActivity.getPublicPictyresPath().createGifTemp(false)
@@ -276,7 +283,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private fun shareVideo() {
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
-            val url = pagerAdapter.list?.get(view_pager.currentItem)?.mediaUrl
+            val url = pagerAdapter.getItem(view_pager.currentItem)?.mediaUrl
             var uri = Uri.parse(url)
             if (ContentResolver.SCHEME_FILE == uri.scheme) {
                 uri = getUriForFile(File(uri.getFilePath(this@DragMediaActivity)))
@@ -381,7 +388,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    inner class VideoHolder(itemView: View) : MediaHolder(itemView),TextureView.SurfaceTextureListener  {
+    inner class VideoHolder(itemView: View) : MediaHolder(itemView), TextureView.SurfaceTextureListener {
         override fun bind(position: Int, messageItem: MessageItem) {
             itemView.tag = "$PREFIX$position"
             itemView.video_layout.setDismissListener(this@DragMediaActivity)
@@ -460,8 +467,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     }
                 }
             })
-
         }
+
         private fun setSize(messageItem: MessageItem, view: View, post: Boolean) {
             val w = if (post) container.width else container.measuredWidth
             val h = if (post) container.height else container.measuredHeight
@@ -504,16 +511,26 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    inner class MediaAdapter(
-        val list: List<MessageItem>?
-    ) : RecyclerView.Adapter<MediaHolder>(){
+    val diffCallback by lazy {
+        object : DiffUtil.ItemCallback<MessageItem>() {
+            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+                return oldItem.messageId == newItem.messageId
+            }
 
-        fun getItem(position: Int): MessageItem = list!![position]
+            override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem): Boolean {
+                return oldItem.mediaUrl == newItem.mediaUrl
+            }
+        }
+    }
 
-        override fun getItemCount(): Int = notNullElse(list, { it.size }, 0)
+    inner class MediaAdapter : PagedListAdapter<MessageItem, MediaHolder>(diffCallback) {
+
+        public override fun getItem(position: Int): MessageItem? {
+            return super.getItem(position)
+        }
 
         override fun getItemViewType(position: Int): Int {
-            val messageItem = getItem(position)
+            val messageItem = getItem(position) ?: return -1
             return if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
                 messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
                 if (messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f) {
@@ -538,7 +555,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
 
         override fun onBindViewHolder(holder: MediaHolder, position: Int) {
-            holder.bind(position, getItem(position))
+            getItem(position)?.let {
+                holder.bind(position, it)
+            }
         }
 
         override fun onViewDetachedFromWindow(holder: MediaHolder) {
@@ -705,7 +724,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private inline fun load(pos: Int, action: () -> Unit = {}) {
-        val messageItem = pagerAdapter.getItem(pos)
+        val messageItem = pagerAdapter.getItem(pos) ?: return
         if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name ||
             messageItem.type == MessageCategory.PLAIN_VIDEO.name) {
             messageItem.mediaUrl?.let {

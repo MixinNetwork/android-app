@@ -2,6 +2,7 @@ package one.mixin.android.repository
 
 import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
+import androidx.paging.DataSource
 import io.reactivex.Observable
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -103,8 +104,10 @@ internal constructor(
 
     suspend fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
 
-    suspend fun getMediaMessages(conversationId: String): List<MessageItem> =
+    fun getMediaMessages(conversationId: String): DataSource.Factory<Int, MessageItem> =
         readMessageDao.getMediaMessages(conversationId)
+
+    fun indexMediaMessages(conversationId: String, messageId: String): Int = readMessageDao.indexMediaMessages(conversationId, messageId)
 
     fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
 
