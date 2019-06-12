@@ -27,9 +27,6 @@
         <attr name="border_overlay" format="boolean" />
         <attr name="border_text_size" format="dimension" />
     </declare-styleable>
-    <declare-styleable name="CameraView">
-        <attr name="camera" format="integer" />
-    </declare-styleable>
     <declare-styleable name="PasswordView">
         <attr name="circleColor" format="color" />
     </declare-styleable>
