@@ -81,7 +81,7 @@ class BalanceLayout : ViewGroup {
         val balanceTv = getChildAt(0) as TextView
         val symbolTv = getChildAt(1) as TextView
         var left = 0
-        if (center) {
+        if (center && balanceTv.layout.lineCount == 1) {
             left = (measuredWidth - balanceTv.measuredWidth - symbolTv.measuredWidth) / 2
             balanceTv.layout(left, 0, left + balanceTv.measuredWidth, balanceTv.measuredHeight)
         } else {
