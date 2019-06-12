@@ -5,6 +5,8 @@ import android.app.Dialog
 import android.content.ClipData
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.text.method.LinkMovementMethod
 import android.view.View
 import android.view.View.GONE
@@ -313,6 +315,19 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             .show()
         nameDialog.setOnDismissListener { dismiss() }
+        nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = false
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+            }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                nameDialog?.getButton(AlertDialog.BUTTON_POSITIVE)?.isEnabled = !(s.isNullOrBlank() || s.toString() == name.toString())
+            }
+        })
+
         nameDialog.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
             WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
         nameDialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
