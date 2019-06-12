@@ -15,7 +15,7 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
 
-class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm) {
+class StickerAlbumAdapter(fm: FragmentManager, private val albums: List<StickerAlbum>) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
     companion object {
         const val TYPE_RECENT = 0
         const val TYPE_LIKE = 1

@@ -14,7 +14,7 @@ import one.mixin.android.widget.gallery.internal.entity.Album
 class GalleryAlbumAdapter(
     private val context: Context,
     fm: FragmentManager
-) : FragmentPagerAdapter(fm) {
+) : FragmentPagerAdapter(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT) {
 
     var callback: GalleryCallback? = null
     var rvCallback: DraggableRecyclerView.Callback? = null
