@@ -1,11 +1,11 @@
 package one.mixin.android.extension
 
-import android.app.ProgressDialog
+import android.content.Context
 import android.content.DialogInterface
 import androidx.fragment.app.Fragment
+import one.mixin.android.widget.ProgressDialog
 import org.jetbrains.anko.AlertBuilder
 import org.jetbrains.anko.alert
-import org.jetbrains.anko.indeterminateProgressDialog
 import org.jetbrains.anko.selector
 
 fun Fragment.toast(textResource: Int) = requireActivity().toast(textResource)
@@ -25,9 +25,19 @@ fun Fragment.alert(
 ) = requireActivity().alert(message, title, init)
 
 fun Fragment.indeterminateProgressDialog(message: String? = null, title: String? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
-    return requireActivity().indeterminateProgressDialog(message, title, init)
+    return requireActivity().progressDialog(message, title, init)
 }
 
 fun Fragment.indeterminateProgressDialog(message: Int? = null, title: Int? = null, init: (ProgressDialog.() -> Unit)? = null): ProgressDialog {
-    return requireActivity().indeterminateProgressDialog(message?.let { requireActivity().getString(it) }, title?.let { requireActivity().getString(it) }, init)
+    return requireActivity().progressDialog(message?.let { requireActivity().getString(it) }, title?.let { requireActivity().getString(it) }, init)
+}
+
+fun Context.progressDialog(
+    message: CharSequence? = null,
+    title: CharSequence? = null,
+    init: (ProgressDialog.() -> Unit)? = null
+) = ProgressDialog(this).apply {
+    if (message != null) setMessage(message)
+    if (title != null) setTitle(title)
+    if (init != null) init()
 }
