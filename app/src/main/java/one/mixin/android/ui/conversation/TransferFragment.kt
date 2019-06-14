@@ -188,27 +188,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             operateKeyboard(false)
             showTransferBottom()
         }
-
-        chatViewModel.assetItemsWithBalance().observe(this, Observer { r: List<AssetItem>? ->
-            if (r != null && r.isNotEmpty()) {
-                assets = r
-                adapter.submitList(r)
-                contentView.asset_rl.isEnabled = true
-
-                notNullElse(r.find {
-                    it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
-                }, { a ->
-                    updateAssetUI(a)
-                    currentAsset = a
-                }, {
-                    val a = assets[0]
-                    updateAssetUI(a)
-                    currentAsset = a
-                })
-            } else {
-                contentView.asset_rl.isEnabled = false
-            }
-        })
     }
 
     private fun handleAddressTransfer() {
@@ -216,6 +195,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.expand_iv.isVisible = false
         contentView.asset_rl.setOnClickListener(null)
         currentAsset = arguments!!.getParcelable(ARGS_ASSET)
+        currentAsset?.let { updateAssetUI(it) }
 
         address = arguments!!.getParcelable(ARGS_ADDRESS)
         if (address == null || currentAsset == null) return
@@ -281,6 +261,27 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 user = u
                 contentView.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
                 contentView.title_view.setSubTitle(getString(R.string.send_to, u.fullName), u.identityNumber)
+            }
+        })
+
+        chatViewModel.assetItemsWithBalance().observe(this, Observer { r: List<AssetItem>? ->
+            if (r != null && r.isNotEmpty()) {
+                assets = r
+                adapter.submitList(r)
+                contentView.asset_rl.isEnabled = true
+
+                notNullElse(r.find {
+                    it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
+                }, { a ->
+                    updateAssetUI(a)
+                    currentAsset = a
+                }, {
+                    val a = assets[0]
+                    updateAssetUI(a)
+                    currentAsset = a
+                })
+            } else {
+                contentView.asset_rl.isEnabled = false
             }
         })
     }
