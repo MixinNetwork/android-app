@@ -35,7 +35,7 @@
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:textColor="@android:color/black"
-            android:textSize="@dimen/wallet_balance_text"/>
+            android:textSize="18sp"/>
 
         <TextView
             android:id="@+id/asset_address"
