@@ -439,6 +439,8 @@ internal constructor(
 
     fun getConversations() = conversationRepository.conversation()
 
+    fun successConversationList() = conversationRepository.successConversationList()
+
     fun findContactUsers() = userRepository.findContactUsers()
 
     private val notificationManager: NotificationManager by lazy {
