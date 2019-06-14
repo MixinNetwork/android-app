@@ -1,9 +1,9 @@
 package one.mixin.android.ui.forward
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_header.view.*
 import one.mixin.android.R
@@ -26,6 +26,24 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     var conversations: List<ConversationItem>? = null
     var friends: List<User>? = null
     var showHeader: Boolean = true
+    var name: CharSequence? = null
+
+    fun changeData() {
+        if (name != null) {
+            conversations = conversations?.filter {
+                if (it.isGroup()) {
+                    it.groupName != null && (it.groupName.contains(name.toString(), ignoreCase = true))
+                } else {
+                    it.name.contains(name.toString(), ignoreCase = true)
+                }
+            }
+            friends = friends?.filter {
+                it.fullName != null && it.fullName.contains(name.toString(), ignoreCase = true)
+            }
+            showHeader = name.isNullOrEmpty()
+        }
+        notifyDataSetChanged()
+    }
 
     override fun getItemCount(): Int {
         return if (conversations == null && friends == null) {

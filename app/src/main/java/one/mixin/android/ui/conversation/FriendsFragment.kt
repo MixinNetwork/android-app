@@ -58,7 +58,7 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
             activity?.onBackPressed()
         }
         friends_rv.adapter = adapter
-        conversationViewModel.getFriends().observe(this, Observer {
+        conversationViewModel.findFriends().observe(this, Observer {
             if (it == null || it.isEmpty()) return@Observer
 
             users.clear()
