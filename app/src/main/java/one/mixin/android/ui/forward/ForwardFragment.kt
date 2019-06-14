@@ -149,23 +149,26 @@ class ForwardFragment : BaseFragment() {
         chatViewModel.getConversations().observe(this, Observer {
             it?.let { conversations ->
                 this.conversations = conversations
-                adapter.conversations = conversations.filter { conversationItem ->
+                adapter.sourceConversations = conversations.filter { conversationItem ->
                     conversationItem.status == ConversationStatus.SUCCESS.ordinal
                 }
 
                 chatViewModel.viewModelScope.launch {
-                    val r = chatViewModel.getFriends()
-                    if (r != null) {
+                    val list = chatViewModel.getFriends()
+                    if (list.isNotEmpty()) {
                         val mutableList = mutableListOf<User>()
-                        mutableList.addAll(r)
+                        mutableList.addAll(list)
                         if (adapter.conversations != null) {
                             for (c in adapter.conversations!!) {
-                                r.filter { item -> c.isContact() && c.ownerIdentityNumber == item.identityNumber }
+                                list.filter { item -> c.isContact() && c.ownerIdentityNumber == item.identityNumber }
                                     .forEach { mutableList.remove(it) }
                             }
                         }
                         friends = mutableList
-                        adapter.friends = mutableList
+                        adapter.sourceFriends = mutableList
+                    } else {
+                        friends = list
+                        adapter.sourceFriends = list
                     }
                     adapter.changeData()
                 }

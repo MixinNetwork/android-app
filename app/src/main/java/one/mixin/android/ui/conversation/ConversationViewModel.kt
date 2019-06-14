@@ -433,7 +433,7 @@ internal constructor(
     }
 
     fun findFriends() = userRepository.findFriends()
-    suspend fun getFriends() = userRepository.getFriends()
+    suspend fun getFriends(): List<User> = userRepository.getFriends()
 
     fun finFriendsNotBot() = userRepository.findFriendsNotBot()
 

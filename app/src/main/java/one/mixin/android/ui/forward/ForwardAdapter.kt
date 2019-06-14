@@ -25,22 +25,30 @@ class ForwardAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     private var listener: ForwardListener? = null
     var conversations: List<ConversationItem>? = null
     var friends: List<User>? = null
+
+    var sourceConversations: List<ConversationItem>? = null
+    var sourceFriends: List<User>? = null
+
     var showHeader: Boolean = true
     var name: CharSequence? = null
 
     fun changeData() {
-        if (name != null) {
-            conversations = conversations?.filter {
+        if (!name.isNullOrBlank()) {
+            conversations = sourceConversations?.filter {
                 if (it.isGroup()) {
                     it.groupName != null && (it.groupName.contains(name.toString(), ignoreCase = true))
                 } else {
                     it.name.contains(name.toString(), ignoreCase = true)
                 }
             }
-            friends = friends?.filter {
+            friends = sourceFriends?.filter {
                 it.fullName != null && it.fullName.contains(name.toString(), ignoreCase = true)
             }
-            showHeader = name.isNullOrEmpty()
+            showHeader = false
+        } else {
+            conversations = sourceConversations
+            friends = sourceFriends
+            showHeader = true
         }
         notifyDataSetChanged()
     }
