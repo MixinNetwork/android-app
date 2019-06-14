@@ -290,7 +290,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @SuppressLint("RestrictedApi")
     private fun showDialog(name: String?) {
-        if (context == null) {
+        if (context == null || !isAdded) {
             return
         }
         val editText = EditText(requireContext())
