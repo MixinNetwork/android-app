@@ -14,11 +14,13 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.ui.common.BaseFragment
@@ -145,27 +147,31 @@ class ForwardFragment : BaseFragment() {
         })
 
         chatViewModel.getConversations().observe(this, Observer {
-            it?.let {
-                conversations = it
-                adapter.conversations = it.filter { conversationItem ->
+            it?.let { conversations ->
+                this.conversations = conversations
+                adapter.sourceConversations = conversations.filter { conversationItem ->
                     conversationItem.status == ConversationStatus.SUCCESS.ordinal
                 }
 
-                chatViewModel.getFriends().observe(this, Observer { r ->
-                    if (r != null) {
+                chatViewModel.viewModelScope.launch {
+                    val list = chatViewModel.getFriends()
+                    if (list.isNotEmpty()) {
                         val mutableList = mutableListOf<User>()
-                        mutableList.addAll(r)
+                        mutableList.addAll(list)
                         if (adapter.conversations != null) {
                             for (c in adapter.conversations!!) {
-                                r.filter { c.isContact() && c.ownerIdentityNumber == it.identityNumber }
+                                list.filter { item -> c.isContact() && c.ownerIdentityNumber == item.identityNumber }
                                     .forEach { mutableList.remove(it) }
                             }
                         }
                         friends = mutableList
-                        adapter.friends = mutableList
+                        adapter.sourceFriends = mutableList
+                    } else {
+                        friends = list
+                        adapter.sourceFriends = list
                     }
-                    adapter.notifyDataSetChanged()
-                })
+                    adapter.changeData()
+                }
             }
         })
         search_et.addTextChangedListener(mWatcher)
@@ -235,18 +241,8 @@ class ForwardFragment : BaseFragment() {
         }
 
         override fun afterTextChanged(s: Editable?) {
-            adapter.conversations = conversations?.filter {
-                if (it.isGroup()) {
-                    it.groupName != null && (it.groupName.contains(s.toString(), ignoreCase = true))
-                } else {
-                    it.name.contains(s.toString(), ignoreCase = true)
-                }
-            }
-            adapter.friends = friends?.filter {
-                it.fullName != null && it.fullName.contains(s.toString(), ignoreCase = true)
-            }
-            adapter.showHeader = s.isNullOrEmpty()
-            adapter.notifyDataSetChanged()
+            adapter.name = s
+            adapter.changeData()
         }
     }
 }
