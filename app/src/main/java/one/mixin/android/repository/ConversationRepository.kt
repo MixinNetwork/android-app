@@ -60,6 +60,8 @@ internal constructor(
 
     fun conversation(): LiveData<List<ConversationItem>> = readConversationDao.conversationList()
 
+    fun successConversationList(): LiveData<List<ConversationItem>> = readConversationDao.successConversationList()
+
     fun insertConversation(conversation: Conversation, participants: List<Participant>) {
         GlobalScope.launch(SINGLE_DB_THREAD) {
             appDatabase.runInTransaction {

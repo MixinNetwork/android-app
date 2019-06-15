@@ -10,6 +10,7 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.collection.ArraySet
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
@@ -30,7 +31,6 @@ import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_MESSAGES
 import one.mixin.android.ui.forward.ForwardActivity.Companion.ARGS_SHARE
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.ConversationItem
-import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
@@ -146,26 +146,24 @@ class ForwardFragment : BaseFragment() {
             }
         })
 
-        chatViewModel.getConversations().observe(this, Observer {
+        chatViewModel.successConversationList().observe(this, Observer {
             it?.let { conversations ->
+                val set = ArraySet<String>()
                 this.conversations = conversations
-                adapter.sourceConversations = conversations.filter { conversationItem ->
-                    conversationItem.status == ConversationStatus.SUCCESS.ordinal
+                adapter.sourceConversations = conversations
+                conversations.forEach { item ->
+                    if (item.isContact()) {
+                        set.add(item.ownerId)
+                    }
                 }
 
                 chatViewModel.viewModelScope.launch {
                     val list = chatViewModel.getFriends()
                     if (list.isNotEmpty()) {
-                        val mutableList = mutableListOf<User>()
-                        mutableList.addAll(list)
-                        if (adapter.conversations != null) {
-                            for (c in adapter.conversations!!) {
-                                list.filter { item -> c.isContact() && c.ownerIdentityNumber == item.identityNumber }
-                                    .forEach { mutableList.remove(it) }
-                            }
+                        friends = list.filter { item ->
+                            !set.contains(item.userId)
                         }
-                        friends = mutableList
-                        adapter.sourceFriends = mutableList
+                        adapter.sourceFriends = friends
                     } else {
                         friends = list
                         adapter.sourceFriends = list
