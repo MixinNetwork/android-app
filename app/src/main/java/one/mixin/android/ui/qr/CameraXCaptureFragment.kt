@@ -157,7 +157,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     }
 
     private val isGooglePlayServicesAvailable by lazy {
-        requireContext().isGooglePlayServicesAvailable()
+        context?.isGooglePlayServicesAvailable() ?: false
     }
 
     private val imageAnalyzer = object : ImageAnalysis.Analyzer {
