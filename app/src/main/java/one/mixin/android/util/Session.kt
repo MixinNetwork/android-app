@@ -96,6 +96,8 @@ class Session {
             return preference.getLong(Constants.Account.PREF_PIN_ITERATOR, 1)
         }
 
+        fun hasEmergencyContact() = Session.getAccount()?.hasEmergencyContact ?: false
+
         @JvmStatic
         fun getAccountId(): String? {
             val account = Session.getAccount()

@@ -81,7 +81,7 @@ internal constructor(
         return accountRepository.updatePin(PinRequest(fresh, old)).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
     }
 
-    fun verifyPin(code: String) = accountRepository.verifyPin(code)
+    suspend fun verifyPin(code: String) = accountRepository.verifyPin(code)
 
     fun getUserById(id: String): User? = userRepository.getUserById(id)
 

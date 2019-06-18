@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import androidx.work.WorkManager
 import kotlinx.android.synthetic.main.fragment_verification_emergency.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -16,15 +17,20 @@ import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.CryptoPreference
+import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateRSAKeyPair
 import one.mixin.android.crypto.getPublicKey
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.User
+import one.mixin.android.worker.RefreshAccountWorker
+import java.security.KeyPair
 
 class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
     companion object {
@@ -69,44 +75,74 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
     }
 
     override fun clickNextFab() {
-        requestRemote()
+        val sessionKey = generateRSAKeyPair()
+        if (from == FROM_CONTACT) {
+            createVerify(sessionKey)
+        } else {
+            loginVerify(sessionKey)
+        }
     }
 
-    private fun requestRemote() = lifecycleScope.launch {
+    override fun insertUser(u: User) {
+        viewModel.upsertUser(u)
+    }
+
+    private fun createVerify(sessionKey: KeyPair) = lifecycleScope.launch {
         showLoading()
         val response = try {
             withContext(Dispatchers.IO) {
-                viewModel.verifyEmergency(verificationId, buildEmergencyRequest())
+                viewModel.createVerifyEmergency(verificationId, buildEmergencyRequest(sessionKey))
             }
         } catch (t: Throwable) {
-            ErrorHandler.handleError(t)
-            hideLoading()
+            handleError(t)
             return@launch
         }
         hideLoading()
         if (response.isSuccess) {
             AlertDialog.Builder(requireContext())
-                .setTitle(getString(R.string.setting_emergency_change_success))
+                .setTitle(getString(
+                    if (Session.hasEmergencyContact())
+                        R.string.setting_emergency_change_success
+                    else
+                        R.string.setting_emergency_create_success))
                 .setPositiveButton(R.string.group_ok) { dialog, _ ->
-                    if (from == FROM_CONTACT) {
-                        requireFragmentManager().popBackStackImmediate()
-                        requireFragmentManager().popBackStackImmediate()
-                    } else if (from == FROM_SESSION) {
+                    requireFragmentManager().popBackStackImmediate()
+                    requireFragmentManager().popBackStackImmediate()
 
-                    }
+                    WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
                     dialog.dismiss()
                 }
                 .show()
         } else {
-            ErrorHandler.handleMixinError(response.errorCode)
+            handleFailure(response)
         }
     }
 
-    private fun buildEmergencyRequest(): EmergencyRequest {
+    private fun loginVerify(sessionKey: KeyPair) = lifecycleScope.launch {
+        showLoading()
+
+        SignalProtocol.initSignal(requireContext().applicationContext)
+        val response = try {
+            withContext(Dispatchers.IO) {
+                viewModel.loginVerifyEmergency(verificationId, buildEmergencyRequest(sessionKey))
+            }
+        } catch (t: Throwable) {
+            handleError(t)
+            return@launch
+        }
+        hideLoading()
+        if (response.isSuccess) {
+            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)
+            handleAccount(response, sessionKey)
+        } else {
+            handleFailure(response)
+        }
+    }
+
+    private fun buildEmergencyRequest(sessionKey: KeyPair): EmergencyRequest {
         val registrationId = CryptoPreference.getLocalRegistrationId(requireContext())
-        val sessionKey = generateRSAKeyPair()
         val sessionSecret = Base64.encodeBytes(sessionKey.getPublicKey())
-        val purpose =  if (from == FROM_CONTACT) {
+        val purpose = if (from == FROM_CONTACT) {
             EmergencyPurpose.CONTACT.name
         } else {
             EmergencyPurpose.SESSION.name
@@ -114,7 +150,7 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
         return EmergencyRequest(
             user?.phone,
             user?.identityNumber ?: userIdentityNumber,
-            Session.getPinToken()?.let { encryptPin(it, pin)!!},
+            Session.getPinToken()?.let { encryptPin(it, pin)!! },
             pin_verification_view.code(),
             purpose,
             sessionSecret = sessionSecret,

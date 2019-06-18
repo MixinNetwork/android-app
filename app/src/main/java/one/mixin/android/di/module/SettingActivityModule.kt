@@ -11,6 +11,7 @@ import one.mixin.android.ui.setting.BackUpFragment
 import one.mixin.android.ui.setting.EmergencyContactTipBottomSheetDialogFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.ui.setting.NotificationsFragment
+import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
 import one.mixin.android.ui.setting.PrivacyFragment
 import one.mixin.android.ui.setting.SettingBlockedFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
@@ -65,4 +66,7 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeVerificationEmergencyFragment(): VerificationEmergencyFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributePinEmergencyBottomSheetDialog(): PinEmergencyBottomSheetDialog
 }

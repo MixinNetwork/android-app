@@ -1,7 +1,6 @@
 package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
-import android.graphics.Point
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.LayoutInflater
@@ -18,7 +17,7 @@ import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.android.synthetic.main.view_verification_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import one.mixin.android.MixinApplication
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
@@ -29,14 +28,12 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateRSAKeyPair
-import one.mixin.android.crypto.getPrivateKeyPem
 import one.mixin.android.crypto.getPublicKey
-import one.mixin.android.crypto.rsaDecrypt
 import one.mixin.android.extension.alert
-import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.saveQRCode
+import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.PinCodeFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.landing.MobileFragment.Companion.ARGS_PHONE_NUM
@@ -44,36 +41,39 @@ import one.mixin.android.ui.setting.VerificationEmergencyIdFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.util.Session
+import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
-import one.mixin.android.vo.toUser
+import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.RecaptchaView
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
-import org.jetbrains.anko.windowManager
 import org.jetbrains.anko.yesButton
 
 class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     companion object {
         const val TAG: String = "VerificationFragment"
         private const val ARGS_ID = "args_id"
+        const val ARGS_HAS_EMERGENCY_CONTACT = "args_has_emergency_contact"
 
-        fun newInstance(id: String, phoneNum: String, pin: String? = null): VerificationFragment {
-            val verificationFragment = VerificationFragment()
-            val b = bundleOf(
+        fun newInstance(
+            id: String,
+            phoneNum: String,
+            pin: String? = null,
+            hasEmergencyContact: Boolean = false
+        ): VerificationFragment = VerificationFragment().apply {
+            arguments = bundleOf(
                 ARGS_ID to id,
                 ARGS_PHONE_NUM to phoneNum,
-                ARGS_PIN to pin
+                ARGS_PIN to pin,
+                ARGS_HAS_EMERGENCY_CONTACT to hasEmergencyContact
             )
-            verificationFragment.arguments = b
-            return verificationFragment
         }
     }
 
     override fun getModelClass() = MobileViewModel::class.java
 
     private var mCountDownTimer: CountDownTimer? = null
-    private lateinit var account: Account
 
     private val pin: String? by lazy {
         arguments!!.getString(ARGS_PIN)
@@ -81,6 +81,8 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     private val phoneNum by lazy { arguments!!.getString(ARGS_PHONE_NUM) }
 
     private lateinit var recaptchaView: RecaptchaView
+
+    private var hasEmergencyContact = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val parent = inflater.inflate(R.layout.fragment_verification, container, false) as ViewGroup
@@ -99,6 +101,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        hasEmergencyContact = arguments!!.getBoolean(ARGS_HAS_EMERGENCY_CONTACT)
         pin_verification_title_tv.text = getString(R.string.landing_validation_title, phoneNum)
         verification_resend_tv.setOnClickListener { sendVerification() }
         verification_need_help_tv.setOnClickListener { showBottom() }
@@ -127,10 +130,15 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         }
     }
 
+    override fun insertUser(u: User) {
+        viewModel.insertUser(u)
+    }
+
     @SuppressLint("InflateParams")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_verification_bottom, null)
+        view.lost_tv.isVisible = hasEmergencyContact
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.cant_tv.setOnClickListener {
@@ -176,7 +184,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
             })
     }
 
-    private fun handleLogin() {
+    private fun handleLogin() = lifecycleScope.launch {
         showLoading()
 
         SignalProtocol.initSignal(context!!.applicationContext)
@@ -186,52 +194,23 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         val accountRequest = AccountRequest(pin_verification_view.code(),
             registration_id = registrationId,
             purpose = VerificationPurpose.SESSION.name,
-            pin = pin,
+            pin = Session.getPinToken()?.let { encryptPin(it, pin) },
             session_secret = sessionSecret)
-        viewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest)
-            .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
-                if (!isAdded) {
-                    return@subscribe
-                }
-                verification_next_fab.hide()
-                verification_cover.visibility = GONE
-                if (!r.isSuccess) {
-                    handleFailure(r)
-                    return@subscribe
-                }
 
-                account = r.data!!
-                if (account.code_id.isNotEmpty()) {
-                    saveQrCode()
-                }
-                Session.storeAccount(account)
-                Session.storeToken(sessionKey.getPrivateKeyPem())
-                val key = rsaDecrypt(sessionKey.private, account.session_id, account.pin_token)
-                Session.storePinToken(key)
-
-                verification_keyboard.animate().translationY(300f).start()
-                MixinApplication.get().onlining.set(true)
-                if (account.full_name.isNullOrBlank()) {
-                    viewModel.insertUser(r.data!!.toUser())
-                    InitializeActivity.showSetupName(context!!)
-                } else {
-                    RestoreActivity.show(requireContext())
-                }
-                activity?.finish()
-            }, { t: Throwable ->
-                handleError(t)
-            })
-    }
-
-    private fun saveQrCode() = lifecycleScope.launch(Dispatchers.IO) {
-        if (!isAdded) return@launch
-
-        val p = Point()
-        val ctx = MixinApplication.appContext
-        ctx.windowManager.defaultDisplay?.getSize(p)
-        val size = minOf(p.x, p.y)
-        val b = account.code_url.generateQRCode(size)
-        b?.saveQRCode(ctx, account.userId)
+        val response = try {
+            withContext(Dispatchers.IO) {
+                viewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest)
+            }
+        } catch (t: Throwable) {
+            handleError(t)
+            return@launch
+        }
+        if (response.isSuccess) {
+            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
+            handleAccount(response, sessionKey)
+        } else {
+            handleFailure(response)
+        }
     }
 
     override fun hideLoading() {
@@ -256,6 +235,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
                         ErrorHandler.handleMixinError(r.errorCode)
                     }
                 } else {
+                    hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
                     hideLoading()
                     pin_verification_view?.clear()
                     startCountDown()

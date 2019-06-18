@@ -13,7 +13,6 @@ import kotlinx.android.synthetic.main.fragment_verification_emergency_id.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
@@ -21,12 +20,12 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
-import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.ui.common.FabLoadingFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 
-class VerificationEmergencyIdFragment : BaseViewModelFragment<EmergencyViewModel>() {
+class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>() {
     companion object {
         const val TAG = "VerificationEmergencyIdFragment"
         const val ARGS_PHONE = "args_phone"
@@ -48,14 +47,12 @@ class VerificationEmergencyIdFragment : BaseViewModelFragment<EmergencyViewModel
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         back_iv.setOnClickListener { activity?.onBackPressed() }
-        id_fab.setOnClickListener {
+        verification_next_fab.setOnClickListener {
             sendCode(id_et.text.toString())
         }
         id_et.addTextChangedListener(watcher)
-        id_cover.isClickable = true
 
-        id_keyboard.setKeyboardKeys(KEYS)
-        id_keyboard.setOnClickKeyboardListener(mKeyboardListener)
+        verification_keyboard.setOnClickKeyboardListener(mKeyboardListener)
     }
 
     private fun sendCode(mixinID: String) = lifecycleScope.launch {
@@ -65,8 +62,7 @@ class VerificationEmergencyIdFragment : BaseViewModelFragment<EmergencyViewModel
                 viewModel.createEmergency(buildEmergencyRequest(mixinID))
             }
         } catch (t: Throwable) {
-            ErrorHandler.handleError(t)
-            hideLoading()
+            handleError(t)
             return@launch
         }
         hideLoading()
@@ -87,22 +83,12 @@ class VerificationEmergencyIdFragment : BaseViewModelFragment<EmergencyViewModel
         identityNumber = mixinID,
         purpose = EmergencyPurpose.SESSION.name)
 
-    private fun showLoading() {
-        id_fab?.show()
-        id_cover?.visibility = VISIBLE
-    }
-
-    private fun hideLoading() {
-        id_fab?.hide()
-        id_cover?.visibility = INVISIBLE
-    }
-
     private fun handleEditView(str: String) {
         id_et.setSelection(id_et.text.toString().length)
         if (str.isNotBlank()) {
-            id_fab.visibility = VISIBLE
+            verification_next_fab.visibility = VISIBLE
         } else {
-            id_fab.visibility = INVISIBLE
+            verification_next_fab.visibility = INVISIBLE
         }
     }
 

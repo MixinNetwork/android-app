@@ -116,13 +116,15 @@
             android:text="@string/setting_emergency"
             tools:ignore="RelativeOverlap"/>
 
-        <TextView
-            android:id="@+id/emergency_id_tv"
+        <ProgressBar
+            android:id="@+id/emergency_pb"
+            style="?android:attr/progressBarStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:visibility="gone"
             android:layout_marginEnd="@dimen/margin16"
-            style="@style/DescTextStyle"/>
+            android:theme="@style/AppTheme.BlueAccent"/>
     </RelativeLayout>
 </LinearLayout>

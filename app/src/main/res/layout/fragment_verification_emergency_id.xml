@@ -52,12 +52,12 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.github.jorgecastilloprz.FABProgressCircle
-        android:id="@+id/id_fab"
+        android:id="@+id/verification_next_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/id_keyboard"
+        android:layout_above="@+id/verification_keyboard"
         android:layout_alignParentEnd="true"
-        android:layout_alignParentBottom="true"
+        android:visibility="invisible"
         app:arcColor="@android:color/holo_blue_dark">
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -69,16 +69,13 @@
     </com.github.jorgecastilloprz.FABProgressCircle>
 
     <one.mixin.android.widget.Keyboard
-        android:id="@+id/id_keyboard"
+        android:id="@+id/verification_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"/>
+        android:layout_alignParentBottom="true"/>
 
     <View
-        android:id="@+id/id_cover"
+        android:id="@+id/verification_cover"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent"

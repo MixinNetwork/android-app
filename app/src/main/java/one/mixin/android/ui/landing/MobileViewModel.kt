@@ -40,8 +40,7 @@ constructor(
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
         accountRepository.verification(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
-    fun create(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
-        accountRepository.create(id, request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> = accountRepository.create(id, request)
 
     fun changePhone(id: String, verificationCode: String, pin: String): Observable<MixinResponse<Account>> =
         accountRepository.changePhone(id, AccountRequest(verificationCode, purpose = VerificationPurpose.PHONE.name,

@@ -2,7 +2,6 @@ package one.mixin.android.repository
 
 import com.google.gson.Gson
 import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
@@ -59,7 +58,7 @@ constructor(
     fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
         accountService.verification(request)
 
-    fun create(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
+    suspend fun create(id: String, request: AccountRequest): MixinResponse<Account> =
         accountService.create(id, request)
 
     fun changePhone(id: String, request: AccountRequest): Observable<MixinResponse<Account>> =
@@ -113,9 +112,8 @@ constructor(
 
     fun updatePin(request: PinRequest) = accountService.updatePin(request)
 
-    fun verifyPin(code: String): Observable<MixinResponse<Account>> =
+    suspend fun verifyPin(code: String): MixinResponse<Account> =
         accountService.verifyPin(PinRequest(encryptPin(Session.getPinToken()!!, code)!!))
-            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun authorize(request: AuthorizeRequest) = authService.authorize(request)
 
@@ -146,7 +144,10 @@ constructor(
 
     suspend fun createEmergency(request: EmergencyRequest) = emergencyService.create(request)
 
-    suspend fun verifyEmergency(id: String, request: EmergencyRequest) = emergencyService.verify(id, request)
+    suspend fun createVerifyEmergency(id: String, request: EmergencyRequest) = emergencyService.createVerify(id, request)
 
-    suspend fun showEmergency() = emergencyService.show()
+    suspend fun loginVerifyEmergency(id: String, request: EmergencyRequest) = emergencyService.loginVerify(id, request)
+
+    suspend fun showEmergency(pin: String) =
+        emergencyService.show(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
 }

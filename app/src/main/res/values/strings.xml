@@ -68,6 +68,7 @@
     <string name="receive">Receive</string>
     <string name="developer">Developer</string>
     <string name="mixin_id" translatable="false">Mixin ID</string>
+    <string name="later">Later</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -396,7 +397,9 @@
     <string name="setting_emergency_contact_mixin_id">Enter your emergency contact Mixin ID</string>
     <string name="setting_emergency_send_code">Enter the 4-digit code send to Mixin ID: %1$s</string>
     <string name="setting_emergency_change_success">Change emergency contact successfully</string>
+    <string name="setting_emergency_create_success">Create emergency contact successfully</string>
     <string name="setting_emergency_set">Set emergency contact</string>
+    <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
     <string name="setting_deauthorize">Deauthorize</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>

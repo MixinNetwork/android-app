@@ -216,8 +216,11 @@ class MobileFragment : BaseFragment() {
                     return@subscribe
                 }
                 hideLoading()
+                val verificationResponse = r.data as VerificationResponse
                 activity?.addFragment(this@MobileFragment,
-                    VerificationFragment.newInstance(r.data!!.id, phoneNum, pin), VerificationFragment.TAG)
+                    VerificationFragment.newInstance(verificationResponse.id, phoneNum,
+                        pin, verificationResponse.hasEmergencyContact),
+                    VerificationFragment.TAG)
             }, { t: Throwable ->
                 hideLoading()
                 ErrorHandler.handleError(t)

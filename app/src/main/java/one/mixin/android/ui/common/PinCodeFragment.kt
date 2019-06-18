@@ -1,19 +1,40 @@
 package one.mixin.android.ui.common
 
+import android.graphics.Point
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModel
 import kotlinx.android.synthetic.main.fragment_verification.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.KEYS
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.crypto.getPrivateKeyPem
+import one.mixin.android.crypto.rsaDecrypt
+import one.mixin.android.extension.generateQRCode
+import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.vibrate
+import one.mixin.android.ui.landing.InitializeActivity
+import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.User
+import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
+import org.jetbrains.anko.windowManager
+import java.security.KeyPair
 
-abstract class PinCodeFragment<VH : ViewModel> : BaseViewModelFragment<VH>() {
+abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
+    companion object {
+        const val PREF_LOGIN_FROM = "pref_login_from"
+
+        const val FROM_LOGIN = 0
+        const val FROM_EMERGENCY = 1
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -25,7 +46,7 @@ abstract class PinCodeFragment<VH : ViewModel> : BaseViewModelFragment<VH>() {
         verification_next_fab.setOnClickListener { clickNextFab() }
     }
 
-    protected fun handleFailure(r: MixinResponse<Account>) {
+    protected fun handleFailure(r: MixinResponse<*>) {
         pin_verification_view.error()
         pin_verification_tip_tv.visibility = View.VISIBLE
         pin_verification_tip_tv.text = getString(R.string.landing_validation_error)
@@ -36,25 +57,48 @@ abstract class PinCodeFragment<VH : ViewModel> : BaseViewModelFragment<VH>() {
         ErrorHandler.handleMixinError(r.errorCode)
     }
 
-    protected fun handleError(t: Throwable) {
-        verification_next_fab.hide()
-        verification_cover.visibility = View.GONE
-        ErrorHandler.handleError(t)
+    private suspend fun saveQrCode(account: Account) = withContext(Dispatchers.IO) {
+        val p = Point()
+        val ctx = MixinApplication.appContext
+        ctx.windowManager.defaultDisplay?.getSize(p)
+        val size = minOf(p.x, p.y)
+        val b = account.code_url.generateQRCode(size)
+        b?.saveQRCode(ctx, account.userId)
     }
 
-    protected fun showLoading() {
-        verification_next_fab.visibility = View.VISIBLE
-        verification_next_fab.show()
-        verification_cover.visibility = View.VISIBLE
-    }
+    protected suspend fun handleAccount(
+        response: MixinResponse<Account>,
+        sessionKey: KeyPair
+    ) = withContext(Dispatchers.Main) {
+        hideLoading()
+        if (!response.isSuccess) {
+            handleFailure(response)
+            return@withContext
+        }
 
-    protected open fun hideLoading() {
-        verification_next_fab.hide()
-        verification_next_fab.visibility = View.GONE
-        verification_cover.visibility = View.GONE
+        val account = response.data as Account
+        if (account.code_id.isNotEmpty()) {
+            saveQrCode(account)
+        }
+        Session.storeAccount(account)
+        Session.storeToken(sessionKey.getPrivateKeyPem())
+        val key = rsaDecrypt(sessionKey.private, account.session_id, account.pin_token)
+        Session.storePinToken(key)
+
+        verification_keyboard.animate().translationY(300f).start()
+        MixinApplication.get().onlining.set(true)
+        if (account.full_name.isNullOrBlank()) {
+            insertUser(account.toUser())
+            InitializeActivity.showSetupName(context!!)
+        } else {
+            RestoreActivity.show(requireContext())
+        }
+        activity?.finish()
     }
 
     abstract fun clickNextFab()
+
+    abstract fun insertUser(u: User)
 
     private val mKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {

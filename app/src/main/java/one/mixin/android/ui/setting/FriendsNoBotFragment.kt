@@ -59,7 +59,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
 
     private fun requestCreateEmergency(user: User) = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message),
-            title = getString(R.string.group_creating)) // TODO creating or modifying
+            title = getString(if (Session.hasEmergencyContact()) R.string.changing else R.string.group_creating))
         dialog.setCancelable(false)
         dialog.show()
 

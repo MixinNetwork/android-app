@@ -64,6 +64,7 @@
     <string name="transfer_send">转出</string>
     <string name="receive">转入</string>
     <string name="developer">开发者</string>
+    <string name="later">稍后</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -384,7 +385,9 @@
     <string name="setting_emergency_contact_mixin_id">请输入紧急联系人的 Mixin ID</string>
     <string name="setting_emergency_send_code">请输入发送至以下Mixin ID的 4 位验证码：%1$s</string>
     <string name="setting_emergency_change_success">修改紧急联系人成功</string>
+    <string name="setting_emergency_create_success">添加紧急联系人成功</string>
     <string name="setting_emergency_set">Set emergency contact</string>
+    <string name="setting_emergency_change_mobile">马上修改手机号？</string>
     <string name="setting_deauthorize">取消授权</string>
     <string name="setting_backup">备份</string>
     <string name="setting_clearing">正在清理…</string>

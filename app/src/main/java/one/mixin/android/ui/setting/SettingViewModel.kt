@@ -25,7 +25,7 @@ internal constructor(
 
     fun deauthApp(appId: String) = accountRepository.deAuthorize(DeauthorRequest(appId)).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
 
-    suspend fun showEmergency() = accountRepository.showEmergency()
+    suspend fun showEmergency(pin: String) = accountRepository.showEmergency(pin)
 
     suspend fun findUserById(userId: String) = userRepository.suspendFindUserById(userId)
 }

@@ -6,12 +6,14 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.uber.autodispose.autoDisposable
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_old_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.updatePinCheck
@@ -20,7 +22,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_CHANGE
 import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_OLD_PASSWORD
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.Account
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import javax.inject.Inject
@@ -46,7 +47,7 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
         super.onActivityCreated(savedInstanceState)
         title_view.setSubTitle(getString(R.string.wallet_password_old_title), "1/5")
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title_view.right_animator.setOnClickListener { verify() }
+        title_view.right_animator.setOnClickListener { verify(pin.code()) }
         disableTitleRight()
         pin.setListener(this)
         keyboard.setKeyboardKeys(KEYS)
@@ -68,31 +69,35 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
         title_view.right_animator.isEnabled = false
     }
 
-    private fun verify() {
+    private fun verify(pinCode: String) = lifecycleScope.launch {
         val dialog = indeterminateProgressDialog(message = getString(R.string.pb_dialog_message),
             title = getString(R.string.wallet_verifying))
         dialog.setCancelable(false)
         dialog.show()
-        walletViewModel.verifyPin(pin.code()).autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
-            dialog.dismiss()
-            if (r.isSuccess) {
-                context?.updatePinCheck()
-                r.data?.let {
-                    view?.navigate(R.id.action_old_password_to_password,
-                        Bundle().apply {
-                            putBoolean(ARGS_CHANGE, true)
-                            putString(ARGS_OLD_PASSWORD, pin.code())
-                        })
-                }
-            } else {
-                pin.clear()
-                ErrorHandler.handleMixinError(r.errorCode)
+        val response = try {
+            withContext(Dispatchers.IO) {
+                walletViewModel.verifyPin(pinCode)
             }
-        }, { t ->
+        } catch (t: Throwable) {
             dialog.dismiss()
             pin.clear()
             ErrorHandler.handleError(t)
-        })
+            return@launch
+        }
+        dialog.dismiss()
+        if (response.isSuccess) {
+            context?.updatePinCheck()
+            response.data?.let {
+                view?.navigate(R.id.action_old_password_to_password,
+                    Bundle().apply {
+                        putBoolean(ARGS_CHANGE, true)
+                        putString(ARGS_OLD_PASSWORD, pin.code())
+                    })
+            }
+        } else {
+            pin.clear()
+            ErrorHandler.handleMixinError(response.errorCode)
+        }
     }
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
