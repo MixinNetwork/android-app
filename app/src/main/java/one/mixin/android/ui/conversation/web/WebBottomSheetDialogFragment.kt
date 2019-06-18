@@ -366,16 +366,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             bottomSheet.dismiss()
         }
         view.share.setOnClickListener {
-            val shareIntent = ShareCompat.IntentBuilder
+            ShareCompat.IntentBuilder
                 .from(activity)
                 .setType("text/plain")
                 .setChooserTitle(name)
                 .setText(url)
-                .intent
-
-            if (shareIntent.resolveActivity(requireActivity().packageManager) != null) {
-                activity?.startActivity(shareIntent)
-            }
+                .startChooser()
             bottomSheet.dismiss()
         }
         view.refresh.setOnClickListener {
