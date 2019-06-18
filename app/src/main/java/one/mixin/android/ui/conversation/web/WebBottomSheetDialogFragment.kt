@@ -376,6 +376,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (shareIntent.resolveActivity(requireActivity().packageManager) != null) {
                 activity?.startActivity(shareIntent)
             }
+            bottomSheet.dismiss()
         }
         view.refresh.setOnClickListener {
             contentView.chat_web_view.clearCache(true)
