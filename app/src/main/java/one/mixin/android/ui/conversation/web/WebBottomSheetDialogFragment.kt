@@ -26,6 +26,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.app.ShareCompat
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
@@ -360,9 +361,21 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_web_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.share.setOnClickListener {
+        view.forward.setOnClickListener {
             ForwardActivity.show(requireContext(), contentView.chat_web_view.url)
             bottomSheet.dismiss()
+        }
+        view.share.setOnClickListener {
+            val shareIntent = ShareCompat.IntentBuilder
+                .from(activity)
+                .setType("text/plain")
+                .setChooserTitle(name)
+                .setText(url)
+                .intent
+
+            if (shareIntent.resolveActivity(requireActivity().packageManager) != null) {
+                activity?.startActivity(shareIntent)
+            }
         }
         view.refresh.setOnClickListener {
             contentView.chat_web_view.clearCache(true)
