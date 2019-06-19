@@ -525,7 +525,8 @@ class ConversationAdapter(
                     oldItem.sharedUserFullName == newItem.sharedUserFullName &&
                     oldItem.mediaSize == newItem.mediaSize &&
                     oldItem.quoteContent == newItem.quoteContent &&
-                    oldItem.assetSymbol == newItem.assetSymbol
+                    oldItem.assetSymbol == newItem.assetSymbol &&
+                    oldItem.assetUrl == newItem.assetUrl
             }
         }
     }

@@ -5,7 +5,7 @@ import one.mixin.android.db.insertUpdate
 import one.mixin.android.vo.Sticker
 
 class RefreshStickerJob(private val stickerId: String) : BaseJob(Params(PRIORITY_UI_HIGH)
-    .addTags(RefreshStickerJob.GROUP).persist().requireNetwork()) {
+    .addTags(GROUP).persist().requireNetwork()) {
 
     companion object {
         private const val serialVersionUID = 1L
