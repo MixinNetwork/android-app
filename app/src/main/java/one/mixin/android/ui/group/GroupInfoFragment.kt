@@ -1,5 +1,6 @@
 package one.mixin.android.ui.group
 
+import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
@@ -88,6 +89,7 @@ class GroupInfoFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         LayoutInflater.from(context).inflate(R.layout.fragment_group_info, container, false)
 
+    @SuppressLint("AutoDispose")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener {
@@ -231,12 +233,7 @@ class GroupInfoFragment : BaseFragment() {
                         }
                     }
                     adapter.participantsMap = participantsMap
-                    val s = search_et.text.toString()
-                    if (s.isNotBlank()) {
-                        filter(s.trim())
-                    } else {
-                        adapter.data = u
-                    }
+                    filter()
                 }
             }
         })
@@ -268,21 +265,27 @@ class GroupInfoFragment : BaseFragment() {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                filter(s.toString())
+                keyword = s.toString()
             }
         })
 
         jobManager.addJobInBackground(RefreshConversationJob(conversationId))
     }
 
-    private fun filter(s: String) {
-        val us = arrayListOf<User>()
-        users.forEach {
-            if (it.fullName?.contains(s, true) == true || it.identityNumber.contains(s, true)) {
-                us.add(it)
-            }
+    private var keyword: String = ""
+        set(value) {
+            field = value
+            filter()
         }
-        adapter.data = us
+
+    private fun filter() {
+        adapter.data = if (keyword.isNotBlank()) {
+            users.filter {
+                it.fullName?.contains(keyword, true) == true || it.identityNumber.contains(keyword, true)
+            }
+        } else {
+            users
+        }
     }
 
     private fun openChat(user: User) {
