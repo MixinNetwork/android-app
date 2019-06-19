@@ -117,11 +117,15 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
                 PushAttachmentData.ProgressListener { total, progress ->
                     RxBus.publish(ProgressEvent(message.id, progress.toFloat() / total.toFloat()))
                 })
-        val digest = if (isPlain()) {
-            uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)
-            null
-        } else {
-            uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
+        val digest = try {
+            if (isPlain()) {
+                uploadPlainAttachment(attachResponse.upload_url!!, message.mediaSize, attachmentData)
+                null
+            } else {
+                uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
+            }
+        } catch (e: Exception) {
+            return false
         }
         if (isCancel) {
             removeJob()
