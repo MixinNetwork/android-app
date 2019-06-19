@@ -10,7 +10,6 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.MixinResponse
@@ -23,6 +22,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.PAGE_SIZE
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
@@ -144,6 +144,8 @@ internal constructor(
                             assetRepository.upsert(it)
                             chainIconUrl = it.iconUrl
                         }
+                    } else if (r != null && !r.isSuccess) {
+                        ErrorHandler.handleMixinError(r.errorCode)
                     }
                 }
                 asset.toTopAssetItem(chainIconUrl)
@@ -156,6 +158,8 @@ internal constructor(
                 }
             }
             return Pair(topAssetList, existsSet)
+        } else if (response != null && !response.isSuccess) {
+            ErrorHandler.handleMixinError(response.errorCode)
         }
         return Pair(null, null)
     }
