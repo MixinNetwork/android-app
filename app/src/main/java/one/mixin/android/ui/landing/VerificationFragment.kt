@@ -17,9 +17,9 @@ import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.android.synthetic.main.view_verification_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
@@ -197,20 +197,21 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
             pin = Session.getPinToken()?.let { encryptPin(it, pin) },
             session_secret = sessionSecret)
 
-        val response = try {
-            withContext(Dispatchers.IO) {
-                viewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest)
+        handleMixinResponse(
+            invokeNetwork = { viewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest) },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
+                handleAccount(response, sessionKey)
+            },
+            doAfterNetworkSuccess = { hideLoading() },
+            defaultErrorHandle = {
+                handleFailure(it)
+            },
+            defaultExceptionHandle = {
+                handleError(it)
             }
-        } catch (t: Throwable) {
-            handleError(t)
-            return@launch
-        }
-        if (response.isSuccess) {
-            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
-            handleAccount(response, sessionKey)
-        } else {
-            handleFailure(response)
-        }
+        )
     }
 
     override fun hideLoading() {

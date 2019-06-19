@@ -4,8 +4,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.response.VerificationResponse
@@ -16,7 +16,6 @@ import one.mixin.android.ui.common.friends.BaseFriendsFragment
 import one.mixin.android.ui.common.friends.FriendsListener
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_CONTACT
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.User
@@ -62,23 +61,17 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
             title = getString(if (Session.hasEmergencyContact()) R.string.changing else R.string.group_creating))
         dialog.setCancelable(false)
         dialog.show()
-
-        val response = try {
-            withContext(Dispatchers.IO) {
-                viewModel.createEmergency(buildEmergencyRequest(user))
-            }
-        } catch (t: Throwable) {
-            ErrorHandler.handleError(t)
-            dialog.dismiss()
-            return@launch
-        }
-        dialog.dismiss()
-        if (response.isSuccess) {
-            navTo(VerificationEmergencyFragment.newInstance(user, pin, (response.data as VerificationResponse).id, FROM_CONTACT),
-                VerificationEmergencyFragment.TAG)
-        } else {
-            ErrorHandler.handleMixinError(response.errorCode)
-        }
+        handleMixinResponse(
+            invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(user)) },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                navTo(VerificationEmergencyFragment.newInstance(user, pin,
+                    (response.data as VerificationResponse).id, FROM_CONTACT),
+                    VerificationEmergencyFragment.TAG)
+            },
+            exceptionBlock = { dialog.dismiss() },
+            doAfterNetworkSuccess = { dialog.dismiss() }
+        )
     }
 
     private fun buildEmergencyRequest(user: User) = EmergencyRequest(

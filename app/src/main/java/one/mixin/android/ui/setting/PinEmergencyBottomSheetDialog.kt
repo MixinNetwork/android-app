@@ -8,11 +8,10 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PinView
 
@@ -45,25 +44,23 @@ class PinEmergencyBottomSheetDialog : PinBottomSheetDialogFragment() {
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
         contentView.pin_va?.displayedChild = POS_PB
-        val response = try {
-            withContext(Dispatchers.IO) {
-                bottomViewModel.verifyPin(pinCode)
+        handleMixinResponse(
+            invokeNetwork = { bottomViewModel.verifyPin(pinCode) },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                context?.updatePinCheck()
+                pinEmergencyCallback?.onSuccess(pinCode)
+                dismiss()
+            },
+            exceptionBlock = {
+                contentView.pin_va?.displayedChild = POS_PIN
+                contentView.pin.clear()
+            },
+            doAfterNetworkSuccess = {
+                contentView.pin_va?.displayedChild = POS_PIN
+                contentView.pin.clear()
             }
-        } catch (t: Throwable) {
-            contentView.pin_va?.displayedChild = POS_PIN
-            contentView.pin.clear()
-            ErrorHandler.handleError(t)
-            return@launch
-        }
-        contentView.pin_va?.displayedChild = POS_PIN
-        contentView.pin.clear()
-        if (response.isSuccess) {
-            context?.updatePinCheck()
-            pinEmergencyCallback?.onSuccess(pinCode)
-            dismiss()
-        } else {
-            ErrorHandler.handleMixinError(response.errorCode)
-        }
+        )
     }
 
     var pinEmergencyCallback: PinEmergencyCallback? = null

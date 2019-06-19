@@ -12,8 +12,8 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_verification_emergency_id.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.response.VerificationResponse
@@ -22,7 +22,6 @@ import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.FabLoadingFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment.Companion.FROM_SESSION
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 
 class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>() {
@@ -57,25 +56,22 @@ class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>()
 
     private fun sendCode(mixinID: String) = lifecycleScope.launch {
         showLoading()
-        val response = try {
-            withContext(Dispatchers.IO) {
-                viewModel.createEmergency(buildEmergencyRequest(mixinID))
+        handleMixinResponse(
+            invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(mixinID)) },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                navTo(
+                    VerificationEmergencyFragment.newInstance(
+                        verificationId = (response.data as VerificationResponse).id,
+                        from = FROM_SESSION,
+                        userIdentityNumber = mixinID),
+                    VerificationEmergencyFragment.TAG)
+            },
+            doAfterNetworkSuccess = { hideLoading() },
+            defaultExceptionHandle = {
+                handleError(it)
             }
-        } catch (t: Throwable) {
-            handleError(t)
-            return@launch
-        }
-        hideLoading()
-        if (response.isSuccess) {
-            navTo(
-                VerificationEmergencyFragment.newInstance(
-                    verificationId = (response.data as VerificationResponse).id,
-                    from = FROM_SESSION,
-                    userIdentityNumber = mixinID),
-                VerificationEmergencyFragment.TAG)
-        } else {
-            ErrorHandler.handleMixinError(response.errorCode)
-        }
+        )
     }
 
     private fun buildEmergencyRequest(mixinID: String) = EmergencyRequest(

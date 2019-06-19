@@ -14,15 +14,14 @@ import kotlinx.android.synthetic.main.view_emergency_bottom.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -102,23 +101,17 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
 
     private fun fetchEmergencyContact(pinCode: String) = lifecycleScope.launch {
         emergency_pb.isVisible = true
-        val response = try {
-            withContext(Dispatchers.IO) {
-                viewModel.showEmergency(pinCode)
-            }
-        } catch (t: Throwable) {
-            emergency_pb.isVisible = false
-            ErrorHandler.handleError(t)
-            return@launch
-        }
-        emergency_pb.isVisible = false
-        if (response.isSuccess) {
-            val user = response.data as User
-            UserBottomSheetDialogFragment.newInstance(user)
-                .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
-        } else {
-            ErrorHandler.handleMixinError(response.errorCode)
-        }
+        handleMixinResponse(
+            invokeNetwork = { viewModel.showEmergency(pinCode) },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                val user = response.data as User
+                UserBottomSheetDialogFragment.newInstance(user)
+                    .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+            },
+            exceptionBlock = { emergency_pb.isVisible = false },
+            doAfterNetworkSuccess = { emergency_pb.isVisible = false }
+        )
     }
 
     private val bottomSheetCallback = object : PinEmergencyBottomSheetDialog.PinEmergencyCallback() {

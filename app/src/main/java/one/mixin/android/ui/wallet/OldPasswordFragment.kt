@@ -11,9 +11,9 @@ import kotlinx.android.synthetic.main.fragment_old_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.updatePinCheck
@@ -21,7 +21,6 @@ import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_CHANGE
 import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_OLD_PASSWORD
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import javax.inject.Inject
@@ -74,30 +73,28 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             title = getString(R.string.wallet_verifying))
         dialog.setCancelable(false)
         dialog.show()
-        val response = try {
-            withContext(Dispatchers.IO) {
-                walletViewModel.verifyPin(pinCode)
-            }
-        } catch (t: Throwable) {
-            dialog.dismiss()
-            pin.clear()
-            ErrorHandler.handleError(t)
-            return@launch
-        }
-        dialog.dismiss()
-        if (response.isSuccess) {
-            context?.updatePinCheck()
-            response.data?.let {
-                view?.navigate(R.id.action_old_password_to_password,
-                    Bundle().apply {
-                        putBoolean(ARGS_CHANGE, true)
-                        putString(ARGS_OLD_PASSWORD, pin.code())
-                    })
-            }
-        } else {
-            pin.clear()
-            ErrorHandler.handleMixinError(response.errorCode)
-        }
+        handleMixinResponse(
+            invokeNetwork = { walletViewModel.verifyPin(pinCode) },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                context?.updatePinCheck()
+                response.data?.let {
+                    view?.navigate(R.id.action_old_password_to_password,
+                        Bundle().apply {
+                            putBoolean(ARGS_CHANGE, true)
+                            putString(ARGS_OLD_PASSWORD, pin.code())
+                        })
+                }
+            },
+            exceptionBlock = {
+                dialog.dismiss()
+                pin.clear()
+            },
+            errorBlock = {
+                pin.clear()
+            },
+            doAfterNetworkSuccess = { dialog.dismiss() }
+        )
     }
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {

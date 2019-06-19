@@ -10,9 +10,9 @@ import androidx.work.WorkManager
 import kotlinx.android.synthetic.main.fragment_verification_emergency.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.crypto.Base64
@@ -89,54 +89,53 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
 
     private fun createVerify(sessionKey: KeyPair) = lifecycleScope.launch {
         showLoading()
-        val response = try {
-            withContext(Dispatchers.IO) {
-                viewModel.createVerifyEmergency(verificationId, buildEmergencyRequest(sessionKey))
-            }
-        } catch (t: Throwable) {
-            handleError(t)
-            return@launch
-        }
-        hideLoading()
-        if (response.isSuccess) {
-            AlertDialog.Builder(requireContext())
-                .setTitle(getString(
-                    if (Session.hasEmergencyContact())
-                        R.string.setting_emergency_change_success
-                    else
-                        R.string.setting_emergency_create_success))
-                .setPositiveButton(R.string.group_ok) { dialog, _ ->
-                    requireFragmentManager().popBackStackImmediate()
-                    requireFragmentManager().popBackStackImmediate()
+        handleMixinResponse(
+            invokeNetwork = { viewModel.createVerifyEmergency(verificationId, buildEmergencyRequest(sessionKey)) },
+            switchContext = Dispatchers.IO,
+            successBlock = { _ ->
+                AlertDialog.Builder(requireContext())
+                    .setTitle(getString(
+                        if (Session.hasEmergencyContact())
+                            R.string.setting_emergency_change_success
+                        else
+                            R.string.setting_emergency_create_success))
+                    .setPositiveButton(R.string.group_ok) { dialog, _ ->
+                        requireFragmentManager().popBackStackImmediate()
+                        requireFragmentManager().popBackStackImmediate()
 
-                    WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
-                    dialog.dismiss()
-                }
-                .show()
-        } else {
-            handleFailure(response)
-        }
+                        WorkManager.getInstance(requireContext()).enqueueOneTimeNetworkWorkRequest<RefreshAccountWorker>()
+                        dialog.dismiss()
+                    }
+                    .show()
+            },
+            doAfterNetworkSuccess = { hideLoading() },
+            defaultErrorHandle = {
+                handleFailure(it)
+            },
+            defaultExceptionHandle = {
+                handleError(it)
+            }
+        )
     }
 
     private fun loginVerify(sessionKey: KeyPair) = lifecycleScope.launch {
         showLoading()
-
         SignalProtocol.initSignal(requireContext().applicationContext)
-        val response = try {
-            withContext(Dispatchers.IO) {
-                viewModel.loginVerifyEmergency(verificationId, buildEmergencyRequest(sessionKey))
+        handleMixinResponse(
+            invokeNetwork = { viewModel.loginVerifyEmergency(verificationId, buildEmergencyRequest(sessionKey)) },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)
+                handleAccount(response, sessionKey)
+            },
+            doAfterNetworkSuccess = { hideLoading() },
+            defaultErrorHandle = {
+                handleFailure(it)
+            },
+            defaultExceptionHandle = {
+                handleError(it)
             }
-        } catch (t: Throwable) {
-            handleError(t)
-            return@launch
-        }
-        hideLoading()
-        if (response.isSuccess) {
-            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_EMERGENCY)
-            handleAccount(response, sessionKey)
-        } else {
-            handleFailure(response)
-        }
+        )
     }
 
     private fun buildEmergencyRequest(sessionKey: KeyPair): EmergencyRequest {

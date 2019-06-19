@@ -15,9 +15,9 @@ import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_pin_check.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.updatePinCheck
@@ -73,34 +73,34 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
         contentView.pin_va?.displayedChild = POS_PB
-        val response = try {
-            withContext(Dispatchers.IO) {
-                pinCheckViewModel.verifyPin(pinCode)
+        handleMixinResponse(
+            invokeNetwork = { pinCheckViewModel.verifyPin(pinCode) },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                context?.updatePinCheck()
+                dismiss()
+            },
+            exceptionBlock = {
+                contentView.pin?.clear()
+                contentView.pin_va?.displayedChild = POS_PIN
+            },
+            errorBlock = { response ->
+                contentView.pin.clear()
+                if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
+                    contentView.pin.error(getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT))
+                } else if (response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                    contentView.pin_va.displayedChild = POS_TIP
+                    contentView.tip_va.showNext()
+                    val transY = contentView.height / 2 - contentView.top_ll.translationY * 2
+                    contentView.top_ll.animate().translationY(transY).start()
+                    contentView.keyboard.animate().translationY(contentView.keyboard.height.toFloat()).start()
+                }
+            },
+            doAfterNetworkSuccess = {
+                contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
+                contentView.pin.clear()
             }
-        } catch (t: Throwable) {
-            contentView.pin?.clear()
-            contentView.pin_va?.displayedChild = POS_PIN
-            ErrorHandler.handleError(t)
-            return@launch
-        }
-        contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN
-        contentView.pin.clear()
-        if (response.isSuccess) {
-            context?.updatePinCheck()
-            dismiss()
-        } else {
-            contentView.pin.clear()
-            if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
-                contentView.pin.error(getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT))
-            } else if (response.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
-                contentView.pin_va.displayedChild = POS_TIP
-                contentView.tip_va.showNext()
-                val transY = contentView.height / 2 - contentView.top_ll.translationY * 2
-                contentView.top_ll.animate().translationY(transY).start()
-                contentView.keyboard.animate().translationY(contentView.keyboard.height.toFloat()).start()
-            }
-            ErrorHandler.handleMixinError(response.errorCode)
-        }
+        )
     }
 
     override fun onStart() {

@@ -10,9 +10,9 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_verify_pin.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.updatePinCheck
@@ -21,7 +21,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.setting.FriendsNoBotFragment
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import javax.inject.Inject
@@ -78,30 +77,24 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
 
     private fun verify(pinCode: String) = lifecycleScope.launch {
         showLoading()
-        val response = try {
-            withContext(Dispatchers.IO) {
-                accountRepository.verifyPin(pinCode)
-            }
-        } catch (t: Throwable) {
-            hideLoading()
-            ErrorHandler.handleError(t)
-            return@launch
-        }
-        hideLoading()
-        if (response.isSuccess) {
-            context?.updatePinCheck()
-            activity?.supportFragmentManager?.inTransaction {
-                remove(this@VerifyFragment)
-            }
-            if (from == FROM_PHONE) {
-                LandingActivity.show(context!!, pinCode)
-            } else if (from == FROM_EMERGENCY) {
-                val f = FriendsNoBotFragment.newInstance(pinCode)
-                activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
-            }
-        } else {
-            ErrorHandler.handleMixinError(response.errorCode)
-        }
+        handleMixinResponse(
+            invokeNetwork = { accountRepository.verifyPin(pinCode) },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                context?.updatePinCheck()
+                activity?.supportFragmentManager?.inTransaction {
+                    remove(this@VerifyFragment)
+                }
+                if (from == FROM_PHONE) {
+                    LandingActivity.show(context!!, pinCode)
+                } else if (from == FROM_EMERGENCY) {
+                    val f = FriendsNoBotFragment.newInstance(pinCode)
+                    activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
+                }
+            },
+            exceptionBlock = { hideLoading() },
+            doAfterNetworkSuccess = { hideLoading() }
+        )
     }
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
