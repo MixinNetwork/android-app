@@ -27,7 +27,7 @@ interface AssetService {
     fun asset(@Path("id") id: String): Call<MixinResponse<Asset>>
 
     @GET("assets/{id}")
-    suspend fun suspendAsset(@Path("id") id: String): MixinResponse<Asset>
+    suspend fun getAsset(@Path("id") id: String): MixinResponse<Asset>
 
     @GET("assets/{id}/snapshots")
     fun snapshots(

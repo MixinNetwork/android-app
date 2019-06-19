@@ -44,7 +44,7 @@ constructor(
 
     fun asset(id: String) = assetService.asset(id)
 
-    suspend fun suspendAsset(id: String) = assetService.suspendAsset(id)
+    suspend fun getAsset(id: String) = assetService.getAsset(id)
 
     fun assetLocal(id: String) = assetDao.simpleAsset(id)
 
