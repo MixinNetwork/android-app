@@ -441,6 +441,7 @@
     <string name="notification_message">消息通知</string>
     <string name="notification_node">消息节点</string>
     <string name="notification_reply">回复</string>
+    <string name="notification_mark">标记为已读</string>
     <!--auth-->
     <string name="auth_request">需要访问你的</string>
     <string name="auth_public_profile">个人资料(必须)</string>

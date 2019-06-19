@@ -43,32 +43,33 @@ class SendService : IntentService("SendService") {
 
     override fun onHandleIntent(intent: Intent) {
         val bundle = RemoteInput.getResultsFromIntent(intent)
+        val conversationId = intent.getStringExtra(CONVERSATION_ID)
         if (bundle != null) {
             val content = bundle.getCharSequence(KEY_REPLY) ?: return
-            val conversationId = intent.getStringExtra(CONVERSATION_ID)
             val category = if (intent.getBooleanExtra(IS_PLAIN, false)) {
                 MessageCategory.PLAIN_TEXT.name
             } else {
                 MessageCategory.SIGNAL_TEXT.name
             }
-            val manager = getSystemService<NotificationManager>()
-            manager?.cancel(conversationId.hashCode())
+
             val message = createMessage(UUID.randomUUID().toString(), conversationId,
                 Session.getAccountId().toString(), category, content.toString().trim(), nowInUtc(), MessageStatus.SENDING)
             jobManager.addJobInBackground(SendMessageJob(message))
-            messageDao.findUnreadMessagesSync(conversationId)?.let { list ->
-                if (list.isNotEmpty()) {
-                    messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
-                    list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
-                        val chunkList = messages.chunked(100)
-                        for (item in chunkList) {
-                            jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))
-                        }
+        }
+        val manager = getSystemService<NotificationManager>()
+        manager?.cancel(conversationId.hashCode())
+        messageDao.findUnreadMessagesSync(conversationId)?.let { list ->
+            if (list.isNotEmpty()) {
+                messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
+                list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
+                    val chunkList = messages.chunked(100)
+                    for (item in chunkList) {
+                        jobManager.addJobInBackground(SendAckMessageJob(createAckListParamBlazeMessage(item)))
                     }
-                    Session.getExtensionSessionId()?.let {
-                        list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
-                            jobDao.insertList(it)
-                        }
+                }
+                Session.getExtensionSessionId()?.let {
+                    list.map { createAckJob(CREATE_SESSION_MESSAGE, BlazeAckMessage(it.id, MessageStatus.READ.name)) }.let {
+                        jobDao.insertList(it)
                     }
                 }
             }
