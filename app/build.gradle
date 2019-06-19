@@ -227,7 +227,7 @@ dependencies {
     }
     implementation "com.facebook.rebound:rebound:${reboundVersion}"
     implementation 'com.madgag.spongycastle:core:1.58.0.0'
-    ktlint "com.github.shyiko:ktlint:${ktlintVersion}"
+    ktlint "com.pinterest:ktlint:${ktlintVersion}"
     testImplementation "junit:junit:${junitVersion}"
     androidTestImplementation "junit:junit:${junitVersion}"
     androidTestImplementation("androidx.test.espresso:espresso-core:${espressoVersion}", {
@@ -249,20 +249,20 @@ dependencies {
 
 task ktlint(type: JavaExec, group: "verification") {
     description = "Check Kotlin code style."
-    main = "com.github.shyiko.ktlint.Main"
     classpath = configurations.ktlint
-    args '--android', "src/**/*.kt"
+    main = "com.pinterest.ktlint.Main"
+    args "src/**/*.kt"
     // to generate report in checkstyle format prepend following args:
     // "--reporter=plain", "--reporter=checkstyle,output=${buildDir}/ktlint.xml"
-    // see https://github.com/shyiko/ktlint#usage for more
+    // see https://github.com/pinterest/ktlint#usage for more
 }
 check.dependsOn ktlint
 
 task ktlintFormat(type: JavaExec, group: "formatting") {
     description = "Fix Kotlin code style deviations."
-    main = "com.github.shyiko.ktlint.Main"
     classpath = configurations.ktlint
-    args '--android', "-F", "src/**/*.kt"
+    main = "com.pinterest.ktlint.Main"
+    args "-F", "src/**/*.kt"
 }
 
 // preBuild.dependsOn ktlint
