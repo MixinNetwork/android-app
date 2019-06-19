@@ -580,4 +580,5 @@
     <!-- shortcut -->
     <string name="shortcut_wallet_label">钱包</string>
     <string name="shortcut_scan_label">扫码</string>
+    <string name="divide">、</string>
 </resources>

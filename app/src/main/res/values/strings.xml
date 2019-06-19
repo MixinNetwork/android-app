@@ -591,5 +591,6 @@
     <!-- shortcut -->
     <string name="shortcut_wallet_label">Wallet</string>
     <string name="shortcut_scan_label">Scan</string>
+    <string name="divide">, </string>
 </resources>
 
