@@ -68,7 +68,7 @@ interface AssetDao : BaseDao<Asset> {
     fun assetItemsWithBalance(): LiveData<List<AssetItem>>
 
     @Query("SELECT icon_url FROM assets WHERE asset_id = :id")
-    fun getIconUrl(id: String): String
+    fun getIconUrl(id: String): String?
 
     @Query("SELECT asset_id FROM assets WHERE asset_id = :id")
     fun checkExists(id: String): String?

@@ -10,6 +10,7 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.MixinResponse
@@ -135,7 +136,16 @@ internal constructor(
             val assetList = response.data as List<Asset>
             val topAssetList = arrayListOf<TopAssetItem>()
             assetList.mapTo(topAssetList) { asset ->
-                val chainIconUrl = assetRepository.getIconUrl(asset.chainId)
+                var chainIconUrl = assetRepository.getIconUrl(asset.chainId)
+                if (chainIconUrl == null) {
+                    val r = assetRepository.asset(asset.chainId).execute().body()
+                    if (r != null && r.isSuccess && r.data != null) {
+                        r.data?.let {
+                            assetRepository.upsert(it)
+                            chainIconUrl = it.iconUrl
+                        }
+                    }
+                }
                 asset.toTopAssetItem(chainIconUrl)
             }
             val existsSet = ArraySet<String>()
