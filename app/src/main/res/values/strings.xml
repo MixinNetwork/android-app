@@ -449,6 +449,7 @@
     <string name="notification_message">Message Notification</string>
     <string name="notification_node">Messaging Node</string>
     <string name="notification_reply">Reply</string>
+    <string name="notification_mark">Mark as read</string>
     <!--auth-->
     <string name="auth_request">Requests access to your</string>
     <string name="auth_public_profile">Public profile (required)</string>

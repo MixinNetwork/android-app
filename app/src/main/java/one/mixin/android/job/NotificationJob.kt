@@ -106,6 +106,10 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                 .setAllowGeneratedReplies(true)
                 .build()
             notificationBuilder.addAction(action)
+            val readAction = NotificationCompat.Action.Builder(R.mipmap.ic_launcher,
+                context.getString(R.string.notification_mark), pendingIntent)
+                .build()
+            notificationBuilder.addAction(readAction)
         }
 
         when (message.category) {
