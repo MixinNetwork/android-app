@@ -17,8 +17,8 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 
-class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int)
-    : RecyclerView.Adapter<ContactsAdapter.ViewHolder>(),
+class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :
+    RecyclerView.Adapter<ContactsAdapter.ViewHolder>(),
     StickyRecyclerHeadersAdapter<ContactsAdapter.HeaderViewHolder> {
 
     companion object {

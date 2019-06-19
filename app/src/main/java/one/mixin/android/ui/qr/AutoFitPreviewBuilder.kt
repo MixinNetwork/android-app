@@ -36,8 +36,10 @@ import java.util.Objects
  * [PreviewConfig], then instantiates a [Preview] which automatically
  * resizes and rotates reacting to config changes.
  */
-class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
-    viewFinderRef: WeakReference<TextureView>) {
+class AutoFitPreviewBuilder private constructor(
+    config: PreviewConfig,
+    viewFinderRef: WeakReference<TextureView>
+) {
     /** Public instance of preview use-case which can be used by consumers of this adapter */
     val useCase: Preview
 
@@ -117,13 +119,16 @@ class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
             override fun onViewDetachedFromWindow(view: View?) {
                 displayManager.unregisterDisplayListener(displayListener)
             }
-
         })
     }
 
     /** Helper function that fits a camera preview into the given [TextureView] */
-    private fun updateTransform(textureView: TextureView?, rotation: Int?, newBufferDimens: Size,
-        newViewFinderDimens: Size) {
+    private fun updateTransform(
+        textureView: TextureView?,
+        rotation: Int?,
+        newBufferDimens: Size,
+        newViewFinderDimens: Size
+    ) {
         // This should happen anyway, but now the linter knows
         val textureView = textureView ?: return
 
@@ -194,7 +199,7 @@ class AutoFitPreviewBuilder private constructor(config: PreviewConfig,
 
     companion object {
         /** Helper function that gets the rotation of a [Display] in degrees */
-        fun getDisplaySurfaceRotation(display: Display?) = when(display?.rotation) {
+        fun getDisplaySurfaceRotation(display: Display?) = when (display?.rotation) {
             Surface.ROTATION_0 -> 0
             Surface.ROTATION_90 -> 90
             Surface.ROTATION_180 -> 180

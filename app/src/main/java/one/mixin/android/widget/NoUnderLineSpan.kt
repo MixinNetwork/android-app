@@ -6,8 +6,8 @@ import android.view.View
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 
-class NoUnderLineSpan(url: String, private val onItemListener: ConversationAdapter.OnItemListener? = null)
-    : URLSpan(url) {
+class NoUnderLineSpan(url: String, private val onItemListener: ConversationAdapter.OnItemListener? = null) :
+    URLSpan(url) {
 
     override fun updateDrawState(ds: TextPaint) {
         super.updateDrawState(ds)

@@ -70,7 +70,6 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
         friends_rv.adapter = adapter
         conversationViewModel.viewModelScope.launch {
             users = conversationViewModel.getFriends()
-
         }
 
         search_et.addTextChangedListener(object : TextWatcher {

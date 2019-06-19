@@ -72,8 +72,8 @@ class GenerateAvatarWorker @AssistedInject constructor(
         val textPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
             color = Color.WHITE
         }
-        val c0 = Color.parseColor("#33FFFFFF")  // 20%
-        val c1 = Color.parseColor("#E6FFFFFF")  // 90%
+        val c0 = Color.parseColor("#33FFFFFF") // 20%
+        val c1 = Color.parseColor("#E6FFFFFF") // 90%
         val verticalDividerPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
             shader = LinearGradient(0f, 0f, 0f, size / 2f, c0, c1, Shader.TileMode.MIRROR)
         }

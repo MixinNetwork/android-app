@@ -161,7 +161,6 @@ class StickerAddFragment : BaseFragment() {
         } else {
             handleBack(R.string.error_image)
         }
-
     }
 
     private suspend fun doAfterStickerAdded(r: MixinResponse<Sticker>) = withContext(Dispatchers.IO) {

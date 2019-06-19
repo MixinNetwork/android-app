@@ -22,8 +22,8 @@ import one.mixin.android.event.ProgressEvent
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.sp
 
-class CircleProgress @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0)
-    : View(context, attrs, defStyleAttr) {
+class CircleProgress @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
+    View(context, attrs, defStyleAttr) {
     private val bounds = RectF()
     private val fBounds = RectF()
 
