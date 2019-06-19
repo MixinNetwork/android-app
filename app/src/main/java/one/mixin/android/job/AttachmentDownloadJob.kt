@@ -124,7 +124,12 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
             .url(url)
             .build()
         call = client.newCall(request)
-        val response = call!!.execute()
+        val response = try {
+            call!!.execute()
+        } catch (e: Exception) {
+            messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
+            return false
+        }
         if (response.code() == 404) {
             messageDao.updateMediaStatus(MediaStatus.EXPIRED.name, message.id)
             return true
