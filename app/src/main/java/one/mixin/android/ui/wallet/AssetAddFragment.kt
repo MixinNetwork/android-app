@@ -142,15 +142,7 @@ class AssetAddFragment : BaseFragment() {
             if (va.displayedChild != POS_PB) {
                 va.displayedChild = POS_PB
             }
-            val pair = try {
-                withContext(Dispatchers.IO) {
-                    walletViewModel.queryAsset(query)
-                }
-            } catch (t: Throwable) {
-                va.displayedChild = POS_EMPTY
-                ErrorHandler.handleError(t)
-                return@launch
-            }
+            val pair = walletViewModel.queryAsset(query)
             adapter.existsSet = pair.second
             adapter.submitList(pair.first)
             if (pair.first.isNullOrEmpty()) {

@@ -44,6 +44,8 @@ constructor(
 
     fun asset(id: String) = assetService.asset(id)
 
+    suspend fun suspendAsset(id: String) = assetService.suspendAsset(id)
+
     fun assetLocal(id: String) = assetDao.simpleAsset(id)
 
     fun insertAsset(asset: Asset) = assetDao.insert(asset)
@@ -137,9 +139,9 @@ constructor(
 
     fun clearPendingDepositsByAssetId(assetId: String) = snapshotDao.clearPendingDepositsByAssetId(assetId)
 
-    fun queryAssets(query: String) = assetService.queryAssets(query)
+    suspend fun queryAssets(query: String) = assetService.queryAssets(query)
 
-    fun getIconUrl(id: String) = assetDao.getIconUrl(id)
+    suspend fun getIconUrl(id: String) = assetDao.getIconUrl(id)
 
     fun observeTopAssets() = hotAssetDao.topAssets()
 
