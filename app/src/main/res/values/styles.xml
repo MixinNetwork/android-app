@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
@@ -11,6 +11,11 @@
         <item name="android:windowBackground">@color/white</item>
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
+        <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
+    </style>
+
+    <style name="NoneHFTextViewStyle" parent="Widget.AppCompat.TextView">
+        <item name="android:hyphenationFrequency" tools:ignore="NewApi">none</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="AppTheme">
