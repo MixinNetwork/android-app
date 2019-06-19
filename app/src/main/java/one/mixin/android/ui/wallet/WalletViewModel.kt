@@ -10,8 +10,10 @@ import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.PinRequest
 import one.mixin.android.job.MixinJobManager
@@ -22,6 +24,7 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.wallet.BaseTransactionsFragment.Companion.PAGE_SIZE
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
@@ -129,25 +132,54 @@ internal constructor(
         jobManager.addJobInBackground(RefreshTopAssetsJob())
     }
 
-    fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> {
-        val response = assetRepository.queryAssets(query).execute().body()
-        if (response != null && response.isSuccess && response.data != null) {
-            val assetList = response.data as List<Asset>
-            val topAssetList = arrayListOf<TopAssetItem>()
-            assetList.mapTo(topAssetList) { asset ->
-                val chainIconUrl = assetRepository.getIconUrl(asset.chainId)
-                asset.toTopAssetItem(chainIconUrl)
+    suspend fun queryAsset(query: String): Pair<List<TopAssetItem>?, ArraySet<String>?> =
+        withContext(Dispatchers.IO) {
+            val response = try {
+                assetRepository.queryAssets(query)
+            } catch (t: Throwable) {
+                ErrorHandler.handleError(t)
+                return@withContext Pair(null, null)
             }
-            val existsSet = ArraySet<String>()
-            topAssetList.forEach {
-                val exists = assetRepository.checkExists(it.assetId)
-                if (exists != null) {
-                    existsSet.add(it.assetId)
+            if (response.isSuccess) {
+                val assetList = response.data as List<Asset>
+                val topAssetList = arrayListOf<TopAssetItem>()
+                assetList.mapTo(topAssetList) { asset ->
+                    var chainIconUrl = assetRepository.getIconUrl(asset.chainId)
+                    if (chainIconUrl == null) {
+                        chainIconUrl = fetchAsset(asset.chainId)
+                    }
+                    asset.toTopAssetItem(chainIconUrl)
                 }
+                val existsSet = ArraySet<String>()
+                topAssetList.forEach {
+                    val exists = assetRepository.checkExists(it.assetId)
+                    if (exists != null) {
+                        existsSet.add(it.assetId)
+                    }
+                }
+                return@withContext Pair(topAssetList, existsSet)
+            } else {
+                ErrorHandler.handleMixinError(response.errorCode)
             }
-            return Pair(topAssetList, existsSet)
+            return@withContext Pair(null, null)
         }
-        return Pair(null, null)
+
+    private suspend fun fetchAsset(assetId: String) = withContext(Dispatchers.IO) {
+        val r = try {
+            assetRepository.getAsset(assetId)
+        } catch (t: Throwable) {
+            ErrorHandler.handleError(t)
+            return@withContext null
+        }
+        if (r.isSuccess) {
+            r.data?.let {
+                assetRepository.upsert(it)
+                return@withContext it.iconUrl
+            }
+        } else {
+            ErrorHandler.handleMixinError(r.errorCode)
+        }
+        return@withContext null
     }
 
     fun saveAssets(hotAssetList: List<TopAssetItem>) {

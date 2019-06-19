@@ -9,19 +9,18 @@ import androidx.collection.ArraySet
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import kotlinx.android.synthetic.main.fragment_asset_add.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.adapter.AssetAddAdapter
 import one.mixin.android.vo.TopAssetItem
-import one.mixin.android.widget.MixinToast
 import one.mixin.android.widget.SearchView
 import org.jetbrains.anko.textColor
 import javax.inject.Inject
@@ -75,7 +74,7 @@ class AssetAddFragment : BaseFragment() {
         title_view.right_animator.isEnabled = false
         title_view.right_animator.setOnClickListener {
             walletViewModel.saveAssets(adapter.checkedAssets.values.toList())
-            MixinToast.showSuccess(requireContext())
+            context?.toast(R.string.successful)
             search_et?.hideKeyboard()
             view?.findNavController()?.navigateUp()
         }
@@ -95,15 +94,20 @@ class AssetAddFragment : BaseFragment() {
             }
 
             override fun onSearch() {
+                val query = search_et.text.toString()
+                if (query.isBlank()) return
+
                 assets_rv.removeAllViewsInLayout()
 
-                search()
+                search(query)
             }
         }
 
         walletViewModel.observeTopAssets().observe(this, Observer {
             topAssets = it
-            showHot()
+            if (search_et.text.isNullOrBlank()) {
+                showHot()
+            }
         })
         walletViewModel.refreshHotAssets()
     }
@@ -128,24 +132,20 @@ class AssetAddFragment : BaseFragment() {
         va.displayedChild = POS_RV
     }
 
-    private fun search() {
+    private fun search(query: String) {
         currentSearch?.cancel()
-
-        val query = search_et.text.toString()
-        adapter.submitList(null)
-        if (va.displayedChild != POS_PB) {
-            va.displayedChild = POS_PB
-        }
-        currentSearch = GlobalScope.launch(Dispatchers.IO) {
+        currentSearch = lifecycleScope.launch {
+            adapter.submitList(null)
+            if (va.displayedChild != POS_PB) {
+                va.displayedChild = POS_PB
+            }
             val pair = walletViewModel.queryAsset(query)
-            launch(Dispatchers.Main) {
-                adapter.existsSet = pair.second
-                adapter.submitList(pair.first)
-                if (pair.first.isNullOrEmpty()) {
-                    va.displayedChild = POS_EMPTY
-                } else {
-                    va.displayedChild = POS_RV
-                }
+            adapter.existsSet = pair.second
+            adapter.submitList(pair.first)
+            if (pair.first.isNullOrEmpty()) {
+                va.displayedChild = POS_EMPTY
+            } else {
+                va.displayedChild = POS_RV
             }
         }
     }

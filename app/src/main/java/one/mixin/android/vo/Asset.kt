@@ -62,4 +62,4 @@ data class Asset(
 fun Asset.toAssetItem(): AssetItem = AssetItem(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd, chainId, changeUsd, changeBtc, hidden,
     confirmations, null, null, null, accountName, accountTag, assetKey)
 
-fun Asset.toTopAssetItem(chainIconUrl: String) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl)
+fun Asset.toTopAssetItem(chainIconUrl: String?) = TopAssetItem(assetId, symbol, name, iconUrl, chainId, chainIconUrl)
