@@ -7,11 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.viewModelScope
 import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.job.MixinJobManager
@@ -46,7 +47,16 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
     private val adapter = FriendAdapter().apply { listener = this@FriendsFragment }
     private val conversationId: String by lazy { arguments!!.getString(CONVERSATION_ID) }
 
-    private var users = arrayListOf<User>()
+    private var users: List<User> = listOf()
+        set(value) {
+            field = value
+            dataChange()
+        }
+    private var keyWord: String = ""
+        set(value) {
+            field = value
+            dataChange()
+        }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         layoutInflater.inflate(R.layout.fragment_friends, container, false)
@@ -58,13 +68,10 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
             activity?.onBackPressed()
         }
         friends_rv.adapter = adapter
-        conversationViewModel.findFriends().observe(this, Observer {
-            if (it == null || it.isEmpty()) return@Observer
+        conversationViewModel.viewModelScope.launch {
+            users = conversationViewModel.getFriends()
 
-            users.clear()
-            users.addAll(it)
-            adapter.friends = it
-        })
+        }
 
         search_et.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -72,15 +79,19 @@ class FriendsFragment : BaseFragment(), FriendAdapter.FriendListener {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
             override fun afterTextChanged(s: Editable) {
-                val us = arrayListOf<User>()
-                users.forEach {
-                    if (it.fullName?.contains(s, true) == true) {
-                        us.add(it)
-                    }
-                }
-                adapter.friends = us
+                keyWord = s.toString()
             }
         })
+    }
+
+    private fun dataChange() {
+        adapter.friends = if (keyWord.isNotBlank()) {
+            users.filter {
+                it.fullName?.contains(keyWord, true) == true
+            }
+        } else {
+            users
+        }
     }
 
     private var friendClick: ((User) -> Unit)? = null
