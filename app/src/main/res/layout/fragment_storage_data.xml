@@ -55,27 +55,12 @@
                 android:text="@string/setting_data_title"
                 android:textColor="@color/colorBlue"
                 android:textSize="12sp"
-                app:layout_constraintBottom_toTopOf="@id/storage_info"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
                 tools:ignore="RelativeOverlap"/>
 
-            <TextView
-                android:id="@+id/storage_info"
-                style="@style/NormalTextStyle"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginTop="3dp"
-                android:text="@string/setting_data_info"
-                android:textColor="@color/text_gray"
-                android:textSize="12sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintHorizontal_bias="0"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/storage_title"
-                tools:ignore="RelativeOverlap"/>
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <androidx.constraintlayout.widget.ConstraintLayout

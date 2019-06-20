@@ -70,10 +70,6 @@ object Constants {
         const val AUTO_DOWNLOAD_VIDEO = 0x0100
         const val AUTO_DOWNLOAD_DOCUMENT = 0x1000
 
-        fun autoDownloadPhoto(value: Int) = value.or(0x1110) == 0x1111
-        fun autoDownloadAudio(value: Int) = value.or(0x1101) == 0x1111
-        fun autoDownloadVideo(value: Int) = value.or(0x1011) == 0x1111
-        fun autoDownloadDocument(value: Int) = value.or(0x0111) == 0x1111
     }
 
     const val SLEEP_MILLIS: Long = 1000

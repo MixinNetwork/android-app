@@ -18,13 +18,16 @@ import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_PHOTO
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_ROAMING
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_VIDEO
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_WIFI
-import one.mixin.android.Constants.Download.autoDownloadAudio
-import one.mixin.android.Constants.Download.autoDownloadDocument
-import one.mixin.android.Constants.Download.autoDownloadPhoto
-import one.mixin.android.Constants.Download.autoDownloadVideo
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.autoDownloadAudio
+import one.mixin.android.extension.autoDownloadDocument
+import one.mixin.android.extension.autoDownloadPhoto
+import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getAutoDownloadMobileValue
+import one.mixin.android.extension.getAutoDownloadRoamingValue
+import one.mixin.android.extension.getAutoDownloadWifiValue
 import one.mixin.android.extension.putInt
 import one.mixin.android.ui.common.BaseFragment
 
@@ -47,13 +50,13 @@ class SettingDataStorageFragment : BaseFragment() {
             requireActivity().addFragment(this@SettingDataStorageFragment,
                 SettingStorageFragment.newInstance(), SettingStorageFragment.TAG)
         }
-        storage_mobile.setOnClickListener { showMenu(AUTO_DOWNLOAD_MOBILE, defaultSharedPreferences.getInt(AUTO_DOWNLOAD_MOBILE, 0x0001), R.string.setting_data_mobile) }
+        storage_mobile.setOnClickListener { showMenu(AUTO_DOWNLOAD_MOBILE, requireContext().getAutoDownloadMobileValue(), R.string.setting_data_mobile) }
         storage_wifi.setOnClickListener {
-            showMenu(AUTO_DOWNLOAD_WIFI, defaultSharedPreferences.getInt(AUTO_DOWNLOAD_WIFI, 0x1111), R.string
+            showMenu(AUTO_DOWNLOAD_WIFI, requireContext().getAutoDownloadWifiValue(), R.string
                 .setting_data_wifi)
         }
         storage_roaming.setOnClickListener {
-            showMenu(AUTO_DOWNLOAD_ROAMING, defaultSharedPreferences.getInt(AUTO_DOWNLOAD_ROAMING, 0x0000), R.string
+            showMenu(AUTO_DOWNLOAD_ROAMING, requireContext().getAutoDownloadRoamingValue(), R.string
                 .setting_data_roaming)
         }
     }
@@ -64,9 +67,9 @@ class SettingDataStorageFragment : BaseFragment() {
     }
 
     private fun refresh() {
-        storage_mobile_info.text = getInfo(defaultSharedPreferences.getInt(AUTO_DOWNLOAD_MOBILE, 0x0001))
-        storage_wifi_info.text = getInfo(defaultSharedPreferences.getInt(AUTO_DOWNLOAD_WIFI, 0x1111))
-        storage_roaming_info.text = getInfo(defaultSharedPreferences.getInt(AUTO_DOWNLOAD_ROAMING, 0x0000))
+        storage_mobile_info.text = getInfo(requireContext().getAutoDownloadMobileValue())
+        storage_wifi_info.text = getInfo(requireContext().getAutoDownloadWifiValue())
+        storage_roaming_info.text = getInfo(requireContext().getAutoDownloadRoamingValue())
     }
 
     private fun getInfo(value: Int): String {
