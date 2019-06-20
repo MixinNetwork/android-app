@@ -4,6 +4,9 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkInfo
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Download.MOBILE_DEFAULT
+import one.mixin.android.Constants.Download.ROAMING_DEFAULT
+import one.mixin.android.Constants.Download.WIFI_DEFAULT
 import timber.log.Timber
 
 val autoDownloadPhoto: (value: Int) -> Boolean = {
@@ -77,7 +80,7 @@ fun Context.autoDownload(support: (value: Int) -> Boolean, action: () -> Unit) {
     })
 }
 
-fun Context.getAutoDownloadWifiValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_WIFI, 0x1111)
-fun Context.getAutoDownloadMobileValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_MOBILE, 0x1000)
-fun Context.getAutoDownloadRoamingValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_ROAMING, 0x0000)
+fun Context.getAutoDownloadWifiValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_WIFI, WIFI_DEFAULT)
+fun Context.getAutoDownloadMobileValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_MOBILE, MOBILE_DEFAULT)
+fun Context.getAutoDownloadRoamingValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_ROAMING, ROAMING_DEFAULT)
 
