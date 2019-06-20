@@ -10,6 +10,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Session
 import one.mixin.android.widget.BottomSheet
 
@@ -37,7 +38,12 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                         .addToBackStack(null)
                 }
             } else {
-                WalletActivity.show(requireActivity())
+                requireFragmentManager().inTransaction {
+                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                        .anim.slide_in_bottom, R.anim.slide_out_bottom)
+                        .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                        .addToBackStack(null)
+                }
             }
             dismiss()
         }

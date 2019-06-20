@@ -24,6 +24,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
@@ -233,9 +234,9 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                 }
 
                                 activity?.let { activity ->
-                                    if (activity is ConversationActivity) {
+                                    if (activity is ConversationActivity || activity is SettingActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
-                                        activity.onBackPressed()
+                                        requireFragmentManager().popBackStackImmediate()
                                     } else if (activity is MainActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
                                         activity.onBackPressed()

@@ -18,7 +18,7 @@ interface EmergencyService {
     suspend fun create(@Body request: EmergencyRequest): MixinResponse<VerificationResponse>
 
     @POST("emergency_verifications/{id}")
-    suspend fun createVerify(@Path("id") id: String, @Body request: EmergencyRequest): MixinResponse<VerificationResponse>
+    suspend fun createVerify(@Path("id") id: String, @Body request: EmergencyRequest): MixinResponse<Account>
 
     @POST("emergency_verifications/{id}")
     suspend fun loginVerify(@Path("id") id: String, @Body request: EmergencyRequest): MixinResponse<Account>

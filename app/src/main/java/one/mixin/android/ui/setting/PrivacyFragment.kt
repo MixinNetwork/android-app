@@ -21,7 +21,7 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
-import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -101,7 +101,12 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
                         .addToBackStack(null)
                 }
             } else {
-                WalletActivity.show(requireActivity())
+                requireFragmentManager().inTransaction {
+                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                        .anim.slide_in_bottom, R.anim.slide_out_bottom)
+                        .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                        .addToBackStack(null)
+                }
             }
             bottomSheet.dismiss()
         }

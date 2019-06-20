@@ -50,6 +50,8 @@ class VerificationEmergencyIdFragment : FabLoadingFragment<EmergencyViewModel>()
             sendCode(id_et.text.toString())
         }
         id_et.addTextChangedListener(watcher)
+        id_et.showSoftInputOnFocus = false
+        id_et.requestFocus()
 
         verification_keyboard.setOnClickKeyboardListener(mKeyboardListener)
     }

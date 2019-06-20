@@ -19,6 +19,7 @@ import one.mixin.android.ui.setting.SettingDataStorageFragment
 import one.mixin.android.ui.setting.SettingFragment
 import one.mixin.android.ui.setting.SettingStorageFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment
+import one.mixin.android.ui.wallet.WalletPasswordFragment
 
 @Module
 abstract class SettingActivityModule {
@@ -69,4 +70,7 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributePinEmergencyBottomSheetDialog(): PinEmergencyBottomSheetDialog
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment
 }
