@@ -1,9 +1,9 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.view.Gravity
 import android.view.View
+import android.view.View.*
 import android.widget.FrameLayout
 import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_sticker.view.*
@@ -34,14 +34,13 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
     }
 
     fun bind(
-        messageItem: MessageItem,
-        isFirst: Boolean,
-        hasSelect: Boolean,
-        isSelect: Boolean,
-        onItemListener: ConversationAdapter.OnItemListener
+            messageItem: MessageItem,
+            isFirst: Boolean,
+            hasSelect: Boolean,
+            isSelect: Boolean,
+            onItemListener: ConversationAdapter.OnItemListener
     ) {
         val isMe = meId == messageItem.userId
-        chatLayout(isMe, false)
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
@@ -62,9 +61,8 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         }
         if (messageItem.assetWidth == null || messageItem.assetHeight == null) {
             itemView.chat_sticker.layoutParams.width = dp120
-            itemView.chat_time.layoutParams.width = dp120
             itemView.chat_sticker.layoutParams.height = dp120
-            itemView.chat_sticker.setImageDrawable(ColorDrawable(Color.TRANSPARENT))
+            itemView.chat_time.visibility = INVISIBLE
         } else if (messageItem.assetWidth * 2 < dp48 || messageItem.assetHeight * 2 < dp48) {
             if (messageItem.assetWidth < messageItem.assetHeight) {
                 if (dp48 * messageItem.assetHeight / messageItem.assetWidth > dp120) {
@@ -83,7 +81,7 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
                     itemView.chat_sticker.layoutParams.width = dp48 * messageItem.assetWidth / messageItem.assetHeight
                 }
             }
-            itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
+            itemView.chat_time.visibility = VISIBLE
         } else if (messageItem.assetWidth * 2 > dp120 || messageItem.assetHeight * 2 > dp120) {
             if (messageItem.assetWidth > messageItem.assetHeight) {
                 itemView.chat_sticker.layoutParams.width = dp120
@@ -92,16 +90,18 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
                 itemView.chat_sticker.layoutParams.height = dp120
                 itemView.chat_sticker.layoutParams.width = dp120 * messageItem.assetWidth / messageItem.assetHeight
             }
-            itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
+            itemView.chat_time.visibility = VISIBLE
         } else {
             itemView.chat_sticker.layoutParams.width = messageItem.assetWidth * 2
             itemView.chat_sticker.layoutParams.height = messageItem.assetHeight * 2
-            itemView.chat_sticker.loadSticker(messageItem.assetUrl, messageItem.assetType)
+            itemView.chat_time.visibility = VISIBLE
         }
-
+        messageItem.assetUrl?.let { url ->
+            itemView.chat_sticker.loadSticker(url, messageItem.assetType)
+        }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
+            itemView.chat_name.visibility = VISIBLE
             itemView.chat_name.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
@@ -112,7 +112,7 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
             itemView.chat_name.setTextColor(getColorById(messageItem.userId))
             itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
         } else {
-            itemView.chat_name.visibility = View.GONE
+            itemView.chat_name.visibility = GONE
         }
         setStatusIcon(isMe, messageItem.status, {
             it?.setBounds(0, 0, dp12, dp12)
@@ -120,6 +120,7 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         }, {
             TextViewCompat.setCompoundDrawablesRelative(itemView.chat_time, null, null, null, null)
         })
+        chatLayout(isMe, false)
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {
