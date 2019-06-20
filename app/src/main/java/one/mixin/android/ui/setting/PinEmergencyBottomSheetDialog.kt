@@ -29,10 +29,9 @@ class PinEmergencyBottomSheetDialog : PinBottomSheetDialogFragment() {
         (dialog as BottomSheet).setCustomView(contentView)
     }
 
-    override fun getTipTextRes() = R.string.setting_emergency
-
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        contentView.info_tv.setText(R.string.setting_emergency_pin_tip)
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
                 if (index == contentView.pin.getCount()) {

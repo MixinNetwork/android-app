@@ -99,6 +99,6 @@ class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         }
     }
 
-    override fun getTipTextRes(): Int =
+    private fun getTipTextRes(): Int =
         if (fromWalletSetting) R.string.wallet_pin_open_biometrics else R.string.wallet_pin_modify_biometrics
 }

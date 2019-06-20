@@ -42,8 +42,6 @@ abstract class PinBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    protected abstract fun getTipTextRes(): Int
-
     var callback: Callback? = null
 
     interface Callback {
