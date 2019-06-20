@@ -2,6 +2,7 @@ package one.mixin.android.ui.setting
 
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import kotlinx.android.synthetic.main.fragment_friends.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -9,6 +10,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.EmergencyPurpose
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.response.VerificationResponse
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.withArgs
@@ -50,6 +52,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.confirm) { dialog, _ ->
+                search_et.hideKeyboard()
                 requestCreateEmergency(user)
                 dialog.dismiss()
             }

@@ -65,14 +65,10 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
                     .showNow(requireFragmentManager(), EmergencyContactTipBottomSheetDialogFragment.TAG)
             }
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
         setEmergencySet()
     }
 
-    private fun setEmergencySet() {
+    fun setEmergencySet() {
         emergency_enabled.isVisible = Session.hasEmergencyContact()
     }
 

@@ -115,7 +115,7 @@
     <string name="error_duration_short">Duration is too short</string>
     <string name="error_too_many_stickers">ERROR %1$d: Too many stickers</string>
     <string name="error_too_small_withdraw_amount">ERROR %1$d: Withdraw amount too small</string>
-    <string name="error_emergency_mixin_id">ERROR %1$d: Invalid or not exists Mixin ID</string>
+    <string name="error_invalid_emergency_contact">ERROR %1$d: Invalid emergency contact</string>
     <string name="error_retry_upload">Retry upload failed.</string>
     <!--home-->
     <string name="title_home">Contacts</string>
