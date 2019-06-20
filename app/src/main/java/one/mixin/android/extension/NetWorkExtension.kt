@@ -63,21 +63,21 @@ fun Context.diffrentNetWorkAction(wifiAction: () -> Unit, mobileAction: () -> Un
 
 fun Context.autoDownload(support: (value: Int) -> Boolean, action: () -> Unit) {
     diffrentNetWorkAction({
-        if (support(defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_WIFI, 0x1111))) {
+        if (support(getAutoDownloadWifiValue())) {
             action()
         }
     }, {
-        if (support(defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_MOBILE, 0x0100))) {
+        if (support(getAutoDownloadMobileValue())) {
             action()
         }
     }, {
-        if (support(defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_ROAMING, 0x0000))) {
+        if (support(getAutoDownloadRoamingValue())) {
             action()
         }
     })
 }
 
 fun Context.getAutoDownloadWifiValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_WIFI, 0x1111)
-fun Context.getAutoDownloadMobileValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_MOBILE, 0x0100)
+fun Context.getAutoDownloadMobileValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_MOBILE, 0x1000)
 fun Context.getAutoDownloadRoamingValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_ROAMING, 0x0000)
 

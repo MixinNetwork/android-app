@@ -41,7 +41,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/storage_auto_download"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="@dimen/item_contact_height"
             android:layout_marginTop="16dp"
             android:background="@android:color/white"
             android:padding="16dp">
