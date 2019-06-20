@@ -116,6 +116,17 @@
             android:text="@string/setting_emergency"
             tools:ignore="RelativeOverlap"/>
 
+        <TextView
+            android:id="@+id/emergency_enabled"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:layout_marginEnd="@dimen/margin16"
+            android:visibility="gone"
+            android:textColor="@color/text_gray"
+            android:text="@string/setting_emergency_enabled"/>
+
         <ProgressBar
             android:id="@+id/emergency_pb"
             style="?android:attr/progressBarStyleSmall"

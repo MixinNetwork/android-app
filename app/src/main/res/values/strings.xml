@@ -401,6 +401,7 @@
     <string name="setting_emergency_set">Set emergency contact</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
+    <string name="setting_emergency_enabled">Enabled</string>
     <string name="setting_deauthorize">Deauthorize</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>

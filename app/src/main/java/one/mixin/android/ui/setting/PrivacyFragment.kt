@@ -67,6 +67,15 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        setEmergencySet()
+    }
+
+    private fun setEmergencySet() {
+        emergency_enabled.isVisible = Session.hasEmergencyContact()
+    }
+
     @SuppressLint("InflateParams")
     private fun showEmergencyBottom() {
         val builder = BottomSheet.Builder(requireActivity())
@@ -101,6 +110,7 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
 
     private fun fetchEmergencyContact(pinCode: String) = lifecycleScope.launch {
         emergency_pb.isVisible = true
+        emergency_enabled.isVisible = false
         handleMixinResponse(
             invokeNetwork = { viewModel.showEmergency(pinCode) },
             switchContext = Dispatchers.IO,
@@ -109,8 +119,14 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
                 UserBottomSheetDialogFragment.newInstance(user)
                     .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
             },
-            exceptionBlock = { emergency_pb.isVisible = false },
-            doAfterNetworkSuccess = { emergency_pb.isVisible = false }
+            exceptionBlock = {
+                emergency_pb.isVisible = false
+                setEmergencySet()
+            },
+            doAfterNetworkSuccess = {
+                emergency_pb.isVisible = false
+                setEmergencySet()
+            }
         )
     }
 
