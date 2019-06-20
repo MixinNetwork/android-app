@@ -91,12 +91,12 @@ class ForwardFragment : BaseFragment() {
                         str.append(it.name)
                     }
                     if (i != 0) {
-                        str.append("、")
+                        str.append(getString(R.string.divide))
                     }
                 } else if (it is User) {
                     str.append(it.fullName)
                     if (i != 0) {
-                        str.append("、")
+                        str.append(getString(R.string.divide))
                     }
                 } else {
                 }

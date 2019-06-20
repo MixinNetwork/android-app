@@ -54,7 +54,7 @@
                 android:layout_centerVertical="true"
                 android:text="@string/setting_data_title"
                 android:textColor="@color/colorBlue"
-                android:textSize="12sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
