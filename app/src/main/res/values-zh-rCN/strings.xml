@@ -367,7 +367,18 @@
     <string name="setting_deauthorize">取消授权</string>
     <string name="setting_backup">备份</string>
     <string name="setting_clearing">正在清理…</string>
+    <string name="setting_data_storage">数据与存储空间</string>
     <string name="setting_storage">储存空间</string>
+    <string name="setting_data_title">自动下载文件</string>
+    <string name="setting_data_info">语音信息始终自动下载，以确保最佳通信体验</string>
+    <string name="setting_data_mobile">当使用移动数据时</string>
+    <string name="setting_data_wifi">当连接到 Wi-Fi 时</string>
+    <string name="setting_data_roaming">当漫游时</string>
+    <string name="setting_data_photo">照片</string>
+    <string name="setting_data_audio">音频</string>
+    <string name="setting_data_video">视频</string>
+    <string name="setting_data_documents">文档</string>
+    <string name="setting_data_noting">没有媒体</string>
     <string name="setting_desktop">Mixin Messenger 桌面</string>
     <string name="setting_storage_clear">清除 %1$d 条消息 (%2$s)?</string>
     <string name="setting_storage_bn_clear">清理</string>
@@ -569,4 +580,5 @@
     <!-- shortcut -->
     <string name="shortcut_wallet_label">钱包</string>
     <string name="shortcut_scan_label">扫码</string>
+    <string name="divide">、</string>
 </resources>

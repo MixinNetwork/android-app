@@ -274,7 +274,7 @@
     <string name="wallet_pay_with_biometric">Biometric Payment</string>
     <string name="wallet_transfer_amount">Transfer Amount</string>
     <string name="wallet_transfer_memo">Memo (optional)</string>
-    <string name="wallet_transfer_tag" >Tag (optional)</string>
+    <string name="wallet_transfer_tag">Tag (optional)</string>
     <string name="wallet_unit_usd">%1$s USD</string>
     <string name="wallet_verifying">Verifying…</string>
     <string name="wallet_change_password_success">Change PIN successfully</string>
@@ -376,7 +376,18 @@
     <string name="setting_deauthorize">Deauthorize</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>
+    <string name="setting_data_storage">Data and storage usage</string>
     <string name="setting_storage">Storage Usage</string>
+    <string name="setting_data_title">Media auto-download</string>
+    <string name="setting_data_info">Voice messages are always auto-downloaded for the best communication experience</string>
+    <string name="setting_data_mobile">When using mobile data</string>
+    <string name="setting_data_wifi">When connected on Wi-Fi</string>
+    <string name="setting_data_roaming">When roaming</string>
+    <string name="setting_data_photo">Photos</string>
+    <string name="setting_data_audio">Audio</string>
+    <string name="setting_data_video">Videos</string>
+    <string name="setting_data_documents">Documents</string>
+    <string name="setting_data_noting">No media</string>
     <string name="setting_desktop">Mixin Messenger Desktop</string>
     <string name="setting_storage_clear">Clear %1$d messages (%2$s)?</string>
     <string name="setting_storage_bn_clear">Clear</string>
@@ -580,5 +591,6 @@
     <!-- shortcut -->
     <string name="shortcut_wallet_label">Wallet</string>
     <string name="shortcut_scan_label">Scan</string>
+    <string name="divide">,&#160;</string>
 </resources>
 

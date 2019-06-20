@@ -14,6 +14,11 @@ import one.mixin.android.crypto.SignalProtocol.Companion.DEFAULT_DEVICE_ID
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.event.RecallEvent
+import one.mixin.android.extension.autoDownload
+import one.mixin.android.extension.autoDownloadAudio
+import one.mixin.android.extension.autoDownloadDocument
+import one.mixin.android.extension.autoDownloadPhoto
+import one.mixin.android.extension.autoDownloadVideo
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc
@@ -269,10 +274,13 @@ class DecryptMessage : Injector() {
                 val message = createMediaMessage(data.messageId, data.conversationId, data.userId, data.category,
                     mediaData.attachmentId, null,
                     mimeType, mediaData.size, mediaData.width, mediaData.height, mediaData.thumbnail,
-                    mediaData.key, mediaData.digest, data.createdAt, MediaStatus.PENDING, MessageStatus.DELIVERED)
+                    mediaData.key, mediaData.digest, data.createdAt, MediaStatus.CANCELED, MessageStatus.DELIVERED)
 
                 messageDao.insert(message)
-                jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                MixinApplication.appContext.autoDownload(autoDownloadPhoto) {
+                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                }
+
                 sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
@@ -288,6 +296,9 @@ class DecryptMessage : Injector() {
                     mediaData.width, mediaData.height, mediaData.thumbnail, mimeType,
                     mediaData.size, data.createdAt, mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
                 messageDao.insert(message)
+                MixinApplication.appContext.autoDownload(autoDownloadVideo) {
+                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                }
                 sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
@@ -300,6 +311,9 @@ class DecryptMessage : Injector() {
                     mimeType, mediaData.size, data.createdAt,
                     mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
                 messageDao.insert(message)
+                MixinApplication.appContext.autoDownload(autoDownloadDocument) {
+                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                }
                 sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }
@@ -308,9 +322,11 @@ class DecryptMessage : Injector() {
                 val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val message = createAudioMessage(data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                     data.category, mediaData.size, null, mediaData.duration.toString(), nowInUtc(), mediaData.waveform,
-                    mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
+                    mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
                 messageDao.insert(message)
-                jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                MixinApplication.appContext.autoDownload(autoDownloadAudio) {
+                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
+                }
                 sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }

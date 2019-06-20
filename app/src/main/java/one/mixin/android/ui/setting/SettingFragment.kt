@@ -45,7 +45,7 @@ class SettingFragment : BaseFragment() {
         }
         storage_rl.setOnClickListener {
             requireActivity().addFragment(this@SettingFragment,
-                SettingStorageFragment.newInstance(), SettingStorageFragment.TAG)
+                SettingDataStorageFragment.newInstance(), SettingDataStorageFragment.TAG)
         }
 
         settingViewModel.countBlockingUsers().observe(this, Observer {

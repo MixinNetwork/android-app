@@ -60,6 +60,18 @@ object Constants {
         const val BACKUP_LAST_TIME = "backup_last_time"
     }
 
+    object Download {
+        const val AUTO_DOWNLOAD_MOBILE = "auto_download_mobile"
+        const val AUTO_DOWNLOAD_WIFI = "auto_download_wifi"
+        const val AUTO_DOWNLOAD_ROAMING = "auto_download_roaming"
+
+        const val AUTO_DOWNLOAD_PHOTO = 0x0001
+        const val AUTO_DOWNLOAD_AUDIO = 0x0010
+        const val AUTO_DOWNLOAD_VIDEO = 0x0100
+        const val AUTO_DOWNLOAD_DOCUMENT = 0x1000
+
+    }
+
     const val SLEEP_MILLIS: Long = 1000
     const val INTERVAL_24_HOURS: Long = 1000 * 60 * 60 * 24
     const val INTERVAL_48_HOURS: Long = 1000 * 60 * 60 * 48
