@@ -1,140 +1,170 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_gray">
+    android:background="@color/bg_gray"
+    android:orientation="vertical">
 
-    <LinearLayout
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        app:titleText="@string/setting_title"/>
 
-        <one.mixin.android.widget.TitleView
-            android:id="@+id/title_view"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:titleText="@string/setting_title"/>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/bg_gray">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:layout_marginBottom="8dp"
-                android:text="@string/setting_privacy_title"
-                android:textColor="@color/text_gray"
-                android:textSize="12sp"/>
-        </FrameLayout>
-
-        <RelativeLayout
-            android:id="@+id/blocked_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
-
-            <TextView
-                android:id="@+id/blocked_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_blocked"
-                tools:ignore="RelativeOverlap"/>
-
-            <TextView
-                android:id="@+id/blocking_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:layout_centerVertical="true"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:text="@string/none"
-                android:textColor="@color/text_gray"/>
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/conversation_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
-
-            <TextView
-                android:id="@+id/conversation_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_conversation"
-                tools:ignore="RelativeOverlap"/>
-        </RelativeLayout>
-
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/bg_gray">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="8dp"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginBottom="@dimen/activity_vertical_margin"
-                android:text="@string/setting_privacy_tip"
-                android:textColor="@color/text_gray"
-                android:textSize="12sp"/>
-        </FrameLayout>
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            android:id="@+id/backup_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/bg_gray">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:layout_marginBottom="8dp"
+                    android:text="@string/setting_privacy_title"
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp"/>
+            </FrameLayout>
+
             <RelativeLayout
-                android:id="@+id/backup_rl"
+                android:id="@+id/blocked_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="@android:color/white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
-                    android:id="@+id/backup_tv"
+                    android:id="@+id/blocked_tv"
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_backup"
+                    android:text="@string/setting_blocked"
                     tools:ignore="RelativeOverlap"/>
+
+                <TextView
+                    android:id="@+id/blocking_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/none"
+                    android:textColor="@color/text_gray"/>
             </RelativeLayout>
 
             <RelativeLayout
-                android:id="@+id/storage_rl"
+                android:id="@+id/conversation_rl"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
                 android:background="@android:color/white"
                 android:foreground="?attr/selectableItemBackground">
 
                 <TextView
-                    android:id="@+id/storage_tv"
+                    android:id="@+id/conversation_tv"
                     style="@style/NormalTextStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/setting_data_storage"
+                    android:text="@string/setting_conversation"
+                    tools:ignore="RelativeOverlap"/>
+            </RelativeLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/bg_gray">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_marginBottom="@dimen/activity_vertical_margin"
+                    android:text="@string/setting_privacy_tip"
+                    android:textColor="@color/text_gray"
+                    android:textSize="12sp"/>
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/backup_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:id="@+id/backup_rl"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/item_contact_height"
+                    android:background="@android:color/white"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <TextView
+                        android:id="@+id/backup_tv"
+                        style="@style/NormalTextStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:text="@string/setting_backup"
+                        tools:ignore="RelativeOverlap"/>
+                </RelativeLayout>
+
+                <RelativeLayout
+                    android:id="@+id/storage_rl"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/item_contact_height"
+                    android:background="@android:color/white"
+                    android:foreground="?attr/selectableItemBackground">
+
+                    <TextView
+                        android:id="@+id/storage_tv"
+                        style="@style/NormalTextStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:text="@string/setting_data_storage"
+                        tools:ignore="RelativeOverlap"/>
+                </RelativeLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/setting_divider"
+                    android:background="@color/bg_gray"/>
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/auth_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="@android:color/white"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/auth_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/setting_authentications"
                     tools:ignore="RelativeOverlap"/>
             </RelativeLayout>
 
@@ -142,70 +172,47 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/setting_divider"
                 android:background="@color/bg_gray"/>
+
+            <RelativeLayout
+                android:id="@+id/desktop_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="@android:color/white"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/desktop_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/setting_desktop"
+                    tools:ignore="RelativeOverlap"/>
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/setting_divider"
+                android:background="@color/bg_gray"/>
+
+            <RelativeLayout
+                android:id="@+id/about_rl"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/item_contact_height"
+                android:background="@android:color/white"
+                android:foreground="?attr/selectableItemBackground">
+
+                <TextView
+                    android:id="@+id/about_tv"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:text="@string/about"
+                    tools:ignore="RelativeOverlap"/>
+            </RelativeLayout>
         </LinearLayout>
-
-        <RelativeLayout
-            android:id="@+id/auth_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
-
-            <TextView
-                android:id="@+id/auth_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_authentications"
-                tools:ignore="RelativeOverlap"/>
-        </RelativeLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/setting_divider"
-            android:background="@color/bg_gray"/>
-
-        <RelativeLayout
-            android:id="@+id/desktop_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
-
-            <TextView
-                android:id="@+id/desktop_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/setting_desktop"
-                tools:ignore="RelativeOverlap"/>
-        </RelativeLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/setting_divider"
-            android:background="@color/bg_gray"/>
-
-        <RelativeLayout
-            android:id="@+id/about_rl"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
-            android:foreground="?attr/selectableItemBackground">
-
-            <TextView
-                android:id="@+id/about_tv"
-                style="@style/NormalTextStyle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:text="@string/about"
-                tools:ignore="RelativeOverlap"/>
-        </RelativeLayout>
-    </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</LinearLayout>
