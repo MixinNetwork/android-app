@@ -6,10 +6,12 @@
     android:orientation="vertical">
 
     <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <LinearLayout
+            android:id="@+id/scroll_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
@@ -30,14 +32,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/margin16"
-                android:layout_marginBottom="24dp"
                 android:gravity="center_horizontal"
                 android:textColor="@color/wallet_text_dark"
                 android:text="@string/setting_emergency_content"/>
 
             <ImageView
+                android:id="@+id/image_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="28dp"
                 android:layout_gravity="center_horizontal"
                 android:background="@drawable/ic_emergency_contact"/>
 
@@ -45,7 +49,6 @@
                 android:id="@+id/desc_tv"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
                 android:gravity="center_horizontal"
                 android:textColor="@color/wallet_pending_text_color"
                 android:text="@string/setting_emergency_desc"/>

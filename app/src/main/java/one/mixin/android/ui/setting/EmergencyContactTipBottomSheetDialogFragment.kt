@@ -3,13 +3,15 @@ package one.mixin.android.ui.setting
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
+import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.fragment_emergency_contact_bottom.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
-import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.Session
 import one.mixin.android.widget.BottomSheet
@@ -52,5 +54,21 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
         val target = getString(R.string.setting_emergency)
         val desc = getString(R.string.setting_emergency_desc)
         contentView.desc_tv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
+
+        contentView.scroll_view.post {
+            val childHeight = contentView.scroll_content.height
+            val isScrollable = contentView.scroll_view.height <
+                childHeight + contentView.scroll_view.paddingTop + contentView.scroll_view.paddingBottom
+            if (isScrollable) {
+                contentView.image_view.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    topMargin = context?.dpToPx(12f) ?: 0
+                    bottomMargin = context?.dpToPx(12f) ?: 0
+                }
+                contentView.continue_tv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    topMargin = context?.dpToPx(20f) ?: 0
+                    bottomMargin = context?.dpToPx(20f) ?: 0
+                }
+            }
+        }
     }
 }
