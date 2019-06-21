@@ -123,10 +123,10 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     }
 
     override fun clickNextFab() {
-        if (pin == null) {
-            handleLogin()
-        } else {
+        if (isPhoneModification()) {
             handlePhoneModification()
+        } else {
+            handleLogin()
         }
     }
 
@@ -134,11 +134,13 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         viewModel.insertUser(u)
     }
 
+    private fun isPhoneModification() = pin != null
+
     @SuppressLint("InflateParams")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_verification_bottom, null)
-        view.lost_tv.isVisible = hasEmergencyContact
+        view.lost_tv.isVisible = hasEmergencyContact && !isPhoneModification()
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.cant_tv.setOnClickListener {
@@ -224,7 +226,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
         val verificationRequest = VerificationRequest(
             arguments!!.getString(ARGS_PHONE_NUM),
             null,
-            if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
+            if (isPhoneModification()) VerificationPurpose.PHONE.name else VerificationPurpose.SESSION.name,
             gRecaptchaResponse)
         viewModel.verification(verificationRequest)
             .autoDisposable(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
