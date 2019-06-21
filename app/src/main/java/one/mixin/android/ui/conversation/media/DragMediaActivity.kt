@@ -66,6 +66,7 @@ import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.createPngTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.fadeIn
@@ -207,6 +208,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                                 val file = File(item.mediaUrl?.toUri()?.getFilePath())
                                 val outFile = if (item.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
                                     this@DragMediaActivity.getPublicPictyresPath().createGifTemp(false)
+                                } else if (item.mediaMimeType.equals(MimeType.PNG.toString())) {
+                                    this@DragMediaActivity.getPublicPictyresPath().createPngTemp(false)
                                 } else {
                                     this@DragMediaActivity.getPublicPictyresPath().createImageTemp(noMedia = false)
                                 }
