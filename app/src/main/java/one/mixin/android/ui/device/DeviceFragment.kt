@@ -1,5 +1,6 @@
 package one.mixin.android.ui.device
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
@@ -8,6 +9,7 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
+import com.tbruyelle.rxpermissions2.RxPermissions
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -20,6 +22,7 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
@@ -98,10 +101,18 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
             } else {
-                CaptureActivity.show(requireActivity()) {
-                    it.putExtra(ARGS_FOR_ADDRESS, true)
-                    startActivityForResult(it, REQUEST_CODE)
-                }
+                RxPermissions(activity!!)
+                    .request(Manifest.permission.CAMERA)
+                    .subscribe { granted ->
+                        if (granted) {
+                            CaptureActivity.show(requireActivity()) {
+                                it.putExtra(ARGS_FOR_ADDRESS, true)
+                                startActivityForResult(it, REQUEST_CODE)
+                            }
+                        } else {
+                            context?.openPermissionSetting()
+                        }
+                    }
             }
         }
     }
