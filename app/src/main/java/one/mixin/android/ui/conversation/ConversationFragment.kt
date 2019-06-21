@@ -630,18 +630,22 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             disposable?.dispose()
         }
         AudioPlayer.pause()
-        if (OpusAudioRecorder.state != STATE_NOT_INIT) {
-            OpusAudioRecorder.get().stop()
-        }
-        if (chat_control.isRecording) {
-            chat_control.cancelExternal()
-        }
         MixinApplication.conversationId = null
         recallDisposable?.let { disposable ->
             if (!disposable.isDisposed) {
                 disposable.dispose()
             }
         }
+    }
+
+    override fun onDetach() {
+        if (OpusAudioRecorder.state != STATE_NOT_INIT) {
+            OpusAudioRecorder.get().stop()
+        }
+        if (chat_control?.isRecording == true) {
+            chat_control?.cancelExternal()
+        }
+        super.onDetach()
     }
 
     override fun onBackPressed(): Boolean {
@@ -654,7 +658,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         dialog.dismiss()
                     }
                     .setNegativeButton(getString(R.string.chat_audio_discard_ok)) { dialog, _ ->
-                        chat_control.cancelExternal()
                         activity?.finish()
                         dialog.dismiss()
                     }
