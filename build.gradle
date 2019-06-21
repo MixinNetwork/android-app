@@ -42,7 +42,7 @@ buildscript {
         ext.countryPickerVersion = '1.0.10'
         ext.fabprogresscircleVersion = '1.01@aar'
         ext.rxContactsVersion = '1.1'
-        ext.glideTransformationsVersion = '3.2.0'
+        ext.glideTransformationsVersion = '4.0.1'
         ext.jobqueueVersion = '2.0.7'
         ext.stickyheadersrecyclerviewVersion = '0.5'
         ext.threetenabpVersion = '1.2.1'
