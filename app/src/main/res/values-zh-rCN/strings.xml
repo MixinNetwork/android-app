@@ -205,6 +205,7 @@
     <string name="chat_call_failed">呼叫失败</string>
     <string name="chat_call_warning_call">无法在 Mixin 通话时拨打电话</string>
     <string name="chat_call_warning_voice">无法在 Mixin 通话时录制语音消息</string>
+    <string name="chat_audio_warning">无法在 Mixin 录音时播放语音</string>
     <string name="chat_delete_message">删除 %1$d 条消息吗?</string>
     <string name="chat_delete_for_me">为我删除</string>
     <string name="chat_delete_for_everyone">在所有人设备上删除</string>

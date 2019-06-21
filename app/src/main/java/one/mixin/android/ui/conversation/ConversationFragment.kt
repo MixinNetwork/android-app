@@ -356,6 +356,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.cancel(id)
             }
 
+            override fun onAudioClick(messageItem: MessageItem) {
+                when {
+                    chat_control.isSend() -> AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                        .setMessage(getString(R.string.chat_audio_warning))
+                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                    AudioPlayer.get().isPlay(messageItem.messageId) -> AudioPlayer.get().pause()
+                    else -> AudioPlayer.get().play(messageItem)
+                }
+            }
+
             override fun onImageClick(messageItem: MessageItem, view: View) {
                 starTransition = true
                 val file = File(messageItem.mediaUrl?.toUri()?.getFilePath())

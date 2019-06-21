@@ -214,6 +214,7 @@
     <string name="chat_call_failed">Call failed</string>
     <string name="chat_call_warning_call">You cannot place a Mixin call if you\'re already on another call.</string>
     <string name="chat_call_warning_voice">Can\'t record voice messages during a Mixin call.</string>
+    <string name="chat_audio_warning">You cannot play audio if your\'re already on play another audio.</string>
     <string name="chat_delete_message">Delete %1$d messages?</string>
     <string name="chat_delete_for_me">Delete for me</string>
     <string name="chat_delete_for_everyone">Delete for Everyone</string>
