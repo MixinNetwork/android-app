@@ -38,7 +38,7 @@ buildscript {
         ext.jwtVersion = '0.9.1'
         ext.zxingVersion = '3.4.0'
         ext.rxpermissionsVersion = '0.10.2'
-        ext.ucropVersion = '2.2.1'
+        ext.ucropVersion = '2.2.3-native'
         ext.countryPickerVersion = '1.0.10'
         ext.fabprogresscircleVersion = '1.01@aar'
         ext.rxContactsVersion = '1.1'
