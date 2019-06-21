@@ -215,6 +215,10 @@
     <string name="chat_call_warning_call">You cannot place a Mixin call if you\'re already on another call.</string>
     <string name="chat_call_warning_voice">Can\'t record voice messages during a Mixin call.</string>
     <string name="chat_audio_warning">You cannot play audio if your\'re already on play another audio.</string>
+    <string name="chat_audio_discard_warning_title">Discard Voice message</string>
+    <string name="chat_audio_discard_warning">Are you sure you want to stop recording and discard your voice message ?</string>
+    <string name="chat_audio_discard_ok">DISCARD</string>
+    <string name="chat_audio_discard_cancel">CONTINUE</string>
     <string name="chat_delete_message">Delete %1$d messages?</string>
     <string name="chat_delete_for_me">Delete for me</string>
     <string name="chat_delete_for_everyone">Delete for Everyone</string>

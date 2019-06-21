@@ -646,6 +646,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onBackPressed(): Boolean {
         return when {
+            chat_control.isSend() -> {
+                AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                    .setTitle(getString(R.string.chat_audio_discard_warning_title))
+                    .setMessage(getString(R.string.chat_audio_discard_warning))
+                    .setNeutralButton(getString(R.string.chat_audio_discard_cancel)) { dialog, _ ->
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton(getString(R.string.chat_audio_discard_ok)) { dialog, _ ->
+                        chat_control.cancelExternal()
+                        activity?.finish()
+                        dialog.dismiss()
+                    }
+                    .show()
+                true
+            }
             tool_view.visibility == VISIBLE -> {
                 closeTool()
                 true
