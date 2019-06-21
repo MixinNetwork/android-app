@@ -65,14 +65,13 @@ object Constants {
         const val AUTO_DOWNLOAD_WIFI = "auto_download_wifi"
         const val AUTO_DOWNLOAD_ROAMING = "auto_download_roaming"
 
-        const val AUTO_DOWNLOAD_PHOTO = 0x0001
-        const val AUTO_DOWNLOAD_AUDIO = 0x0010
-        const val AUTO_DOWNLOAD_VIDEO = 0x0100
-        const val AUTO_DOWNLOAD_DOCUMENT = 0x1000
+        const val AUTO_DOWNLOAD_PHOTO = 0x001
+        const val AUTO_DOWNLOAD_VIDEO = 0x010
+        const val AUTO_DOWNLOAD_DOCUMENT = 0x100
 
-        const val MOBILE_DEFAULT = 0x0001
-        const val WIFI_DEFAULT = 0x1111
-        const val ROAMING_DEFAULT = 0x0000
+        const val MOBILE_DEFAULT = 0x001
+        const val WIFI_DEFAULT = 0x111
+        const val ROAMING_DEFAULT = 0x000
     }
 
     const val SLEEP_MILLIS: Long = 1000

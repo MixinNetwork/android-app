@@ -13,13 +13,6 @@
     </one.mixin.android.widget.CheckView>
 
     <one.mixin.android.widget.CheckView
-        android:id="@+id/check_audio"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </one.mixin.android.widget.CheckView>
-
-    <one.mixin.android.widget.CheckView
         android:id="@+id/check_video"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
