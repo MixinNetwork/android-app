@@ -33,7 +33,7 @@ buildscript {
         ext.coroutines_version = '1.2.2'
         ext.firebaseVersion = '17.0.0'
         ext.firebaseMessageVersion = '19.0.0'
-        ext.firebaseDylinkVersion = '17.0.0'
+        ext.firebaseDylinkVersion = '18.0.0'
         ext.firebaseMLVersion = '21.0.0'
         ext.jwtVersion = '0.9.1'
         ext.zxingVersion = '3.4.0'
