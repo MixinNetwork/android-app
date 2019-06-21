@@ -681,7 +681,7 @@ class ChatControlView : FrameLayout {
     private var maxScrollX = context.dip(100f)
     var calling = false
 
-    public fun isSend() = recordCircle.sendButtonVisible
+    public fun isSend() = recordCircle.sendButtonVisible || hasStartRecord
 
     private val sendOnTouchListener = OnTouchListener { _, event ->
         if (calling && sendStatus == AUDIO) {
