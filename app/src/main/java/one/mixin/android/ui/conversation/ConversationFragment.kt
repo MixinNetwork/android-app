@@ -358,7 +358,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onAudioClick(messageItem: MessageItem) {
                 when {
-                    chat_control.isSend() -> AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                    chat_control.isRecording -> AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                         .setMessage(getString(R.string.chat_audio_warning))
                         .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
                             dialog.dismiss()
@@ -646,7 +646,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onBackPressed(): Boolean {
         return when {
-            chat_control.isSend() -> {
+            chat_control.isRecording -> {
                 AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                     .setTitle(getString(R.string.chat_audio_discard_warning_title))
                     .setMessage(getString(R.string.chat_audio_discard_warning))
