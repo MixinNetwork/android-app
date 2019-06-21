@@ -10,16 +10,13 @@ import one.mixin.android.Constants.Download.WIFI_DEFAULT
 import timber.log.Timber
 
 val autoDownloadPhoto: (value: Int) -> Boolean = {
-    it.or(0x1110) == 0x1111
-}
-val autoDownloadAudio: (value: Int) -> Boolean = {
-    it.or(0x1101) == 0x1111
+    it.or(0x110) == 0x111
 }
 val autoDownloadVideo: (value: Int) -> Boolean = {
-    it.or(0x1011) == 0x1111
+    it.or(0x101) == 0x111
 }
 val autoDownloadDocument: (value: Int) -> Boolean = {
-    it.or(0x0111) == 0x1111
+    it.or(0x011) == 0x111
 }
 
 fun Context.isConnectedToWiFi(): Boolean {

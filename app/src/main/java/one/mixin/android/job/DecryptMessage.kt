@@ -15,7 +15,6 @@ import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.RatchetStatus
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.autoDownload
-import one.mixin.android.extension.autoDownloadAudio
 import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
@@ -322,11 +321,9 @@ class DecryptMessage : Injector() {
                 val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val message = createAudioMessage(data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
                     data.category, mediaData.size, null, mediaData.duration.toString(), nowInUtc(), mediaData.waveform,
-                    mediaData.key, mediaData.digest, MediaStatus.CANCELED, MessageStatus.DELIVERED)
+                    mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
                 messageDao.insert(message)
-                MixinApplication.appContext.autoDownload(autoDownloadAudio) {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(message))
-                }
+                jobManager.addJobInBackground(AttachmentDownloadJob(message))
                 sendToExtensionSession(message, plainText, dataUserId = dataUserId)
                 sendNotificationJob(message, data.source)
             }

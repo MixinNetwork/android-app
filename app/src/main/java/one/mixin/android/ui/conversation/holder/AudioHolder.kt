@@ -124,24 +124,10 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                         itemView.audio_progress.setPlay()
                     }
                     itemView.audio_progress.setOnClickListener {
-                        if (!hasSelect) {
-                            if (AudioPlayer.get().isPlay(messageItem.messageId)) {
-                                AudioPlayer.get().pause()
-                            } else {
-                                AudioPlayer.get().play(messageItem)
-                            }
-                        }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
 
                     itemView.setOnClickListener {
-                        if (!hasSelect) {
-                            if (AudioPlayer.get().isPlay(messageItem.messageId)) {
-                                AudioPlayer.get().pause()
-                            } else {
-                                AudioPlayer.get().play(messageItem)
-                            }
-                        }
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -196,6 +182,8 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
             }
         } else if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
             onItemListener.onCancel(messageItem.messageId)
+        } else if (messageItem.mediaStatus == MediaStatus.DONE.name) {
+            onItemListener.onAudioClick(messageItem)
         } else if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
         } else {
         }

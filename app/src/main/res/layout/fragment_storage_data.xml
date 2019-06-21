@@ -41,7 +41,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/storage_auto_download"
             android:layout_width="match_parent"
-            android:layout_height="@dimen/item_contact_height"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:background="@android:color/white"
             android:padding="16dp">
@@ -56,9 +56,26 @@
                 android:textColor="@color/colorBlue"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toTopOf="@id/storage_info"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+                tools:ignore="RelativeOverlap"/>
+
+            <TextView
+                android:id="@+id/storage_info"
+                style="@style/NormalTextStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:layout_marginTop="3dp"
+                android:text="@string/setting_data_info"
+                android:textColor="@color/text_gray"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/storage_title"
                 tools:ignore="RelativeOverlap"/>
 
         </androidx.constraintlayout.widget.ConstraintLayout>

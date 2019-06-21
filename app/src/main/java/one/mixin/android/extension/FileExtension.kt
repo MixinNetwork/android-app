@@ -231,6 +231,11 @@ fun File.createGifTemp(noMedia: Boolean = true): File {
     return newTempFile("IMAGE_$time", ".gif", noMedia)
 }
 
+fun File.createPngTemp(noMedia: Boolean = true): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    return newTempFile("IMAGE_$time", ".png", noMedia)
+}
+
 fun File.createWebpTemp(noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return newTempFile("IMAGE_$time", ".webp", noMedia)

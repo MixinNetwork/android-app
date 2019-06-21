@@ -559,6 +559,8 @@ class ConversationAdapter(
 
         open fun onActionClick(action: String) {}
 
+        open fun onAudioClick(messageItem: MessageItem) {}
+
         open fun onBillClick(messageItem: MessageItem) {}
 
         open fun onContactCardClick(userId: String) {}

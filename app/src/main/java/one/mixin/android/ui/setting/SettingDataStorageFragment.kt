@@ -11,7 +11,6 @@ import kotlinx.android.synthetic.main.fragment_storage.title_view
 import kotlinx.android.synthetic.main.fragment_storage_data.*
 import kotlinx.android.synthetic.main.view_stotage_data.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
-import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_AUDIO
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_DOCUMENT
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_MOBILE
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_PHOTO
@@ -20,7 +19,6 @@ import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_VIDEO
 import one.mixin.android.Constants.Download.AUTO_DOWNLOAD_WIFI
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.autoDownloadAudio
 import one.mixin.android.extension.autoDownloadDocument
 import one.mixin.android.extension.autoDownloadPhoto
 import one.mixin.android.extension.autoDownloadVideo
@@ -75,7 +73,6 @@ class SettingDataStorageFragment : BaseFragment() {
     private fun getInfo(value: Int): String {
         val list = mutableListOf<String>()
         if (autoDownloadPhoto(value)) list.add(getString(R.string.setting_data_photo))
-        if (autoDownloadAudio(value)) list.add(getString(R.string.setting_data_audio))
         if (autoDownloadVideo(value)) list.add(getString(R.string.setting_data_video))
         if (autoDownloadDocument(value)) list.add(getString(R.string.setting_data_documents))
         val divide = getString(R.string.divide)
@@ -98,10 +95,6 @@ class SettingDataStorageFragment : BaseFragment() {
                 setName(R.string.setting_data_photo)
                 isChecked = autoDownloadPhoto(value)
             }
-            this.check_audio.apply {
-                setName(R.string.setting_data_audio)
-                isChecked = autoDownloadAudio(value)
-            }
             this.check_video.apply {
                 setName(R.string.setting_data_video)
                 isChecked = autoDownloadVideo(value)
@@ -121,9 +114,6 @@ class SettingDataStorageFragment : BaseFragment() {
                 var value = 0
                 if (menuView.check_photo.isChecked) {
                     value += (AUTO_DOWNLOAD_PHOTO)
-                }
-                if (menuView.check_audio.isChecked) {
-                    value += (AUTO_DOWNLOAD_AUDIO)
                 }
                 if (menuView.check_video.isChecked) {
                     value += (AUTO_DOWNLOAD_VIDEO)
