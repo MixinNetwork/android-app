@@ -579,6 +579,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var paused = false
     private var starTransition = false
     private var recallDisposable: Disposable? = null
+    private var messageDisposable: Disposable? = null
 
     @SuppressLint("AutoDispose")
     override fun onResume() {
@@ -602,7 +603,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
-        chatAdapter.listen(scopeProvider)
+        messageDisposable = chatAdapter.listen()
         recallDisposable = RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe { event ->
@@ -644,6 +645,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         if (chat_control?.isRecording == true) {
             chat_control?.cancelExternal()
+        }
+        if (messageDisposable?.isDisposed == false) {
+            messageDisposable?.dispose()
         }
         super.onDetach()
     }

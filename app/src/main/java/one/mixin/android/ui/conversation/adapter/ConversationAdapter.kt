@@ -8,9 +8,8 @@ import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import io.reactivex.subjects.PublishSubject
 import kotlinx.android.synthetic.main.item_chat_unread.view.*
 import one.mixin.android.Constants.PAGE_SIZE
@@ -88,11 +87,10 @@ class ConversationAdapter(
         }
     }
 
-    fun listen(scope: AndroidLifecycleScopeProvider) {
-        publisher.throttleLast(120, TimeUnit.MILLISECONDS)
+    fun listen(): Disposable? {
+        return publisher.throttleLast(120, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(scope)
             .subscribe({
                 super.submitList(it)
             }, {
