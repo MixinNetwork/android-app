@@ -51,7 +51,7 @@ buildscript {
         ext.svgVersion = '1.2.1'
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.33.0'
-        ext.exoplayerVersion = '2.10.1'
+        ext.exoplayerVersion = '2.10.2'
         ext.gcmVersion = '17.0.0'
         ext.perfVersion = '18.0.0'
 
