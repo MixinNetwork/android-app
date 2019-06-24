@@ -626,20 +626,16 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         paused = true
         input_layout.removeOnKeyboardShownListener(this)
         input_layout.removeOnKeyboardHiddenListener(this)
-        markRead()
-        if (disposable?.isDisposed == false) {
-            disposable?.dispose()
-        }
-        AudioPlayer.pause()
         MixinApplication.conversationId = null
-        recallDisposable?.let { disposable ->
-            if (!disposable.isDisposed) {
-                disposable.dispose()
-            }
-        }
     }
 
-    override fun onDetach() {
+    override fun onStop() {
+        markRead()
+        AudioPlayer.pause()
+        val draftText = chat_control.chat_et.text
+        if (draftText != null) {
+            chatViewModel.saveDraft(conversationId, draftText.toString())
+        }
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get().stop()
         }
@@ -649,7 +645,33 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (messageDisposable?.isDisposed == false) {
             messageDisposable?.dispose()
         }
-        super.onDetach()
+        recallDisposable?.let { disposable ->
+            if (!disposable.isDisposed) {
+                disposable.dispose()
+            }
+        }
+        if (disposable?.isDisposed == false) {
+            disposable?.dispose()
+        }
+        super.onStop()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        chat_rv?.let { rv ->
+            rv.children.forEach {
+                val vh = rv.getChildViewHolder(it)
+                if (vh != null && vh is BaseViewHolder) {
+                    vh.stopListen()
+                }
+            }
+        }
+        chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        AudioPlayer.release()
     }
 
     override fun onBackPressed(): Boolean {
@@ -716,31 +738,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chatAdapter.markRead()
     }
 
-    override fun onStop() {
-        val draftText = chat_control.chat_et.text
-        if (draftText != null) {
-            chatViewModel.saveDraft(conversationId, draftText.toString())
-        }
-        super.onStop()
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        chat_rv?.let { rv ->
-            rv.children.forEach {
-                val vh = rv.getChildViewHolder(it)
-                if (vh != null && vh is BaseViewHolder) {
-                    vh.stopListen()
-                }
-            }
-        }
-        chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        AudioPlayer.release()
-    }
 
     private var firstPosition = 0
 
