@@ -35,6 +35,7 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
@@ -232,7 +233,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
 
-            @SuppressLint("CheckResult")
             override fun onShowFileChooser(webView: WebView?, filePathCallback: ValueCallback<Array<Uri>>?, fileChooserParams: FileChooserParams?): Boolean {
                 uploadMessage?.onReceiveValue(null)
                 uploadMessage = filePathCallback
@@ -247,6 +247,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             .setGrantedAction {
                                 RxPermissions(requireActivity())
                                     .request(Manifest.permission.CAMERA)
+                                    .autoDisposable(stopScope)
                                     .subscribe({ granted ->
                                         if (granted) {
                                             startActivityForResult(Intent(MediaStore.ACTION_VIDEO_CAPTURE), FILE_CHOOSER)
@@ -265,6 +266,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }.setGrantedAction {
                                 RxPermissions(requireActivity())
                                     .request(Manifest.permission.CAMERA)
+                                    .autoDisposable(stopScope)
                                     .subscribe({ granted ->
                                         if (granted) {
                                             openCamera(getImageUri())
@@ -404,11 +406,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.onResume()
     }
 
-    @SuppressLint("CheckResult", "AutoDispose")
     private fun saveImageFromUrl(url: String?) {
         if (!isAdded) return
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            .autoDisposable(stopScope)
             .subscribe { granted ->
                 if (granted) {
                     doAsync {

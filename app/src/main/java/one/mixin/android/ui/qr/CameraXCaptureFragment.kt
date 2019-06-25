@@ -62,7 +62,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_capture_camerax, container, false)
 
-    @SuppressLint("RestrictedApi", "AutoDispose")
+    @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         view_finder.post {

@@ -73,7 +73,7 @@ class AddPeopleFragment : BaseFragment() {
         search_tv.setOnClickListener {
             search_animator.displayedChild = POS_PROGRESS
             search_tv.isEnabled = false
-            contactsViewModel.search(search_et.text.toString()).autoDisposable(scopeProvider).subscribe({ r ->
+            contactsViewModel.search(search_et.text.toString()).autoDisposable(stopScope).subscribe({ r ->
                 search_animator.displayedChild = POS_SEARCH
                 search_tv.isEnabled = true
                 when {

@@ -50,7 +50,7 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
             verify_fab.show()
             verify_cover.visibility = VISIBLE
             accountRepository.verifyPin(pin.code())
-                .autoDisposable(scopeProvider)
+                .autoDisposable(stopScope)
                 .subscribe({ r: MixinResponse<Account> ->
                     verify_fab?.hide()
                     verify_fab?.visibility = GONE

@@ -200,7 +200,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         asset.differentProcess({
-            walletViewModel.pendingDeposits(asset.assetId, key = asset.publicKey).autoDisposable(scopeProvider)
+            walletViewModel.pendingDeposits(asset.assetId, key = asset.publicKey).autoDisposable(stopScope)
                 .subscribe({ list ->
                     updateData(list.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
@@ -208,7 +208,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     ErrorHandler.handleError(it)
                 })
         }, {
-            walletViewModel.pendingDeposits(asset.assetId, name = asset.accountName, tag = asset.accountTag).autoDisposable(scopeProvider)
+            walletViewModel.pendingDeposits(asset.assetId, name = asset.accountName, tag = asset.accountTag).autoDisposable(stopScope)
                 .subscribe({ list ->
                     updateData(list.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
@@ -218,7 +218,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }, {
             headerView.receive_tv.visibility = INVISIBLE
             headerView.receive_progress.visibility = VISIBLE
-            walletViewModel.getAsset(asset.assetId).autoDisposable(scopeProvider).subscribe({ response ->
+            walletViewModel.getAsset(asset.assetId).autoDisposable(stopScope).subscribe({ response ->
                 if (response?.isSuccess == true) {
                     headerView.receive_tv.visibility = VISIBLE
                     headerView.receive_progress.visibility = GONE

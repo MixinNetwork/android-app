@@ -34,7 +34,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -393,11 +392,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            @SuppressLint("CheckResult")
             override fun onUserClick(userId: String) {
-                chatViewModel.getUserById(userId).autoDisposable(scopeProvider).subscribe({
+                chatViewModel.getUserById(userId).autoDisposable(stopScope).subscribe({
                     it?.let {
-                        UserBottomSheetDialogFragment.newInstance(it, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                        UserBottomSheetDialogFragment.newInstance(it, conversationId)
+                            .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }
                 }, {
                     Timber.e(it)
@@ -439,7 +438,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     activity?.addFragment(this@ConversationFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
                     return
                 }
-                chatViewModel.getUserById(userId).autoDisposable(scopeProvider).subscribe({
+                chatViewModel.getUserById(userId).autoDisposable(stopScope).subscribe({
                     it?.let {
                         UserBottomSheetDialogFragment.newInstance(it, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
                     }
@@ -473,7 +472,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
 
-            @SuppressLint("CheckResult")
             override fun onCallClick(messageItem: MessageItem) {
                 if (!callState.isIdle()) {
                     if (recipient != null && callState.user?.userId == recipient?.userId) {
@@ -489,6 +487,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     RxPermissions(requireActivity())
                         .request(Manifest.permission.RECORD_AUDIO)
+                        .autoDisposable(stopScope)
                         .subscribe({ granted ->
                             if (granted) {
                                 callVoice()
@@ -575,37 +574,33 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private var showGroupNotification = false
-    private var disposable: Disposable? = null
     private var paused = false
     private var starTransition = false
-    private var recallDisposable: Disposable? = null
-    private var messageDisposable: Disposable? = null
 
-    @SuppressLint("AutoDispose")
     override fun onResume() {
         super.onResume()
         input_layout.addOnKeyboardShownListener(this)
         input_layout.addOnKeyboardHiddenListener(this)
         MixinApplication.conversationId = conversationId
         if (isGroup) {
-            if (disposable == null || disposable?.isDisposed == true) {
-                disposable = RxBus.listen(GroupEvent::class.java)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .subscribe {
-                        if (it.conversationId == conversationId) {
-                            showGroupNotification = true
-                            showAlert()
-                        }
+            RxBus.listen(GroupEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDisposable(stopScope)
+                .subscribe {
+                    if (it.conversationId == conversationId) {
+                        showGroupNotification = true
+                        showAlert()
                     }
-            }
+                }
         }
         if (paused) {
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
-        messageDisposable = chatAdapter.listen()
-        recallDisposable = RxBus.listen(RecallEvent::class.java)
+        chatAdapter.listen(stopScope)
+        RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(stopScope)
             .subscribe { event ->
                 if (chatAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
@@ -622,7 +617,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var lastReadMessage: String? = null
     override fun onPause() {
-        chatViewModel.viewModelScope.launch {
+        lifecycleScope.launch {
             lastReadMessage = chatViewModel.findLastMessage(conversationId)
         }
         deleteDialog?.dismiss()
@@ -645,17 +640,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         if (chat_control?.isRecording == true) {
             chat_control?.cancelExternal()
-        }
-        if (messageDisposable?.isDisposed == false) {
-            messageDisposable?.dispose()
-        }
-        recallDisposable?.let { disposable ->
-            if (!disposable.isDisposed) {
-                disposable.dispose()
-            }
-        }
-        if (disposable?.isDisposed == false) {
-            disposable?.dispose()
         }
         super.onStop()
     }
@@ -742,10 +726,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chatAdapter.markRead()
     }
 
-
     private var firstPosition = 0
 
-    @SuppressLint("CheckResult")
     private fun initView() {
         chat_rv.visibility = INVISIBLE
         if (chat_rv.adapter == null) {
@@ -824,7 +806,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             down_unread.visibility = GONE
         }
         chatViewModel.searchConversationById(conversationId)
-            .autoDisposable(scopeProvider).subscribe({
+            .autoDisposable(stopScope).subscribe({
                 it?.draft?.let { str ->
                     if (isAdded) {
                         chat_control.chat_et.setText(str)
@@ -1146,11 +1128,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    @SuppressLint("CheckResult")
     private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
         createConversation {
             chatViewModel.sendImageMessage(conversationId, sender, uri, isPlainMessage(), mimeType)
-                ?.autoDisposable(scopeProvider)?.subscribe({
+                ?.autoDisposable(stopScope)?.subscribe({
                     when (it) {
                         0 -> {
                             scrollToDown()
@@ -1202,7 +1183,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         id?.let {
             createConversation {
                 chatViewModel.sendFordMessage(conversationId, sender, it, isPlainMessage())
-                    .autoDisposable(scopeProvider).subscribe({
+                    .autoDisposable(stopScope).subscribe({
                         if (it == 0) {
                             toast(R.string.error_file_exists)
                         }
@@ -1630,10 +1611,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    @SuppressLint("CheckResult", "AutoDispose")
     private fun openCamera() {
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)
+            .autoDisposable(stopScope)
             .subscribe({ granted ->
                 if (granted) {
                     imageUri = createImageUri()

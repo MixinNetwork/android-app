@@ -1,7 +1,6 @@
 package one.mixin.android.ui.contacts
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -128,7 +127,7 @@ class ContactsFragment : BaseFragment() {
             .toSortedList(Contact::compareTo)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
-            .autoDisposable(scopeProvider)
+            .autoDisposable(stopScope)
             .subscribe({ contacts ->
                 val mutableList = mutableListOf<User>()
                 for (item in contacts) {
@@ -159,10 +158,10 @@ class ContactsFragment : BaseFragment() {
             activity?.addFragment(this@ContactsFragment, AddPeopleFragment.newInstance(), AddPeopleFragment.TAG)
         }
 
-        @SuppressLint("CheckResult")
         override fun onEmptyRl() {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.READ_CONTACTS)
+                .autoDisposable(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         contactAdapter.removeFooter()

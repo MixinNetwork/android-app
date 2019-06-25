@@ -53,7 +53,7 @@ class InviteFragment : BaseFragment() {
         layoutInflater.inflate(R.layout.fragment_invite, container, false)
 
     private fun refreshUrl() {
-        inviteViewModel.findConversation(conversationId).autoDisposable(scopeProvider).subscribe({
+        inviteViewModel.findConversation(conversationId).autoDisposable(stopScope).subscribe({
             if (it.isSuccess && it.data != null) {
                 inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
             }
@@ -90,7 +90,7 @@ class InviteFragment : BaseFragment() {
         })
 
         invite_revoke.setOnClickListener {
-            inviteViewModel.rotate(conversationId).autoDisposable(scopeProvider).subscribe({
+            inviteViewModel.rotate(conversationId).autoDisposable(stopScope).subscribe({
                 if (it.isSuccess) {
                     val cr = it.data!!
                     invite_link.text = cr.codeUrl

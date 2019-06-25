@@ -1,6 +1,5 @@
 package one.mixin.android.ui.landing
 
-import android.annotation.SuppressLint
 import android.graphics.Point
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -145,7 +144,7 @@ class VerificationFragment : BaseFragment() {
     private fun handlePhoneModification() {
         showLoading()
         mobileViewModel.changePhone(arguments!!.getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
-            .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+            .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                 verification_next_fab.hide()
                 verification_cover.visibility = GONE
                 if (!r.isSuccess) {
@@ -174,7 +173,6 @@ class VerificationFragment : BaseFragment() {
             })
     }
 
-    @SuppressLint("CheckResult")
     private fun handleLogin() {
         showLoading()
 
@@ -188,7 +186,7 @@ class VerificationFragment : BaseFragment() {
             pin = pin,
             session_secret = sessionSecret)
         mobileViewModel.create(arguments!!.getString(ARGS_ID)!!, accountRequest)
-            .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+            .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                 if (!isAdded) {
                     return@subscribe
                 }
@@ -269,7 +267,7 @@ class VerificationFragment : BaseFragment() {
             if (pin == null) VerificationPurpose.SESSION.name else VerificationPurpose.PHONE.name,
             gRecaptchaResponse)
         mobileViewModel.verification(verificationRequest)
-            .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<VerificationResponse> ->
+            .autoDisposable(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
                 if (!r.isSuccess) {
                     if (r.errorCode == NEED_RECAPTCHA) {
                         recaptchaView.loadRecaptcha()

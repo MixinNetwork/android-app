@@ -7,7 +7,8 @@ import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import androidx.lifecycle.Lifecycle
+import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
 import one.mixin.android.R
@@ -16,7 +17,7 @@ import javax.inject.Inject
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasSupportFragmentInjector {
 
-    protected val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+    protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Fragment>

@@ -98,7 +98,7 @@ class GiphyFragment : BaseFragment() {
         }
         sticker_progress.visibility = View.VISIBLE
         stickerViewModel.trendingGifs(26, 0)
-            .autoDisposable(scopeProvider)
+            .autoDisposable(stopScope)
             .subscribe({ list ->
                 if (!isAdded) return@subscribe
                 giphyAdapter.data = list

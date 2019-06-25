@@ -69,7 +69,7 @@ class GroupEditFragment : BaseFragment() {
             } else {
                 title_view.pb.visibility = View.VISIBLE
                 title_view.right_tv.visibility = View.GONE
-                groupViewModel.updateGroup(conversationId, desc_et.text.toString()).autoDisposable(scopeProvider).subscribe({
+                groupViewModel.updateGroup(conversationId, desc_et.text.toString()).autoDisposable(stopScope).subscribe({
                     if (it.isSuccess) {
                         groupViewModel.updateAnnouncement(conversationId, it.data?.announcement)
                         desc_et.hideKeyboard()

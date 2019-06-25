@@ -44,7 +44,7 @@ class LoadingFragment : BaseFragment() {
     private fun load() {
         if (count > 0) {
             count--
-            loadingViewModel.pushAsyncSignalKeys().autoDisposable(scopeProvider).subscribe({
+            loadingViewModel.pushAsyncSignalKeys().autoDisposable(stopScope).subscribe({
                 when {
                     it?.isSuccess == true -> {
                         context!!.defaultSharedPreferences.putBoolean(IS_LOADED, true)

@@ -51,7 +51,7 @@ class SetupNameFragment : BaseFragment() {
             name_cover.visibility = VISIBLE
             val accountUpdateRequest = AccountUpdateRequest(name_et.text.toString())
             mobileViewModel.update(accountUpdateRequest)
-                .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+                .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                     name_fab?.hide()
                     name_cover?.visibility = INVISIBLE
                     if (!r.isSuccess) {

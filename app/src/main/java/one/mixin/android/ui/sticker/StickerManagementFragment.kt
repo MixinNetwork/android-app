@@ -1,7 +1,6 @@
 package one.mixin.android.ui.sticker
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
@@ -22,6 +21,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -91,11 +91,11 @@ class StickerManagementFragment : BaseFragment() {
         stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         sticker_rv.adapter = stickerAdapter
         stickerAdapter.setOnStickerListener(object : StickerListener {
-            @SuppressLint("CheckResult")
             override fun onAddClick() {
                 RxPermissions(activity!!)
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_EXTERNAL_STORAGE)
+                    .autoDisposable(stopScope)
                     .subscribe({ granted ->
                         if (granted) {
                             openGalleryFromSticker()

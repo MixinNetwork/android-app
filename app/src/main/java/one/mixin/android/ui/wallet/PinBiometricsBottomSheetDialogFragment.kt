@@ -59,7 +59,7 @@ class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                 if (index != contentView.pin.getCount()) return
 
                 contentView.pin_va?.displayedChild = POS_PB
-                bottomViewModel.verifyPin(contentView.pin.code()).autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+                bottomViewModel.verifyPin(contentView.pin.code()).autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                     dialog.dismiss()
                     if (r.isSuccess) {
                         context?.updatePinCheck()

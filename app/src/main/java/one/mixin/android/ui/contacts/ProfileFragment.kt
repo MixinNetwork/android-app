@@ -212,7 +212,7 @@ class ProfileFragment : BaseFragment() {
         }
         dialog?.dismiss()
         redeem_pb.visibility = VISIBLE
-        contactsViewModel.redeem(code).autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+        contactsViewModel.redeem(code).autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
             redeem_pb.visibility = GONE
             if (r.isSuccess) {
                 r.data?.let {
@@ -256,7 +256,7 @@ class ProfileFragment : BaseFragment() {
             AccountUpdateRequest(content, null)
         }
         contactsViewModel.update(accountUpdateRequest)
-            .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+            .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                 if (!isAdded) return@subscribe
 
                 if (isPhoto) {

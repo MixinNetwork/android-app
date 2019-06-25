@@ -1,7 +1,6 @@
 package one.mixin.android.ui.address
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
@@ -11,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -137,10 +137,10 @@ class AddressAddFragment : BaseFragment() {
 
     private fun noPublicKey() = !asset.accountName.isNullOrEmpty()
 
-    @SuppressLint("CheckResult", "AutoDispose")
     private fun handleClick(isAddr: Boolean) {
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)
+            .autoDisposable(stopScope)
             .subscribe { granted ->
                 if (granted) {
                     CaptureActivity.show(requireActivity()) {

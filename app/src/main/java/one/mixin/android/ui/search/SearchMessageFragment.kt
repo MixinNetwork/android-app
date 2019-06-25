@@ -1,6 +1,5 @@
 package one.mixin.android.ui.search
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,8 +14,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
+import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
 import kotlinx.android.synthetic.main.fragment_search_message.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -62,15 +61,12 @@ class SearchMessageFragment : BaseFragment() {
 
     private val adapter by lazy { SearchMessageAdapter() }
 
-    private val disposable = CompositeDisposable()
-
     private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
     private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_search_message, container, false)
 
-    @SuppressLint("AutoDispose")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener {
@@ -95,34 +91,31 @@ class SearchMessageFragment : BaseFragment() {
         search_rv.layoutManager = LinearLayoutManager(requireContext())
         adapter.callback = object : SearchMessageAdapter.SearchMessageCallback {
             override fun onItemClick(item: SearchMessageDetailItem) {
-                disposable.add(searchViewModel.findConversationById(searchMessageItem.conversationId)
+                searchViewModel.findConversationById(searchMessageItem.conversationId)
+                    .autoDisposable(stopScope)
                     .subscribe {
                         search_et.hideKeyboard()
                         ConversationActivity.show(requireContext(),
                             conversationId = searchMessageItem.conversationId,
                             messageId = item.messageId,
                             keyword = search_et.text.toString())
-                    })
+                    }
             }
         }
         search_rv.adapter = adapter
 
         clear_ib.setOnClickListener { search_et.setText("") }
         search_et.setText(query)
-        disposable.add(search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(destroyScope)
             .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 onTextChanged(it.toString())
-            }, {}))
+            }, {})
         search_et.postDelayed({
             onTextChanged(query)
         }, 50)
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposable.dispose()
     }
 
     private fun onTextChanged(s: String) {

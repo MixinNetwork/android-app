@@ -1,13 +1,13 @@
 package one.mixin.android.ui.setting
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
+import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.annotation.RequiresPermission
@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -52,7 +53,6 @@ class BackUpFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_backup, container, false)
 
-    @SuppressLint("CheckResult")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         backup_info.text = getString(R.string.backup_external_storage, "")
@@ -64,6 +64,7 @@ class BackUpFragment : BaseFragment() {
         backup_bn.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDisposable(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         jobManager.addJobInBackground(BackupJob(true))
@@ -93,11 +94,11 @@ class BackUpFragment : BaseFragment() {
 
         BackupJob.backupLiveData.observe(this, Observer {
             if (it) {
-                backup_bn.visibility = View.INVISIBLE
-                progressGroup.visibility = View.VISIBLE
+                backup_bn.visibility = INVISIBLE
+                progressGroup.visibility = VISIBLE
             } else {
-                backup_bn.visibility = View.VISIBLE
-                progressGroup.visibility = View.GONE
+                backup_bn.visibility = VISIBLE
+                progressGroup.visibility = GONE
                 when {
                     BackupJob.backupLiveData.result == Result.SUCCESS -> findBackUp()
                     BackupJob.backupLiveData.result == Result.NO_AVAILABLE_MEMORY ->

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.conversation
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -62,7 +61,6 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
         arguments!!.getString(ARGS_USER_ID)!!
     }
 
-    @SuppressLint("CheckResult")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         transactions_rv.addItemDecoration(StickyRecyclerHeadersDecoration(adapter))
@@ -79,7 +77,7 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
 
     override fun <T> onNormalItemClick(item: T) {
         val snapshot = item as SnapshotItem
-        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(scopeProvider).subscribe({ assetItem ->
+        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(stopScope).subscribe({ assetItem ->
             assetItem.let {
                 try {
                     view?.findNavController()?.navigate(R.id.action_user_transactions_to_transaction,

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.group
 
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
 import android.os.Bundle
@@ -18,8 +17,8 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
+import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_group_info.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -82,14 +81,12 @@ class GroupInfoFragment : BaseFragment() {
     private var self: User? = null
     private var participantsMap: ArrayMap<String, Participant> = ArrayMap()
     private var users = arrayListOf<User>()
-    private var disposable: Disposable? = null
     private var dialog: Dialog? = null
     private lateinit var header: View
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         LayoutInflater.from(context).inflate(R.layout.fragment_group_info, container, false)
 
-    @SuppressLint("AutoDispose")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title_view.left_ib.setOnClickListener {
@@ -249,15 +246,14 @@ class GroupInfoFragment : BaseFragment() {
             adapter.self = it
         })
 
-        if (disposable == null) {
-            disposable = RxBus.listen(ConversationEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE || it.type == TYPE_EXIT) {
-                        dialog?.dismiss()
-                    }
+        RxBus.listen(ConversationEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(stopScope)
+            .subscribe {
+                if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE || it.type == TYPE_EXIT) {
+                    dialog?.dismiss()
                 }
-        }
+            }
 
         search_et.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -294,8 +290,6 @@ class GroupInfoFragment : BaseFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        disposable?.dispose()
-        disposable = null
         dialog?.dismiss()
     }
 

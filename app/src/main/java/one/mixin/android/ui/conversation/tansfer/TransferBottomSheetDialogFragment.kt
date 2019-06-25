@@ -153,7 +153,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 (t as WithdrawBiometricItem).let {
                     bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.memo)
                 }
-        }.autoDisposable(scopeProvider)
+        }.autoDisposable(stopScope)
             .subscribe({
                 contentView.pin_va?.displayedChild = POS_PIN
                 if (it.isSuccess) {

@@ -62,7 +62,7 @@ class SettingConversationFragment : BaseFragment() {
     private var disposable: Disposable? = null
     private fun render(prefer: Int) {
         if (prefer == MessageSource.EVERYBODY.ordinal) {
-            everybody_iv.visibility = View.VISIBLE
+            everybody_iv.visibility = VISIBLE
             my_contacts_iv.visibility = View.GONE
             everybody_pb.visibility = View.GONE
             my_contacts_pb.visibility = View.GONE
@@ -70,7 +70,7 @@ class SettingConversationFragment : BaseFragment() {
                 if (my_contacts_iv.visibility == VISIBLE) return@setOnClickListener
 
                 everybody_iv.visibility = View.GONE
-                my_contacts_pb.visibility = View.VISIBLE
+                my_contacts_pb.visibility = VISIBLE
                 disposable?.let {
                     if (!it.isDisposed) {
                         it.dispose()
@@ -78,7 +78,7 @@ class SettingConversationFragment : BaseFragment() {
                 }
                 disposable = settingConversationViewModel
                     .savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.CONTACTS.name))
-                    .autoDisposable(scopeProvider)
+                    .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
                             settingConversationViewModel.preferences.setContacts()
@@ -95,13 +95,13 @@ class SettingConversationFragment : BaseFragment() {
             }
         } else {
             everybody_iv.visibility = View.GONE
-            my_contacts_iv.visibility = View.VISIBLE
+            my_contacts_iv.visibility = VISIBLE
             everybody_pb.visibility = View.GONE
             my_contacts_pb.visibility = View.GONE
             everybody_rl.setOnClickListener {
                 if (everybody_iv.visibility == VISIBLE) return@setOnClickListener
 
-                everybody_pb.visibility = View.VISIBLE
+                everybody_pb.visibility = VISIBLE
                 my_contacts_iv.visibility = View.GONE
                 disposable?.let {
                     if (!it.isDisposed) {
@@ -110,7 +110,7 @@ class SettingConversationFragment : BaseFragment() {
                 }
                 disposable = settingConversationViewModel
                     .savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.EVERYBODY.name))
-                    .autoDisposable(scopeProvider)
+                    .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
                             settingConversationViewModel.preferences.setEveryBody()
@@ -130,7 +130,7 @@ class SettingConversationFragment : BaseFragment() {
 
     private fun renderGroup(prefer: Int) {
         if (prefer == MessageSource.EVERYBODY.ordinal) {
-            everybody_group_iv.visibility = View.VISIBLE
+            everybody_group_iv.visibility = VISIBLE
             my_contacts_group_iv.visibility = View.GONE
             everybody_group_pb.visibility = View.GONE
             my_contacts_group_pb.visibility = View.GONE
@@ -138,7 +138,7 @@ class SettingConversationFragment : BaseFragment() {
                 if (my_contacts_group_iv.visibility == VISIBLE) return@setOnClickListener
 
                 everybody_group_iv.visibility = View.GONE
-                my_contacts_group_pb.visibility = View.VISIBLE
+                my_contacts_group_pb.visibility = VISIBLE
                 disposable?.let {
                     if (!it.isDisposed) {
                         it.dispose()
@@ -146,7 +146,7 @@ class SettingConversationFragment : BaseFragment() {
                 }
                 disposable = settingConversationViewModel
                     .savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.CONTACTS.name))
-                    .autoDisposable(scopeProvider)
+                    .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
                             settingConversationViewModel.groupPreferences.setContacts()
@@ -163,13 +163,13 @@ class SettingConversationFragment : BaseFragment() {
             }
         } else {
             everybody_group_iv.visibility = View.GONE
-            my_contacts_group_iv.visibility = View.VISIBLE
+            my_contacts_group_iv.visibility = VISIBLE
             everybody_group_pb.visibility = View.GONE
             my_contacts_group_pb.visibility = View.GONE
             everybody_group_rl.setOnClickListener {
                 if (everybody_group_iv.visibility == VISIBLE) return@setOnClickListener
 
-                everybody_group_pb.visibility = View.VISIBLE
+                everybody_group_pb.visibility = VISIBLE
                 my_contacts_group_iv.visibility = View.GONE
                 disposable?.let {
                     if (!it.isDisposed) {
@@ -178,7 +178,7 @@ class SettingConversationFragment : BaseFragment() {
                 }
                 disposable = settingConversationViewModel
                     .savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.EVERYBODY.name))
-                    .autoDisposable(scopeProvider)
+                    .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
                             settingConversationViewModel.groupPreferences.setEveryBody()

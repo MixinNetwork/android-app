@@ -119,7 +119,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                 } else {
                     bottomViewModel.deleteAddr(addressId!!, contentView.pin.code())
                 }
-                observable.autoDisposable(scopeProvider).subscribe({ r ->
+                observable.autoDisposable(stopScope).subscribe({ r ->
                     if (r.isSuccess) {
                         doAsync {
                             if (type == ADD || type == MODIFY) {

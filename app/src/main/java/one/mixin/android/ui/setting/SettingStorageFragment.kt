@@ -136,7 +136,7 @@ class SettingStorageFragment : BaseFragment() {
                 }
             }
             map.values.toMutableList()
-        }.autoDisposable(scopeProvider).subscribe({
+        }.autoDisposable(stopScope).subscribe({
             menuAdapter.setData(it)
             selectSet.clear()
             it?.let {
@@ -222,7 +222,7 @@ class SettingStorageFragment : BaseFragment() {
                 }
             }
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(scopeProvider)
+            .autoDisposable(stopScope)
             .subscribe({
                 dialog.dismiss()
             }, {
