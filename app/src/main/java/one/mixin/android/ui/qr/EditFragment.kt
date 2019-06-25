@@ -1,7 +1,6 @@
 package one.mixin.android.ui.qr
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
@@ -21,6 +20,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -106,7 +106,6 @@ class EditFragment : CaptureVisionFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_edit, container, false)
 
-    @SuppressLint("AutoDispose")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         send_fl.post {
@@ -123,6 +122,7 @@ class EditFragment : CaptureVisionFragment() {
         download_iv.setOnClickListener {
             RxPermissions(activity!!)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDisposable(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         save()

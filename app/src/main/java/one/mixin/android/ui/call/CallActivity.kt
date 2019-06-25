@@ -27,6 +27,7 @@ import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.activity_call.*
 import kotlinx.android.synthetic.main.view_call_button.view.*
@@ -141,7 +142,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     }
 
     override fun onResume() {
-        sensorManager?.registerListener(this, sensorManager?.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_UI)
+        sensorManager?.registerListener(this, sensorManager?.getDefaultSensor(TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_UI)
         if (callState.connectedTime != null) {
             startTimer()
         }
@@ -215,10 +216,10 @@ class CallActivity : BaseActivity(), SensorEventListener {
         }
     }
 
-    @SuppressLint("CheckResult", "AutoDispose")
     private fun handleAnswer() {
         RxPermissions(this)
             .request(Manifest.permission.RECORD_AUDIO)
+            .autoDisposable(stopScope)
             .subscribe { granted ->
                 if (granted) {
                     handleAnswering()

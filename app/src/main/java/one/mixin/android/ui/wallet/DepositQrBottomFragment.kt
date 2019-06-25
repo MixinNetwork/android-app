@@ -124,7 +124,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                     }
                 }.subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .autoDisposable(scopeProvider)
+                    .autoDisposable(stopScope)
                     .subscribe({ r ->
                         contentView.qr.setImageBitmap(r)
                     }, {

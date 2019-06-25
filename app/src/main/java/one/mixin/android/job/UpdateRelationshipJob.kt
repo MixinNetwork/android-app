@@ -17,7 +17,7 @@ import one.mixin.android.vo.UserRelationship
 import timber.log.Timber
 
 class UpdateRelationshipJob(private val request: RelationshipRequest) :
-    BaseJob(Params(PRIORITY_UI_HIGH).addTags(UpdateRelationshipJob.GROUP).groupBy("relationship").requireNetwork()) {
+    BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("relationship").requireNetwork()) {
 
     companion object {
         private const val serialVersionUID = 1L

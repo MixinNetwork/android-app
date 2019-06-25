@@ -47,7 +47,7 @@ class AuthenticationsFragment : BaseFragment() {
                 showDialog(app, position)
             }
         })
-        settingViewModel.authorizations().autoDisposable(scopeProvider).subscribe({ list ->
+        settingViewModel.authorizations().autoDisposable(stopScope).subscribe({ list ->
             if (list.isSuccess) {
                 this.list = list.data?.map {
                     it.app
@@ -73,7 +73,7 @@ class AuthenticationsFragment : BaseFragment() {
             }
             .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                settingViewModel.deauthApp(app.appId).autoDisposable(scopeProvider).subscribe({}, {})
+                settingViewModel.deauthApp(app.appId).autoDisposable(stopScope).subscribe({}, {})
                 list?.removeAt(position)
                 auth_rv.adapter?.notifyItemRemoved(position)
                 dialog.dismiss()

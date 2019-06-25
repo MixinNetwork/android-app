@@ -10,6 +10,7 @@ import android.view.View
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.activity_restore.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -35,7 +36,7 @@ class RestoreActivity : BaseActivity() {
     @Inject
     lateinit var jobManager: MixinJobManager
 
-    @SuppressLint("MissingPermission", "CheckResult", "AutoDispose")
+    @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, true)
@@ -50,6 +51,7 @@ class RestoreActivity : BaseActivity() {
             .setPositiveButton(R.string.restore_authorization) { dialog, _ ->
                 RxPermissions(this)
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDisposable(stopScope)
                     .subscribe({ granted ->
                         if (!granted) {
                             openPermissionSetting()
@@ -109,7 +111,7 @@ class RestoreActivity : BaseActivity() {
             }
     }
 
-    @SuppressLint("MissingPermission", "AutoDispose")
+    @SuppressLint("MissingPermission")
     private fun initUI(data: File) {
         setContentView(R.layout.activity_restore)
         restore_time.text = data.lastModified().run {
@@ -125,6 +127,7 @@ class RestoreActivity : BaseActivity() {
         restore_restore.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDisposable(stopScope)
                 .subscribe({ granted ->
                     if (!granted) {
                         openPermissionSetting()

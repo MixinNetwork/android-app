@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting
 
-import android.annotation.SuppressLint
 import androidx.lifecycle.ViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -18,6 +17,5 @@ internal constructor(private val accountRepository: AccountRepository, private v
 
     fun authorizations() = authorizationService.authorizations().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
 
-    @SuppressLint("CheckResult")
     fun deauthApp(appId: String) = accountRepository.deAuthorize(DeauthorRequest(appId)).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
 }

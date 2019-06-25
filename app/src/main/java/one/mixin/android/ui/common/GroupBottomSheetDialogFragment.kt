@@ -93,7 +93,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.join_tv.setOnClickListener {
             if (code == null) return@setOnClickListener
 
-            bottomViewModel.join(code!!).autoDisposable(scopeProvider).subscribe({
+            bottomViewModel.join(code!!).autoDisposable(stopScope).subscribe({
                 if (it.isSuccess) {
                     dismiss()
                     val conversationResponse = it.data as ConversationResponse

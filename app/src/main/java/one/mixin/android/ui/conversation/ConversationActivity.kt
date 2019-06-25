@@ -48,7 +48,7 @@ class ConversationActivity : BlazeBaseActivity() {
             val userId = bundle.getString(RECIPIENT_ID)!!
             Observable.just(userId).map {
                 userRepository.getUserById(userId)!!
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider)
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(stopScope)
                 .subscribe({
                     if (it.userId == Session.getAccountId()) {
                         throw IllegalArgumentException("error data")
@@ -61,7 +61,7 @@ class ConversationActivity : BlazeBaseActivity() {
         } else {
             Observable.just(bundle.getString(CONVERSATION_ID)).map {
                 userRepository.findContactByConversationId(it)
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider)
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(stopScope)
                 .subscribe({
                     if (it?.userId == Session.getAccountId()) {
                         throw IllegalArgumentException("error data ${bundle.getString(CONVERSATION_ID)}")

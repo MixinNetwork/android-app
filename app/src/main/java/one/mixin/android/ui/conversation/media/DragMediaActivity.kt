@@ -2,7 +2,6 @@ package one.mixin.android.ui.conversation.media
 
 import android.Manifest
 import android.animation.ValueAnimator
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.ContentResolver
@@ -52,6 +51,7 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.shizhefei.view.largeimage.LargeImageView
 import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -133,7 +133,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     @Inject
     lateinit var conversationRepository: ConversationRepository
 
-    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
@@ -191,15 +190,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         mixinPlayer.release()
     }
 
-    @SuppressLint("AutoDispose")
     private fun showBottom() {
         val builder = BottomSheet.Builder(this)
         val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
-        view.save.setOnClickListener { _ ->
+        view.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDisposable(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {
@@ -660,7 +659,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    @SuppressLint("AutoDispose")
     private fun start() {
         view_pager.post {
             setPreviewIv(false, view_pager.currentItem)
@@ -669,7 +667,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 if (parentView is FrameLayout) {
                     fadeOut(parentView)
                     (parentView.getChildAt(2) as PlayView).status = STATUS_PLAYING
-                    disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS).observeOn(AndroidSchedulers.mainThread()).subscribe {
+                    disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDisposable(stopScope)
+                        .subscribe {
                         if (mixinPlayer.duration() != 0) {
                             parentView.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
                                 mixinPlayer.duration()).toInt()

@@ -217,7 +217,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                 dialog.show()
 
                 walletViewModel.updatePin(pin.code(), oldPassword)
-                    .autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+                    .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                         if (r.isSuccess) {
                             r.data?.let {
                                 Session.storeAccount(it)

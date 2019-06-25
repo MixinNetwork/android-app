@@ -137,7 +137,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             bottomViewModel.searchGifs(query, LIMIT, offset)
         } else {
             bottomViewModel.trendingGifs(LIMIT, offset)
-        }.autoDisposable(scopeProvider)
+        }.autoDisposable(stopScope)
             .subscribe({ list ->
                 if (!isAdded) return@subscribe
                 if (offset == 0) {

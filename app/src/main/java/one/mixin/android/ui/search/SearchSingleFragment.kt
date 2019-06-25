@@ -12,8 +12,8 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
+import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_search_single.*
 import kotlinx.android.synthetic.main.view_head_search_single.view.*
 import kotlinx.coroutines.launch
@@ -74,12 +74,9 @@ class SearchSingleFragment : BaseFragment() {
         SearchSingleAdapter(type).apply { query = this@SearchSingleFragment.query }
     }
 
-    private var disposable: Disposable? = null
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_search_single, container, false)
 
-    @SuppressLint("AutoDispose")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         back_ib.setOnClickListener {
@@ -106,7 +103,6 @@ class SearchSingleFragment : BaseFragment() {
                 activity?.let { WalletActivity.show(it, assetItem) }
             }
 
-            @SuppressLint("CheckResult")
             override fun onMessageClick(message: SearchMessageItem) {
                 search_rv.hideKeyboard()
                 val f = SearchMessageFragment.newInstance(message, adapter.query)
@@ -127,8 +123,9 @@ class SearchSingleFragment : BaseFragment() {
         clear_ib.setOnClickListener { search_et.setText("") }
         search_et.hint = text
         search_et.setText(query)
-        disposable = search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
+        search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(destroyScope)
             .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 if (it == adapter.query) return@subscribe
@@ -136,11 +133,6 @@ class SearchSingleFragment : BaseFragment() {
                 adapter.query = it.toString()
                 onTextChanged(it.toString())
             }, {})
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposable?.dispose()
     }
 
     private fun onTextChanged(s: String) = lifecycleScope.launch {

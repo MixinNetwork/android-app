@@ -104,7 +104,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }
                         }.subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
-                            .autoDisposable(scopeProvider)
+                            .autoDisposable(stopScope)
                             .subscribe({ r ->
                                 contentView.qr.setImageBitmap(r)
                             }, { _ ->
@@ -123,7 +123,6 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    @SuppressLint("AutoDispose")
     private fun showBottom() {
         val builder = BottomSheet.Builder(requireActivity())
         val view = View.inflate(ContextThemeWrapper(requireContext(), R.style.Custom), R.layout.view_qr_bottom, null)
@@ -132,6 +131,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         view.save.setOnClickListener {
             RxPermissions(activity!!)
                 .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDisposable(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         lifecycleScope.launch(Dispatchers.IO) {

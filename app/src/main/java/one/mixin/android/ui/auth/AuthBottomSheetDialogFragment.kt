@@ -140,7 +140,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.confirm_anim.displayedChild = POS_PB
             contentView.confirm_anim.isEnabled = false
             val request = AuthorizeRequest(auth.authorizationId, scopeAdapter.checkedScopes.toList())
-            bottomViewModel.authorize(request).autoDisposable(scopeProvider).subscribe({ r ->
+            bottomViewModel.authorize(request).autoDisposable(stopScope).subscribe({ r ->
                 contentView.confirm_anim?.displayedChild = POS_TEXT
                 contentView.confirm_anim.isEnabled = true
                 if (r.isSuccess && r.data != null) {
@@ -159,11 +159,12 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    @SuppressLint("CheckResult")
     override fun onDismiss(dialog: DialogInterface?) {
         if (!success && isAdded) {
             val request = AuthorizeRequest(auth.authorizationId, listOf())
-            bottomViewModel.authorize(request).subscribe({
+            bottomViewModel.authorize(request)
+                .autoDisposable(stopScope)
+                .subscribe({
                 if (it.isSuccess && it.data != null) {
                     redirect(it.data!!.app.redirectUri, it.data!!.authorization_code)
                 }

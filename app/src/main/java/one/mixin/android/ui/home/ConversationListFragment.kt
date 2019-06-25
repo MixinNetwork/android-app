@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
@@ -100,7 +101,6 @@ class ConversationListFragment : LinkFragment() {
     ): View? =
         inflater.inflate(R.layout.fragment_conversation_list, container, false)
 
-    @SuppressLint("AutoDispose")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         message_rv.adapter = messageAdapter
@@ -169,6 +169,7 @@ class ConversationListFragment : LinkFragment() {
         shadow_view.setOnClickListener {
             RxPermissions(activity!!)
                 .request(Manifest.permission.CAMERA)
+                .autoDisposable(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         CaptureActivity.show(requireActivity())

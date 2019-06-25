@@ -3,11 +3,13 @@ package one.mixin.android.ui.common
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import androidx.lifecycle.Lifecycle
+import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.di.Injectable
 
 open class BaseFragment : Fragment(), Injectable {
-    protected val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+    protected val stopScope = scope(Lifecycle.Event.ON_STOP)
+    protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     open fun onBackPressed() = false
 

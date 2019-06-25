@@ -12,6 +12,7 @@ import android.os.SystemClock
 import android.view.View
 import androidx.core.view.isVisible
 import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
 import kotlinx.android.synthetic.main.view_camera_tip.view.*
 import one.mixin.android.Constants
@@ -45,7 +46,7 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
     private val forAddress: Boolean by lazy { arguments!!.getBoolean(CaptureActivity.ARGS_FOR_ADDRESS) }
     private val forAccountName: Boolean by lazy { arguments!!.getBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME) }
 
-    @SuppressLint("RestrictedApi", "AutoDispose")
+    @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_CAMERA_TIP, false)) {
@@ -79,6 +80,7 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
         gallery_iv.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDisposable(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         openGallery()

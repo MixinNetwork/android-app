@@ -1,6 +1,5 @@
 package one.mixin.android.ui.search
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -87,7 +86,6 @@ class SearchFragment : BaseFragment() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    @SuppressLint("CheckResult")
     private fun bindData(keyword: String? = this@SearchFragment.keyword) {
         fuzzySearch(keyword)
     }
@@ -138,7 +136,7 @@ class SearchFragment : BaseFragment() {
             override fun onTipClick() {
                 search_rv.hideKeyboard()
                 searchAdapter.searchingId = true
-                searchViewModel.search(searchAdapter.query).autoDisposable(scopeProvider).subscribe({ r ->
+                searchViewModel.search(searchAdapter.query).autoDisposable(stopScope).subscribe({ r ->
                     searchAdapter.searchingId = false
                     when {
                         r.isSuccess -> r.data?.let { data ->
@@ -163,7 +161,6 @@ class SearchFragment : BaseFragment() {
                 activity?.let { WalletActivity.show(it, assetItem) }
             }
 
-            @SuppressLint("CheckResult")
             override fun onMessageClick(message: SearchMessageItem) {
                 search_rv.hideKeyboard()
                 val f = SearchMessageFragment.newInstance(message, keyword ?: "")

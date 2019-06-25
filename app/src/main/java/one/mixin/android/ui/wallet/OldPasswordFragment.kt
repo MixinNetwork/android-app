@@ -73,7 +73,7 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             title = getString(R.string.wallet_verifying))
         dialog.setCancelable(false)
         dialog.show()
-        walletViewModel.verifyPin(pin.code()).autoDisposable(scopeProvider).subscribe({ r: MixinResponse<Account> ->
+        walletViewModel.verifyPin(pin.code()).autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
             dialog.dismiss()
             if (r.isSuccess) {
                 context?.updatePinCheck()

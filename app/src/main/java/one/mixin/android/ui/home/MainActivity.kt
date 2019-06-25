@@ -298,7 +298,7 @@ class MainActivity : BlazeBaseActivity() {
                 runOnUiThread { alertDialog?.dismiss() }
                 innerIntent
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(scopeProvider).subscribe({
+                .autoDisposable(stopScope).subscribe({
                     it?.let { intent ->
                         this.startActivity(intent)
                     }

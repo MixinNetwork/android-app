@@ -3,9 +3,10 @@ package one.mixin.android.ui.common
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.MixinDialogFragment
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
+import com.uber.autodispose.android.lifecycle.scope
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.ui.url.UrlInterpreterActivity
@@ -15,7 +16,7 @@ import javax.inject.Inject
 abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectable {
 
     protected lateinit var contentView: View
-    protected val scopeProvider: AndroidLifecycleScopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+    protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
