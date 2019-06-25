@@ -639,4 +639,9 @@ internal constructor(
             return botsString.deserialize<Array<String>>()?.toList()
         } ?: return null
     }
+
+    suspend fun findLastMessage(conversationId: String) = conversationRepository.findLastMessage(conversationId)
+
+    suspend fun findUnreadMessageByMessageId(conversationId: String, userId: String, messageId: String) =
+        conversationRepository.findUnreadMessageByMessageId(conversationId, userId, messageId)
 }

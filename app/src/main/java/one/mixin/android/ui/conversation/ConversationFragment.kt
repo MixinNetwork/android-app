@@ -620,7 +620,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
     }
 
+    private var lastReadMessage: String? = null
     override fun onPause() {
+        chatViewModel.viewModelScope.launch {
+            lastReadMessage = chatViewModel.findLastMessage(conversationId)
+        }
         deleteDialog?.dismiss()
         super.onPause()
         paused = true
@@ -1019,6 +1023,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     if (isBottom && unreadCount > 20) {
                         isBottom = false
                         showAlert()
+                    }
+                } else if (lastReadMessage != null) {
+                    chatViewModel.viewModelScope.launch {
+                        lastReadMessage?.let { id ->
+                            val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(conversationId, sender.userId, id)
+                            if (unreadMsgId != null) {
+                                Timber.d("1 $lastReadMessage")
+                                Timber.d("2 $unreadMsgId")
+                                chatAdapter.unreadMsgId = unreadMsgId
+                                lastReadMessage = null
+                            }
+                        }
                     }
                 }
                 if (list.size > 0) {
