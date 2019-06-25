@@ -1011,8 +1011,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         lastReadMessage?.let { id ->
                             val unreadMsgId = chatViewModel.findUnreadMessageByMessageId(conversationId, sender.userId, id)
                             if (unreadMsgId != null) {
-                                Timber.d("1 $lastReadMessage")
-                                Timber.d("2 $unreadMsgId")
                                 chatAdapter.unreadMsgId = unreadMsgId
                                 lastReadMessage = null
                             }
