@@ -597,7 +597,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             paused = false
             chat_rv.adapter?.notifyDataSetChanged()
         }
-        chatAdapter.listen(stopScope)
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDisposable(stopScope)
@@ -732,6 +731,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chat_rv.visibility = INVISIBLE
         if (chat_rv.adapter == null) {
             chat_rv.adapter = chatAdapter
+            chatAdapter.listen(destroyScope)
         }
         chat_control.callback = chatControlCallback
         chat_control.activity = requireActivity()
