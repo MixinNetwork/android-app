@@ -130,3 +130,8 @@ fun MessageItem.canRecall(): Boolean {
 }
 
 fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
+
+fun MessageItem.toMessage() = Message(messageId, conversationId, userId, type, content, mediaUrl, mediaMimeType, mediaSize,
+    mediaDuration, mediaWidth, mediaHeight, null, thumbImage, null, null, mediaStatus, status,
+    createdAt, actionName, participantUserId, snapshotId, hyperlink = null, name = mediaName, albumId = null, stickerId = stickerId,
+    sharedUserId = sharedUserId, mediaWaveform = mediaWaveform, mediaMineType = null, quoteMessageId = quoteId, quoteContent = quoteContent)

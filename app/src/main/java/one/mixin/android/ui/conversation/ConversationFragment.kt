@@ -61,6 +61,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.GroupEvent
+import one.mixin.android.event.ProgressEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
@@ -373,7 +374,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                         .show()
                     AudioPlayer.get().isPlay(messageItem.messageId) -> AudioPlayer.get().pause()
-                    else -> AudioPlayer.get().play(messageItem)
+                    else -> {
+                        RxBus.listen(ProgressEvent::class.java)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDisposable(destroyScope)
+                            .subscribe {
+                                if (it.progress == -1f || it.status == STATUS_PLAY) {
+                                    chatViewModel.checkNextAudioMessageAvailable(it.id)
+                                }
+                            }
+                        AudioPlayer.get().play(messageItem)
+                    }
                 }
             }
 

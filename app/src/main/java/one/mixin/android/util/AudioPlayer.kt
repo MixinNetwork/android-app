@@ -169,10 +169,10 @@ class AudioPlayer private constructor() {
 
     private fun checkNext() {
         messageItem?.let { item ->
-            GlobalScope.launch {
+            GlobalScope.launch(Dispatchers.IO) {
                 val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
                     .messageDao()
-                    .findNextMessage(item.conversationId, item.createdAt, item.messageId) ?: return@launch
+                    .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId) ?: return@launch
                 if (nextMessage.userId != item.userId || !nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
 
                 withContext(Dispatchers.Main) {
