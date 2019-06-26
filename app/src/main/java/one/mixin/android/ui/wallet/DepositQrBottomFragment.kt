@@ -91,6 +91,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
                 .subscribe({ granted ->
                     if (granted) {
                         lifecycleScope.launch(Dispatchers.IO) {
+                            if (!isAdded) return@launch
                             contentView.content_ll.capture(requireContext())
                         }
                         requireContext().toast(R.string.save_success)

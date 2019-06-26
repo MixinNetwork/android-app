@@ -106,6 +106,8 @@ class StickerAddFragment : BaseFragment() {
     }
 
     private fun loadImage() = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         val w = withContext(Dispatchers.IO) {
             try {
                 val byteArray = Glide.with(MixinApplication.appContext)
@@ -136,6 +138,8 @@ class StickerAddFragment : BaseFragment() {
     }
 
     private fun addSticker() = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         val request = try {
             val uri = url.toUri()
             val mimeType = getMimeType(uri)

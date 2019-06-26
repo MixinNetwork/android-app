@@ -135,6 +135,8 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 .subscribe({ granted ->
                     if (granted) {
                         lifecycleScope.launch(Dispatchers.IO) {
+                            if (!isAdded) return@launch
+
                             contentView.bottom_ll.capture(requireContext())
                         }
                         context?.toast(R.string.save_success)

@@ -133,6 +133,8 @@ class SearchMessageFragment : BaseFragment() {
         }
 
         lifecycleScope.launch {
+            if (!isAdded) return@launch
+
             observer?.let {
                 curLiveData?.removeObserver(it)
             }

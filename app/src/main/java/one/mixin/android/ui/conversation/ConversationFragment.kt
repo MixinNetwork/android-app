@@ -450,6 +450,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onMessageClick(messageId: String?) {
                 messageId?.let {
                     lifecycleScope.launch {
+                        if (!isAdded) return@launch
+
                         val index = chatViewModel.findMessageIndex(conversationId, it)
                         if (index == 0) {
                             toast(R.string.error_not_found)
@@ -617,6 +619,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var lastReadMessage: String? = null
     override fun onPause() {
         lifecycleScope.launch {
+            if (!isAdded) return@launch
             lastReadMessage = chatViewModel.findLastMessage(conversationId)
         }
         deleteDialog?.dismiss()
@@ -906,6 +909,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun addSticker(m: MessageItem) = lifecycleScope.launch(Dispatchers.IO) {
+        if (!isAdded) return@launch
+
         val request = StickerAddRequest(stickerId = m.stickerId)
         val r = try {
             chatViewModel.addStickerAsync(request).await()
@@ -1031,6 +1036,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var unreadCount = 0
     private fun bindData() {
         lifecycleScope.launch {
+            if (!isAdded) return@launch
+
             unreadCount = if (!messageId.isNullOrEmpty()) {
                 chatViewModel.findMessageIndex(conversationId, messageId!!)
             } else {
@@ -1331,6 +1338,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         if (user.isBot()) {
             lifecycleScope.launch {
+                if (!isAdded) return@launch
+
                 app = chatViewModel.findAppById(user.appId!!)
                 if (app != null && app!!.creatorId == Session.getAccountId()) {
                     initMenuLayout(true)

@@ -207,6 +207,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
             if (result != null) {
                 alreadyDetected = true
                 lifecycleScope.launch(Dispatchers.Main) {
+                    if (!isAdded) return@launch
                     handleAnalysis(result)
                 }
             }

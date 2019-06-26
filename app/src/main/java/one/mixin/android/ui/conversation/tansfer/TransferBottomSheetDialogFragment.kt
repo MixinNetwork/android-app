@@ -95,6 +95,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.asset_icon.bg.loadImage(t.asset.iconUrl, R.drawable.ic_avatar_place_holder)
         lifecycleScope.launch(Dispatchers.IO) {
+            if (!isAdded) return@launch
+
             bottomViewModel.simpleAssetItem(t.asset.assetId)?.let {
                 withContext(Dispatchers.Main) {
                     contentView.asset_icon.badge.loadImage(it.chainIconUrl, R.drawable.ic_avatar_place_holder)

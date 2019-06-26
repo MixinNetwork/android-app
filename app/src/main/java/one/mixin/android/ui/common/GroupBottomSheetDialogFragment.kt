@@ -156,6 +156,8 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     @SuppressLint("SetTextI18n")
     private fun initParticipant() = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         var participantCount = 0
         withContext(Dispatchers.IO) {
             me = bottomViewModel.findParticipantByIds(conversationId, Session.getAccountId()!!)
