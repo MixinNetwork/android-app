@@ -123,6 +123,10 @@ class AudioPlayer private constructor() {
         return status == STATUS_PLAY && this.id == id
     }
 
+    fun isEnd(): Boolean {
+        return status == STATUS_PAUSE || status == STATUS_ERROR
+    }
+
     fun isLoaded(id: String): Boolean {
         return this.id == id && status != STATUS_ERROR
     }
