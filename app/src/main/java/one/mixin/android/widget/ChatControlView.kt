@@ -720,6 +720,7 @@ class ChatControlView : FrameLayout {
                         doOnEnd { locked = true }
                     }.start()
                     chat_slide.toCancel()
+                    callback.onRecordLocked()
                     return@OnTouchListener false
                 }
 
@@ -860,5 +861,6 @@ class ChatControlView : FrameLayout {
         fun onGalleryClick()
         fun onDragChatControl(dis: Float)
         fun onReleaseChatControl(fling: Int)
+        fun onRecordLocked()
     }
 }

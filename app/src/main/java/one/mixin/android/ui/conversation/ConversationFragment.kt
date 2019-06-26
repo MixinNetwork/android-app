@@ -1889,5 +1889,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onReleaseChatControl(fling: Int) {
             releaseChatControl(fling)
         }
+
+        override fun onRecordLocked() {
+            // TODO
+        }
     }
 }
