@@ -1855,10 +1855,24 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onRecordEnd() {
             OpusAudioRecorder.get().stopRecording(true)
+            if (!isCling && aodWakeLock.isHeld) {
+                aodWakeLock.release()
+            }
         }
 
         override fun onRecordCancel() {
             OpusAudioRecorder.get().stopRecording(false)
+            if (!isCling && aodWakeLock.isHeld) {
+                aodWakeLock.release()
+            }
+        }
+
+        override fun onRecordLocked() {
+            if (!isCling) {
+                if (!aodWakeLock.isHeld) {
+                    aodWakeLock.acquire()
+                }
+            }
         }
 
         override fun onCalling() {
@@ -1888,10 +1902,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         override fun onReleaseChatControl(fling: Int) {
             releaseChatControl(fling)
-        }
-
-        override fun onRecordLocked() {
-            // TODO
         }
     }
 }
