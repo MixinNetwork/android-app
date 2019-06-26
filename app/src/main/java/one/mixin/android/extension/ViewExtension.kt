@@ -10,6 +10,7 @@ import android.graphics.Outline
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Property
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -250,4 +251,16 @@ fun View.bounce() {
             }
         })
     spring.endValue = 1.0
+}
+
+fun View.IntProperty(name: String, getAction: (View) -> Int, setAction: (View, Int) -> Unit): Property<View, Int> {
+    return object : Property<View, Int>(Int::class.java, name) {
+        override fun get(obj: View): Int {
+            return getAction(obj)
+        }
+
+        override fun set(obj: View, value: Int) {
+            return setAction(obj, value)
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package one.mixin.android.util.video
 
+import android.annotation.SuppressLint
 import android.net.Uri
 import android.view.TextureView
 import com.google.android.exoplayer2.C
@@ -14,12 +15,14 @@ import com.google.android.exoplayer2.source.BehindLiveWindowException
 import com.google.android.exoplayer2.source.MediaSource
 import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.source.TrackGroupArray
+import com.google.android.exoplayer2.source.hls.HlsMediaSource
 import com.google.android.exoplayer2.trackselection.AdaptiveTrackSelection
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
 import com.google.android.exoplayer2.upstream.DataSource
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
 import okhttp3.OkHttpClient
@@ -124,9 +127,10 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         player.prepare(mediaSource)
     }
 
-    fun loadAudio(uri: Uri) {
-        val mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
-            .createMediaSource(uri)
+    fun loadHlsVideo(url: String) {
+        val dataSourceFactory = DefaultDataSourceFactory(MixinApplication.appContext, BANDWIDTH_METER,
+            DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), BANDWIDTH_METER))
+        val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
 
@@ -202,7 +206,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         onVideoPlayerListener?.onRenderedFirstFrame()
     }
 
-    fun setOnVideoPlayerListener(onVideoPlayerListener: OnVideoPlayerListener) {
+    fun setOnVideoPlayerListener(onVideoPlayerListener: OnVideoPlayerListener?) {
         this.onVideoPlayerListener = onVideoPlayerListener
     }
 
@@ -259,6 +263,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     companion object {
+        @SuppressLint("StaticFieldLeak")
         private val BANDWIDTH_METER = DefaultBandwidthMeter.Builder(MixinApplication.appContext).build()
 
         private fun isBehindLiveWindow(e: ExoPlaybackException): Boolean {

@@ -4,11 +4,20 @@
              android:layout_width="match_parent"
              android:layout_height="match_parent">
 
-    <TextureView
+
+    <one.mixin.android.widget.AspectRatioFrameLayout
+        android:id="@+id/video_aspect_ratio"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:clipChildren="false"
+        android:clipToPadding="false">
+
+        <TextureView
             android:id="@+id/video_texture"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"/>
+            android:layout_height="match_parent" />
+    </one.mixin.android.widget.AspectRatioFrameLayout>
 
     <ImageView
             android:id="@+id/preview_iv"
@@ -73,6 +82,16 @@
             android:layout_marginStart="8dp"
             android:padding="8dp"
             android:src="@drawable/ic_close_white_24dp"
+            tools:ignore="ContentDescription"
+            android:visibility="invisible"/>
+
+    <ImageView
+            android:id="@+id/pip_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_outinline"
             tools:ignore="ContentDescription"
             android:visibility="invisible"/>
 

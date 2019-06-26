@@ -5,7 +5,9 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.ActivityOptions
 import android.content.ContentResolver
+import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.graphics.Color
 import android.graphics.SurfaceTexture
@@ -15,6 +17,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.view.TextureView
 import android.view.View
 import android.view.View.INVISIBLE
@@ -29,6 +32,7 @@ import android.view.WindowManager
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
@@ -44,6 +48,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
+import com.demo.systemuidemo.SystemUIManager
 import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.firebase.ml.vision.FirebaseVision
@@ -78,13 +83,14 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.supportsPie
 import one.mixin.android.extension.toast
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.url.openUrl
@@ -104,8 +110,10 @@ import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
+import java.util.Random
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
@@ -123,18 +131,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private lateinit var pagerAdapter: MediaAdapter
     private var disposable: Disposable? = null
 
-    private val mixinPlayer: MixinPlayer by lazy {
-        MixinPlayer().apply {
-            setOnVideoPlayerListener(videoListener)
-        }
-    }
-
     @Inject
     lateinit var conversationRepository: ConversationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
         postponeEnterTransition()
         super.onCreate(savedInstanceState)
+        VideoPlayer.player().setOnVideoPlayerListener(videoListener)
         belowOreo {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
@@ -177,16 +180,28 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 SYSTEM_UI_FLAG_FULLSCREEN or SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
                     SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             }
+        supportsPie {
+            val lp = window.attributes
+            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            window.attributes = lp
+        }
+        SystemUIManager.setSystemUiColor(window, Color.BLACK)
+        SystemUIManager.lightUI(window, false)
     }
 
     override fun onPause() {
         super.onPause()
-        pause()
+        if (!pipVideoView.shown) {
+            pause()
+        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        mixinPlayer.release()
+        VideoPlayer.player().setOnVideoPlayerListener(null)
+        if (!pipVideoView.shown) {
+            VideoPlayer.destroy()
+        }
     }
 
     private fun showBottom() {
@@ -204,12 +219,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                             pagerAdapter.list?.let { list ->
                                 val item = list[view_pager.currentItem]
                                 val file = File(item.mediaUrl?.toUri()?.getFilePath())
-                                val outFile = if (item.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
-                                    this@DragMediaActivity.getPublicPicturePath().createGifTemp(false)
-                                } else if (item.mediaMimeType.equals(MimeType.PNG.toString())) {
-                                    this@DragMediaActivity.getPublicPicturePath().createPngTemp(false)
-                                } else {
-                                    this@DragMediaActivity.getPublicPicturePath().createImageTemp(noMedia = false)
+                                val outFile = when {
+                                    item.mediaMimeType.equals(MimeType.GIF.toString(), true) -> this@DragMediaActivity.getPublicPicturePath().createGifTemp(false)
+                                    item.mediaMimeType.equals(MimeType.PNG.toString()) -> this@DragMediaActivity.getPublicPicturePath().createPngTemp(false)
+                                    else -> this@DragMediaActivity.getPublicPicturePath().createImageTemp(noMedia = false)
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
                                 sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
@@ -328,26 +341,28 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun createVideoView(container: ViewGroup, position: Int, messageItem: MessageItem): View {
             val view = View.inflate(container.context, R.layout.item_video_layout, null)
             view.close_iv.setOnClickListener { finishAfterTransition() }
+            view.pip_iv.setOnClickListener {
+                switchToPip()
+            }
             view.share_iv.setOnClickListener { shareVideo() }
             view.close_iv.post {
                 val statusBarHeight = statusBarHeight().toFloat()
                 view.close_iv.translationY = statusBarHeight
                 view.share_iv.translationY = statusBarHeight
+                view.pip_iv.translationY = statusBarHeight
             }
             view.video_texture.surfaceTextureListener = this
             setSize(messageItem, view, false)
             view.post { setSize(messageItem, view, true) }
             view.preview_iv.visibility = VISIBLE
 
-            view.preview_iv.loadVideo(messageItem.mediaUrl ?: "", R.drawable.image_holder)
-
             view.seek_bar.progress = 0
             view.duration_tv.text = 0L.formatMillis()
             view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
 
             if (position == index) {
-                ViewCompat.setTransitionName(view.video_texture, "transition")
-                setStartPostTransition(view.video_texture)
+                ViewCompat.setTransitionName(view.preview_iv, "transition")
+                setStartPostTransition(view.preview_iv)
             }
 
             if (position != view_pager.currentItem) {
@@ -375,6 +390,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     fadeIn(view)
                 }
             }
+
             view.video_texture.setOnClickListener {
                 if (view.controller.isVisible) {
                     fadeOut(view)
@@ -386,19 +402,19 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             var isPlaying = false
             view.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                    isPlaying = mixinPlayer.isPlaying()
-                    mixinPlayer.pause()
+                    isPlaying = VideoPlayer.player().isPlaying()
+                    VideoPlayer.player().pause()
                 }
 
                 override fun onStopTrackingTouch(seekBar: SeekBar?) {
                     if (isPlaying) {
-                        mixinPlayer.start()
+                        VideoPlayer.player().start()
                     }
                 }
 
                 override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                     if (fromUser) {
-                        mixinPlayer.seekTo(progress * mixinPlayer.duration() / 200)
+                        VideoPlayer.player().seekTo(progress * VideoPlayer.player().duration() / 200)
                     }
                 }
             })
@@ -409,31 +425,31 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun setSize(messageItem: MessageItem, view: View, post: Boolean) {
             val w = if (post) container.width else container.measuredWidth
             val h = if (post) container.height else container.measuredHeight
-            val textureParams = view.video_texture.layoutParams
-            val previewParams = view.video_texture.layoutParams
+//            val textureParams = view.video_texture.layoutParams
+            val previewParams = view.preview_iv.layoutParams
             val scaleW = w / messageItem.mediaWidth!!.toFloat()
             val scaleH = h / messageItem.mediaHeight!!.toFloat()
             when {
                 scaleW > scaleH -> {
-                    textureParams.height = h
+//                    textureParams.height = h
                     previewParams.height = h
-                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
+//                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
                     previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
                 }
                 scaleW < scaleH -> {
-                    textureParams.width = w
+//                    textureParams.width = w
                     previewParams.width = w
-                    textureParams.height = (messageItem.mediaHeight * scaleW).toInt()
+//                    textureParams.height = (messageItem.mediaHeight * scaleW).toInt()
                     previewParams.height = (messageItem.mediaHeight * scaleW).toInt()
                 }
                 else -> {
-                    textureParams.height = h
+//                    textureParams.height = h
                     previewParams.height = h
-                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
+//                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
                     previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
                 }
             }
-            view.video_texture.layoutParams = textureParams
+//            view.video_texture.layoutParams = textureParams
             view.preview_iv.layoutParams = previewParams
         }
 
@@ -550,6 +566,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
         view.controller.fadeIn()
         view.close_iv.fadeIn()
+        view.pip_iv.fadeIn()
         view.share_iv.fadeIn()
     }
 
@@ -561,6 +578,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
         view.controller.fadeOut()
         view.close_iv.fadeOut()
+        view.pip_iv.fadeOut()
         view.share_iv.fadeOut()
     }
 
@@ -568,7 +586,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         findViewPagerChildByTag {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
-                mixinPlayer.setVideoTextureView(parentView.getChildAt(0) as TextureView)
+                VideoPlayer.player().setVideoTextureView(parentView.video_texture)
             }
         }
     }
@@ -670,12 +688,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDisposable(stopScope)
                         .subscribe {
-                            if (mixinPlayer.duration() != 0) {
-                                parentView.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
-                                    mixinPlayer.duration()).toInt()
-                                parentView.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
+                            if (VideoPlayer.player().duration() != 0) {
+                                parentView.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
+                                    VideoPlayer.player().duration()).toInt()
+                                parentView.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
                                 if (parentView.remain_tv.text.isEmpty()) { // from google photo
-                                    parentView.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
+                                    parentView.remain_tv.text = VideoPlayer.player().duration().toLong().formatMillis()
                                 }
                             }
                         }
@@ -683,28 +701,33 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         }
 
-        mixinPlayer.start()
+        VideoPlayer.player().start()
     }
 
     private fun pause() {
         setPlayViewStatus(STATUS_PAUSING)
         disposable?.dispose()
-        mixinPlayer.pause()
+        VideoPlayer.player().pause()
     }
 
     private fun stop() {
         setPlayViewStatus(STATUS_IDLE)
         handleLast()
         disposable?.dispose()
-        mixinPlayer.stop()
+        VideoPlayer.player().stop()
     }
 
     private inline fun load(pos: Int, action: () -> Unit = {}) {
         val messageItem = pagerAdapter.getItem(pos)
         if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name ||
             messageItem.type == MessageCategory.PLAIN_VIDEO.name) {
-            messageItem.mediaUrl?.let {
-                mixinPlayer.loadVideo(it)
+//            messageItem.mediaUrl?.let {
+//                VideoPlayer.player().loadVideo(it)
+//            }
+            resources.getStringArray(R.array.live_test).apply {
+                get(Random().nextInt(size)).let {
+                    VideoPlayer.player().loadHlsVideo(it)
+                }
             }
             setTextureView()
             action()
@@ -718,7 +741,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
 
         override fun onLoadingChanged(isLoading: Boolean) {
-            if (mixinPlayer.isPlaying() && isLoading && mixinPlayer.player.playbackState == STATE_BUFFERING) {
+            if (VideoPlayer.player().isPlaying() && isLoading && VideoPlayer.player().player.playbackState == STATE_BUFFERING) {
                 setPlayViewStatus(STATE_BUFFERING)
             }
         }
@@ -726,6 +749,22 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
             if (playbackState == Player.STATE_ENDED) {
                 stop()
+            }
+        }
+
+        override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
+            var nWidth = width
+            var nHeight = height
+            if (unappliedRotationDegrees == 90 || unappliedRotationDegrees == 270) {
+                nWidth = height
+                nHeight = width
+            }
+            val ratio = (if (nHeight == 0) 1 else nWidth * pixelWidthHeightRatio / nHeight) as Float
+            findViewPagerChildByTag {
+                val parentView = it.getChildAt(0)
+                if (parentView is FrameLayout) {
+                    parentView.video_aspect_ratio.setAspectRatio(ratio, unappliedRotationDegrees)
+                }
             }
         }
     }
@@ -745,6 +784,42 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
+    private fun switchToPip() {
+        findViewPagerChildByTag {
+            val windowView = it.getChildAt(0)
+            val changedTextureView = pipVideoView.show(
+                this, windowView.video_aspect_ratio.aspectRatio,
+                windowView.video_aspect_ratio.videoRotation,
+                conversationId, messageId)
+            VideoPlayer.player().setVideoTextureView(changedTextureView)
+            super.finish()
+        }
+    }
+
+    private val pipVideoView by lazy {
+        PipVideoView()
+    }
+
+    private fun checkInlinePermissions(): Boolean {
+        if (Settings.canDrawOverlays(this)) {
+            return true
+        } else {
+            this.let { activity ->
+                AlertDialog.Builder(activity)
+                    .setTitle(R.string.app_name)
+                    .setMessage(R.string.live_permission)
+                    .setPositiveButton(R.string.live_setting) { _, _ ->
+                        try {
+                            activity.startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + activity.packageName)))
+                        } catch (e: Exception) {
+                            Timber.e(e)
+                        }
+                    }.show()
+            }
+        }
+        return false
+    }
+
     companion object {
         private const val MESSAGE_ID = "id"
         private const val CONVERSATION_ID = "conversation_id"
@@ -760,6 +835,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 activity.startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(activity, imageView,
                     "transition").toBundle())
             }
+        }
+
+        fun show(context: Context, conversationId: String, messageId: String) {
+            val intent = Intent(context, DragMediaActivity::class.java).apply {
+                addFlags(FLAG_ACTIVITY_NEW_TASK)
+                putExtra(CONVERSATION_ID, conversationId)
+                putExtra(MESSAGE_ID, messageId)
+            }
+            context.startActivity(intent)
         }
     }
 }

@@ -633,4 +633,7 @@
     <string name="shortcut_wallet_label">钱包</string>
     <string name="shortcut_scan_label">扫码</string>
     <string name="divide">、</string>
+    <!-- live -->
+    <string name="live_permission">Mixin 需要使用出现在其它应用上的权限以在画中画模式中播放视频。</string>
+    <string name="live_setting">设置</string>
 </resources>
