@@ -5,7 +5,6 @@ import android.app.NotificationManager
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.net.Uri
-import androidx.core.net.toUri
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -39,6 +38,7 @@ import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getImageSize
 import one.mixin.android.extension.getMimeType
+import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.mainThread
@@ -326,7 +326,7 @@ internal constructor(
                                     return@let 0
                                 }
                             }
-                            file.toUri().toString()
+                            MixinApplication.get().getUriForFile(file).toString()
                         }
 
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
