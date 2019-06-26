@@ -7,9 +7,14 @@ import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.ClipData
 import android.content.Intent
+import android.hardware.Sensor
+import android.hardware.SensorEvent
+import android.hardware.SensorEventListener
+import android.hardware.SensorManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.os.SystemClock
 import android.provider.Settings
 import android.view.LayoutInflater
@@ -20,6 +25,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.view.children
 import androidx.core.view.inputmethod.InputContentInfoCompat
@@ -153,8 +159,9 @@ import java.io.File
 import javax.inject.Inject
 import kotlin.math.abs
 
+@SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
-    OpusAudioRecorder.Callback {
+    OpusAudioRecorder.Callback, SensorEventListener {
 
     companion object {
         const val TAG = "ConversationFragment"
@@ -552,6 +559,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var isFirstLoad = true
     private var isBottom = true
 
+    private val sensorManager: SensorManager by lazy {
+        requireContext().getSystemService<SensorManager>()!!
+    }
+
+    private val powerManager: PowerManager by lazy {
+        requireContext().getSystemService<PowerManager>()!!
+    }
+
+    private val wakeLock by lazy {
+        powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recipient = arguments!!.getParcelable<User?>(RECIPIENT)
@@ -579,6 +598,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onResume() {
         super.onResume()
+        sensorManager.registerListener(this, sensorManager?.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_UI)
         input_layout.addOnKeyboardShownListener(this)
         input_layout.addOnKeyboardHiddenListener(this)
         MixinApplication.conversationId = conversationId
@@ -616,6 +636,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private var lastReadMessage: String? = null
     override fun onPause() {
+        sensorManager.unregisterListener(this)
         lifecycleScope.launch {
             lastReadMessage = chatViewModel.findLastMessage(conversationId)
         }
@@ -625,6 +646,22 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         input_layout.removeOnKeyboardShownListener(this)
         input_layout.removeOnKeyboardHiddenListener(this)
         MixinApplication.conversationId = null
+    }
+
+    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+    }
+
+    override fun onSensorChanged(event: SensorEvent?) {
+        val values = event?.values ?: return
+        if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
+            if (values[0] == 0.0f) {
+                if (!wakeLock.isHeld) {
+                    wakeLock.acquire(10 * 60 * 1000L)
+                }
+            } else if (wakeLock.isHeld) {
+                wakeLock.release()
+            }
+        }
     }
 
     override fun onStop() {
