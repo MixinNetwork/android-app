@@ -459,7 +459,7 @@
     <string name="alert_key_contact_sticker_message">send you a sticker</string>
     <string name="alert_key_contact_contact_message">shared a contact</string>
     <string name="alert_key_contact_audio_call_message">ask you a audio call</string>
-    <string name="unread">new messages</string>
+    <string name="unread">New Messages</string>
     <string name="stranger_from">The sender is not in your contacts</string>
     <string name="notification_group">Group Notification</string>
     <string name="notification_message">Message Notification</string>
