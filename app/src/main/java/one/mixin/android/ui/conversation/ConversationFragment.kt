@@ -145,6 +145,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.widget.ChatControlView
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
@@ -162,7 +163,7 @@ import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
-    OpusAudioRecorder.Callback, SensorEventListener {
+    OpusAudioRecorder.Callback, SensorEventListener, AudioPlayer.StatusListener {
 
     companion object {
         const val TAG = "ConversationFragment"
@@ -571,6 +572,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private val wakeLock by lazy {
         powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
     }
+    private val aodWakeLock by lazy {
+        powerManager.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE, "mixin")
+    }
 
     private val audioManager: AudioManager by lazy {
         requireContext().getSystemService<AudioManager>()!!
@@ -596,6 +600,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         } else {
             initView()
         }
+        AudioPlayer.get().setStatusListener(this)
     }
 
     private var showGroupNotification = false
@@ -654,12 +659,28 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         MixinApplication.conversationId = null
     }
 
+    @SuppressLint("WakelockTimeout")
+    override fun onStatusChange(status: Int) {
+        if (isCling) return
+        if (status == STATUS_PLAY) {
+            if (!aodWakeLock.isHeld) {
+                aodWakeLock.acquire()
+            }
+        } else {
+            if (aodWakeLock.isHeld) {
+                aodWakeLock.release()
+            }
+        }
+    }
+
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
     }
 
+    private var isCling: Boolean = false
     override fun onSensorChanged(event: SensorEvent?) {
         val values = event?.values ?: return
-        if (AudioPlayer.isEnd() || audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothA2dpOn) {
+        isCling = values[0] == 0.0f
+        if (AudioPlayer.isEnd() || audioManager.isWiredHeadsetOn || audioManager.isBluetoothScoOn || audioManager.isBluetoothA2dpOn) {
             if (wakeLock.isHeld) {
                 wakeLock.release()
                 audioManager.mode = AudioManager.MODE_NORMAL
@@ -667,7 +688,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             return
         }
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
-            if (values[0] == 0.0f) {
+            if (isCling) {
                 if (!wakeLock.isHeld) {
                     wakeLock.acquire(10 * 60 * 1000L)
                     audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
@@ -681,6 +702,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onStop() {
         markRead()
+        AudioPlayer.pause()
         val draftText = chat_control.chat_et.text
         if (draftText != null) {
             chatViewModel.saveDraft(conversationId, draftText.toString())
@@ -690,6 +712,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         if (chat_control?.isRecording == true) {
             chat_control?.cancelExternal()
+        }
+        if (wakeLock.isHeld) {
+            wakeLock.release()
+        }
+        if (aodWakeLock.isHeld) {
+            aodWakeLock.release()
         }
         super.onStop()
     }

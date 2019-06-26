@@ -95,6 +95,21 @@ class AudioPlayer private constructor() {
     private var id: String? = null
     private var messageItem: MessageItem? = null
     private var status = STATUS_PAUSE
+        set(value) {
+            if (field != value) {
+                field = value
+                statusListener?.onStatusChange(value)
+            }
+        }
+
+    interface StatusListener {
+        fun onStatusChange(status: Int)
+    }
+
+    private var statusListener: StatusListener? = null
+    fun setStatusListener(statusListener: StatusListener) {
+        this.statusListener = statusListener
+    }
 
     fun play(messageItem: MessageItem) {
         if (id != messageItem.messageId) {
