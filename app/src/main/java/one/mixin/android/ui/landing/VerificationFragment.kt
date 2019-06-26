@@ -221,6 +221,8 @@ class VerificationFragment : BaseFragment() {
     }
 
     private fun saveQrCode() = lifecycleScope.launch(Dispatchers.IO) {
+        if (!isAdded) return@launch
+
         val p = Point()
         val ctx = MixinApplication.appContext
         ctx.windowManager.defaultDisplay?.getSize(p)

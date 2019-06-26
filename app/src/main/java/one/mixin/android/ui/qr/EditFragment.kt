@@ -161,6 +161,8 @@ class EditFragment : CaptureVisionFragment() {
     }
 
     private fun scan() = lifecycleScope.launch(Dispatchers.IO) {
+        if (!isAdded) return@launch
+
         val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
         if (requireContext().isGooglePlayServicesAvailable()) {
             val visionImage = FirebaseVisionImage.fromBitmap(bitmap)
@@ -169,6 +171,7 @@ class EditFragment : CaptureVisionFragment() {
                     .addOnSuccessListener { result ->
                         result.firstOrNull()?.rawValue?.let {
                             lifecycleScope.launch {
+                                if (!isAdded) return@launch
                                 pseudoNotificationView.addContent(it)
                             }
                         }
@@ -188,6 +191,8 @@ class EditFragment : CaptureVisionFragment() {
     }
 
     private fun save() = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         val outFile = if (isVideo) {
             requireContext().getPublicPictyresPath().createVideoTemp("mp4", false)
         } else {

@@ -100,6 +100,8 @@ class StickerFragment : BaseFragment() {
                 })
             } else {
                 lifecycleScope.launch {
+                    if (!isAdded) return@launch
+
                     personalAlbumId = stickerViewModel.getPersonalAlbums()?.albumId
                     if (personalAlbumId == null) { // not add any personal sticker yet
                         stickerViewModel.observePersonalStickers()

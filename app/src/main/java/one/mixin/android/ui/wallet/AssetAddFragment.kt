@@ -135,6 +135,8 @@ class AssetAddFragment : BaseFragment() {
     private fun search(query: String) {
         currentSearch?.cancel()
         currentSearch = lifecycleScope.launch {
+            if (!isAdded) return@launch
+
             adapter.submitList(null)
             if (va.displayedChild != POS_PB) {
                 va.displayedChild = POS_PB

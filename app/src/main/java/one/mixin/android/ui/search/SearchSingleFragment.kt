@@ -1,6 +1,5 @@
 package one.mixin.android.ui.search
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.LayoutInflater
@@ -136,6 +135,8 @@ class SearchSingleFragment : BaseFragment() {
     }
 
     private fun onTextChanged(s: String) = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         val list: List<Parcelable>? = when (type) {
             TypeAsset -> searchViewModel.fuzzySearch<AssetItem>(s)
             TypeUser -> searchViewModel.fuzzySearch<User>(s)

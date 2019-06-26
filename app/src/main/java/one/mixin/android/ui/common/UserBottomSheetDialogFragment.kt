@@ -218,6 +218,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun updateUserInfo(user: User) = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         contentView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         contentView.name.text = user.fullName
         contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
@@ -377,6 +379,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun updateRelationship(relationship: String) = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         updateUserStatus(relationship)
         val request = RelationshipRequest(user.userId,
             if (relationship == UserRelationship.FRIEND.name)

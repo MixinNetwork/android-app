@@ -186,6 +186,8 @@ class SearchFragment : BaseFragment() {
     }
 
     private fun loadRecentUsedApps() = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         val apps = withContext(Dispatchers.IO) {
             var botsList = defaultSharedPreferences.getString(PREF_RECENT_USED_BOTS, null)?.split("=")
                 ?: return@withContext null
@@ -228,6 +230,8 @@ class SearchFragment : BaseFragment() {
 
     @Suppress("UNCHECKED_CAST")
     private fun fuzzySearch(keyword: String?) = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
         searchAdapter.setData(null, null, null)
         val assetItems = searchViewModel.fuzzySearch<AssetItem>(keyword) as List<AssetItem>?
         val users = searchViewModel.fuzzySearch<User>(keyword) as List<User>?

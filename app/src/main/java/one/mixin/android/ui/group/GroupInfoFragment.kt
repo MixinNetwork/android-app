@@ -219,6 +219,8 @@ class GroupInfoFragment : BaseFragment() {
                     GONE else VISIBLE
 
                 lifecycleScope.launch {
+                    if (!isAdded) return@launch
+
                     val participants = groupViewModel.getRealParticipants(conversationId)
                     participantsMap.clear()
                     for (item in it) {
