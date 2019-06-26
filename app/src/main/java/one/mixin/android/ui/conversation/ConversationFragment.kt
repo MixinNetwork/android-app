@@ -681,7 +681,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onStop() {
         markRead()
-        AudioPlayer.pause()
         val draftText = chat_control.chat_et.text
         if (draftText != null) {
             chatViewModel.saveDraft(conversationId, draftText.toString())
