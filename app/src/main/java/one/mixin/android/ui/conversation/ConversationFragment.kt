@@ -696,6 +696,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else if (wakeLock.isHeld) {
                 wakeLock.release()
                 audioManager.mode = AudioManager.MODE_NORMAL
+                AudioPlayer.pause()
             }
         }
     }
