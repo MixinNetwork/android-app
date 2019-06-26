@@ -11,6 +11,7 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -570,10 +571,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private val wakeLock by lazy {
         powerManager.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
     }
-    
+
+    private val audioManager: AudioManager by lazy {
+        requireContext().getSystemService<AudioManager>()!!
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         recipient = arguments!!.getParcelable<User?>(RECIPIENT)
+        audioManager.mode = AudioManager.MODE_NORMAL
     }
 
     override fun onCreateView(
@@ -657,9 +663,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             if (values[0] == 0.0f) {
                 if (!wakeLock.isHeld) {
                     wakeLock.acquire(10 * 60 * 1000L)
+                    audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
                 }
             } else if (wakeLock.isHeld) {
                 wakeLock.release()
+                audioManager.mode = AudioManager.MODE_NORMAL
             }
         }
     }
@@ -681,7 +689,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
         chat_rv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
@@ -690,7 +697,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         }
-        chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
+        if (isAdded) {
+            chatAdapter.unregisterAdapterDataObserver(chatAdapterDataObserver)
+        }
+        super.onDestroyView()
     }
 
     override fun onDestroy() {
