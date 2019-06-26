@@ -659,7 +659,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onSensorChanged(event: SensorEvent?) {
         val values = event?.values ?: return
-        if (AudioPlayer.get().isEnd() || audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothA2dpOn) {
+        if (AudioPlayer.isEnd() || audioManager.isWiredHeadsetOn || audioManager.isBluetoothA2dpOn || audioManager.isBluetoothA2dpOn) {
             if (wakeLock.isHeld) {
                 wakeLock.release()
                 audioManager.mode = AudioManager.MODE_NORMAL

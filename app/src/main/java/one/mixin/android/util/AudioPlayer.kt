@@ -51,6 +51,10 @@ class AudioPlayer private constructor() {
         fun pause() {
             instance?.pause()
         }
+
+        fun isEnd(): Boolean {
+            return instance?.status == STATUS_PAUSE || instance?.status == STATUS_ERROR
+        }
     }
 
     private var recallDisposable: Disposable? = null
@@ -121,10 +125,6 @@ class AudioPlayer private constructor() {
 
     fun isPlay(id: String): Boolean {
         return status == STATUS_PLAY && this.id == id
-    }
-
-    fun isEnd(): Boolean {
-        return status == STATUS_PAUSE || status == STATUS_ERROR
     }
 
     fun isLoaded(id: String): Boolean {
