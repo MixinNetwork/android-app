@@ -230,4 +230,7 @@ interface MessageDao : BaseDao<Message> {
 
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND messages.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1")
     suspend fun findUnreadMessageByMessageId(conversationId: String, userId: String, messageId: String): String?
+
+    @Query("SELECT count(id) FROM messages WHERE conversation_id =:conversationId AND user_id =:userId")
+    suspend fun isSilence(conversationId: String, userId: String): Int
 }

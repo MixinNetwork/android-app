@@ -1096,7 +1096,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.viewModelScope.launch {
                     chatAdapter.hasBottomView = !isGroup &&
                         recipient?.relationship == UserRelationship.STRANGER.name &&
-                        list.find { item -> item != null && item.userId == sender.userId } == null
+                        chatViewModel.isSilence(conversationId, sender.userId)
                 }
                 if (isFirstLoad && messageId == null && unreadCount > 0) {
                     chatAdapter.unreadMsgId = unreadMessageId
