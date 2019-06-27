@@ -51,6 +51,10 @@ class AudioPlayer private constructor() {
         fun pause() {
             instance?.pause()
         }
+
+        fun isEnd(): Boolean {
+            return instance?.status == STATUS_PAUSE || instance?.status == STATUS_ERROR
+        }
     }
 
     private var recallDisposable: Disposable? = null
@@ -91,6 +95,21 @@ class AudioPlayer private constructor() {
     private var id: String? = null
     private var messageItem: MessageItem? = null
     private var status = STATUS_PAUSE
+        set(value) {
+            if (field != value) {
+                field = value
+                statusListener?.onStatusChange(value)
+            }
+        }
+
+    interface StatusListener {
+        fun onStatusChange(status: Int)
+    }
+
+    private var statusListener: StatusListener? = null
+    fun setStatusListener(statusListener: StatusListener) {
+        this.statusListener = statusListener
+    }
 
     fun play(messageItem: MessageItem) {
         if (id != messageItem.messageId) {
@@ -150,10 +169,10 @@ class AudioPlayer private constructor() {
 
     private fun checkNext() {
         messageItem?.let { item ->
-            GlobalScope.launch {
+            GlobalScope.launch(Dispatchers.IO) {
                 val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
                     .messageDao()
-                    .findNextMessage(item.conversationId, item.createdAt, item.messageId) ?: return@launch
+                    .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId) ?: return@launch
                 if (nextMessage.userId != item.userId || !nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
 
                 withContext(Dispatchers.Main) {
