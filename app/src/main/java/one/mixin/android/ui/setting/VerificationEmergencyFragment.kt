@@ -100,8 +100,8 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
             successBlock = { response ->
                 val a = response.data as Account
                 Session.setHasEmergencyContact(a.hasEmergencyContact)
-                activity?.supportFragmentManager?.findFragmentByTag(PrivacyFragment.TAG)?.let {
-                    (it as? PrivacyFragment)?.setEmergencySet()
+                activity?.supportFragmentManager?.findFragmentByTag(EmergencyContactFragment.TAG)?.let {
+                    (it as? EmergencyContactFragment)?.setEmergencySet()
                 }
 
                 AlertDialog.Builder(requireContext())

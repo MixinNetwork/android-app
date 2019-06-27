@@ -8,7 +8,6 @@ import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.fragment_emergency_contact_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.highlightLinkText
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
@@ -49,11 +48,6 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
             }
             dismiss()
         }
-
-        val url = getString(R.string.setting_emergency_url)
-        val target = getString(R.string.setting_emergency)
-        val desc = getString(R.string.setting_emergency_desc)
-        contentView.desc_tv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
 
         contentView.scroll_view.post {
             val childHeight = contentView.scroll_content.height

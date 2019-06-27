@@ -26,5 +26,7 @@ internal constructor(
 
     suspend fun findUserById(userId: String) = userRepository.suspendFindUserById(userId)
 
+    suspend fun showEmergency(pin: String) = accountRepository.showEmergency(pin)
+
     fun upsertUser(u: User) = userRepository.upsert(u)
 }

@@ -389,7 +389,7 @@
     <string name="setting_authentications">Authentications</string>
     <string name="setting_emergency">Emergency Contact</string>
     <string name="setting_emergency_content">The emergency contact is designed to help you log in to your account if you are lost and can not retrieve your mobile number.</string>
-    <string name="setting_emergency_desc">Please be assured that even if your mobile phone number is lost, it is safe to find your wallet asset. Read our Emergency Contact to learn more. \n\n We won\'t spam your contact.</string>
+    <string name="setting_emergency_desc">When your lost your mobile number, please contact your emergency contact by phone or other means to get the Mixin ID and verification code. Read our Emergency Contact to learn more.</string>
     <string name="setting_emergency_bottom_current">View current emergency contact</string>
     <string name="setting_emergency_bottom_change">Change emergency contact</string>
     <string name="setting_emergency_bottom_create">Create emergency contact</string>
@@ -402,7 +402,7 @@
     <string name="setting_emergency_set">Set emergency contact</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
-    <string name="setting_emergency_enabled">Enabled</string>
+    <string name="setting_emergency_enable">Enable Emergency Contact</string>
     <string name="setting_deauthorize">Deauthorize</string>
     <string name="setting_backup">Backup</string>
     <string name="setting_clearing">Clearing…</string>

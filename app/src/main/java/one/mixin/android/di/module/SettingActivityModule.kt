@@ -8,6 +8,7 @@ import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.AboutFragment
 import one.mixin.android.ui.setting.AuthenticationsFragment
 import one.mixin.android.ui.setting.BackUpFragment
+import one.mixin.android.ui.setting.EmergencyContactFragment
 import one.mixin.android.ui.setting.EmergencyContactTipBottomSheetDialogFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.ui.setting.NotificationsFragment
@@ -19,6 +20,7 @@ import one.mixin.android.ui.setting.SettingDataStorageFragment
 import one.mixin.android.ui.setting.SettingFragment
 import one.mixin.android.ui.setting.SettingStorageFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment
+import one.mixin.android.ui.setting.ViewEmergencyContactFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 
 @Module
@@ -73,4 +75,10 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeEmergencyContactFragment(): EmergencyContactFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeViewEmergencyContactFragment(): ViewEmergencyContactFragment
 }
