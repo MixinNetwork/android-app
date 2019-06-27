@@ -644,4 +644,6 @@ internal constructor(
 
     suspend fun findUnreadMessageByMessageId(conversationId: String, userId: String, messageId: String) =
         conversationRepository.findUnreadMessageByMessageId(conversationId, userId, messageId)
+
+    suspend fun isSilence(conversationId: String,userId: String) = conversationRepository.isSilence(conversationId,userId) == 0
 }
