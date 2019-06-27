@@ -7,6 +7,7 @@ import one.mixin.android.ui.wallet.AssetAddFragment
 import one.mixin.android.ui.wallet.BiometricTimeFragment
 import one.mixin.android.ui.wallet.AssetKeyBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
+import one.mixin.android.ui.wallet.DepositTipBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.HiddenAssetsFragment
 import one.mixin.android.ui.wallet.OldPasswordFragment
 import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
@@ -64,4 +65,7 @@ abstract class WalletActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeAssetkeyBottomSheetDialogFragment(): AssetKeyBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeDepositTipBottomSheetDialogFragment(): DepositTipBottomSheetDialogFragment
 }

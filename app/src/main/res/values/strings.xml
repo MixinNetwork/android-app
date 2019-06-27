@@ -291,7 +291,6 @@
     <string name="transactions_type">Transaction Type</string>
     <string name="asset_no_hidden">No hidden assets</string>
     <string name="asset_none">N/A</string>
-    <string name="wallet_block_confirmations">Deposit will arrive after at least %1$d block confirmations.</string>
     <string name="wallet_setting">Wallet Setting</string>
     <string name="wallet_pay_with_biometrics">Pay with Biometrics</string>
     <string name="wallet_pin_open_biometrics">Please enter PIN to open Biometrics</string>
@@ -528,7 +527,14 @@
     <string name="gallery_empty_text">No media yet</string>
     <string name="account_name">Account Name</string>
     <string name="account_memo">Account Memo</string>
-    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your %1$s to Mixin, deposit will arrive after at least %2$d block confirmations.</string>
+    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your %1$s to Mixin.</string>
+    <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
+    <string name="bottom_deposit_title">%1$s Deposit</string>
+    <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, BLACK, OCT, KARMA, etc.</string>
+    <string name="bottom_deposit_tip_eth">This address supports all ERC 20 tokens, such as ETH, XIN, TUSD, HT, LOOM, DGD, LEO, etc.</string>
+    <string name="bottom_deposit_tip_btc">This address only supports BTC and Omni USDT.</string>
+    <string name="bottom_deposit_tip_trx">This address supports all TRC 10 tokens, such as TRX, BTT, etc.</string>
+    <string name="bottom_deposit_tip_common">This address only supports %1$s.</string>
     <!--sticker-->
     <string name="sticker_manager">Manager Sticker</string>
     <string name="sticker_add">Add Sticker</string>

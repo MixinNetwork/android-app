@@ -23,8 +23,7 @@ object Constants {
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_WRONG_TIME = "pref_wrong_time"
         const val PREF_RESTORE = "pref_restore"
-        const val PREF_SHOW_DEPOSIT_TIP = "pref_show_deposit_tip"
-        const val PREF_FIRST_SHOW_DEPOSIT = "pref_first_show_deposit"
+        const val PREF_SHOW_DEPOSIT_TIP_CHAIN_SET = "pref_show_deposit_tip_chain_set"
         const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
         const val PREF_RECALL_SHOW = "pref_recall_show"
 
@@ -72,6 +71,15 @@ object Constants {
         const val MOBILE_DEFAULT = 0x001
         const val WIFI_DEFAULT = 0x111
         const val ROAMING_DEFAULT = 0x000
+    }
+
+    object ChainId {
+        const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
+
+        const val BTC_CHAIN_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
+        const val ETH_CHAIN_ID = "43d61dcd-e413-450d-80b8-101d5e903357"
+        const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
+        const val TRX_CHAIN_ID = "9ed81392-757f-3d57-8304-5fd6f81ff357"
     }
 
     const val SLEEP_MILLIS: Long = 1000
