@@ -80,24 +80,12 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     }
     private val phoneNum by lazy { arguments!!.getString(ARGS_PHONE_NUM)!! }
 
-    private lateinit var recaptchaView: RecaptchaView
+    private var recaptchaView: RecaptchaView? = null
 
     private var hasEmergencyContact = false
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val parent = inflater.inflate(R.layout.fragment_verification, container, false) as ViewGroup
-        recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
-            override fun onStop() {
-                hideLoading()
-            }
-
-            override fun onPostToken(value: String) {
-                sendVerification(value)
-            }
-        })
-        parent.addView(recaptchaView.webView, MATCH_PARENT, MATCH_PARENT)
-        return parent
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        inflater.inflate(R.layout.fragment_verification, container, false) as ViewGroup
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -115,7 +103,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     }
 
     override fun onBackPressed(): Boolean {
-        if (recaptchaView.isVisible()) {
+        if (recaptchaView?.isVisible() == true) {
             hideLoading()
             return true
         }
@@ -218,7 +206,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
 
     override fun hideLoading() {
         super.hideLoading()
-        recaptchaView.webView.visibility = GONE
+        recaptchaView?.webView?.visibility = GONE
     }
 
     private fun sendVerification(gRecaptchaResponse: String? = null) {
@@ -232,7 +220,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
             .autoDispose(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
                 if (!r.isSuccess) {
                     if (r.errorCode == NEED_RECAPTCHA) {
-                        recaptchaView.loadRecaptcha()
+                        initAndLoadRecaptcha()
                     } else {
                         hideLoading()
                         ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -246,8 +234,22 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
             }, { t: Throwable ->
                 handleError(t)
                 verification_next_fab.visibility = GONE
-                recaptchaView.webView.visibility = GONE
+                recaptchaView?.webView?.visibility = GONE
             })
+    }
+
+    private fun initAndLoadRecaptcha() {
+        recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
+            override fun onStop() {
+                hideLoading()
+            }
+
+            override fun onPostToken(value: String) {
+                sendVerification(value)
+            }
+        })
+        (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+        recaptchaView?.loadRecaptcha()
     }
 
     private fun startCountDown() {

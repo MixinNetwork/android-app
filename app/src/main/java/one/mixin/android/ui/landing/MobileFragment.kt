@@ -69,23 +69,10 @@ class MobileFragment : BaseFragment() {
 
     private var pin: String? = null
 
-    private lateinit var recaptchaView: RecaptchaView
+    private var recaptchaView: RecaptchaView? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val parent = layoutInflater.inflate(R.layout.fragment_mobile, container, false) as ViewGroup
-        recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
-            override fun onStop() {
-                mobile_fab?.hide()
-                mobile_cover?.visibility = GONE
-            }
-
-            override fun onPostToken(value: String) {
-                requestSend(value)
-            }
-        })
-        parent.addView(recaptchaView.webView, MATCH_PARENT, MATCH_PARENT)
-        return parent
-    }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+        layoutInflater.inflate(R.layout.fragment_mobile, container, false) as ViewGroup
 
     @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -127,7 +114,7 @@ class MobileFragment : BaseFragment() {
     }
 
     override fun onBackPressed(): Boolean {
-        if (recaptchaView.isVisible()) {
+        if (recaptchaView?.isVisible() == true) {
             hideLoading()
             return true
         }
@@ -165,7 +152,7 @@ class MobileFragment : BaseFragment() {
             .autoDispose(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
                 if (!r.isSuccess) {
                     if (r.errorCode == NEED_RECAPTCHA) {
-                        recaptchaView.loadRecaptcha()
+                        initAndLoadRecaptcha()
                     } else {
                         hideLoading()
                         ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -184,10 +171,25 @@ class MobileFragment : BaseFragment() {
             })
     }
 
+    private fun initAndLoadRecaptcha() {
+        recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
+            override fun onStop() {
+                mobile_fab?.hide()
+                mobile_cover?.visibility = GONE
+            }
+
+            override fun onPostToken(value: String) {
+                requestSend(value)
+            }
+        })
+        (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+        recaptchaView?.loadRecaptcha()
+    }
+
     private fun hideLoading() {
         mobile_fab?.hide()
         mobile_cover?.visibility = GONE
-        recaptchaView.hide()
+        recaptchaView?.hide()
     }
 
     private fun handleEditView(str: String) {
