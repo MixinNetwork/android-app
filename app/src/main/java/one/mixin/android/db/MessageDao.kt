@@ -213,8 +213,14 @@ interface MessageDao : BaseDao<Message> {
     fun takeUnseen(userId: String, conversationId: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_MESSAGE_ITEM AND m.created_at >= :createdAt AND m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1")
-    fun findNextMessage(conversationId: String, createdAt: String, messageId: String): MessageItem?
+    @Query("$PREFIX_MESSAGE_ITEM AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO') AND m.created_at >= :createdAt AND " +
+        "m.rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1")
+    suspend fun findNextAudioMessageItem(conversationId: String, createdAt: String, messageId: String): MessageItem?
+
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @Query("SELECT * FROM messages WHERE conversation_id = :conversationId AND (category = 'SIGNAL_AUDIO' OR category = 'PLAIN_AUDIO') " +
+        "AND created_at >= :createdAt AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) LIMIT 1")
+    suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String): Message?
 
     @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND user_id !=:userId AND status = 'DELIVERED' ORDER BY created_at ASC LIMIT 1")
     suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String?

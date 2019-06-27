@@ -222,4 +222,7 @@ internal constructor(
         messageDao.findUnreadMessageByMessageId(conversationId, userId, messageId)
 
     suspend fun isSilence(conversationId: String, userId: String): Int = messageDao.isSilence(conversationId,userId)
+
+    suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String) =
+        messageDao.findNextAudioMessage(conversationId, createdAt, messageId)
 }

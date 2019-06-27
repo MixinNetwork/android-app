@@ -645,5 +645,17 @@ internal constructor(
     suspend fun findUnreadMessageByMessageId(conversationId: String, userId: String, messageId: String) =
         conversationRepository.findUnreadMessageByMessageId(conversationId, userId, messageId)
 
+
     suspend fun isSilence(conversationId: String,userId: String) = conversationRepository.isSilence(conversationId,userId) == 0
+
+    fun checkNextAudioMessageAvailable(currentMessageId: String) =
+        viewModelScope.launch(Dispatchers.IO) {
+            val currentMessage = conversationRepository.findMessageById(currentMessageId) ?: return@launch
+            val message = conversationRepository.findNextAudioMessage(
+                currentMessage.conversationId, currentMessage.createdAt, currentMessageId) ?: return@launch
+            if (message.mediaStatus != MediaStatus.DONE.name) {
+                jobManager.addJobInBackground(AttachmentDownloadJob(message))
+            }
+        }
+
 }
