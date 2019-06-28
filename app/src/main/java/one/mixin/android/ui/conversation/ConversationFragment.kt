@@ -88,6 +88,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
@@ -440,13 +441,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onBotClick(id: String) {
                 if (userJob?.isActive == true) return
                 userJob = chatViewModel.viewModelScope.launch {
-                    val response = chatViewModel.searchUserById(id)
-                    if (response.isSuccess && response.data != null) {
-                        UserBottomSheetDialogFragment.newInstance(response.data!!, conversationId).showNow(requireFragmentManager(),
-                        UserBottomSheetDialogFragment.TAG)
-                    } else {
+                    notNullElse(chatViewModel.searchUserById(id), { user ->
+                        UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(requireFragmentManager(),
+                            UserBottomSheetDialogFragment.TAG)
+                    }, {
                         toast(R.string.error_user_not_found)
-                    }
+                    })
                 }
             }
 

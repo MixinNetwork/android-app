@@ -141,5 +141,7 @@ constructor(
 
     fun searchGifs(query: String, limit: Int, offset: Int) = giphyService.searchGifs(query, limit, offset)
 
-    suspend fun searchUserById(query: String) = userService.searchUserById(query)
+    suspend fun searchUserByIdentityNumber(identityNumber: String) = userService.searchUserByIdentityNumber(identityNumber)
+
+    suspend fun findUserByIdentityNumber(identityNumber: String) = userDao.findUserByIdentityNumber(identityNumber)
 }

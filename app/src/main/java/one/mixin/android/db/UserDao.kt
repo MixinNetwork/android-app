@@ -70,4 +70,7 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL")
     fun findFriendsNotBot(): LiveData<List<User>>
+
+    @Query("SELECT * FROM users WHERE identity_number =:identityNumber LIMIT 1")
+    suspend fun findUserByIdentityNumber(identityNumber: String): User?
 }

@@ -18,6 +18,7 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
@@ -653,5 +654,13 @@ internal constructor(
             }
         }
 
-    suspend fun searchUserById(query:String) = accountRepository.searchUserById(query)
+    suspend fun searchUserById(identityNumber: String): User? {
+        val user: User? = accountRepository.findUserByIdentityNumber(identityNumber)
+        if (user != null) return user
+        val response = accountRepository.searchUserByIdentityNumber(identityNumber)
+        if (response.isSuccess && response.data != null) {
+            return response.data
+        }
+        return null
+    }
 }
