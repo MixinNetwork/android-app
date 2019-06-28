@@ -525,7 +525,7 @@ internal constructor(
                 } else {
                     when (item.type) {
                         ForwardCategory.CONTACT.name -> {
-                            sendContactMessage(item.sharedUserId!!, sender, item.sharedUserId, isPlainMessage)
+                            sendContactMessage(conversationId, sender, item.sharedUserId!!, isPlainMessage)
                         }
                         ForwardCategory.IMAGE.name -> {
                             sendImageMessage(conversationId, sender, Uri.parse(item.mediaUrl), isPlainMessage)
