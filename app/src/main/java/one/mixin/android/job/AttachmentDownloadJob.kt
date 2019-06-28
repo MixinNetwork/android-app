@@ -41,7 +41,7 @@ import java.util.concurrent.TimeUnit
 
 class AttachmentDownloadJob(private val message: Message, private val attachmentId: String? = null) :
     MixinJob(Params(PRIORITY_RECEIVE_MESSAGE).addTags(AttachmentDownloadJob.GROUP)
-    .groupBy("attachment_download").requireNetwork().persist(), message.id) {
+        .groupBy("attachment_download").requireNetwork().persist(), message.id) {
 
     private val TAG = AttachmentDownloadJob::class.java.simpleName
 
@@ -173,7 +173,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                 val dataFile = MixinApplication.get().getDocumentPath()
                     .createDocumentTemp(extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(dataFile.absolutePath, message.id)
+                messageDao.updateMediaMessageUrl(Uri.fromFile(dataFile).toString(), message.id)
                 messageDao.updateMediaSize(dataFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             } else if (message.category.endsWith("_VIDEO")) {
