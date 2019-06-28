@@ -24,6 +24,7 @@ import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getImagePath
+import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.notNullElse
@@ -173,7 +174,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                 val dataFile = MixinApplication.get().getDocumentPath()
                     .createDocumentTemp(extensionName)
                 dataFile.copyFromInputStream(attachmentCipherInputStream)
-                messageDao.updateMediaMessageUrl(Uri.fromFile(dataFile).toString(), message.id)
+                messageDao.updateMediaMessageUrl(MixinApplication.appContext.getUriForFile(dataFile).toString(), message.id)
                 messageDao.updateMediaSize(dataFile.length(), message.id)
                 messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             } else if (message.category.endsWith("_VIDEO")) {
