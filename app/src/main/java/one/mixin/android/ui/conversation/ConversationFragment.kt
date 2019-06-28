@@ -1095,6 +1095,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 chatViewModel.viewModelScope.launch {
                     chatAdapter.hasBottomView = !isGroup &&
+                        !list.isEmpty() &&
                         recipient?.relationship == UserRelationship.STRANGER.name &&
                         chatViewModel.isSilence(conversationId, sender.userId)
                 }
@@ -1136,7 +1137,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             } else {
                 chatViewModel.indexUnread(conversationId)
             }
-            val msgId = messageId ?: chatViewModel.findFirstUnreadMessageId(conversationId, Session.getAccountId()!!)
+            val msgId = messageId
+                ?: chatViewModel.findFirstUnreadMessageId(conversationId, Session.getAccountId()!!)
             liveDataMessage(unreadCount, msgId)
         }
 
