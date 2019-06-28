@@ -530,9 +530,9 @@ fun Context.isGooglePlayServicesAvailable() =
 
 fun Fragment.getTipsByAsset(asset: AssetItem) =
     when (asset.chainId) {
-        Constants.ChainId.BTC_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)
-        Constants.ChainId.ETH_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eth)
+        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eth)
         Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eos)
-        Constants.ChainId.TRX_CHAIN_ID -> getString(R.string.bottom_deposit_tip_trx)
+        Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.bottom_deposit_tip_trx)
         else -> getString(R.string.bottom_deposit_tip_common, asset.symbol)
     }
