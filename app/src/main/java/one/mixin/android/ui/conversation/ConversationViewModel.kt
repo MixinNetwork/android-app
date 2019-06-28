@@ -2,6 +2,7 @@ package one.mixin.android.ui.conversation
 
 import android.app.Activity
 import android.app.NotificationManager
+import android.content.ContentResolver.SCHEME_CONTENT
 import android.content.SharedPreferences
 import android.graphics.Bitmap
 import android.net.Uri
@@ -315,20 +316,12 @@ internal constructor(
                     }
                     message.category.endsWith("_DATA") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-                        val uri = if (message.userId == Session.getAccountId()) {
-                            if (message.mediaUrl?.fileExists() != true) {
-                                return@let 0
+                        val uri =
+                            if (Uri.parse(message.mediaUrl).scheme == SCHEME_CONTENT) {
+                                message.mediaUrl
+                            } else {
+                                MixinApplication.get().getUriForFile(File(message.mediaUrl)).toString()
                             }
-                            message.mediaUrl
-                        } else {
-                            val file = File(message.mediaUrl).apply {
-                                if (!this.exists()) {
-                                    return@let 0
-                                }
-                            }
-                            MixinApplication.get().getUriForFile(file).toString()
-                        }
-
                         jobManager.addJobInBackground(SendAttachmentMessageJob(createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
                             category, null, message.name, uri, message.mediaMimeType!!, message.mediaSize!!, nowInUtc(), null,
                             null, MediaStatus.PENDING, MessageStatus.SENDING)))
@@ -394,7 +387,8 @@ internal constructor(
                     val category = if (it.category.startsWith("PLAIN")) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
                     try {
                         jobManager.addJobInBackground(SendGiphyJob(it.conversationId, it.userId, it.mediaUrl!!,
-                            it.mediaWidth!!, it.mediaHeight!!, category, it.id, it.thumbImage ?: "", it.createdAt))
+                            it.mediaWidth!!, it.mediaHeight!!, category, it.id, it.thumbImage
+                            ?: "", it.createdAt))
                     } catch (e: NullPointerException) {
                         onError.invoke()
                     }
@@ -645,17 +639,17 @@ internal constructor(
     suspend fun findUnreadMessageByMessageId(conversationId: String, userId: String, messageId: String) =
         conversationRepository.findUnreadMessageByMessageId(conversationId, userId, messageId)
 
-
-    suspend fun isSilence(conversationId: String,userId: String) = conversationRepository.isSilence(conversationId,userId) == 0
+    suspend fun isSilence(conversationId: String, userId: String) = conversationRepository.isSilence(conversationId, userId) == 0
 
     fun checkNextAudioMessageAvailable(currentMessageId: String) =
         viewModelScope.launch(Dispatchers.IO) {
-            val currentMessage = conversationRepository.findMessageById(currentMessageId) ?: return@launch
+            val currentMessage = conversationRepository.findMessageById(currentMessageId)
+                ?: return@launch
             val message = conversationRepository.findNextAudioMessage(
-                currentMessage.conversationId, currentMessage.createdAt, currentMessageId) ?: return@launch
+                currentMessage.conversationId, currentMessage.createdAt, currentMessageId)
+                ?: return@launch
             if (message.mediaStatus != MediaStatus.DONE.name) {
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
             }
         }
-
 }

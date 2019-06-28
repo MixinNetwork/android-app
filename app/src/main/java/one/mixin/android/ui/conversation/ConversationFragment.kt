@@ -6,6 +6,8 @@ import android.annotation.TargetApi
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.ContentResolver.SCHEME_CONTENT
+import android.content.ContentResolver.SCHEME_FILE
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -1699,14 +1701,23 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         try {
             messageItem.mediaUrl?.let {
-                val file = File(it)
-                val uri = if (!file.exists()) {
-                    Uri.parse(it)
+                val uri = Uri.parse(it)
+                if (uri.scheme == SCHEME_CONTENT) {
+                    intent.setDataAndType(uri, messageItem.mediaMimeType)
+                    requireContext().startActivity(intent)
                 } else {
-                    requireContext().getUriForFile(file)
+                    val file = File(if (uri.scheme == SCHEME_FILE) {
+                        uri.path
+                    } else {
+                        messageItem.mediaUrl
+                    })
+                    if (!file.exists()) {
+                        context?.toast(R.string.error_file_exists)
+                    } else {
+                        intent.setDataAndType(requireContext().getUriForFile(file), messageItem.mediaMimeType)
+                        requireContext().startActivity(intent)
+                    }
                 }
-                intent.setDataAndType(uri, messageItem.mediaMimeType)
-                requireContext().startActivity(intent)
             }
         } catch (e: ActivityNotFoundException) {
             context?.toast(R.string.error_unable_to_open_media)
