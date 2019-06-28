@@ -8,6 +8,8 @@ import com.crashlytics.android.Crashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -30,6 +32,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
 import one.mixin.android.util.GzipException
+import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.LinkState
@@ -153,35 +156,37 @@ class ChatWebSocket(
     }
 
     override fun onMessage(webSocket: WebSocket?, bytes: ByteString?) {
-        try {
-            val json = bytes?.ungzip()
-            val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)
-            if (blazeMessage.error == null) {
-                if (transactions[blazeMessage.id] != null) {
-                    transactions[blazeMessage.id]!!.success.success(blazeMessage)
-                    transactions.remove(blazeMessage.id)
+        GlobalScope.launch(SINGLE_DB_THREAD) {
+            try {
+                val json = bytes?.ungzip()
+                val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)
+                if (blazeMessage.error == null) {
+                    if (transactions[blazeMessage.id] != null) {
+                        transactions[blazeMessage.id]!!.success.success(blazeMessage)
+                        transactions.remove(blazeMessage.id)
+                    }
+                    if (blazeMessage.data != null && blazeMessage.isReceiveMessageAction()) {
+                        handleReceiveMessage(blazeMessage)
+                    }
+                } else {
+                    if (transactions[blazeMessage.id] != null) {
+                        transactions[blazeMessage.id]!!.error.error(blazeMessage)
+                        transactions.remove(blazeMessage.id)
+                    }
+                    if (blazeMessage.action == ERROR_ACTION && blazeMessage.error.code == AUTHENTICATION) {
+                        val errorDescription = "Force logout webSocket.\nblazeMessage: $blazeMessage"
+                        val ise = IllegalStateException(errorDescription)
+                        Bugsnag.notify(ise)
+                        Crashlytics.log(Log.ERROR, "401", errorDescription)
+                        Crashlytics.logException(ise)
+                        connected = false
+                        closeInternal(quitCode)
+                        (app as MixinApplication).closeAndClear()
+                    }
                 }
-                if (blazeMessage.data != null && blazeMessage.isReceiveMessageAction()) {
-                    handleReceiveMessage(blazeMessage)
-                }
-            } else {
-                if (transactions[blazeMessage.id] != null) {
-                    transactions[blazeMessage.id]!!.error.error(blazeMessage)
-                    transactions.remove(blazeMessage.id)
-                }
-                if (blazeMessage.action == ERROR_ACTION && blazeMessage.error.code == AUTHENTICATION) {
-                    val errorDescription = "Force logout webSocket.\nblazeMessage: $blazeMessage"
-                    val ise = IllegalStateException(errorDescription)
-                    Bugsnag.notify(ise)
-                    Crashlytics.log(Log.ERROR, "401", errorDescription)
-                    Crashlytics.logException(ise)
-                    connected = false
-                    closeInternal(quitCode)
-                    (app as MixinApplication).closeAndClear()
-                }
+            } catch (e: GzipException) {
+                Bugsnag.notify(e)
             }
-        } catch (e: GzipException) {
-            Bugsnag.notify(e)
         }
     }
 
