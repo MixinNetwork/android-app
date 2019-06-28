@@ -6,8 +6,8 @@ import android.annotation.TargetApi
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.ClipData
-import android.content.ContentResolver
 import android.content.ContentResolver.SCHEME_CONTENT
+import android.content.ContentResolver.SCHEME_FILE
 import android.content.Intent
 import android.hardware.Sensor
 import android.hardware.SensorEvent
@@ -1706,7 +1706,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     intent.setDataAndType(uri, messageItem.mediaMimeType)
                     requireContext().startActivity(intent)
                 } else {
-                    context?.toast(R.string.error_file_exists)
+                    val file = File(if (uri.scheme == SCHEME_FILE) {
+                        uri.path
+                    } else {
+                        messageItem.mediaUrl
+                    })
+                    if (!file.exists()) {
+                        context?.toast(R.string.error_file_exists)
+                    } else {
+                        intent.setDataAndType(requireContext().getUriForFile(file), messageItem.mediaMimeType)
+                        requireContext().startActivity(intent)
+                    }
                 }
             }
         } catch (e: ActivityNotFoundException) {
