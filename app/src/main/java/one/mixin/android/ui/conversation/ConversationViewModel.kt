@@ -201,12 +201,32 @@ internal constructor(
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
-    fun sendAttachmentMessage(conversationId: String, sender: User, attachment: Attachment, isPlain: Boolean, replyMessage: MessageItem? = null) {
+    fun sendAttachmentMessage(
+        conversationId: String,
+        sender: User,
+        attachment: Attachment,
+        isPlain: Boolean,
+        replyMessage: MessageItem? = null
+    ) {
         val category = if (isPlain) MessageCategory.PLAIN_DATA.name else MessageCategory.SIGNAL_DATA.name
-        val message = createAttachmentMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
-            null, attachment.filename, attachment.uri.toString(),
-            attachment.mimeType, attachment.fileSize, nowInUtc(), null,
-            null, MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+        val message = createAttachmentMessage(
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            category,
+            null,
+            attachment.filename,
+            attachment.uri.toString(),
+            attachment.mimeType,
+            attachment.fileSize,
+            nowInUtc(),
+            null,
+            null,
+            MediaStatus.PENDING,
+            MessageStatus.SENDING.name,
+            replyMessage?.messageId,
+            replyMessage?.toQuoteMessageItem()
+        )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 
@@ -220,9 +240,11 @@ internal constructor(
         replyMessage: MessageItem? = null
     ) {
         val category = if (isPlain) MessageCategory.PLAIN_AUDIO.name else MessageCategory.SIGNAL_AUDIO.name
-        val message = createAudioMessage(UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
+        val message = createAudioMessage(
+            UUID.randomUUID().toString(), conversationId, sender.userId, null, category,
             file.length(), Uri.fromFile(file).toString(), duration.toString(), nowInUtc(), waveForm, null, null,
-            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+            MediaStatus.PENDING, MessageStatus.SENDING.name, replyMessage?.messageId, replyMessage?.toQuoteMessageItem()
+        )
         jobManager.addJobInBackground(SendAttachmentMessageJob(message))
     }
 
@@ -253,12 +275,28 @@ internal constructor(
         }
     }
 
-    fun sendContactMessage(conversationId: String, sender: User, shareUserId: String, isPlain: Boolean, replyMessage: MessageItem? = null) {
+    fun sendContactMessage(
+        conversationId: String,
+        sender: User,
+        shareUserId: String,
+        isPlain: Boolean,
+        replyMessage: MessageItem? = null
+    ) {
         val category = if (isPlain) MessageCategory.PLAIN_CONTACT.name else MessageCategory.SIGNAL_CONTACT.name
         val transferContactData = ContactMessagePayload(shareUserId)
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferContactData).toByteArray())
-        val message = createContactMessage(UUID.randomUUID().toString(), conversationId, sender.userId,
-            category, encoded, shareUserId, MessageStatus.SENDING.name, nowInUtc(), replyMessage?.messageId, replyMessage?.toQuoteMessageItem())
+        val message = createContactMessage(
+            UUID.randomUUID().toString(),
+            conversationId,
+            sender.userId,
+            category,
+            encoded,
+            shareUserId,
+            MessageStatus.SENDING.name,
+            nowInUtc(),
+            replyMessage?.messageId,
+            replyMessage?.toQuoteMessageItem()
+        )
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -1015,5 +1053,16 @@ internal constructor(
         }
     }
 
-    suspend fun getAnnouncementByConversationId(conversationId: String) = conversationRepository.getAnnouncementByConversationId(conversationId)
+    suspend fun getAnnouncementByConversationId(conversationId: String) =
+        conversationRepository.getAnnouncementByConversationId(conversationId)
+
+    suspend fun searchUserById(identityNumber: String): User? {
+        val user: User? = accountRepository.findUserByIdentityNumber(identityNumber)
+        if (user != null) return user
+        val response = accountRepository.searchUserByIdentityNumber(identityNumber)
+        if (response.isSuccess && response.data != null) {
+            return response.data
+        }
+        return null
+    }
 }

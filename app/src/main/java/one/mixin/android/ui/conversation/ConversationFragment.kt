@@ -46,9 +46,6 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -56,6 +53,7 @@ import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -91,6 +89,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
@@ -175,6 +174,9 @@ import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -480,6 +482,27 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onMentionClick(name: String) {
+            }
+
+            private var userJob: Job? = null
+            override fun onBotClick(id: String) {
+                if (userJob?.isActive == true) return
+                userJob = chatViewModel.viewModelScope.launch {
+                    val user = try {
+                        chatViewModel.searchUserById(id)
+                    } catch (e: Exception) {
+                        ErrorHandler.handleError(e)
+                        return@launch
+                    }
+                    user.notNullWithElse({ user ->
+                        UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(
+                            parentFragmentManager,
+                            UserBottomSheetDialogFragment.TAG
+                        )
+                    }, {
+                        toast(R.string.error_user_not_found)
+                    })
+                }
             }
 
             override fun onAddClick() {
@@ -1151,7 +1174,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             group_desc.expand()
         }
         group_close.setOnClickListener {
-            requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION).putBoolean(conversationId, false)
+            requireActivity().sharedPreferences(RefreshConversationJob.PREFERENCES_CONVERSATION)
+                .putBoolean(conversationId, false)
             group_flag.isVisible = false
         }
         callState.observe(viewLifecycleOwner, Observer { info ->
@@ -1256,7 +1280,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                     chatViewModel.viewModelScope.launch {
                         chatAdapter.hasBottomView = ((isBot && list.isEmpty()) ||
-                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(conversationId, sender.userId))) &&
+                            (!isGroup && (!list.isEmpty()) && chatViewModel.isSilence(
+                                conversationId,
+                                sender.userId
+                            ))) &&
                             recipient?.relationship == UserRelationship.STRANGER.name
                     }
                     if (isFirstLoad && messageId == null && unreadCount > 0) {

@@ -25,6 +25,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
     private var mentionModeColor = DEFAULT_COLOR
     private var hashtagModeColor = DEFAULT_COLOR
     private var urlModeColor = DEFAULT_COLOR
+    private var botModeColor = DEFAULT_COLOR
     private var phoneModeColor = DEFAULT_COLOR
     private var emailModeColor = DEFAULT_COLOR
     private var customModeColor = DEFAULT_COLOR
@@ -64,7 +65,8 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
                 clickableSpan,
                 autoLinkItem.startPoint,
                 autoLinkItem.endPoint,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
         }
 
         return spannableString
@@ -86,19 +88,25 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
             if (anAutoLinkMode == AutoLinkMode.MODE_PHONE) {
                 while (matcher.find()) {
                     if (matcher.group().length > MIN_PHONE_NUMBER_LENGTH)
-                        autoLinkItems.add(AutoLinkItem(
-                            matcher.start(),
-                            matcher.end(),
-                            matcher.group(),
-                            anAutoLinkMode))
+                        autoLinkItems.add(
+                            AutoLinkItem(
+                                matcher.start(),
+                                matcher.end(),
+                                matcher.group(),
+                                anAutoLinkMode
+                            )
+                        )
                 }
             } else {
                 while (matcher.find()) {
-                    autoLinkItems.add(AutoLinkItem(
-                        matcher.start(),
-                        matcher.end(),
-                        matcher.group(),
-                        anAutoLinkMode))
+                    autoLinkItems.add(
+                        AutoLinkItem(
+                            matcher.start(),
+                            matcher.end(),
+                            matcher.group(),
+                            anAutoLinkMode
+                        )
+                    )
                 }
             }
         }
@@ -113,6 +121,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
             AutoLinkMode.MODE_URL -> urlModeColor
             AutoLinkMode.MODE_PHONE -> phoneModeColor
             AutoLinkMode.MODE_EMAIL -> emailModeColor
+            AutoLinkMode.MODE_BOT -> botModeColor
             AutoLinkMode.MODE_CUSTOM -> customModeColor
         }
     }
@@ -127,6 +136,10 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatT
 
     fun setUrlModeColor(@ColorInt urlModeColor: Int) {
         this.urlModeColor = urlModeColor
+    }
+
+    fun setBotModeColor(@ColorInt botModeColor: Int) {
+        this.botModeColor = botModeColor
     }
 
     fun setPhoneModeColor(@ColorInt phoneModeColor: Int) {

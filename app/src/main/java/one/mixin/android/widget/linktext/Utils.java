@@ -20,6 +20,8 @@ class Utils {
                 return RegexParser.PHONE_PATTERN;
             case MODE_EMAIL:
                 return RegexParser.EMAIL_PATTERN;
+            case MODE_BOT:
+                return RegexParser.BOT_PATTERN;
             case MODE_CUSTOM:
                 if (!Utils.isValidRegex(customRegex)) {
                     Timber.e("Your custom regex is null, returning URL_PATTERN");

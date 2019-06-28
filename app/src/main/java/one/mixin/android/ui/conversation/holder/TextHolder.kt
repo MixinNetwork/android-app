@@ -24,7 +24,9 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
 
     init {
         itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
+        itemView.chat_tv.addAutoLinkMode(AutoLinkMode.MODE_BOT)
         itemView.chat_tv.setUrlModeColor(LINK_COLOR)
+        itemView.chat_tv.setBotModeColor(LINK_COLOR)
         itemView.chat_layout.setMaxWidth(itemView.context.maxItemWidth())
         itemView.chat_tv.setAutoLinkOnClickListener { autoLinkMode, matchedText ->
             when (autoLinkMode) {
@@ -33,6 +35,9 @@ class TextHolder constructor(containerView: View) : BaseViewHolder(containerView
                 }
                 AutoLinkMode.MODE_MENTION -> {
                     onItemListener?.onMentionClick(matchedText)
+                }
+                AutoLinkMode.MODE_BOT -> {
+                    onItemListener?.onBotClick(matchedText)
                 }
                 else -> {
                 }
