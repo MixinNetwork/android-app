@@ -652,4 +652,6 @@ internal constructor(
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
             }
         }
+
+    suspend fun searchUserById(query:String) = accountRepository.searchUserById(query)
 }

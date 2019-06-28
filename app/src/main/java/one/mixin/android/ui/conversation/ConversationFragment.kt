@@ -50,6 +50,7 @@ import kotlinx.android.synthetic.main.view_reply.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_tool.view.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -433,6 +434,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onMentionClick(name: String) {
+            }
+
+            private var userJob: Job? = null
+            override fun onBotClick(id: String) {
+                if (userJob?.isActive == true) return
+                userJob = chatViewModel.viewModelScope.launch {
+                    val response = chatViewModel.searchUserById(id)
+                    if (response.isSuccess && response.data != null) {
+                        UserBottomSheetDialogFragment.newInstance(response.data!!, conversationId).showNow(requireFragmentManager(),
+                        UserBottomSheetDialogFragment.TAG)
+                    } else {
+                        toast(R.string.error_user_not_found)
+                    }
+                }
             }
 
             override fun onAddClick() {

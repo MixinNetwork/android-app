@@ -553,6 +553,8 @@ class ConversationAdapter(
 
         open fun onMentionClick(name: String) {}
 
+        open fun onBotClick(id: String) {}
+
         open fun onUrlClick(url: String) {}
 
         open fun onAddClick() {}

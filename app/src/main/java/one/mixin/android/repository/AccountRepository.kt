@@ -140,4 +140,6 @@ constructor(
     fun trendingGifs(limit: Int, offset: Int) = giphyService.trendingGifs(limit, offset)
 
     fun searchGifs(query: String, limit: Int, offset: Int) = giphyService.searchGifs(query, limit, offset)
+
+    suspend fun searchUserById(query: String) = userService.searchUserById(query)
 }

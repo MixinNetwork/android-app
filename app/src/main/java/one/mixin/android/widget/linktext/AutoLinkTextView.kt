@@ -2,14 +2,14 @@ package one.mixin.android.widget.linktext
 
 import android.content.Context
 import android.graphics.Color
-import androidx.annotation.ColorInt
-import androidx.appcompat.widget.AppCompatTextView
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.View
 import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.appcompat.widget.AppCompatTextView
 import java.util.LinkedList
 import java.util.regex.Pattern
 
@@ -26,6 +26,7 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
     private var mentionModeColor = DEFAULT_COLOR
     private var hashtagModeColor = DEFAULT_COLOR
     private var urlModeColor = DEFAULT_COLOR
+    private var botModeColor = DEFAULT_COLOR
     private var phoneModeColor = DEFAULT_COLOR
     private var emailModeColor = DEFAULT_COLOR
     private var customModeColor = DEFAULT_COLOR
@@ -114,6 +115,7 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
             AutoLinkMode.MODE_URL -> urlModeColor
             AutoLinkMode.MODE_PHONE -> phoneModeColor
             AutoLinkMode.MODE_EMAIL -> emailModeColor
+            AutoLinkMode.MODE_BOT -> botModeColor
             AutoLinkMode.MODE_CUSTOM -> customModeColor
         }
     }
@@ -128,6 +130,10 @@ class AutoLinkTextView(context: Context, attrs: AttributeSet?) : AppCompatTextVi
 
     fun setUrlModeColor(@ColorInt urlModeColor: Int) {
         this.urlModeColor = urlModeColor
+    }
+
+    fun setBotModeColor(@ColorInt botModeColor: Int) {
+        this.botModeColor = botModeColor
     }
 
     fun setPhoneModeColor(@ColorInt phoneModeColor: Int) {
