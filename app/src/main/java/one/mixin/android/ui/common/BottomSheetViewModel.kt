@@ -110,8 +110,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
 
-    fun updateRelationship(request: RelationshipRequest) {
-        jobManager.addJobInBackground(UpdateRelationshipJob(request))
+    fun updateRelationship(request: RelationshipRequest, deleteConversationId: String? = null) {
+        jobManager.addJobInBackground(UpdateRelationshipJob(request, deleteConversationId))
     }
 
     fun getLimitParticipants(conversationId: String, limit: Int) = conversationRepo.getLimitParticipants(conversationId, limit)

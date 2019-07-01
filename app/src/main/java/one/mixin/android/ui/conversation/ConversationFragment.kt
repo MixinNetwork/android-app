@@ -62,6 +62,7 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.DragReleaseEvent
+import one.mixin.android.event.ExitEvent
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.event.RecallEvent
@@ -618,6 +619,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             initView()
         }
         AudioPlayer.get().setStatusListener(this)
+        RxBus.listen(ExitEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(stopScope)
+            .subscribe {
+                if (it.conversationId == conversationId) {
+                    activity?.finish()
+                }
+            }
     }
 
     private var showGroupNotification = false
