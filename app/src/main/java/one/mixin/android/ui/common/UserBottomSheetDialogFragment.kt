@@ -22,8 +22,10 @@ import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
+import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.notNullElse
@@ -42,6 +44,7 @@ import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
+import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
@@ -67,7 +70,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private lateinit var user: User
     // bot need conversation id
-    private var conversationId: String? = null
+    private lateinit var conversationId: String
     private lateinit var menu: AlertDialog
     private var creator: User? = null
 
@@ -85,7 +88,9 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         user = arguments!!.getParcelable(ARGS_USER)!!
-        conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
+        conversationId = arguments!!.getString(ARGS_CONVERSATION_ID) ?: generateConversationId(
+            user.userId, Session.getAccountId()!!
+        )
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             user.avatarUrl.let { url ->
@@ -148,6 +153,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 choices.add(getString(R.string.contact_other_block))
             }
         }
+        choices.add(getString(R.string.contact_other_report))
         menu = AlertDialog.Builder(context!!)
             .setItems(choices.toTypedArray()) { _, which ->
                 when (choices[which]) {
@@ -193,6 +199,9 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     getString(R.string.contact_other_remove) -> {
                         updateRelationship(UserRelationship.STRANGER.name)
                     }
+                    getString(R.string.contact_other_report) -> {
+                        reportUser(user.userId)
+                    }
                 }
             }.create()
         menu.setOnDismissListener {
@@ -205,6 +214,21 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             (dialog as BottomSheet).fakeDismiss()
             menu.show()
         }
+    }
+
+    private fun reportUser(userId: String) {
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setMessage(getString(R.string.contact_other_report_warning))
+            .setNeutralButton(getString(android.R.string.cancel)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setNegativeButton(getString(R.string.contact_other_report)) { dialog, _ ->
+                bottomViewModel.updateRelationship(RelationshipRequest(userId, RelationshipAction.BLOCK.name), conversationId)
+                RxBus.publish(ExitEvent(conversationId))
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
     }
 
     private fun setMute(choices: MutableList<String>) {
