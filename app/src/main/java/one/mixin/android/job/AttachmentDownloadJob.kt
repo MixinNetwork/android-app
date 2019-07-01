@@ -16,6 +16,7 @@ import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.createDocumentTemp
+import one.mixin.android.extension.createEmptyTemp
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
@@ -139,31 +140,32 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
             sink.writeAll(response.body()!!.source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
-                if (message.mediaMimeType?.isImageSupport() == true) {
-                    val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {
-                        AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
-                    } else {
-                        FileInputStream(destination)
-                    }
-                    val imageFile = when {
-                        message.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createImageTemp("REC", ".png")
-                        }
-                        message.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createGifTemp()
-                        }
-                        message.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
-                            MixinApplication.get().getImagePath().createWebpTemp()
-                        }
-                        else -> {
-                            MixinApplication.get().getImagePath().createImageTemp("REC", ".jpg")
-                        }
-                    }
-                    imageFile.copyFromInputStream(attachmentCipherInputStream)
-                    messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
-                    messageDao.updateMediaSize(imageFile.length(), message.id)
-                    messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
+                val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_IMAGE.name) {
+                    AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))
+                } else {
+                    FileInputStream(destination)
                 }
+                val imageFile = when {
+                    message.mediaMimeType?.isImageSupport() == false -> {
+                        MixinApplication.get().getImagePath().createEmptyTemp(true)
+                    }
+                    message.mediaMimeType.equals(MimeType.PNG.toString(), true) -> {
+                        MixinApplication.get().getImagePath().createImageTemp("REC", ".png")
+                    }
+                    message.mediaMimeType.equals(MimeType.GIF.toString(), true) -> {
+                        MixinApplication.get().getImagePath().createGifTemp()
+                    }
+                    message.mediaMimeType.equals(MimeType.WEBP.toString(), true) -> {
+                        MixinApplication.get().getImagePath().createWebpTemp()
+                    }
+                    else -> {
+                        MixinApplication.get().getImagePath().createImageTemp("REC", ".jpg")
+                    }
+                }
+                imageFile.copyFromInputStream(attachmentCipherInputStream)
+                messageDao.updateMediaMessageUrl(Uri.fromFile(imageFile).toString(), message.id)
+                messageDao.updateMediaSize(imageFile.length(), message.id)
+                messageDao.updateMediaStatus(MediaStatus.DONE.name, message.id)
             } else if (message.category.endsWith("_DATA")) {
                 val attachmentCipherInputStream = if (message.category == MessageCategory.SIGNAL_DATA.name) {
                     AttachmentCipherInputStream(destination, message.mediaKey, Optional.of(message.mediaDigest))

@@ -241,6 +241,11 @@ fun File.createWebpTemp(noMedia: Boolean = true): File {
     return newTempFile("IMAGE_$time", ".webp", noMedia)
 }
 
+fun File.createEmptyTemp(noMedia: Boolean = true): File {
+    val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+    return newTempFile("IMAGE_$time", "", noMedia)
+}
+
 fun File.createDocumentTemp(type: String?, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return newTempFile("FILE_$time", if (type == null) {
