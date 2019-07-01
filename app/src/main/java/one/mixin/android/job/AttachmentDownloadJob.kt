@@ -42,7 +42,7 @@ import java.io.FileInputStream
 import java.util.concurrent.TimeUnit
 
 class AttachmentDownloadJob(private val message: Message, private val attachmentId: String? = null) :
-    MixinJob(Params(PRIORITY_RECEIVE_MESSAGE).addTags(AttachmentDownloadJob.GROUP)
+    MixinJob(Params(PRIORITY_RECEIVE_MESSAGE).addTags(GROUP)
         .groupBy("attachment_download").requireNetwork().persist(), message.id) {
 
     private val TAG = AttachmentDownloadJob::class.java.simpleName

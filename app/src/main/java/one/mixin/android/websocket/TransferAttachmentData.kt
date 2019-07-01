@@ -2,7 +2,7 @@ package one.mixin.android.websocket
 
 import com.google.gson.annotations.SerializedName
 
-class TransferAttachmentData(
+data class TransferAttachmentData(
     @SerializedName("key")
     var key: ByteArray?,
     @SerializedName("digest")

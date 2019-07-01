@@ -147,7 +147,7 @@ interface MessageDao : BaseDao<Message> {
         "media_size = :mediaSize, media_width = :mediaWidth, media_height = :mediaHeight, " +
         "thumb_image = :thumbImage, media_key = :mediaKey, media_digest = :mediaDigest, media_duration = :mediaDuration, " +
         "media_status = :mediaStatus, status = :status, name = :name, media_waveform = :mediaWaveform WHERE id = :messageId " +
-        "AND category = 'MESSAGE_RECALL'")
+        "AND category != 'MESSAGE_RECALL'")
     fun updateAttachmentMessage(
         messageId: String,
         content: String,
