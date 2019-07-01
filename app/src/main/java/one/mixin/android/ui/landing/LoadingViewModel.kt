@@ -16,6 +16,7 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.job.RefreshOneTimePreKeysJob
 import javax.inject.Inject
+import kotlin.math.abs
 
 class LoadingViewModel @Inject internal
 constructor(
@@ -45,23 +46,16 @@ constructor(
     fun pingServer(callback: () -> Unit, elseCallBack: (e: Exception?) -> Unit): Job {
         return viewModelScope.launch {
             try {
-                val response = accountService.ping().execute()
-
+                val response = withContext(coroutineContext + Dispatchers.IO) { accountService.ping().execute() }
                 response.headers()["X-Server-Time"]?.toLong()?.let { serverTime ->
-                    if (Math.abs(serverTime / 1000000 - System.currentTimeMillis()) < 600000L) { // 10 minutes
-                        withContext(Dispatchers.Main) {
-                            callback.invoke()
-                        }
+                    if (abs(serverTime / 1000000 - System.currentTimeMillis()) < 600000L) { // 10 minutes
+                        callback.invoke()
                     } else {
-                        withContext(Dispatchers.Main) {
-                            elseCallBack.invoke(null)
-                        }
+                        elseCallBack.invoke(null)
                     }
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    elseCallBack.invoke(e)
-                }
+                elseCallBack.invoke(e)
             }
         }
     }
