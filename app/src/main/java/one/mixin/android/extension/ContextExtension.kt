@@ -45,11 +45,13 @@ import androidx.fragment.app.FragmentTransaction
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
+import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
@@ -525,3 +527,12 @@ fun Context.getSplineFlingDistance(velocity: Int): Double {
 
 fun Context.isGooglePlayServicesAvailable() =
     GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
+
+fun Fragment.getTipsByAsset(asset: AssetItem) =
+    when (asset.chainId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.bottom_deposit_tip_btc)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eth)
+        Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.bottom_deposit_tip_eos)
+        Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.bottom_deposit_tip_trx)
+        else -> getString(R.string.bottom_deposit_tip_common, asset.symbol)
+    }

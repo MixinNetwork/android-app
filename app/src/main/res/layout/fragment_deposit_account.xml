@@ -208,6 +208,23 @@
                 android:layout_marginStart="24dp"
                 android:layout_marginTop="@dimen/margin16"
                 android:layout_marginEnd="24dp"
+                android:gravity="start"
+                android:paddingStart="8dp"
+                android:paddingTop="3dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="3dp"
+                android:text="@string/bottom_deposit_tip_eos"
+                android:textColor="@color/wallet_text_gray"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:id="@+id/warning_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="24dp"
+                android:layout_marginTop="@dimen/margin12"
+                android:layout_marginEnd="24dp"
                 android:layout_marginBottom="32dp"
                 android:gravity="start"
                 android:paddingStart="8dp"
@@ -215,7 +232,7 @@
                 android:paddingEnd="8dp"
                 android:paddingBottom="3dp"
                 android:text="@string/deposit_tip"
-                android:textColor="@color/wallet_text_gray"
+                android:textColor="@color/colorRed"
                 android:textSize="12sp"/>
         </LinearLayout>
     </ScrollView>

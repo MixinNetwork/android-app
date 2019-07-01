@@ -29,6 +29,7 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import one.mixin.android.Constants.ARGS_USER_ID
+import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
@@ -72,8 +73,6 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "TransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
         const val ARGS_SWITCH_ASSET = "args_switch_asset"
-
-        const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
 
         fun newInstance(
             userId: String? = null,

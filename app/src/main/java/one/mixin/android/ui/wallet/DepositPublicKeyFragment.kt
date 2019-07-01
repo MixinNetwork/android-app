@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -19,14 +20,13 @@ import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
+import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_ADDRESS
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.vo.AssetItem
 
 class DepositPublicKeyFragment : DepositFragment() {
 
@@ -39,10 +39,7 @@ class DepositPublicKeyFragment : DepositFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_deposit_key, container, false).apply { this.setOnClickListener { } }
 
-    val asset: AssetItem by lazy {
-        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)
-    }
-
+    @SuppressLint("SetTextI18n")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
@@ -56,7 +53,7 @@ class DepositPublicKeyFragment : DepositFragment() {
             context?.toast(R.string.copy_success)
         }
         key_code.text = asset.publicKey
-        confirm_tv.text = getString(R.string.wallet_block_confirmations, asset.confirmations)
+        confirm_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
         qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
         }
@@ -83,6 +80,4 @@ class DepositPublicKeyFragment : DepositFragment() {
         }
         showTip()
     }
-
-    override fun getTips() = confirm_tv.text.toString()
 }

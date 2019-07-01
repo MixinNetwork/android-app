@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -21,14 +22,13 @@ import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getQRCodePath
+import one.mixin.android.extension.getTipsByAsset
 import one.mixin.android.extension.isQRCodeFileExists
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.saveQRCode
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.DepositQrBottomFragment.Companion.TYPE_TAG
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.vo.AssetItem
 
 class DepositAccountFragment : DepositFragment() {
 
@@ -38,11 +38,10 @@ class DepositAccountFragment : DepositFragment() {
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
 
-    private val asset: AssetItem by lazy { arguments!!.getParcelable<AssetItem>(ARGS_ASSET) }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_deposit_account, container, false).apply { this.setOnClickListener { } }
 
+    @SuppressLint("SetTextI18n")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
@@ -56,7 +55,8 @@ class DepositAccountFragment : DepositFragment() {
         account_memo_qr_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         account_name_key_code.text = asset.accountName
         account_memo_key_code.text = asset.accountTag
-        tip_tv.text = getString(R.string.deposit_tip, asset.symbol, asset.confirmations)
+        tip_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
+        warning_tv.text = getString(R.string.deposit_tip, asset.symbol)
         account_name_qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
         }
@@ -102,6 +102,4 @@ class DepositAccountFragment : DepositFragment() {
             }
         }
     }
-
-    override fun getTips() = tip_tv.text.toString()
 }
