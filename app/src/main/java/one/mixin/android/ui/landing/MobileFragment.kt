@@ -172,17 +172,19 @@ class MobileFragment : BaseFragment() {
     }
 
     private fun initAndLoadRecaptcha() {
-        recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
-            override fun onStop() {
-                mobile_fab?.hide()
-                mobile_cover?.visibility = GONE
-            }
+        if (recaptchaView == null) {
+            recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
+                override fun onStop() {
+                    mobile_fab?.hide()
+                    mobile_cover?.visibility = GONE
+                }
 
-            override fun onPostToken(value: String) {
-                requestSend(value)
-            }
-        })
-        (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+                override fun onPostToken(value: String) {
+                    requestSend(value)
+                }
+            })
+            (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+        }
         recaptchaView?.loadRecaptcha()
     }
 

@@ -239,16 +239,18 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     }
 
     private fun initAndLoadRecaptcha() {
-        recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
-            override fun onStop() {
-                hideLoading()
-            }
+        if (recaptchaView == null) {
+            recaptchaView = RecaptchaView(requireContext(), object : RecaptchaView.Callback {
+                override fun onStop() {
+                    hideLoading()
+                }
 
-            override fun onPostToken(value: String) {
-                sendVerification(value)
-            }
-        })
-        (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+                override fun onPostToken(value: String) {
+                    sendVerification(value)
+                }
+            })
+            (view as ViewGroup).addView(recaptchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+        }
         recaptchaView?.loadRecaptcha()
     }
 
