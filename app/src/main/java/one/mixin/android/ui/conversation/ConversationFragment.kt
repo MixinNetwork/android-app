@@ -228,6 +228,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onItemRangeInserted(positionStart: Int, itemCount: Int) {
+                if (!isAdded) return
+
                 when {
                     isFirstLoad -> {
                         isFirstLoad = false

@@ -17,6 +17,7 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
+import java.lang.Exception
 import java.util.Locale
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
@@ -88,8 +89,12 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         if (keyword.length < 4) return false
         if (!keyword.all { it.isDigit() or (it == '+') }) return false
         return if (keyword.startsWith('+')) {
-            val phoneNum = PhoneNumberUtil.getInstance().parse(keyword, Locale.getDefault().country)
-            PhoneNumberUtil.getInstance().isValidNumber(phoneNum)
+            try {
+                val phoneNum = PhoneNumberUtil.getInstance().parse(keyword, Locale.getDefault().country)
+                PhoneNumberUtil.getInstance().isValidNumber(phoneNum)
+            } catch (e: Exception) {
+                false
+            }
         } else {
             keyword.all { it.isDigit() }
         } && data.userList.isNullOrEmpty()
