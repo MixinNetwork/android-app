@@ -46,7 +46,7 @@ class UpdateRelationshipJob(private val request: RelationshipRequest, private va
             return
         }
         if (deleteConversationId != null) {
-            userService.report(request)
+            userService.relationship(request)
                 .subscribeOn(Schedulers.io())
                 .subscribe({ r: MixinResponse<User> ->
                     if (r.isSuccess) {

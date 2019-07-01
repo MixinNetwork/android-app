@@ -24,9 +24,6 @@ interface UserService {
     @POST("relationships")
     fun relationship(@Body request: RelationshipRequest): Observable<MixinResponse<User>>
 
-    @POST("report")
-    fun report(@Body request: RelationshipRequest): Observable<MixinResponse<User>>
-
     @GET("blocking_users")
     fun blockingUsers(): Observable<MixinResponse<List<User>>>
 }
