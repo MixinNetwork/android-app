@@ -527,7 +527,8 @@ class ConversationAdapter(
                     oldItem.mediaSize == newItem.mediaSize &&
                     oldItem.quoteContent == newItem.quoteContent &&
                     oldItem.assetSymbol == newItem.assetSymbol &&
-                    oldItem.assetUrl == newItem.assetUrl
+                    oldItem.assetUrl == newItem.assetUrl &&
+                    oldItem.assetSymbol == newItem.assetSymbol
             }
         }
     }
