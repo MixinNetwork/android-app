@@ -528,7 +528,7 @@ class ConversationAdapter(
                     oldItem.quoteContent == newItem.quoteContent &&
                     oldItem.assetSymbol == newItem.assetSymbol &&
                     oldItem.assetUrl == newItem.assetUrl &&
-                    oldItem.assetSymbol == newItem.assetSymbol
+                    oldItem.assetIcon == newItem.assetIcon
             }
         }
     }
