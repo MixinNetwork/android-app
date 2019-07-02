@@ -70,7 +70,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     private lateinit var user: User
     // bot need conversation id
-    private lateinit var conversationId: String
+    private var conversationId: String? = null
     private lateinit var menu: AlertDialog
     private var creator: User? = null
 
@@ -88,9 +88,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         user = arguments!!.getParcelable(ARGS_USER)!!
-        conversationId = arguments!!.getString(ARGS_CONVERSATION_ID) ?: generateConversationId(
-            user.userId, Session.getAccountId()!!
-        )
+        conversationId = arguments!!.getString(ARGS_CONVERSATION_ID)
         contentView.title.right_iv.setOnClickListener { dismiss() }
         contentView.avatar.setOnClickListener {
             user.avatarUrl.let { url ->
@@ -223,6 +221,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dialog.dismiss()
             }
             .setNegativeButton(getString(R.string.contact_other_report)) { dialog, _ ->
+                val conversationId = generateConversationId(userId, Session.getAccountId()!!)
                 bottomViewModel.updateRelationship(RelationshipRequest(userId, RelationshipAction.BLOCK.name), conversationId)
                 RxBus.publish(ExitEvent(conversationId))
                 dialog.dismiss()
