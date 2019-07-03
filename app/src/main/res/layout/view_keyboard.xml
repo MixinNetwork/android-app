@@ -9,7 +9,7 @@
         android:layout_height="1px"
         android:background="#999999" />
 
-    <GridView
+    <one.mixin.android.widget.FullGridView
         android:id="@+id/gv_keyboard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

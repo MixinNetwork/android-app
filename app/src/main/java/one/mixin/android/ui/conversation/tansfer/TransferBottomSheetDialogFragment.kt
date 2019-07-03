@@ -8,7 +8,9 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import android.view.View.VISIBLE
+import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
@@ -21,6 +23,7 @@ import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullElse
@@ -135,6 +138,21 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         })
         contentView.biometric_tv.setOnClickListener { showBiometricPrompt() }
         contentView.biometric_tv.isVisible = BiometricUtil.shouldShowBiometric(requireContext())
+
+        contentView.scroll_view.post {
+            if (!isAdded) return@post
+
+            val childHeight = contentView.scroll_content.height
+            val isScrollable = contentView.scroll_view.height <
+                childHeight + contentView.scroll_view.paddingTop + contentView.scroll_view.paddingBottom
+            if (isScrollable) {
+                contentView.asset_icon.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    topMargin = requireContext().dpToPx(8f)
+                    bottomMargin = requireContext().dpToPx(12f)
+                    width = requireContext().dpToPx(60f)
+                }
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

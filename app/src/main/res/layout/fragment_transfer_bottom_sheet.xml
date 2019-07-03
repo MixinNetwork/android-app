@@ -11,115 +11,128 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
-    <LinearLayout
+    <ScrollView
+        android:id="@+id/scroll_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/white"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:layout_height="wrap_content">
 
-        <one.mixin.android.widget.BadgeCircleImageView
-            android:id="@+id/asset_icon"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:layout_margin="@dimen/activity_vertical_margin"
-            tools:ignore="ContentDescription"/>
-
-        <TextView
-            android:id="@+id/balance"
+        <LinearLayout
+            android:id="@+id/scroll_content"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/margin12"
-            android:textColor="@android:color/black"
-            android:textSize="@dimen/wallet_balance_text"/>
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/balance_as"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="4dp"
-            android:textColor="@color/text_gray"
-            android:textSize="@dimen/wallet_balance_as_text"/>
-
-        <TextView
-            android:id="@+id/memo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="@dimen/margin16"
-            android:layout_gravity="center_horizontal"
-            android:gravity="center"
-            android:maxLines="3"
-            android:ellipsize="end"
-            android:visibility="gone"
-            android:textColor="@color/text_gray"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/bottom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/white"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
-
-        <ViewAnimator
-            android:id="@+id/pin_va"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
-
-            <one.mixin.android.widget.PinView
-                android:id="@+id/pin"
-                android:layout_width="180dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                app:pin_tipVisible="false"/>
-
-            <FrameLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_gravity="center">
+                android:layout_height="wrap_content"
+                android:background="@android:color/white"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
-                <ProgressBar
-                    style="?android:attr/progressBarStyleSmall"
+                <one.mixin.android.widget.BadgeCircleImageView
+                    android:id="@+id/asset_icon"
+                    android:layout_width="70dp"
+                    android:layout_height="70dp"
+                    android:layout_margin="@dimen/activity_vertical_margin"
+                    android:layout_marginBottom="28dp"
+                    tools:ignore="ContentDescription"/>
+
+                <TextView
+                    android:id="@+id/balance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:gravity="center_horizontal"
+                    android:textColor="@android:color/black"
+                    android:textSize="@dimen/wallet_balance_text"/>
+
+                <TextView
+                    android:id="@+id/balance_as"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:theme="@style/AppTheme.BlueAccent"/>
-            </FrameLayout>
-        </ViewAnimator>
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:textColor="@color/text_gray"
+                    android:textSize="@dimen/wallet_balance_as_text"/>
 
-        <TextView
-            android:id="@+id/pay_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="@dimen/activity_vertical_margin"
-            android:text="@string/wallet_pay_with_pwd"
-            android:textColor="@color/text_gray"/>
+                <TextView
+                    android:id="@+id/memo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginStart="@dimen/activity_horizontal_margin"
+                    android:layout_marginTop="@dimen/margin16"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:ellipsize="end"
+                    android:gravity="center"
+                    android:maxLines="3"
+                    android:textColor="@color/text_gray"
+                    android:visibility="gone"/>
+            </LinearLayout>
 
-        <TextView
-            android:id="@+id/biometric_tv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/margin20"
-            android:layout_marginBottom="32dp"
-            android:drawableStart="@drawable/ic_biometric"
-            android:drawablePadding="@dimen/padding8"
-            android:text="@string/wallet_pay_with_biometric"
-            android:textSize="16sp"
-            android:visibility="gone"
-            android:textColor="@color/wallet_blue_secondary"/>
+            <LinearLayout
+                android:id="@+id/bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/white"
+                android:gravity="center_horizontal"
+                android:orientation="vertical">
 
-        <one.mixin.android.widget.Keyboard
-            android:id="@+id/keyboard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"/>
-    </LinearLayout>
+                <ViewAnimator
+                    android:id="@+id/pin_va"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <one.mixin.android.widget.PinView
+                        android:id="@+id/pin"
+                        android:layout_width="180dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="@dimen/activity_vertical_margin"
+                        app:pin_tipVisible="false"/>
+
+                    <FrameLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center">
+
+                        <ProgressBar
+                            style="?android:attr/progressBarStyleSmall"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:theme="@style/AppTheme.BlueAccent"/>
+                    </FrameLayout>
+                </ViewAnimator>
+
+                <TextView
+                    android:id="@+id/pay_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/activity_vertical_margin"
+                    android:text="@string/wallet_pay_with_pwd"
+                    android:textColor="@color/text_gray"/>
+
+                <TextView
+                    android:id="@+id/biometric_tv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/margin20"
+                    android:layout_marginBottom="32dp"
+                    android:drawableStart="@drawable/ic_biometric"
+                    android:drawablePadding="@dimen/padding8"
+                    android:text="@string/wallet_pay_with_biometric"
+                    android:textColor="@color/wallet_blue_secondary"
+                    android:textSize="16sp"
+                    android:visibility="gone"/>
+
+                <one.mixin.android.widget.Keyboard
+                    android:id="@+id/keyboard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>
