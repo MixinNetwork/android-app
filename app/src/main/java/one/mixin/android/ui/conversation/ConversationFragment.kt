@@ -441,7 +441,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onBotClick(id: String) {
                 if (userJob?.isActive == true) return
                 userJob = chatViewModel.viewModelScope.launch {
-                    notNullElse(chatViewModel.searchUserById(id), { user ->
+                    val user = try {
+                        chatViewModel.searchUserById(id)
+                    } catch (e: Exception) {
+                        ErrorHandler.handleError(e)
+                        return@launch
+                    }
+                    notNullElse(user, { user ->
                         UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(requireFragmentManager(),
                             UserBottomSheetDialogFragment.TAG)
                     }, {
