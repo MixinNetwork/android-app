@@ -12,7 +12,6 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.paging.PagedList
-import androidx.room.Transaction
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transactions.*
@@ -26,6 +25,7 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.extension.loadImage
@@ -168,10 +168,11 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         jobManager.addJobInBackground(RefreshAssetsJob(asset.assetId))
     }
 
-    @Transaction
     fun updateData(list: List<Snapshot>?) {
-        list?.let { data ->
-            walletViewModel.insertPendingDeposit(data)
+        runInTransaction {
+            list?.let { data ->
+                walletViewModel.insertPendingDeposit(data)
+            }
         }
     }
 
