@@ -24,9 +24,11 @@ interface ParticipantDao : BaseDao<Participant> {
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
     fun updateParticipantRole(conversationId: String, userId: String, role: String)
 
+    @Transaction
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId")
     fun getRealParticipants(conversationId: String): List<Participant>
 
+    @Transaction
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId")
     suspend fun getRealParticipantsSuspend(conversationId: String): List<Participant>
 
@@ -38,6 +40,7 @@ interface ParticipantDao : BaseDao<Participant> {
         "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at LIMIT 4")
     fun getParticipantsAvatar(conversationId: String): List<User>
 
+    @Transaction
     @Query("SELECT p.* FROM participants p LEFT JOIN users u ON p.user_id = u.user_id WHERE p.conversation_id = :conversationId AND u.app_id IS NULL AND " +
         "p.user_id NOT IN (SELECT user_id FROM sent_sender_keys WHERE conversation_id= :conversationId) AND p.user_id != :accountId")
     fun getNotSentKeyParticipants(conversationId: String, accountId: String): List<Participant>?
