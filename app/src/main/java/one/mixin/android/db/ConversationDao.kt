@@ -66,7 +66,6 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT unseen_message_count FROM conversations WHERE conversation_id = :conversationId")
     suspend fun indexUnread(conversationId: String): Int?
 
-    @Transaction
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun findConversationById(conversationId: String): Conversation?
 
@@ -76,7 +75,6 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId")
     fun saveDraft(conversationId: String, text: String)
 
-    @Transaction
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversation(conversationId: String): Conversation?
 
