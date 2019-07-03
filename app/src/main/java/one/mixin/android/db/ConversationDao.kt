@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import androidx.room.Transaction
 import io.reactivex.Maybe
 import io.reactivex.Single
 import one.mixin.android.vo.ChatMinimal

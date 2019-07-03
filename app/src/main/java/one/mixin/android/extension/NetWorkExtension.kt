@@ -80,4 +80,3 @@ fun Context.autoDownload(support: (value: Int) -> Boolean, action: () -> Unit) {
 fun Context.getAutoDownloadWifiValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_WIFI, WIFI_DEFAULT)
 fun Context.getAutoDownloadMobileValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_MOBILE, MOBILE_DEFAULT)
 fun Context.getAutoDownloadRoamingValue() = defaultSharedPreferences.getInt(Constants.Download.AUTO_DOWNLOAD_ROAMING, ROAMING_DEFAULT)
-
