@@ -711,7 +711,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onSensorChanged(event: SensorEvent?) {
         val values = event?.values ?: return
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
-            isCling = values[0] == 0.0f
+            isCling = values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
             if (AudioPlayer.isEnd() || audioManager.isWiredHeadsetOn || audioManager.isBluetoothScoOn || audioManager.isBluetoothA2dpOn) {
                 if (wakeLock.isHeld) {
                     wakeLock.release()
