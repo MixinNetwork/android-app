@@ -1907,9 +1907,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun changeToSpeaker() {
-        audioManager.mode = AudioManager.MODE_NORMAL
         AudioPlayer.switchAudioStreamType(true)
         audioManager.isSpeakerphoneOn = true
+        audioManager.mode = AudioManager.MODE_NORMAL
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
+            audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0)
     }
 
     private fun changeToHeadset() {
@@ -1917,13 +1919,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         audioManager.isSpeakerphoneOn = false
         audioManager.isBluetoothScoOn = false
         audioManager.mode = AudioManager.MODE_NORMAL
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
+            audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0)
     }
 
     private fun changeToReceiver() {
+        AudioPlayer.switchAudioStreamType(false)
         audioManager.isSpeakerphoneOn = false
         audioManager.isBluetoothScoOn = false
-        AudioPlayer.switchAudioStreamType(false)
         audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,
+            audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL), 0)
     }
 
     private fun resetAudioMode() {
