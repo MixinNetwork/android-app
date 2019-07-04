@@ -1004,6 +1004,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     chat_control.cancelExternal()
                 }
                 chat_control.chat_et.showKeyboard()
+                chat_control.chat_et.requestFocus()
             }
             closeTool()
         }
