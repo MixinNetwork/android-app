@@ -1,5 +1,6 @@
 package one.mixin.android.util
 
+import android.media.AudioManager
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
 import io.reactivex.Observable
@@ -52,8 +53,16 @@ class AudioPlayer private constructor() {
             instance?.pause()
         }
 
+        fun resume() {
+            instance?.resume()
+        }
+
         fun isEnd(): Boolean {
-            return instance?.status == STATUS_PAUSE || instance?.status == STATUS_ERROR
+            return instance?.status == STATUS_ERROR || instance?.status == STATUS_PAUSE
+        }
+
+        fun switchAudioStreamType(useFrontSpeaker: Boolean) {
+            instance?.switchAudioStreamType(useFrontSpeaker)
         }
     }
 
@@ -68,6 +77,14 @@ class AudioPlayer private constructor() {
                     pause()
                 }
             }
+    }
+
+    fun switchAudioStreamType(useFrontSpeaker: Boolean) {
+        if (useFrontSpeaker) {
+            player.setAudioStreamType(AudioManager.STREAM_MUSIC)
+        } else {
+            player.setAudioStreamType(AudioManager.STREAM_VOICE_CALL)
+        }
     }
 
     private val player: MixinPlayer = MixinPlayer(true).also {
@@ -129,6 +146,12 @@ class AudioPlayer private constructor() {
         startTimer()
     }
 
+    private fun resume() {
+        if (messageItem != null && (status == STATUS_PAUSE || status == STATUS_ERROR)) {
+            play(messageItem!!)
+        }
+    }
+
     fun pause() {
         status = STATUS_PAUSE
         player.pause()
@@ -172,7 +195,8 @@ class AudioPlayer private constructor() {
             GlobalScope.launch(Dispatchers.IO) {
                 val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
                     .messageDao()
-                    .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId) ?: return@launch
+                    .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId)
+                    ?: return@launch
                 if (!nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
 
                 withContext(Dispatchers.Main) {
