@@ -4,10 +4,10 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import androidx.room.Transaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
+import one.mixin.android.MixinApplication
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_15_16
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_16_17
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_17_18
@@ -96,9 +96,10 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
 
-        @Transaction
         fun checkPoint() {
-            supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
+            runInTransaction {
+                supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
+            }
         }
 
         fun getReadDatabase(context: Context): MixinDatabase {
@@ -130,4 +131,8 @@ abstract class MixinDatabase : RoomDatabase() {
             }
         }
     }
+}
+
+fun runInTransaction(block: () -> Unit) {
+    MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
 }

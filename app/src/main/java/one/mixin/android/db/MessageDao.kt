@@ -4,7 +4,6 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
-import androidx.room.Transaction
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
@@ -177,7 +176,6 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET content = :content WHERE id = :id")
     fun updateMessageContent(content: String, id: String)
 
-    @Transaction
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun findMessageById(messageId: String): Message?
 
