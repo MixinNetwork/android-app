@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.getBackupPath
 import java.io.File
 import kotlin.coroutines.CoroutineContext
@@ -25,7 +26,7 @@ fun backup(
 ) {
     val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
         ?: return callback(Result.NOT_FOUND)
-    GlobalScope.launch {
+    GlobalScope.launch(Dispatchers.IO) {
         val backupDir = context.getBackupPath()
 
         val availableSize = StatFs(backupDir.path).availableBytes
@@ -44,34 +45,62 @@ fun backup(
             name
         }
         val copyPath = "$backupDir${File.separator}$tmpName"
-        MixinDatabase.checkPoint()
-        return@launch try {
-            val result = dbFile.copyTo(File(copyPath))
+        var result: File? = null
+        try {
+            runInTransaction {
+                MixinDatabase.checkPoint()
+                result = dbFile.copyTo(File(copyPath), overwrite = true)
+            }
+        } catch (e: Exception) {
+            result?.delete()
+            withContext(Dispatchers.Main) {
+                callback(Result.FAILURE)
+            }
+            return@launch
+        }
 
+        var db: SQLiteDatabase? = null
+        try {
+            db = SQLiteDatabase.openDatabase("$backupDir${File.separator}$tmpName", null, SQLiteDatabase.OPEN_READWRITE)
+        } catch (e: Exception) {
+            result?.delete()
+            db?.close()
+            withContext(Dispatchers.Main) {
+                callback(Result.FAILURE)
+            }
+            return@launch
+        }
+        try {
+            db.execSQL("DELETE FROM sent_sender_keys")
+            db.execSQL("DELETE FROM jobs")
+            db.execSQL("DELETE FROM flood_messages")
+            db.execSQL("DELETE FROM offsets")
+        } catch (ignored: Exception) {
+        } finally {
+            db.close()
+        }
+
+        try {
             backupDir.listFiles().forEach { f ->
                 if (f.name != tmpName) {
                     f.delete()
                 }
             }
             if (tmpName.contains(BACKUP_POSTFIX)) {
-                result.renameTo(File("$backupDir${File.separator}$name"))
-            }
-
-            val db = SQLiteDatabase.openDatabase("$backupDir${File.separator}$name", null, SQLiteDatabase.OPEN_READWRITE)
-            db.execSQL("DELETE FROM sent_sender_keys")
-            db.execSQL("DELETE FROM jobs")
-            db.execSQL("DELETE FROM flood_messages")
-            db.execSQL("DELETE FROM offsets")
-            db.close()
-
-            withContext(Dispatchers.Main) {
-                callback(Result.SUCCESS)
+                result?.renameTo(File("$backupDir${File.separator}$name"))
             }
         } catch (e: Exception) {
+            result?.delete()
             withContext(Dispatchers.Main) {
                 callback(Result.FAILURE)
             }
+            return@launch
         }
+
+        withContext(Dispatchers.Main) {
+            callback(Result.SUCCESS)
+        }
+
     }
 }
 
@@ -105,7 +134,7 @@ fun restore(
 suspend fun delete(
     context: Context
 ): Boolean {
-    return GlobalScope.async {
+    return GlobalScope.async(Dispatchers.IO) {
         val backupDir = context.getBackupPath()
         return@async backupDir.deleteRecursively()
     }.await()

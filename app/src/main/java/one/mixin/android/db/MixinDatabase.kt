@@ -97,9 +97,7 @@ abstract class MixinDatabase : RoomDatabase() {
         }
 
         fun checkPoint() {
-            runInTransaction {
-                supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
-            }
+            supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
         }
 
         fun getReadDatabase(context: Context): MixinDatabase {
