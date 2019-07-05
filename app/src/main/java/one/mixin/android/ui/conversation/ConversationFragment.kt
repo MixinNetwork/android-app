@@ -5,10 +5,13 @@ import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
 import android.content.ActivityNotFoundException
+import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ContentResolver.SCHEME_CONTENT
 import android.content.ContentResolver.SCHEME_FILE
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -600,8 +603,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        registerHeadsetPlugReceiver()
         recipient = arguments!!.getParcelable<User?>(RECIPIENT)
-        audioManager.mode = AudioManager.MODE_NORMAL
     }
 
     override fun onCreateView(
@@ -635,7 +638,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onResume() {
         super.onResume()
-        sensorManager.registerListener(this, sensorManager?.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_UI)
+        sensorManager.registerListener(this, sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY), SensorManager.SENSOR_DELAY_NORMAL)
         input_layout.addOnKeyboardShownListener(this)
         input_layout.addOnKeyboardHiddenListener(this)
         MixinApplication.conversationId = conversationId
@@ -669,6 +672,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     }
                 }
             }
+        resetAudioMode()
     }
 
     private var lastReadMessage: String? = null
@@ -706,24 +710,24 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var isCling: Boolean = false
     override fun onSensorChanged(event: SensorEvent?) {
         val values = event?.values ?: return
-        isCling = values[0] == 0.0f
-        if (AudioPlayer.isEnd() || audioManager.isWiredHeadsetOn || audioManager.isBluetoothScoOn || audioManager.isBluetoothA2dpOn) {
-            if (wakeLock.isHeld) {
-                wakeLock.release()
-                audioManager.mode = AudioManager.MODE_NORMAL
-            }
-            return
-        }
         if (event.sensor.type == Sensor.TYPE_PROXIMITY) {
+            isCling = values[0] < 5.0f && values[0] != sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY).maximumRange
+            if (AudioPlayer.isEnd() || audioManager.isWiredHeadsetOn || audioManager.isBluetoothScoOn || audioManager.isBluetoothA2dpOn) {
+                if (wakeLock.isHeld) {
+                    wakeLock.release()
+                    changeToHeadset()
+                }
+                return
+            }
+
             if (isCling) {
                 if (!wakeLock.isHeld) {
                     wakeLock.acquire(10 * 60 * 1000L)
-                    audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+                    changeToReceiver()
                 }
             } else if (wakeLock.isHeld) {
                 wakeLock.release()
-                audioManager.mode = AudioManager.MODE_NORMAL
-                AudioPlayer.pause()
+                changeToSpeaker()
             }
         }
     }
@@ -768,6 +772,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     override fun onDestroy() {
         super.onDestroy()
         AudioPlayer.release()
+        unRegisterHeadsetPlugReceiver()
     }
 
     override fun onBackPressed(): Boolean {
@@ -1004,6 +1009,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     chat_control.cancelExternal()
                 }
                 chat_control.chat_et.showKeyboard()
+                chat_control.chat_et.requestFocus()
             }
             closeTool()
         }
@@ -1873,6 +1879,69 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         currentContainer.animateHeight(curH, targetH)
         RxBus.publish(DragReleaseEvent(targetH == max))
+    }
+
+    private var headsetPlugReceiver: HeadsetPlugReceiver? = null
+    private fun registerHeadsetPlugReceiver() {
+        headsetPlugReceiver = HeadsetPlugReceiver()
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(Intent.ACTION_HEADSET_PLUG)
+        context?.registerReceiver(headsetPlugReceiver, intentFilter)
+    }
+
+    private fun unRegisterHeadsetPlugReceiver() {
+        headsetPlugReceiver?.let { context?.unregisterReceiver(it) }
+    }
+
+    inner class HeadsetPlugReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            if (intent.action == Intent.ACTION_HEADSET_PLUG) {
+                val state = intent.getIntExtra("state", 0)
+                if (state == 0) {
+                    resetAudioMode()
+                } else if (state == 1) {
+                    changeToHeadset()
+                }
+            }
+        }
+    }
+
+    private fun changeToSpeaker() {
+        AudioPlayer.switchAudioStreamType(true)
+        audioManager.isSpeakerphoneOn = true
+        audioManager.mode = AudioManager.MODE_NORMAL
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
+            audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0)
+    }
+
+    private fun changeToHeadset() {
+        AudioPlayer.switchAudioStreamType(true)
+        audioManager.isSpeakerphoneOn = false
+        audioManager.isBluetoothScoOn = false
+        audioManager.mode = AudioManager.MODE_NORMAL
+        audioManager.setStreamVolume(AudioManager.STREAM_MUSIC,
+            audioManager.getStreamVolume(AudioManager.STREAM_MUSIC), 0)
+    }
+
+    private fun changeToReceiver() {
+        AudioPlayer.switchAudioStreamType(false)
+        audioManager.isSpeakerphoneOn = false
+        audioManager.isBluetoothScoOn = false
+        audioManager.mode = AudioManager.MODE_IN_COMMUNICATION
+        audioManager.setStreamVolume(AudioManager.STREAM_VOICE_CALL,
+            audioManager.getStreamVolume(AudioManager.STREAM_VOICE_CALL), 0)
+    }
+
+    private fun resetAudioMode() {
+        if (!audioManager.isWiredHeadsetOn && !audioManager.isBluetoothScoOn && !audioManager.isBluetoothA2dpOn) {
+            if (isCling) {
+                changeToReceiver()
+            } else {
+                changeToSpeaker()
+            }
+        } else {
+            changeToHeadset()
+        }
     }
 
     private val chatControlCallback = object : ChatControlView.Callback {

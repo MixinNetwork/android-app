@@ -34,6 +34,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         if (isAudio) {
             val trackSelector = DefaultTrackSelector()
             ExoPlayerFactory.newSimpleInstance(MixinApplication.appContext, trackSelector).apply {
+                volume = 1.0f
                 addListener(this@MixinPlayer)
                 addVideoListener(this@MixinPlayer)
             }
@@ -42,6 +43,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
             val videoTrackSelectionFactory = AdaptiveTrackSelection.Factory(BANDWIDTH_METER)
             val trackSelector = DefaultTrackSelector(videoTrackSelectionFactory)
             ExoPlayerFactory.newSimpleInstance(MixinApplication.appContext, trackSelector).apply {
+                volume = 1.0f
                 addListener(this@MixinPlayer)
                 addVideoListener(this@MixinPlayer)
             }
@@ -53,6 +55,10 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
 
     fun setCycle(cycle: Boolean) {
         this.cycle = cycle
+    }
+
+    fun setAudioStreamType(streamType:Int){
+        this.player.audioStreamType = streamType
     }
 
     fun isPlaying() = player.playWhenReady
