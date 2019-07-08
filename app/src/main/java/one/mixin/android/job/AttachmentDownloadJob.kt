@@ -73,6 +73,10 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
         removeJob()
     }
 
+    override fun getRetryLimit(): Int {
+        return 1
+    }
+
     override fun onRun() {
         if (isCancel) {
             return
