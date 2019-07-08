@@ -41,25 +41,23 @@
             android:id="@+id/bot_iv"
             android:layout_width="12dp"
             android:layout_height="12dp"
-            android:layout_toEndOf="@id/name"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
+            android:layout_toEndOf="@id/name"
             android:src="@drawable/ic_bot"
             android:visibility="gone"
-            tools:ignore="ContentDescription"/>
+            tools:ignore="ContentDescription" />
 
         <ImageView
             android:id="@+id/verified_iv"
             android:layout_width="12dp"
             android:layout_height="12dp"
-            android:layout_toEndOf="@id/bot_iv"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:visibility="gone"
+            android:layout_toEndOf="@id/bot_iv"
             android:src="@drawable/ic_user_verified"
-            tools:ignore="ContentDescription"/>
+            android:visibility="gone"
+            tools:ignore="ContentDescription" />
     </RelativeLayout>
 
     <TextView
