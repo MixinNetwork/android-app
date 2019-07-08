@@ -1,12 +1,13 @@
 package one.mixin.android.ui.conversation.adapter
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import one.mixin.android.R
 import one.mixin.android.vo.User
+import one.mixin.android.vo.showVerifiedOrBot
 
 class FriendAdapter : RecyclerView.Adapter<FriendAdapter.FriendViewHolder>() {
 
@@ -37,8 +38,7 @@ class FriendAdapter : RecyclerView.Adapter<FriendAdapter.FriendViewHolder>() {
             itemView.setOnClickListener {
                 listener?.onFriendClick(item)
             }
-            itemView.bot_iv.visibility = if (item.appId != null) View.VISIBLE else View.GONE
-            itemView.verified_iv.visibility = if (item.isVerified == true) View.VISIBLE else View.GONE
+            item.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
         }
     }
 

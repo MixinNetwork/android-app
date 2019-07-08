@@ -2,6 +2,8 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
+import android.view.View
+import androidx.core.view.isVisible
 import kotlinx.android.parcel.Parcelize
 
 @SuppressLint("ParcelCreator")
@@ -18,3 +20,20 @@ data class ChatMinimal(
     val isVerified: Boolean?,
     val appId: String?
 ) : Parcelable
+
+fun ChatMinimal.showVerifiedOrBot(verifiedView: View, botView: View) {
+    when {
+        isVerified == true -> {
+            verifiedView.isVisible = true
+            botView.isVisible = false
+        }
+        appId != null -> {
+            verifiedView.isVisible = false
+            botView.isVisible = true
+        }
+        else -> {
+            verifiedView.isVisible = false
+            botView.isVisible = false
+        }
+    }
+}

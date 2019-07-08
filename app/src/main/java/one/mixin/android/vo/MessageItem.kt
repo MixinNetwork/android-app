@@ -2,6 +2,8 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
+import android.view.View
+import androidx.core.view.isVisible
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import kotlinx.android.parcel.Parcelize
@@ -135,3 +137,20 @@ fun MessageItem.toMessage() = Message(messageId, conversationId, userId, type, c
     mediaDuration, mediaWidth, mediaHeight, null, thumbImage, null, null, mediaStatus, status,
     createdAt, actionName, participantUserId, snapshotId, hyperlink = null, name = mediaName, albumId = null, stickerId = stickerId,
     sharedUserId = sharedUserId, mediaWaveform = mediaWaveform, mediaMineType = null, quoteMessageId = quoteId, quoteContent = quoteContent)
+
+fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
+    when {
+        sharedUserIsVerified == true -> {
+            verifiedView.isVisible = true
+            botView.isVisible = false
+        }
+        sharedUserAppId != null -> {
+            verifiedView.isVisible = false
+            botView.isVisible = true
+        }
+        else -> {
+            verifiedView.isVisible = false
+            botView.isVisible = false
+        }
+    }
+}

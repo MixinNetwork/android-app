@@ -55,6 +55,7 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DraggableRecyclerView
@@ -542,9 +543,8 @@ class ConversationListFragment : LinkFragment() {
                 }
             }
 
-            itemView.bot_iv.visibility = if (conversationItem.isBot()) VISIBLE else GONE
             itemView.mute_iv.visibility = if (conversationItem.isMute()) VISIBLE else GONE
-            itemView.verified_iv.visibility = if (conversationItem.ownerVerified == true) VISIBLE else GONE
+            conversationItem.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
 
             if (conversationItem.isGroup()) {
                 itemView.avatar_iv.setGroup(conversationItem.iconUrl())

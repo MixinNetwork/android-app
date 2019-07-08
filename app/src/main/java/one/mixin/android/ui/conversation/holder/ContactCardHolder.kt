@@ -3,8 +3,6 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_contact_card.view.*
@@ -13,6 +11,7 @@ import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.showVerifiedOrBot
 import org.jetbrains.anko.dip
 
 class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
@@ -35,8 +34,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         itemView.name_tv.text = item.sharedUserFullName
         itemView.id_tv.text = item.sharedUserIdentityNumber
         itemView.chat_time.timeAgoClock(item.createdAt)
-        itemView.verified_iv.visibility = if (item.sharedUserIsVerified == true) VISIBLE else GONE
-        itemView.bot_iv.visibility = if (item.sharedUserAppId != null) VISIBLE else GONE
+        item.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
 
         val isMe = Session.getAccountId() == item.userId
         if (isFirst && !isMe) {

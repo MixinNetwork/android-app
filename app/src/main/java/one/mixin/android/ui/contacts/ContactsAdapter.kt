@@ -1,11 +1,9 @@
 package one.mixin.android.ui.contacts
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_contact.view.*
 import kotlinx.android.synthetic.main.item_contact_header.view.*
@@ -16,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.inflate
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
+import one.mixin.android.vo.showVerifiedOrBot
 
 class ContactsAdapter(val context: Context, var users: List<User>, var friendSize: Int) :
     RecyclerView.Adapter<ContactsAdapter.ViewHolder>(),
@@ -212,8 +211,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun bind(user: User, listener: ContactListener?) {
             itemView.normal.text = user.fullName
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
-            itemView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
+            user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
             if (listener != null) {
                 itemView.setOnClickListener { listener.onFriendItem(user) }
             }

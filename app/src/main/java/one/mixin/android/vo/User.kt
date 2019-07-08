@@ -2,6 +2,8 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
+import android.view.View
+import androidx.core.view.isVisible
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -67,4 +69,21 @@ const val SYSTEM_USER = "00000000-0000-0000-0000-000000000000"
 
 fun createSystemUser(): User {
     return User(SYSTEM_USER, "0", "", "0", null, null, false, null, null)
+}
+
+fun User.showVerifiedOrBot(verifiedView: View, botView: View) {
+    when {
+        isVerified == true -> {
+            verifiedView.isVisible = true
+            botView.isVisible = false
+        }
+        isBot() -> {
+            verifiedView.isVisible = false
+            botView.isVisible = true
+        }
+        else -> {
+            verifiedView.isVisible = false
+            botView.isVisible = false
+        }
+    }
 }
