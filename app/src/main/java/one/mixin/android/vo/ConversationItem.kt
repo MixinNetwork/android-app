@@ -1,5 +1,7 @@
 package one.mixin.android.vo
 
+import android.view.View
+import androidx.core.view.isVisible
 import androidx.room.Entity
 import org.threeten.bp.Instant
 
@@ -76,4 +78,21 @@ data class ConversationItem(
 
     fun isRecall() =
         contentType == MessageCategory.MESSAGE_RECALL.name
+}
+
+fun ConversationItem.showVerifiedOrBot(verifiedView: View, botView: View) {
+    when {
+        ownerVerified == true -> {
+            verifiedView.isVisible = true
+            botView.isVisible = false
+        }
+        isBot() -> {
+            verifiedView.isVisible = false
+            botView.isVisible = true
+        }
+        else -> {
+            verifiedView.isVisible = false
+            botView.isVisible = false
+        }
+    }
 }

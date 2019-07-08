@@ -7,6 +7,7 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.ConversationCategory
+import one.mixin.android.vo.showVerifiedOrBot
 
 class ChatHolder constructor(containerView: View) : NormalHolder(containerView) {
     init {
@@ -19,16 +20,7 @@ class ChatHolder constructor(containerView: View) : NormalHolder(containerView) 
             itemView.search_name.text = chat.fullName
             itemView.search_name.highLight(target)
             itemView.search_avatar_iv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)
-            itemView.verified_iv.visibility = if (chat.isVerified == true) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
-            itemView.bot_iv.visibility = if (chat.appId != null) {
-                View.VISIBLE
-            } else {
-                View.GONE
-            }
+            chat.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
         } else {
             itemView.bot_iv.visibility = View.GONE
             itemView.verified_iv.visibility = View.GONE

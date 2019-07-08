@@ -45,6 +45,7 @@ import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.vo.showVerifiedOrBot
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
@@ -251,9 +252,8 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             context?.toast(R.string.copy_success)
             true
         }
-        contentView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
+        user.showVerifiedOrBot(contentView.verified_iv, contentView.bot_iv)
         if (user.isBot()) {
-            contentView.bot_iv.visibility = VISIBLE
             contentView.open_fl.visibility = VISIBLE
             contentView.transfer_fl.visibility = GONE
             bottomViewModel.findAppById(user.appId!!)?.let { app ->
@@ -274,7 +274,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     })
             }
         } else {
-            contentView.bot_iv.visibility = GONE
             contentView.detail_tv.visibility = GONE
             contentView.open_fl.visibility = GONE
             contentView.transfer_fl.visibility = VISIBLE

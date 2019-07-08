@@ -27,7 +27,7 @@ class AboutFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         twitter.setOnClickListener { context?.openUrl("https://twitter.com/MixinMessenger") }
         facebook.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
-        help_center.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/en-us") }
+        help_center.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com") }
         terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
         privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
     }

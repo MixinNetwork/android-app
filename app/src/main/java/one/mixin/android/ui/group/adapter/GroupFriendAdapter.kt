@@ -1,11 +1,9 @@
 package one.mixin.android.ui.group.adapter
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
-import android.view.View.GONE
-import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import kotlinx.android.synthetic.main.item_contact_header.view.*
 import kotlinx.android.synthetic.main.item_group_friend.view.*
@@ -13,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.vo.User
+import one.mixin.android.vo.showVerifiedOrBot
 
 class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHolder>(),
     StickyRecyclerHeadersAdapter<GroupFriendAdapter.HeaderViewHolder> {
@@ -91,9 +90,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
                     if (it.contains(user.userId)) {
                         itemView.cb.setButtonDrawable(R.drawable.ic_round_gray)
                         itemView.isEnabled = false
-                        itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
-                        itemView.verified_iv.visibility =
-                            if (user.isVerified != null && user.isVerified) VISIBLE else GONE
+                        user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
                         return
                     } else {
                         itemView.cb.setButtonDrawable(R.drawable.cb_add_member)
@@ -104,8 +101,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
             if (checkedMap.containsKey(user.identityNumber)) {
                 itemView.cb.isChecked = checkedMap[user.identityNumber]!!
             }
-            itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
-            itemView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
+            user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
             itemView.cb.isClickable = false
             itemView.setOnClickListener {
                 itemView.cb.isChecked = !itemView.cb.isChecked

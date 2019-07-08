@@ -11,6 +11,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.contacts.ContactsAdapter
 import one.mixin.android.vo.User
+import one.mixin.android.vo.showVerifiedOrBot
 
 class SingleFriendSelectAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(),
     StickyRecyclerHeadersAdapter<SingleFriendSelectAdapter.HeaderViewHolder> {
@@ -100,8 +101,7 @@ class SingleFriendSelectAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         fun bind(user: User, listener: FriendSelectListener?) {
             itemView.normal.text = user.fullName
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            itemView.bot_iv.visibility = if (user.appId != null) View.VISIBLE else View.GONE
-            itemView.verified_iv.visibility = if (user.isVerified != null && user.isVerified) View.VISIBLE else View.GONE
+            user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
             if (listener != null) {
                 itemView.setOnClickListener { listener.onItemClick(user) }
             }

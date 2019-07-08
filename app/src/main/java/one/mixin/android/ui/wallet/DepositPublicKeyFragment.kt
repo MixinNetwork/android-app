@@ -43,7 +43,7 @@ class DepositPublicKeyFragment : DepositFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/en-us/articles/360018789931-How-to-deposit-on-Mixin-Messenger-") }
+        title.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360018789931") }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         qr_avatar.setBorder()

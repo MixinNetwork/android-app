@@ -12,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.showVerifiedOrBot
 
 class ConversationCheckView : LinearLayout, Checkable {
     private var checked = false
@@ -70,7 +71,6 @@ class ConversationCheckView : LinearLayout, Checkable {
             toggle()
             listener?.onUserItemClick(item)
         }
-        bot_iv.visibility = if (item.appId != null) View.VISIBLE else View.GONE
-        verified_iv.visibility = if (item.isVerified == true) View.VISIBLE else View.GONE
+        item.showVerifiedOrBot(verified_iv, bot_iv)
     }
 }
