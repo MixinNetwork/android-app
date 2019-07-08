@@ -217,8 +217,8 @@
     <string name="chat_audio_discard_ok">放弃</string>
     <string name="chat_audio_discard_cancel">继续</string>
     <string name="chat_delete_message">删除 %1$d 条消息吗?</string>
-    <string name="chat_delete_for_me">为我删除</string>
-    <string name="chat_delete_for_everyone">在所有人设备上删除</string>
+    <string name="chat_delete_for_me">删除</string>
+    <string name="chat_delete_for_everyone">撤回</string>
     <string name="chat_recall_me">你撤回了一条消息</string>
     <string name="chat_recall_delete">此消息已撤回</string>
     <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的设备都将删除被选中的消息</string>
@@ -388,7 +388,7 @@
     <string name="setting_emergency_create_success">添加紧急联系人成功</string>
     <string name="setting_emergency_set">设置为紧急联系人</string>
     <string name="setting_emergency_change_mobile">立即修改手机号？</string>
-    <string name="setting_emergency_pin_tip">紧急联系人经 PIN 加密保护</string>
+    <string name="setting_emergency_pin_tip">紧急联系人经支付密码加密保护</string>
     <string name="setting_emergency_enable">启用紧急联系人</string>
     <string name="setting_deauthorize">取消授权</string>
     <string name="setting_backup">备份</string>

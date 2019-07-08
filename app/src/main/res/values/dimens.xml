@@ -34,5 +34,5 @@
 
     <dimen name="album_item_height">72dp</dimen>
     <dimen name="call_button_size">74dp</dimen>
-    <dimen name="setting_divider">24dp</dimen>
+    <dimen name="setting_divider">16dp</dimen>
 </resources>
