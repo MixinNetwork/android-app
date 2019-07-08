@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.view.View
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
@@ -31,9 +32,11 @@ class WaveformView : View {
 
     private var innerColor = Color.parseColor("#DDDDDD")
     private var outerColor = Color.parseColor("#9B9B9B")
+    private var freshColor = context.getColor(R.color.colorBlue)
     private var paintInner: Paint = Paint()
     private var paintOuter: Paint = Paint()
     private var thumbX = 0
+    var isFresh = false
 
     fun setProgress(progress: Float) {
         if (progress < 0) {
@@ -98,7 +101,7 @@ class WaveformView : View {
         var barCounter = 0f
         var nextBarNum = 0
 
-        paintInner.color = innerColor
+        paintInner.color = if (isFresh && thumbX == 0) freshColor else innerColor
         paintOuter.color = outerColor
 
         val y = height

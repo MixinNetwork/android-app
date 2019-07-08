@@ -97,6 +97,7 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
@@ -365,12 +366,10 @@ internal constructor(
         Observable.just(userId).subscribeOn(Schedulers.io())
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
-    fun cancel(id: String) {
-        doAsync {
-            notNullElse(jobManager.findJobById(id), { it.cancel() }, {
-                conversationRepository.updateMediaStatusStatus(MediaStatus.CANCELED.name, id)
-            })
-        }
+    fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
+        notNullElse(jobManager.findJobById(id), { it.cancel() }, {
+            conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
+        })
     }
 
     fun retryUpload(id: String, onError: () -> Unit) {
@@ -641,14 +640,17 @@ internal constructor(
 
     suspend fun isSilence(conversationId: String, userId: String) = conversationRepository.isSilence(conversationId, userId) == 0
 
-    fun checkNextAudioMessageAvailable(currentMessageId: String) =
+    fun markAudioReadAndCheckNextAudioAvailable(currentMessageId: String) =
         viewModelScope.launch(Dispatchers.IO) {
             val currentMessage = conversationRepository.findMessageById(currentMessageId)
                 ?: return@launch
+            if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
+                conversationRepository.updateMediaStatus(MediaStatus.READ.name, currentMessageId)
+            }
             val message = conversationRepository.findNextAudioMessage(
                 currentMessage.conversationId, currentMessage.createdAt, currentMessageId)
                 ?: return@launch
-            if (message.mediaStatus != MediaStatus.DONE.name) {
+            if (!mediaDownloaded(message.mediaStatus)) {
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
             }
         }

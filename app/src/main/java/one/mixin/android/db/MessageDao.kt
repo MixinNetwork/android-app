@@ -126,6 +126,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET media_status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaStatus(status: String, id: String)
 
+    @Query("UPDATE messages SET media_status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
+    suspend fun updateMediaStatusSuspend(status: String, id: String)
+
     @Query("UPDATE messages SET media_size = :mediaSize WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMediaSize(mediaSize: Long, id: String)
 
