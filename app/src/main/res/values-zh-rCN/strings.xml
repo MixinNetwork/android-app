@@ -112,6 +112,7 @@
     <string name="error_too_small_withdraw_amount">错误 %1$d：提现金额太小</string>
     <string name="error_invalid_emergency_contact">错误 %1$d：紧急联系人不正确</string>
     <string name="error_retry_upload">重新上传失败。</string>
+    <string name="error_not_supported_audio_format">不支持的音频格式，请用其他app打开。</string>
     <!--home-->
     <string name="title_home">联系人</string>
     <string name="search_hint">资产，联系人，消息</string>

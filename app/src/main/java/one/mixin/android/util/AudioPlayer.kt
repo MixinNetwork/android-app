@@ -3,6 +3,7 @@ package one.mixin.android.util
 import android.media.AudioManager
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -21,6 +22,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isAudio
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
@@ -97,17 +99,22 @@ class AudioPlayer private constructor() {
                 if (playbackState == Player.STATE_ENDED) {
                     RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
                     stopTimber()
-                    status = STATUS_ERROR
+                    status = STATUS_DONE
 
                     checkNext()
                 }
             }
 
             override fun onPlayerError(error: ExoPlaybackException) {
-                status = STATUS_PAUSE
+                if (error.cause is UnrecognizedInputFormatException) {
+                    status = STATUS_ERROR
+                    RxBus.publish(ProgressEvent(id!!, 0f, STATUS_ERROR))
+                } else {
+                    status = STATUS_PAUSE
+                    RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
+                }
                 stopTimber()
                 it.stop()
-                RxBus.publish(ProgressEvent(id!!, 0f, STATUS_PAUSE))
             }
         })
     }
@@ -143,7 +150,7 @@ class AudioPlayer private constructor() {
             id = messageItem.messageId
             this.messageItem = messageItem
             player.loadAudio(messageItem.mediaUrl)
-        } else if (status == STATUS_ERROR) {
+        } else if (status == STATUS_DONE || status == STATUS_ERROR) {
             player.loadAudio(messageItem.mediaUrl)
         }
         status = STATUS_PLAY
@@ -155,7 +162,7 @@ class AudioPlayer private constructor() {
     }
 
     private fun resume() {
-        if (messageItem != null && (status == STATUS_PAUSE || status == STATUS_ERROR)) {
+        if (messageItem != null && (status == STATUS_PAUSE || status == STATUS_DONE || status == STATUS_ERROR)) {
             play(messageItem!!)
         }
     }
@@ -174,7 +181,7 @@ class AudioPlayer private constructor() {
     }
 
     fun isLoaded(id: String): Boolean {
-        return this.id == id && status != STATUS_ERROR
+        return this.id == id && status != STATUS_ERROR && status != STATUS_DONE
     }
 
     var timerDisposable: Disposable? = null
@@ -200,6 +207,8 @@ class AudioPlayer private constructor() {
 
     private fun checkNext() {
         messageItem?.let { item ->
+            if (!item.isAudio()) return
+
             GlobalScope.launch(Dispatchers.IO) {
                 val nextMessage = MixinDatabase.getDatabase(MixinApplication.appContext)
                     .messageDao()

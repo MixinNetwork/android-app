@@ -43,6 +43,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -152,6 +153,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.widget.ChatControlView
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
@@ -414,6 +416,23 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         openMedia(messageItem)
                     } else {
                         startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
+                    }
+                } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
+                    if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                        AudioPlayer.get().pause()
+                    } else {
+                        RxBus.listen(ProgressEvent::class.java)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDisposable(stopScope)
+                            .subscribe {
+                                if (it.progress == 0f &&
+                                    it.status == STATUS_ERROR &&
+                                    it.id == messageItem.messageId) {
+                                    toast(R.string.error_not_supported_audio_format)
+                                    openMedia(messageItem)
+                                }
+                            }
+                        AudioPlayer.get().play(messageItem)
                     }
                 } else {
                     openMedia(messageItem)

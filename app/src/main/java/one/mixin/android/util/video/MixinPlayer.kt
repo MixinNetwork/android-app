@@ -124,6 +124,12 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         player.prepare(mediaSource)
     }
 
+    fun loadAudio(uri: Uri) {
+        val mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
+            .createMediaSource(uri)
+        player.prepare(mediaSource)
+    }
+
     private fun buildDataSourceFactory(bandwidthMeter: DefaultBandwidthMeter): DataSource.Factory {
         return DefaultDataSourceFactory(MixinApplication.appContext, bandwidthMeter, buildOkHttpDataSourceFactory())
     }

@@ -114,6 +114,10 @@ fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name
 
+fun MessageItem.isFile() =
+    type == MessageCategory.SIGNAL_DATA.name ||
+        type == MessageCategory.PLAIN_DATA.name
+
 fun MessageItem.canRecall(): Boolean {
     return this.type == MessageCategory.SIGNAL_TEXT.name ||
         this.type == MessageCategory.SIGNAL_IMAGE.name ||
