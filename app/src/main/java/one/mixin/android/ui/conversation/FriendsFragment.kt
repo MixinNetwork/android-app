@@ -15,7 +15,7 @@ import javax.inject.Inject
 
 class FriendsFragment : BaseFriendsFragment<FriendsViewHolder, ConversationViewModel>(), FriendsListener {
     init {
-        adapter = FriendsAdapter().apply {
+        adapter = FriendsAdapter(userCallback).apply {
             listener = this@FriendsFragment
         }
     }

@@ -31,6 +31,8 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder, VM: ViewModel> : 
             dataChange()
         }
 
+    protected val userCallback = UserItemCallback("")
+
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
         layoutInflater.inflate(R.layout.fragment_friends, container, false)
 
@@ -54,12 +56,12 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder, VM: ViewModel> : 
             override fun afterTextChanged(s: Editable) {
                 keyWord = s.toString()
                 adapter.filter = keyWord
+                userCallback.filter = keyWord
             }
         })
     }
 
     private fun dataChange() {
-        adapter.submitList(null)
         adapter.submitList(if (keyWord.isNotBlank()) {
             users.filter {
                 it.fullName?.contains(keyWord, true) == true ||

@@ -9,9 +9,10 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.friends.AbsFriendsAdapter
 import one.mixin.android.ui.common.friends.BaseFriendsViewHolder
 import one.mixin.android.ui.common.friends.FriendsListener
+import one.mixin.android.ui.common.friends.UserItemCallback
 import one.mixin.android.vo.User
 
-class FriendsNoBotAdapter : AbsFriendsAdapter<FriendsNoBotViewHolder>() {
+class FriendsNoBotAdapter(callback: UserItemCallback) : AbsFriendsAdapter<FriendsNoBotViewHolder>(callback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         FriendsNoBotViewHolder(parent.inflate(R.layout.item_friends_no_bot))
 }

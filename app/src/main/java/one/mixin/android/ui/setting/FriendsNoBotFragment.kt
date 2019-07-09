@@ -24,7 +24,7 @@ import one.mixin.android.vo.User
 
 class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, EmergencyViewModel>(), FriendsListener {
     init {
-        adapter = FriendsNoBotAdapter().apply {
+        adapter = FriendsNoBotAdapter(userCallback).apply {
             listener = this@FriendsNoBotFragment
         }
     }
