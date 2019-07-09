@@ -35,7 +35,7 @@ class ViewEmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>()
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        title_view.right_animator.setOnClickListener { context?.openUrl("") }
+        title_view.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360029154692") }
         avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         name_tv.text = user.fullName
         id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)

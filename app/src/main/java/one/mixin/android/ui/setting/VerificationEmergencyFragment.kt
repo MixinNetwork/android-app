@@ -99,6 +99,7 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
             switchContext = Dispatchers.IO,
             successBlock = { response ->
                 val a = response.data as Account
+                Session.storeAccount(a)
                 Session.setHasEmergencyContact(a.hasEmergencyContact)
                 activity?.supportFragmentManager?.findFragmentByTag(EmergencyContactFragment.TAG)?.let {
                     (it as? EmergencyContactFragment)?.setEmergencySet()

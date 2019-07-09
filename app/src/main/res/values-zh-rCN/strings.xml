@@ -384,7 +384,7 @@
     <string name="setting_emergency_bottom_create">添加紧急联系人</string>
     <string name="setting_emergency_select_contact">选择紧急联系人</string>
     <string name="setting_emergency_contact_mixin_id">请输入紧急联系人的 Mixin ID</string>
-    <string name="setting_emergency_send_code">请输入发送至以下Mixin ID的 4 位验证码：%1$s</string>
+    <string name="setting_emergency_send_code">请输入发送至以下 Mixin ID 的 4 位验证码：%1$s</string>
     <string name="setting_emergency_change_success">修改紧急联系人成功</string>
     <string name="setting_emergency_create_success">添加紧急联系人成功</string>
     <string name="setting_emergency_set">设置为紧急联系人</string>
