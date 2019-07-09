@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_gray">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:titleText="@string/setting_emergency"
+        app:need_divider="false"
+        app:rightIcon="@drawable/ic_help_outline_black_24dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/white">
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/avatar"
+            android:layout_width="92dp"
+            android:layout_height="92dp"
+            android:layout_marginTop="42dp"
+            android:src="@drawable/ic_emergency_avatar"
+            android:layout_gravity="center_horizontal"/>
+
+        <TextView
+            android:id="@+id/name_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/margin12"
+            android:layout_gravity="center_horizontal"
+            android:maxWidth="280dp"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:textSize="@dimen/bottom_name_text_size"
+            android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/id_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="42dp"
+            android:layout_gravity="center_horizontal"
+            android:maxLines="1"
+            android:textColor="@color/text_gray"/>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tip_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="@string/setting_emergency_content"
+        android:textColor="@color/text_gray"
+        android:textSize="12sp"/>
+</LinearLayout>

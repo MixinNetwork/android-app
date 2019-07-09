@@ -154,7 +154,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         })
     }
 
-    override fun getTipTextRes(): Int = when (type) {
+    private fun getTipTextRes(): Int = when (type) {
         ADD -> R.string.withdrawal_addr_pin_add
         DELETE -> R.string.withdrawal_addr_pin_delete
         MODIFY -> R.string.withdrawal_addr_pin_modify

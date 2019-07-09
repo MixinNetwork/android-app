@@ -4,28 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
+import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_setting.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.addFragment
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.extension.navTo
 import one.mixin.android.ui.device.DeviceFragment
-import javax.inject.Inject
 
-class SettingFragment : BaseFragment() {
+class SettingFragment : Fragment() {
     companion object {
         const val TAG = "SettingFragment"
 
         fun newInstance() = SettingFragment()
-    }
-
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val settingViewModel: SettingViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(SettingViewModel::class.java)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
@@ -37,37 +27,19 @@ class SettingFragment : BaseFragment() {
             activity?.onBackPressed()
         }
         about_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                AboutFragment.newInstance(), AboutFragment.TAG)
+            navTo(AboutFragment.newInstance(), AboutFragment.TAG)
         }
         desktop_rl.setOnClickListener {
             DeviceFragment.newInstance().showNow(requireFragmentManager(), DeviceFragment.TAG)
         }
         storage_rl.setOnClickListener {
-            requireActivity().addFragment(this@SettingFragment,
-                SettingDataStorageFragment.newInstance(), SettingDataStorageFragment.TAG)
-        }
-
-        settingViewModel.countBlockingUsers().observe(this, Observer {
-            it?.let {
-                blocking_tv.text = "${it.size}"
-            }
-        })
-        blocked_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                SettingBlockedFragment.newInstance(), SettingBlockedFragment.TAG)
-        }
-        conversation_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                SettingConversationFragment.newInstance(), SettingConversationFragment.TAG)
-        }
-        auth_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
+            navTo(SettingDataStorageFragment.newInstance(), SettingDataStorageFragment.TAG)
         }
         backup_rl.setOnClickListener {
-            activity?.addFragment(this@SettingFragment,
-                BackUpFragment.newInstance(), BackUpFragment.TAG)
+            navTo(BackUpFragment.newInstance(), BackUpFragment.TAG)
+        }
+        privacy_rl.setOnClickListener {
+            navTo(PrivacyFragment.newInstance(), PrivacyFragment.TAG)
         }
     }
 }

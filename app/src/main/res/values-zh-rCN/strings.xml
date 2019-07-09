@@ -64,6 +64,7 @@
     <string name="transfer_send">转出</string>
     <string name="receive">转入</string>
     <string name="developer">开发者</string>
+    <string name="later">稍后</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -109,6 +110,7 @@
     <string name="error_duration_short">时间太短</string>
     <string name="error_too_many_stickers">错误 %1$d：贴纸数已达上限</string>
     <string name="error_too_small_withdraw_amount">错误 %1$d：提现金额太小</string>
+    <string name="error_invalid_emergency_contact">错误 %1$d：紧急联系人不正确</string>
     <string name="error_retry_upload">重新上传失败。</string>
     <!--home-->
     <string name="title_home">联系人</string>
@@ -143,6 +145,9 @@
     <string name="landing_agree">同意并继续</string>
     <string name="landing_privacy_policy">隐私政策</string>
     <string name="landing_terms_service">服务条款</string>
+    <string name="landing_verification_need_help">需要帮助？</string>
+    <string name="landing_verification_cant_receive">接收不到验证码?</string>
+    <string name="landing_verification_lost_mobile">手机丢失?</string>
     <!--contacts-->
     <string name="contact_new_group_chat_title">新群聊</string>
     <string name="contact_new_group_chat_desc">创建一个最多支持 256 人的群</string>
@@ -163,6 +168,7 @@
     <string name="contact_receive_money">我的收款码</string>
     <string name="contact_receive_tip">用 Mixin 扫描二维码给我转账</string>
     <string name="add_contact">+ 添加联系人</string>
+    <string name="contact_search_hint">昵称, Mixin ID</string>
     <!--profile-->
     <string name="profile_my_title">我的</string>
     <string name="profile_photo">个人头像</string>
@@ -211,8 +217,8 @@
     <string name="chat_audio_discard_ok">放弃</string>
     <string name="chat_audio_discard_cancel">继续</string>
     <string name="chat_delete_message">删除 %1$d 条消息吗?</string>
-    <string name="chat_delete_for_me">为我删除</string>
-    <string name="chat_delete_for_everyone">在所有人设备上删除</string>
+    <string name="chat_delete_for_me">删除</string>
+    <string name="chat_delete_for_everyone">撤回</string>
     <string name="chat_recall_me">你撤回了一条消息</string>
     <string name="chat_recall_delete">此消息已撤回</string>
     <string name="chat_recall_delete_alert">所有使用最新版本 Mixin Messenger 的设备都将删除被选中的消息</string>
@@ -370,6 +376,21 @@
     <string name="conversation_status_unknown">未知</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_authentications">授权</string>
+    <string name="setting_emergency">紧急联系人</string>
+    <string name="setting_emergency_content">紧急联系人旨在帮助你在丢失且无法找回手机号的情况下登录你的账号。</string>
+    <string name="setting_emergency_desc">请放心，即使您的手机号丢失无法找回钱包资产也很安全，请牢记您的支付密码，阅读紧急联系人了解更多。</string>
+    <string name="setting_emergency_bottom_current">查看紧急联系人</string>
+    <string name="setting_emergency_bottom_change">修改紧急联系人</string>
+    <string name="setting_emergency_bottom_create">添加紧急联系人</string>
+    <string name="setting_emergency_select_contact">选择紧急联系人</string>
+    <string name="setting_emergency_contact_mixin_id">请输入紧急联系人的 Mixin ID</string>
+    <string name="setting_emergency_send_code">请输入发送至以下 Mixin ID 的 4 位验证码：%1$s</string>
+    <string name="setting_emergency_change_success">修改紧急联系人成功</string>
+    <string name="setting_emergency_create_success">添加紧急联系人成功</string>
+    <string name="setting_emergency_set">设置为紧急联系人</string>
+    <string name="setting_emergency_change_mobile">立即修改手机号？</string>
+    <string name="setting_emergency_pin_tip">紧急联系人经支付密码加密保护</string>
+    <string name="setting_emergency_enable">启用紧急联系人</string>
     <string name="setting_deauthorize">取消授权</string>
     <string name="setting_backup">备份</string>
     <string name="setting_clearing">正在清理…</string>
@@ -398,6 +419,7 @@
     <string name="setting_desktop_logout_failed">退出桌面端失败</string>
     <string name="setting_desktop_confirm">确认登录 Mixin Messenger 桌面端</string>
     <string name="setting_desktop_login">登录</string>
+    <string name="setting_privacy_security">隐私和安全</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>
@@ -520,7 +542,8 @@
     <string name="gallery_empty_text">还没有图片或视频</string>
     <string name="account_name">账号名</string>
     <string name="account_memo">备注(Memo)</string>
-    <string name="deposit_tip">注意：账号名和备注同时使用才能充值 %1$s 到 Mixin。</string>
+    <string name="deposit_account_attention">注意：首次充值请小额尝试！账号名和备注同时使用才能充值 %1$s 到 Mixin。</string>
+    <string name="deposit_attention">首次充值请小额尝试！</string>
     <string name="deposit_confirmation">充值到账至少需要 %1$d 个区块确认。</string>
     <string name="bottom_deposit_title">%1$s 充值</string>
     <string name="bottom_deposit_tip_eos">该充值地址支持所有基于 EOS 发行的代币，例如 EOS、IQ、BLACK、OCT、KARMA 等。</string>

@@ -14,8 +14,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
@@ -30,15 +28,14 @@ import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.StorageUsage
 import timber.log.Timber
-import javax.inject.Inject
 
-class SettingStorageFragment : BaseFragment() {
+class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() {
     companion object {
         const val TAG = "SettingStorageFragment"
 
@@ -47,12 +44,8 @@ class SettingStorageFragment : BaseFragment() {
         }
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
+    override fun getModelClass() = SettingStorageViewModel::class.java
 
-    private val settingStorageViewModel: SettingStorageViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(SettingStorageViewModel::class.java)
-    }
     private val adapter = StorageAdapter {
         showMenu(it)
     }
@@ -69,7 +62,7 @@ class SettingStorageFragment : BaseFragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        settingStorageViewModel.getConversationStorageUsage().observe(this, Observer {
+        viewModel.getConversationStorageUsage().observe(this, Observer {
             if (progress.visibility != View.GONE) {
                 progress.visibility = View.GONE
             }
@@ -87,7 +80,7 @@ class SettingStorageFragment : BaseFragment() {
     private val selectSet: ArraySet<StorageUsage> = ArraySet()
     private val unknownSet: ArraySet<String> = ArraySet()
     private fun showMenu(conversationId: String) {
-        settingStorageViewModel.getStorageUsage(conversationId).map { list ->
+        viewModel.getStorageUsage(conversationId).map { list ->
             val map = ArrayMap<String, StorageUsage>()
             unknownSet.clear()
             list.forEach { item ->
@@ -198,24 +191,24 @@ class SettingStorageFragment : BaseFragment() {
                 for (item in selectSet) {
                     when {
                         item.category.endsWith("_IMAGE") -> {
-                            settingStorageViewModel.clear(item.conversationId, MessageCategory.PLAIN_IMAGE.name)
-                            settingStorageViewModel.clear(item.conversationId, MessageCategory.SIGNAL_IMAGE.name)
+                            viewModel.clear(item.conversationId, MessageCategory.PLAIN_IMAGE.name)
+                            viewModel.clear(item.conversationId, MessageCategory.SIGNAL_IMAGE.name)
                         }
                         item.category.endsWith("_DATA") -> {
-                            settingStorageViewModel.clear(item.conversationId, MessageCategory.PLAIN_DATA.name)
-                            settingStorageViewModel.clear(item.conversationId, MessageCategory.SIGNAL_DATA.name)
+                            viewModel.clear(item.conversationId, MessageCategory.PLAIN_DATA.name)
+                            viewModel.clear(item.conversationId, MessageCategory.SIGNAL_DATA.name)
                         }
                         item.category.endsWith("_VIDEO") -> {
-                            settingStorageViewModel.clear(item.conversationId, MessageCategory.PLAIN_VIDEO.name)
-                            settingStorageViewModel.clear(item.conversationId, MessageCategory.SIGNAL_VIDEO.name)
+                            viewModel.clear(item.conversationId, MessageCategory.PLAIN_VIDEO.name)
+                            viewModel.clear(item.conversationId, MessageCategory.SIGNAL_VIDEO.name)
                         }
                         item.category.endsWith("_AUDIO") -> {
-                            settingStorageViewModel.clear(item.conversationId, MessageCategory.PLAIN_AUDIO.name)
-                            settingStorageViewModel.clear(item.conversationId, MessageCategory.SIGNAL_AUDIO.name)
+                            viewModel.clear(item.conversationId, MessageCategory.PLAIN_AUDIO.name)
+                            viewModel.clear(item.conversationId, MessageCategory.SIGNAL_AUDIO.name)
                         }
                         else -> {
                             unknownSet.forEach { category ->
-                                settingStorageViewModel.clear(item.conversationId, category)
+                                viewModel.clear(item.conversationId, category)
                             }
                         }
                     }

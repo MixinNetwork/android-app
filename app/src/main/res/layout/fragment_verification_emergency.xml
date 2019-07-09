@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <ImageView
+        android:id="@+id/back_iv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/margin12"
+        android:padding="@dimen/margin12"
+        android:background="@drawable/mixin_ripple"
+        android:contentDescription="@string/landing_back_content_desc"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.023"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/ic_arrow_back_black_24dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/verification_keyboard"
+        android:layout_below="@+id/back_iv"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/pin_verification_title_tv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="center_horizontal"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"/>
+
+        <one.mixin.android.widget.VerificationCodeView
+            android:id="@+id/pin_verification_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginTop="32dp"
+            android:layout_marginEnd="@dimen/margin16"
+            android:layout_marginBottom="8dp"
+            android:gravity="center_horizontal"
+            app:vcv_inputWidth="30dp"
+            app:vcv_spacing="10dp"
+            app:vcv_textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/pin_verification_tip_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:textColor="@color/colorRed"/>
+    </LinearLayout>
+
+    <com.github.jorgecastilloprz.FABProgressCircle
+        android:id="@+id/verification_next_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/verification_keyboard"
+        android:layout_alignParentEnd="true"
+        android:visibility="invisible"
+        app:arcColor="@android:color/holo_blue_dark"
+        app:layout_constraintBottom_toTopOf="@+id/verification_keyboard"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:src="@drawable/ic_arrow_forward_white_24dp"
+            app:backgroundTint="@color/colorBlue"/>
+    </com.github.jorgecastilloprz.FABProgressCircle>
+
+    <one.mixin.android.widget.Keyboard
+        android:id="@+id/verification_keyboard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
+
+    <View
+        android:id="@+id/verification_cover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="invisible"
+        android:clickable="true"
+        android:background="@android:color/transparent"
+        android:focusable="true"/>
+</RelativeLayout>

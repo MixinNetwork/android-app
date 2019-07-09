@@ -1,6 +1,9 @@
 package one.mixin.android.api
 
+import kotlinx.coroutines.withContext
+import one.mixin.android.util.ErrorHandler
 import retrofit2.Response
+import kotlin.coroutines.CoroutineContext
 
 class MixinResponse<T>() {
 
@@ -29,4 +32,46 @@ class MixinResponse<T>() {
 
     val errorDescription: String
         get() = if (error != null) error!!.description else ""
+}
+
+suspend fun <T, R> handleMixinResponse(
+    invokeNetwork: suspend () -> MixinResponse<T>,
+    switchContext: CoroutineContext? = null,
+    successBlock: (suspend (MixinResponse<T>) -> R)? = null,
+    errorBlock: (suspend (MixinResponse<T>) -> R)? = null,
+    exceptionBlock: ((t: Throwable) -> R)? = null,
+    doAfterNetworkSuccess: (() -> Unit)? = null,
+    defaultErrorHandle: (suspend (MixinResponse<T>) -> Unit) = {
+        ErrorHandler.handleMixinError(it.errorCode)
+    },
+    defaultExceptionHandle: (suspend (t: Throwable) -> Unit) = {
+        ErrorHandler.handleError(it)
+    }
+): R? {
+    val response = if (switchContext != null) {
+        try {
+            withContext(switchContext) {
+                invokeNetwork()
+            }
+        } catch (t: Throwable) {
+            defaultExceptionHandle.invoke(t)
+            return exceptionBlock?.invoke(t)
+        }
+    } else {
+        try {
+            invokeNetwork()
+        } catch (t: Throwable) {
+            defaultExceptionHandle.invoke(t)
+            return exceptionBlock?.invoke(t)
+        }
+    }
+
+    doAfterNetworkSuccess?.invoke()
+
+    return if (response.isSuccess) {
+        successBlock?.invoke(response)
+    } else {
+        defaultErrorHandle(response)
+        errorBlock?.invoke(response)
+    }
 }

@@ -14,7 +14,6 @@ import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_backup.*
@@ -45,8 +44,6 @@ class BackUpFragment : BaseFragment() {
         fun newInstance() = BackUpFragment()
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
     @Inject
     lateinit var jobManager: MixinJobManager
 

@@ -1,38 +1,31 @@
 package one.mixin.android.ui.setting
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.DialogInterface
 import android.graphics.Color
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
-import androidx.recyclerview.widget.ListAdapter
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_authentications.*
 import kotlinx.android.synthetic.main.item_auth.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.App
-import javax.inject.Inject
 
-class AuthenticationsFragment : BaseFragment() {
+class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
         const val TAG = "AuthenticationsFragment"
 
         fun newInstance() = AuthenticationsFragment()
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-    private val settingViewModel: SettingViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(SettingViewModel::class.java)
-    }
+    override fun getModelClass() = SettingViewModel::class.java
 
     private var list: MutableList<App>? = null
 
@@ -47,7 +40,7 @@ class AuthenticationsFragment : BaseFragment() {
                 showDialog(app, position)
             }
         })
-        settingViewModel.authorizations().autoDisposable(stopScope).subscribe({ list ->
+        viewModel.authorizations().autoDisposable(stopScope).subscribe({ list ->
             if (list.isSuccess) {
                 this.list = list.data?.map {
                     it.app
@@ -73,7 +66,7 @@ class AuthenticationsFragment : BaseFragment() {
             }
             .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                settingViewModel.deauthApp(app.appId).autoDisposable(stopScope).subscribe({}, {})
+                viewModel.deauthApp(app.appId).autoDisposable(stopScope).subscribe({}, {})
                 list?.removeAt(position)
                 auth_rv.adapter?.notifyItemRemoved(position)
                 dialog.dismiss()

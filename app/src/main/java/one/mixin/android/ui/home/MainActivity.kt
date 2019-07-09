@@ -9,6 +9,7 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.core.content.getSystemService
 import androidx.fragment.app.MixinDialogFragment
+import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
@@ -17,6 +18,8 @@ import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
@@ -32,6 +35,8 @@ import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.MixinJobManager
@@ -44,7 +49,11 @@ import one.mixin.android.job.RotateSignedPreKeyJob.Companion.ROTATE_SIGNED_PRE_K
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
+import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_EMERGENCY
+import one.mixin.android.ui.common.PinCodeFragment.Companion.FROM_LOGIN
+import one.mixin.android.ui.common.PinCodeFragment.Companion.PREF_LOGIN_FROM
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
@@ -128,6 +137,11 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
+        if(defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
+            defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
+            delayShowModifyMobile()
+        }
+
         setContentView(R.layout.activity_main)
 
         if (savedInstanceState == null) {
@@ -159,6 +173,25 @@ class MainActivity : BlazeBaseActivity() {
     override fun onStart() {
         super.onStart()
         getSystemService<NotificationManager>()?.cancelAll()
+    }
+
+    private fun delayShowModifyMobile() = lifecycleScope.launch {
+        delay(2000)
+        androidx.appcompat.app.AlertDialog.Builder(this@MainActivity)
+            .setTitle(getString(R.string.setting_emergency_change_mobile))
+            .setPositiveButton(R.string.change) { dialog, _ ->
+                supportFragmentManager.inTransaction {
+                    setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                        R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                        .add(R.id.root_view, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE))
+                        .addToBackStack(null)
+                    dialog.dismiss()
+                }
+            }
+            .setNegativeButton(R.string.later) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun checkRoot() {

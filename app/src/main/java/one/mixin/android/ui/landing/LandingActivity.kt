@@ -23,9 +23,9 @@ class LandingActivity : BaseActivity() {
             context.startActivity(intent)
         }
 
-        fun show(context: Context, verificationCode: String) {
+        fun show(context: Context, pinCode: String) {
             val intent = Intent(context, LandingActivity::class.java).apply {
-                putExtra(ARGS_PIN, verificationCode)
+                putExtra(ARGS_PIN, pinCode)
             }
             context.startActivity(intent)
         }

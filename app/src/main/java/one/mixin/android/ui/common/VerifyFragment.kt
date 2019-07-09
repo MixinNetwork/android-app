@@ -6,17 +6,21 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import com.uber.autodispose.autoDisposable
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_verify_pin.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
+import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
-import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.Account
+import one.mixin.android.ui.setting.FriendsNoBotFragment
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import javax.inject.Inject
@@ -26,8 +30,17 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
     companion object {
         val TAG = VerifyFragment::class.java.simpleName
 
-        fun newInstance() = VerifyFragment()
+        const val FROM_PHONE = 0
+        const val FROM_EMERGENCY = 1
+
+        const val ARGS_FROM = "args_from"
+
+        fun newInstance(from: Int) = VerifyFragment().withArgs {
+            putInt(ARGS_FROM, from)
+        }
     }
+
+    private val from by lazy { arguments!!.getInt(ARGS_FROM) }
 
     @Inject
     lateinit var accountRepository: AccountRepository
@@ -46,28 +59,42 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
 
     override fun onUpdate(index: Int) {
         if (index == pin.getCount()) {
-            verify_fab.visibility = VISIBLE
-            verify_fab.show()
-            verify_cover.visibility = VISIBLE
-            accountRepository.verifyPin(pin.code())
-                .autoDisposable(stopScope)
-                .subscribe({ r: MixinResponse<Account> ->
-                    verify_fab?.hide()
-                    verify_fab?.visibility = GONE
-                    verify_cover?.visibility = GONE
-                    if (r.isSuccess) {
-                        context?.updatePinCheck()
-                        LandingActivity.show(context!!, pin.code())
-                    } else {
-                        pin.clear()
-                        ErrorHandler.handleMixinError(r.errorCode)
-                    }
-                }, { t: Throwable ->
-                    verify_fab?.hide()
-                    verify_cover?.visibility = GONE
-                    ErrorHandler.handleError(t)
-                })
+            verify(pin.code())
         }
+    }
+
+    private fun showLoading() {
+        verify_fab.visibility = VISIBLE
+        verify_fab.show()
+        verify_cover.visibility = VISIBLE
+    }
+
+    private fun hideLoading() {
+        verify_fab?.hide()
+        verify_fab?.visibility = GONE
+        verify_cover?.visibility = GONE
+    }
+
+    private fun verify(pinCode: String) = lifecycleScope.launch {
+        showLoading()
+        handleMixinResponse(
+            invokeNetwork = { accountRepository.verifyPin(pinCode) },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                context?.updatePinCheck()
+                activity?.supportFragmentManager?.inTransaction {
+                    remove(this@VerifyFragment)
+                }
+                if (from == FROM_PHONE) {
+                    LandingActivity.show(context!!, pinCode)
+                } else if (from == FROM_EMERGENCY) {
+                    val f = FriendsNoBotFragment.newInstance(pinCode)
+                    activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
+                }
+            },
+            exceptionBlock = { hideLoading() },
+            doAfterNetworkSuccess = { hideLoading() }
+        )
     }
 
     private val keyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {

@@ -179,7 +179,7 @@ class BottomSheetViewModel @Inject internal constructor(
         jobManager.addJobInBackground(RefreshUserJob(listOf(userId), forceRefresh = forceRefresh))
     }
 
-    fun verifyPin(code: String): Observable<MixinResponse<Account>> = accountRepository.verifyPin(code)
+    suspend fun verifyPin(code: String): MixinResponse<Account> = accountRepository.verifyPin(code)
 
     fun trendingGifs(limit: Int, offset: Int): Observable<List<Gif>> =
         accountRepository.trendingGifs(limit, offset).map { it.data }

@@ -64,7 +64,12 @@ class WalletActivity : BlazeBaseActivity() {
     companion object {
         const val ASSET = "ASSET"
         const val LEFT_IN_ANIM = "left_in_anim"
-        fun show(activity: Activity, assetItem: AssetItem? = null, leftInAnim: Boolean = false) {
+
+        fun show(
+            activity: Activity,
+            assetItem: AssetItem? = null,
+            leftInAnim: Boolean = false
+        ) {
             val myIntent = Intent(activity, WalletActivity::class.java)
             val bundle = Bundle()
             assetItem?.let {

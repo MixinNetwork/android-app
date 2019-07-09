@@ -31,14 +31,11 @@
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="32dp"
+        android:gravity="center_horizontal"
         android:layout_below="@id/close_iv"
         android:text="@string/verify_pin"
         android:textColor="@android:color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        android:textSize="18sp"/>
 
     <one.mixin.android.widget.PinView
         android:id="@+id/pin"

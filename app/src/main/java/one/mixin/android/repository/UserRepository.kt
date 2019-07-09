@@ -35,6 +35,8 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
 
     fun findUserById(query: String): LiveData<User> = userDao.findUserById(query)
 
+    suspend fun suspendFindUserById(query: String) = userDao.suspendFindUserById(query)
+
     fun getUserById(id: String): User? = userDao.findUser(id)
 
     suspend fun findUserExist(userIds: List<String>): List<String> = userDao.findUserExist(userIds)
@@ -83,6 +85,8 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
     suspend fun findAppById(id: String) = appDao.findAppById(id)
 
     fun findContactUsers() = userDao.findContactUsers()
+
+    suspend fun getFriendsNotBot() = userDao.getFriendsNotBot()
 
     fun findFriendsNotBot() = userDao.findFriendsNotBot()
 

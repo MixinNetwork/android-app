@@ -25,7 +25,9 @@ open class Account(
     val receive_message_source: String,
     @SerializedName("has_pin")
     val hasPin: Boolean,
-    val accept_conversation_source: String
+    val accept_conversation_source: String,
+    @SerializedName("has_emergency_contact")
+    var hasEmergencyContact: Boolean
 )
 
 fun Account.toUser(): User =

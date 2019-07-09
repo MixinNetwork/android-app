@@ -114,6 +114,9 @@ open class ErrorHandler {
                     WITHDRAWAL_AMOUNT_SMALL -> {
                         toast(getString(R.string.error_too_small_withdraw_amount, WITHDRAWAL_AMOUNT_SMALL))
                     }
+                    INVALID_EMERGENCY_CONTACT -> {
+                        toast(getString(R.string.error_invalid_emergency_contact, INVALID_EMERGENCY_CONTACT))
+                    }
                     else -> handled = false
                 }
 
@@ -185,6 +188,7 @@ open class ErrorHandler {
         private const val INSUFFICIENT_TRANSACTION_FEE = 20124
         private const val TOO_MANY_STICKERS = 20126
         private const val WITHDRAWAL_AMOUNT_SMALL = 20127
+        private const val INVALID_EMERGENCY_CONTACT = 20130
         private const val BLOCKCHAIN_ERROR = 30100
         private const val INVALID_ADDRESS = 30102
     }

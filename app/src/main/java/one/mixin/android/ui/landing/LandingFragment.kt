@@ -1,19 +1,14 @@
 package one.mixin.android.ui.landing
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
-import androidx.core.content.ContextCompat
-import android.text.SpannableString
-import android.text.Spanned
-import android.text.method.LinkMovementMethod
-import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.fragment_landing.*
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
-import one.mixin.android.widget.NoUnderLineSpan
+import one.mixin.android.extension.highlightLinkText
 
 class LandingFragment : Fragment() {
 
@@ -32,38 +27,15 @@ class LandingFragment : Fragment() {
         val policy: String = getString(R.string.landing_privacy_policy)
         val termsService: String = getString(R.string.landing_terms_service)
         val policyWrapper = getString(R.string.landing_introduction, policy, termsService)
-        val colorPrimary = ContextCompat.getColor(context!!, R.color.colorBlue)
         val policyUrl = getString(R.string.landing_privacy_policy_url)
         val termsUrl = getString(R.string.landing_terms_url)
-        introduction_tv.text = highlightLinkText(
+        introduction_tv.highlightLinkText(
             policyWrapper,
-            colorPrimary,
             arrayOf(policy, termsService),
             arrayOf(policyUrl, termsUrl))
-        introduction_tv.movementMethod = LinkMovementMethod.getInstance()
 
         agree_tv.setOnClickListener {
             activity?.addFragment(this@LandingFragment, MobileFragment.newInstance(), MobileFragment.TAG)
         }
-    }
-
-    private fun highlightLinkText(
-        source: String,
-        color: Int,
-        texts: Array<String>,
-        links: Array<String>
-    ): SpannableString {
-        if (texts.size != links.size) {
-            throw IllegalArgumentException("texts's length should equals with links")
-        }
-        val sp = SpannableString(source)
-        for (i in texts.indices) {
-            val text = texts[i]
-            val link = links[i]
-            val start = source.indexOf(text)
-            sp.setSpan(NoUnderLineSpan(link), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-            sp.setSpan(ForegroundColorSpan(color), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        }
-        return sp
     }
 }

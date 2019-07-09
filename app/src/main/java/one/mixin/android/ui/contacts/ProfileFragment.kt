@@ -42,6 +42,7 @@ import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.ui.common.VerifyFragment.Companion.FROM_PHONE
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
@@ -96,7 +97,7 @@ class ProfileFragment : BaseFragment() {
                         activity?.supportFragmentManager?.inTransaction {
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                                 R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                .add(R.id.container, VerifyFragment.newInstance())
+                                .add(R.id.container, VerifyFragment.newInstance(FROM_PHONE))
                                 .addToBackStack(null)
                         }
                     }

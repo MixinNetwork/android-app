@@ -18,6 +18,7 @@ import kotlinx.android.synthetic.main.fragment_deposit_account.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
@@ -45,7 +46,7 @@ class DepositAccountFragment : DepositFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360023738212") }
+        title.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT_ACCOUNT) }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         account_name_qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         account_name_qr_avatar.setBorder()
@@ -56,7 +57,7 @@ class DepositAccountFragment : DepositFragment() {
         account_name_key_code.text = asset.accountName
         account_memo_key_code.text = asset.accountTag
         tip_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
-        warning_tv.text = getString(R.string.deposit_tip, asset.symbol)
+        warning_tv.text = getString(R.string.deposit_account_attention, asset.symbol)
         account_name_qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
         }

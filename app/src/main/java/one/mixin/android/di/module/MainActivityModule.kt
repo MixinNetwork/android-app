@@ -3,6 +3,7 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.search.SearchFragment
@@ -33,4 +34,7 @@ abstract class MainActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeSearchMessageFragment(): SearchMessageFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeVerifyFragment(): VerifyFragment
 }

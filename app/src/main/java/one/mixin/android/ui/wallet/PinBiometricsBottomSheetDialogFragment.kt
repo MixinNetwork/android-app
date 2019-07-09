@@ -11,15 +11,15 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.os.bundleOf
-import com.uber.autodispose.autoDisposable
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
-import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.Account
 import one.mixin.android.widget.AndroidUtilities
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PinView
@@ -56,36 +56,40 @@ class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         super.onActivityCreated(savedInstanceState)
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
-                if (index != contentView.pin.getCount()) return
-
-                contentView.pin_va?.displayedChild = POS_PB
-                bottomViewModel.verifyPin(contentView.pin.code()).autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
-                    dialog.dismiss()
-                    if (r.isSuccess) {
-                        context?.updatePinCheck()
-                        r.data?.let {
-                            if (fromWalletSetting) {
-                                val success = BiometricUtil.savePin(requireContext(), contentView.pin.code(),
-                                    this@PinBiometricsBottomSheetDialogFragment)
-                                if (success) callback?.onSuccess() else dismiss()
-                            } else {
-                                callback?.onSuccess()
-                            }
-                        }
-                        dismiss()
-                    } else {
-                        contentView.pin_va?.displayedChild = POS_PIN
-                        contentView.pin.clear()
-                        ErrorHandler.handleMixinError(r.errorCode)
-                    }
-                }, { t ->
-                    dialog.dismiss()
-                    contentView.pin_va?.displayedChild = POS_PIN
-                    contentView.pin.clear()
-                    ErrorHandler.handleError(t)
-                })
+                if (index == contentView.pin.getCount()) {
+                    verify(contentView.pin.code())
+                }
             }
         })
+    }
+
+    private fun verify(pinCode: String) = lifecycleScope.launch {
+        contentView.pin_va?.displayedChild = POS_PB
+        handleMixinResponse(
+            invokeNetwork = { bottomViewModel.verifyPin(pinCode) },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                context?.updatePinCheck()
+                response.data?.let {
+                    if (fromWalletSetting) {
+                        val success = BiometricUtil.savePin(requireContext(), pinCode,
+                            this@PinBiometricsBottomSheetDialogFragment)
+                        if (success) callback?.onSuccess() else dismiss()
+                    } else {
+                        callback?.onSuccess()
+                    }
+                }
+                dismiss()
+            },
+            exceptionBlock = {
+                contentView.pin_va?.displayedChild = POS_PIN
+                contentView.pin.clear()
+            },
+            doAfterNetworkSuccess = {
+                contentView.pin_va?.displayedChild = POS_PIN
+                contentView.pin.clear()
+            }
+        )
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -95,6 +99,6 @@ class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         }
     }
 
-    override fun getTipTextRes(): Int =
+    private fun getTipTextRes(): Int =
         if (fromWalletSetting) R.string.wallet_pin_open_biometrics else R.string.wallet_pin_modify_biometrics
 }

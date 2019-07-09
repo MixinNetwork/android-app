@@ -60,7 +60,7 @@ class SingleFriendSelectFragment : BaseFragment() {
             data?.let { list ->
                 conversations = list
                 adapter.conversations = list
-                chatViewModel.finFriendsNotBot().observe(this, Observer { r ->
+                chatViewModel.findFriendsNotBot().observe(this, Observer { r ->
                     if (r != null) {
                         val mutableList = mutableListOf<User>()
                         mutableList.addAll(r)

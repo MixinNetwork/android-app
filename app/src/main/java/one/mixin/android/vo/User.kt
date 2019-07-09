@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.os.Parcelable
 import android.view.View
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DiffUtil
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
@@ -59,6 +60,16 @@ data class User(
     @Ignore
     @IgnoredOnParcel
     var app: App? = null
+
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<User>() {
+            override fun areItemsTheSame(oldItem: User, newItem: User) =
+                oldItem.userId == newItem.userId
+
+            override fun areContentsTheSame(oldItem: User, newItem: User) =
+                oldItem == newItem
+        }
+    }
 
     fun isBot(): Boolean {
         return appId != null

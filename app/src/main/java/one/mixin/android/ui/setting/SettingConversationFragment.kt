@@ -1,25 +1,22 @@
 package one.mixin.android.ui.setting
 
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
 import com.uber.autodispose.autoDisposable
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_setting_conversation.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.api.request.AccountUpdateRequest
-import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.MessageSource
-import javax.inject.Inject
 
-class SettingConversationFragment : BaseFragment() {
+class SettingConversationFragment : BaseViewModelFragment<SettingConversationViewModel>() {
     companion object {
         const val TAG = "SettingConversationFragment"
         const val CONVERSATION_KEY = "conversation_key"
@@ -27,12 +24,7 @@ class SettingConversationFragment : BaseFragment() {
         fun newInstance() = SettingConversationFragment()
     }
 
-    @Inject
-    lateinit var viewModelFactory: ViewModelProvider.Factory
-
-    private val settingConversationViewModel: SettingConversationViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(SettingConversationViewModel::class.java)
-    }
+    override fun getModelClass() = SettingConversationViewModel::class.java
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_setting_conversation, container, false)
@@ -40,13 +32,13 @@ class SettingConversationFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
-        settingConversationViewModel.initPreferences(context!!)
+        viewModel.initPreferences(context!!)
             .observe(this@SettingConversationFragment, Observer {
                 it?.let {
                     render(it)
                 }
             })
-        settingConversationViewModel.initGroupPreferences(context!!)
+        viewModel.initGroupPreferences(context!!)
             .observe(this@SettingConversationFragment, Observer {
                 it?.let {
                     renderGroup(it)
@@ -76,20 +68,20 @@ class SettingConversationFragment : BaseFragment() {
                         it.dispose()
                     }
                 }
-                disposable = settingConversationViewModel
+                disposable = viewModel
                     .savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.CONTACTS.name))
                     .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
-                            settingConversationViewModel.preferences.setContacts()
+                            viewModel.preferences.setContacts()
                         } else {
-                            settingConversationViewModel.preferences.setEveryBody()
+                            viewModel.preferences.setEveryBody()
                             ErrorHandler.handleMixinError(it.errorCode)
                         }
                         my_contacts_pb?.visibility = View.GONE
                     }, {
                         my_contacts_pb?.visibility = View.GONE
-                        settingConversationViewModel.preferences.setEveryBody()
+                        viewModel.preferences.setEveryBody()
                         ErrorHandler.handleError(it)
                     })
             }
@@ -108,20 +100,20 @@ class SettingConversationFragment : BaseFragment() {
                         it.dispose()
                     }
                 }
-                disposable = settingConversationViewModel
+                disposable = viewModel
                     .savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.EVERYBODY.name))
                     .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
-                            settingConversationViewModel.preferences.setEveryBody()
+                            viewModel.preferences.setEveryBody()
                         } else {
-                            settingConversationViewModel.preferences.setContacts()
+                            viewModel.preferences.setContacts()
                             ErrorHandler.handleMixinError(it.errorCode)
                         }
                         everybody_pb?.visibility = View.GONE
                     }, {
                         everybody_pb?.visibility = View.GONE
-                        settingConversationViewModel.preferences.setContacts()
+                        viewModel.preferences.setContacts()
                         ErrorHandler.handleError(it)
                     })
             }
@@ -144,20 +136,20 @@ class SettingConversationFragment : BaseFragment() {
                         it.dispose()
                     }
                 }
-                disposable = settingConversationViewModel
+                disposable = viewModel
                     .savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.CONTACTS.name))
                     .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
-                            settingConversationViewModel.groupPreferences.setContacts()
+                            viewModel.groupPreferences.setContacts()
                         } else {
-                            settingConversationViewModel.groupPreferences.setEveryBody()
+                            viewModel.groupPreferences.setEveryBody()
                             ErrorHandler.handleMixinError(it.errorCode)
                         }
                         my_contacts_group_pb?.visibility = View.GONE
                     }, {
                         my_contacts_group_pb?.visibility = View.GONE
-                        settingConversationViewModel.groupPreferences.setEveryBody()
+                        viewModel.groupPreferences.setEveryBody()
                         ErrorHandler.handleError(it)
                     })
             }
@@ -176,20 +168,20 @@ class SettingConversationFragment : BaseFragment() {
                         it.dispose()
                     }
                 }
-                disposable = settingConversationViewModel
+                disposable = viewModel
                     .savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.EVERYBODY.name))
                     .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
-                            settingConversationViewModel.groupPreferences.setEveryBody()
+                            viewModel.groupPreferences.setEveryBody()
                         } else {
-                            settingConversationViewModel.groupPreferences.setContacts()
+                            viewModel.groupPreferences.setContacts()
                             ErrorHandler.handleMixinError(it.errorCode)
                         }
                         everybody_pb?.visibility = View.GONE
                     }, {
                         everybody_pb?.visibility = View.GONE
-                        settingConversationViewModel.groupPreferences.setContacts()
+                        viewModel.groupPreferences.setContacts()
                         ErrorHandler.handleError(it)
                     })
             }
