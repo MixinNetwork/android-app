@@ -819,10 +819,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             gallery_container.isVisible) {
             chat_control.reset()
         }
-        if (chat_control.isRecording) {
-            OpusAudioRecorder.get().stopRecording(false)
-            chat_control.cancelExternal()
-        }
         if (reply_view.visibility == VISIBLE) {
             reply_view.fadeOut()
             chat_control.showOtherInput()
