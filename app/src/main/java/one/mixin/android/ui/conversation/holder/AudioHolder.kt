@@ -88,7 +88,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         messageItem.mediaWaveform?.let {
             itemView.audio_waveform.setWaveform(it)
         }
-        if (!isMe && messageItem.mediaStatus == MediaStatus.DONE.name) {
+        if (!isMe && messageItem.mediaStatus != MediaStatus.READ.name) {
             itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.colorBlue))
             itemView.audio_waveform.isFresh = true
         } else {
