@@ -59,6 +59,7 @@ abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder, VM: ViewModel> : 
     }
 
     private fun dataChange() {
+        adapter.submitList(null)
         adapter.submitList(if (keyWord.isNotBlank()) {
             users.filter {
                 it.fullName?.contains(keyWord, true) == true ||
