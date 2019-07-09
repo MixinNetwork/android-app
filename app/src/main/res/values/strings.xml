@@ -553,7 +553,8 @@
     <string name="gallery_empty_text">No media yet</string>
     <string name="account_name">Account Name</string>
     <string name="account_memo">Account Memo</string>
-    <string name="deposit_tip">Notice: Both an Account Memo and an Account Name are required to successfully deposit your %1$s to Mixin.</string>
+    <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both an Account Memo and an Account Name are required to successfully deposit your %1$s to Mixin.</string>
+    <string name="deposit_attention">Please try a small amount for the first deposit.</string>
     <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
     <string name="bottom_deposit_title">%1$s Deposit</string>
     <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, BLACK, OCT, KARMA, etc.</string>

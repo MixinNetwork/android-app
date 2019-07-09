@@ -56,7 +56,7 @@ class DepositAccountFragment : DepositFragment() {
         account_name_key_code.text = asset.accountName
         account_memo_key_code.text = asset.accountTag
         tip_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
-        warning_tv.text = getString(R.string.deposit_tip, asset.symbol)
+        warning_tv.text = getString(R.string.deposit_account_attention, asset.symbol)
         account_name_qr_fl.setOnClickListener {
             DepositQrBottomFragment.newInstance(asset).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
         }

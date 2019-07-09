@@ -6,13 +6,11 @@ import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.fragment_deposit_tip_bottom_sheet.view.*
-import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_SHOW_DEPOSIT_TIP_CHAIN_SET
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getTipsByAsset
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -57,7 +55,10 @@ class DepositTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             defaultSharedPreferences.putStringSet(PREF_SHOW_DEPOSIT_TIP_CHAIN_SET, depositChainSet)
             dismiss()
         }
-        contentView.warning_tv.isVisible = asset.chainId == EOS_CHAIN_ID
-        contentView.warning_tv.text = getString(R.string.deposit_tip, asset.symbol)
+        contentView.warning_tv.text = if (asset.chainId == EOS_CHAIN_ID) {
+            getString(R.string.deposit_account_attention, asset.symbol)
+        } else {
+            getString(R.string.deposit_attention)
+        }
     }
 }
