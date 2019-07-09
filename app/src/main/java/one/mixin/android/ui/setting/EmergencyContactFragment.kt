@@ -37,7 +37,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        title_view.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360029154692") }
+        title_view.right_animator.setOnClickListener { context?.openUrl("") }
         enable_rl.setOnClickListener {
             EmergencyContactTipBottomSheetDialogFragment.newInstance()
                 .showNow(requireFragmentManager(), EmergencyContactTipBottomSheetDialogFragment.TAG)

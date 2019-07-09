@@ -35,9 +35,14 @@ class ViewEmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>()
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        title_view.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360029154692") }
+        title_view.right_animator.setOnClickListener { context?.openUrl("") }
         avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         name_tv.text = user.fullName
         id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
+
+        val url = getString(R.string.setting_emergency_url)
+        val target = getString(R.string.setting_emergency)
+        val desc = getString(R.string.setting_emergency_desc)
+        tip_tv.highlightLinkText(desc, arrayOf(target), arrayOf(url))
     }
 }
