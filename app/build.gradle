@@ -146,9 +146,6 @@ dependencies {
     implementation "androidx.room:room-rxjava2:${roomVersion}"
     implementation "androidx.room:room-ktx:${roomVersion}"
 
-    // play service
-    implementation "com.google.android.gms:play-services-auth:${gcmVersion}"
-
     // DI
     implementation "com.google.dagger:dagger:${daggerVersion}"
     implementation "com.google.dagger:dagger-android:${daggerVersion}"
