@@ -321,7 +321,7 @@ class DecryptMessage : Injector() {
                 val decoded = Base64.decode(plainText)
                 val mediaData = gson.fromJson(String(decoded), TransferAttachmentData::class.java)
                 val message = createAudioMessage(data.messageId, data.conversationId, data.userId, mediaData.attachmentId,
-                    data.category, mediaData.size, null, mediaData.duration.toString(), nowInUtc(), mediaData.waveform,
+                    data.category, mediaData.size, null, mediaData.duration.toString(), data.createdAt, mediaData.waveform,
                     mediaData.key, mediaData.digest, MediaStatus.PENDING, MessageStatus.DELIVERED)
                 messageDao.insert(message)
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
