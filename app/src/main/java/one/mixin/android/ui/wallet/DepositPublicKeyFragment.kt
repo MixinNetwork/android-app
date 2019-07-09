@@ -16,6 +16,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.fragment_deposit_key.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
@@ -43,7 +44,7 @@ class DepositPublicKeyFragment : DepositFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360018789931") }
+        title.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT_PUBLIC_KEY) }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         qr_avatar.setBorder()

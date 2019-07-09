@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import kotlinx.android.synthetic.main.fragment_view_emergency_contact.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.extension.highlightLinkText
@@ -35,12 +36,12 @@ class ViewEmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>()
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        title_view.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360029154692") }
+        title_view.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
         avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
         name_tv.text = user.fullName
         id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
 
-        val url = getString(R.string.setting_emergency_url)
+        val url = Constants.HelpLink.EMERGENCY
         val target = getString(R.string.setting_emergency)
         val desc = getString(R.string.setting_emergency_desc)
         tip_tv.highlightLinkText(desc, arrayOf(target), arrayOf(url))

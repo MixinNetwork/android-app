@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.fragment_emergency_contact.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.inTransaction
@@ -37,7 +38,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
         title_view.left_ib.setOnClickListener {
             activity?.onBackPressed()
         }
-        title_view.right_animator.setOnClickListener { context?.openUrl("https://mixinmessenger.zendesk.com/hc/articles/360029154692") }
+        title_view.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
         enable_rl.setOnClickListener {
             EmergencyContactTipBottomSheetDialogFragment.newInstance()
                 .showNow(requireFragmentManager(), EmergencyContactTipBottomSheetDialogFragment.TAG)
