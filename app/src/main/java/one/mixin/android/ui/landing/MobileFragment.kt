@@ -1,14 +1,13 @@
 package one.mixin.android.ui.landing
 
 import android.annotation.SuppressLint
-import android.app.Activity.RESULT_OK
-import android.content.Intent
-import android.content.IntentSender
+import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
@@ -17,11 +16,6 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import com.google.android.gms.auth.api.Auth
-import com.google.android.gms.auth.api.credentials.Credential
-import com.google.android.gms.auth.api.credentials.CredentialPickerConfig
-import com.google.android.gms.auth.api.credentials.HintRequest
-import com.google.android.gms.common.api.GoogleApiClient
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -38,7 +32,6 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
@@ -46,7 +39,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
-import java.util.Locale
 import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
@@ -54,8 +46,6 @@ class MobileFragment : BaseFragment() {
     companion object {
         const val TAG: String = "MobileFragment"
         const val ARGS_PHONE_NUM = "args_phone_num"
-
-        const val REQUEST_CODE = 100
 
         fun newInstance(pin: String? = null): MobileFragment = MobileFragment().apply {
             val b = Bundle().apply {
@@ -81,8 +71,6 @@ class MobileFragment : BaseFragment() {
     private var pin: String? = null
 
     private lateinit var recaptchaView: RecaptchaView
-
-    private lateinit var apiClient: GoogleApiClient
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val parent = layoutInflater.inflate(R.layout.fragment_mobile, container, false) as ViewGroup
@@ -114,6 +102,9 @@ class MobileFragment : BaseFragment() {
         mobile_et.showSoftInputOnFocus = false
         mobile_et.addTextChangedListener(mWatcher)
         mobile_et.requestFocus()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            mobile_et.setAutofillHints(AUTOFILL_HINT_PHONE)
+        }
         mobile_cover.isClickable = true
 
         countryPicker = CountryPicker.newInstance()
@@ -134,8 +125,6 @@ class MobileFragment : BaseFragment() {
         keyboard.setKeyboardKeys(KEYS)
         keyboard.setOnClickKeyboardListener(mKeyboardListener)
         keyboard.animate().translationY(0f).start()
-
-        requestHint()
     }
 
     override fun onBackPressed(): Boolean {
@@ -148,37 +137,6 @@ class MobileFragment : BaseFragment() {
             return true
         }
         return false
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK && data != null) {
-            val credential = data.getParcelableExtra<Credential>(Credential.EXTRA_KEY)
-            val phoneNum = try {
-                PhoneNumberUtil.getInstance().parse(credential.id, Locale.getDefault().country).nationalNumber.toString()
-            } catch (e: NumberParseException) {
-                ""
-            }
-            mobile_et?.setText(phoneNum)
-        }
-    }
-
-    private fun requestHint() {
-        if (!requireContext().isGooglePlayServicesAvailable()) return
-
-        apiClient = GoogleApiClient.Builder(requireContext())
-            .addApi(Auth.CREDENTIALS_API)
-            .build()
-        val hintRequest = HintRequest.Builder()
-            .setPhoneNumberIdentifierSupported(true)
-            .setHintPickerConfig(CredentialPickerConfig.Builder().setShowCancelButton(true).build())
-            .build()
-        val pendingIntent = Auth.CredentialsApi.getHintPickerIntent(apiClient, hintRequest)
-        try {
-            startIntentSenderForResult(pendingIntent.intentSender, REQUEST_CODE,
-                null, 0, 0, 0, null)
-        } catch (ignored: IntentSender.SendIntentException) {
-        }
     }
 
     private fun showDialog() {

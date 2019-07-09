@@ -73,7 +73,7 @@
             app:layout_constraintTop_toTopOf="@+id/mobile_et"
             tools:text="+86"/>
 
-        <EditText
+        <one.mixin.android.widget.AutoFillPhoneText
             android:id="@+id/mobile_et"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
