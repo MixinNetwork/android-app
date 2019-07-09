@@ -388,7 +388,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             .autoDisposable(destroyScope)
                             .subscribe {
                                 if (it.progress == -1f || it.status == STATUS_PLAY) {
-                                    chatViewModel.checkNextAudioMessageAvailable(it.id)
+                                    chatViewModel.markAudioReadAndCheckNextAudioAvailable(it.id)
                                 }
                             }
                         AudioPlayer.get().play(messageItem)

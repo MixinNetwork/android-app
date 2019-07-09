@@ -213,7 +213,9 @@ fun String.isIllegalMessageCategory(): Boolean {
 
 enum class MessageStatus { SENDING, SENT, DELIVERED, READ, FAILED }
 
-enum class MediaStatus { PENDING, DONE, CANCELED, EXPIRED }
+enum class MediaStatus { PENDING, DONE, CANCELED, EXPIRED, READ }
+
+fun mediaDownloaded(name: String?) = name == MediaStatus.DONE.name || name == MediaStatus.READ.name
 
 fun createMessage(
     messageId: String,

@@ -14,6 +14,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.mediaDownloaded
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 import kotlin.math.min
@@ -87,6 +88,13 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         messageItem.mediaWaveform?.let {
             itemView.audio_waveform.setWaveform(it)
         }
+        if (!isMe && messageItem.mediaStatus == MediaStatus.DONE.name) {
+            itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.colorBlue))
+            itemView.audio_waveform.isFresh = true
+        } else {
+            itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.gray_50))
+            itemView.audio_waveform.isFresh = false
+        }
         if (AudioPlayer.get().isLoaded(messageItem.messageId)) {
             itemView.audio_waveform.setProgress(AudioPlayer.get().progress)
         } else {
@@ -113,7 +121,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                         handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
-                MediaStatus.DONE.name -> {
+                MediaStatus.DONE.name, MediaStatus.READ.name -> {
                     itemView.audio_expired.visibility = View.GONE
                     itemView.audio_progress.visibility = View.VISIBLE
                     itemView.audio_progress.setBindOnly(messageItem.messageId)
@@ -182,7 +190,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
             }
         } else if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
             onItemListener.onCancel(messageItem.messageId)
-        } else if (messageItem.mediaStatus == MediaStatus.DONE.name) {
+        } else if (mediaDownloaded(messageItem.mediaStatus)) {
             onItemListener.onAudioClick(messageItem)
         } else if (messageItem.mediaStatus == MediaStatus.EXPIRED.name) {
         } else {

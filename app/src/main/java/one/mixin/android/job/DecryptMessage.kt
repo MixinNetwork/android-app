@@ -47,6 +47,7 @@ import one.mixin.android.vo.createStickerMessage
 import one.mixin.android.vo.createSystemUser
 import one.mixin.android.vo.createVideoMessage
 import one.mixin.android.vo.isIllegalMessageCategory
+import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessageData
@@ -167,7 +168,7 @@ class DecryptMessage : Injector() {
                 messageDao.recallFailedMessage(msg.id)
                 messageDao.recallMessage(msg.id)
                 messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
-                if (msg.mediaUrl != null && msg.mediaStatus == MediaStatus.DONE.name) {
+                if (msg.mediaUrl != null && mediaDownloaded(msg.mediaStatus)) {
                     File(msg.mediaUrl.getFilePath()).let { file ->
                         if (file.exists() && file.isFile) {
                             file.delete()
