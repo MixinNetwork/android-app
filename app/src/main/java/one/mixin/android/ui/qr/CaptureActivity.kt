@@ -38,7 +38,7 @@ class CaptureActivity : BlazeBaseActivity() {
         const val REQUEST_CODE = 0x0000c0ff
         const val RESULT_CODE = 0x0000c0df
 
-        val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "ASSETS:READ", "APPS:READ", "APPS:WRITE", "CONTACTS:READ")
+        val SCOPES = arrayListOf("PROFILE:READ", "PHONE:READ", "ASSETS:READ", "APPS:READ", "APPS:WRITE", "CONTACTS:READ", "MESSAGES:REPRESENT")
 
         const val MAX_DURATION = 15
         const val MIN_DURATION = 1

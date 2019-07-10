@@ -88,6 +88,8 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         scopes.add(Scope(s, ctx.getString(R.string.auth_apps_write_description)))
                     SCOPES[5] ->
                         scopes.add(Scope(s, ctx.getString(R.string.auth_permission_contacts_read_description)))
+                    SCOPES[6] ->
+                        scopes.add(Scope(s, ctx.getString(R.string.auth_messages_represent_description)))
                 }
             }
             return scopes
@@ -223,6 +225,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 SCOPES[3] -> R.string.auth_app_read
                 SCOPES[4] -> R.string.auth_apps_write
                 SCOPES[5] -> R.string.auth_permission_contacts_read
+                SCOPES[6] -> R.string.auth_messages_represent
                 else -> R.string.auth_public_profile
             }
             return ctx.getString(id)
