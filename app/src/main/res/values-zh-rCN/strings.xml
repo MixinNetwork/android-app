@@ -110,6 +110,7 @@
     <string name="error_duration_short">时间太短</string>
     <string name="error_too_many_stickers">错误 %1$d：贴纸数已达上限</string>
     <string name="error_too_small_withdraw_amount">错误 %1$d：提现金额太小</string>
+    <string name="error_invalid_code_too_frequent">错误 %1$d：发送验证码太频繁，请稍后再试</string>
     <string name="error_invalid_emergency_contact">错误 %1$d：紧急联系人不正确</string>
     <string name="error_retry_upload">重新上传失败。</string>
     <!--home-->

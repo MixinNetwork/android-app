@@ -582,6 +582,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var isFirstLoad = true
     private var isBottom = true
 
+    private var botWebBottomSheet: WebBottomSheetDialogFragment? = null
+
     private val sensorManager: SensorManager by lazy {
         requireContext().getSystemService<SensorManager>()!!
     }
@@ -755,6 +757,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     override fun onDestroyView() {
+        botWebBottomSheet?.dismiss()
         chat_rv?.let { rv ->
             rv.children.forEach {
                 val vh = rv.getChildViewHolder(it)
@@ -1996,8 +1999,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideIfShowBottomSheet()
             app?.let {
                 chat_control.chat_et.hideKeyboard()
-                val dialog = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId, appName = it.name, appAvatar = recipient?.avatarUrl)
-                dialog.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+                botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId, appName = it.name, appAvatar = recipient?.avatarUrl)
+                botWebBottomSheet?.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
             }
         }
 
