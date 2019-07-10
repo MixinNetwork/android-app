@@ -382,6 +382,8 @@
     <string name="setting_emergency_desc">请放心，即使您的手机号丢失无法找回钱包资产也很安全，请牢记您的支付密码，阅读紧急联系人了解更多。</string>
     <string name="setting_emergency_bottom_current">查看紧急联系人</string>
     <string name="setting_emergency_bottom_change">修改紧急联系人</string>
+    <string name="setting_emergency_bottom_remove">移除紧急联系人</string>
+    <string name="setting_emergency_remove_tip">确定移除紧急联系人？</string>
     <string name="setting_emergency_bottom_create">添加紧急联系人</string>
     <string name="setting_emergency_select_contact">选择紧急联系人</string>
     <string name="setting_emergency_contact_mixin_id">请输入紧急联系人的 Mixin ID</string>

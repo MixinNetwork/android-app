@@ -25,4 +25,7 @@ interface EmergencyService {
 
     @POST("emergency_contact")
     suspend fun show(@Body pin: PinRequest): MixinResponse<User>
+
+    @POST("emergency_contact/delete")
+    suspend fun delete(@Body pin: PinRequest): MixinResponse<Account>
 }

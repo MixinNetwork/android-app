@@ -29,4 +29,6 @@ internal constructor(
     suspend fun showEmergency(pin: String) = accountRepository.showEmergency(pin)
 
     fun upsertUser(u: User) = userRepository.upsert(u)
+
+    suspend fun deleteEmergency(pin: String) = accountRepository.deleteEmergency(pin)
 }

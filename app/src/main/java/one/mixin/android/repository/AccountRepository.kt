@@ -150,4 +150,7 @@ constructor(
 
     suspend fun showEmergency(pin: String) =
         emergencyService.show(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+
+    suspend fun deleteEmergency(pin: String) =
+        emergencyService.delete(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
 }

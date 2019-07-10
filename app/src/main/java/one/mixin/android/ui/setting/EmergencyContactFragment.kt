@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_emergency_contact.*
@@ -19,6 +20,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.util.Session
+import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 
 class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
@@ -27,6 +29,8 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
 
         fun newInstance() = EmergencyContactFragment()
     }
+
+    private var showEmergency = true
 
     override fun getModelClass(): Class<EmergencyViewModel> = EmergencyViewModel::class.java
 
@@ -44,6 +48,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
                 .showNow(requireFragmentManager(), EmergencyContactTipBottomSheetDialogFragment.TAG)
         }
         view_rl.setOnClickListener {
+            showEmergency = true
             val pinBottom = PinEmergencyBottomSheetDialog.newInstance()
             pinBottom.pinEmergencyCallback = bottomSheetCallback
             pinBottom.showNow(requireFragmentManager(), PinEmergencyBottomSheetDialog.TAG)
@@ -56,6 +61,21 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
                     .addToBackStack(null)
             }
         }
+        delete_rl.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setMessage(getString(R.string.setting_emergency_remove_tip))
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setPositiveButton(R.string.confirm) { dialog, _ ->
+                    showEmergency = false
+                    val pinBottom = PinEmergencyBottomSheetDialog.newInstance()
+                    pinBottom.pinEmergencyCallback = bottomSheetCallback
+                    pinBottom.showNow(requireFragmentManager(), PinEmergencyBottomSheetDialog.TAG)
+                    dialog.dismiss()
+                }
+                .show()
+        }
         setEmergencySet()
     }
 
@@ -64,10 +84,12 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
             enable_rl.isVisible = false
             view_rl.isVisible = true
             change_rl.isVisible = true
+            delete_rl.isVisible = true
         } else {
             enable_rl.isVisible = true
             view_rl.isVisible = false
             change_rl.isVisible = false
+            delete_rl.isVisible = false
         }
     }
 
@@ -91,9 +113,35 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
         )
     }
 
+    private fun deleteEmergencyContact(pinCode: String) = lifecycleScope.launch {
+        delete_pb.isVisible = true
+        handleMixinResponse(
+            invokeNetwork = { viewModel.deleteEmergency(pinCode) },
+            switchContext = Dispatchers.IO,
+            successBlock = { response ->
+                val a = response.data as Account
+                Session.storeAccount(a)
+                Session.setHasEmergencyContact(a.hasEmergencyContact)
+                setEmergencySet()
+            },
+            exceptionBlock = {
+                delete_pb.isVisible = false
+                setEmergencySet()
+            },
+            doAfterNetworkSuccess = {
+                delete_pb.isVisible = false
+                setEmergencySet()
+            }
+        )
+    }
+
     private val bottomSheetCallback = object : PinEmergencyBottomSheetDialog.PinEmergencyCallback() {
         override fun onSuccess(pinCode: String) {
-            fetchEmergencyContact(pinCode)
+            if (showEmergency) {
+                fetchEmergencyContact(pinCode)
+            } else {
+                deleteEmergencyContact(pinCode)
+            }
         }
     }
 }

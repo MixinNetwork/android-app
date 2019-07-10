@@ -98,6 +98,7 @@
         android:id="@+id/change_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
+        android:layout_marginBottom="24dp"
         android:background="@android:color/white"
         android:visibility="gone"
         android:foreground="?attr/selectableItemBackground">
@@ -111,5 +112,36 @@
             android:layout_marginStart="@dimen/activity_horizontal_margin"
             android:text="@string/setting_emergency_bottom_change"
             tools:ignore="RelativeOverlap"/>
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/delete_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:visibility="gone"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/delete_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_emergency_bottom_remove"
+            android:textColor="@color/colorRed"
+            tools:ignore="RelativeOverlap"/>
+
+        <ProgressBar
+            android:id="@+id/delete_pb"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"
+            android:layout_marginEnd="@dimen/margin16"
+            android:theme="@style/AppTheme.BlueAccent"/>
     </RelativeLayout>
 </LinearLayout>
