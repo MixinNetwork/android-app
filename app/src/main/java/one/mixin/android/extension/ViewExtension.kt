@@ -21,7 +21,6 @@ import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
-import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart
@@ -223,7 +222,7 @@ fun View.navigate(
 }
 
 fun View.capture(context: Context) {
-    val outFile = context.getPublicPictyresPath().createImageTemp(noMedia = false)
+    val outFile = context.getPublicPicturePath().createImageTemp(noMedia = false)
     val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val c = Canvas(b)
     draw(c)

@@ -10,8 +10,10 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
@@ -27,7 +29,10 @@ import android.view.animation.AccelerateInterpolator
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
+import android.widget.TextView
+import androidx.appcompat.widget.LinearLayoutCompat
 import one.mixin.android.R
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullElse
@@ -382,3 +387,43 @@ fun BottomSheet.getMaxCustomViewHeight(): Int {
     }
     return totalHeight - context.statusBarHeight()
 }
+
+fun buildBottomSheetView(
+    context: Context,
+    items: List<BottomSheetItem>
+): View {
+    val linearLayout = LinearLayoutCompat(context).apply {
+        orientation = LinearLayoutCompat.VERTICAL
+    }
+    val outValue = TypedValue()
+    context.theme.resolveAttribute(android.R.attr.selectableItemBackground, outValue, true)
+    val itemHeight = context.dpToPx(56f)
+    val padding = context.dpToPx(16f)
+    items.forEachIndexed { index, bottomSheetItem ->
+        val textView = TextView(context)
+        if (index == 0) {
+            textView.setBackgroundResource(R.drawable.bg_upper_round)
+        } else {
+            textView.setBackgroundResource(R.color.white)
+        }
+        textView.foreground = context.getDrawable(outValue.resourceId)
+        bottomSheetItem.icon?.let {
+            textView.setCompoundDrawables(it, null, null, null)
+            textView.compoundDrawablePadding = padding
+        }
+        textView.text = bottomSheetItem.text
+        textView.setPadding(padding, 0, padding, 0)
+        textView.gravity = Gravity.CENTER_VERTICAL
+        textView.setOnClickListener {
+            bottomSheetItem.clickAction.invoke()
+        }
+        linearLayout.addView(textView, ViewGroup.LayoutParams(MATCH_PARENT, itemHeight))
+    }
+    return linearLayout
+}
+
+data class BottomSheetItem(
+    val text: String,
+    val clickAction: () -> Unit,
+    val icon: Drawable? = null
+)

@@ -90,7 +90,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     itemView.file_expired.visibility = View.VISIBLE
                     itemView.file_progress.visibility = View.INVISIBLE
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.PENDING.name -> {
@@ -102,7 +102,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                         onItemListener.onCancel(messageItem.messageId)
                     }
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
@@ -115,15 +115,15 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                         } else {
                             itemView.file_progress.setPlay()
                         }
+                        itemView.file_progress.setOnClickListener {
+                            onItemListener.onAudioFileClick(messageItem)
+                        }
                     } else {
                         itemView.file_progress.setDone()
                         itemView.file_progress.setBindId(null)
                     }
-                    itemView.file_progress.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
-                    }
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.CANCELED.name -> {
@@ -144,7 +144,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                         }
                     }
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
             }
@@ -160,7 +160,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
     }
 
-    private fun handlerClick(
+    private fun handleClick(
         hasSelect: Boolean,
         isSelect: Boolean,
         isMe: Boolean,

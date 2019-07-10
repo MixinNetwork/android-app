@@ -69,6 +69,9 @@
     <string name="developer">Developer</string>
     <string name="mixin_id" translatable="false">Mixin ID</string>
     <string name="later">Later</string>
+    <string name="save_to_music">Save to Music</string>
+    <string name="save_to_gallery">Save to Gallery</string>
+    <string name="save_to_downloads">Save to Downloads</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

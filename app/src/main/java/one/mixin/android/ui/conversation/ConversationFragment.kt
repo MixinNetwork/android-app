@@ -148,10 +148,13 @@ import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.websocket.TransferStickerData
+import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
@@ -160,6 +163,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_UP
 import one.mixin.android.widget.MixinHeadersDecoration
+import one.mixin.android.widget.buildBottomSheetView
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardShownListener
@@ -417,25 +421,29 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     } else {
                         startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
                     }
-                } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
-                    if (AudioPlayer.get().isPlay(messageItem.messageId)) {
-                        AudioPlayer.get().pause()
-                    } else {
-                        RxBus.listen(ProgressEvent::class.java)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .autoDisposable(stopScope)
-                            .subscribe {
-                                if (it.progress == 0f &&
-                                    it.status == STATUS_ERROR &&
-                                    it.id == messageItem.messageId) {
-                                    toast(R.string.error_not_supported_audio_format)
-                                    openMedia(messageItem)
-                                }
-                            }
-                        AudioPlayer.get().play(messageItem)
-                    }
                 } else {
-                    openMedia(messageItem)
+                    showBottomSheet(messageItem)
+                }
+            }
+
+            override fun onAudioFileClick(messageItem: MessageItem) {
+                if (!MimeTypes.isAudio(messageItem.mediaMimeType)) return
+
+                if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                    AudioPlayer.get().pause()
+                } else {
+                    RxBus.listen(ProgressEvent::class.java)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .autoDisposable(stopScope)
+                        .subscribe {
+                            if (it.progress == 0f &&
+                                it.status == STATUS_ERROR &&
+                                it.id == messageItem.messageId) {
+                                toast(R.string.error_not_supported_audio_format)
+                                openMedia(messageItem)
+                            }
+                        }
+                    AudioPlayer.get().play(messageItem)
                 }
             }
 
@@ -1919,6 +1927,51 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }
         }
+    }
+
+    private fun showBottomSheet(messageItem: MessageItem) {
+        var bottomSheet: BottomSheet? = null
+        val builder = BottomSheet.Builder(requireActivity())
+        val items = arrayListOf<BottomSheetItem>()
+        if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
+            items.add(BottomSheetItem(getString(R.string.save_to_music), {
+                checkWritePermissionAndSave(messageItem)
+                bottomSheet?.dismiss()
+            }))
+        } else if (MimeTypes.isVideo(messageItem.mediaMimeType) ||
+            messageItem.mediaMimeType?.isImageSupport() == true) {
+            items.add(BottomSheetItem(getString(R.string.save_to_gallery), {
+                checkWritePermissionAndSave(messageItem)
+                bottomSheet?.dismiss()
+            }))
+        } else {
+            items.add(BottomSheetItem(getString(R.string.save_to_downloads), {
+                checkWritePermissionAndSave(messageItem)
+                bottomSheet?.dismiss()
+            }))
+        }
+        items.add(BottomSheetItem(getString(R.string.open), {
+            openMedia(messageItem)
+            bottomSheet?.dismiss()
+        }))
+        val view = buildBottomSheetView(requireContext(), items)
+        builder.setCustomView(view)
+        bottomSheet = builder.create()
+        bottomSheet.show()
+    }
+
+    private fun checkWritePermissionAndSave(messageItem: MessageItem) {
+        RxPermissions(requireActivity())
+            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+            .autoDisposable(stopScope)
+            .subscribe({ granted ->
+                if (granted) {
+                    messageItem.saveToLocal(requireContext())
+                } else {
+                    context?.openPermissionSetting()
+                }
+            }, {
+            })
     }
 
     private fun changeToSpeaker() {

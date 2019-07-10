@@ -43,7 +43,7 @@ private fun isAvailable(): Boolean {
     return false
 }
 
-private fun hasWritePermission(): Boolean {
+fun hasWritePermission(): Boolean {
     return ContextCompat.checkSelfPermission(MixinApplication.appContext,
         Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED
 }
@@ -177,7 +177,7 @@ fun Context.getAudioPath(): File {
     return File("$root${File.separator}Audio")
 }
 
-fun Context.getPublicPictyresPath(): File {
+fun Context.getPublicPicturePath(): File {
     return File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "Mixin")
 }
 
