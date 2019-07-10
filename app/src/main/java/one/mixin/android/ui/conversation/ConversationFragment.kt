@@ -421,8 +421,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     } else {
                         startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
                     }
-                } else {
+                } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                     showBottomSheet(messageItem)
+                } else {
+                    openMedia(messageItem)
                 }
             }
 

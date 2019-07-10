@@ -65,9 +65,9 @@
     <string name="receive">转入</string>
     <string name="developer">开发者</string>
     <string name="later">稍后</string>
-    <string name="save_to_music">保存到 音乐</string>
-    <string name="save_to_gallery">保存到 画廊</string>
-    <string name="save_to_downloads">保存到 下载</string>
+    <string name="save_to_music">保存到音乐库</string>
+    <string name="save_to_gallery">保存到相册</string>
+    <string name="save_to_downloads">保存到下载</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

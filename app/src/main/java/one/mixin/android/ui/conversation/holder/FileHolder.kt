@@ -121,6 +121,9 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     } else {
                         itemView.file_progress.setDone()
                         itemView.file_progress.setBindId(null)
+                        itemView.file_progress.setOnClickListener {
+                            handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        }
                     }
                     itemView.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
