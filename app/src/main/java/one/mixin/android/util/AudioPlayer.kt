@@ -11,10 +11,13 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.event.RecallEvent
+import one.mixin.android.extension.fileExists
+import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isAudio
@@ -129,14 +132,19 @@ class AudioPlayer private constructor() {
     }
 
     fun play(messageItem: MessageItem) {
+        if (messageItem.mediaUrl == null) {
+            MixinApplication.appContext.toast(R.string.error_bad_data)
+            return
+        } else if (!messageItem.mediaUrl.fileExists()) {
+            MixinApplication.appContext.toast(R.string.error_file_exists)
+            return
+        }
         if (id != messageItem.messageId) {
             id = messageItem.messageId
             this.messageItem = messageItem
-            messageItem.mediaUrl?.let {
-                player.loadAudio(it)
-            }
+            player.loadAudio(messageItem.mediaUrl)
         } else if (status == STATUS_ERROR) {
-            player.loadAudio(messageItem.mediaUrl!!)
+            player.loadAudio(messageItem.mediaUrl)
         }
         status = STATUS_PLAY
         player.start()
