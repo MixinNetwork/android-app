@@ -8,7 +8,6 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.AudioManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -29,7 +28,6 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
-import androidx.core.content.getSystemService
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
@@ -352,16 +350,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return imageUri!!
     }
 
-    override fun onStop() {
-        super.onStop()
-        stopAudio()
-    }
-
-    override fun dismiss() {
-        stopAudio()
-        super.dismiss()
-    }
-
     override fun onDestroyView() {
         contentView.chat_web_view.stopLoading()
         contentView.chat_web_view.webViewClient = null
@@ -369,11 +357,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         unregisterForContextMenu(contentView.chat_web_view)
         contentView.removeCallbacks(setCustomViewHeightRunnable)
         super.onDestroyView()
-    }
-
-    private fun stopAudio() {
-        context?.getSystemService<AudioManager>()?.requestAudioFocus({},
-            AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN)
     }
 
     private fun showBottomSheet() {
@@ -409,8 +392,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     override fun onPause() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N || !requireActivity().isInMultiWindowMode) {
-            contentView.chat_web_view.onPause()
-            contentView.chat_web_view.pauseTimers()
+            contentView.chat_web_view.onResume()
+            contentView.chat_web_view.resumeTimers()
         }
         super.onPause()
     }
