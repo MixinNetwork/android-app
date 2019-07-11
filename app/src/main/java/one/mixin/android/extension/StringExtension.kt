@@ -35,7 +35,6 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
-import kotlin.experimental.and
 import kotlin.math.abs
 
 fun String.generateQRCode(size: Int): Bitmap? {
@@ -319,4 +318,14 @@ inline fun <T : Serializable> T.serialize(): String? {
     } catch (e: Exception) {
         throw IOException("Serialization error: ${e.message}, $e")
     }
+}
+
+private val escapeSqlChars = arrayOf('\\', '%', '_', '[', ']')
+
+fun String.escapeSql(): String {
+    var result = this
+    escapeSqlChars.forEach { c ->
+        result = result.replace(c.toString(), "\\$c")
+    }
+    return result
 }

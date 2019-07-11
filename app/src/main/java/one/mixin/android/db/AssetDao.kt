@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
 
@@ -52,7 +53,8 @@ interface AssetDao : BaseDao<Asset> {
     fun assetItemsNotHidden(): LiveData<List<AssetItem>>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 AND (a1.name LIKE :name OR a1.symbol LIKE :symbol) ORDER BY a1.price_usd*a1.balance DESC")
+    @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 AND (a1.name LIKE :name" + ESCAPE_SUFFIX + " OR a1.symbol LIKE :symbol" + ESCAPE_SUFFIX + ") " +
+        "ORDER BY a1.price_usd*a1.balance DESC")
     suspend fun fuzzySearchAsset(name: String, symbol: String): List<AssetItem>
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)

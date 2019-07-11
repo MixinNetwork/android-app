@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import io.reactivex.Maybe
 import io.reactivex.Single
+import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
@@ -51,8 +52,9 @@ interface ConversationDao : BaseDao<Conversation> {
         "FROM conversations c " +
         "INNER JOIN users ou ON ou.user_id = c.owner_id " +
         "LEFT JOIN messages m ON c.last_message_id = m.id " +
-        "WHERE (c.category = 'GROUP' AND c.name LIKE :query) " +
-        "OR (c.category = 'CONTACT' AND ou.relationship != 'FRIEND' AND (ou.full_name LIKE :query OR ou.identity_number like :query))" +
+        "WHERE (c.category = 'GROUP' AND c.name LIKE :query" + ESCAPE_SUFFIX + ") " +
+        "OR (c.category = 'CONTACT' AND ou.relationship != 'FRIEND' AND (ou.full_name LIKE :query " + ESCAPE_SUFFIX +
+        "OR ou.identity_number like :query" + ESCAPE_SUFFIX + "))" +
         "ORDER BY c.pin_time DESC, m.created_at DESC")
     suspend fun fuzzySearchChat(query: String): List<ChatMinimal>
 

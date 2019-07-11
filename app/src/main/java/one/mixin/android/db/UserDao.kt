@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 
@@ -46,8 +47,8 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId AND c.category = 'CONTACT'")
     fun findContactByConversationId(conversationId: String): User?
 
-    @Query("SELECT * FROM users WHERE user_id != :id AND relationship = 'FRIEND' AND (full_name LIKE :username OR " +
-        "identity_number like :identityNumber)")
+    @Query("SELECT * FROM users WHERE user_id != :id AND relationship = 'FRIEND' AND (full_name LIKE :username" + ESCAPE_SUFFIX + "OR " +
+        "identity_number like :identityNumber" + ESCAPE_SUFFIX + ")")
     suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String = Session.getAccountId()!!): List<User>
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND'")

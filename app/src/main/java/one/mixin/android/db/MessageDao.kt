@@ -4,6 +4,7 @@ import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
@@ -88,8 +89,8 @@ interface MessageDao : BaseDao<Message> {
         "FROM messages m " +
         "INNER JOIN users u ON c.owner_id = u.user_id " +
         "INNER JOIN conversations c ON c.conversation_id = m.conversation_id " +
-        "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
-        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query) " +
+        "WHERE ((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query " + ESCAPE_SUFFIX + ") " +
+        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query" + ESCAPE_SUFFIX + ") " +
         "GROUP BY m.conversation_id " +
         "ORDER BY m.created_at DESC " +
         "LIMIT :limit")
@@ -100,8 +101,8 @@ interface MessageDao : BaseDao<Message> {
         "FROM messages m " +
         "INNER JOIN users u ON m.user_id = u.user_id " +
         "WHERE m.conversation_id = :conversationId " +
-        "AND (((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query) " +
-        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query)) " +
+        "AND (((m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.status != 'FAILED' AND m.content LIKE :query" + ESCAPE_SUFFIX + ") " +
+        "OR ((m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.status != 'FAILED' AND m.name LIKE :query" + ESCAPE_SUFFIX + ")) " +
         "ORDER BY m.created_at DESC")
     fun fuzzySearchMessageByConversationId(query: String, conversationId: String): DataSource.Factory<Int, SearchMessageDetailItem>
 
