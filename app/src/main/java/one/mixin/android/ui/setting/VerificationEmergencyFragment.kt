@@ -109,8 +109,7 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
                     .setMessage(getString(
                         if (Session.hasEmergencyContact())
                             R.string.setting_emergency_change_success
-                        else
-                            R.string.setting_emergency_create_success))
+                        else R.string.setting_emergency_create_success))
                     .setPositiveButton(R.string.group_ok) { dialog, _ ->
                         requireFragmentManager().popBackStackImmediate()
                         requireFragmentManager().popBackStackImmediate()

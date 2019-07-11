@@ -57,7 +57,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         this.cycle = cycle
     }
 
-    fun setAudioStreamType(streamType:Int){
+    fun setAudioStreamType(streamType: Int) {
         this.player.audioStreamType = streamType
     }
 

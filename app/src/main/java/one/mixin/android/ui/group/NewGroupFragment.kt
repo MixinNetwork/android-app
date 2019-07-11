@@ -30,7 +30,6 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadCircleImage
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard

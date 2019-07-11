@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.api.request.DeauthorRequest
-import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository

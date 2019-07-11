@@ -34,11 +34,11 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
     }
 
     fun bind(
-            messageItem: MessageItem,
-            isFirst: Boolean,
-            hasSelect: Boolean,
-            isSelect: Boolean,
-            onItemListener: ConversationAdapter.OnItemListener
+        messageItem: MessageItem,
+        isFirst: Boolean,
+        hasSelect: Boolean,
+        isSelect: Boolean,
+        onItemListener: ConversationAdapter.OnItemListener
     ) {
         val isMe = meId == messageItem.userId
         if (hasSelect && isSelect) {

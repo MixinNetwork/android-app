@@ -367,7 +367,7 @@ internal constructor(
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
-        jobManager.findJobById(id).notNullElse( { it.cancel() }, {
+        jobManager.findJobById(id).notNullElse({ it.cancel() }, {
             conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
         })
     }

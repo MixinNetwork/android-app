@@ -12,7 +12,7 @@ import one.mixin.android.ui.common.friends.UserItemCallback
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
-class FriendsAdapter(callback: UserItemCallback): AbsFriendsAdapter<FriendsViewHolder>(callback) {
+class FriendsAdapter(callback: UserItemCallback) : AbsFriendsAdapter<FriendsViewHolder>(callback) {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         FriendsViewHolder(parent.inflate(R.layout.item_contact_normal))
 }
