@@ -560,6 +560,10 @@
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both an Account Memo and an Account Name are required to successfully deposit your %1$s to Mixin.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
     <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
+    <string name="bottom_withdrawal_title">%1$s Withdrawal</string>
+    <string name="bottom_withdrawal_change_amount">Change Amount</string>
+    <string name="bottom_withdrawal_change_amount_count">Change Amount (%1$d)</string>
+    <string name="bottom_withdrawal_address_tips">For the first withdraw to the new address, please try a small amount.</string>
     <string name="bottom_deposit_title">%1$s Deposit</string>
     <string name="bottom_deposit_tip_eos">This address supports all base on EOS tokens, such as EOS, IQ, BLACK, OCT, KARMA, etc.</string>
     <string name="bottom_deposit_tip_eth">This address supports all ERC-20 tokens, such as ETH, XIN, TUSD, HT, LOOM, DGD, LEO, etc.</string>

@@ -33,6 +33,7 @@ object Constants {
         const val PREF_SHOW_DEPOSIT_TIP_CHAIN_SET = "pref_show_deposit_tip_chain_set"
         const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
         const val PREF_RECALL_SHOW = "pref_recall_show"
+        const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
 
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
     }

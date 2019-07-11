@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import android.view.View.VISIBLE
+import androidx.collection.arraySetOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
@@ -17,6 +18,7 @@ import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -27,6 +29,7 @@ import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.putStringSet
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
@@ -161,6 +164,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (it.isSuccess) {
                     defaultSharedPreferences.putLong(BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                     context?.updatePinCheck()
+
+                    if (t is WithdrawBiometricItem) {
+                        updateFirstWithdrawalSet(t as WithdrawBiometricItem)
+                    }
+
                     dismiss()
                     notNullElse(callback, { action -> action.onSuccess() }, {
                         toast(R.string.successful)
@@ -174,6 +182,16 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.pin?.clear()
                 contentView.pin_va?.displayedChild = POS_PIN
             })
+    }
+
+    private fun updateFirstWithdrawalSet(item: WithdrawBiometricItem) {
+        var firsSet = defaultSharedPreferences.getStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)
+        if (firsSet == null) {
+            firsSet = setOf(item.addressId)
+        } else {
+            firsSet.add(item.addressId)
+        }
+        defaultSharedPreferences.putStringSet(Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET, firsSet)
     }
 
     private fun showBiometricPrompt() {

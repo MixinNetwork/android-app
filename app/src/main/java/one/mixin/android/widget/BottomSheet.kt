@@ -13,6 +13,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
+import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.view.View.INVISIBLE
@@ -58,6 +59,21 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
 
     var fullScreen = false
 
+    var dismissClickOutside = true
+        set(value) {
+            field = value
+            if (value) {
+                setOnKeyListener(null)
+            } else {
+                setOnKeyListener { _, keyCode, event ->
+                    if (keyCode == KeyEvent.KEYCODE_BACK && event.action == KeyEvent.ACTION_UP) {
+                        return@setOnKeyListener true
+                    }
+                    return@setOnKeyListener false
+                }
+            }
+        }
+
     private inner class ContainerView(context: Context) : FrameLayout(context) {
 
         @SuppressLint("ClickableViewAccessibility")
@@ -66,7 +82,9 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
                 val startX = ev.x.toInt()
                 val startY = ev.y.toInt()
                 if (startY < sheetContainer.top || startX < sheetContainer.left || startX > sheetContainer.right) {
-                    dismiss()
+                    if (dismissClickOutside) {
+                        dismiss()
+                    }
                     return true
                 }
             }
