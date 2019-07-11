@@ -269,9 +269,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 adapter.submitList(r)
                 contentView.asset_rl.isEnabled = true
 
-                notNullElse(r.find {
+                r.find {
                     it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
-                }, { a ->
+                }.notNullElse({ a ->
                     updateAssetUI(a)
                     currentAsset = a
                 }, {

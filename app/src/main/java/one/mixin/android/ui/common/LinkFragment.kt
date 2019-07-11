@@ -80,7 +80,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     override fun onChanged(t: Int?) {
         if (callState.callInfo.callState != CallService.CallState.STATE_IDLE) return
 
-        notNullElse(t, {
+        t.notNullElse({
             if (it > 500) {
                 setSyncing()
                 showBar()

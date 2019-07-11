@@ -186,7 +186,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 choices.add(getString(R.string.group_edit_name))
             }
-            if (notNullElse(conversation.muteUntil, {
+            if (conversation.muteUntil.notNullElse({
                     Instant.now().isBefore(Instant.parse(it))
                 }, false)) {
                 choices.add(getString(R.string.un_mute))

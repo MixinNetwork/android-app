@@ -212,7 +212,7 @@ class NewGroupFragment : BaseFragment() {
             holder.bind(users!![position])
         }
 
-        override fun getItemCount(): Int = notNullElse(users, { it.size }, 0)
+        override fun getItemCount(): Int = users.notNullElse({ it.size }, 0)
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

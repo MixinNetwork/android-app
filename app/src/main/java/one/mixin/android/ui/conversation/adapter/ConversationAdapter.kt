@@ -115,8 +115,8 @@ class ConversationAdapter(
         }
     }
 
-    override fun getHeaderId(position: Int): Long = notNullElse(getItem(position), {
-        Math.abs(it.createdAt.hashForDate())
+    override fun getHeaderId(position: Int): Long = getItem(position).notNullElse({
+        abs(it.createdAt.hashForDate())
     }, 0)
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
@@ -450,7 +450,7 @@ class ConversationAdapter(
     }
 
     private fun getItemType(messageItem: MessageItem?): Int =
-        notNullElse(messageItem, { item ->
+        messageItem.notNullElse({ item ->
             when {
                 item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
                 item.type == MessageCategory.SECRET.name -> SECRET_TYPE

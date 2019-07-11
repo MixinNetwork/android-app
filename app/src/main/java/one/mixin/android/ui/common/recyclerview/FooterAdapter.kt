@@ -23,7 +23,7 @@ abstract class FooterAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(data, {
+    override fun getItemCount(): Int = data.notNullElse({
         if (footerView != null) it.size + 1 else it.size
     }, 0)
 

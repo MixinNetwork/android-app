@@ -1,11 +1,11 @@
 package one.mixin.android.ui.address.adapter
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_address.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.notNullElse
@@ -40,7 +40,7 @@ class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(addresses, { it.size }, 0)
+    override fun getItemCount(): Int = addresses.notNullElse({ it.size }, 0)
 
     fun removeItem(pos: Int): Address? {
         val addr = addresses?.removeAt(pos)

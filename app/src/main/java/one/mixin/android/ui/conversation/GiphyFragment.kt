@@ -154,7 +154,7 @@ class GiphyFragment : BaseFragment() {
             return NormalHolder(view)
         }
 
-        override fun getItemCount(): Int = notNullElse(data, {
+        override fun getItemCount(): Int = data.notNullElse({
             if (footerView != null) it.size + 2 else it.size + 1
         }, 0)
 

@@ -139,7 +139,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         if (Build.VERSION.SDK_INT >= 26) {
             window?.decorView?.systemUiVisibility =
                 View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR or
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }
         setContentView(container, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
@@ -290,7 +290,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
     fun setCustomViewHeight(height: Int, endAction: (() -> Unit)? = null) {
         customViewHeight = height
         val params = customView?.layoutParams
-        val duration = notNullElse(customView?.layoutParams, {
+        val duration = customView?.layoutParams.notNullElse({
             try {
                 min(abs(height - it.height) / speed, 200)
             } catch (e: ArithmeticException) {

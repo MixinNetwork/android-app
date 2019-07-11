@@ -301,7 +301,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         fun getItem(position: Int): MessageItem = list!![position]
 
-        override fun getCount(): Int = notNullElse(list, { it.size }, 0)
+        override fun getCount(): Int = list.notNullElse({ it.size }, 0)
 
         override fun isViewFromObject(view: View, obj: Any): Boolean = view === obj
 
@@ -671,15 +671,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDisposable(stopScope)
                         .subscribe {
-                        if (mixinPlayer.duration() != 0) {
-                            parentView.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
-                                mixinPlayer.duration()).toInt()
-                            parentView.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
-                            if (parentView.remain_tv.text.isEmpty()) { // from google photo
-                                parentView.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
+                            if (mixinPlayer.duration() != 0) {
+                                parentView.seek_bar.progress = (mixinPlayer.getCurrentPos() * 200 /
+                                    mixinPlayer.duration()).toInt()
+                                parentView.duration_tv.text = mixinPlayer.getCurrentPos().formatMillis()
+                                if (parentView.remain_tv.text.isEmpty()) { // from google photo
+                                    parentView.remain_tv.text = mixinPlayer.duration().toLong().formatMillis()
+                                }
                             }
                         }
-                    }
                 }
             }
         }

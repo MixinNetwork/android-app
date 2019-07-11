@@ -232,7 +232,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun setMute(choices: MutableList<String>) {
-        if (notNullElse(user.muteUntil, {
+        if (user.muteUntil.notNullElse({
                 Instant.now().isBefore(Instant.parse(it))
             }, false)) {
             choices.add(getString(R.string.un_mute))

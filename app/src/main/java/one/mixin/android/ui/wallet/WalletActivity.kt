@@ -34,7 +34,7 @@ class WalletActivity : BlazeBaseActivity() {
         }
         navController = findNavController(R.id.wallet_nav_fragment)
         val navGraph = navController.navInflater.inflate(R.navigation.nav_wallet)
-        notNullElse(asset, {
+        asset.notNullElse({
             navGraph.startDestination = R.id.transactions_fragment
             navGraph.addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
         }, {

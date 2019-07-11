@@ -130,7 +130,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     }
                     user
                 }.observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider).subscribe({
-                    notNullElse(it, {
+                    it.notNullElse({
                         dismiss()
                         UserBottomSheetDialogFragment.newInstance(it)
                             .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)

@@ -82,7 +82,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
             return
         }
         jobManager.saveJob(this)
-        attachmentCall = conversationApi.getAttachment(notNullElse(attachmentId, { it }, message.content!!))
+        attachmentCall = conversationApi.getAttachment(attachmentId.notNullElse({ it }, message.content!!))
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancel) && body.data != null) {
             body.data!!.view_url?.let {

@@ -130,7 +130,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
                             uiThread {
                                 contentView.pin_va?.displayedChild = POS_PIN
-                                notNullElse(callback, { action -> action.onSuccess() }, {
+                                callback.notNullElse({ action -> action.onSuccess() }, {
                                     toast(R.string.successful)
                                 })
                                 dismiss()

@@ -253,7 +253,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             return CheckHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_storage_check, parent, false), checkAction)
         }
 
-        override fun getItemCount(): Int = notNullElse(storageUsageList, { it.size }, 0)
+        override fun getItemCount(): Int = storageUsageList.notNullElse({ it.size }, 0)
 
         override fun onBindViewHolder(holder: CheckHolder, position: Int) {
             storageUsageList?.let {
@@ -282,7 +282,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             holder.bind(conversationStorageUsageList!![position], action)
         }
 
-        override fun getItemCount(): Int = notNullElse(conversationStorageUsageList, { it.size }, 0)
+        override fun getItemCount(): Int = conversationStorageUsageList.notNullElse({ it.size }, 0)
     }
 
     class CheckHolder(itemView: View, private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.ViewHolder(itemView) {

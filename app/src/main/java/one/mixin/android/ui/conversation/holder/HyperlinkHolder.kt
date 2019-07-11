@@ -116,7 +116,7 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
             }
         }
 
-        notNullElse(keyword, { k ->
+        keyword.notNullElse({ k ->
             messageItem.content?.let { str ->
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {

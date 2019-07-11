@@ -24,7 +24,7 @@ abstract class HeaderFooterAdapter<T> : HeaderAdapter<T>() {
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(data, {
+    override fun getItemCount(): Int = data.notNullElse({
         if (headerView != null && footerView != null) {
             it.size + 2
         } else if (headerView != null || footerView != null) {

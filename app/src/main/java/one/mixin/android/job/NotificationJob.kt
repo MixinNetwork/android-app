@@ -229,7 +229,7 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         notificationBuilder.setSound(Uri.parse("android.resource://" + context.packageName + "/" + R.raw.mixin))
         notificationBuilder.setAutoCancel(true)
         notificationBuilder.priority = NotificationCompat.PRIORITY_HIGH
-        notNullElse(user, {
+        user.notNullElse({
             context.mainThread {
                 val height = context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_height)
                 val width = context.resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width)

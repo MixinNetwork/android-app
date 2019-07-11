@@ -56,7 +56,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
             itemView.chat_name.visibility = View.GONE
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        notNullElse(keyword, { k ->
+        keyword.notNullElse({ k ->
             messageItem.mediaName?.let { str ->
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {

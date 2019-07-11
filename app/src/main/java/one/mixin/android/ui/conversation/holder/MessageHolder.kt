@@ -106,7 +106,7 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
             }
         }
 
-        notNullElse(keyword, { k ->
+        keyword.notNullElse({ k ->
             messageItem.content?.let { str ->
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {

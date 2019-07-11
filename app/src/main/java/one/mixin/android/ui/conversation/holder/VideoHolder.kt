@@ -81,14 +81,14 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         if (messageItem.mediaStatus == MediaStatus.DONE.name) {
-            notNullElse(messageItem.mediaDuration, {
+            messageItem.mediaDuration.notNullElse({
                 itemView.duration_tv.visibility = VISIBLE
                 itemView.duration_tv.text = it.toLong().formatMillis()
             }, {
                 itemView.duration_tv.visibility = GONE
             })
         } else {
-            notNullElse(messageItem.mediaSize, {
+            messageItem.mediaSize.notNullElse({
                 if (it == 0L) {
                     itemView.duration_tv.visibility = GONE
                 } else {

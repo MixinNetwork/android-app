@@ -90,7 +90,7 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
             }
         }
 
-        override fun getItemCount(): Int = notNullElse(users, { it.size + 1 }, 1)
+        override fun getItemCount(): Int = users.notNullElse({ it.size + 1 }, 1)
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

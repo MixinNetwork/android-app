@@ -12,7 +12,7 @@ abstract class HeaderFilterAdapter<T> : HeaderAdapter<T>() {
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(data, {
+    override fun getItemCount(): Int = data.notNullElse({
         if (filtered()) it.size else it.size + 1
     }, if (filtered()) 0 else 1)
 

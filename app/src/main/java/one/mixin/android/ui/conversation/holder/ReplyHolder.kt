@@ -136,7 +136,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        notNullElse(keyword, { k ->
+        keyword.notNullElse({ k ->
             messageItem.content?.let { str ->
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {
@@ -231,7 +231,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
             }
             quoteMessage.type.endsWith("_DATA") -> {
-                notNullElse(quoteMessage.mediaName, {
+                quoteMessage.mediaName.notNullElse({
                     itemView.reply_content_tv.text = it
                 }, {
                     itemView.reply_content_tv.setText(R.string.document)
@@ -243,7 +243,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
             }
             quoteMessage.type.endsWith("_AUDIO") -> {
-                notNullElse(quoteMessage.mediaDuration, {
+                quoteMessage.mediaDuration.notNullElse({
                     itemView.reply_content_tv.text = it.toLong().formatMillis()
                 }, {
                     itemView.reply_content_tv.setText(R.string.audio)
@@ -289,8 +289,8 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
     }
 
     private fun setIcon(@DrawableRes icon: Int? = null) {
-        notNullElse(icon, {
-            AppCompatResources.getDrawable(itemView.context, it).let {
+        icon.notNullElse({ icon ->
+            AppCompatResources.getDrawable(itemView.context, icon).let {
                 it?.setBounds(0, 0, itemView.context.dpToPx(10f), itemView.context.dpToPx(10f))
                 TextViewCompat.setCompoundDrawablesRelative(itemView.reply_content_tv, it, null, null, null)
             }

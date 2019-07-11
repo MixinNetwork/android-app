@@ -65,7 +65,7 @@ class InviteFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
 
         inviteViewModel.getConversation(conversationId).observe(this, Observer {
-            notNullElse(it, {
+            it.notNullElse({
                 val url = it.codeUrl
                 invite_link.text = url
                 invite_forward.setOnClickListener {

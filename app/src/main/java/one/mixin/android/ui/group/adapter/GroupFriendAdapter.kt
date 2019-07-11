@@ -31,13 +31,13 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
         notifyDataSetChanged()
     }
 
-    override fun getItemCount(): Int = notNullElse(data, { it.size }, 0)
+    override fun getItemCount(): Int = data.notNullElse({ it.size }, 0)
 
     override fun getHeaderId(position: Int): Long {
         if (!mShowHeader) {
             return -1
         }
-        return notNullElse(data, {
+        return data.notNullElse({
             val u = it[position]
             if (u.fullName != null) {
                 if (u.fullName.isEmpty()) ' '.toLong() else u.fullName[0].toLong()

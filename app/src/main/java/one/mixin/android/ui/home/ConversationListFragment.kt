@@ -315,7 +315,7 @@ class ConversationListFragment : LinkFragment() {
             holder.bind(onItemClickListener, position, conversations!![position])
         }
 
-        override fun getItemCount() = notNullElse(conversations, { list -> list.size }, 0)
+        override fun getItemCount() = conversations.notNullElse({ list -> list.size }, 0)
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder =
             MessageHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_list_conversation, parent, false))
@@ -525,7 +525,7 @@ class ConversationListFragment : LinkFragment() {
                     itemView.unread_tv.visibility = GONE
                 } else {
                     itemView.pb.visibility = GONE
-                    notEmptyOrElse(conversationItem.unseenMessageCount,
+                    conversationItem.unseenMessageCount.notEmptyOrElse(
                         { itemView.unread_tv.text = "$it"; itemView.unread_tv.visibility = VISIBLE },
                         { itemView.unread_tv.visibility = GONE })
                 }
@@ -536,7 +536,7 @@ class ConversationListFragment : LinkFragment() {
                     itemView.unread_tv.visibility = GONE
                 } else {
                     itemView.pb.visibility = GONE
-                    notEmptyOrElse(conversationItem.unseenMessageCount,
+                    conversationItem.unseenMessageCount.notEmptyOrElse(
                         { itemView.unread_tv.text = "$it"; itemView.unread_tv.visibility = VISIBLE; },
                         { itemView.unread_tv.visibility = GONE }
                     )
@@ -554,7 +554,7 @@ class ConversationListFragment : LinkFragment() {
             }
             itemView.setOnClickListener { onItemClickListener?.click(position, conversationItem) }
             itemView.setOnLongClickListener {
-                notNullElse(onItemClickListener, { it.longClick(conversationItem) }, false)
+                onItemClickListener.notNullElse({ it.longClick(conversationItem) }, false)
             }
         }
 
