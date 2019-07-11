@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_link.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.vo.User
 
 class ParticipantAdapter(val list: ArrayList<User>) : RecyclerView.Adapter<ParticipantAdapter.ParticipantHolder>() {
@@ -16,8 +15,7 @@ class ParticipantAdapter(val list: ArrayList<User>) : RecyclerView.Adapter<Parti
         }
     }
 
-    override fun getItemCount(): Int =
-        list.notNullElse({ it.size }, 0)
+    override fun getItemCount(): Int = list.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ParticipantHolder =
         ParticipantHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_link, parent, false))

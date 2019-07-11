@@ -26,7 +26,6 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.vo.ConversationCategory
@@ -253,7 +252,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             return CheckHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_storage_check, parent, false), checkAction)
         }
 
-        override fun getItemCount(): Int = storageUsageList.notNullElse({ it.size }, 0)
+        override fun getItemCount(): Int = storageUsageList?.size ?: 0
 
         override fun onBindViewHolder(holder: CheckHolder, position: Int) {
             storageUsageList?.let {
@@ -282,7 +281,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             holder.bind(conversationStorageUsageList!![position], action)
         }
 
-        override fun getItemCount(): Int = conversationStorageUsageList.notNullElse({ it.size }, 0)
+        override fun getItemCount(): Int = conversationStorageUsageList?.size ?: 0
     }
 
     class CheckHolder(itemView: View, private val checkAction: (Boolean, StorageUsage) -> Unit) : RecyclerView.ViewHolder(itemView) {

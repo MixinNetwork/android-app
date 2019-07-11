@@ -28,7 +28,6 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.isImageSupport
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.util.okhttp.ProgressListener
 import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
@@ -82,7 +81,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
             return
         }
         jobManager.saveJob(this)
-        attachmentCall = conversationApi.getAttachment(attachmentId.notNullElse({ it }, message.content!!))
+        attachmentCall = conversationApi.getAttachment(attachmentId ?: message.content!!)
         val body = attachmentCall!!.execute().body()
         if (body != null && (body.isSuccess || !isCancel) && body.data != null) {
             body.data!!.view_url?.let {

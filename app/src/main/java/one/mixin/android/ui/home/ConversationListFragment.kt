@@ -315,7 +315,7 @@ class ConversationListFragment : LinkFragment() {
             holder.bind(onItemClickListener, position, conversations!![position])
         }
 
-        override fun getItemCount() = conversations.notNullElse({ list -> list.size }, 0)
+        override fun getItemCount() = conversations?.size ?: 0
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MessageHolder =
             MessageHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_list_conversation, parent, false))

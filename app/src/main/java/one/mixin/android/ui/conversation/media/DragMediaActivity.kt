@@ -79,7 +79,6 @@ import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadVideo
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.screenWidth
@@ -301,7 +300,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         fun getItem(position: Int): MessageItem = list!![position]
 
-        override fun getCount(): Int = list.notNullElse({ it.size }, 0)
+        override fun getCount(): Int = list?.size ?: 0
 
         override fun isViewFromObject(view: View, obj: Any): Boolean = view === obj
 
