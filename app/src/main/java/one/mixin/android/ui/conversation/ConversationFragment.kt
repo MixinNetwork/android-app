@@ -774,6 +774,17 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     override fun onDestroy() {
         super.onDestroy()
+        activity?.supportFragmentManager?.let { fm ->
+            val fragments = fm.fragments
+            if (fragments.size > 0) {
+                fm.inTransaction {
+                    fragments.indices
+                        .map { fragments[it] }
+                        .filter { it != null && it !is ConversationFragment }
+                        .forEach { remove(it) }
+                }
+            }
+        }
         AudioPlayer.release()
         unRegisterHeadsetPlugReceiver()
     }
