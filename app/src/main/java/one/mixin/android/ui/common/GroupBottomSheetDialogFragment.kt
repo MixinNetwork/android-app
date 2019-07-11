@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -186,7 +186,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 choices.add(getString(R.string.group_edit_name))
             }
-            if (conversation.muteUntil.notNullElse({
+            if (conversation.muteUntil.notNullWithElse({
                     Instant.now().isBefore(Instant.parse(it))
                 }, false)) {
                 choices.add(getString(R.string.un_mute))

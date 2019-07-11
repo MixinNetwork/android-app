@@ -13,7 +13,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
@@ -116,7 +116,7 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
             }
         }
 
-        keyword.notNullElse({ k ->
+        keyword.notNullWithElse({ k ->
             messageItem.content?.let { str ->
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {

@@ -28,7 +28,7 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -232,7 +232,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun setMute(choices: MutableList<String>) {
-        if (user.muteUntil.notNullElse({
+        if (user.muteUntil.notNullWithElse({
                 Instant.now().isBefore(Instant.parse(it))
             }, false)) {
             choices.add(getString(R.string.un_mute))

@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_message.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.maxItemWidth
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
@@ -106,7 +106,7 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
             }
         }
 
-        keyword.notNullElse({ k ->
+        keyword.notNullWithElse({ k ->
             messageItem.content?.let { str ->
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {

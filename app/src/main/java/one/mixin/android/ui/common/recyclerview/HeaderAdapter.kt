@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 
 abstract class HeaderAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
@@ -25,7 +25,7 @@ abstract class HeaderAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         }
     }
 
-    override fun getItemCount(): Int = data.notNullElse({
+    override fun getItemCount(): Int = data.notNullWithElse({
         if (headerView != null) it.size + 1 else it.size
     }, 0)
 

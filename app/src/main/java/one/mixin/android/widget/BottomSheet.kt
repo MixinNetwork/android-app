@@ -30,7 +30,7 @@ import android.widget.FrameLayout
 import one.mixin.android.R
 import one.mixin.android.extension.isNotchScreen
 import one.mixin.android.extension.isTablet
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import org.jetbrains.anko.dip
@@ -290,7 +290,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
     fun setCustomViewHeight(height: Int, endAction: (() -> Unit)? = null) {
         customViewHeight = height
         val params = customView?.layoutParams
-        val duration = customView?.layoutParams.notNullElse({
+        val duration = customView?.layoutParams.notNullWithElse({
             try {
                 min(abs(height - it.height) / speed, 200)
             } catch (e: ArithmeticException) {

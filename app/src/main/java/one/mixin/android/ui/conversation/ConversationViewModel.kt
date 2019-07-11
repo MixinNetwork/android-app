@@ -43,7 +43,7 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.mainThread
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
@@ -367,7 +367,7 @@ internal constructor(
             .map { userRepository.getUserById(it) }.observeOn(AndroidSchedulers.mainThread())!!
 
     fun cancel(id: String) = viewModelScope.launch(Dispatchers.IO) {
-        jobManager.findJobById(id).notNullElse({ it.cancel() }, {
+        jobManager.findJobById(id).notNullWithElse({ it.cancel() }, {
             conversationRepository.updateMediaStatus(MediaStatus.CANCELED.name, id)
         })
     }

@@ -19,7 +19,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.maxItemWidth
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -136,7 +136,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
         }
 
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        keyword.notNullElse({ k ->
+        keyword.notNullWithElse({ k ->
             messageItem.content?.let { str ->
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {
@@ -231,7 +231,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
             }
             quoteMessage.type.endsWith("_DATA") -> {
-                quoteMessage.mediaName.notNullElse({
+                quoteMessage.mediaName.notNullWithElse({
                     itemView.reply_content_tv.text = it
                 }, {
                     itemView.reply_content_tv.setText(R.string.document)
@@ -243,7 +243,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp8
             }
             quoteMessage.type.endsWith("_AUDIO") -> {
-                quoteMessage.mediaDuration.notNullElse({
+                quoteMessage.mediaDuration.notNullWithElse({
                     itemView.reply_content_tv.text = it.toLong().formatMillis()
                 }, {
                     itemView.reply_content_tv.setText(R.string.audio)
@@ -289,7 +289,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
     }
 
     private fun setIcon(@DrawableRes icon: Int? = null) {
-        icon.notNullElse({ icon ->
+        icon.notNullWithElse({ icon ->
             AppCompatResources.getDrawable(itemView.context, icon).let {
                 it?.setBounds(0, 0, itemView.context.dpToPx(10f), itemView.context.dpToPx(10f))
                 TextViewCompat.setCompoundDrawablesRelative(itemView.reply_content_tv, it, null, null, null)

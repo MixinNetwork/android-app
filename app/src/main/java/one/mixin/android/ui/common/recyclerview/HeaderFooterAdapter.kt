@@ -3,7 +3,7 @@ package one.mixin.android.ui.common.recyclerview
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 
 abstract class HeaderFooterAdapter<T> : HeaderAdapter<T>() {
     companion object {
@@ -24,7 +24,7 @@ abstract class HeaderFooterAdapter<T> : HeaderAdapter<T>() {
         }
     }
 
-    override fun getItemCount(): Int = data.notNullElse({
+    override fun getItemCount(): Int = data.notNullWithElse({
         if (headerView != null && footerView != null) {
             it.size + 2
         } else if (headerView != null || footerView != null) {

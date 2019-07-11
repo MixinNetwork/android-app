@@ -1,6 +1,6 @@
 package one.mixin.android.ui.common.recyclerview
 
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 
 abstract class HeaderFilterAdapter<T> : HeaderAdapter<T>() {
 
@@ -12,7 +12,7 @@ abstract class HeaderFilterAdapter<T> : HeaderAdapter<T>() {
         }
     }
 
-    override fun getItemCount(): Int = data.notNullElse({
+    override fun getItemCount(): Int = data.notNullWithElse({
         if (filtered()) it.size else it.size + 1
     }, if (filtered()) 0 else 1)
 

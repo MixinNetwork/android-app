@@ -17,7 +17,7 @@ import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadGif
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
@@ -154,7 +154,7 @@ class GiphyFragment : BaseFragment() {
             return NormalHolder(view)
         }
 
-        override fun getItemCount(): Int = data.notNullElse({
+        override fun getItemCount(): Int = data.notNullWithElse({
             if (footerView != null) it.size + 2 else it.size + 1
         }, 0)
 

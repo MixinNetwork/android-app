@@ -38,7 +38,7 @@ import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -271,7 +271,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
                 r.find {
                     it.assetId == activity?.defaultSharedPreferences!!.getString(ASSET_PREFERENCE, "")
-                }.notNullElse({ a ->
+                }.notNullWithElse({ a ->
                     updateAssetUI(a)
                     currentAsset = a
                 }, {
