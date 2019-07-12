@@ -31,7 +31,7 @@ buildscript {
         ext.libphonenumberVersion = '8.10.14'
         ext.anko_version = '0.10.8'
         ext.coroutines_version = '1.2.2'
-        ext.firebaseVersion = '17.0.0'
+        ext.firebaseVersion = '17.0.1'
         ext.firebaseMessageVersion = '19.0.1'
         ext.firebaseDylinkVersion = '18.0.0'
         ext.firebaseMLVersion = '21.0.0'
