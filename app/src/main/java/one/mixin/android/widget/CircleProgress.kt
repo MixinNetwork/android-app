@@ -11,6 +11,7 @@ import android.graphics.Paint.Cap
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Typeface
+import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
@@ -62,6 +63,11 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         context.dip(3f).toFloat()
     }
 
+    private val drawable: PlayPauseDrawable = PlayPauseDrawable().apply {
+        callback = this@CircleProgress
+        firstTimeNotAnimated = true
+    }
+
     init {
         val a = context.obtainStyledAttributes(attrs, R.styleable.CircleProgress, defStyleAttr, 0)
         mSize = a.getDimensionPixelSize(R.styleable.CircleProgress_size, context.dip(40))
@@ -84,6 +90,8 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         mPaint.color = mProgressColor
         mBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         mBackgroundPaint.color = mShadowColor
+
+        drawable.color = mProgressColor
 
         mForkPath = Path()
         mArrowPath = Path()
@@ -171,6 +179,10 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         super.onDetachedFromWindow()
     }
 
+    override fun verifyDrawable(who: Drawable?): Boolean {
+        return who == drawable || super.verifyDrawable(who)
+    }
+
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
         super.onSizeChanged(w, h, oldw, oldh)
         val centerX = w / 2
@@ -181,6 +193,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         fBounds.right = bounds.right - mBorderWidth
         fBounds.top = bounds.top + mBorderWidth
         fBounds.bottom = bounds.bottom - mBorderWidth
+        drawable.setBounds(0, 0, w, h)
     }
 
     override fun draw(canvas: Canvas) {
@@ -205,20 +218,12 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                 drawDone(canvas)
             }
             STATUS_PLAY -> {
-                mPaint.style = Paint.Style.STROKE
-                if (mBorder) {
-                    canvas.drawArc(fBounds, 0f, 360f, false, mPaint)
-                }
-                mPaint.style = Paint.Style.FILL
-                drawPlay(canvas)
+                drawable.isPlay = true
+                drawable.draw(canvas)
             }
             STATUS_PAUSE -> {
-                mPaint.style = Paint.Style.STROKE
-                if (mBorder) {
-                    canvas.drawArc(fBounds, 0f, 360f, false, mPaint)
-                }
-                mPaint.style = Paint.Style.FILL
-                drawPause(canvas)
+                drawable.isPlay = false
+                drawable.draw(canvas)
             }
             else -> {
                 when {
@@ -272,24 +277,6 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         val fontMetrics = mTextPaint.fontMetricsInt
         val baseline = (bounds.bottom + bounds.top - fontMetrics.bottom - fontMetrics.top) / 2
         canvas.drawText("FILE", bounds.centerX(), baseline, mTextPaint)
-    }
-
-    private fun drawPlay(canvas: Canvas) {
-        mForkPath.reset()
-        mForkPath.moveTo(fBounds.centerX() - fBounds.width() * 0.20f, fBounds.centerY() - fBounds.height() * 0.2f)
-        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.2f, fBounds.centerY())
-        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.15f, fBounds.centerY() + fBounds.height() * 0.2f)
-        mForkPath.lineTo(fBounds.centerX() - fBounds.width() * 0.15f, fBounds.centerY() - fBounds.height() * 0.2f)
-        mForkPath.lineTo(fBounds.centerX() + fBounds.width() * 0.2f, fBounds.centerY())
-        canvas.drawPath(mForkPath, mPaint)
-    }
-
-    private fun drawPause(canvas: Canvas) {
-        val height = (fBounds.height() / 8)
-        canvas.drawLine((fBounds.centerX() - fBounds.width() * 0.1f), (fBounds.centerY() - height),
-            (fBounds.centerX() - fBounds.width() * 0.1f), (fBounds.centerY() + height), mPaint)
-        canvas.drawLine((fBounds.centerX() + width * 0.1f), (fBounds.centerY() - height),
-            (fBounds.centerX() + fBounds.width() * 0.1f), (fBounds.centerY() + height), mPaint)
     }
 
     private fun drawArc(canvas: Canvas) {

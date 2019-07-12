@@ -36,14 +36,25 @@ class PlayPauseDrawable : Drawable() {
         set(value) {
             if (value == field) return
 
-            pausePlayAnimator.apply {
-                cancel()
-                duration = 200
-                interpolator = DecelerateInterpolator()
-                start()
+            if (first && firstTimeNotAnimated) {
+                progress = 1f
+                first = false
+            } else {
+                pausePlayAnimator.apply {
+                    cancel()
+                    duration = 200
+                    interpolator = DecelerateInterpolator()
+                    start()
+                }
             }
             field = value
             invalidateSelf()
+        }
+
+    var color: Int = Color.WHITE
+        set(value) {
+            field = value
+            mPaint.color = value
         }
 
     private val pausePlayAnimator: Animator
@@ -51,10 +62,13 @@ class PlayPauseDrawable : Drawable() {
             return ObjectAnimator.ofFloat(this, PROGRESS, if (isPlay) 1f else 0f, if (isPlay) 0f else 1f)
         }
 
+    var firstTimeNotAnimated = false
+    private var first = true
+
     init {
         mPaint.isAntiAlias = true
         mPaint.style = Paint.Style.FILL
-        mPaint.color = Color.WHITE
+        mPaint.color = color
     }
 
     override fun onBoundsChange(bounds: Rect) {
