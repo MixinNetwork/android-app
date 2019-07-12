@@ -65,6 +65,9 @@
     <string name="receive">转入</string>
     <string name="developer">开发者</string>
     <string name="later">稍后</string>
+    <string name="save_to_music">保存到音乐库</string>
+    <string name="save_to_gallery">保存到相册</string>
+    <string name="save_to_downloads">保存到下载</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -113,6 +116,7 @@
     <string name="error_invalid_code_too_frequent">错误 %1$d：发送验证码太频繁，请稍后再试</string>
     <string name="error_invalid_emergency_contact">错误 %1$d：紧急联系人不正确</string>
     <string name="error_retry_upload">重新上传失败。</string>
+    <string name="error_not_supported_audio_format">不支持的音频格式，请用其他app打开。</string>
     <!--home-->
     <string name="title_home">联系人</string>
     <string name="search_hint">资产，联系人，消息</string>

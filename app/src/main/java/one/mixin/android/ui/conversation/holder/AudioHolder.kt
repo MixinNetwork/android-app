@@ -106,7 +106,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_expired.visibility = View.VISIBLE
                     itemView.audio_progress.visibility = View.INVISIBLE
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.PENDING.name -> {
@@ -115,10 +115,10 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                     itemView.audio_progress.enableLoading()
                     itemView.audio_progress.setBindOnly(messageItem.messageId)
                     itemView.audio_progress.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.DONE.name, MediaStatus.READ.name -> {
@@ -132,11 +132,10 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                         itemView.audio_progress.setPlay()
                     }
                     itemView.audio_progress.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
-
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.CANCELED.name -> {
@@ -157,7 +156,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
                         }
                     }
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
             }
@@ -173,7 +172,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         }
     }
 
-    private fun handlerClick(
+    private fun handleClick(
         hasSelect: Boolean,
         isSelect: Boolean,
         isMe: Boolean,

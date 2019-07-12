@@ -1,13 +1,29 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import android.os.Environment
 import android.os.Parcelable
 import android.view.View
+import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.android.parcel.Parcelize
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
+import one.mixin.android.extension.copyFromInputStream
+import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.getPublicPicturePath
+import one.mixin.android.extension.hasWritePermission
+import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.toast
+import java.io.File
+import java.io.FileInputStream
 
 @SuppressLint("ParcelCreator")
 @Entity
@@ -114,6 +130,10 @@ fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name
 
+fun MessageItem.isFile() =
+    type == MessageCategory.SIGNAL_DATA.name ||
+        type == MessageCategory.PLAIN_DATA.name
+
 fun MessageItem.canRecall(): Boolean {
     return this.type == MessageCategory.SIGNAL_TEXT.name ||
         this.type == MessageCategory.SIGNAL_IMAGE.name ||
@@ -153,4 +173,23 @@ fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
             botView.isVisible = false
         }
     }
+}
+
+fun MessageItem.saveToLocal(context: Context) {
+    if (!hasWritePermission()) return
+
+    val file = File(mediaUrl?.toUri()?.getFilePath())
+    val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
+        File(context.getPublicPicturePath(), mediaName)
+    } else {
+        val dir = if (MimeTypes.isAudio(mediaMimeType)) {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
+        } else {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        }
+        File(dir, mediaName)
+    }
+    outFile.copyFromInputStream(FileInputStream(file))
+    context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+    MixinApplication.appContext.toast(R.string.save_success)
 }

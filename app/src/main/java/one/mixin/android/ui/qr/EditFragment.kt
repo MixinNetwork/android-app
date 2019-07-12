@@ -31,7 +31,7 @@ import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.decodeQR
-import one.mixin.android.extension.getPublicPictyresPath
+import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadImage
@@ -194,9 +194,9 @@ class EditFragment : CaptureVisionFragment() {
         if (!isAdded) return@launch
 
         val outFile = if (isVideo) {
-            requireContext().getPublicPictyresPath().createVideoTemp("mp4", false)
+            requireContext().getPublicPicturePath().createVideoTemp("mp4", false)
         } else {
-            requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
+            requireContext().getPublicPicturePath().createImageTemp(noMedia = false)
         }
         withContext(Dispatchers.IO) {
             File(path).copy(outFile)

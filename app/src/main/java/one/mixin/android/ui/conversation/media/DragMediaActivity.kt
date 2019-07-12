@@ -73,7 +73,7 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.getPublicPictyresPath
+import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadGif
@@ -205,11 +205,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                                 val item = list[view_pager.currentItem]
                                 val file = File(item.mediaUrl?.toUri()?.getFilePath())
                                 val outFile = if (item.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
-                                    this@DragMediaActivity.getPublicPictyresPath().createGifTemp(false)
+                                    this@DragMediaActivity.getPublicPicturePath().createGifTemp(false)
                                 } else if (item.mediaMimeType.equals(MimeType.PNG.toString())) {
-                                    this@DragMediaActivity.getPublicPictyresPath().createPngTemp(false)
+                                    this@DragMediaActivity.getPublicPicturePath().createPngTemp(false)
                                 } else {
-                                    this@DragMediaActivity.getPublicPictyresPath().createImageTemp(noMedia = false)
+                                    this@DragMediaActivity.getPublicPicturePath().createImageTemp(noMedia = false)
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
                                 sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))

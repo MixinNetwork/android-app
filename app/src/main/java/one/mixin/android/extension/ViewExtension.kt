@@ -222,7 +222,7 @@ fun View.navigate(
 }
 
 fun View.capture(context: Context) {
-    val outFile = context.getPublicPictyresPath().createImageTemp(noMedia = false)
+    val outFile = context.getPublicPicturePath().createImageTemp(noMedia = false)
     val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
     val c = Canvas(b)
     draw(c)

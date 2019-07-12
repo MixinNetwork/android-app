@@ -542,6 +542,8 @@ class ConversationAdapter(
 
         open fun onFileClick(messageItem: MessageItem) {}
 
+        open fun onAudioFileClick(messageItem: MessageItem) {}
+
         open fun onCancel(id: String) {}
 
         open fun onRetryUpload(messageId: String) {}

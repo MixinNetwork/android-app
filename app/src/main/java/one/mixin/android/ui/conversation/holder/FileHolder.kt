@@ -7,6 +7,7 @@ import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
+import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_file.view.*
 import one.mixin.android.R
@@ -14,6 +15,7 @@ import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import org.jetbrains.anko.dip
@@ -88,7 +90,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     itemView.file_expired.visibility = View.VISIBLE
                     itemView.file_progress.visibility = View.INVISIBLE
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.PENDING.name -> {
@@ -100,19 +102,31 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                         onItemListener.onCancel(messageItem.messageId)
                     }
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
-                MediaStatus.DONE.name -> {
+                MediaStatus.DONE.name, MediaStatus.READ.name -> {
                     itemView.file_expired.visibility = View.GONE
                     itemView.file_progress.visibility = View.VISIBLE
-                    itemView.file_progress.setDone()
-                    itemView.file_progress.setBindId(null)
-                    itemView.file_progress.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                    if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
+                        itemView.file_progress.setBindOnly(messageItem.messageId)
+                        if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                            itemView.file_progress.setPause()
+                        } else {
+                            itemView.file_progress.setPlay()
+                        }
+                        itemView.file_progress.setOnClickListener {
+                            onItemListener.onAudioFileClick(messageItem)
+                        }
+                    } else {
+                        itemView.file_progress.setDone()
+                        itemView.file_progress.setBindId(null)
+                        itemView.file_progress.setOnClickListener {
+                            handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        }
                     }
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
                 MediaStatus.CANCELED.name -> {
@@ -133,7 +147,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                         }
                     }
                     itemView.setOnClickListener {
-                        handlerClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
             }
@@ -149,7 +163,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         }
     }
 
-    private fun handlerClick(
+    private fun handleClick(
         hasSelect: Boolean,
         isSelect: Boolean,
         isMe: Boolean,

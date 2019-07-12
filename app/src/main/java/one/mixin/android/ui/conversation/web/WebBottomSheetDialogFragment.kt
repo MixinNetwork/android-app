@@ -45,7 +45,7 @@ import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
-import one.mixin.android.extension.getPublicPictyresPath
+import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.openCamera
@@ -415,7 +415,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (granted) {
                     doAsync {
                         try {
-                            val outFile = requireContext().getPublicPictyresPath().createImageTemp(noMedia = false)
+                            val outFile = requireContext().getPublicPicturePath().createImageTemp(noMedia = false)
                             val encodingPrefix = "base64,"
                             val prefixIndex = url?.indexOf(encodingPrefix)
                             if (url != null && prefixIndex != null && prefixIndex != -1) {
