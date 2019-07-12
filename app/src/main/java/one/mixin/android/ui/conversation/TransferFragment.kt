@@ -29,6 +29,7 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.*
 import one.mixin.android.Constants.ARGS_USER_ID
+import one.mixin.android.Constants.Account.PREF_HAS_WITHDRAWAL_ADDRESS_SET
 import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.checkNumber
@@ -185,7 +186,41 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             if (!isAdded) return@setOnClickListener
 
             operateKeyboard(false)
-            showTransferBottom()
+
+            when {
+                isInnerTransfer() -> showTransferBottom()
+                shouldShowWithdrawalTip() -> {
+                    currentAsset?.let {
+                        val withdrawalBottom = WithdrawalTipBottomSheetDialogFragment.newInstance(it)
+                        withdrawalBottom.showNow(requireFragmentManager(), WithdrawalTipBottomSheetDialogFragment.TAG)
+                        withdrawalBottom.callback = object : WithdrawalTipBottomSheetDialogFragment.Callback {
+                            override fun onSuccess() {
+                                showTransferBottom()
+                            }
+                        }
+                    }
+                }
+                else -> showTransferBottom()
+            }
+        }
+    }
+
+    private fun shouldShowWithdrawalTip(): Boolean {
+        if (currentAsset == null && address == null) return false
+
+        try {
+            val amount = BigDecimal(getAmount()).toDouble() * currentAsset!!.priceUsd.toDouble()
+            if (amount <= 10) {
+                return false
+            }
+        } catch (e: NumberFormatException) {
+            return false
+        }
+        val hasWithdrawalAddressSet = defaultSharedPreferences.getStringSet(PREF_HAS_WITHDRAWAL_ADDRESS_SET, null)
+        return if (hasWithdrawalAddressSet == null) {
+            true
+        } else {
+            !hasWithdrawalAddressSet.contains(address!!.addressId)
         }
     }
 

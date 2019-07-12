@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/scroll_content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/title_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="@string/bottom_withdrawal_title"
+                android:textSize="18sp"
+                android:layout_marginTop="70dp"
+                android:textColor="@color/wallet_text_dark"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/warning_tv"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin16"
+                android:gravity="center_horizontal"
+                android:textColor="@color/colorRed"
+                android:text="@string/bottom_withdrawal_address_tips"/>
+
+            <ImageView
+                android:id="@+id/image_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:layout_marginBottom="36dp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/ic_withdrawal"/>
+
+            <Button
+                style="@style/AppTheme.MaterialButton"
+                android:id="@+id/change_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:enabled="false"
+                android:paddingStart="@dimen/margin20"
+                android:paddingEnd="@dimen/margin20"
+                android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginTop="32dp"
+                android:text="@string/bottom_withdrawal_change_amount"
+                android:textColor="@color/white"
+                android:textSize="14sp"/>
+
+            <TextView
+                android:id="@+id/continue_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:layout_marginBottom="40dp"
+                android:layout_marginTop="@dimen/margin16"
+                android:enabled="false"
+                android:layout_gravity="center_horizontal"
+                android:textColor="@color/text_gray"
+                android:text="@string/common_continue"/>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
