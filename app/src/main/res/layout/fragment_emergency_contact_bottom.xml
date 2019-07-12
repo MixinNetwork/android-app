@@ -36,6 +36,14 @@
                 android:textColor="@color/wallet_text_dark"
                 android:text="@string/setting_emergency_content"/>
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/margin16"
+                android:gravity="center_horizontal"
+                android:textColor="@color/colorRed"
+                android:text="@string/setting_emergency_warning"/>
+
             <ImageView
                 android:id="@+id/image_view"
                 android:layout_width="match_parent"
