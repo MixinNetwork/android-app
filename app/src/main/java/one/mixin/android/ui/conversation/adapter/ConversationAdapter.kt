@@ -19,7 +19,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.conversation.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.holder.ActionHolder
 import one.mixin.android.ui.conversation.holder.AudioHolder
@@ -115,8 +115,8 @@ class ConversationAdapter(
         }
     }
 
-    override fun getHeaderId(position: Int): Long = notNullElse(getItem(position), {
-        Math.abs(it.createdAt.hashForDate())
+    override fun getHeaderId(position: Int): Long = getItem(position).notNullWithElse({
+        abs(it.createdAt.hashForDate())
     }, 0)
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup): TimeHolder =
@@ -450,7 +450,7 @@ class ConversationAdapter(
     }
 
     private fun getItemType(messageItem: MessageItem?): Int =
-        notNullElse(messageItem, { item ->
+        messageItem.notNullWithElse({ item ->
             when {
                 item.type == MessageCategory.STRANGER.name -> STRANGER_TYPE
                 item.type == MessageCategory.SECRET.name -> SECRET_TYPE

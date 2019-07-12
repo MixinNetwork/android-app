@@ -11,7 +11,6 @@ import kotlinx.android.synthetic.main.fragment_blocked.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.vo.User
@@ -90,7 +89,7 @@ class SettingBlockedFragment : BaseViewModelFragment<SettingBlockedViewModel>() 
             }
         }
 
-        override fun getItemCount(): Int = notNullElse(users, { it.size + 1 }, 1)
+        override fun getItemCount(): Int = (users?.size ?: 0) + 1
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

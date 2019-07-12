@@ -9,7 +9,7 @@ import kotlinx.android.synthetic.main.item_contact_header.view.*
 import kotlinx.android.synthetic.main.item_group_friend.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
 
@@ -31,13 +31,13 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
         notifyDataSetChanged()
     }
 
-    override fun getItemCount(): Int = notNullElse(data, { it.size }, 0)
+    override fun getItemCount(): Int = data?.size ?: 0
 
     override fun getHeaderId(position: Int): Long {
         if (!mShowHeader) {
             return -1
         }
-        return notNullElse(data, {
+        return data.notNullWithElse({
             val u = it[position]
             if (u.fullName != null) {
                 if (u.fullName.isEmpty()) ' '.toLong() else u.fullName[0].toLong()

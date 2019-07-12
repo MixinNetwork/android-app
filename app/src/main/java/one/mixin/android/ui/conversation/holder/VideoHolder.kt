@@ -15,7 +15,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadVideoMark
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -81,14 +81,14 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         if (messageItem.mediaStatus == MediaStatus.DONE.name) {
-            notNullElse(messageItem.mediaDuration, {
+            messageItem.mediaDuration.notNullWithElse({
                 itemView.duration_tv.visibility = VISIBLE
                 itemView.duration_tv.text = it.toLong().formatMillis()
             }, {
                 itemView.duration_tv.visibility = GONE
             })
         } else {
-            notNullElse(messageItem.mediaSize, {
+            messageItem.mediaSize.notNullWithElse({
                 if (it == 0L) {
                     itemView.duration_tv.visibility = GONE
                 } else {

@@ -1,10 +1,9 @@
 package one.mixin.android.ui.conversation.adapter
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.ui.conversation.holder.MentionHolder
 import one.mixin.android.vo.User
 
@@ -30,7 +29,7 @@ class MentionAdapter constructor(private val onClickListener: OnUserClickListene
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(filterList, { it.size }, 0)
+    override fun getItemCount(): Int = filterList?.size ?: 0
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MentionHolder =
         MentionHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_chat_mention, parent, false))

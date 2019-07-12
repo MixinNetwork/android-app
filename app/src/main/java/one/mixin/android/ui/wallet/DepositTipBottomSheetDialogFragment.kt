@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import androidx.core.view.isVisible
 import kotlinx.android.synthetic.main.fragment_deposit_tip_bottom_sheet.view.*
 import one.mixin.android.Constants.Account.PREF_SHOW_DEPOSIT_TIP_CHAIN_SET
 import one.mixin.android.Constants.ChainId.EOS_CHAIN_ID

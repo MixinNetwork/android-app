@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -130,7 +130,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
                             uiThread {
                                 contentView.pin_va?.displayedChild = POS_PIN
-                                notNullElse(callback, { action -> action.onSuccess() }, {
+                                callback.notNullWithElse({ action -> action.onSuccess() }, {
                                     toast(R.string.successful)
                                 })
                                 dismiss()

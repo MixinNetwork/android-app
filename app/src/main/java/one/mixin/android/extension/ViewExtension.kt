@@ -21,7 +21,6 @@ import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
-import android.widget.TextView
 import androidx.annotation.LayoutRes
 import androidx.core.animation.doOnEnd
 import androidx.core.animation.doOnStart

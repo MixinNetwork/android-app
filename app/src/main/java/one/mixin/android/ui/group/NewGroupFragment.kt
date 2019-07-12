@@ -30,7 +30,6 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadCircleImage
-import one.mixin.android.extension.notNullElse
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
@@ -212,7 +211,7 @@ class NewGroupFragment : BaseFragment() {
             holder.bind(users!![position])
         }
 
-        override fun getItemCount(): Int = notNullElse(users, { it.size }, 0)
+        override fun getItemCount(): Int = users?.size ?: 0
     }
 
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

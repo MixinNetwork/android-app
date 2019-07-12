@@ -17,7 +17,6 @@ import one.mixin.android.ui.setting.PrivacyFragment
 import one.mixin.android.ui.setting.SettingBlockedFragment
 import one.mixin.android.ui.setting.SettingConversationFragment
 import one.mixin.android.ui.setting.SettingDataStorageFragment
-import one.mixin.android.ui.setting.SettingFragment
 import one.mixin.android.ui.setting.SettingStorageFragment
 import one.mixin.android.ui.setting.VerificationEmergencyFragment
 import one.mixin.android.ui.setting.ViewEmergencyContactFragment

@@ -137,7 +137,7 @@ class MainActivity : BlazeBaseActivity() {
             return
         }
 
-        if(defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
+        if (defaultSharedPreferences.getInt(PREF_LOGIN_FROM, FROM_LOGIN) == FROM_EMERGENCY) {
             defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
             delayShowModifyMobile()
         }

@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 
 abstract class FooterAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     companion object {
@@ -23,7 +23,7 @@ abstract class FooterAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>(
         }
     }
 
-    override fun getItemCount(): Int = notNullElse(data, {
+    override fun getItemCount(): Int = data.notNullWithElse({
         if (footerView != null) it.size + 1 else it.size
     }, 0)
 

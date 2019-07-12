@@ -13,7 +13,7 @@ import java.util.Locale
 class AutoFillPhoneText(
     context: Context,
     attributeSet: AttributeSet
-): EditText(context, attributeSet) {
+) : EditText(context, attributeSet) {
 
     @TargetApi(Build.VERSION_CODES.O)
     override fun autofill(value: AutofillValue) {

@@ -23,7 +23,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.putLong
@@ -78,7 +78,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             is TransferBiometricItem -> {
                 (t as TransferBiometricItem).let {
                     contentView.title_view.showAvatar(it.user)
-                    contentView.title_view.setSubTitle(it.user.fullName ?: "", it.user.identityNumber)
+                    contentView.title_view.setSubTitle(it.user.fullName
+                        ?: "", it.user.identityNumber)
                 }
             }
             is WithdrawBiometricItem -> {
@@ -162,7 +163,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     defaultSharedPreferences.putLong(BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                     context?.updatePinCheck()
                     dismiss()
-                    notNullElse(callback, { action -> action.onSuccess() }, {
+                    callback.notNullWithElse({ action -> action.onSuccess() }, {
                         toast(R.string.successful)
                     })
                 } else {

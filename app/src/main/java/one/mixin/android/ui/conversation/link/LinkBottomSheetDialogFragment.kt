@@ -33,7 +33,7 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.di.Injectable
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.QrCodeType
@@ -130,7 +130,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     }
                     user
                 }.observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider).subscribe({
-                    notNullElse(it, {
+                    it.notNullWithElse({
                         dismiss()
                         UserBottomSheetDialogFragment.newInstance(it)
                             .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)

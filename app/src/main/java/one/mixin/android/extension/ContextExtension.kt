@@ -453,33 +453,33 @@ fun Window.isNotchScreen(): Boolean {
     }
 }
 
-inline fun <T : Any, R> notNullElse(input: T?, normalAction: (T) -> R, default: R): R {
-    return if (input == null) {
+inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, default: R): R {
+    return if (this == null) {
         default
     } else {
-        input.let(normalAction)
+        normalAction(this)
     }
 }
 
-inline fun <T : Any, R> notNullElse(input: T?, normalAction: (T) -> R, elseAction: () -> R): R {
-    return if (input != null) {
-        input.let(normalAction)
+inline fun <T, R> T?.notNullWithElse(normalAction: (T) -> R, elseAction: () -> R): R {
+    return if (this != null) {
+        normalAction(this)
     } else {
         elseAction()
     }
 }
 
-inline fun <T : Any> notNullElse(input: T?, normalAction: (T) -> Unit, elseAction: () -> Unit) {
-    return if (input != null) {
-        input.let(normalAction)
+inline fun <T> T?.notNullWithElse(normalAction: (T) -> Unit, elseAction: () -> Unit) {
+    return if (this != null) {
+        normalAction(this)
     } else {
         elseAction()
     }
 }
 
-inline fun <T : Number, R> notEmptyOrElse(input: T?, normalAction: (T) -> R, elseAction: () -> R): R {
-    return if (input != null && input != 0) {
-        normalAction(input)
+inline fun <T : Number, R> T?.notEmptyWithElse(normalAction: (T) -> R, elseAction: () -> R): R {
+    return if (this != null && this != 0) {
+        normalAction(this)
     } else {
         elseAction()
     }

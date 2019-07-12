@@ -16,7 +16,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.vo.User
 
-abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder, VM: ViewModel> : BaseViewModelFragment<VM>() {
+abstract class BaseFriendsFragment<VH : BaseFriendsViewHolder, VM : ViewModel> : BaseViewModelFragment<VM>() {
 
     protected lateinit var adapter: AbsFriendsAdapter<VH>
 

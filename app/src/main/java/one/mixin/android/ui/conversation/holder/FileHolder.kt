@@ -11,7 +11,7 @@ import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_file.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fileSize
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
@@ -56,7 +56,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
             itemView.chat_name.visibility = View.GONE
         }
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        notNullElse(keyword, { k ->
+        keyword.notNullWithElse({ k ->
             messageItem.mediaName?.let { str ->
                 val start = str.indexOf(k, 0, true)
                 if (start >= 0) {

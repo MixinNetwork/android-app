@@ -100,7 +100,6 @@ fun backup(
         withContext(Dispatchers.Main) {
             callback(Result.SUCCESS)
         }
-
     }
 }
 

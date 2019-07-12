@@ -12,7 +12,7 @@ import one.mixin.android.di.Injectable
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.LinkState
@@ -80,7 +80,7 @@ open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
     override fun onChanged(t: Int?) {
         if (callState.callInfo.callState != CallService.CallState.STATE_IDLE) return
 
-        notNullElse(t, {
+        t.notNullWithElse({
             if (it > 500) {
                 setSyncing()
                 showBar()

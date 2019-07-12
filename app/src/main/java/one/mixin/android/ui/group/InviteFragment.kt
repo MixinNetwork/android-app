@@ -14,7 +14,7 @@ import kotlinx.android.synthetic.main.fragment_invite.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.getClipboardManager
-import one.mixin.android.extension.notNullElse
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
@@ -65,7 +65,7 @@ class InviteFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
 
         inviteViewModel.getConversation(conversationId).observe(this, Observer {
-            notNullElse(it, {
+            it.notNullWithElse({
                 val url = it.codeUrl
                 invite_link.text = url
                 invite_forward.setOnClickListener {
