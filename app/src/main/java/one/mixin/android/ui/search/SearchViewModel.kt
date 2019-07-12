@@ -13,6 +13,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.extension.escapeSql
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.AssetRepository
 import one.mixin.android.repository.ConversationRepository
@@ -44,11 +45,12 @@ internal constructor(
             null
         } else {
             controlledRunner.cancelPreviousThenRun {
+                val escapedQuery = query.trim().escapeSql()
                 when (T::class) {
-                    AssetItem::class -> assetRepository.fuzzySearchAsset("%${query.trim()}%")
-                    User::class -> userRepository.fuzzySearchUser("%${query.trim()}%")
-                    ChatMinimal::class -> conversationRepository.fuzzySearchChat("%${query.trim()}%")
-                    else -> conversationRepository.fuzzySearchMessage("%${query.trim()}%", limit)
+                    AssetItem::class -> assetRepository.fuzzySearchAsset("%$escapedQuery%")
+                    User::class -> userRepository.fuzzySearchUser("%$escapedQuery%")
+                    ChatMinimal::class -> conversationRepository.fuzzySearchChat("%$escapedQuery%")
+                    else -> conversationRepository.fuzzySearchMessage("%$escapedQuery%", limit)
                 }
             }
         }
@@ -57,7 +59,8 @@ internal constructor(
 
     fun fuzzySearchMessageDetailAsync(query: String, conversationId: String): Deferred<LiveData<PagedList<SearchMessageDetailItem>>> =
         viewModelScope.async(Dispatchers.IO) {
-            LivePagedListBuilder(conversationRepository.fuzzySearchMessageDetail("%${query.trim()}%", conversationId),
+            val escapedQuery = query.trim().escapeSql()
+            LivePagedListBuilder(conversationRepository.fuzzySearchMessageDetail("%$escapedQuery%", conversationId),
                 PagedList.Config.Builder()
                     .setPageSize(30)
                     .setEnablePlaceholders(true)

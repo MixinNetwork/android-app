@@ -35,6 +35,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ACCOUNT_NAME
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
 import java.io.File
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 class CameraXCaptureFragment : BaseCaptureFragment() {
@@ -165,7 +166,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
         override fun analyze(image: ImageProxy, rotationDegrees: Int) {
             if (!alreadyDetected && !image.planes.isNullOrEmpty() && detecting.compareAndSet(false, true)) {
-                if (isGooglePlayServicesAvailable) {
+                if (isGooglePlayServicesAvailable && Locale.getDefault() != Locale.CHINA) {
                     decodeWithFirebaseVision(image)
                 } else {
                     decodeWithZxing(image)
