@@ -480,11 +480,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         val info = packageManager.resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY)
                         if (info != null) {
                             context.startActivity(intent)
-                        } else {
-                            view.loadUrl(url, extraHeaders)
-                            // or call external broswer
-                            //                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(fallbackUrl));
-                            //                    context.startActivity(browserIntent);
                         }
                     }
                 } catch (e: URISyntaxException) {
