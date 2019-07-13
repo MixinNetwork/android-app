@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
-import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
@@ -78,9 +77,13 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         layoutInflater.inflate(R.layout.fragment_transactions, container, false)
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        asset = arguments!!.getParcelable(ARGS_ASSET) as AssetItem
+    }
+
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        asset = arguments!!.getParcelable(ARGS_ASSET) as AssetItem
         title_view.title_tv.text = asset.name
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener {
@@ -217,19 +220,17 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     ErrorHandler.handleError(it)
                 })
         }, {
-            headerView.receive_tv.visibility = INVISIBLE
+            headerView.receive_tv.visibility = GONE
             headerView.receive_progress.visibility = VISIBLE
             walletViewModel.getAsset(asset.assetId).autoDisposable(stopScope).subscribe({ response ->
                 if (response?.isSuccess == true) {
                     headerView.receive_tv.visibility = VISIBLE
                     headerView.receive_progress.visibility = GONE
                     response.data?.let { asset ->
+                        walletViewModel.upsetAsset(asset)
                         asset.toAssetItem().let { assetItem ->
-                            assetItem.differentProcess({
-                                refreshPendingDeposits(assetItem)
-                            }, {
-                                refreshPendingDeposits(assetItem)
-                            }, {})
+                            this@TransactionsFragment.asset = assetItem
+                            refreshPendingDeposits(assetItem)
                         }
                     }
                 }
