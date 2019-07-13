@@ -188,6 +188,10 @@ internal constructor(
         }
     }
 
+    fun upsetAsset(asset: Asset) = viewModelScope.launch(Dispatchers.IO) {
+        assetRepository.upsert(asset)
+    }
+
     fun observeTopAssets() = assetRepository.observeTopAssets()
 
     fun getUser(userId: String) = userRepository.getUserById(userId)
