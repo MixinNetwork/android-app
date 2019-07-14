@@ -227,7 +227,8 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_DATA.name ||
             data.category == MessageCategory.PLAIN_AUDIO.name ||
             data.category == MessageCategory.PLAIN_STICKER.name ||
-            data.category == MessageCategory.PLAIN_CONTACT.name) {
+            data.category == MessageCategory.PLAIN_CONTACT.name ||
+            data.category == MessageCategory.PLAIN_LIVE.name) {
             var dataUserId: String? = null
             if (!data.representativeId.isNullOrBlank()) {
                 dataUserId = data.userId
@@ -360,6 +361,10 @@ class DecryptMessage : Injector() {
                 syncUser(contactData.userId)
                 sendNotificationJob(message, data.source)
                 sendToExtensionSession(message, plainText)
+            }
+            data.category.endsWith("_LIVE") -> {
+                val decoded = Base64.decode(plainText)
+                // Todo
             }
         }
     }

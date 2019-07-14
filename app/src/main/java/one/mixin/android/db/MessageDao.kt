@@ -56,7 +56,8 @@ interface MessageDao : BaseDao<Message> {
         "m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.media_url AS mediaUrl, " +
         "m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration " +
         "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
-        "AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO') " +
+        "AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR " +
+        "m.category = 'PLAIN_VIDEO' OR m.category = 'PLAIN_LIVE') " +
         "AND m.media_status = 'DONE' " +
         "ORDER BY m.created_at DESC LIMIT 50")
     suspend fun getMediaMessages(conversationId: String): List<MessageItem>

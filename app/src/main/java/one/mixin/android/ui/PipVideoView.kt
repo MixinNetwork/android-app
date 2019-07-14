@@ -4,6 +4,7 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ObjectAnimator
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
@@ -71,6 +72,23 @@ class PipVideoView {
                 1 -> total - appContext.dpToPx(10f)
                 else -> (round((total - appContext.dpToPx(20f)) * p) + appContext.dpToPx(10f)).toInt()
             }
+        }
+
+        @SuppressLint("StaticFieldLeak")
+        private var Instance: PipVideoView? = null
+
+        fun getInstance(): PipVideoView {
+            var localInstance = Instance
+            if (localInstance == null) {
+                synchronized(PipVideoView::class.java) {
+                    localInstance = Instance
+                    if (localInstance == null) {
+                        localInstance = PipVideoView()
+                        Instance = localInstance
+                    }
+                }
+            }
+            return localInstance!!
         }
     }
 

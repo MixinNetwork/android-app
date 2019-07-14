@@ -477,7 +477,8 @@ class ConversationAdapter(
                 item.type == MessageCategory.SIGNAL_CONTACT.name ||
                     item.type == MessageCategory.PLAIN_CONTACT.name -> CONTACT_CARD_TYPE
                 item.type == MessageCategory.SIGNAL_VIDEO.name ||
-                    item.type == MessageCategory.PLAIN_VIDEO.name -> VIDEO_TYPE
+                    item.type == MessageCategory.PLAIN_VIDEO.name ||
+                    item.type == MessageCategory.PLAIN_LIVE.name -> VIDEO_TYPE
                 item.type == MessageCategory.SIGNAL_AUDIO.name ||
                     item.type == MessageCategory.PLAIN_AUDIO.name -> AUDIO_TYPE
                 item.isCallMessage() -> CALL_TYPE

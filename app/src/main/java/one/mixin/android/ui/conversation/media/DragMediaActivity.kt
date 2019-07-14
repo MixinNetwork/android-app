@@ -83,6 +83,7 @@ import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
+import one.mixin.android.extension.loadVideo
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.screenWidth
@@ -116,6 +117,7 @@ import java.io.FileInputStream
 import java.util.Random
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.math.min
 
 class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private lateinit var colorDrawable: ColorDrawable
@@ -136,6 +138,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         postponeEnterTransition()
+        if (pipVideoView.shown) {
+            pipVideoView.close()
+        }
         super.onCreate(savedInstanceState)
         VideoPlayer.player().setOnVideoPlayerListener(videoListener)
         belowOreo {
@@ -153,11 +158,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }.reversed()
 
             index = list.indexOfFirst { item -> messageId == item.messageId }
-            list.map {
-                if (it.type == MessageCategory.SIGNAL_VIDEO.name ||
-                    it.type == MessageCategory.PLAIN_VIDEO.name) {
-                }
-            }
             pagerAdapter = MediaAdapter(list, this@DragMediaActivity)
             view_pager.adapter = pagerAdapter
             if (index != -1) {
@@ -354,11 +354,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.video_texture.surfaceTextureListener = this
             setSize(messageItem, view, false)
             view.post { setSize(messageItem, view, true) }
+            view.preview_iv.loadVideo(messageItem.mediaUrl!!)
             view.preview_iv.visibility = VISIBLE
 
             view.seek_bar.progress = 0
             view.duration_tv.text = 0L.formatMillis()
             view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
+            view.tag = messageItem.type == MessageCategory.PLAIN_LIVE.name
 
             if (position == index) {
                 ViewCompat.setTransitionName(view.preview_iv, "transition")
@@ -384,18 +386,18 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 }
             }
             view.setOnClickListener {
-                if (view.controller.isVisible) {
-                    fadeOut(view)
+                if (view.close_iv.isVisible) {
+                    fadeOut(view, messageItem.type == MessageCategory.PLAIN_LIVE.name)
                 } else {
-                    fadeIn(view)
+                    fadeIn(view, messageItem.type == MessageCategory.PLAIN_LIVE.name)
                 }
             }
 
             view.video_texture.setOnClickListener {
-                if (view.controller.isVisible) {
-                    fadeOut(view)
+                if (view.close_iv.isVisible) {
+                    fadeOut(view, messageItem.type == MessageCategory.PLAIN_LIVE.name)
                 } else {
-                    fadeIn(view)
+                    fadeIn(view, messageItem.type == MessageCategory.PLAIN_LIVE.name)
                 }
             }
 
@@ -425,31 +427,23 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun setSize(messageItem: MessageItem, view: View, post: Boolean) {
             val w = if (post) container.width else container.measuredWidth
             val h = if (post) container.height else container.measuredHeight
-//            val textureParams = view.video_texture.layoutParams
             val previewParams = view.preview_iv.layoutParams
             val scaleW = w / messageItem.mediaWidth!!.toFloat()
             val scaleH = h / messageItem.mediaHeight!!.toFloat()
             when {
                 scaleW > scaleH -> {
-//                    textureParams.height = h
                     previewParams.height = h
-//                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
                     previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
                 }
                 scaleW < scaleH -> {
-//                    textureParams.width = w
                     previewParams.width = w
-//                    textureParams.height = (messageItem.mediaHeight * scaleW).toInt()
                     previewParams.height = (messageItem.mediaHeight * scaleW).toInt()
                 }
                 else -> {
-//                    textureParams.height = h
                     previewParams.height = h
-//                    textureParams.width = (messageItem.mediaWidth * scaleH).toInt()
                     previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
                 }
             }
-//            view.video_texture.layoutParams = textureParams
             view.preview_iv.layoutParams = previewParams
         }
 
@@ -560,26 +554,36 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun fadeIn(view: View, withoutPlay: Boolean = false) {
-        if (!withoutPlay) {
-            view.play_view.fadeIn()
+    private fun fadeIn(view: View, live: Boolean, withoutPlay: Boolean = false) {
+        if (live) {
+            view.pip_iv.fadeIn()
+            view.close_iv.fadeIn()
+        } else {
+            if (!withoutPlay) {
+                view.play_view.fadeIn()
+            }
+            view.controller.fadeIn()
+            view.close_iv.fadeIn()
+            view.pip_iv.fadeIn()
+            view.share_iv.fadeIn()
         }
-        view.controller.fadeIn()
-        view.close_iv.fadeIn()
-        view.pip_iv.fadeIn()
-        view.share_iv.fadeIn()
     }
 
-    private fun fadeOut(view: View, withoutPlay: Boolean = false) {
-        if (!withoutPlay) {
-            view.play_view.fadeOut()
+    private fun fadeOut(view: View, live: Boolean, withoutPlay: Boolean = false) {
+        if (live) {
+            view.pip_iv.fadeOut()
+            view.close_iv.fadeOut()
         } else {
-            view.play_view.fadeIn()
+            if (!withoutPlay) {
+                view.play_view.fadeOut()
+            } else {
+                view.play_view.fadeIn()
+            }
+            view.controller.fadeOut()
+            view.close_iv.fadeOut()
+            view.pip_iv.fadeOut()
+            view.share_iv.fadeOut()
         }
-        view.controller.fadeOut()
-        view.close_iv.fadeOut()
-        view.pip_iv.fadeOut()
-        view.share_iv.fadeOut()
     }
 
     private fun setTextureView() {
@@ -613,7 +617,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         findViewPagerChildByTag(lastPos) {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
-                fadeOut(parentView, true)
+                fadeOut(parentView, parentView.tag as Boolean, true)
                 parentView.preview_iv.visibility = VISIBLE
             }
         }
@@ -624,7 +628,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     override fun onDismissProgress(progress: Float) {
-        colorDrawable.alpha = Math.min(ALPHA_MAX, ((1 - progress) * ALPHA_MAX).toInt())
+        colorDrawable.alpha = min(ALPHA_MAX, ((1 - progress) * ALPHA_MAX).toInt())
     }
 
     override fun onDismiss() {
@@ -678,11 +682,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun start() {
         view_pager.post {
-            setPreviewIv(false, view_pager.currentItem)
             findViewPagerChildByTag { viewGroup ->
                 val parentView = viewGroup.getChildAt(0)
                 if (parentView is FrameLayout) {
-                    fadeOut(parentView)
+                    fadeOut(parentView, parentView.tag as Boolean)
                     (parentView.getChildAt(2) as PlayView).status = STATUS_PLAYING
                     disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
@@ -721,9 +724,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         val messageItem = pagerAdapter.getItem(pos)
         if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name ||
             messageItem.type == MessageCategory.PLAIN_VIDEO.name) {
-//            messageItem.mediaUrl?.let {
-//                VideoPlayer.player().loadVideo(it)
-//            }
+            messageItem.mediaUrl?.let {
+                VideoPlayer.player().loadVideo(it)
+            }
+            setTextureView()
+            action()
+        } else if (messageItem.type == MessageCategory.PLAIN_LIVE.name) {
+            // Todo
             resources.getStringArray(R.array.live_test).apply {
                 get(Random().nextInt(size)).let {
                     VideoPlayer.player().loadHlsVideo(it)
@@ -738,6 +745,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
         override fun onRenderedFirstFrame() {
+            findViewPagerChildByTag {
+                val parentView = it.getChildAt(0)
+                if (parentView is FrameLayout) {
+                    parentView.preview_iv.visibility = INVISIBLE
+                }
+            }
         }
 
         override fun onLoadingChanged(isLoading: Boolean) {
@@ -747,6 +760,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+            findViewPagerChildByTag {
+                val parentView = it.getChildAt(0)
+                if (parentView is FrameLayout) {
+                    parentView.preview_iv.visibility = INVISIBLE
+                }
+            }
             if (playbackState == Player.STATE_ENDED) {
                 stop()
             }
@@ -797,7 +816,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private val pipVideoView by lazy {
-        PipVideoView()
+        PipVideoView.getInstance()
     }
 
     private fun checkInlinePermissions(): Boolean {
@@ -826,15 +845,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private const val ALPHA_MAX = 0xFF
         private const val PREFIX = "media"
 
-        fun show(activity: Activity, imageView: View, messageItem: MessageItem?) {
-            messageItem?.let {
-                val intent = Intent(activity, DragMediaActivity::class.java).apply {
-                    putExtra(CONVERSATION_ID, messageItem.conversationId)
-                    putExtra(MESSAGE_ID, messageItem.messageId)
-                }
-                activity.startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(activity, imageView,
-                    "transition").toBundle())
+        fun show(activity: Activity, imageView: View, conversationId: String, messageId: String) {
+            val intent = Intent(activity, DragMediaActivity::class.java).apply {
+                putExtra(CONVERSATION_ID, conversationId)
+                putExtra(MESSAGE_ID, messageId)
             }
+            activity.startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(activity, imageView,
+                "transition").toBundle())
         }
 
         fun show(context: Context, conversationId: String, messageId: String) {

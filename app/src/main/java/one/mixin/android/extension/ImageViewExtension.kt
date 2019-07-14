@@ -206,9 +206,9 @@ fun ImageView.loadVideoMark(
         }).submit(layoutParams.width, layoutParams.height)
 }
 
-fun ImageView.loadVideo(uri: String, @DrawableRes holder: Int) {
+fun ImageView.loadVideo(uri: String) {
     Glide.with(this).load(uri).apply(RequestOptions().frame(0)
-        .centerCrop().placeholder(holder).dontAnimate()).into(this)
+        .centerCrop().dontAnimate()).into(this)
 }
 
 fun ImageView.loadSticker(uri: String?, type: String?) {

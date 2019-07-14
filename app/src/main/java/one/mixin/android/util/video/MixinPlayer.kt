@@ -53,7 +53,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         }
     }
     private var onVideoPlayerListener: OnVideoPlayerListener? = null
-    private var mHlsMediaSource: MediaSource? = null
+    private var mediaSource: MediaSource? = null
     private var cycle = true
 
     fun setCycle(cycle: Boolean) {
@@ -116,13 +116,13 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     fun loadVideo(url: String) {
-        val mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory(BANDWIDTH_METER))
+        mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory(BANDWIDTH_METER))
             .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
 
     fun loadAudio(url: String) {
-        val mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
+        mediaSource = ProgressiveMediaSource.Factory(DefaultDataSourceFactory(MixinApplication.appContext, BuildConfig.APPLICATION_ID))
             .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
@@ -130,7 +130,7 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     fun loadHlsVideo(url: String) {
         val dataSourceFactory = DefaultDataSourceFactory(MixinApplication.appContext, BANDWIDTH_METER,
             DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), BANDWIDTH_METER))
-        val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
+        mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
     }
 
@@ -175,8 +175,8 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     }
 
     override fun onPlayerError(error: ExoPlaybackException) {
-        if (isBehindLiveWindow(error)) {
-            player.prepare(mHlsMediaSource)
+        if (isBehindLiveWindow(error) && mediaSource != null) {
+            player.prepare(mediaSource)
         }
         // HttpDataSourceException
         onVideoPlayerListener?.onPlayerError(error)

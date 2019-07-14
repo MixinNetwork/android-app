@@ -12,7 +12,6 @@ import android.content.ContentResolver.SCHEME_FILE
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
-import android.graphics.drawable.BitmapDrawable
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -31,7 +30,6 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
@@ -109,7 +107,6 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_NOT_INIT
 import one.mixin.android.media.OpusAudioRecorder.Companion.STATE_RECORDING
-import one.mixin.android.ui.VideoViewer
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
@@ -174,7 +171,6 @@ import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
-import java.util.Random
 import javax.inject.Inject
 import kotlin.math.abs
 
@@ -410,7 +406,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 starTransition = true
                 val file = File(messageItem.mediaUrl?.toUri()?.getFilePath())
                 if (file.exists()) {
-                    DragMediaActivity.show(requireActivity(), view, messageItem)
+                    DragMediaActivity.show(requireActivity(), view, messageItem.conversationId, messageItem.messageId)
                 } else {
                     toast(R.string.error_file_exists)
                 }
