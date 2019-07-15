@@ -44,6 +44,7 @@ data class MessageItem(
     val mediaName: String?,
     val mediaMimeType: String?,
     val mediaSize: Long?,
+    val thumbUrl: String?,
     val mediaWidth: Int?,
     val mediaHeight: Int?,
     val thumbImage: String?,
@@ -90,7 +91,7 @@ data class MessageItem(
 fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
     type, null, createdAt
     ?: nowInUtc(), MessageStatus.READ.name, null, null,
-    null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null, null, null)
 
@@ -105,6 +106,7 @@ fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name ||
     this.type == MessageCategory.APP_BUTTON_GROUP.name ||
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
     this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
+    this.type == MessageCategory.PLAIN_LIVE.name ||
     (!mediaDownloaded(this.mediaStatus) && this.isMedia()) ||
     isCallMessage() || isRecall()
 
@@ -125,6 +127,8 @@ fun MessageItem.isCallMessage() =
         type == MessageCategory.WEBRTC_AUDIO_END.name ||
         type == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
         type == MessageCategory.WEBRTC_AUDIO_FAILED.name
+
+fun MessageItem.isLive() = type == MessageCategory.PLAIN_LIVE.name
 
 fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
@@ -154,7 +158,7 @@ fun MessageItem.canRecall(): Boolean {
 fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
 
 fun MessageItem.toMessage() = Message(messageId, conversationId, userId, type, content, mediaUrl, mediaMimeType, mediaSize,
-    mediaDuration, mediaWidth, mediaHeight, null, thumbImage, null, null, mediaStatus, status,
+    mediaDuration, mediaWidth, mediaHeight, null, thumbImage, thumbUrl, null, null, mediaStatus, status,
     createdAt, actionName, participantUserId, snapshotId, hyperlink = null, name = mediaName, albumId = null, stickerId = stickerId,
     sharedUserId = sharedUserId, mediaWaveform = mediaWaveform, mediaMineType = null, quoteMessageId = quoteId, quoteContent = quoteContent)
 

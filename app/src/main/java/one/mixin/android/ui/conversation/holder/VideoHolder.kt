@@ -14,13 +14,16 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isLive
 import org.jetbrains.anko.dip
 
 class VideoHolder constructor(containerView: View) : MediaHolder(containerView) {
@@ -209,12 +212,18 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
 
         dataWidth = messageItem.mediaWidth
         dataHeight = messageItem.mediaHeight
-        dataUrl = messageItem.mediaUrl
+        dataUrl = if (messageItem.isLive()) {
+            messageItem.thumbUrl
+        } else {
+            messageItem.mediaUrl
+        }
+        type = messageItem.type
         dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
     }
 
     private var dataUrl: String? = null
+    private var type: String? = null
     private var dataThumbImage: String? = null
     private var dataWidth: Int? = null
     private var dataHeight: Int? = null
@@ -274,6 +283,10 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         itemView.chat_image.setShape(mark)
-        itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
+        if (type == MessageCategory.PLAIN_LIVE.name) {
+            itemView.chat_image.loadImageMark(dataUrl, dataThumbImage, mark)
+        } else {
+            itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
+        }
     }
 }

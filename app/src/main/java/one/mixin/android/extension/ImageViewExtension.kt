@@ -21,6 +21,15 @@ fun ImageView.loadImage(uri: String?) {
     Glide.with(this).load(uri).into(this)
 }
 
+fun ImageView.loadImage(uri: String?, holder: String?) {
+    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
+        .apply {
+            if (holder != null) {
+                this.placeholder(holder.toDrawable())
+            }
+        }).into(this)
+}
+
 fun ImageView.loadImage(uri: Uri?) {
     Glide.with(this).load(uri).into(this)
 }

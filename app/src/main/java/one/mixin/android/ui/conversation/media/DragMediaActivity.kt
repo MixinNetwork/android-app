@@ -1,6 +1,10 @@
 package one.mixin.android.ui.conversation.media
 
 import android.Manifest
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.app.Activity
 import android.app.ActivityOptions
@@ -29,6 +33,7 @@ import android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
@@ -74,6 +79,7 @@ import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayRatio
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
@@ -95,9 +101,11 @@ import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.url.openUrl
+import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isLive
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -154,7 +162,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         val model = ViewModelProviders.of(this).get(DragMediaViewModel::class.java)
         model.viewModelScope.launch {
             val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
-                File(item.mediaUrl?.toUri()?.getFilePath()).exists()
+                if (item.type == MessageCategory.PLAIN_LIVE.name) {
+                    true
+                } else {
+                    File(item.mediaUrl?.toUri()?.getFilePath()).exists()
+                }
             }.reversed()
 
             index = list.indexOfFirst { item -> messageId == item.messageId }
@@ -344,6 +356,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.pip_iv.setOnClickListener {
                 switchToPip()
             }
+            (view.share_iv.layoutParams as FrameLayout.LayoutParams).marginEnd = baseContext.dpToPx(44f)
             view.share_iv.setOnClickListener { shareVideo() }
             view.close_iv.post {
                 val statusBarHeight = statusBarHeight().toFloat()
@@ -354,13 +367,16 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.video_texture.surfaceTextureListener = this
             val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
             setSize(ratio, view)
+            if (messageItem.isLive()) {
+                view.preview_iv.loadImage(messageItem.thumbUrl!!, messageItem.thumbImage)
+            } else {
+                view.preview_iv.loadVideo(messageItem.mediaUrl!!)
+                view.seek_bar.progress = 0
+                view.duration_tv.text = 0L.formatMillis()
+                view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
+            }
 
-            view.preview_iv.loadVideo(messageItem.mediaUrl!!)
             view.preview_iv.visibility = VISIBLE
-
-            view.seek_bar.progress = 0
-            view.duration_tv.text = 0L.formatMillis()
-            view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
             view.tag = messageItem.type == MessageCategory.PLAIN_LIVE.name
 
             if (position == index) {
@@ -558,6 +574,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         if (live) {
             view.pip_iv.fadeIn()
             view.close_iv.fadeIn()
+            view.play_view.fadeIn()
         } else {
             if (!withoutPlay) {
                 view.play_view.fadeIn()
@@ -573,6 +590,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         if (live) {
             view.pip_iv.fadeOut()
             view.close_iv.fadeOut()
+            view.play_view.fadeOut()
         } else {
             if (!withoutPlay) {
                 view.play_view.fadeOut()
@@ -723,18 +741,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private inline fun load(pos: Int, action: () -> Unit = {}) {
         val messageItem = pagerAdapter.getItem(pos)
         if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name ||
-            messageItem.type == MessageCategory.PLAIN_VIDEO.name) {
+            messageItem.type == MessageCategory.PLAIN_VIDEO.name ||
+            messageItem.type == MessageCategory.PLAIN_LIVE.name) {
             messageItem.mediaUrl?.let {
                 VideoPlayer.player().loadVideo(it)
-            }
-            setTextureView()
-            action()
-        } else if (messageItem.type == MessageCategory.PLAIN_LIVE.name) {
-            // Todo
-            resources.getStringArray(R.array.live_test).apply {
-                get(Random().nextInt(size)).let {
-                    VideoPlayer.player().loadHlsVideo(it)
-                }
             }
             setTextureView()
             action()
@@ -796,17 +806,51 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             lastPos = position
         }
     }
-
+    private var pipAnimationInProgress = false
     private fun switchToPip() {
+        if (!checkInlinePermissions() || pipAnimationInProgress) {
+            return
+        }
+        pipAnimationInProgress = true
         findViewPagerChildByTag {
             val windowView = it.getChildAt(0)
+            val rect = PipVideoView.getPipRect(windowView.video_aspect_ratio.aspectRatio)
+            val with = windowView.width
+            val scale = rect.width / with
+            val animatorSet = AnimatorSet()
+            val position = IntArray(2)
+            windowView.video_aspect_ratio.getLocationOnScreen(position)
             val changedTextureView = pipVideoView.show(
                 this, windowView.video_aspect_ratio.aspectRatio,
                 windowView.video_aspect_ratio.videoRotation,
                 conversationId, messageId)
-            VideoPlayer.player().setVideoTextureView(changedTextureView)
-            super.finish()
+
+            animatorSet.playTogether(
+                ObjectAnimator.ofInt(colorDrawable, AnimationProperties.COLOR_DRAWABLE_ALPHA, 0),
+                ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_X, scale),
+                ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_Y, scale),
+                ObjectAnimator.ofFloat(windowView.video_aspect_ratio, View.TRANSLATION_X, rect.x - windowView.video_aspect_ratio.x
+                    - this.realSize().x * (1f - scale) / 2),
+                ObjectAnimator.ofFloat(windowView.video_aspect_ratio, View.TRANSLATION_Y, rect.y - windowView.video_aspect_ratio.y
+                    + this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2))
+            animatorSet.interpolator = DecelerateInterpolator()
+            animatorSet.duration = 250
+            animatorSet.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator?) {
+                    pipAnimationInProgress = false
+                    VideoPlayer.player().setVideoTextureView(changedTextureView)
+                    dismiss()
+                }
+            })
+            animatorSet.start()
+
         }
+    }
+
+    private fun dismiss() {
+        container.visibility = INVISIBLE
+        overridePendingTransition(0, 0)
+        super.finish()
     }
 
     private val pipVideoView by lazy {

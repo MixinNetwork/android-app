@@ -71,6 +71,10 @@ class Message(
     @ColumnInfo(name = "thumb_image")
     val thumbImage: String?,
 
+    @SerializedName("thumb_url")
+    @ColumnInfo(name = "thumb_url")
+    val thumbUrl: String?,
+
     @ColumnInfo(name = "media_key", typeAffinity = ColumnInfo.BLOB)
     val mediaKey: ByteArray? = null,
 
