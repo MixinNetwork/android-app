@@ -117,6 +117,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 .showNow(requireFragmentManager(), TransferFragment.TAG)
         }
         contentView.send_fl.setOnClickListener {
+            if (user.userId == Session.getAccountId()) {
+                toast(R.string.cant_talk_self)
+                return@setOnClickListener
+            }
             context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
             dismiss()
         }

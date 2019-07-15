@@ -50,7 +50,14 @@ class RecordCircleView : View {
             invalidate()
         }
     var startTranslation = 0f
-    var sendButtonVisible = false
+    var locked = false
+        set(value) {
+            field = value
+            if (!value) {
+                invalidate()
+            }
+        }
+
     private var pressedEnd = false
     private var pressedSend = false
 
@@ -96,20 +103,15 @@ class RecordCircleView : View {
         invalidate()
     }
 
-    fun setSendButtonInvisible() {
-        sendButtonVisible = false
-        invalidate()
-    }
-
     fun setLockTranslation(value: Float): Int {
         if (value == 10000f) {
-            sendButtonVisible = false
+            locked = false
             lockAnimatedTranslation = -1f
             startTranslation = -1f
             invalidate()
             return 0
         } else {
-            if (sendButtonVisible) {
+            if (locked) {
                 return 2
             }
             if (lockAnimatedTranslation == -1f) {
@@ -118,7 +120,7 @@ class RecordCircleView : View {
             lockAnimatedTranslation = value
             invalidate()
             if (startTranslation - lockAnimatedTranslation >= AndroidUtilities.dp(57f)) {
-                sendButtonVisible = true
+                locked = true
                 return 2
             }
         }
@@ -126,7 +128,7 @@ class RecordCircleView : View {
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (sendButtonVisible) {
+        if (locked) {
             val x = event.x.toInt()
             val y = event.y.toInt()
             if (event.action == MotionEvent.ACTION_DOWN) {
@@ -198,7 +200,7 @@ class RecordCircleView : View {
             canvas.drawCircle(measuredWidth / 2.0f, cy.toFloat(), (AndroidUtilities.dp(42f) + AndroidUtilities.dp(20f) * amplitude) * scale, paintRecord)
         }
         canvas.drawCircle(measuredWidth / 2.0f, cy.toFloat(), AndroidUtilities.dp(42f) * sc, paint)
-        val drawable: Drawable = if (sendButtonVisible) {
+        val drawable: Drawable = if (locked) {
             sendDrawable
         } else {
             audioDrawable
@@ -216,7 +218,7 @@ class RecordCircleView : View {
         val lockMiddleY: Int
         val lockArrowY: Int
         var intAlpha = (alpha * 255).toInt()
-        if (sendButtonVisible) {
+        if (locked) {
             lockSize = AndroidUtilities.dp(31f)
             lockY = AndroidUtilities.dp(57f) + (AndroidUtilities.dp(30f) * (1.0f - sc) - yAdd + AndroidUtilities.dp(20f) * moveProgress).toInt()
             lockTopY = lockY + AndroidUtilities.dp(5f)
@@ -253,7 +255,7 @@ class RecordCircleView : View {
         lockDrawable.draw(canvas)
         lockArrowDrawable.setBounds(cx - AndroidUtilities.dp(7.5f), lockArrowY, cx + AndroidUtilities.dp(7.5f), lockArrowY + AndroidUtilities.dp(9f))
         lockArrowDrawable.draw(canvas)
-        if (sendButtonVisible) {
+        if (locked) {
             rect.set(cx - AndroidUtilities.dp(6.5f).toFloat(), lockY + AndroidUtilities.dp(9f).toFloat(), cx + AndroidUtilities.dp(6.5f).toFloat(), lockY.toFloat() + AndroidUtilities.dp((9 + 13).toFloat()))
             canvas.drawRoundRect(rect, AndroidUtilities.dp(1f).toFloat(), AndroidUtilities.dp(1f).toFloat(), paintRecord)
         }

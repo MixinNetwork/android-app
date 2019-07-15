@@ -308,6 +308,7 @@ class ChatControlView : FrameLayout {
         originX = 0f
         if (!locked) {
             isRecording = false
+            recordCircle.locked = false
         }
         checkSend(false)
     }
@@ -339,10 +340,10 @@ class ChatControlView : FrameLayout {
                 duration = 200
                 addListener(onEnd = {
                     recordCircle.visibility = View.GONE
-                    recordCircle.setSendButtonInvisible()
+                    recordCircle.locked = false
                 }, onCancel = {
                     recordCircle.visibility = View.GONE
-                    recordCircle.setSendButtonInvisible()
+                    recordCircle.locked = false
                 })
             }.start()
             chat_send_ib.animate().setDuration(200).alpha(1f).start()
@@ -677,7 +678,6 @@ class ChatControlView : FrameLayout {
     private var startTime = 0L
     private var triggeredCancel = false
     private var hasStartRecord = false
-    private var locked = false
     private var maxScrollX = context.dip(100f)
     var calling = false
 
@@ -690,7 +690,7 @@ class ChatControlView : FrameLayout {
         chat_send_ib.onTouchEvent(event)
         when (event.action) {
             ACTION_DOWN -> {
-                if (recordCircle.sendButtonVisible) {
+                if (recordCircle.locked) {
                     return@OnTouchListener false
                 }
 
@@ -702,14 +702,13 @@ class ChatControlView : FrameLayout {
                 }
                 startTime = System.currentTimeMillis()
                 hasStartRecord = false
-                locked = false
                 if (currentAudio()) {
                     postDelayed(recordRunnable, RECORD_DELAY)
                 }
                 return@OnTouchListener true
             }
             ACTION_MOVE -> {
-                if (!currentAudio() || recordCircle.sendButtonVisible || !hasStartRecord) return@OnTouchListener false
+                if (!currentAudio() || recordCircle.locked || !hasStartRecord) return@OnTouchListener false
 
                 val x = recordCircle.setLockTranslation(event.y)
                 if (x == 2) {
@@ -717,7 +716,6 @@ class ChatControlView : FrameLayout {
                         recordCircle.startTranslation).apply {
                         duration = 150
                         interpolator = DecelerateInterpolator()
-                        doOnEnd { locked = true }
                     }.start()
                     chat_slide.toCancel()
                     callback.onRecordLocked()
@@ -752,21 +750,12 @@ class ChatControlView : FrameLayout {
                             clickSend()
                         }
                     }
-                } else if (hasStartRecord && !locked && System.currentTimeMillis() - startTime < 500) {
+                } else if (!isRecording) {
                     removeRecordRunnable()
-                    // delay check sendButtonVisible
-                    postDelayed({
-                        if (!recordCircle.sendButtonVisible) {
-                            handleCancelOrEnd(true)
-                        } else {
-                            recordCircle.sendButtonVisible = false
-                        }
-                    }, 200)
-                    return@OnTouchListener false
-                }
-
-                if (isRecording && !recordCircle.sendButtonVisible) {
-                    handleCancelOrEnd(event.action == ACTION_CANCEL)
+                    handleCancelOrEnd(true)
+                } else if (!recordCircle.locked) {
+                    removeRecordRunnable()
+                    handleCancelOrEnd(false)
                 } else {
                     cleanUp(true)
                 }

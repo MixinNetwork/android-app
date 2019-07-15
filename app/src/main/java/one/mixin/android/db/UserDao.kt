@@ -49,7 +49,7 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE user_id != :id AND relationship = 'FRIEND' AND (full_name LIKE :username" + ESCAPE_SUFFIX + "OR " +
         "identity_number like :identityNumber" + ESCAPE_SUFFIX + ")")
-    suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String = Session.getAccountId()!!): List<User>
+    suspend fun fuzzySearchUser(username: String, identityNumber: String, id: String): List<User>
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND'")
     fun syncFindFriends(): List<User>
