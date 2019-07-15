@@ -8,6 +8,7 @@ import android.animation.ValueAnimator
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
@@ -430,6 +431,7 @@ fun buildBottomSheetView(
             textView.compoundDrawablePadding = padding
         }
         textView.text = bottomSheetItem.text
+        textView.setTextColor(Color.BLACK)
         textView.setPadding(padding, 0, padding, 0)
         textView.gravity = Gravity.CENTER_VERTICAL
         textView.setOnClickListener {
