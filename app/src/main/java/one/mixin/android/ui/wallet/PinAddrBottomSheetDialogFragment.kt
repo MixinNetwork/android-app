@@ -143,7 +143,11 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                             contentView.pin_va?.displayedChild = POS_PIN
                             contentView.pin?.clear()
                         }
-                        ErrorHandler.handleMixinError(r.errorCode)
+                        if (r.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                            toast(R.string.error_pin_check_too_many_request)
+                        } else {
+                            ErrorHandler.handleMixinError(r.errorCode)
+                        }
                     }
                 }, { t ->
                     contentView.pin_va?.displayedChild = POS_PIN

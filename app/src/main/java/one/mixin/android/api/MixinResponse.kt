@@ -38,8 +38,8 @@ suspend fun <T, R> handleMixinResponse(
     invokeNetwork: suspend () -> MixinResponse<T>,
     switchContext: CoroutineContext? = null,
     successBlock: (suspend (MixinResponse<T>) -> R)? = null,
-    errorBlock: (suspend (MixinResponse<T>) -> R)? = null,
-    exceptionBlock: ((t: Throwable) -> R)? = null,
+    failureBlock: (suspend (MixinResponse<T>) -> Boolean)? = null,
+    exceptionBlock: ((t: Throwable) -> Boolean)? = null,
     doAfterNetworkSuccess: (() -> Unit)? = null,
     defaultErrorHandle: (suspend (MixinResponse<T>) -> Unit) = {
         ErrorHandler.handleMixinError(it.errorCode)
@@ -47,31 +47,36 @@ suspend fun <T, R> handleMixinResponse(
     defaultExceptionHandle: (suspend (t: Throwable) -> Unit) = {
         ErrorHandler.handleError(it)
     }
-): R? {
+) {
     val response = if (switchContext != null) {
         try {
             withContext(switchContext) {
                 invokeNetwork()
             }
         } catch (t: Throwable) {
-            defaultExceptionHandle.invoke(t)
-            return exceptionBlock?.invoke(t)
+            if (exceptionBlock?.invoke(t) != true) {
+                defaultExceptionHandle.invoke(t)
+            }
+            return
         }
     } else {
         try {
             invokeNetwork()
         } catch (t: Throwable) {
-            defaultExceptionHandle.invoke(t)
-            return exceptionBlock?.invoke(t)
+            if (exceptionBlock?.invoke(t) != true) {
+                defaultExceptionHandle.invoke(t)
+            }
+            return
         }
     }
 
     doAfterNetworkSuccess?.invoke()
 
-    return if (response.isSuccess) {
+    if (response.isSuccess) {
         successBlock?.invoke(response)
     } else {
-        defaultErrorHandle(response)
-        errorBlock?.invoke(response)
+        if (failureBlock?.invoke(response) != true) {
+            defaultErrorHandle(response)
+        }
     }
 }
