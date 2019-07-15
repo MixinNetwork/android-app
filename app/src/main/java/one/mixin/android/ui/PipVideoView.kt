@@ -12,22 +12,26 @@ import android.os.Build
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.TextureView
+import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.Keep
+import androidx.core.view.isVisible
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.fadeIn
+import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.media.VideoPlayer
-import one.mixin.android.widget.AndroidUtilities
 import one.mixin.android.widget.AspectRatioFrameLayout
+import org.jetbrains.anko.dip
 import timber.log.Timber
 import kotlin.math.abs
 import kotlin.math.round
@@ -176,11 +180,32 @@ class PipVideoView {
 
         val inlineButton = ImageView(activity)
         inlineButton.scaleType = ImageView.ScaleType.CENTER
+        inlineButton.visibility = View.GONE
         inlineButton.setImageResource(one.mixin.android.R.drawable.ic_outinline)
         windowView.addView(inlineButton, FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END))
         inlineButton.setOnClickListener {
             DragMediaActivity.show(MixinApplication.appContext, conversationId, messageId)
             close()
+        }
+
+        val closeButton = ImageView(activity)
+        closeButton.scaleType = ImageView.ScaleType.CENTER
+        closeButton.visibility = View.GONE
+        closeButton.setImageResource(one.mixin.android.R.drawable.ic_close_white_24dp)
+        windowView.addView(closeButton, FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START))
+        closeButton.setOnClickListener {
+            close()
+            VideoPlayer.destroy()
+        }
+
+        textureView.setOnClickListener {
+            if (closeButton.isVisible) {
+                closeButton.fadeOut()
+                inlineButton.fadeOut()
+            } else {
+                closeButton.fadeIn()
+                inlineButton.fadeIn()
+            }
         }
         val prefreences = appContext.defaultSharedPreferences
         val sidex = prefreences.getInt(SIDEX, 1)
@@ -227,9 +252,9 @@ class PipVideoView {
         val endY = getSideCoord(false, 1, 0f, videoHeight)
         var animators: ArrayList<Animator>? = null
         val editor = appContext.defaultSharedPreferences.edit()
-        val maxDiff = AndroidUtilities.dp(20f)
+        val maxDiff = appContext.dip(20f)
         var slideOut = false
-        if (abs(startX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x < 0 && windowLayoutParams.x > -videoWidth / 4) {
+        if (abs(startX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x < 0 && windowLayoutParams.x > -videoWidth * 2 / 5) {
             if (animators == null) {
                 animators = ArrayList()
             }
@@ -239,7 +264,7 @@ class PipVideoView {
             }
             animators.add(ObjectAnimator.ofInt(this, "x", startX))
         } else if (abs(endX - windowLayoutParams.x) <= maxDiff || windowLayoutParams.x > appContext.realSize().x - videoWidth &&
-            windowLayoutParams.x < appContext.realSize().x - videoWidth / 4 * 3) {
+            windowLayoutParams.x < appContext.realSize().x - videoWidth * 3 / 5) {
             if (animators == null) {
                 animators = ArrayList()
             }
@@ -247,7 +272,7 @@ class PipVideoView {
             if (windowView.alpha != 1.0f) {
                 animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 1.0f))
             }
-            animators.add(ObjectAnimator.ofInt(this, "x", endX))
+            animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, endX))
         } else if (windowView.alpha != 1.0f) {
             if (animators == null) {
                 animators = ArrayList()
@@ -255,7 +280,7 @@ class PipVideoView {
             if (windowLayoutParams.x < 0) {
                 animators.add(ObjectAnimator.ofInt(this, "x", -videoWidth))
             } else {
-                animators.add(ObjectAnimator.ofInt(this, "x", appContext.realSize().x))
+                animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, appContext.realSize().x))
             }
             slideOut = true
         } else {

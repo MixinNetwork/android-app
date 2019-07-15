@@ -4,6 +4,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageView
+        android:id="@+id/preview_iv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="invisible"
+        tools:ignore="ContentDescription" />
+
     <one.mixin.android.widget.AspectRatioFrameLayout
         android:id="@+id/video_aspect_ratio"
         android:layout_width="match_parent"
@@ -15,15 +23,6 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </one.mixin.android.widget.AspectRatioFrameLayout>
-
-
-    <ImageView
-        android:id="@+id/preview_iv"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="invisible"
-        tools:ignore="ContentDescription" />
 
     <one.mixin.android.widget.PlayView
         android:id="@+id/play_view"

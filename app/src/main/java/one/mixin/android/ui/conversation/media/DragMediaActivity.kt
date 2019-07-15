@@ -352,8 +352,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 view.pip_iv.translationY = statusBarHeight
             }
             view.video_texture.surfaceTextureListener = this
-            setSize(messageItem, view, false)
-            view.post { setSize(messageItem, view, true) }
+            val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
+            setSize(ratio, view)
+
             view.preview_iv.loadVideo(messageItem.mediaUrl!!)
             view.preview_iv.visibility = VISIBLE
 
@@ -424,27 +425,26 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             return view
         }
 
-        private fun setSize(messageItem: MessageItem, view: View, post: Boolean) {
-            val w = if (post) container.width else container.measuredWidth
-            val h = if (post) container.height else container.measuredHeight
+        private fun setSize(rotio: Float, view: View) {
+            val w = applicationContext.realSize().x
+            val h = applicationContext.realSize().y
             val previewParams = view.preview_iv.layoutParams
-            val scaleW = w / messageItem.mediaWidth!!.toFloat()
-            val scaleH = h / messageItem.mediaHeight!!.toFloat()
-            when {
-                scaleW > scaleH -> {
-                    previewParams.height = h
-                    previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
-                }
-                scaleW < scaleH -> {
-                    previewParams.width = w
-                    previewParams.height = (messageItem.mediaHeight * scaleW).toInt()
-                }
-                else -> {
-                    previewParams.height = h
-                    previewParams.width = (messageItem.mediaWidth * scaleH).toInt()
-                }
+            val ratioParams = view.video_aspect_ratio.layoutParams
+            if (rotio > 1f) {
+                val scaleH = (w / rotio).toInt()
+                previewParams.width = w
+                ratioParams.width = w
+                previewParams.height = scaleH
+                ratioParams.height = scaleH
+            } else {
+                val scaleW = (h * rotio).toInt()
+                previewParams.width = scaleW
+                ratioParams.width = scaleW
+                previewParams.height = h
+                ratioParams.height = h
             }
             view.preview_iv.layoutParams = previewParams
+            view.video_aspect_ratio.layoutParams = ratioParams
         }
 
         private fun createLargeImageView(container: ViewGroup, position: Int, messageItem: MessageItem): LargeImageView {
@@ -760,12 +760,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-            findViewPagerChildByTag {
-                val parentView = it.getChildAt(0)
-                if (parentView is FrameLayout) {
-                    parentView.preview_iv.visibility = INVISIBLE
-                }
-            }
             if (playbackState == Player.STATE_ENDED) {
                 stop()
             }
