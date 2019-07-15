@@ -68,6 +68,7 @@
     <string name="save_to_music">保存到音乐库</string>
     <string name="save_to_gallery">保存到相册</string>
     <string name="save_to_downloads">保存到下载</string>
+    <string name="cant_talk_self">不能和自己对话</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
