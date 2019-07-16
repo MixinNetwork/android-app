@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.View
 import android.view.ViewGroup
 import android.view.Window
+import one.mixin.android.extension.supportsPie
 
 @SuppressLint("InlinedApi")
 object SystemUIManager {
@@ -79,5 +80,12 @@ object SystemUIManager {
                 bottomMargin = it.safeInsetBottom
             }
         }
+    }
+
+    fun hasCutOut(window: Window): Boolean {
+        supportsPie {
+            return window.decorView.rootWindowInsets?.displayCutout?.safeInsetTop != 0
+        }
+        return false
     }
 }

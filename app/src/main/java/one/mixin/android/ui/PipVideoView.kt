@@ -184,7 +184,7 @@ class PipVideoView {
         inlineButton.setImageResource(one.mixin.android.R.drawable.ic_outinline)
         windowView.addView(inlineButton, FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END))
         inlineButton.setOnClickListener {
-            DragMediaActivity.show(MixinApplication.appContext, conversationId, messageId)
+            DragMediaActivity.show(MixinApplication.appContext, conversationId, messageId, aspectRatio, VideoPlayer.player().currentPosition())
             close()
         }
 

@@ -183,6 +183,7 @@ enum class MessageCategory {
     SIGNAL_DATA,
     SIGNAL_CONTACT,
     SIGNAL_AUDIO,
+    SIGNAL_LIVE,
     PLAIN_TEXT,
     PLAIN_IMAGE,
     PLAIN_VIDEO,
@@ -190,6 +191,7 @@ enum class MessageCategory {
     PLAIN_STICKER,
     PLAIN_CONTACT,
     PLAIN_AUDIO,
+    PLAIN_LIVE,
     PLAIN_JSON,
     MESSAGE_RECALL,
     STRANGER,
@@ -206,8 +208,7 @@ enum class MessageCategory {
     WEBRTC_AUDIO_DECLINE,
     WEBRTC_AUDIO_END,
     WEBRTC_AUDIO_BUSY,
-    WEBRTC_AUDIO_FAILED,
-    PLAIN_LIVE
+    WEBRTC_AUDIO_FAILED
 }
 
 fun String.isIllegalMessageCategory(): Boolean {

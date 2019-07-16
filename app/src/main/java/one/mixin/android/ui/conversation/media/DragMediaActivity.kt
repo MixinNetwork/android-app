@@ -122,7 +122,6 @@ import org.jetbrains.anko.uiThread
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
-import java.util.Random
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import kotlin.math.min
@@ -136,6 +135,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         intent.getStringExtra(MESSAGE_ID)
     }
 
+    private val currentPosition by lazy {
+        intent.getLongExtra(CURRENT_POSITION, 0L)
+    }
+
+    private val ratio by lazy {
+        intent.getFloatExtra(RATIO, 0f)
+    }
+
     private var index: Int = 0
     private var lastPos: Int = -1
     private lateinit var pagerAdapter: MediaAdapter
@@ -145,7 +152,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     lateinit var conversationRepository: ConversationRepository
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        postponeEnterTransition()
+        if (ratio == 0f) {
+            postponeEnterTransition()
+        }
         if (pipVideoView.shown) {
             pipVideoView.close()
         }
@@ -358,6 +367,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             (view.share_iv.layoutParams as FrameLayout.LayoutParams).marginEnd = baseContext.dpToPx(44f)
             view.share_iv.setOnClickListener { shareVideo() }
+            view.pip_iv.isEnabled = false
+            view.pip_iv.alpha = 0.5f
             view.close_iv.post {
                 val statusBarHeight = statusBarHeight().toFloat()
                 view.close_iv.translationY = statusBarHeight
@@ -572,7 +583,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun fadeIn(view: View, live: Boolean, withoutPlay: Boolean = false) {
         if (live) {
-            view.pip_iv.fadeIn()
+            view.pip_iv.fadeIn(if (view.pip_iv.isEnabled) {
+                1f
+            } else {
+                0.5f
+            })
             view.close_iv.fadeIn()
             view.play_view.fadeIn()
         } else {
@@ -744,14 +759,21 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             messageItem.type == MessageCategory.PLAIN_VIDEO.name ||
             messageItem.type == MessageCategory.PLAIN_LIVE.name) {
             messageItem.mediaUrl?.let {
-                VideoPlayer.player().loadVideo(it)
+                if (messageItem.isLive()) {
+                    VideoPlayer.player().loadHlsVideo(it)
+                } else {
+                    VideoPlayer.player().loadVideo(it)
+                }
             }
             setTextureView()
             action()
         }
     }
 
-    private fun play(pos: Int) = load(pos) { start() }
+    private fun play(pos: Int) = load(pos) {
+        start()
+        VideoPlayer.player().seekTo(currentPosition)
+    }
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
         override fun onRenderedFirstFrame() {
@@ -759,6 +781,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 val parentView = it.getChildAt(0)
                 if (parentView is FrameLayout) {
                     parentView.preview_iv.visibility = INVISIBLE
+                    parentView.pip_iv.isEnabled = true
+                    parentView.pip_iv.alpha = 1f
                 }
             }
         }
@@ -820,10 +844,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val animatorSet = AnimatorSet()
             val position = IntArray(2)
             windowView.video_aspect_ratio.getLocationOnScreen(position)
+            val messageItem = pagerAdapter.getItem(view_pager.currentItem)
             val changedTextureView = pipVideoView.show(
                 this, windowView.video_aspect_ratio.aspectRatio,
                 windowView.video_aspect_ratio.videoRotation,
-                conversationId, messageId)
+                conversationId, messageItem.messageId)
 
             animatorSet.playTogether(
                 ObjectAnimator.ofInt(colorDrawable, AnimationProperties.COLOR_DRAWABLE_ALPHA, 0),
@@ -836,6 +861,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             animatorSet.interpolator = DecelerateInterpolator()
             animatorSet.duration = 250
             animatorSet.addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationStart(animation: Animator?) {
+                    windowView.pip_iv.fadeOut()
+                    windowView.close_iv.fadeOut()
+                    if (!SystemUIManager.hasCutOut(window)) {
+                        SystemUIManager.clearStyle(window)
+                    }
+                }
+
                 override fun onAnimationEnd(animation: Animator?) {
                     pipAnimationInProgress = false
                     VideoPlayer.player().setVideoTextureView(changedTextureView)
@@ -879,6 +912,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     companion object {
         private const val MESSAGE_ID = "id"
+        private const val RATIO = "ratio"
+        private const val CURRENT_POSITION = "current_position"
         private const val CONVERSATION_ID = "conversation_id"
         private const val ALPHA_MAX = 0xFF
         private const val PREFIX = "media"
@@ -892,11 +927,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 "transition").toBundle())
         }
 
-        fun show(context: Context, conversationId: String, messageId: String) {
+        fun show(context: Context, conversationId: String, messageId: String, ratio: Float, currentPosition: Long) {
             val intent = Intent(context, DragMediaActivity::class.java).apply {
                 addFlags(FLAG_ACTIVITY_NEW_TASK)
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
+                putExtra(RATIO, ratio)
+                putExtra(CURRENT_POSITION, currentPosition)
             }
             context.startActivity(intent)
         }

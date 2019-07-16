@@ -380,6 +380,7 @@
     <string name="conversation_status_voice">语音电话</string>
     <string name="conversation_status_transfer">转账</string>
     <string name="conversation_status_sticker">贴纸</string>
+    <string name="conversation_status_live">直播</string>
     <string name="conversation_status_unknown">未知</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_authentications">授权</string>
@@ -520,6 +521,7 @@
     <string name="sticker">贴纸</string>
     <string name="video">视频</string>
     <string name="audio">语音</string>
+    <string name="live">直播</string>
     <!--pay-->
     <string name="pay_paid">此付款链接已由某人支付，您无法进行重复付款。</string>
 

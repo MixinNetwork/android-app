@@ -106,7 +106,6 @@ fun MessageItem.canNotForward() = this.type == MessageCategory.APP_CARD.name ||
     this.type == MessageCategory.APP_BUTTON_GROUP.name ||
     this.type == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name ||
     this.type == MessageCategory.SYSTEM_CONVERSATION.name ||
-    this.type == MessageCategory.PLAIN_LIVE.name ||
     (!mediaDownloaded(this.mediaStatus) && this.isMedia()) ||
     isCallMessage() || isRecall()
 
@@ -128,7 +127,7 @@ fun MessageItem.isCallMessage() =
         type == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
         type == MessageCategory.WEBRTC_AUDIO_FAILED.name
 
-fun MessageItem.isLive() = type == MessageCategory.PLAIN_LIVE.name
+fun MessageItem.isLive() = type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name
 
 fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
@@ -146,13 +145,15 @@ fun MessageItem.canRecall(): Boolean {
         this.type == MessageCategory.SIGNAL_DATA.name ||
         this.type == MessageCategory.SIGNAL_CONTACT.name ||
         this.type == MessageCategory.SIGNAL_AUDIO.name ||
+        this.type == MessageCategory.SIGNAL_LIVE.name ||
         this.type == MessageCategory.PLAIN_TEXT.name ||
         this.type == MessageCategory.PLAIN_IMAGE.name ||
         this.type == MessageCategory.PLAIN_VIDEO.name ||
         this.type == MessageCategory.PLAIN_STICKER.name ||
         this.type == MessageCategory.PLAIN_DATA.name ||
         this.type == MessageCategory.PLAIN_CONTACT.name ||
-        this.type == MessageCategory.PLAIN_AUDIO.name
+        this.type == MessageCategory.PLAIN_AUDIO.name ||
+        this.type == MessageCategory.PLAIN_LIVE.name
 }
 
 fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
