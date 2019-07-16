@@ -105,6 +105,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
             exceptionBlock = {
                 view_pb.isVisible = false
                 setEmergencySet()
+                return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
                 view_pb.isVisible = false
@@ -127,6 +128,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
             exceptionBlock = {
                 delete_pb.isVisible = false
                 setEmergencySet()
+                return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
                 delete_pb.isVisible = false

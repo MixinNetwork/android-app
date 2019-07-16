@@ -10,8 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PinView
 
@@ -51,9 +53,17 @@ class PinEmergencyBottomSheetDialog : PinBottomSheetDialogFragment() {
                 pinEmergencyCallback?.onSuccess(pinCode)
                 dismiss()
             },
+            failureBlock = {
+                if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                    toast(R.string.error_pin_check_too_many_request)
+                    return@handleMixinResponse true
+                }
+                return@handleMixinResponse false
+            },
             exceptionBlock = {
                 contentView.pin_va?.displayedChild = POS_PIN
                 contentView.pin.clear()
+                return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
                 contentView.pin_va?.displayedChild = POS_PIN

@@ -15,12 +15,14 @@ import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.setting.FriendsNoBotFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import javax.inject.Inject
@@ -92,8 +94,22 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
                     activity?.addFragment(this@VerifyFragment, f, FriendsNoBotFragment.TAG)
                 }
             },
-            exceptionBlock = { hideLoading() },
-            doAfterNetworkSuccess = { hideLoading() }
+            failureBlock = {
+                if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                    toast(R.string.error_pin_check_too_many_request)
+                    return@handleMixinResponse true
+                }
+                return@handleMixinResponse false
+            },
+            exceptionBlock = {
+                hideLoading()
+                pin.clear()
+                return@handleMixinResponse false
+            },
+            doAfterNetworkSuccess = {
+                hideLoading()
+                pin.clear()
+            }
         )
     }
 

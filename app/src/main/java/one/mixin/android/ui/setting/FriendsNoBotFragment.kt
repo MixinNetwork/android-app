@@ -72,7 +72,10 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
                     (response.data as VerificationResponse).id, FROM_CONTACT),
                     VerificationEmergencyFragment.TAG)
             },
-            exceptionBlock = { dialog.dismiss() },
+            exceptionBlock = {
+                dialog.dismiss()
+                return@handleMixinResponse false
+            },
             doAfterNetworkSuccess = { dialog.dismiss() }
         )
     }

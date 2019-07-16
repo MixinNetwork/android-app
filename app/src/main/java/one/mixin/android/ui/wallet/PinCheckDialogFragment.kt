@@ -83,8 +83,9 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
             exceptionBlock = {
                 contentView.pin?.clear()
                 contentView.pin_va?.displayedChild = POS_PIN
+                return@handleMixinResponse false
             },
-            errorBlock = { response ->
+            failureBlock = { response ->
                 contentView.pin.clear()
                 if (response.errorCode == ErrorHandler.PIN_INCORRECT) {
                     contentView.pin.error(getString(R.string.error_pin_incorrect, ErrorHandler.PIN_INCORRECT))
@@ -95,6 +96,7 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
                     contentView.top_ll.animate().translationY(transY).start()
                     contentView.keyboard.animate().translationY(contentView.keyboard.height.toFloat()).start()
                 }
+                return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
                 contentView.pin_va?.displayedChild = PinBottomSheetDialogFragment.POS_PIN

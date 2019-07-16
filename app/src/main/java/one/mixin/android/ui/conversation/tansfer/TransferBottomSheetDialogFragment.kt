@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
 import android.view.View.VISIBLE
-import androidx.collection.arraySetOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
@@ -176,7 +175,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     })
                 } else {
                     contentView.pin?.clear()
-                    ErrorHandler.handleMixinError(it.errorCode)
+                    if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
+                        toast(R.string.error_pin_check_too_many_request)
+                    } else {
+                        ErrorHandler.handleMixinError(it.errorCode)
+                    }
                 }
             }, {
                 ErrorHandler.handleError(it)
