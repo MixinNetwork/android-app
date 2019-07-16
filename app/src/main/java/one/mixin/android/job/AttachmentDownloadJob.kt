@@ -33,6 +33,8 @@ import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
+import one.mixin.android.widget.CircleProgress
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_LOADING
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import org.whispersystems.libsignal.util.guava.Optional
@@ -118,7 +120,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
                     ProgressListener { bytesRead, contentLength, done ->
                         if (!done) {
                             RxBus.publish(ProgressEvent(message.id,
-                                bytesRead.toFloat() / contentLength.toFloat()))
+                                bytesRead.toFloat() / contentLength.toFloat(), STATUS_LOADING))
                         }
                     })).build()
             }
