@@ -65,7 +65,7 @@ class EditFragment : CaptureVisionFragment() {
     }
 
     private val path: String by lazy {
-        arguments!!.getString(ARGS_PATH)
+        arguments!!.getString(ARGS_PATH)!!
     }
 
     private val isVideo by lazy {

@@ -50,7 +50,7 @@ class DepositPublicKeyFragment : DepositFragment() {
         qr_avatar.setBorder()
         qr_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         copy_tv.setOnClickListener {
-            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.publicKey)
+            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.publicKey))
             context?.toast(R.string.copy_success)
         }
         key_code.text = asset.publicKey

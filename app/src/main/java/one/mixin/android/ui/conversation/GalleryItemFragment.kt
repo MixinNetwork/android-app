@@ -47,7 +47,7 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
 
     private var disposable: Disposable? = null
 
-    private val album: Album by lazy { arguments!!.getParcelable<Album>(ARGS_ALBUM) }
+    private val album: Album by lazy { arguments!!.getParcelable<Album>(ARGS_ALBUM)!! }
     private val needCamera: Boolean by lazy { arguments!!.getBoolean(ARGS_NEED_CAMERA) }
 
     private val padding: Int by lazy {

@@ -41,7 +41,7 @@ class GroupEditFragment : BaseFragment() {
         ViewModelProviders.of(this, viewModelFactory).get(GroupViewModel::class.java)
     }
     private val conversationId: String by lazy {
-        arguments!!.getString(ARGS_CONVERSATION_ID)
+        arguments!!.getString(ARGS_CONVERSATION_ID)!!
     }
 
     private val desc: String? by lazy {

@@ -201,7 +201,7 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         } catch (ignored: Exception) {
         }
         if (focusable) {
-            window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
+            window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
         }
         isDismissed = false
         cancelSheetAnimation()

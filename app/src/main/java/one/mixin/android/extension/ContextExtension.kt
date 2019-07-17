@@ -345,7 +345,7 @@ fun Context.getAttachment(local: Uri): Attachment? {
         if (cursor != null && cursor.moveToFirst()) {
             val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
             val fileSize = cursor.getLong(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE))
-            val mimeType = contentResolver.getType(uri)
+            val mimeType = contentResolver.getType(uri) ?: ""
             return Attachment(uri, fileName, mimeType, fileSize)
         }
     } finally {

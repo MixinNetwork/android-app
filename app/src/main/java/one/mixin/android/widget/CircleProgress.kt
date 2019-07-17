@@ -179,7 +179,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         super.onDetachedFromWindow()
     }
 
-    override fun verifyDrawable(who: Drawable?): Boolean {
+    override fun verifyDrawable(who: Drawable): Boolean {
         return who == drawable || super.verifyDrawable(who)
     }
 

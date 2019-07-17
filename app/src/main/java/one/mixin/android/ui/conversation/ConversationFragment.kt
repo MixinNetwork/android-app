@@ -578,7 +578,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun createImageUri() = Uri.fromFile(context?.getImagePath()?.createImageTemp())
 
     private val conversationId: String by lazy {
-        var cid = arguments!!.getString(CONVERSATION_ID)
+        var cid = arguments!!.getString(CONVERSATION_ID)!!
         if (cid.isNullOrBlank()) {
             isFirstMessage = true
             cid = generateConversationId(sender.userId, recipient!!.userId)
@@ -984,8 +984,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         tool_view.copy_iv.setOnClickListener {
             try {
-                context?.getClipboardManager()?.primaryClip =
-                    ClipData.newPlainText(null, chatAdapter.selectSet.valueAt(0)?.content)
+                context?.getClipboardManager()?.setPrimaryClip(
+                    ClipData.newPlainText(null, chatAdapter.selectSet.valueAt(0)?.content))
                 context?.toast(R.string.copy_success)
             } catch (e: ArrayIndexOutOfBoundsException) {
             }

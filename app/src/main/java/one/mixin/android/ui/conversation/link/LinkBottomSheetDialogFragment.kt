@@ -104,7 +104,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     }
 
     private val url: String by lazy {
-        arguments!!.getString(CODE)
+        arguments!!.getString(CODE)!!
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {

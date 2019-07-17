@@ -43,7 +43,7 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
         fun newInstance(
             user: User? = null,
             pin: String? = null,
-            verificationId: String? = null,
+            verificationId: String,
             from: Int,
             userIdentityNumber: String? = null
         ) = VerificationEmergencyFragment().withArgs {
@@ -57,7 +57,7 @@ class VerificationEmergencyFragment : PinCodeFragment<EmergencyViewModel>() {
 
     private val user: User? by lazy { arguments!!.getParcelable<User>(ARGS_USER) }
     private val pin: String? by lazy { arguments!!.getString(ARGS_PIN) }
-    private val verificationId by lazy { arguments!!.getString(ARGS_VERIFICATION_ID) }
+    private val verificationId by lazy { arguments!!.getString(ARGS_VERIFICATION_ID)!! }
     private val from by lazy { arguments!!.getInt(ARGS_FROM) }
     private val userIdentityNumber: String? by lazy { arguments!!.getString(ARGS_IDENTITY_NUMBER) }
 

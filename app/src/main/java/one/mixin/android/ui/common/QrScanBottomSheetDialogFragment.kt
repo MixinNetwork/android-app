@@ -32,7 +32,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val text: String by lazy { arguments!!.getString(ARGS_TEXT) }
+    private val text: String by lazy { arguments!!.getString(ARGS_TEXT)!! }
     private val conversationId: String? by lazy { arguments!!.getString(ARGS_CONVERSATION_ID) }
 
     @SuppressLint("RestrictedApi")
@@ -52,7 +52,7 @@ class QrScanBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         contentView.qr_tv.text = text
         contentView.copy.setOnClickListener {
-            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, text)
+            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, text))
             toast(R.string.copy_success)
             dismiss()
         }

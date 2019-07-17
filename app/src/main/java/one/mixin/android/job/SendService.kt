@@ -41,7 +41,9 @@ class SendService : IntentService("SendService") {
         AndroidInjection.inject(this)
     }
 
-    override fun onHandleIntent(intent: Intent) {
+    override fun onHandleIntent(intent: Intent?) {
+        if (intent == null) return
+
         val bundle = RemoteInput.getResultsFromIntent(intent)
         val conversationId = intent.getStringExtra(CONVERSATION_ID)
         if (bundle != null) {

@@ -78,7 +78,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     private val pin: String? by lazy {
         arguments!!.getString(ARGS_PIN)
     }
-    private val phoneNum by lazy { arguments!!.getString(ARGS_PHONE_NUM) }
+    private val phoneNum by lazy { arguments!!.getString(ARGS_PHONE_NUM)!! }
 
     private lateinit var recaptchaView: RecaptchaView
 

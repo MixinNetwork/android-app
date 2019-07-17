@@ -61,7 +61,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
     }
 
-    private val t: BiometricItem by lazy { arguments!!.getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM) }
+    private val t: BiometricItem by lazy { arguments!!.getParcelable<BiometricItem>(ARGS_BIOMETRIC_ITEM)!! }
 
     private var biometricDialog: BiometricDialog<BiometricItem>? = null
 

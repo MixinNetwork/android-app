@@ -59,7 +59,7 @@ class AddressAddFragment : BaseFragment() {
     }
 
     private val asset: AssetItem by lazy {
-        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)
+        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!!
     }
     private val address: Address? by lazy {
         arguments!!.getParcelable<Address?>(ARGS_ADDRESS)

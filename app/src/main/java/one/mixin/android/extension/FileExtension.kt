@@ -58,7 +58,12 @@ private fun Context.getAppPath(): File {
     } else {
         var externalFile: Array<File>? = ContextCompat.getExternalFilesDirs(this, null)
         if (externalFile == null) {
-            externalFile = arrayOf(this.getExternalFilesDir(null))
+            val externalFilesDir = getExternalFilesDir(null)
+            if (externalFilesDir == null) {
+                return getBestAvailableCacheRoot()
+            } else {
+                externalFile = arrayOf(externalFilesDir)
+            }
         }
         val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}")
         root.mkdirs()
@@ -319,7 +324,7 @@ fun Uri.getFileUrlWithAuthority(context: Context): String? {
     if (this.authority != null) {
         var input: InputStream? = null
         try {
-            input = context.contentResolver.openInputStream(this)
+            input = context.contentResolver.openInputStream(this) ?: return null
             val mimeTypeMap = MimeTypeMap.getSingleton()
             val type = mimeTypeMap.getExtensionFromMimeType(context.contentResolver.getType(this))
             val outFile = context.getDocumentPath().createDocumentTemp(type = ".$type")

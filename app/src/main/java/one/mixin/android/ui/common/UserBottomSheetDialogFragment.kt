@@ -252,7 +252,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.name.text = user.fullName
         contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
         contentView.id_tv.setOnLongClickListener {
-            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, user.identityNumber)
+            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
             context?.toast(R.string.copy_success)
             true
         }

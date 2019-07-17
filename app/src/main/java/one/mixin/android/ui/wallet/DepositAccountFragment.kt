@@ -65,11 +65,11 @@ class DepositAccountFragment : DepositFragment() {
             DepositQrBottomFragment.newInstance(asset, TYPE_TAG).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
         }
         account_name_copy_tv.setOnClickListener {
-            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.accountName)
+            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.accountName))
             context?.toast(R.string.copy_success)
         }
         account_memo_copy_tv.setOnClickListener {
-            context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.accountTag)
+            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.accountTag))
             context?.toast(R.string.copy_success)
         }
 

@@ -67,7 +67,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     var callback: Callback? = null
 
     private val conversationId: String by lazy {
-        arguments!!.getString(ARGS_CONVERSATION_ID)
+        arguments!!.getString(ARGS_CONVERSATION_ID)!!
     }
     private val code: String? by lazy { arguments!!.getString(CODE) }
     private lateinit var conversation: Conversation
