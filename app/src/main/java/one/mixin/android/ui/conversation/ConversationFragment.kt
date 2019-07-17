@@ -1007,6 +1007,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     it.type.endsWith("_CONTACT") -> ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = it.sharedUserId)
                     it.type.endsWith("_STICKER") -> ForwardMessage(ForwardCategory.STICKER.name, id = it.messageId)
                     it.type.endsWith("_AUDIO") -> ForwardMessage(ForwardCategory.AUDIO.name, id = it.messageId)
+                    it.type.endsWith("_LIVE") -> ForwardMessage(ForwardCategory.LIVE.name, id = it.messageId)
                     else -> ForwardMessage(ForwardCategory.TEXT.name)
                 }
             }

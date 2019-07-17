@@ -171,7 +171,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         val model = ViewModelProviders.of(this).get(DragMediaViewModel::class.java)
         model.viewModelScope.launch {
             val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
-                if (item.type == MessageCategory.PLAIN_LIVE.name) {
+                if (item.type == MessageCategory.PLAIN_LIVE.name || item.type == MessageCategory.SIGNAL_LIVE.name) {
                     true
                 } else {
                     File(item.mediaUrl?.toUri()?.getFilePath()).exists()
@@ -388,7 +388,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
 
             view.preview_iv.visibility = VISIBLE
-            view.tag = messageItem.type == MessageCategory.PLAIN_LIVE.name
+            view.tag = messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name
 
             if (position == index) {
                 ViewCompat.setTransitionName(view.preview_iv, "transition")
@@ -415,17 +415,17 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             view.setOnClickListener {
                 if (view.close_iv.isVisible) {
-                    fadeOut(view, messageItem.type == MessageCategory.PLAIN_LIVE.name)
+                    fadeOut(view, messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name)
                 } else {
-                    fadeIn(view, messageItem.type == MessageCategory.PLAIN_LIVE.name)
+                    fadeIn(view, messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name)
                 }
             }
 
             view.video_texture.setOnClickListener {
                 if (view.close_iv.isVisible) {
-                    fadeOut(view, messageItem.type == MessageCategory.PLAIN_LIVE.name)
+                    fadeOut(view, messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name)
                 } else {
-                    fadeIn(view, messageItem.type == MessageCategory.PLAIN_LIVE.name)
+                    fadeIn(view, messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name)
                 }
             }
 
@@ -757,7 +757,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         val messageItem = pagerAdapter.getItem(pos)
         if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name ||
             messageItem.type == MessageCategory.PLAIN_VIDEO.name ||
-            messageItem.type == MessageCategory.PLAIN_LIVE.name) {
+            messageItem.type == MessageCategory.PLAIN_LIVE.name ||
+            messageItem.type == MessageCategory.SIGNAL_LIVE.name) {
             messageItem.mediaUrl?.let {
                 if (messageItem.isLive()) {
                     VideoPlayer.player().loadHlsVideo(it)

@@ -128,6 +128,15 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
         }).into(this)
 }
 
+fun ImageView.loadImageMark(uri: String?, @DrawableRes holder: Int?, mark: Int) {
+    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
+        .signature(StringSignature("$uri$mark")).apply {
+            if (holder != null) {
+                this.placeholder(holder)
+            }
+        }).into(this)
+}
+
 fun ImageView.loadImageMark(uri: String?, mark: Int) {
     Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
         .signature(StringSignature("$uri$mark")))

@@ -87,6 +87,7 @@ import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
 import one.mixin.android.vo.createConversation
+import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createRecallMessage
@@ -105,6 +106,7 @@ import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.CREATE_SESSION_MESSAGE
 import one.mixin.android.websocket.TransferContactData
+import one.mixin.android.websocket.TransferLiveData
 import one.mixin.android.websocket.TransferRecallData
 import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.websocket.createAckListParamBlazeMessage
@@ -232,6 +234,18 @@ internal constructor(
         }
     }
 
+    private fun sendLiveMessage(conversationId: String,
+        sender: User,
+        transferLiveData: TransferLiveData,
+        isPlain: Boolean) {
+        val category = if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
+        val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferLiveData).toByteArray())
+        val message = createLiveMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,
+            encoded, transferLiveData.width, transferLiveData.height, transferLiveData.url, transferLiveData.thumbUrl,
+            MessageStatus.SENDING, nowInUtc())
+        jobManager.addJobInBackground(SendMessageJob(message))
+    }
+
     fun sendGiphyMessage(conversationId: String, senderId: String, image: Image, isPlain: Boolean, previewUrl: String) {
         val category = if (isPlain) MessageCategory.PLAIN_IMAGE.name else MessageCategory.SIGNAL_IMAGE.name
         jobManager.addJobInBackground(SendGiphyJob(conversationId, senderId, image.url, image.width, image.height,
@@ -303,6 +317,18 @@ internal constructor(
                             message.mediaWidth, message.mediaHeight, message.thumbImage, null, null, nowInUtc(),
                             MediaStatus.PENDING, MessageStatus.SENDING
                         )))
+                    }
+                    message.category.endsWith("_LIVE") -> {
+                        if (message.mediaWidth == null ||
+                            message.mediaWidth == 0 ||
+                            message.mediaHeight == null ||
+                            message.mediaHeight == 0 ||
+                            message.thumbUrl.isNullOrBlank() ||
+                            message.mediaUrl.isNullOrBlank()) {
+                            return@let 1
+                        }
+                        sendLiveMessage(conversationId, sender, TransferLiveData(
+                            message.mediaWidth, message.mediaHeight, message.thumbUrl, message.mediaUrl), isPlain)
                     }
                     message.category.endsWith("_VIDEO") -> {
                         val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name

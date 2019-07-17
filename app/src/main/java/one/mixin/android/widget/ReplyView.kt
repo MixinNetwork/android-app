@@ -64,7 +64,7 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
             }
             messageItem.type.endsWith("_LIVE") -> {
                 reply_view_tv.setText(R.string.live)
-                setIcon(R.drawable.ic_status_video)
+                setIcon(R.drawable.ic_status_live)
                 reply_view_iv.loadImageCenterCrop(messageItem.thumbUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as ConstraintLayout.LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE

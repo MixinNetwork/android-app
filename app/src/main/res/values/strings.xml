@@ -483,6 +483,7 @@
     <string name="alert_key_group_text_message">%1$s send a message</string>
     <string name="alert_key_group_image_message">%1$s send a photo</string>
     <string name="alert_key_group_video_message">%1$s send a video</string>
+    <string name="alert_key_group_live_message">%1$s send a live</string>
     <string name="alert_key_group_data_message">%1$s send a file</string>
     <string name="alert_key_group_audio_message">%1$s send a audio</string>
     <string name="alert_key_group_sticker_message">%1$s send a sticker</string>
@@ -490,6 +491,7 @@
     <string name="alert_key_contact_text_message">send you a message</string>
     <string name="alert_key_contact_image_message">send you a photo</string>
     <string name="alert_key_contact_video_message">send you a video</string>
+    <string name="alert_key_contact_live_message">send you a live</string>
     <string name="alert_key_contact_transfer_message">send you a transfer</string>
     <string name="alert_key_contact_data_message">send a file</string>
     <string name="alert_key_contact_audio_message">send a audio</string>

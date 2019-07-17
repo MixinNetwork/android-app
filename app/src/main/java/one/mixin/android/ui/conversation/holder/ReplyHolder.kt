@@ -230,11 +230,10 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
                 (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
                 (itemView.reply_name_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16
             }
-            // TODO
             quoteMessage.type.endsWith("_LIVE") -> {
                 itemView.reply_iv.loadImageCenterCrop(quoteMessage.thumbUrl, R.drawable.image_holder)
                 itemView.reply_content_tv.setText(R.string.live)
-                setIcon(R.drawable.ic_status_video)
+                setIcon(R.drawable.ic_status_live)
                 itemView.reply_iv.visibility = View.VISIBLE
                 itemView.reply_avatar.visibility = View.GONE
                 (itemView.reply_content_tv.layoutParams as ConstraintLayout.LayoutParams).marginEnd = dp16

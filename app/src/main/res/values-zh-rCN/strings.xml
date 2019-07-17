@@ -471,6 +471,7 @@
     <string name="alert_key_group_text_message">%1$s 发送一条消息</string>
     <string name="alert_key_group_image_message">%1$s 发送一张照片</string>
     <string name="alert_key_group_video_message">%1$s 发送一个视频</string>
+    <string name="alert_key_group_live_message">%1$s 发送一个直播</string>
     <string name="alert_key_group_data_message">%1$s 发送一个文件</string>
     <string name="alert_key_group_audio_message">%1$s 发送一条语音</string>
     <string name="alert_key_group_sticker_message">%1$s 发送一张贴纸</string>
@@ -478,6 +479,7 @@
     <string name="alert_key_contact_text_message">发送一条消息</string>
     <string name="alert_key_contact_image_message">发送一张照片</string>
     <string name="alert_key_contact_video_message">发送一个视频</string>
+    <string name="alert_key_contact_live_message">发送一个直播</string>
     <string name="alert_key_contact_transfer_message">发送一笔转账</string>
     <string name="alert_key_contact_data_message">发送一个文件</string>
     <string name="alert_key_contact_audio_message">发送一条语音</string>

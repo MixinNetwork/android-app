@@ -391,6 +391,26 @@ fun createStickerMessage(
     .setName(stickerName)
     .build()
 
+fun createLiveMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String?,
+    width: Int,
+    height: Int,
+    url: String,
+    thumbUrl: String,
+    status: MessageStatus,
+    createdAt: String
+) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    .setContent(content)
+    .setMediaWidth(width)
+    .setMediaHeight(height)
+    .setMediaUrl(url)
+    .setThumbUrl(thumbUrl)
+    .build()
+
 fun createContactMessage(
     messageId: String,
     conversationId: String,

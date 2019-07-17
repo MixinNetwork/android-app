@@ -9,10 +9,10 @@
         android:id="@+id/chat_layout"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="1dp"
-        android:layout_marginEnd="5dp"
         android:layout_marginStart="5dp"
-        android:layout_marginTop="1.5dp">
+        android:layout_marginTop="1.5dp"
+        android:layout_marginEnd="5dp"
+        android:layout_marginBottom="1dp">
 
         <TextView
             android:id="@+id/chat_name"
@@ -69,15 +69,35 @@
             android:layout_marginStart="10dp"
             android:layout_marginTop="4dp"
             android:background="@drawable/chat_time_shadow"
-            android:paddingBottom="1dp"
-            android:paddingEnd="3dp"
             android:paddingStart="3dp"
             android:paddingTop="1dp"
+            android:paddingEnd="3dp"
+            android:paddingBottom="1dp"
             android:textColor="@color/white"
             android:textSize="10sp"
             app:layout_constraintStart_toStartOf="@id/chat_layout"
             app:layout_constraintTop_toBottomOf="@id/chat_name"
             app:layout_goneMarginTop="4dp" />
+
+        <TextView
+            android:id="@+id/live_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/chat_live_shadow"
+            android:paddingStart="3dp"
+            android:paddingTop="1dp"
+            android:paddingEnd="3dp"
+            android:paddingBottom="1dp"
+            android:text="LIVE"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:visibility="gone"
+            app:layout_constraintStart_toStartOf="@id/chat_layout"
+            app:layout_constraintTop_toBottomOf="@id/chat_name"
+            app:layout_goneMarginTop="4dp"
+            tools:ignore="HardcodedText" />
 
         <one.mixin.android.widget.CircleProgress
             android:id="@+id/progress"
