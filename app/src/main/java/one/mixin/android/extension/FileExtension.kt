@@ -133,7 +133,8 @@ fun getImageSize(file: File): Size {
 }
 
 fun String.fileExists(): Boolean {
-    return File(this.toUri().getFilePath(MixinApplication.appContext)).exists()
+    val path = this.toUri().getFilePath(MixinApplication.appContext) ?: return false
+    return File(path).exists()
 }
 
 private fun getOrientationFromExif(imagePath: String): Int {
