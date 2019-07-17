@@ -178,7 +178,9 @@ fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
 fun MessageItem.saveToLocal(context: Context) {
     if (!hasWritePermission()) return
 
-    val file = File(mediaUrl?.toUri()?.getFilePath())
+    val filePath = mediaUrl?.toUri()?.getFilePath() ?: return
+
+    val file = File(filePath)
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
         File(context.getPublicPicturePath(), mediaName)
     } else {
@@ -187,6 +189,7 @@ fun MessageItem.saveToLocal(context: Context) {
         } else {
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         }
+        dir.mkdir()
         File(dir, mediaName)
     }
     outFile.copyFromInputStream(FileInputStream(file))
