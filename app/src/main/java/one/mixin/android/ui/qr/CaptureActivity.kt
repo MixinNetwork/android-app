@@ -2,10 +2,13 @@ package one.mixin.android.ui.qr
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.util.isCameraCanUse
 
 class CaptureActivity : BlazeBaseActivity() {
 
@@ -13,6 +16,7 @@ class CaptureActivity : BlazeBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkCameraCanUse()
         setContentView(R.layout.activity_contact)
         captureFragment = when {
                 intent.hasExtra(ARGS_FOR_ADDRESS) -> CameraXCaptureFragment.newInstance(true)
@@ -25,6 +29,15 @@ class CaptureActivity : BlazeBaseActivity() {
     override fun finish() {
         super.finish()
         overridePendingTransition(0, R.anim.slide_out_bottom)
+    }
+
+    private fun checkCameraCanUse() {
+        if (Build.MANUFACTURER == "smartisan" || Build.MANUFACTURER == "Meizu") {
+            if (!isCameraCanUse()) {
+                toast(R.string.need_camera_permission)
+                finish()
+            }
+        }
     }
 
     companion object {
