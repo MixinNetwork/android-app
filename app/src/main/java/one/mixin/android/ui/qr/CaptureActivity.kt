@@ -17,6 +17,7 @@ class CaptureActivity : BlazeBaseActivity() {
         captureFragment = when {
                 intent.hasExtra(ARGS_FOR_ADDRESS) -> CameraXCaptureFragment.newInstance(true)
                 intent.hasExtra(ARGS_FOR_ACCOUNT_NAME) -> CameraXCaptureFragment.newInstance(forAccountName = true)
+                intent.hasExtra(ARGS_FOR_MEMO) -> CameraXCaptureFragment.newInstance(forMemo = true)
                 else -> CameraXCaptureFragment.newInstance()
             }
         replaceFragment(captureFragment, R.id.container, CameraXCaptureFragment.TAG)
@@ -34,6 +35,8 @@ class CaptureActivity : BlazeBaseActivity() {
         const val ARGS_ADDRESS_RESULT = "args_address_result"
         const val ARGS_FOR_ACCOUNT_NAME = "args_for_account_name"
         const val ARGS_ACCOUNT_NAME_RESULT = "args_account_name_result"
+        const val ARGS_FOR_MEMO = "args_for_memo"
+        const val ARGS_MEMO_RESULT = "args_memo_result"
 
         const val REQUEST_CODE = 0x0000c0ff
         const val RESULT_CODE = 0x0000c0df

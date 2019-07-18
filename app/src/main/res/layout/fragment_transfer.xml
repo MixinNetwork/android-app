@@ -179,21 +179,41 @@
                     android:textSize="12sp"/>
             </RelativeLayout>
 
-            <EditText
-                android:id="@+id/transfer_memo"
-                style="@style/NormalTextStyle"
+            <RelativeLayout
+                android:id="@+id/memo_rl"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
                 android:layout_marginStart="@dimen/margin20"
+                android:layout_marginTop="10dp"
                 android:layout_marginEnd="@dimen/margin20"
                 android:background="@drawable/bg_round_8_solid_gray"
-                android:hint="@string/wallet_transfer_memo"
-                android:inputType="text"
-                android:maxLength="140"
-                android:paddingStart="@dimen/margin16"
-                android:paddingEnd="@dimen/margin16"
-                android:singleLine="true"
-                android:textColorHint="@color/wallet_text_gray"/>
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/transfer_memo"
+                    style="@style/NormalTextStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="@dimen/margin16"
+                    android:layout_marginEnd="@dimen/margin16"
+                    android:layout_toStartOf="@id/memo_iv"
+                    android:hint="@string/wallet_transfer_memo"
+                    android:background="@null"
+                    android:inputType="text"
+                    android:maxLength="140"
+                    android:singleLine="true"
+                    android:textColorHint="@color/wallet_text_gray"/>
+
+                <ImageView
+                    android:id="@+id/memo_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_transfer_memo_scan"/>
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/fee_tv"

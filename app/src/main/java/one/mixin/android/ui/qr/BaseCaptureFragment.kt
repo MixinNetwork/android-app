@@ -45,6 +45,7 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
 
     private val forAddress: Boolean by lazy { arguments!!.getBoolean(CaptureActivity.ARGS_FOR_ADDRESS) }
     private val forAccountName: Boolean by lazy { arguments!!.getBoolean(CaptureActivity.ARGS_FOR_ACCOUNT_NAME) }
+    private val forMemo: Boolean by lazy { arguments!!.getBoolean(CaptureActivity.ARGS_FOR_MEMO) }
 
     @SuppressLint("RestrictedApi")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -123,9 +124,13 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
         if (!isAdded) return
 
         requireContext().defaultSharedPreferences.putBoolean(CaptureActivity.SHOW_QR_CODE, false)
-        if (forAddress || forAccountName) {
+        if (forAddress || forAccountName || forMemo) {
             val result = Intent().apply {
-                putExtra(if (forAddress) CaptureActivity.ARGS_ADDRESS_RESULT else CaptureActivity.ARGS_ACCOUNT_NAME_RESULT, analysisResult)
+                putExtra(when {
+                    forAddress -> CaptureActivity.ARGS_ADDRESS_RESULT
+                    forAccountName -> CaptureActivity.ARGS_ACCOUNT_NAME_RESULT
+                    else -> CaptureActivity.ARGS_MEMO_RESULT
+                }, analysisResult)
             }
             activity?.setResult(CaptureActivity.RESULT_CODE, result)
             activity?.finish()
