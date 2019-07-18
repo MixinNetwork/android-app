@@ -129,6 +129,8 @@ fun MessageItem.isCallMessage() =
 
 fun MessageItem.isLive() = type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name
 
+fun MessageItem.isVideo() = type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.PLAIN_VIDEO.name
+
 fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name

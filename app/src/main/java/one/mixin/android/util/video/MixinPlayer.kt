@@ -8,6 +8,8 @@ import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.PlaybackParameters
 import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.STATE_BUFFERING
+import com.google.android.exoplayer2.Player.STATE_READY
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.Timeline
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSourceFactory
@@ -89,11 +91,15 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
     fun stop() = player.stop()
 
     fun start() {
-        player.playWhenReady = true
+        if (!player.playWhenReady) {
+            player.playWhenReady = true
+        }
     }
 
     fun pause() {
-        player.playWhenReady = false
+        if (player.playWhenReady) {
+            player.playWhenReady = false
+        }
     }
 
     fun seekTo(pos: Long) {
@@ -115,7 +121,13 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         player.setVideoTextureView(texture)
     }
 
-    fun loadVideo(url: String) {
+    private var url: String? = null
+
+    fun loadVideo(url: String, force: Boolean = false) {
+        if (!force && this.url == url && (player.playbackState == STATE_READY || player.playbackState == STATE_BUFFERING)) {
+            return
+        }
+        this.url = url
         mediaSource = ProgressiveMediaSource.Factory(buildDataSourceFactory(BANDWIDTH_METER))
             .createMediaSource(Uri.parse(url))
         player.prepare(mediaSource)
@@ -127,7 +139,11 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         player.prepare(mediaSource)
     }
 
-    fun loadHlsVideo(url: String) {
+    fun loadHlsVideo(url: String, force: Boolean = false) {
+        if (!force && this.url == url && (player.playbackState == STATE_READY || player.playbackState == STATE_BUFFERING)) {
+            return
+        }
+        this.url = url
         val dataSourceFactory = DefaultDataSourceFactory(MixinApplication.appContext, BANDWIDTH_METER,
             DefaultHttpDataSourceFactory(Util.getUserAgent(MixinApplication.appContext, "Mixin"), BANDWIDTH_METER))
         mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(Uri.parse(url))

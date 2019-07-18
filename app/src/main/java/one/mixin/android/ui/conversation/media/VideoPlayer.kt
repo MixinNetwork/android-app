@@ -24,6 +24,6 @@ class VideoPlayer private constructor() {
         private var instance: VideoPlayer? = null
     }
 
-    private val player: MixinPlayer = MixinPlayer(true).also {
+    private val player: MixinPlayer = MixinPlayer(false).also {
     }
 }

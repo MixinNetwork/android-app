@@ -231,6 +231,7 @@ class PipVideoView {
         } catch (e: Exception) {
             Timber.e(e)
         }
+        windowView.keepScreenOn = true
         return textureView
     }
 

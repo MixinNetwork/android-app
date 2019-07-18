@@ -24,6 +24,7 @@ import android.os.Bundle
 import android.provider.Settings
 import android.view.TextureView
 import android.view.View
+import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
 import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -54,8 +55,11 @@ import com.bumptech.glide.load.resource.gif.GifDrawable
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.demo.systemuidemo.SystemUIManager
-import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
+import com.google.android.exoplayer2.Player.STATE_ENDED
+import com.google.android.exoplayer2.Player.STATE_IDLE
+import com.google.android.exoplayer2.Player.STATE_READY
 import com.google.firebase.ml.vision.FirebaseVision
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.shizhefei.view.largeimage.LargeImageView
@@ -106,6 +110,7 @@ import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -171,7 +176,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         val model = ViewModelProviders.of(this).get(DragMediaViewModel::class.java)
         model.viewModelScope.launch {
             val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
-                if (item.type == MessageCategory.PLAIN_LIVE.name || item.type == MessageCategory.SIGNAL_LIVE.name) {
+                if (item.isLive()) {
                     true
                 } else {
                     File(item.mediaUrl?.toUri()?.getFilePath()).exists()
@@ -220,6 +225,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     override fun onDestroy() {
         super.onDestroy()
         VideoPlayer.player().setOnVideoPlayerListener(null)
+        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         if (!pipVideoView.shown) {
             VideoPlayer.destroy()
         }
@@ -365,6 +371,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.pip_iv.setOnClickListener {
                 switchToPip()
             }
+            view.refresh_iv.visibility = GONE
+            view.refresh_iv.setOnClickListener {
+                it.fadeOut()
+                load(position, force = true)
+            }
             (view.share_iv.layoutParams as FrameLayout.LayoutParams).marginEnd = baseContext.dpToPx(44f)
             view.share_iv.setOnClickListener { shareVideo() }
             view.pip_iv.isEnabled = false
@@ -389,7 +400,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
 
             view.preview_iv.visibility = VISIBLE
-            view.tag = messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name
+            view.tag = messageItem.isLive()
 
             if (position == index) {
                 ViewCompat.setTransitionName(view.preview_iv, "transition")
@@ -397,7 +408,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
 
             if (position != view_pager.currentItem) {
-                view.play_view.visibility = VISIBLE
+                if (!view.refresh_iv.isVisible)
+                    view.play_view.visibility = VISIBLE
             }
 
             view.play_view.setOnClickListener {
@@ -416,17 +428,17 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             view.setOnClickListener {
                 if (view.close_iv.isVisible) {
-                    fadeOut(view, messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name)
+                    fadeOut(view, messageItem.isLive())
                 } else {
-                    fadeIn(view, messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name)
+                    fadeIn(view, messageItem.isLive())
                 }
             }
 
             view.video_texture.setOnClickListener {
                 if (view.close_iv.isVisible) {
-                    fadeOut(view, messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name)
+                    fadeOut(view, messageItem.isLive())
                 } else {
-                    fadeIn(view, messageItem.type == MessageCategory.PLAIN_LIVE.name || messageItem.type == MessageCategory.SIGNAL_LIVE.name)
+                    fadeIn(view, messageItem.isLive())
                 }
             }
 
@@ -590,11 +602,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 0.5f
             })
             view.close_iv.fadeIn()
-            view.play_view.fadeIn()
+            if (!view.refresh_iv.isVisible) {
+                view.play_view.fadeIn()
+            }
             view.live_tv.fadeIn()
         } else {
             if (!withoutPlay) {
-                view.play_view.fadeIn()
+                if (!view.refresh_iv.isVisible) {
+                    view.play_view.fadeIn()
+                }
             }
             view.controller.fadeIn()
             view.close_iv.fadeIn()
@@ -607,13 +623,19 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         if (live) {
             view.pip_iv.fadeOut()
             view.close_iv.fadeOut()
-            view.play_view.fadeOut()
+            if (!view.refresh_iv.isVisible) {
+                view.play_view.fadeOut()
+            }
             view.live_tv.fadeOut()
         } else {
             if (!withoutPlay) {
-                view.play_view.fadeOut()
+                if (!view.refresh_iv.isVisible) {
+                    view.play_view.fadeOut()
+                }
             } else {
-                view.play_view.fadeIn()
+                if (!view.refresh_iv.isVisible) {
+                    view.play_view.fadeIn()
+                }
             }
             view.controller.fadeOut()
             view.close_iv.fadeOut()
@@ -756,21 +778,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         VideoPlayer.player().stop()
     }
 
-    private fun end() {
-        setPlayViewStatus(STATUS_IDLE)
-    }
-
-    private inline fun load(pos: Int, action: () -> Unit = {}) {
+    private inline fun load(pos: Int, force: Boolean = false, action: () -> Unit = {}) {
         val messageItem = pagerAdapter.getItem(pos)
-        if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name ||
-            messageItem.type == MessageCategory.PLAIN_VIDEO.name ||
-            messageItem.type == MessageCategory.PLAIN_LIVE.name ||
-            messageItem.type == MessageCategory.SIGNAL_LIVE.name) {
+        if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.mediaUrl?.let {
                 if (messageItem.isLive()) {
-                    VideoPlayer.player().loadHlsVideo(it)
+                    VideoPlayer.player().loadHlsVideo(it, force)
                 } else {
-                    VideoPlayer.player().loadVideo(it)
+                    VideoPlayer.player().loadVideo(it, force)
                 }
             }
             setTextureView()
@@ -780,7 +795,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun play(pos: Int) = load(pos) {
         start()
-        VideoPlayer.player().seekTo(currentPosition)
+        pagerAdapter.getItem(pos).let { messageItem ->
+            if (messageItem.isVideo()) {
+                VideoPlayer.player().seekTo(currentPosition)
+            }
+        }
     }
 
     private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
@@ -795,6 +814,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         }
 
+        override fun onPlayerError(error: ExoPlaybackException) {
+            showRefresh()
+        }
+
         override fun onLoadingChanged(isLoading: Boolean) {
             if (VideoPlayer.player().isPlaying() && isLoading && VideoPlayer.player().player.playbackState == STATE_BUFFERING) {
                 setPlayViewStatus(STATE_BUFFERING)
@@ -802,8 +825,17 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
 
         override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
-            if (playbackState == Player.STATE_ENDED) {
-                stop()
+            when (playbackState) {
+                STATE_ENDED -> stop()
+                STATE_IDLE -> {
+                    showRefresh()
+                }
+                STATE_READY -> {
+                    hideRefresh()
+                }
+                STATE_BUFFERING -> {
+                    hideRefresh()
+                }
             }
         }
 
@@ -821,6 +853,21 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     parentView.video_aspect_ratio.setAspectRatio(ratio, unappliedRotationDegrees)
                 }
             }
+        }
+    }
+
+    private fun showRefresh() {
+        findViewPagerChildByTag {
+            val parentView = it.getChildAt(0)
+            parentView.refresh_iv.fadeIn()
+            parentView.play_view.visibility = GONE
+        }
+    }
+
+    private fun hideRefresh() {
+        findViewPagerChildByTag {
+            val parentView = it.getChildAt(0)
+            parentView.refresh_iv.fadeOut()
         }
     }
 

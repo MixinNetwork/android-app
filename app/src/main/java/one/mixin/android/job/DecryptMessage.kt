@@ -371,6 +371,7 @@ class DecryptMessage : Injector() {
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)
                 sendNotificationJob(message, data.source)
+                sendToExtensionSession(message, plainText)
             }
         }
     }
