@@ -1473,14 +1473,18 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         chatAdapter.recipient = user
         renderUserInfo(user)
         chatViewModel.findUserById(user.userId).observe(this, Observer {
-            it?.let {
-                recipient = it
-                renderUserInfo(it)
+            it?.let { u ->
+                recipient = u
+                if (u.isBot()) {
+                    renderBot(u)
+                }
+                renderUserInfo(u)
             }
         })
         action_bar.avatar_iv.setOnClickListener {
             hideIfShowBottomSheet()
-            UserBottomSheetDialogFragment.newInstance(user, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+            UserBottomSheetDialogFragment.newInstance(user, conversationId)
+                .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
         }
         bottom_unblock.setOnClickListener {
             recipient?.let { user ->
@@ -1488,15 +1492,19 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     RelationshipAction.UNBLOCK.name, user.fullName))
             }
         }
-
         if (user.isBot()) {
-            lifecycleScope.launch {
-                if (!isAdded) return@launch
+            renderBot(user)
+        }
+    }
 
-                app = chatViewModel.findAppById(user.appId!!)
-                if (app != null && app!!.creatorId == Session.getAccountId()) {
-                    initMenuLayout(true)
-                }
+    private fun renderBot(user: User) = lifecycleScope.launch {
+        if (!isAdded) return@launch
+
+        app = chatViewModel.findAppById(user.appId!!)
+        if (app != null && app!!.creatorId == Session.getAccountId()) {
+            val menuFragment = requireFragmentManager().findFragmentByTag(MenuFragment.TAG)
+            if (menuFragment == null) {
+                initMenuLayout(true)
             }
         }
     }
@@ -2084,6 +2092,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             hideIfShowBottomSheet()
             app?.let {
                 chat_control.chat_et.hideKeyboard()
+                recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
                 botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId, appName = it.name, appAvatar = recipient?.avatarUrl)
                 botWebBottomSheet?.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
             }

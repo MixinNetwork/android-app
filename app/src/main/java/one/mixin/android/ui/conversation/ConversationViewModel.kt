@@ -50,6 +50,7 @@ import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
+import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.job.RemoveStickersJob
 import one.mixin.android.job.SendAckMessageJob
 import one.mixin.android.job.SendAttachmentMessageJob
@@ -655,4 +656,8 @@ internal constructor(
                 jobManager.addJobInBackground(AttachmentDownloadJob(message))
             }
         }
+
+    fun refreshUser(userId: String, forceRefresh: Boolean) {
+        jobManager.addJobInBackground(RefreshUserJob(listOf(userId), forceRefresh = forceRefresh))
+    }
 }
