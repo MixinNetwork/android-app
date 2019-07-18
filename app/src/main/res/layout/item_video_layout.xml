@@ -94,6 +94,23 @@
         android:visibility="invisible"
         tools:ignore="ContentDescription" />
 
+    <TextView
+        android:id="@+id/live_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/chat_live_shadow"
+        android:paddingStart="3dp"
+        android:paddingTop="1dp"
+        android:paddingEnd="3dp"
+        android:paddingBottom="1dp"
+        android:text="LIVE"
+        android:textColor="@color/white"
+        android:textSize="10sp"
+        android:visibility="gone"
+        tools:ignore="HardcodedText" />
+
     <ImageView
         android:id="@+id/share_iv"
         android:layout_width="wrap_content"

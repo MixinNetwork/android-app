@@ -373,6 +373,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 val statusBarHeight = statusBarHeight().toFloat()
                 view.close_iv.translationY = statusBarHeight
                 view.share_iv.translationY = statusBarHeight
+                view.live_tv.translationY = statusBarHeight
                 view.pip_iv.translationY = statusBarHeight
             }
             view.video_texture.surfaceTextureListener = this
@@ -590,6 +591,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             })
             view.close_iv.fadeIn()
             view.play_view.fadeIn()
+            view.live_tv.fadeIn()
         } else {
             if (!withoutPlay) {
                 view.play_view.fadeIn()
@@ -606,6 +608,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.pip_iv.fadeOut()
             view.close_iv.fadeOut()
             view.play_view.fadeOut()
+            view.live_tv.fadeOut()
         } else {
             if (!withoutPlay) {
                 view.play_view.fadeOut()
@@ -753,6 +756,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         VideoPlayer.player().stop()
     }
 
+    private fun end() {
+        setPlayViewStatus(STATUS_IDLE)
+    }
+
     private inline fun load(pos: Int, action: () -> Unit = {}) {
         val messageItem = pagerAdapter.getItem(pos)
         if (messageItem.type == MessageCategory.SIGNAL_VIDEO.name ||
@@ -865,6 +872,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 override fun onAnimationStart(animation: Animator?) {
                     windowView.pip_iv.fadeOut()
                     windowView.close_iv.fadeOut()
+                    windowView.live_tv.fadeOut()
                     if (!SystemUIManager.hasCutOut(window)) {
                         SystemUIManager.clearStyle(window)
                     }
