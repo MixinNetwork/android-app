@@ -877,7 +877,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 }
             })
             animatorSet.start()
-
         }
     }
 

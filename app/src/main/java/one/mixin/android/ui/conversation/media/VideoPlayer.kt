@@ -16,7 +16,7 @@ class VideoPlayer private constructor() {
             return getInstance().player
         }
 
-        fun destroy(){
+        fun destroy() {
             instance?.player?.release()
             instance = null
         }
@@ -25,6 +25,5 @@ class VideoPlayer private constructor() {
     }
 
     private val player: MixinPlayer = MixinPlayer(true).also {
-
     }
 }

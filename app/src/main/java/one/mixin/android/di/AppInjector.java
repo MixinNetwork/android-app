@@ -11,7 +11,6 @@ import dagger.android.AndroidInjection;
 import dagger.android.support.AndroidSupportInjection;
 import dagger.android.support.HasSupportFragmentInjector;
 import one.mixin.android.MixinApplication;
-import one.mixin.android.ui.VideoViewer;
 
 /**
  * Helper class to automatically inject fragments if they implement {@link Injectable}.
@@ -34,7 +33,6 @@ public class AppInjector{
 
                     @Override
                     public void onActivityStarted(Activity activity) {
-                        VideoViewer.Companion.switchActivity(activity, true);
                     }
 
                     @Override
@@ -49,7 +47,6 @@ public class AppInjector{
 
                     @Override
                     public void onActivityStopped(Activity activity) {
-                        VideoViewer.Companion.switchActivity(activity, false);
                     }
 
                     @Override

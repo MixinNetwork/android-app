@@ -234,10 +234,12 @@ internal constructor(
         }
     }
 
-    private fun sendLiveMessage(conversationId: String,
+    private fun sendLiveMessage(
+        conversationId: String,
         sender: User,
         transferLiveData: TransferLiveData,
-        isPlain: Boolean) {
+        isPlain: Boolean
+    ) {
         val category = if (isPlain) MessageCategory.PLAIN_LIVE.name else MessageCategory.SIGNAL_LIVE.name
         val encoded = Base64.encodeBytes(GsonHelper.customGson.toJson(transferLiveData).toByteArray())
         val message = createLiveMessage(UUID.randomUUID().toString(), conversationId, sender.userId, category,

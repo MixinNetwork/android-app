@@ -5,7 +5,6 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
-import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 
 @Dao
