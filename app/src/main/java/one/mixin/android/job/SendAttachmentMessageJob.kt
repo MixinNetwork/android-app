@@ -18,6 +18,8 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.TransferAttachmentData
+import one.mixin.android.widget.CircleProgress
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_LOADING
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
 
@@ -115,7 +117,7 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
                     AttachmentCipherOutputStreamFactory(key)
                 },
                 PushAttachmentData.ProgressListener { total, progress ->
-                    RxBus.publish(ProgressEvent(message.id, progress.toFloat() / total.toFloat()))
+                    RxBus.publish(ProgressEvent(message.id, progress.toFloat() / total.toFloat(), STATUS_LOADING))
                 })
         val digest = try {
             if (isPlain()) {

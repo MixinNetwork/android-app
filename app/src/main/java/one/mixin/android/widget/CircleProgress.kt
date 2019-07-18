@@ -140,7 +140,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                 .subscribe {
                     if (it.id == mBindId) {
                         when {
-                            it.status == STATUS_ERROR && status == STATUS_LOADING -> {
+                            it.status == STATUS_LOADING -> {
                                 val progress = (it.progress * mMaxProgress).toInt().let {
                                     if (it >= mMaxProgress) {
                                         (mMaxProgress * 0.95).toInt()
@@ -365,7 +365,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         private val ANGLE_INTERPOLATOR = LinearInterpolator()
         private const val ANGLE_ANIMATOR_DURATION = 3000
         private const val DEFAULT_BORDER_WIDTH = 3
-        private const val STATUS_LOADING = 0
+        const val STATUS_LOADING = 0
         private const val STATUS_UPLOAD = 1
         private const val STATUS_DOWNLOAD = 2
         const val STATUS_DONE = 3
