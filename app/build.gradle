@@ -160,7 +160,9 @@ dependencies {
     implementation "io.reactivex.rxjava2:rxandroid:${rxAndroidVersion}"
     implementation("io.jsonwebtoken:jjwt:${jwtVersion}")
     implementation "com.jakewharton.threetenabp:threetenabp:${threetenabpVersion}"
-    implementation "com.bugsnag:bugsnag-android:${bugsnagVersion}"
+    implementation("com.bugsnag:bugsnag-android:${bugsnagVersion}") {
+        exclude group: "com.bugsnag", module: "bugsnag-plugin-android-anr"
+    }
     implementation "org.jsoup:jsoup:${jsoupVersion}"
 
     // retrofit
