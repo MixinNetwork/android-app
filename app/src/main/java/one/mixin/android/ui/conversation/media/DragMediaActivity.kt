@@ -624,7 +624,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             if (!view.refresh_iv.isVisible) {
                 view.play_view.fadeIn()
             }
-            view.live_tv.fadeIn()
+            if (view.live_tv.isEnabled) {
+                view.live_tv.fadeIn()
+            }
         } else {
             if (!withoutPlay) {
                 if (!view.refresh_iv.isVisible) {
@@ -645,7 +647,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             if (!view.refresh_iv.isVisible) {
                 view.play_view.fadeOut()
             }
-            view.live_tv.fadeOut()
+            if (view.live_tv.isEnabled) {
+                view.live_tv.fadeOut()
+            }
         } else {
             if (!withoutPlay) {
                 if (!view.refresh_iv.isVisible) {
@@ -838,6 +842,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     parentView.preview_iv.visibility = INVISIBLE
                     parentView.pip_iv.isEnabled = true
                     parentView.pip_iv.alpha = 1f
+                    parentView.live_tv.isEnabled = VideoPlayer.player().player.isCurrentWindowDynamic
                 }
             }
         }
@@ -953,7 +958,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     }
                     windowView.pip_iv.fadeOut()
                     windowView.close_iv.fadeOut()
-                    windowView.live_tv.fadeOut()
+                    if (windowView.live_tv.isEnabled) {
+                        windowView.live_tv.fadeOut()
+                    }
                     if (!SystemUIManager.hasCutOut(window)) {
                         SystemUIManager.clearStyle(window)
                     }

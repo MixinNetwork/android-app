@@ -78,8 +78,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="gone"
-        android:src="@drawable/ic_refresh" />
+        android:src="@drawable/ic_refresh"
+        android:visibility="gone" />
 
     <ImageView
         android:id="@+id/close_iv"
@@ -109,6 +109,7 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
         android:background="@drawable/chat_live_shadow"
+        android:enabled="false"
         android:paddingStart="3dp"
         android:paddingTop="1dp"
         android:paddingEnd="3dp"
