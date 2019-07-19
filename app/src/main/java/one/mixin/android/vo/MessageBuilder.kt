@@ -15,10 +15,11 @@ class MessageBuilder(
     private var mediaMimeType: String? = null
     private var mediaSize: Long? = null
     private var mediaDuration: String? = null
+    private var thumbUrl: String? = null
+    private var thumbImage: String? = null
     private var mediaWidth: Int? = null
     private var mediaHeight: Int? = null
     private var mediaHash: String? = null
-    private var thumbImage: String? = null
     private var mediaKey: ByteArray? = null
     private var mediaDigest: ByteArray? = null
     private var mediaStatus: String? = null
@@ -56,6 +57,11 @@ class MessageBuilder(
 
     fun setMediaDuration(mediaDuration: String): MessageBuilder {
         this.mediaDuration = mediaDuration
+        return this
+    }
+
+    fun setThumbUrl(setThumbUrl: String?): MessageBuilder {
+        this.thumbUrl = setThumbUrl
         return this
     }
 
@@ -152,6 +158,6 @@ class MessageBuilder(
     fun build(): Message =
         Message(id, conversationId, userId, category, content, mediaUrl,
             mediaMimeType, mediaSize, mediaDuration, mediaWidth, mediaHeight, mediaHash,
-            thumbImage, mediaKey, mediaDigest, mediaStatus, status, createdAt,
+            thumbImage, thumbUrl, mediaKey, mediaDigest, mediaStatus, status, createdAt,
             action, participantId, snapshotId, hyperlink, name, albumId, stickerId, sharedUserId, mediaWaveform, null, quoteMessageId, quoteContent)
 }

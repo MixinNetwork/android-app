@@ -71,6 +71,10 @@ class Message(
     @ColumnInfo(name = "thumb_image")
     val thumbImage: String?,
 
+    @SerializedName("thumb_url")
+    @ColumnInfo(name = "thumb_url")
+    val thumbUrl: String?,
+
     @ColumnInfo(name = "media_key", typeAffinity = ColumnInfo.BLOB)
     val mediaKey: ByteArray? = null,
 
@@ -179,6 +183,7 @@ enum class MessageCategory {
     SIGNAL_DATA,
     SIGNAL_CONTACT,
     SIGNAL_AUDIO,
+    SIGNAL_LIVE,
     PLAIN_TEXT,
     PLAIN_IMAGE,
     PLAIN_VIDEO,
@@ -186,6 +191,7 @@ enum class MessageCategory {
     PLAIN_STICKER,
     PLAIN_CONTACT,
     PLAIN_AUDIO,
+    PLAIN_LIVE,
     PLAIN_JSON,
     MESSAGE_RECALL,
     STRANGER,
@@ -383,6 +389,26 @@ fun createStickerMessage(
     .setStickerId(stickerId)
     .setAlbumId(albumId)
     .setName(stickerName)
+    .build()
+
+fun createLiveMessage(
+    messageId: String,
+    conversationId: String,
+    userId: String,
+    category: String,
+    content: String?,
+    width: Int,
+    height: Int,
+    url: String,
+    thumbUrl: String,
+    status: MessageStatus,
+    createdAt: String
+) = MessageBuilder(messageId, conversationId, userId, category, status.name, createdAt)
+    .setContent(content)
+    .setMediaWidth(width)
+    .setMediaHeight(height)
+    .setMediaUrl(url)
+    .setThumbUrl(thumbUrl)
     .build()
 
 fun createContactMessage(

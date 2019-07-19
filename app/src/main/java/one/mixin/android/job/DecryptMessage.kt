@@ -39,6 +39,7 @@ import one.mixin.android.vo.createAckJob
 import one.mixin.android.vo.createAttachmentMessage
 import one.mixin.android.vo.createAudioMessage
 import one.mixin.android.vo.createContactMessage
+import one.mixin.android.vo.createLiveMessage
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.createRecallMessage
@@ -58,6 +59,7 @@ import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.websocket.SystemConversationData
 import one.mixin.android.websocket.TransferAttachmentData
 import one.mixin.android.websocket.TransferContactData
+import one.mixin.android.websocket.TransferLiveData
 import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.TransferRecallData
 import one.mixin.android.websocket.TransferStickerData
@@ -227,7 +229,8 @@ class DecryptMessage : Injector() {
             data.category == MessageCategory.PLAIN_DATA.name ||
             data.category == MessageCategory.PLAIN_AUDIO.name ||
             data.category == MessageCategory.PLAIN_STICKER.name ||
-            data.category == MessageCategory.PLAIN_CONTACT.name) {
+            data.category == MessageCategory.PLAIN_CONTACT.name ||
+            data.category == MessageCategory.PLAIN_LIVE.name) {
             var dataUserId: String? = null
             if (!data.representativeId.isNullOrBlank()) {
                 dataUserId = data.userId
@@ -358,6 +361,15 @@ class DecryptMessage : Injector() {
                     plainText, contactData.userId, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)
                 syncUser(contactData.userId)
+                sendNotificationJob(message, data.source)
+                sendToExtensionSession(message, plainText)
+            }
+            data.category.endsWith("_LIVE") -> {
+                val decoded = Base64.decode(plainText)
+                val liveData = gson.fromJson(String(decoded), TransferLiveData::class.java)
+                val message = createLiveMessage(data.messageId, data.conversationId, data.userId, data.category, null,
+                    liveData.width, liveData.height, liveData.url, liveData.thumbUrl, MessageStatus.DELIVERED, data.createdAt)
+                messageDao.insert(message)
                 sendNotificationJob(message, data.source)
                 sendToExtensionSession(message, plainText)
             }

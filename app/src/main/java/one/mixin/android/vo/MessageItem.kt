@@ -44,6 +44,7 @@ data class MessageItem(
     val mediaName: String?,
     val mediaMimeType: String?,
     val mediaSize: Long?,
+    val thumbUrl: String?,
     val mediaWidth: Int?,
     val mediaHeight: Int?,
     val thumbImage: String?,
@@ -90,7 +91,7 @@ data class MessageItem(
 fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
     type, null, createdAt
     ?: nowInUtc(), MessageStatus.READ.name, null, null,
-    null, null, null, null, null, null, null,
+    null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null,
     null, null, null, null, null, null, null, null, null, null)
 
@@ -126,6 +127,10 @@ fun MessageItem.isCallMessage() =
         type == MessageCategory.WEBRTC_AUDIO_BUSY.name ||
         type == MessageCategory.WEBRTC_AUDIO_FAILED.name
 
+fun MessageItem.isLive() = type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name
+
+fun MessageItem.isVideo() = type == MessageCategory.SIGNAL_VIDEO.name || type == MessageCategory.PLAIN_VIDEO.name
+
 fun MessageItem.isAudio() =
     type == MessageCategory.PLAIN_AUDIO.name ||
         type == MessageCategory.SIGNAL_AUDIO.name
@@ -142,19 +147,21 @@ fun MessageItem.canRecall(): Boolean {
         this.type == MessageCategory.SIGNAL_DATA.name ||
         this.type == MessageCategory.SIGNAL_CONTACT.name ||
         this.type == MessageCategory.SIGNAL_AUDIO.name ||
+        this.type == MessageCategory.SIGNAL_LIVE.name ||
         this.type == MessageCategory.PLAIN_TEXT.name ||
         this.type == MessageCategory.PLAIN_IMAGE.name ||
         this.type == MessageCategory.PLAIN_VIDEO.name ||
         this.type == MessageCategory.PLAIN_STICKER.name ||
         this.type == MessageCategory.PLAIN_DATA.name ||
         this.type == MessageCategory.PLAIN_CONTACT.name ||
-        this.type == MessageCategory.PLAIN_AUDIO.name
+        this.type == MessageCategory.PLAIN_AUDIO.name ||
+        this.type == MessageCategory.PLAIN_LIVE.name
 }
 
 fun MessageItem.isRecall() = type == MessageCategory.MESSAGE_RECALL.name
 
 fun MessageItem.toMessage() = Message(messageId, conversationId, userId, type, content, mediaUrl, mediaMimeType, mediaSize,
-    mediaDuration, mediaWidth, mediaHeight, null, thumbImage, null, null, mediaStatus, status,
+    mediaDuration, mediaWidth, mediaHeight, null, thumbImage, thumbUrl, null, null, mediaStatus, status,
     createdAt, actionName, participantUserId, snapshotId, hyperlink = null, name = mediaName, albumId = null, stickerId = stickerId,
     sharedUserId = sharedUserId, mediaWaveform = mediaWaveform, mediaMineType = null, quoteMessageId = quoteId, quoteContent = quoteContent)
 

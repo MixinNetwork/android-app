@@ -1,9 +1,9 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
+import android.os.Parcelable
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 
 @SuppressLint("ParcelCreator")
@@ -28,6 +28,7 @@ data class QuoteMessageItem(
     val mediaWidth: Int?,
     val mediaHeight: Int?,
     val thumbImage: String?,
+    val thumbUrl: String?,
     val mediaUrl: String?,
     val mediaDuration: String?,
     val assetUrl: String?,
@@ -45,7 +46,7 @@ data class QuoteMessageItem(
         messageItem.userId, messageItem.userFullName, messageItem.userIdentityNumber, messageItem.type,
         messageItem.content, messageItem.createdAt, messageItem.status, messageItem.mediaStatus,
         messageItem.userAvatarUrl, messageItem.mediaName, messageItem.mediaMimeType, messageItem.mediaSize,
-        messageItem.mediaWidth, messageItem.mediaHeight, messageItem.thumbImage, messageItem.mediaUrl,
+        messageItem.mediaWidth, messageItem.mediaHeight, messageItem.thumbImage, messageItem.thumbUrl, messageItem.mediaUrl,
         messageItem.mediaDuration, messageItem.assetUrl, messageItem.assetHeight, messageItem.assetWidth, messageItem.stickerId,
         messageItem.assetName, messageItem.appId, messageItem.sharedUserId, messageItem.sharedUserFullName,
         messageItem.sharedUserIdentityNumber, messageItem.sharedUserAvatarUrl)

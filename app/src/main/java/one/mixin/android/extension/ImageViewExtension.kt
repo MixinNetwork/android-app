@@ -21,6 +21,15 @@ fun ImageView.loadImage(uri: String?) {
     Glide.with(this).load(uri).into(this)
 }
 
+fun ImageView.loadImage(uri: String?, holder: String?) {
+    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
+        .apply {
+            if (holder != null) {
+                this.placeholder(holder.toDrawable())
+            }
+        }).into(this)
+}
+
 fun ImageView.loadImage(uri: Uri?) {
     Glide.with(this).load(uri).into(this)
 }
@@ -119,6 +128,15 @@ fun ImageView.loadImageMark(uri: String?, holder: String?, mark: Int) {
         }).into(this)
 }
 
+fun ImageView.loadImageMark(uri: String?, @DrawableRes holder: Int?, mark: Int) {
+    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
+        .signature(StringSignature("$uri$mark")).apply {
+            if (holder != null) {
+                this.placeholder(holder)
+            }
+        }).into(this)
+}
+
 fun ImageView.loadImageMark(uri: String?, mark: Int) {
     Glide.with(this).load(uri).apply(RequestOptions().dontAnimate()
         .signature(StringSignature("$uri$mark")))
@@ -206,9 +224,9 @@ fun ImageView.loadVideoMark(
         }).submit(layoutParams.width, layoutParams.height)
 }
 
-fun ImageView.loadVideo(uri: String, @DrawableRes holder: Int) {
+fun ImageView.loadVideo(uri: String) {
     Glide.with(this).load(uri).apply(RequestOptions().frame(0)
-        .centerCrop().placeholder(holder).dontAnimate()).into(this)
+        .centerCrop().dontAnimate()).into(this)
 }
 
 fun ImageView.loadSticker(uri: String?, type: String?) {

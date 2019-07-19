@@ -14,13 +14,16 @@ import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadVideoMark
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isLive
 import org.jetbrains.anko.dip
 
 class VideoHolder constructor(containerView: View) : MediaHolder(containerView) {
@@ -80,125 +83,150 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             itemView.chat_name.visibility = View.GONE
         }
 
-        if (messageItem.mediaStatus == MediaStatus.DONE.name) {
-            messageItem.mediaDuration.notNullWithElse({
-                itemView.duration_tv.visibility = VISIBLE
-                itemView.duration_tv.text = it.toLong().formatMillis()
-            }, {
-                itemView.duration_tv.visibility = GONE
-            })
-        } else {
-            messageItem.mediaSize.notNullWithElse({
-                if (it == 0L) {
-                    itemView.duration_tv.visibility = GONE
+        if (messageItem.isLive()) {
+            itemView.chat_warning.visibility = GONE
+            itemView.duration_tv.visibility = GONE
+            itemView.progress.visibility = GONE
+            itemView.play.visibility = GONE
+            itemView.live_tv.visibility = VISIBLE
+            itemView.progress.setBindId(messageItem.messageId)
+            itemView.progress.setOnClickListener {}
+            itemView.progress.setOnLongClickListener { false }
+            itemView.chat_image.setOnLongClickListener {
+                if (!hasSelect) {
+                    onItemListener.onLongClick(messageItem, adapterPosition)
                 } else {
+                    true
+                }
+            }
+            itemView.chat_image.setOnClickListener {
+                if (hasSelect) {
+                    onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                } else {
+                    onItemListener.onImageClick(messageItem, itemView.chat_image)
+                }
+            }
+        } else {
+            itemView.live_tv.visibility = GONE
+            if (messageItem.mediaStatus == MediaStatus.DONE.name) {
+                messageItem.mediaDuration.notNullWithElse({
                     itemView.duration_tv.visibility = VISIBLE
-                    itemView.duration_tv.text = it.fileSize()
-                }
-            }, {
-                itemView.duration_tv.visibility = GONE
-            })
-        }
-
-        itemView.chat_time.timeAgoClock(messageItem.createdAt)
-        messageItem.mediaStatus?.let {
-            when (it) {
-                MediaStatus.EXPIRED.name -> {
-                    itemView.chat_warning.visibility = View.VISIBLE
-                    itemView.progress.visibility = View.GONE
-                    itemView.play.visibility = GONE
-                    itemView.chat_image.setOnLongClickListener {
-                        if (!hasSelect) {
-                            onItemListener.onLongClick(messageItem, adapterPosition)
-                        } else {
-                            true
-                        }
-                    }
-                    itemView.chat_image.setOnClickListener {
-                        if (hasSelect) {
-                            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-                        }
-                    }
-                }
-                MediaStatus.PENDING.name -> {
-                    itemView.chat_warning.visibility = GONE
-                    itemView.progress.visibility = VISIBLE
-                    itemView.play.visibility = GONE
-                    itemView.progress.enableLoading()
-                    itemView.progress.setBindId(messageItem.messageId)
-                    itemView.progress.setOnLongClickListener {
-                        if (!hasSelect) {
-                            onItemListener.onLongClick(messageItem, adapterPosition)
-                        } else {
-                            false
-                        }
-                    }
-                    itemView.progress.setOnClickListener {
-                        if (hasSelect) {
-                            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-                        } else {
-                            onItemListener.onCancel(messageItem.messageId)
-                        }
-                    }
-                    itemView.chat_image.setOnClickListener { }
-                    itemView.chat_image.setOnLongClickListener { false }
-                }
-                MediaStatus.DONE.name -> {
-                    itemView.chat_warning.visibility = GONE
-                    itemView.progress.visibility = GONE
-                    itemView.play.visibility = VISIBLE
-                    itemView.progress.setBindId(messageItem.messageId)
-                    itemView.progress.setOnClickListener {}
-                    itemView.progress.setOnLongClickListener { false }
-                    itemView.chat_image.setOnLongClickListener {
-                        if (!hasSelect) {
-                            onItemListener.onLongClick(messageItem, adapterPosition)
-                        } else {
-                            true
-                        }
-                    }
-                    itemView.chat_image.setOnClickListener {
-                        if (hasSelect) {
-                            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-                        } else {
-                            onItemListener.onImageClick(messageItem, itemView.chat_image)
-                        }
-                    }
-                }
-                MediaStatus.CANCELED.name -> {
-                    itemView.chat_warning.visibility = GONE
-                    itemView.progress.visibility = VISIBLE
-                    itemView.play.visibility = GONE
-                    if (isMe) {
-                        itemView.progress.enableUpload()
+                    itemView.duration_tv.text = it.toLong().formatMillis()
+                }, {
+                    itemView.duration_tv.visibility = GONE
+                })
+            } else {
+                messageItem.mediaSize.notNullWithElse({
+                    if (it == 0L) {
+                        itemView.duration_tv.visibility = GONE
                     } else {
-                        itemView.progress.enableDownload()
+                        itemView.duration_tv.visibility = VISIBLE
+                        itemView.duration_tv.text = it.fileSize()
                     }
-                    itemView.progress.setBindId(messageItem.messageId)
-                    itemView.progress.setProgress(-1)
-                    itemView.progress.setOnLongClickListener {
-                        if (!hasSelect) {
-                            onItemListener.onLongClick(messageItem, adapterPosition)
-                        } else {
-                            false
-                        }
-                    }
-                    itemView.progress.setOnClickListener {
-                        if (hasSelect) {
-                            onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
-                        } else {
-                            if (isMe) {
-                                onItemListener.onRetryUpload(messageItem.messageId)
+                }, {
+                    itemView.duration_tv.visibility = GONE
+                })
+            }
+            messageItem.mediaStatus?.let {
+                when (it) {
+                    MediaStatus.EXPIRED.name -> {
+                        itemView.chat_warning.visibility = View.VISIBLE
+                        itemView.progress.visibility = View.GONE
+                        itemView.play.visibility = GONE
+                        itemView.chat_image.setOnLongClickListener {
+                            if (!hasSelect) {
+                                onItemListener.onLongClick(messageItem, adapterPosition)
                             } else {
-                                onItemListener.onRetryDownload(messageItem.messageId)
+                                true
+                            }
+                        }
+                        itemView.chat_image.setOnClickListener {
+                            if (hasSelect) {
+                                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
                             }
                         }
                     }
-                    itemView.chat_image.setOnClickListener {}
-                    itemView.chat_image.setOnLongClickListener { false }
+                    MediaStatus.PENDING.name -> {
+                        itemView.chat_warning.visibility = GONE
+                        itemView.progress.visibility = VISIBLE
+                        itemView.play.visibility = GONE
+                        itemView.progress.enableLoading()
+                        itemView.progress.setBindId(messageItem.messageId)
+                        itemView.progress.setOnLongClickListener {
+                            if (!hasSelect) {
+                                onItemListener.onLongClick(messageItem, adapterPosition)
+                            } else {
+                                false
+                            }
+                        }
+                        itemView.progress.setOnClickListener {
+                            if (hasSelect) {
+                                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                            } else {
+                                onItemListener.onCancel(messageItem.messageId)
+                            }
+                        }
+                        itemView.chat_image.setOnClickListener { }
+                        itemView.chat_image.setOnLongClickListener { false }
+                    }
+                    MediaStatus.DONE.name -> {
+                        itemView.chat_warning.visibility = GONE
+                        itemView.progress.visibility = GONE
+                        itemView.play.visibility = VISIBLE
+                        itemView.progress.setBindId(messageItem.messageId)
+                        itemView.progress.setOnClickListener {}
+                        itemView.progress.setOnLongClickListener { false }
+                        itemView.chat_image.setOnLongClickListener {
+                            if (!hasSelect) {
+                                onItemListener.onLongClick(messageItem, adapterPosition)
+                            } else {
+                                true
+                            }
+                        }
+                        itemView.chat_image.setOnClickListener {
+                            if (hasSelect) {
+                                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                            } else {
+                                onItemListener.onImageClick(messageItem, itemView.chat_image)
+                            }
+                        }
+                    }
+                    MediaStatus.CANCELED.name -> {
+                        itemView.chat_warning.visibility = GONE
+                        itemView.progress.visibility = VISIBLE
+                        itemView.play.visibility = GONE
+                        if (isMe) {
+                            itemView.progress.enableUpload()
+                        } else {
+                            itemView.progress.enableDownload()
+                        }
+                        itemView.progress.setBindId(messageItem.messageId)
+                        itemView.progress.setProgress(-1)
+                        itemView.progress.setOnLongClickListener {
+                            if (!hasSelect) {
+                                onItemListener.onLongClick(messageItem, adapterPosition)
+                            } else {
+                                false
+                            }
+                        }
+                        itemView.progress.setOnClickListener {
+                            if (hasSelect) {
+                                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                            } else {
+                                if (isMe) {
+                                    onItemListener.onRetryUpload(messageItem.messageId)
+                                } else {
+                                    onItemListener.onRetryDownload(messageItem.messageId)
+                                }
+                            }
+                        }
+                        itemView.chat_image.setOnClickListener {}
+                        itemView.chat_image.setOnLongClickListener { false }
+                    }
                 }
             }
         }
+        itemView.chat_time.timeAgoClock(messageItem.createdAt)
 
         setStatusIcon(isMe, messageItem.status, {
             it?.setBounds(0, 0, dp12, dp12)
@@ -209,12 +237,18 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
 
         dataWidth = messageItem.mediaWidth
         dataHeight = messageItem.mediaHeight
-        dataUrl = messageItem.mediaUrl
+        dataUrl = if (messageItem.isLive()) {
+            messageItem.thumbUrl
+        } else {
+            messageItem.mediaUrl
+        }
+        type = messageItem.type
         dataThumbImage = messageItem.thumbImage
         chatLayout(isMe, isLast)
     }
 
     private var dataUrl: String? = null
+    private var type: String? = null
     private var dataThumbImage: String? = null
     private var dataWidth: Int? = null
     private var dataHeight: Int? = null
@@ -230,6 +264,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.END
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 1f
             (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
+            (itemView.live_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp4
         } else {
             if (isLast) {
                 itemView.chat_time.setBackgroundResource(R.drawable.chat_bubble_shadow)
@@ -239,6 +274,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             (itemView.chat_layout.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.START
             (itemView.chat_image_layout.layoutParams as ConstraintLayout.LayoutParams).horizontalBias = 0f
             (itemView.duration_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
+            (itemView.live_tv.layoutParams as ViewGroup.MarginLayoutParams).marginStart = dp10
         }
 
         var width = mediaWidth - dp6
@@ -274,6 +310,10 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
         }
 
         itemView.chat_image.setShape(mark)
-        itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
+        if (type == MessageCategory.PLAIN_LIVE.name || type == MessageCategory.SIGNAL_LIVE.name) {
+            itemView.chat_image.loadImageMark(dataUrl, R.drawable.image_holder, mark)
+        } else {
+            itemView.chat_image.loadVideoMark(dataUrl, dataThumbImage, mark)
+        }
     }
 }

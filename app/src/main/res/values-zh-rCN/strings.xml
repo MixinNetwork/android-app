@@ -70,6 +70,7 @@
     <string name="save_to_downloads">保存到下载</string>
     <string name="cant_talk_self">不能和自己对话</string>
     <string name="need_camera_permission">继续使用此功能需要相机权限</string>
+    <string name="need_background_permission">继续使用此功能需要后台弹出界面权限</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -380,6 +381,7 @@
     <string name="conversation_status_voice">语音电话</string>
     <string name="conversation_status_transfer">转账</string>
     <string name="conversation_status_sticker">贴纸</string>
+    <string name="conversation_status_live">直播</string>
     <string name="conversation_status_unknown">未知</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_authentications">授权</string>
@@ -470,6 +472,7 @@
     <string name="alert_key_group_text_message">%1$s 发送一条消息</string>
     <string name="alert_key_group_image_message">%1$s 发送一张照片</string>
     <string name="alert_key_group_video_message">%1$s 发送一个视频</string>
+    <string name="alert_key_group_live_message">%1$s 发送一个直播</string>
     <string name="alert_key_group_data_message">%1$s 发送一个文件</string>
     <string name="alert_key_group_audio_message">%1$s 发送一条语音</string>
     <string name="alert_key_group_sticker_message">%1$s 发送一张贴纸</string>
@@ -477,6 +480,7 @@
     <string name="alert_key_contact_text_message">发送一条消息</string>
     <string name="alert_key_contact_image_message">发送一张照片</string>
     <string name="alert_key_contact_video_message">发送一个视频</string>
+    <string name="alert_key_contact_live_message">发送一个直播</string>
     <string name="alert_key_contact_transfer_message">发送一笔转账</string>
     <string name="alert_key_contact_data_message">发送一个文件</string>
     <string name="alert_key_contact_audio_message">发送一条语音</string>
@@ -520,6 +524,7 @@
     <string name="sticker">贴纸</string>
     <string name="video">视频</string>
     <string name="audio">语音</string>
+    <string name="live">直播</string>
     <!--pay-->
     <string name="pay_paid">此付款链接已由某人支付，您无法进行重复付款。</string>
 
@@ -633,4 +638,7 @@
     <string name="shortcut_wallet_label">钱包</string>
     <string name="shortcut_scan_label">扫码</string>
     <string name="divide">、</string>
+    <!-- live -->
+    <string name="live_permission">Mixin 需要使用出现在其它应用上的权限以在画中画模式中播放视频。</string>
+    <string name="live_setting">设置</string>
 </resources>

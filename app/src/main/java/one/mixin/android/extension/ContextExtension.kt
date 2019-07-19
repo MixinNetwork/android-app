@@ -485,6 +485,12 @@ inline fun <T : Number, R> T?.notEmptyWithElse(normalAction: (T) -> R, elseActio
     }
 }
 
+inline fun supportsPie(code: () -> Unit) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        code()
+    }
+}
+
 inline fun supportsOreo(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
         code()

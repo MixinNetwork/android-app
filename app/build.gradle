@@ -237,6 +237,7 @@ dependencies {
     implementation "com.uber.autodispose:autodispose-android-archcomponents:${autodisposeVersion}"
     implementation "com.uber.autodispose:autodispose-lifecycle:${autodisposeVersion}"
     implementation "com.google.android.exoplayer:exoplayer-core:${exoplayerVersion}"
+    implementation "com.google.android.exoplayer:exoplayer-hls:${exoplayerVersion}"
     implementation("com.google.android.exoplayer:extension-okhttp:${exoplayerVersion}") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }

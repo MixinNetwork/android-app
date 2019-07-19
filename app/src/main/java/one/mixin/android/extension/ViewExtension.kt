@@ -10,6 +10,7 @@ import android.graphics.Outline
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Property
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
@@ -58,14 +59,14 @@ fun View.showKeyboard() {
     inputMethodManager.showSoftInput(this, SHOW_IMPLICIT)
 }
 
-fun View.fadeIn() {
-    this.fadeIn(ANIMATION_DURATION_SHORTEST)
+fun View.fadeIn(maxAlpha: Float = 1f) {
+    this.fadeIn(ANIMATION_DURATION_SHORTEST, maxAlpha)
 }
 
-fun View.fadeIn(duration: Long) {
+fun View.fadeIn(duration: Long, maxAlpha: Float = 1f) {
     this.visibility = View.VISIBLE
     this.alpha = 0f
-    ViewCompat.animate(this).alpha(1f).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
+    ViewCompat.animate(this).alpha(maxAlpha).setDuration(duration).setListener(object : ViewPropertyAnimatorListener {
         override fun onAnimationStart(view: View) {
         }
 
@@ -250,4 +251,16 @@ fun View.bounce() {
             }
         })
     spring.endValue = 1.0
+}
+
+fun View.IntProperty(name: String, getAction: (View) -> Int, setAction: (View, Int) -> Unit): Property<View, Int> {
+    return object : Property<View, Int>(Int::class.java, name) {
+        override fun get(obj: View): Int {
+            return getAction(obj)
+        }
+
+        override fun set(obj: View, value: Int) {
+            return setAction(obj, value)
+        }
+    }
 }

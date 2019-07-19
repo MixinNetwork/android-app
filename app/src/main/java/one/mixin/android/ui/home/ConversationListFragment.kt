@@ -369,6 +369,12 @@ class ConversationListFragment : LinkFragment() {
                     itemView.msg_tv.setText(R.string.conversation_status_video)
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_video)
                 }
+                conversationItem.contentType == MessageCategory.SIGNAL_LIVE.name ||
+                    conversationItem.contentType == MessageCategory.PLAIN_LIVE.name -> {
+                    setConversationName(conversationItem)
+                    itemView.msg_tv.setText(R.string.conversation_status_live)
+                    AppCompatResources.getDrawable(itemView.context, R.drawable.ic_status_live)
+                }
                 conversationItem.contentType == MessageCategory.SIGNAL_DATA.name ||
                     conversationItem.contentType == MessageCategory.PLAIN_DATA.name -> {
                     setConversationName(conversationItem)

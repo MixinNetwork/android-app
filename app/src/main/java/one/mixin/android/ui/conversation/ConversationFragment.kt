@@ -148,6 +148,7 @@ import one.mixin.android.vo.canNotReply
 import one.mixin.android.vo.canRecall
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Image
+import one.mixin.android.vo.isLive
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toUser
@@ -404,9 +405,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onImageClick(messageItem: MessageItem, view: View) {
                 starTransition = true
+                if (messageItem.isLive()) {
+                    DragMediaActivity.show(requireActivity(), view, messageItem.conversationId, messageItem.messageId)
+                    return
+                }
                 val file = File(messageItem.mediaUrl?.toUri()?.getFilePath())
                 if (file.exists()) {
-                    DragMediaActivity.show(requireActivity(), view, messageItem)
+                    DragMediaActivity.show(requireActivity(), view, messageItem.conversationId, messageItem.messageId)
                 } else {
                     toast(R.string.error_file_exists)
                 }
@@ -1002,6 +1007,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     it.type.endsWith("_CONTACT") -> ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = it.sharedUserId)
                     it.type.endsWith("_STICKER") -> ForwardMessage(ForwardCategory.STICKER.name, id = it.messageId)
                     it.type.endsWith("_AUDIO") -> ForwardMessage(ForwardCategory.AUDIO.name, id = it.messageId)
+                    it.type.endsWith("_LIVE") -> ForwardMessage(ForwardCategory.LIVE.name, id = it.messageId)
                     else -> ForwardMessage(ForwardCategory.TEXT.name)
                 }
             }

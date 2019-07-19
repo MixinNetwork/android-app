@@ -1,8 +1,8 @@
 package one.mixin.android.vo
 
 import android.annotation.SuppressLint
-import androidx.room.Entity
 import android.os.Parcelable
+import androidx.room.Entity
 import kotlinx.android.parcel.Parcelize
 
 @SuppressLint("ParcelCreator")
@@ -24,7 +24,8 @@ enum class ForwardCategory {
     VIDEO,
     STICKER,
     CONTACT,
-    AUDIO
+    AUDIO,
+    LIVE
 }
 
 fun ForwardMessage.addTo(list: MutableList<ForwardMessage>) {

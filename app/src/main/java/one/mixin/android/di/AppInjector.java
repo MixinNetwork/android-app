@@ -28,11 +28,11 @@ public class AppInjector{
                     @Override
                     public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
                         handleActivity(activity);
+
                     }
 
                     @Override
                     public void onActivityStarted(Activity activity) {
-
                     }
 
                     @Override
@@ -47,7 +47,6 @@ public class AppInjector{
 
                     @Override
                     public void onActivityStopped(Activity activity) {
-
                     }
 
                     @Override

@@ -57,5 +57,11 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE assets ADD COLUMN asset_key TEXT")
             }
         }
+
+        val MIGRATION_21_22: Migration = object : Migration(21, CURRENT_VERSION) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE messages ADD COLUMN thumb_url TEXT")
+            }
+        }
     }
 }

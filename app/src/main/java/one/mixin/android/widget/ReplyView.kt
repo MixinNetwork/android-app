@@ -2,13 +2,13 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.graphics.Color
-import androidx.annotation.DrawableRes
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.core.widget.TextViewCompat
-import androidx.appcompat.content.res.AppCompatResources
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
+import androidx.annotation.DrawableRes
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.view_reply.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -58,6 +58,14 @@ class ReplyView constructor(context: Context, attrs: AttributeSet) : ConstraintL
                 reply_view_tv.setText(R.string.video)
                 setIcon(R.drawable.ic_status_video)
                 reply_view_iv.loadImageCenterCrop(messageItem.mediaUrl, R.drawable.image_holder)
+                (reply_view_tv.layoutParams as ConstraintLayout.LayoutParams).endToStart = R.id.reply_view_iv
+                reply_view_iv.visibility = View.VISIBLE
+                reply_avatar.visibility = View.GONE
+            }
+            messageItem.type.endsWith("_LIVE") -> {
+                reply_view_tv.setText(R.string.live)
+                setIcon(R.drawable.ic_status_live)
+                reply_view_iv.loadImageCenterCrop(messageItem.thumbUrl, R.drawable.image_holder)
                 (reply_view_tv.layoutParams as ConstraintLayout.LayoutParams).endToStart = R.id.reply_view_iv
                 reply_view_iv.visibility = View.VISIBLE
                 reply_avatar.visibility = View.GONE

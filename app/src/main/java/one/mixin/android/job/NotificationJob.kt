@@ -151,6 +151,19 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_video_message))
                 }
             }
+            MessageCategory.SIGNAL_LIVE.name, MessageCategory.PLAIN_LIVE.name -> {
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+                    notificationBuilder.setTicker(
+                        context.getString(R.string.alert_key_group_live_message, user.fullName))
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
+                    notificationBuilder.setContentText(
+                        context.getString(R.string.alert_key_group_live_message, user.fullName))
+                } else {
+                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_live_message))
+                    notificationBuilder.setContentTitle(user.fullName)
+                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_live_message))
+                }
+            }
             MessageCategory.SIGNAL_DATA.name, MessageCategory.PLAIN_DATA.name -> {
                 if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
                     notificationBuilder.setTicker(
