@@ -185,7 +185,11 @@ fun MessageItem.showVerifiedOrBot(verifiedView: View, botView: View) {
 fun MessageItem.saveToLocal(context: Context) {
     if (!hasWritePermission()) return
 
-    val filePath = mediaUrl?.toUri()?.getFilePath() ?: return
+    val filePath = mediaUrl?.toUri()?.getFilePath()
+    if (filePath == null) {
+        MixinApplication.appContext.toast(R.string.save_failure)
+        return
+    }
 
     val file = File(filePath)
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {

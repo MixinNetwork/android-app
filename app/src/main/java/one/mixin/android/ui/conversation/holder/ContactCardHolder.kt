@@ -80,6 +80,14 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
                 true
             }
         }
+        itemView.chat_layout.setOnLongClickListener {
+            if (!hasSelect) {
+                onItemListener.onLongClick(item, adapterPosition)
+            } else {
+                onItemListener.onSelect(!isSelect, item, adapterPosition)
+                true
+            }
+        }
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {

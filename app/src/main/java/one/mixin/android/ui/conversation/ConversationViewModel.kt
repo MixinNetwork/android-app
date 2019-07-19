@@ -19,6 +19,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -267,7 +268,8 @@ internal constructor(
         if (mimeType == MimeType.GIF.toString()) {
             return Flowable.just(uri).map {
                 val gifFile = MixinApplication.get().getImagePath().createGifTemp()
-                gifFile.copyFromInputStream(FileInputStream(uri.getFilePath(MixinApplication.get())))
+                val path = uri.getFilePath(MixinApplication.get()) ?: return@map -1
+                gifFile.copyFromInputStream(FileInputStream(path))
                 val size = getImageSize(gifFile)
                 val thumbnail = gifFile.blurThumbnail(size)?.bitmap2String(mimeType)
 
@@ -592,7 +594,7 @@ internal constructor(
                     sendForwardMessages(item.conversationId, messages, item.isBot())
                 }
 
-                MixinApplication.get().mainThread {
+               withContext(Dispatchers.Main) {
                     MixinApplication.get().toast(R.string.forward_success)
                 }
                 findUnreadMessagesSync(conversationId!!)?.let { list ->

@@ -180,7 +180,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 if (item.isLive()) {
                     true
                 } else {
-                    File(item.mediaUrl?.toUri()?.getFilePath()).exists()
+                    val path = item.mediaUrl?.toUri()?.getFilePath()
+                    path != null && File(path).exists()
                 }
             }.reversed()
 
@@ -246,7 +247,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         doAsync {
                             pagerAdapter.list?.let { list ->
                                 val item = list[view_pager.currentItem]
-                                val file = File(item.mediaUrl?.toUri()?.getFilePath())
+                                val path = item.mediaUrl?.toUri()?.getFilePath()
+                                if (path == null) {
+                                    toast(R.string.save_failure)
+                                    return@doAsync
+                                }
+                                val file = File(path)
                                 val outFile = when {
                                     item.mediaMimeType.equals(MimeType.GIF.toString(), true) -> this@DragMediaActivity.getPublicPicturePath().createGifTemp(false)
                                     item.mediaMimeType.equals(MimeType.PNG.toString()) -> this@DragMediaActivity.getPublicPicturePath().createPngTemp(false)
@@ -323,7 +329,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val url = pagerAdapter.list?.get(view_pager.currentItem)?.mediaUrl
             var uri = Uri.parse(url)
             if (ContentResolver.SCHEME_FILE == uri.scheme) {
-                uri = getUriForFile(File(uri.getFilePath(this@DragMediaActivity)))
+                val path = uri.getFilePath(this@DragMediaActivity)
+                if (path == null) {
+                    toast(R.string.error_file_exists)
+                    return
+                }
+                uri = getUriForFile(File(path))
                 putExtra(Intent.EXTRA_STREAM, uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             } else {

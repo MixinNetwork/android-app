@@ -110,7 +110,8 @@ class SelectedItemCollection(private val mContext: Context) {
     fun asListOfString(): List<String> {
         val paths = ArrayList<String>()
         for (item in mItems!!) {
-            paths.add(item.contentUri.getFilePath()!!)
+            val path = item.contentUri.getFilePath() ?: continue
+            paths.add(path)
         }
         return paths
     }

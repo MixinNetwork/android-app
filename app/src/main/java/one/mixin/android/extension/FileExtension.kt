@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.ContentResolver
 import android.content.Context
 import android.content.pm.PackageManager
+import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
@@ -256,6 +257,17 @@ fun File.createDocumentTemp(type: String?, noMedia: Boolean = true): File {
     }, noMedia)
 }
 
+fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): File {
+    val fileName = name ?: "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}"
+    if (!this.exists()) {
+        this.mkdirs()
+    }
+    if (noMedia) {
+        createNoMediaDir()
+    }
+    return File(this, fileName)
+}
+
 fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
     val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
     return newTempFile("VIDEO_$time", ".$type", noMedia)
@@ -290,43 +302,47 @@ fun String.getFilePath(): String? = Uri.parse(this).getFilePath()
 fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
     val scheme = this.scheme
     var data: String? = null
-    if (scheme == null)
-        data = this.toString()
-    else if (ContentResolver.SCHEME_FILE == scheme) {
-        data = this.path
-    } else if (ContentResolver.SCHEME_CONTENT == scheme) {
-        val cursor = context.contentResolver.query(this, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
-        if (null != cursor) {
-            if (cursor.moveToFirst()) {
-                val index = cursor.getColumnIndex(ImageColumns.DATA)
-                if (index > -1) {
-                    data = cursor.getString(index)
-                    if (data == null) {
-                        return getFileUrlWithAuthority(context)
+    when (scheme) {
+        null -> data = this.toString()
+        ContentResolver.SCHEME_FILE -> data = this.path
+        ContentResolver.SCHEME_CONTENT -> {
+            var cursor: Cursor? = null
+            try {
+                cursor = context.contentResolver.query(this, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
+                if (null != cursor) {
+                    if (cursor.moveToFirst()) {
+                        val index = cursor.getColumnIndex(ImageColumns.DATA)
+                        if (index > -1) {
+                            data = cursor.getString(index)
+                            if (data == null) {
+                                return copyFileUrlWithAuthority(context)
+                            }
+                        } else if (index == -1) {
+                            return copyFileUrlWithAuthority(context)
+                        }
                     }
-                } else if (index == -1) {
-                    return getFileUrlWithAuthority(context)
+                } else {
+                    return copyFileUrlWithAuthority(context)
                 }
+            } catch (ignored: SecurityException) {
+            } finally {
+                cursor?.close()
             }
-            cursor.close()
-        } else {
-            return getFileUrlWithAuthority(context)
         }
     }
     return data
 }
 
-fun Uri.getFileUrlWithAuthority(context: Context): String? {
+fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String? {
     if (this.authority != null) {
         var input: InputStream? = null
-        try {
+        return try {
             input = context.contentResolver.openInputStream(this)
-            val mimeTypeMap = MimeTypeMap.getSingleton()
-            val type = mimeTypeMap.getExtensionFromMimeType(context.contentResolver.getType(this))
-            val outFile = context.getDocumentPath().createDocumentTemp(type = ".$type")
+            val outFile = context.getDocumentPath().createDocumentFile(name = name)
             outFile.copyFromInputStream(input)
-            return outFile.absolutePath
+            outFile.absolutePath
         } catch (ignored: Exception) {
+            null
         } finally {
             input?.closeSilently()
         }
