@@ -157,6 +157,14 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                 onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
             }
         }
+        itemView.chat_layout.setOnLongClickListener {
+            if (!hasSelect) {
+                onItemListener.onLongClick(messageItem, adapterPosition)
+            } else {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+                true
+            }
+        }
         itemView.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, adapterPosition)

@@ -334,7 +334,6 @@ fun Fragment.selectAudio(requestCode: Int) {
 
 fun Context.getAttachment(local: Uri): Attachment? {
     var cursor: Cursor? = null
-
     try {
         val uri = if (local.authority == null) {
             getUriForFile(File(local.path))
@@ -345,9 +344,18 @@ fun Context.getAttachment(local: Uri): Attachment? {
         if (cursor != null && cursor.moveToFirst()) {
             val fileName = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
             val fileSize = cursor.getLong(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE))
-            val mimeType = contentResolver.getType(uri)
-            return Attachment(uri, fileName, mimeType, fileSize)
+            val mimeType = contentResolver.getType(uri) ?: ""
+
+            val copyPath = uri.copyFileUrlWithAuthority(this, fileName)
+            val resultUri = if (copyPath == null) {
+                return null
+            } else {
+                getUriForFile(File(copyPath))
+            }
+            return Attachment(resultUri, fileName, mimeType, fileSize)
         }
+    } catch (e: SecurityException) {
+        toast(R.string.error_file_exists)
     } finally {
         cursor?.close()
     }

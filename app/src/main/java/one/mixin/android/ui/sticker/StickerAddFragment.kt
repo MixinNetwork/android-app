@@ -203,7 +203,14 @@ class StickerAddFragment : BaseFragment() {
         uri: Uri
     ): StickerAddRequest? = withContext(Dispatchers.IO) {
         return@withContext if (mimeType == MimeType.GIF.toString() || mimeType == MimeType.WEBP.toString()) {
-            val f = File(uri.getFilePath(requireContext()))
+            val path = uri.getFilePath(requireContext())
+            if (path == null) {
+                withContext(Dispatchers.Main) {
+                    handleBack(R.string.sticker_add_failed)
+                }
+                return@withContext
+            }
+            val f = File(path)
             if (f.length() < MIN_FILE_SIZE || f.length() > MAX_FILE_SIZE) {
                 handleBack(R.string.sticker_add_invalid_size)
                 return@withContext null

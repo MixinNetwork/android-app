@@ -409,7 +409,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     DragMediaActivity.show(requireActivity(), view, messageItem.conversationId, messageItem.messageId)
                     return
                 }
-                val file = File(messageItem.mediaUrl?.toUri()?.getFilePath())
+                val path = messageItem.mediaUrl?.toUri()?.getFilePath()
+                if (path == null) {
+                    toast(R.string.error_file_exists)
+                    return
+                }
+                val file = File(path)
                 if (file.exists()) {
                     DragMediaActivity.show(requireActivity(), view, messageItem.conversationId, messageItem.messageId)
                 } else {
@@ -1249,8 +1254,11 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 sendImageMessage(Uri.parse(item.mediaUrl), item.mimeType)
                             }
                             ForwardCategory.DATA.name -> {
-                                context?.getAttachment(Uri.parse(item.mediaUrl))?.let {
-                                    sendAttachmentMessage(it)
+                                val attachment = context?.getAttachment(Uri.parse(item.mediaUrl))
+                                if (attachment != null) {
+                                    sendAttachmentMessage(attachment)
+                                } else {
+                                    toast(R.string.error_file_exists)
                                 }
                             }
                             ForwardCategory.VIDEO.name -> {
@@ -1746,18 +1754,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         } else if (requestCode == REQUEST_FILE && resultCode == Activity.RESULT_OK) {
             val uri = data?.data ?: return
-            context?.getAttachment(uri)?.let {
+            val attachment = context?.getAttachment(uri)
+            if (attachment != null) {
                 AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
                     .setMessage(if (isGroup) {
-                        requireContext().getString(R.string.send_file_group, it.filename, groupName)
+                        requireContext().getString(R.string.send_file_group, attachment.filename, groupName)
                     } else {
-                        requireContext().getString(R.string.send_file, it.filename, recipient?.fullName)
+                        requireContext().getString(R.string.send_file, attachment.filename, recipient?.fullName)
                     })
                     .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
                     .setPositiveButton(R.string.send) { dialog, _ ->
-                        sendAttachmentMessage(it)
+                        sendAttachmentMessage(attachment)
                         dialog.dismiss()
                     }.show()
+            } else {
+                toast(R.string.error_file_exists)
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data)
@@ -1791,6 +1802,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         } catch (e: ActivityNotFoundException) {
             context?.toast(R.string.error_unable_to_open_media)
+        } catch (e: SecurityException) {
+            context?.toast(R.string.error_file_exists)
         }
     }
 
