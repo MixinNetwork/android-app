@@ -76,6 +76,7 @@ import kotlinx.android.synthetic.main.view_drag_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.belowOreo
 import one.mixin.android.extension.copyFromInputStream
@@ -107,6 +108,7 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.AnimationProperties
+import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
@@ -973,6 +975,24 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private fun checkInlinePermissions(): Boolean {
+        if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+            var intent = XiaomiUtilities.getPermissionManagerIntent()
+            if (intent != null) {
+                try {
+                    startActivity(intent)
+                } catch (x: Exception) {
+                    try {
+                        intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent.data = Uri.parse("package:" + MixinApplication.appContext.packageName)
+                        startActivity(intent)
+                    } catch (xx: Exception) {
+                        Timber.e(xx)
+                    }
+                }
+            }
+            toast(R.string.need_background_permission)
+            return false
+        }
         if (Settings.canDrawOverlays(this)) {
             return true
         } else {

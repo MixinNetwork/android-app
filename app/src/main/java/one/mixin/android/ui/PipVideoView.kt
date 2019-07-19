@@ -38,8 +38,10 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.conversation.media.VideoPlayer
+import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.widget.AspectRatioFrameLayout
 import org.jetbrains.anko.dip
 import timber.log.Timber
@@ -192,18 +194,21 @@ class PipVideoView {
 
         val inlineButton = ImageView(activity)
         inlineButton.scaleType = ImageView.ScaleType.CENTER
-        inlineButton.visibility = View.GONE
-        inlineButton.setImageResource(one.mixin.android.R.drawable.ic_outinline)
+        inlineButton.visibility = GONE
+        inlineButton.setImageResource(R.drawable.ic_outinline)
         windowView.addView(inlineButton, FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END))
         inlineButton.setOnClickListener {
+            if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+                appContext.toast(R.string.need_background_permission)
+            }
             DragMediaActivity.show(MixinApplication.appContext, conversationId, messageId, aspectRatio, VideoPlayer.player().currentPosition())
             close()
         }
 
         val closeButton = ImageView(activity)
         closeButton.scaleType = ImageView.ScaleType.CENTER
-        closeButton.visibility = View.GONE
-        closeButton.setImageResource(one.mixin.android.R.drawable.ic_close_white_24dp)
+        closeButton.visibility = GONE
+        closeButton.setImageResource(R.drawable.ic_close_white_24dp)
         windowView.addView(closeButton, FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START))
         closeButton.setOnClickListener {
             close()
