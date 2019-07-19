@@ -56,7 +56,6 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.demo.systemuidemo.SystemUIManager
 import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.android.exoplayer2.Player.STATE_ENDED
 import com.google.android.exoplayer2.Player.STATE_IDLE
@@ -117,7 +116,6 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
-import one.mixin.android.widget.PlayView
 import one.mixin.android.widget.PlayView.Companion.STATUS_BUFFERING
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
@@ -370,6 +368,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         private fun createVideoView(container: ViewGroup, position: Int, messageItem: MessageItem): View {
             val view = View.inflate(container.context, R.layout.item_video_layout, null)
+            val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
+            setSize(ratio, view)
             view.close_iv.setOnClickListener { finishAfterTransition() }
             view.pip_iv.setOnClickListener {
                 switchToPip()
@@ -407,8 +407,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 view.pip_iv.translationY = statusBarHeight
             }
             view.video_texture.surfaceTextureListener = this
-            val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
-            setSize(ratio, view)
             if (messageItem.isLive()) {
                 view.preview_iv.loadImage(messageItem.thumbUrl!!, messageItem.thumbImage)
             } else {
@@ -487,23 +485,31 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun setSize(rotio: Float, view: View) {
             val w = applicationContext.realSize().x
             val h = applicationContext.realSize().y
-            val previewParams = view.preview_iv.layoutParams
             val ratioParams = view.video_aspect_ratio.layoutParams
-            if (rotio > 1f) {
+            val previewParams = view.preview_iv.layoutParams
+            if (rotio >= 1f) {
                 val scaleH = (w / rotio).toInt()
-                previewParams.width = w
-                ratioParams.width = w
-                previewParams.height = scaleH
-                ratioParams.height = scaleH
+                if (scaleH > h) {
+                    ratioParams.width = (h * ratio).toInt()
+                    ratioParams.height = h
+                } else {
+                    ratioParams.width = w
+                    ratioParams.height = scaleH
+                }
             } else {
                 val scaleW = (h * rotio).toInt()
-                previewParams.width = scaleW
-                ratioParams.width = scaleW
-                previewParams.height = h
-                ratioParams.height = h
+                if (scaleW > w) {
+                    ratioParams.width = w
+                    ratioParams.height = (w / rotio).toInt()
+                } else {
+                    ratioParams.width = scaleW
+                    ratioParams.height = h
+                }
             }
-            view.preview_iv.layoutParams = previewParams
+            previewParams.width = ratioParams.width
+            previewParams.height = ratioParams.height
             view.video_aspect_ratio.layoutParams = ratioParams
+            view.preview_iv.layoutParams = previewParams
         }
 
         private fun createLargeImageView(container: ViewGroup, position: Int, messageItem: MessageItem): LargeImageView {
@@ -680,7 +686,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         findViewPagerChildByTag(pos) {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
-                (parentView.getChildAt(2) as PlayView).status = status
+                parentView.play_view.status = status
             }
         }
     }
@@ -756,6 +762,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private inline fun findViewPagerChildByTag(pos: Int = view_pager.currentItem, action: (v: ViewGroup) -> Unit) {
+        if (isFinishing) return
         val id = pagerAdapter.getItem(pos).messageId
         val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX$id")
         if (v != null) {
@@ -776,7 +783,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 val parentView = viewGroup.getChildAt(0)
                 if (parentView is FrameLayout) {
                     fadeOut(parentView, parentView.tag as Boolean)
-                    (parentView.getChildAt(2) as PlayView).status = STATUS_PLAYING
+                    parentView.play_view.status = STATUS_PLAYING
                     disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .autoDisposable(stopScope)
@@ -951,7 +958,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             animatorSet.duration = 250
             animatorSet.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
-                    if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
+                    if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == STATE_IDLE) {
                         VideoPlayer.player().loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
                         VideoPlayer.player().setVideoTextureView(changedTextureView)
                         VideoPlayer.player().pause()
