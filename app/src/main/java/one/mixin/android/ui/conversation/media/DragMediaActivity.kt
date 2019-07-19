@@ -11,7 +11,6 @@ import android.app.ActivityOptions
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -395,7 +394,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     }
                 }
             }
-            (view.share_iv.layoutParams as FrameLayout.LayoutParams).marginEnd = baseContext.dpToPx(44f)
+            (view.share_iv.layoutParams as FrameLayout.LayoutParams).marginEnd = baseContext.dpToPx(48f)
             view.share_iv.setOnClickListener { shareVideo() }
             view.pip_iv.isEnabled = false
             view.pip_iv.alpha = 0.5f
@@ -1031,7 +1030,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         fun show(context: Context, conversationId: String, messageId: String, ratio: Float, currentPosition: Long) {
             val intent = Intent(context, DragMediaActivity::class.java).apply {
-                addFlags(FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_MULTIPLE_TASK)
+                addFlags(FLAG_ACTIVITY_NEW_TASK)
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
                 putExtra(RATIO, ratio)
