@@ -89,7 +89,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                 MediaStatus.EXPIRED.name -> {
                     itemView.file_expired.visibility = View.VISIBLE
                     itemView.file_progress.visibility = View.INVISIBLE
-                    itemView.setOnClickListener {
+                    itemView.chat_layout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -101,7 +101,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     itemView.file_progress.setOnClickListener {
                         onItemListener.onCancel(messageItem.messageId)
                     }
-                    itemView.setOnClickListener {
+                    itemView.chat_layout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -125,7 +125,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                         }
                     }
-                    itemView.setOnClickListener {
+                    itemView.chat_layout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
@@ -146,13 +146,17 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                             onItemListener.onRetryDownload(messageItem.messageId)
                         }
                     }
-                    itemView.setOnClickListener {
+                    itemView.chat_layout.setOnClickListener {
                         handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                     }
                 }
             }
         }
-
+        itemView.setOnClickListener {
+            if (hasSelect) {
+                onItemListener.onSelect(!isSelect, messageItem, adapterPosition)
+            }
+        }
         itemView.setOnLongClickListener {
             if (!hasSelect) {
                 onItemListener.onLongClick(messageItem, adapterPosition)

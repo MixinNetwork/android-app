@@ -60,10 +60,15 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         })
         chatLayout(isMe, isLast)
 
-        itemView.setOnClickListener {
+        itemView.chat_layout.setOnClickListener {
             if (!hasSelect) {
                 onItemListener.onContactCardClick(item.sharedUserId!!)
             } else {
+                onItemListener.onSelect(!isSelect, item, adapterPosition)
+            }
+        }
+        itemView.setOnClickListener {
+            if (hasSelect) {
                 onItemListener.onSelect(!isSelect, item, adapterPosition)
             }
         }

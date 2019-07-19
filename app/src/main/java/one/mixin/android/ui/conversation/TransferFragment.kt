@@ -1,7 +1,9 @@
 package one.mixin.android.ui.conversation
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Intent
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
@@ -23,6 +25,8 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
+import com.tbruyelle.rxpermissions2.RxPermissions
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -43,6 +47,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
@@ -54,6 +59,9 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.qr.CaptureActivity
+import one.mixin.android.ui.qr.CaptureActivity.Companion.REQUEST_CODE
+import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
@@ -167,6 +175,21 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 updateAssetUI(it)
             }
         }
+        contentView.memo_iv.setOnClickListener {
+            RxPermissions(requireActivity())
+                .request(Manifest.permission.CAMERA)
+                .autoDisposable(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        CaptureActivity.show(requireActivity()) {
+                            it.putExtra(CaptureActivity.ARGS_FOR_MEMO, true)
+                            startActivityForResult(it, REQUEST_CODE)
+                        }
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+        }
         assetsView.search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 filter(s.toString())
@@ -202,6 +225,12 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 }
                 else -> showTransferBottom()
             }
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_CODE) {
+            contentView.transfer_memo.setText(data?.getStringExtra(CaptureActivity.ARGS_MEMO_RESULT))
         }
     }
 

@@ -34,6 +34,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ACCOUNT_NAME
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
+import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_MEMO
 import java.io.File
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
@@ -42,9 +43,14 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     companion object {
         const val TAG = "CameraXCaptureFragment"
 
-        fun newInstance(forAddress: Boolean = false, forAccountName: Boolean = false) = CameraXCaptureFragment().withArgs {
+        fun newInstance(
+            forAddress: Boolean = false,
+            forAccountName: Boolean = false,
+            forMemo: Boolean = false
+        ) = CameraXCaptureFragment().withArgs {
             putBoolean(ARGS_FOR_ADDRESS, forAddress)
             putBoolean(ARGS_FOR_ACCOUNT_NAME, forAccountName)
+            putBoolean(ARGS_FOR_MEMO, forMemo)
         }
     }
 
