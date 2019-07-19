@@ -11,6 +11,7 @@ import android.app.ActivityOptions
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_MULTIPLE_TASK
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.graphics.Color
@@ -164,7 +165,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             pipVideoView.close()
         }
         super.onCreate(savedInstanceState)
-        VideoPlayer.player().setOnVideoPlayerListener(videoListener)
+        VideoPlayer.player().setOnMediaPlayerListener(mediaListener)
         belowOreo {
             requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
         }
@@ -360,7 +361,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             layout.setDismissListener(onDismissListener)
             layout.layoutParams = ViewPager.LayoutParams()
             layout.addView(innerView)
-            layout.tag = "$PREFIX$position"
+            layout.tag = "$PREFIX${messageItem.messageId}"
             container.addView(layout)
             return layout
         }
@@ -374,7 +375,23 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.refresh_iv.visibility = GONE
             view.refresh_iv.setOnClickListener {
                 it.fadeOut()
-                load(position, force = true)
+                load(position, force = true) {
+                    if (messageItem.isVideo()) {
+                        disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .autoDisposable(stopScope)
+                            .subscribe {
+                                if (VideoPlayer.player().duration() != 0) {
+                                    view.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
+                                        VideoPlayer.player().duration()).toInt()
+                                    view.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
+                                    if (view.remain_tv.text.isEmpty()) { // from google photo
+                                        view.remain_tv.text = VideoPlayer.player().duration().toLong().formatMillis()
+                                    }
+                                }
+                            }
+                    }
+                }
             }
             (view.share_iv.layoutParams as FrameLayout.LayoutParams).marginEnd = baseContext.dpToPx(44f)
             view.share_iv.setOnClickListener { shareVideo() }
@@ -713,7 +730,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             .apply {
                 addUpdateListener {
                     (it.animatedValue as Int).apply {
-                        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${view_pager.currentItem}")
+                        val item = pagerAdapter.getItem(view_pager.currentItem)
+                        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${item.messageId}")
                             ?: return@addUpdateListener
                         v.translationY = (realSize().y * this / 100).toFloat()
                         colorDrawable.alpha = ALPHA_MAX * (100 - this) / 100
@@ -732,7 +750,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private inline fun findViewPagerChildByTag(pos: Int = view_pager.currentItem, action: (v: ViewGroup) -> Unit) {
-        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX$pos")
+        val id = pagerAdapter.getItem(pos).messageId
+        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX$id")
+        if (v != null) {
+            action(v as ViewGroup)
+        }
+    }
+
+    private inline fun findViewPagerChildById(messageId: String, action: (v: ViewGroup) -> Unit) {
+        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX$messageId")
         if (v != null) {
             action(v as ViewGroup)
         }
@@ -783,9 +809,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.mediaUrl?.let {
                 if (messageItem.isLive()) {
-                    VideoPlayer.player().loadHlsVideo(it, force)
+                    VideoPlayer.player().loadHlsVideo(it, messageItem.messageId, force)
                 } else {
-                    VideoPlayer.player().loadVideo(it, force)
+                    VideoPlayer.player().loadVideo(it, messageItem.messageId, force)
                 }
             }
             setTextureView()
@@ -802,9 +828,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private val videoListener = object : MixinPlayer.VideoPlayerListenerWrapper() {
-        override fun onRenderedFirstFrame() {
-            findViewPagerChildByTag {
+    private val mediaListener = object : MixinPlayer.MediaPlayerListenerWrapper() {
+        override fun onRenderedFirstFrame(mid: String) {
+            findViewPagerChildById(mid) {
                 val parentView = it.getChildAt(0)
                 if (parentView is FrameLayout) {
                     parentView.preview_iv.visibility = INVISIBLE
@@ -814,32 +840,32 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         }
 
-        override fun onPlayerError(error: ExoPlaybackException) {
-            showRefresh()
+        override fun onPlayerError(mid: String, error: ExoPlaybackException) {
+            showRefresh(mid)
         }
 
-        override fun onLoadingChanged(isLoading: Boolean) {
+        override fun onLoadingChanged(mid: String, isLoading: Boolean) {
             if (VideoPlayer.player().isPlaying() && isLoading && VideoPlayer.player().player.playbackState == STATE_BUFFERING) {
                 setPlayViewStatus(STATE_BUFFERING)
             }
         }
 
-        override fun onPlayerStateChanged(playWhenReady: Boolean, playbackState: Int) {
+        override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
                 STATE_ENDED -> stop()
                 STATE_IDLE -> {
-                    showRefresh()
+                    showRefresh(mid)
                 }
                 STATE_READY -> {
-                    hideRefresh()
+                    hideRefresh(mid)
                 }
                 STATE_BUFFERING -> {
-                    hideRefresh()
+                    hideRefresh(mid)
                 }
             }
         }
 
-        override fun onVideoSizeChanged(width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
+        override fun onVideoSizeChanged(mid: String, width: Int, height: Int, unappliedRotationDegrees: Int, pixelWidthHeightRatio: Float) {
             var nWidth = width
             var nHeight = height
             if (unappliedRotationDegrees == 90 || unappliedRotationDegrees == 270) {
@@ -847,7 +873,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 nHeight = width
             }
             val ratio = (if (nHeight == 0) 1 else nWidth * pixelWidthHeightRatio / nHeight) as Float
-            findViewPagerChildByTag {
+            findViewPagerChildById(mid) {
                 val parentView = it.getChildAt(0)
                 if (parentView is FrameLayout) {
                     parentView.video_aspect_ratio.setAspectRatio(ratio, unappliedRotationDegrees)
@@ -856,16 +882,16 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun showRefresh() {
-        findViewPagerChildByTag {
+    private fun showRefresh(messageId: String) {
+        findViewPagerChildById(messageId) {
             val parentView = it.getChildAt(0)
             parentView.refresh_iv.fadeIn()
             parentView.play_view.visibility = GONE
         }
     }
 
-    private fun hideRefresh() {
-        findViewPagerChildByTag {
+    private fun hideRefresh(messageId: String) {
+        findViewPagerChildById(messageId) {
             val parentView = it.getChildAt(0)
             parentView.refresh_iv.fadeOut()
         }
@@ -903,7 +929,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val changedTextureView = pipVideoView.show(
                 this, windowView.video_aspect_ratio.aspectRatio,
                 windowView.video_aspect_ratio.videoRotation,
-                conversationId, messageItem.messageId)
+                conversationId, messageItem.messageId, messageItem.isVideo(),
+                messageItem.mediaDuration?.toLong()?.formatMillis())
 
             animatorSet.playTogether(
                 ObjectAnimator.ofInt(colorDrawable, AnimationProperties.COLOR_DRAWABLE_ALPHA, 0),
@@ -984,7 +1011,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         fun show(context: Context, conversationId: String, messageId: String, ratio: Float, currentPosition: Long) {
             val intent = Intent(context, DragMediaActivity::class.java).apply {
-                addFlags(FLAG_ACTIVITY_NEW_TASK)
+                addFlags(FLAG_ACTIVITY_NEW_TASK or FLAG_ACTIVITY_MULTIPLE_TASK)
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
                 putExtra(RATIO, ratio)

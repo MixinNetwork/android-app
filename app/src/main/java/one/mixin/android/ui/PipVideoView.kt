@@ -13,18 +13,28 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
+import android.view.View.GONE
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.SeekBar
 import androidx.annotation.Keep
 import androidx.core.view.isVisible
+import io.reactivex.Observable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import kotlinx.android.synthetic.main.item_video_layout.view.*
 import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
@@ -33,6 +43,7 @@ import one.mixin.android.ui.conversation.media.VideoPlayer
 import one.mixin.android.widget.AspectRatioFrameLayout
 import org.jetbrains.anko.dip
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 import kotlin.math.round
 
@@ -105,7 +116,8 @@ class PipVideoView {
         appContext.getSystemService(WINDOW_SERVICE) as WindowManager
     }
 
-    fun show(activity: Activity, aspectRatio: Float, rotation: Int, conversationId: String, messageId: String): TextureView {
+    fun show(activity: Activity, aspectRatio: Float, rotation: Int, conversationId: String, messageId: String, isVideo: Boolean, duration: String? = null):
+        TextureView {
         windowView = object : FrameLayout(activity) {
             private var startX: Float = 0f
             private var startY: Float = 0f
@@ -197,14 +209,49 @@ class PipVideoView {
             close()
             VideoPlayer.destroy()
         }
+        var controller: View? = null
+        if (isVideo) {
+            controller = activity.layoutInflater.inflate(R.layout.view_controller, null)
+            controller.visibility = GONE
+            duration?.let { controller.remain_tv.text = it }
+            windowView.addView(controller,
+                FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.BOTTOM).also {
+                    it.marginStart = appContext.dpToPx(8f)
+                    it.marginEnd = appContext.dpToPx(8f)
+                    it.bottomMargin = appContext.dpToPx(8f)
+                })
+            var isPlaying = false
+            controller.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+                override fun onStartTrackingTouch(seekBar: SeekBar?) {
+                    isPlaying = VideoPlayer.player().isPlaying()
+                    VideoPlayer.player().pause()
+                }
+
+                override fun onStopTrackingTouch(seekBar: SeekBar?) {
+                    if (isPlaying) {
+                        VideoPlayer.player().start()
+                    }
+                }
+
+                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        VideoPlayer.player().seekTo(progress * VideoPlayer.player().duration() / 200)
+                    }
+                }
+            })
+
+            start(controller)
+        }
 
         textureView.setOnClickListener {
             if (closeButton.isVisible) {
                 closeButton.fadeOut()
                 inlineButton.fadeOut()
+                controller?.fadeOut()
             } else {
                 closeButton.fadeIn()
                 inlineButton.fadeIn()
+                controller?.fadeIn()
             }
         }
         val prefreences = appContext.defaultSharedPreferences
@@ -241,6 +288,9 @@ class PipVideoView {
         try {
             shown = false
             windowManager.removeView(windowView)
+            if (disposable?.isDisposed == false) {
+                disposable?.dispose()
+            }
         } catch (e: Exception) {
         }
     }
@@ -329,6 +379,25 @@ class PipVideoView {
             animatorSet.playTogether(animators)
             animatorSet.start()
         }
+    }
+
+    private var disposable: Disposable? = null
+    fun start(view: View) {
+        if (disposable?.isDisposed == false) {
+            disposable?.dispose()
+        }
+        disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe {
+                if (VideoPlayer.player().duration() != 0) {
+                    view.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
+                        VideoPlayer.player().duration()).toInt()
+                    view.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
+                    if (view.remain_tv.text.isEmpty()) {
+                        view.remain_tv.text = VideoPlayer.player().duration().toLong().formatMillis()
+                    }
+                }
+            }
     }
 
     @Keep
