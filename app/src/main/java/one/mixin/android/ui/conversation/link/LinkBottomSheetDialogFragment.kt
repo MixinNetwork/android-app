@@ -131,9 +131,9 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                     user
                 }.observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider).subscribe({
                     it.notNullWithElse({
-                        dismiss()
                         UserBottomSheetDialogFragment.newInstance(it)
                             .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                        dismiss()
                     }, {
                         context?.toast(R.string.error_user_not_found)
                         dismiss()
