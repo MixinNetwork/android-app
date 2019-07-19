@@ -68,12 +68,12 @@ class PipVideoView {
             val py = prefreences.getFloat(PY, 0f)
             val videoWidth: Int
             val videoHeight: Int
-            if (aspectRatio > 0) {
+            if (aspectRatio > 1f) {
                 videoWidth = appContext.realSize().x * 2 / 3
                 videoHeight = (videoWidth / aspectRatio).toInt()
             } else {
-                videoHeight = appContext.realSize().x * 2 / 3
-                videoWidth = (videoHeight * aspectRatio).toInt()
+                videoWidth = appContext.realSize().x / 2
+                videoHeight = (videoWidth / aspectRatio).toInt()
             }
             return Rect(getSideCoord(true, sidex, px, videoWidth).toFloat(), getSideCoord(false, sidey, py, videoHeight).toFloat(), videoWidth.toFloat(), videoHeight.toFloat())
         }
@@ -178,19 +178,19 @@ class PipVideoView {
                 return true
             }
         }
-        if (aspectRatio > 0) {
+        if (aspectRatio > 1f) {
             videoWidth = appContext.realSize().x * 2 / 3
             videoHeight = (videoWidth / aspectRatio).toInt()
         } else {
-            videoHeight = appContext.realSize().x * 2 / 3
-            videoWidth = (videoHeight * aspectRatio).toInt()
+            videoWidth = appContext.realSize().x / 2
+            videoHeight = (videoWidth / aspectRatio).toInt()
         }
         val aspectRatioFrameLayout = AspectRatioFrameLayout(activity)
         aspectRatioFrameLayout.setAspectRatio(aspectRatio, rotation)
-        windowView.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT, Gravity.CENTER))
+        windowView.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.CENTER))
 
         val textureView = TextureView(activity)
-        aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+        aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
         val inlineButton = ImageView(activity)
         inlineButton.scaleType = ImageView.ScaleType.CENTER
