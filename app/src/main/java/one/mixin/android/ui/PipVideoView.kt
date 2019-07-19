@@ -334,7 +334,7 @@ class PipVideoView {
                 animators = ArrayList()
             }
             if (windowLayoutParams.x < 0) {
-                animators.add(ObjectAnimator.ofInt(this, "x", -videoWidth))
+                animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, -videoWidth))
             } else {
                 animators.add(ObjectAnimator.ofInt(this, "x", windowLayoutParams.x, appContext.realSize().x))
             }
