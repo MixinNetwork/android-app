@@ -56,6 +56,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.demo.systemuidemo.SystemUIManager
 import com.google.android.exoplayer2.ExoPlaybackException
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
 import com.google.android.exoplayer2.Player.STATE_ENDED
 import com.google.android.exoplayer2.Player.STATE_IDLE
@@ -945,6 +946,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             animatorSet.duration = 250
             animatorSet.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
+                    if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == Player.STATE_IDLE) {
+                        VideoPlayer.player().loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
+                        VideoPlayer.player().setVideoTextureView(changedTextureView)
+                        VideoPlayer.player().pause()
+                    }
                     windowView.pip_iv.fadeOut()
                     windowView.close_iv.fadeOut()
                     windowView.live_tv.fadeOut()

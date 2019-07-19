@@ -7,6 +7,7 @@ import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context.WINDOW_SERVICE
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.view.Gravity
@@ -188,7 +189,7 @@ class PipVideoView {
         val aspectRatioFrameLayout = AspectRatioFrameLayout(activity)
         aspectRatioFrameLayout.setAspectRatio(aspectRatio, rotation)
         windowView.addView(aspectRatioFrameLayout, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT, Gravity.CENTER))
-
+        aspectRatioFrameLayout.setBackgroundColor(Color.BLACK)
         val textureView = TextureView(activity)
         aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
