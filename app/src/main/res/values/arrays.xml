@@ -33,24 +33,4 @@
         <item>@drawable/bg_avatar_23</item>
         <item>@drawable/bg_avatar_24</item>
     </integer-array>
-    <!--Todo remove-->
-    <string-array name="live_test">
-        <item>http://aldirect.hls.huya.com/huyalive/94525224-2460685313-10568562945082523648-2789274524-10057-A-0-1_1200.m3u8</item>
-        <!-- 400x300 @ 232 kbps -->
-        <item>http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear1/prog_index.m3u8</item>
-        <!-- 640x480 @ 650 kbps -->
-        <item>http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear2/prog_index.m3u8</item>
-        <!-- 960x720 @ 2 Mbps -->
-        <item>http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_4x3/gear4/prog_index.m3u8</item>
-        <!-- 416x234 @ 265 kbps -->
-        <item>http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_16x9/gear1/prog_index.m3u8</item>
-        <!-- 640x360 @ 580 kbps -->
-        <item>http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_16x9/gear2/prog_index.m3u8</item>
-        <!-- 1920x1080 @ 2 Mbps -->
-        <item>http://devimages.apple.com.edgekey.net/streaming/examples/bipbop_16x9/gear5/prog_index.m3u8</item>
-        <item>http://ivi.bupt.edu.cn/hls/cctv1hd.m3u8</item>
-        <item>http://ivi.bupt.edu.cn/hls/cctv3hd.m3u8</item>
-        <item>http://ivi.bupt.edu.cn/hls/cctv5phd.m3u8</item>
-        <item>http://ivi.bupt.edu.cn/hls/cctv6hd.m3u8</item>
-    </string-array>
 </resources>
