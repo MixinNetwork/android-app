@@ -3,13 +3,11 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
-import one.mixin.android.ui.wallet.WalletPasswordFragment
 
 @Module
 abstract class MainActivityModule {
@@ -27,14 +25,8 @@ abstract class MainActivityModule {
     internal abstract fun contributeQrBottomSheetDialogFragment(): QrScanBottomSheetDialogFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment
-
-    @ContributesAndroidInjector
     internal abstract fun contributeSearchSingleFragment(): SearchSingleFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeSearchMessageFragment(): SearchMessageFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeVerifyFragment(): VerifyFragment
 }

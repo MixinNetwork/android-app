@@ -4,15 +4,10 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AlertDialog
 import android.text.InputType
 import android.util.Base64
 import android.view.LayoutInflater
@@ -23,6 +18,11 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import com.yalantis.ucrop.UCrop
@@ -43,6 +43,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.VerifyFragment.Companion.FROM_PHONE
+import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
@@ -94,11 +95,20 @@ class ProfileFragment : BaseFragment() {
                 alert(getString(R.string.profile_modify_number)) {
                     positiveButton(R.string.profile_phone) { dialog ->
                         dialog.dismiss()
-                        activity?.supportFragmentManager?.inTransaction {
-                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
-                                R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                .add(R.id.container, VerifyFragment.newInstance(FROM_PHONE))
-                                .addToBackStack(null)
+                        if (Session.getAccount()?.hasPin == true) {
+                            activity?.supportFragmentManager?.inTransaction {
+                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
+                                    R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                                    .add(R.id.container, VerifyFragment.newInstance(FROM_PHONE))
+                                    .addToBackStack(null)
+                            }
+                        } else {
+                            activity?.supportFragmentManager?.inTransaction {
+                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                                    .anim.slide_in_bottom, R.anim.slide_out_bottom)
+                                    .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                                    .addToBackStack(null)
+                            }
                         }
                     }
                     noButton { dialog -> dialog.dismiss() }

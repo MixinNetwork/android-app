@@ -22,6 +22,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.vibrate
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.SettingActivity
@@ -234,7 +235,9 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                 }
 
                                 activity?.let { activity ->
-                                    if (activity is ConversationActivity || activity is SettingActivity) {
+                                    if (activity is ConversationActivity ||
+                                        activity is SettingActivity ||
+                                        activity is ContactsActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
                                         requireFragmentManager().popBackStackImmediate()
                                     } else if (activity is MainActivity) {
