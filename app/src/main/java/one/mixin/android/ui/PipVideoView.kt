@@ -9,6 +9,7 @@ import android.app.Activity
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.os.Build
+import android.os.PowerManager
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.TextureView
@@ -23,6 +24,7 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.annotation.Keep
+import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -114,12 +116,19 @@ class PipVideoView {
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
 
+    @SuppressLint("InvalidWakeLockTag")
+    private val wakeLock =
+        appContext.getSystemService<PowerManager>()!!.run {
+            newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin_pip")
+        }
+
     private val windowManager: WindowManager by lazy {
         appContext.getSystemService(WINDOW_SERVICE) as WindowManager
     }
 
     fun show(activity: Activity, aspectRatio: Float, rotation: Int, conversationId: String, messageId: String, isVideo: Boolean, duration: String? = null):
         TextureView {
+        wakeLock.acquire()
         windowView = object : FrameLayout(activity) {
             private var startX: Float = 0f
             private var startY: Float = 0f
@@ -292,6 +301,7 @@ class PipVideoView {
         try {
             shown = false
             windowManager.removeView(windowView)
+            wakeLock.release()
             if (disposable?.isDisposed == false) {
                 disposable?.dispose()
             }
