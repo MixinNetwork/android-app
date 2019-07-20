@@ -151,7 +151,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private var index: Int = 0
     private var lastPos: Int = -1
-    private lateinit var pagerAdapter: MediaAdapter
+    private val pagerAdapter = MediaAdapter(this)
     private var disposable: Disposable? = null
 
     @Inject
@@ -186,7 +186,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }.reversed()
 
             index = list.indexOfFirst { item -> messageId == item.messageId }
-            pagerAdapter = MediaAdapter(list, this@DragMediaActivity)
+            pagerAdapter.list = list
             view_pager.adapter = pagerAdapter
             if (index != -1) {
                 view_pager.currentItem = index
@@ -345,19 +345,19 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         startActivity(Intent.createChooser(sendIntent, "Share video to.."))
     }
 
-    inner class MediaAdapter(
-        val list: List<MessageItem>?,
-        private val onDismissListener: DismissFrameLayout.OnDismissListener
+    inner class MediaAdapter(private val onDismissListener: DismissFrameLayout.OnDismissListener
     ) : PagerAdapter(), TextureView.SurfaceTextureListener {
 
-        fun getItem(position: Int): MessageItem = list!![position]
+        var list: List<MessageItem>? = null
+
+        fun getItem(position: Int): MessageItem? = list?.get(position)
 
         override fun getCount(): Int = list?.size ?: 0
 
         override fun isViewFromObject(view: View, obj: Any): Boolean = view === obj
 
         override fun instantiateItem(container: ViewGroup, position: Int): Any {
-            val messageItem = getItem(position)
+            val messageItem = getItem(position) ?: return DismissFrameLayout(container.context)
             val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
                 messageItem.type == MessageCategory.PLAIN_IMAGE.name) {
                 if (messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f) {
@@ -753,7 +753,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             .apply {
                 addUpdateListener {
                     (it.animatedValue as Int).apply {
-                        val item = pagerAdapter.getItem(view_pager.currentItem)
+                        val item = pagerAdapter.getItem(view_pager.currentItem) ?: return@addUpdateListener
                         val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${item.messageId}")
                             ?: return@addUpdateListener
                         v.translationY = (realSize().y * this / 100).toFloat()
@@ -774,7 +774,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private inline fun findViewPagerChildByTag(pos: Int = view_pager.currentItem, action: (v: ViewGroup) -> Unit) {
         if (isFinishing) return
-        val id = pagerAdapter.getItem(pos).messageId
+        val id = pagerAdapter.getItem(pos)?.messageId ?: return
         val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX$id")
         if (v != null) {
             action(v as ViewGroup)
@@ -829,7 +829,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private inline fun load(pos: Int, force: Boolean = false, action: () -> Unit = {}) {
-        val messageItem = pagerAdapter.getItem(pos)
+        val messageItem = pagerAdapter.getItem(pos) ?: return
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.mediaUrl?.let {
                 if (messageItem.isLive()) {
@@ -845,7 +845,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun play(pos: Int) = load(pos) {
         start()
-        pagerAdapter.getItem(pos).let { messageItem ->
+        pagerAdapter.getItem(pos)?.let { messageItem ->
             if (messageItem.isVideo()) {
                 VideoPlayer.player().seekTo(currentPosition)
             }
@@ -950,7 +950,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val animatorSet = AnimatorSet()
             val position = IntArray(2)
             windowView.video_aspect_ratio.getLocationOnScreen(position)
-            val messageItem = pagerAdapter.getItem(view_pager.currentItem)
+            val messageItem = pagerAdapter.getItem(view_pager.currentItem) ?: return
             val changedTextureView = pipVideoView.show(
                 this, windowView.video_aspect_ratio.aspectRatio,
                 windowView.video_aspect_ratio.videoRotation,
