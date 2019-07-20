@@ -4,8 +4,8 @@ import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.wallet.AssetAddFragment
-import one.mixin.android.ui.wallet.BiometricTimeFragment
 import one.mixin.android.ui.wallet.AssetKeyBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.BiometricTimeFragment
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.ui.wallet.DepositTipBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.HiddenAssetsFragment
@@ -16,16 +16,12 @@ import one.mixin.android.ui.wallet.SingleFriendSelectFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletFragment
-import one.mixin.android.ui.wallet.WalletPasswordFragment
 import one.mixin.android.ui.wallet.WalletSettingFragment
 
 @Module
 abstract class WalletActivityModule {
     @ContributesAndroidInjector
     internal abstract fun contributeWalletFragment(): WalletFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeWalletPasswordFragment(): WalletPasswordFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeWalletTransactionsFragment(): TransactionsFragment
