@@ -120,7 +120,7 @@ internal constructor(
         }
     }
 
-    fun getGroupParticipants(conversationId: String) = readAppDatabase.participantDao().getParticipants(conversationId)
+    fun getGroupParticipants(conversationId: String) = participantDao.getParticipants(conversationId)
 
     fun getGroupParticipantsLiveData(conversationId: String) =
         participantDao.getGroupParticipantsLiveData(conversationId)
@@ -147,7 +147,7 @@ internal constructor(
         }
     }
 
-    suspend fun getRealParticipants(conversationId: String) = readAppDatabase.participantDao().getRealParticipantsSuspend(conversationId)
+    suspend fun getRealParticipants(conversationId: String) = participantDao.getRealParticipantsSuspend(conversationId)
 
     fun getGroupConversationApp(conversationId: String) = readAppDatabase.appDao().getGroupConversationApp(conversationId)
 
@@ -162,11 +162,11 @@ internal constructor(
         }
     }
 
-    fun getLimitParticipants(conversationId: String, limit: Int) = readAppDatabase.participantDao().getLimitParticipants(conversationId, limit)
+    fun getLimitParticipants(conversationId: String, limit: Int) = participantDao.getLimitParticipants(conversationId, limit)
 
-    fun findParticipantByIds(conversationId: String, userId: String) = readAppDatabase.participantDao().findParticipantByIds(conversationId, userId)
+    fun findParticipantByIds(conversationId: String, userId: String) = participantDao.findParticipantByIds(conversationId, userId)
 
-    fun getParticipantsCount(conversationId: String) = readAppDatabase.participantDao().getParticipantsCount(conversationId)
+    fun getParticipantsCount(conversationId: String) = participantDao.getParticipantsCount(conversationId)
 
     fun getStorageUsage(conversationId: String) = readConversationDao.getStorageUsage(conversationId)
 
