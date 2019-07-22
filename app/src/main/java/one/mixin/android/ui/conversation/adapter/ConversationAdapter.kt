@@ -8,7 +8,6 @@ import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.exoplayer2.util.MimeTypes
 import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -52,7 +51,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.create
 import one.mixin.android.vo.isCallMessage
-import one.mixin.android.vo.isFile
 import one.mixin.android.vo.isRecall
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
 import timber.log.Timber
@@ -444,15 +442,11 @@ class ConversationAdapter(
     override fun onViewAttachedToWindow(holder: RecyclerView.ViewHolder) {
         getItem(holder.layoutPosition)?.let {
             (holder as BaseViewHolder).listen(it.messageId)
-            if (it.isFile() && MimeTypes.isAudio(it.mediaMimeType)) {
-                (holder as? FileHolder)?.listenProgress(it.messageId)
-            }
         }
     }
 
     override fun onViewDetachedFromWindow(holder: RecyclerView.ViewHolder) {
         (holder as BaseViewHolder).stopListen()
-        (holder as? FileHolder)?.stopListenProgress()
     }
 
     private fun getItemType(messageItem: MessageItem?): Int =
