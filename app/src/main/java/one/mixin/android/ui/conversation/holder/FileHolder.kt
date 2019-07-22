@@ -7,10 +7,16 @@ import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.SeekBar
+import androidx.core.view.isVisible
 import com.google.android.exoplayer2.util.MimeTypes
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_file.view.*
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.ProgressEvent
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
@@ -18,6 +24,7 @@ import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textResource
 
@@ -84,6 +91,27 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         }, {
             itemView.chat_flag.visibility = View.GONE
         })
+        itemView.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
+                        AudioPlayer.get().isPlay(messageItem.messageId)) {
+                        AudioPlayer.get().seekTo(progress)
+                    }
+                } else {
+                    if (progress == 0 && MimeTypes.isAudio(messageItem.mediaMimeType)) {
+                        itemView.seek_bar.isVisible = false
+                        itemView.file_size_tv.isVisible = true
+                    }
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {
+            }
+        })
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -110,12 +138,24 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     itemView.file_progress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                         itemView.file_progress.setBindOnly(messageItem.messageId)
+                        itemView.seek_bar.bindId = messageItem.messageId
                         if (AudioPlayer.get().isPlay(messageItem.messageId)) {
                             itemView.file_progress.setPause()
+                            itemView.seek_bar.isVisible = true
+                            itemView.file_size_tv.isVisible = false
                         } else {
                             itemView.file_progress.setPlay()
+                            itemView.seek_bar.isVisible = false
+                            itemView.file_size_tv.isVisible = true
                         }
                         itemView.file_progress.setOnClickListener {
+                            if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                                itemView.seek_bar.isVisible = false
+                                itemView.file_size_tv.isVisible = true
+                            } else {
+                                itemView.seek_bar.isVisible = true
+                                itemView.file_size_tv.isVisible = false
+                            }
                             onItemListener.onAudioFileClick(messageItem)
                         }
                     } else {
@@ -196,6 +236,33 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         } else {
             onItemListener.onFileClick(messageItem)
         }
+    }
+
+    private var progressDisposable: Disposable? = null
+
+    fun listenProgress(bindId: String) {
+        if (progressDisposable == null) {
+            progressDisposable = RxBus.listen(ProgressEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe {
+                    // play other audio
+                    if (it.id != messageId && it.status == STATUS_PLAY && messageId != null) {
+                        if (AudioPlayer.get().isPlay(messageId!!)) {
+                            itemView.seek_bar.isVisible = true
+                            itemView.file_size_tv.isVisible = false
+                        } else {
+                            itemView.seek_bar.isVisible = false
+                            itemView.file_size_tv.isVisible = true
+                        }
+                    }
+                }
+        }
+        this.messageId = bindId
+    }
+
+    fun stopListenProgress() {
+        progressDisposable?.dispose()
+        progressDisposable = null
     }
 
     override fun chatLayout(isMe: Boolean, isLast: Boolean, isBlink: Boolean) {

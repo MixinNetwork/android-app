@@ -72,6 +72,15 @@
             app:layout_constraintStart_toEndOf="@id/file_progress"
             app:layout_constraintTop_toTopOf="@id/file_progress" />
 
+        <one.mixin.android.widget.AudioSeekBar
+            android:id="@+id/seek_bar"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/file_name_tv"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/file_progress"/>
+
         <TextView
             android:id="@+id/file_size_tv"
             android:layout_width="0dp"
