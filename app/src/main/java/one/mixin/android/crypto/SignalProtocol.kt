@@ -2,6 +2,7 @@ package one.mixin.android.crypto
 
 import android.content.Context
 import android.util.Log
+import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.db.SessionDao
 import one.mixin.android.crypto.db.SignalDatabase
@@ -33,7 +34,6 @@ import org.whispersystems.libsignal.protocol.PreKeySignalMessage
 import org.whispersystems.libsignal.protocol.SenderKeyDistributionMessage
 import org.whispersystems.libsignal.protocol.SignalMessage
 import org.whispersystems.libsignal.state.PreKeyBundle
-import java.util.UUID
 
 class SignalProtocol(ctx: Context) {
 

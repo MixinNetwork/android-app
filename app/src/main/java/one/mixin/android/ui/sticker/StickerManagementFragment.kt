@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -39,7 +40,6 @@ import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.vo.Sticker
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.textColor
-import javax.inject.Inject
 
 class StickerManagementFragment : BaseFragment() {
     companion object {

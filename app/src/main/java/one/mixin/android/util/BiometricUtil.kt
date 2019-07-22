@@ -9,6 +9,14 @@ import android.security.keystore.UserNotAuthenticatedException
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
 import com.bugsnag.android.Bugsnag
+import java.nio.charset.Charset
+import java.security.InvalidKeyException
+import java.security.KeyStore
+import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
+import javax.crypto.SecretKeyFactory
+import javax.crypto.spec.IvParameterSpec
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.Constants.BIOMETRICS_ALIAS
@@ -21,14 +29,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BiometricException
 import org.jetbrains.anko.getStackTraceString
 import timber.log.Timber
-import java.nio.charset.Charset
-import java.security.InvalidKeyException
-import java.security.KeyStore
-import javax.crypto.Cipher
-import javax.crypto.KeyGenerator
-import javax.crypto.SecretKey
-import javax.crypto.SecretKeyFactory
-import javax.crypto.spec.IvParameterSpec
 
 object BiometricUtil {
 

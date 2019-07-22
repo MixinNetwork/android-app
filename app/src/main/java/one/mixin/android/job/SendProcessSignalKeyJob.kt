@@ -1,10 +1,10 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import java.util.UUID
 import one.mixin.android.db.clearParticipant
 import one.mixin.android.util.Session
 import one.mixin.android.websocket.BlazeMessageData
-import java.util.UUID
 
 class SendProcessSignalKeyJob(
     val data: BlazeMessageData,

@@ -29,6 +29,11 @@ import com.bumptech.glide.load.engine.GlideException
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import io.reactivex.disposables.Disposable
+import java.util.Timer
+import java.util.TimerTask
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_call.*
 import kotlinx.android.synthetic.main.view_call_button.view.*
 import kotlinx.coroutines.Dispatchers
@@ -47,11 +52,6 @@ import one.mixin.android.vo.User
 import one.mixin.android.webrtc.CallService
 import one.mixin.android.widget.CallButton
 import timber.log.Timber
-import java.util.Timer
-import java.util.TimerTask
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.TimeoutException
-import javax.inject.Inject
 
 class CallActivity : BaseActivity(), SensorEventListener {
 

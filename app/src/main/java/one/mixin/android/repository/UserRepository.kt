@@ -2,6 +2,8 @@ package one.mixin.android.repository
 
 import androidx.lifecycle.LiveData
 import io.reactivex.Observable
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
@@ -17,8 +19,6 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class UserRepository

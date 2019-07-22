@@ -12,6 +12,7 @@ import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDisposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants.ARGS_USER_ID
@@ -28,7 +29,6 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotListAdapter
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.worker.RefreshUserSnapshotsWorker
-import javax.inject.Inject
 
 class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
 

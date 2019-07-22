@@ -8,9 +8,9 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkRequest.MIN_BACKOFF_MILLIS
+import java.util.concurrent.TimeUnit
 import one.mixin.android.worker.DownloadAvatarWorker
 import one.mixin.android.worker.GenerateAvatarWorker
-import java.util.concurrent.TimeUnit
 
 inline fun <reified W : ListenableWorker> WorkManager.enqueueOneTimeNetworkWorkRequest(inputData: Data? = null) {
     pruneWork()

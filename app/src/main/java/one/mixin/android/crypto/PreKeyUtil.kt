@@ -2,15 +2,13 @@ package one.mixin.android.crypto
 
 import android.content.Context
 import one.mixin.android.Constants.BATCH_SIZE
-
+import one.mixin.android.crypto.storage.MixinPreKeyStore
+import one.mixin.android.crypto.vo.PreKey
 import org.whispersystems.libsignal.IdentityKeyPair
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord
 import org.whispersystems.libsignal.util.KeyHelper
 import org.whispersystems.libsignal.util.Medium
-
-import one.mixin.android.crypto.storage.MixinPreKeyStore
-import one.mixin.android.crypto.vo.PreKey
 
 object PreKeyUtil {
 

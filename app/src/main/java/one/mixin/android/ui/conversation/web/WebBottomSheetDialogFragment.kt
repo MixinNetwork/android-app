@@ -36,6 +36,10 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
+import java.io.ByteArrayInputStream
+import java.io.FileInputStream
+import java.net.URISyntaxException
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
@@ -64,10 +68,6 @@ import one.mixin.android.widget.getMaxCustomViewHeight
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
-import java.io.ByteArrayInputStream
-import java.io.FileInputStream
-import java.net.URISyntaxException
-import java.util.concurrent.TimeUnit
 
 class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 

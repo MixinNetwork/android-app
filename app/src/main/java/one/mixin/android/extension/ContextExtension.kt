@@ -44,6 +44,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
+import java.io.File
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Future
+import kotlin.math.roundToInt
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -57,10 +61,6 @@ import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
 import org.jetbrains.anko.displayMetrics
 import timber.log.Timber
-import java.io.File
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Future
-import kotlin.math.roundToInt
 
 private val uiHandler = Handler(Looper.getMainLooper())
 

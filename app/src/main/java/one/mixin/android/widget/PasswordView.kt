@@ -3,9 +3,9 @@ package one.mixin.android.widget
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.view.View
+import androidx.core.content.ContextCompat
 import one.mixin.android.R
 import org.jetbrains.anko.dip
 

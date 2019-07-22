@@ -1,11 +1,11 @@
 package one.mixin.android.ui.setting
 
 import androidx.lifecycle.ViewModel
+import javax.inject.Inject
 import one.mixin.android.api.request.EmergencyRequest
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.User
-import javax.inject.Inject
 
 class EmergencyViewModel @Inject
 internal constructor(

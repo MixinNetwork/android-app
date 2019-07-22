@@ -26,6 +26,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import com.yalantis.ucrop.UCrop
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -53,7 +54,6 @@ import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.jetbrains.anko.noButton
 import org.jetbrains.anko.singleLine
-import javax.inject.Inject
 
 class ProfileFragment : BaseFragment() {
 

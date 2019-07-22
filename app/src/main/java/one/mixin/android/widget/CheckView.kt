@@ -1,12 +1,12 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import androidx.annotation.StringRes
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.Checkable
 import android.widget.CompoundButton
 import android.widget.FrameLayout
+import androidx.annotation.StringRes
 import kotlinx.android.synthetic.main.view_check.view.*
 import one.mixin.android.R
 import one.mixin.android.R.id.check_box

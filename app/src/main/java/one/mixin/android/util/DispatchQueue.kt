@@ -4,7 +4,6 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.util.Log
-
 import java.util.concurrent.CountDownLatch
 
 class DispatchQueue(threadName: String) : Thread() {

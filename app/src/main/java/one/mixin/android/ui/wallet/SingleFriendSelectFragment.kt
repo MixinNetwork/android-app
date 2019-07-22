@@ -11,6 +11,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_single_friend_select.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
@@ -20,7 +21,6 @@ import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.adapter.SingleFriendSelectAdapter
 import one.mixin.android.vo.User
 import one.mixin.android.widget.SearchView
-import javax.inject.Inject
 
 class SingleFriendSelectFragment : BaseFragment() {
 

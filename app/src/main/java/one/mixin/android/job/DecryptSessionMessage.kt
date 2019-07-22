@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.app.Activity
 import android.app.NotificationManager
 import android.util.Log
+import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
@@ -31,7 +32,6 @@ import one.mixin.android.websocket.TransferPlainAckData
 import one.mixin.android.websocket.TransferRecallData
 import one.mixin.android.websocket.TransferStickerData
 import org.whispersystems.libsignal.DecryptionCallback
-import java.util.UUID
 
 class DecryptSessionMessage : Injector() {
 

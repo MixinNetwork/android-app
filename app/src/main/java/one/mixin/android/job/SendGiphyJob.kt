@@ -3,6 +3,8 @@ package one.mixin.android.job
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
 import com.bumptech.glide.Glide
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.bitmap2String
 import one.mixin.android.extension.blurThumbnail
@@ -14,8 +16,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createMediaMessage
 import one.mixin.android.widget.gallery.MimeType
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
 
 class SendGiphyJob(
     private val conversationId: String,

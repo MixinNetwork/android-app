@@ -21,6 +21,7 @@ import com.bumptech.glide.request.target.Target
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
+import java.io.File
 import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -44,7 +45,6 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
-import java.io.File
 
 class EditFragment : CaptureVisionFragment() {
 

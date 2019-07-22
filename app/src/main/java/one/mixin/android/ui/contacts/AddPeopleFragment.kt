@@ -1,7 +1,5 @@
 package one.mixin.android.ui.contacts
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -10,9 +8,13 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.autoDisposable
+import java.util.Locale
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_add_people.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -25,8 +27,6 @@ import one.mixin.android.ui.landing.MobileFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.widget.Keyboard
-import java.util.Locale
-import javax.inject.Inject
 
 class AddPeopleFragment : BaseFragment() {
 

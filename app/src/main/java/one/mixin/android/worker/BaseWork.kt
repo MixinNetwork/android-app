@@ -3,12 +3,12 @@ package one.mixin.android.worker
 import android.content.Context
 import androidx.work.Worker
 import androidx.work.WorkerParameters
+import java.net.SocketTimeoutException
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.LocalJobException
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.WebSocketException
-import java.net.SocketTimeoutException
 
 abstract class BaseWork(
     context: Context,

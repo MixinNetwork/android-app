@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation
 
 import androidx.core.os.bundleOf
+import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.friends.BaseFriendsFragment
@@ -11,7 +12,6 @@ import one.mixin.android.ui.conversation.adapter.FriendsViewHolder
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
-import javax.inject.Inject
 
 class FriendsFragment : BaseFriendsFragment<FriendsViewHolder, ConversationViewModel>(), FriendsListener {
     init {

@@ -20,6 +20,7 @@ import androidx.core.view.isVisible
 import com.jakewharton.rxbinding3.widget.textChanges
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.view_search.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.appCompatActionBarHeight
@@ -29,7 +30,6 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import org.jetbrains.annotations.NotNull
-import java.util.concurrent.TimeUnit
 
 class MaterialSearchView : FrameLayout {
     var isOpen = false

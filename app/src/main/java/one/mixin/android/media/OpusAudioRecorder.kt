@@ -8,6 +8,7 @@ import android.media.MediaRecorder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.getSystemService
+import java.io.File
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -16,7 +17,6 @@ import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.vibrate
 import one.mixin.android.util.DispatchQueue
-import java.io.File
 
 class OpusAudioRecorder private constructor(private val ctx: Context) {
     companion object {

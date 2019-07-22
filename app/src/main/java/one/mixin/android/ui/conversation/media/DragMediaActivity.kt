@@ -69,6 +69,11 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import java.io.File
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
@@ -126,11 +131,6 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import kotlin.math.min
 
 class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private lateinit var colorDrawable: ColorDrawable
@@ -345,7 +345,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         startActivity(Intent.createChooser(sendIntent, "Share video to.."))
     }
 
-    inner class MediaAdapter(private val onDismissListener: DismissFrameLayout.OnDismissListener
+    inner class MediaAdapter(
+        private val onDismissListener: DismissFrameLayout.OnDismissListener
     ) : PagerAdapter(), TextureView.SurfaceTextureListener {
 
         var list: List<MessageItem>? = null
@@ -961,10 +962,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 ObjectAnimator.ofInt(colorDrawable, AnimationProperties.COLOR_DRAWABLE_ALPHA, 0),
                 ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_X, scale),
                 ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_Y, scale),
-                ObjectAnimator.ofFloat(windowView.video_aspect_ratio, View.TRANSLATION_X, rect.x - windowView.video_aspect_ratio.x
-                    - this.realSize().x * (1f - scale) / 2),
-                ObjectAnimator.ofFloat(windowView.video_aspect_ratio, View.TRANSLATION_Y, rect.y - windowView.video_aspect_ratio.y
-                    + this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2))
+                ObjectAnimator.ofFloat(windowView.video_aspect_ratio, View.TRANSLATION_X, rect.x - windowView.video_aspect_ratio.x -
+                    this.realSize().x * (1f - scale) / 2),
+                ObjectAnimator.ofFloat(windowView.video_aspect_ratio, View.TRANSLATION_Y, rect.y - windowView.video_aspect_ratio.y +
+                    this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2))
             animatorSet.interpolator = DecelerateInterpolator()
             animatorSet.duration = 250
             animatorSet.addListener(object : AnimatorListenerAdapter() {
@@ -1012,7 +1013,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     startActivity(intent)
                 } catch (x: Exception) {
                     try {
-                        intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                        intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
                         intent.data = Uri.parse("package:" + MixinApplication.appContext.packageName)
                         startActivity(intent)
                     } catch (xx: Exception) {

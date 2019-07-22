@@ -1,8 +1,8 @@
 package one.mixin.android.ui.conversation.adapter
 
 import android.graphics.Rect
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 
 class StickerSpacingItemDecoration(
     private val spanCount: Int,

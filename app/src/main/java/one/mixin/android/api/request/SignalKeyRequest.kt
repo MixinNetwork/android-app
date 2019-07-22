@@ -4,7 +4,6 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.OneTimePreKey
 import one.mixin.android.api.SignedPreKey
 import one.mixin.android.crypto.Base64
-
 import org.whispersystems.libsignal.IdentityKey
 import org.whispersystems.libsignal.state.PreKeyRecord
 import org.whispersystems.libsignal.state.SignedPreKeyRecord

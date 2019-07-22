@@ -1,7 +1,6 @@
 package one.mixin.android.util
 
 import com.bumptech.glide.load.Key
-
 import java.io.UnsupportedEncodingException
 import java.security.MessageDigest
 

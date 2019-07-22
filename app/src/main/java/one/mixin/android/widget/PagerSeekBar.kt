@@ -1,9 +1,9 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import androidx.appcompat.widget.AppCompatSeekBar
 import android.util.AttributeSet
 import android.view.MotionEvent
+import androidx.appcompat.widget.AppCompatSeekBar
 
 class PagerSeekBar : AppCompatSeekBar {
 

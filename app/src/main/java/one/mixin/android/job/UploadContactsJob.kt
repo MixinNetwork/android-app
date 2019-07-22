@@ -7,13 +7,13 @@ import com.birbit.android.jobqueue.Params
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
+import java.util.Locale
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ContactRequest
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.util.Locale
 
 class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) {
 

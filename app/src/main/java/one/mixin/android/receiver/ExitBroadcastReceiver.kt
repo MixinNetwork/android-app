@@ -5,8 +5,8 @@ import android.content.Context
 import android.content.Intent
 import one.mixin.android.job.BlazeMessageService
 import one.mixin.android.job.BlazeMessageService.Companion.ACTION_TO_BACKGROUND
-import one.mixin.android.webrtc.CallService
 import one.mixin.android.ui.call.CallNotificationBuilder
+import one.mixin.android.webrtc.CallService
 
 class ExitBroadcastReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {

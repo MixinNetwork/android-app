@@ -13,14 +13,6 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
-import okio.Buffer
-import okio.ByteString
-import okio.GzipSink
-import okio.GzipSource
-import okio.Okio
-import okio.Source
-import one.mixin.android.util.GzipException
-import org.threeten.bp.Instant
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -36,6 +28,14 @@ import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
 import kotlin.collections.set
 import kotlin.math.abs
+import okio.Buffer
+import okio.ByteString
+import okio.GzipSink
+import okio.GzipSource
+import okio.Okio
+import okio.Source
+import one.mixin.android.util.GzipException
+import org.threeten.bp.Instant
 
 fun String.generateQRCode(size: Int): Bitmap? {
     val result: BitMatrix

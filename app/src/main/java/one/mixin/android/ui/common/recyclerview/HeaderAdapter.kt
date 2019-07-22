@@ -1,9 +1,9 @@
 package one.mixin.android.ui.common.recyclerview
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
 import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.extension.notNullWithElse
 
 abstract class HeaderAdapter<T> : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

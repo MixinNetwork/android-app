@@ -4,6 +4,9 @@ import android.content.Context
 import android.os.CancellationSignal
 import android.security.keystore.UserNotAuthenticatedException
 import com.bugsnag.android.Bugsnag
+import java.math.BigDecimal
+import java.nio.charset.Charset
+import java.security.InvalidKeyException
 import moe.feng.support.biometricprompt.BiometricPromptCompat
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -17,9 +20,6 @@ import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.util.BiometricUtil
 import org.jetbrains.anko.getStackTraceString
 import org.jetbrains.anko.toast
-import java.math.BigDecimal
-import java.nio.charset.Charset
-import java.security.InvalidKeyException
 
 class BiometricDialog<T : BiometricItem>(
     private val context: Context,

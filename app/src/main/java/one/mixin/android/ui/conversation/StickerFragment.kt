@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.reactivex.disposables.Disposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -32,7 +33,6 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_NONE
 import one.mixin.android.widget.DraggableRecyclerView.Companion.DIRECTION_TOP_2_BOTTOM
 import org.jetbrains.anko.dip
-import javax.inject.Inject
 
 class StickerFragment : BaseFragment() {
 

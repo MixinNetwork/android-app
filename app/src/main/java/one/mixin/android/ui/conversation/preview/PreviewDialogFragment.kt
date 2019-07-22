@@ -13,6 +13,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.MixinDialogFragment
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_preview.view.*
 import kotlinx.android.synthetic.main.fragment_preview_video.view.*
 import one.mixin.android.R
@@ -24,7 +25,6 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelineView
-import java.util.concurrent.TimeUnit
 
 class PreviewDialogFragment : MixinDialogFragment(), VideoTimelineView.VideoTimelineViewDelegate {
 

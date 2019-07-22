@@ -18,6 +18,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
+import java.util.Collections
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_contacts.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -36,8 +38,6 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.worker.RefreshContactWorker
-import java.util.Collections
-import javax.inject.Inject
 
 class ContactsFragment : BaseFragment() {
 

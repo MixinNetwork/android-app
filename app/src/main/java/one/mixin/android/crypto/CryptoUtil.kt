@@ -2,10 +2,6 @@
 package one.mixin.android.crypto
 
 import android.os.Build
-import one.mixin.android.extension.toLeByteArray
-import org.spongycastle.asn1.pkcs.PrivateKeyInfo
-import org.spongycastle.util.io.pem.PemObject
-import org.spongycastle.util.io.pem.PemWriter
 import java.io.StringWriter
 import java.security.KeyFactory
 import java.security.KeyPair
@@ -19,6 +15,10 @@ import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.OAEPParameterSpec
 import javax.crypto.spec.PSource
 import javax.crypto.spec.SecretKeySpec
+import one.mixin.android.extension.toLeByteArray
+import org.spongycastle.asn1.pkcs.PrivateKeyInfo
+import org.spongycastle.util.io.pem.PemObject
+import org.spongycastle.util.io.pem.PemWriter
 
 fun generateRSAKeyPair(keyLength: Int = 1024): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")

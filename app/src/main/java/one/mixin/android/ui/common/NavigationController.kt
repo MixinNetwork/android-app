@@ -4,13 +4,13 @@ import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
+import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.ui.wallet.WalletActivity
-import javax.inject.Inject
 
 class NavigationController
 @Inject

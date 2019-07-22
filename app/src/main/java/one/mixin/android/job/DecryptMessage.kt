@@ -5,6 +5,8 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
+import java.io.File
+import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.SignalKeyCount
@@ -73,8 +75,6 @@ import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
-import java.io.File
-import java.util.UUID
 
 class DecryptMessage : Injector() {
 

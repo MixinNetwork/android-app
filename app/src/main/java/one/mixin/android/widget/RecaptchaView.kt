@@ -6,6 +6,7 @@ import android.graphics.Bitmap
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import java.nio.charset.Charset
 import okio.Okio
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -14,7 +15,6 @@ import one.mixin.android.extension.cancelRunOnUIThread
 import one.mixin.android.extension.runOnUIThread
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
-import java.nio.charset.Charset
 
 @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
 class RecaptchaView(private val context: Context, private val callback: Callback) {

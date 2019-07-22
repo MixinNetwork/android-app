@@ -9,6 +9,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.google.android.material.tabs.TabLayout
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker_album.*
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseFragment
@@ -17,7 +18,6 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.backgroundResource
-import javax.inject.Inject
 
 class StickerAlbumFragment : BaseFragment() {
 

@@ -3,10 +3,10 @@
 package one.mixin.android.extension
 
 import android.content.Context
-import androidx.annotation.StringRes
 import android.view.Gravity
 import android.widget.TextView
 import android.widget.Toast
+import androidx.annotation.StringRes
 
 inline fun Context.toast(text: CharSequence, duration: Int = Toast.LENGTH_SHORT): Toast {
     return Toast.makeText(this, text, duration).apply {

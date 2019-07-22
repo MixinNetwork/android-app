@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import java.util.UUID
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
@@ -15,7 +16,6 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import timber.log.Timber
-import java.util.UUID
 
 class ConversationJob(
     private val request: ConversationRequest? = null,

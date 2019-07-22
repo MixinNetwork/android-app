@@ -4,6 +4,8 @@ import android.net.Uri
 import android.util.Log
 import com.birbit.android.jobqueue.Params
 import io.reactivex.disposables.Disposable
+import java.net.URL
+import javax.net.ssl.HttpsURLConnection
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.AttachmentResponse
@@ -18,10 +20,7 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.isVideo
 import one.mixin.android.websocket.TransferAttachmentData
-import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_LOADING
-import java.net.URL
-import javax.net.ssl.HttpsURLConnection
 
 class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_SEND_ATTACHMENT_MESSAGE)
     .addTags(message.id).groupBy("send_media_job").requireNetwork().persist(), message.id) {

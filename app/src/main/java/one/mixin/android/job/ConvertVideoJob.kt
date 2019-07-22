@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.net.Uri
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
+import java.io.File
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.createVideoTemp
 import one.mixin.android.extension.getFileNameNoEx
@@ -16,7 +17,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.createVideoMessage
-import java.io.File
 
 class ConvertVideoJob(
     private val conversationId: String,

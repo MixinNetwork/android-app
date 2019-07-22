@@ -9,6 +9,7 @@ import androidx.annotation.RequiresPermission
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import com.birbit.android.jobqueue.Params
+import java.io.File
 import one.mixin.android.Constants.BackUp.BACKUP_LAST_TIME
 import one.mixin.android.Constants.BackUp.BACKUP_PERIOD
 import one.mixin.android.MixinApplication
@@ -20,7 +21,6 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.util.backup.BackupLiveData
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
-import java.io.File
 
 class BackupJob(private val force: Boolean = false) : BaseJob(Params(if (force) {
     PRIORITY_UI_HIGH

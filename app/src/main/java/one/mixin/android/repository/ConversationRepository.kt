@@ -3,6 +3,9 @@ package one.mixin.android.repository
 import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
 import io.reactivex.Observable
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.ConversationRequest
@@ -30,9 +33,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SearchMessageItem
-import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class ConversationRepository

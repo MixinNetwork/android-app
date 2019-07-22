@@ -15,6 +15,8 @@ import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import dagger.android.AndroidInjection
+import java.util.concurrent.Executors
+import javax.inject.Inject
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -49,8 +51,6 @@ import one.mixin.android.websocket.createAckSessionListParamBlazeMessage
 import one.mixin.android.websocket.createParamSessionMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import org.jetbrains.anko.notificationManager
-import java.util.concurrent.Executors
-import javax.inject.Inject
 
 class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
 

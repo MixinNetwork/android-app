@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -22,7 +23,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
-import javax.inject.Inject
 
 class ContactViewModel
 @Inject

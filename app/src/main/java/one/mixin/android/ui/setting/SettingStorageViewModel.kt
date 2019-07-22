@@ -6,12 +6,12 @@ import com.bugsnag.android.Bugsnag
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.io.File
+import javax.inject.Inject
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.StorageUsage
-import java.io.File
-import javax.inject.Inject
 
 class SettingStorageViewModel @Inject
 internal constructor(

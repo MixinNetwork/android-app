@@ -11,6 +11,7 @@ import android.view.View.VISIBLE
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
+import java.math.BigDecimal
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -43,7 +44,6 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.support.v4.toast
-import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 

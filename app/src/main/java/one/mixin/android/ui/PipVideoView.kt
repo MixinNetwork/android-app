@@ -29,6 +29,9 @@ import androidx.core.view.isVisible
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import java.util.concurrent.TimeUnit
+import kotlin.math.abs
+import kotlin.math.round
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -47,9 +50,6 @@ import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.widget.AspectRatioFrameLayout
 import org.jetbrains.anko.dip
 import timber.log.Timber
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
-import kotlin.math.round
 
 class PipVideoView {
 

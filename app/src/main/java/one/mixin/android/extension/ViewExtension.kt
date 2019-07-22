@@ -34,9 +34,9 @@ import com.facebook.rebound.SimpleSpringListener
 import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
+import java.io.FileNotFoundException
 import org.jetbrains.anko.dip
 import timber.log.Timber
-import java.io.FileNotFoundException
 
 const val ANIMATION_DURATION_SHORTEST = 260L
 

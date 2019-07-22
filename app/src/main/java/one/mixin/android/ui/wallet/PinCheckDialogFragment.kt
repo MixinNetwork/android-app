@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import io.reactivex.disposables.CompositeDisposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_pin_check.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -26,7 +27,6 @@ import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import javax.inject.Inject
 
 class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
 

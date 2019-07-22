@@ -11,6 +11,11 @@ import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import java.util.UUID
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.api.service.AccountService
@@ -43,11 +48,6 @@ import org.webrtc.PeerConnectionFactory
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
-import java.util.UUID
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 

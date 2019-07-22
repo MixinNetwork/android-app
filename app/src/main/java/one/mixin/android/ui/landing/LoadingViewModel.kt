@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
+import kotlin.math.abs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -15,8 +17,6 @@ import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.SignalKeyService
 import one.mixin.android.job.RefreshOneTimePreKeysJob
-import javax.inject.Inject
-import kotlin.math.abs
 
 class LoadingViewModel @Inject internal
 constructor(

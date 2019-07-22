@@ -6,9 +6,9 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
+import android.util.AttributeSet
 import androidx.annotation.DrawableRes
 import androidx.collection.ArrayMap
-import android.util.AttributeSet
 
 class PorterShapeImageView : PorterImageView {
     private var shape: Drawable? = null

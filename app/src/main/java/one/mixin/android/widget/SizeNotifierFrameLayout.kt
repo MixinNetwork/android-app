@@ -12,9 +12,9 @@ import android.util.AttributeSet
 import android.view.View
 import android.view.WindowManager
 import android.widget.FrameLayout
+import java.lang.reflect.Field
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.statusBarHeight
-import java.lang.reflect.Field
 
 class SizeNotifierFrameLayout : FrameLayout {
 

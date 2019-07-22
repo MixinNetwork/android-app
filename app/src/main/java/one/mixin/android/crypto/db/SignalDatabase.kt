@@ -1,11 +1,11 @@
 package one.mixin.android.crypto.db
 
-import androidx.sqlite.db.SupportSQLiteDatabase
+import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
-import android.content.Context
+import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.crypto.vo.Identity
 import one.mixin.android.crypto.vo.PreKey
 import one.mixin.android.crypto.vo.RatchetSenderKey

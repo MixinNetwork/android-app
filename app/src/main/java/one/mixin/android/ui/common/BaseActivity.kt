@@ -11,8 +11,8 @@ import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
 import dagger.android.support.HasSupportFragmentInjector
-import one.mixin.android.R
 import javax.inject.Inject
+import one.mixin.android.R
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity(), HasSupportFragmentInjector {

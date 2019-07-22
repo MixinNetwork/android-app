@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.uber.autodispose.autoDisposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadGif
@@ -31,7 +32,6 @@ import one.mixin.android.widget.DraggableRecyclerView
 import org.jetbrains.anko.dip
 import retrofit2.HttpException
 import timber.log.Timber
-import javax.inject.Inject
 
 class GiphyFragment : BaseFragment() {
     companion object {

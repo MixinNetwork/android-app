@@ -16,6 +16,8 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
+import java.util.Date
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_backup.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
@@ -35,8 +37,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.delete
 import one.mixin.android.util.backup.findBackup
-import java.util.Date
-import javax.inject.Inject
 
 class BackUpFragment : BaseFragment() {
     companion object {

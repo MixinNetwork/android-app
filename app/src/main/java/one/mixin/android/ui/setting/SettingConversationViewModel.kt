@@ -1,11 +1,12 @@
 package one.mixin.android.ui.setting
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import android.content.Context
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.service.AccountService
@@ -13,7 +14,6 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.MessageSource
-import javax.inject.Inject
 
 class SettingConversationViewModel @Inject
 internal constructor(private val userService: AccountService) : ViewModel() {

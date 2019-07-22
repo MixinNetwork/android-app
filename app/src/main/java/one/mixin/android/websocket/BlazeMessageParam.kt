@@ -1,10 +1,10 @@
 package one.mixin.android.websocket
 
+import java.io.Serializable
+import java.util.UUID
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
-import java.io.Serializable
-import java.util.UUID
 
 data class BlazeMessageParam(
     val conversation_id: String?,

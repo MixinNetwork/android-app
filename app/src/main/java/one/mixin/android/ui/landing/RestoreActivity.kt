@@ -11,6 +11,9 @@ import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
+import java.io.File
+import java.util.Date
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_restore.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -27,9 +30,6 @@ import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.util.backup.BackupNotification
 import one.mixin.android.util.backup.Result
 import one.mixin.android.util.backup.restore
-import java.io.File
-import java.util.Date
-import javax.inject.Inject
 
 class RestoreActivity : BaseActivity() {
 

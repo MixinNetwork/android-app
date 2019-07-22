@@ -1,7 +1,7 @@
 package one.mixin.android.ui.conversation.holder
 
-import androidx.recyclerview.widget.RecyclerView
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_chat_time.view.*
 import one.mixin.android.extension.timeAgoDate
 

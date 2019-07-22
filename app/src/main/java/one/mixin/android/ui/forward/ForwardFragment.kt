@@ -19,6 +19,7 @@ import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDisposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
@@ -34,7 +35,6 @@ import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.User
-import javax.inject.Inject
 
 class ForwardFragment : BaseFragment() {
     companion object {

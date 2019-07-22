@@ -33,6 +33,8 @@ import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
+import kotlin.math.abs
+import kotlin.math.min
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.isNotchScreen
@@ -42,8 +44,6 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.statusBarHeight
 import org.jetbrains.anko.dip
 import org.jetbrains.anko.displayMetrics
-import kotlin.math.abs
-import kotlin.math.min
 
 class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(context, R.style.TransparentDialog) {
 

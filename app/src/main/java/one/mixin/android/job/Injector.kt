@@ -1,6 +1,8 @@
 package one.mixin.android.job
 
 import com.google.gson.JsonElement
+import java.io.IOException
+import javax.inject.Inject
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.ConversationService
@@ -30,8 +32,6 @@ import one.mixin.android.vo.createConversation
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.ChatWebSocket
-import java.io.IOException
-import javax.inject.Inject
 
 open class Injector : Injectable {
     @Inject

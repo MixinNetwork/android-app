@@ -1,6 +1,7 @@
 package one.mixin.android.webrtc
 
 import android.content.Context
+import java.util.concurrent.Executors
 import org.webrtc.AudioSource
 import org.webrtc.AudioTrack
 import org.webrtc.DataChannel
@@ -14,7 +15,6 @@ import org.webrtc.SdpObserver
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
-import java.util.concurrent.Executors
 
 class PeerConnectionClient(private val context: Context, private val events: PeerConnectionEvents) {
     private val executor = Executors.newSingleThreadExecutor()

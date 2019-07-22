@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
+import kotlin.math.min
 import kotlinx.android.synthetic.main.item_chat_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -20,7 +21,6 @@ import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.dip
-import kotlin.math.min
 
 class ImageHolder constructor(containerView: View) : MediaHolder(containerView) {
 

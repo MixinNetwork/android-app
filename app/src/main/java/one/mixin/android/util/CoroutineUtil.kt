@@ -1,5 +1,6 @@
 package one.mixin.android.util
 
+import java.util.concurrent.Executors
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -7,7 +8,6 @@ import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.selects.select
-import java.util.concurrent.Executors
 
 val SINGLE_DB_THREAD by lazy {
     Executors.newSingleThreadExecutor().asCoroutineDispatcher()

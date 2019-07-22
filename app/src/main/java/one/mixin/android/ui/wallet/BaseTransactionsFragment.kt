@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transaction_filters.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import one.mixin.android.R
@@ -16,7 +17,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CheckedFlowLayout
-import javax.inject.Inject
 
 abstract class BaseTransactionsFragment<C> : BaseFragment() {
 

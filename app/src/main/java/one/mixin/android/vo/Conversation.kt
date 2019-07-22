@@ -4,8 +4,8 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import one.mixin.android.extension.nowInUtc
 import java.util.UUID
+import one.mixin.android.extension.nowInUtc
 
 @Entity(tableName = "conversations", indices = [
     Index(value = ["conversation_id"], unique = true),

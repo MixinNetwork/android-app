@@ -2,14 +2,14 @@ package one.mixin.android.widget.linktext
 
 import android.content.Context
 import android.graphics.Color
-import androidx.annotation.ColorInt
-import androidx.appcompat.widget.AppCompatTextView
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.TextUtils
 import android.util.AttributeSet
 import android.view.View
 import android.widget.TextView
+import androidx.annotation.ColorInt
+import androidx.appcompat.widget.AppCompatTextView
 import java.util.LinkedList
 import java.util.regex.Pattern
 

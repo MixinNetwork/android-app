@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_time.*
 import kotlinx.coroutines.Job
 import one.mixin.android.Constants
@@ -16,7 +17,6 @@ import one.mixin.android.extension.shaking
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ErrorHandler
-import javax.inject.Inject
 
 class TimeFragment : BaseFragment() {
 

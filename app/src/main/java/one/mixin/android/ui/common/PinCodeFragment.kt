@@ -4,6 +4,7 @@ import android.graphics.Point
 import android.os.Bundle
 import android.view.View
 import androidx.lifecycle.ViewModel
+import java.security.KeyPair
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -26,7 +27,6 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
 import org.jetbrains.anko.windowManager
-import java.security.KeyPair
 
 abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
     companion object {

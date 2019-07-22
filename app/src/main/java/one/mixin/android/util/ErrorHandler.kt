@@ -3,6 +3,9 @@ package one.mixin.android.util
 import android.content.Context
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
+import java.io.IOException
+import java.net.SocketTimeoutException
+import java.net.UnknownHostException
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.ClientErrorException
@@ -11,9 +14,6 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.extension.toast
 import org.jetbrains.anko.runOnUiThread
 import retrofit2.HttpException
-import java.io.IOException
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
 
 open class ErrorHandler {
 

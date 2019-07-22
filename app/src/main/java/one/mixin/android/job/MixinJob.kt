@@ -4,6 +4,7 @@ import android.util.Log
 import com.birbit.android.jobqueue.Params
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import java.util.UUID
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.NetworkException
@@ -43,7 +44,6 @@ import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
 import one.mixin.android.websocket.createSignalKeyParam
 import timber.log.Timber
-import java.util.UUID
 
 abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 

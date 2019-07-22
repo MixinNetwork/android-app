@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProviders
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -28,7 +29,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.group.adapter.GroupFriendAdapter
 import one.mixin.android.vo.User
 import org.jetbrains.anko.textColor
-import javax.inject.Inject
 
 class GroupFragment : BaseFragment() {
 

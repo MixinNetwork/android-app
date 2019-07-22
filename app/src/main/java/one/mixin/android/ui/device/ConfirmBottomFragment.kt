@@ -8,6 +8,7 @@ import android.net.UrlQuerySanitizer
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.View
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_confirm.view.*
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +31,6 @@ import one.mixin.android.util.Session
 import one.mixin.android.util.UnescapeIgnorePlusUrlQuerySanitizer
 import one.mixin.android.widget.BottomSheet
 import org.whispersystems.libsignal.ecc.Curve
-import javax.inject.Inject
 
 class ConfirmBottomFragment : MixinBottomSheetDialogFragment() {
 

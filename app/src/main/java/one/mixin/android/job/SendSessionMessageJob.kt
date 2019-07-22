@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import java.util.UUID
 import one.mixin.android.crypto.Base64
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
@@ -12,7 +13,6 @@ import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSignal
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.createParamSessionMessage
-import java.util.UUID
 
 class SendSessionMessageJob(
     private val message: Message,

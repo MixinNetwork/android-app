@@ -22,9 +22,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.os.EnvironmentCompat
 import androidx.exifinterface.media.ExifInterface
-import one.mixin.android.MixinApplication
-import one.mixin.android.util.Session
-import one.mixin.android.widget.gallery.MimeType
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileInputStream
@@ -35,6 +32,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.LinkedList
 import java.util.Locale
+import one.mixin.android.MixinApplication
+import one.mixin.android.util.Session
+import one.mixin.android.widget.gallery.MimeType
 
 private fun isAvailable(): Boolean {
     val state = Environment.getExternalStorageState()

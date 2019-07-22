@@ -8,14 +8,14 @@ import android.util.AttributeSet
 import android.view.View
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import kotlin.experimental.and
+import kotlin.experimental.or
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import org.jetbrains.anko.dip
-import kotlin.experimental.and
-import kotlin.experimental.or
 
 class WaveformView : View {
     constructor(context: Context) : super(context)

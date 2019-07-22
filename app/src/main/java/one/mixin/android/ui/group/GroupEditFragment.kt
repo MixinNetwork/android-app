@@ -1,14 +1,15 @@
 package one.mixin.android.ui.group
 
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.autoDisposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group_edit.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -20,7 +21,6 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
 import one.mixin.android.util.ErrorHandler
 import org.jetbrains.anko.textColorResource
-import javax.inject.Inject
 
 class GroupEditFragment : BaseFragment() {
     companion object {

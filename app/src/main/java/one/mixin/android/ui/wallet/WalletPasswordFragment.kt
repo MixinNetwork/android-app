@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navOptions
 import com.uber.autodispose.autoDisposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_wallet_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.Constants
@@ -33,7 +34,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
-import javax.inject.Inject
 
 class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 

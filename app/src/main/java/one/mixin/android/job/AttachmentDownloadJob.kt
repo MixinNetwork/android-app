@@ -2,6 +2,9 @@ package one.mixin.android.job
 
 import android.net.Uri
 import com.birbit.android.jobqueue.Params
+import java.io.File
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
 import okhttp3.Call
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -33,14 +36,10 @@ import one.mixin.android.util.okhttp.ProgressResponseBody
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
-import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_LOADING
 import one.mixin.android.widget.gallery.MimeType
 import org.whispersystems.libsignal.logging.Log
 import org.whispersystems.libsignal.util.guava.Optional
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
 
 class AttachmentDownloadJob(private val message: Message, private val attachmentId: String? = null) :
     MixinJob(Params(PRIORITY_RECEIVE_MESSAGE).addTags(GROUP)

@@ -4,11 +4,11 @@ import android.app.Application
 import dagger.BindsInstance
 import dagger.Component
 import dagger.android.support.AndroidSupportInjectionModule
+import javax.inject.Singleton
 import one.mixin.android.MixinApplication
 import one.mixin.android.di.worker.WorkerModule
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.Injector
-import javax.inject.Singleton
 
 @Singleton
 @Component(modules = [(AndroidSupportInjectionModule::class),

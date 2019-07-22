@@ -1,10 +1,10 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import java.util.UUID
 import one.mixin.android.extension.getEpochNano
 import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
-import java.util.UUID
 
 class RefreshOffsetJob : MixinJob(Params(PRIORITY_UI_HIGH)
     .setSingleId(GROUP).requireNetwork(), UUID.randomUUID().toString()) {

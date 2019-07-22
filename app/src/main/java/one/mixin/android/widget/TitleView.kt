@@ -1,11 +1,11 @@
 package one.mixin.android.widget
 
 import android.content.Context
-import androidx.core.content.ContextCompat
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 

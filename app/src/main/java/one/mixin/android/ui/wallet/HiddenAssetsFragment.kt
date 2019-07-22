@@ -12,6 +12,7 @@ import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_hidden_assets.*
 import kotlinx.android.synthetic.main.view_title.*
 import one.mixin.android.R
@@ -22,7 +23,6 @@ import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.vo.AssetItem
 import org.jetbrains.anko.doAsync
-import javax.inject.Inject
 
 class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 

@@ -13,6 +13,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_search_single.*
 import kotlinx.android.synthetic.main.view_head_search_single.view.*
 import kotlinx.coroutines.launch
@@ -28,8 +30,6 @@ import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 
 class SearchSingleFragment : BaseFragment() {
     companion object {

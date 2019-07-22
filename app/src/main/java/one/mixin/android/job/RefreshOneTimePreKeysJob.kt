@@ -2,11 +2,11 @@ package one.mixin.android.job
 
 import android.util.Log
 import com.birbit.android.jobqueue.Params
+import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.SignalKeyRequest
 import one.mixin.android.crypto.IdentityKeyUtil
 import one.mixin.android.crypto.PreKeyUtil
-import java.util.UUID
 
 class RefreshOneTimePreKeysJob : MixinJob(Params(PRIORITY_UI_HIGH).requireNetwork()
     .groupBy("refresh_pre_keys"), UUID.randomUUID().toString()) {

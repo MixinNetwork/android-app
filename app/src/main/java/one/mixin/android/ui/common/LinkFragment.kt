@@ -5,6 +5,9 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
+import java.util.Timer
+import java.util.TimerTask
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.view_link_state.*
 import one.mixin.android.R
 import one.mixin.android.db.FloodMessageDao
@@ -18,9 +21,6 @@ import one.mixin.android.vo.CallState
 import one.mixin.android.vo.LinkState
 import one.mixin.android.webrtc.CallService
 import org.jetbrains.anko.runOnUiThread
-import java.util.Timer
-import java.util.TimerTask
-import javax.inject.Inject
 
 open class LinkFragment : BaseFragment(), Injectable, Observer<Int> {
 
