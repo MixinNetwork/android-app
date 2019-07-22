@@ -60,6 +60,7 @@ import timber.log.Timber
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import kotlin.math.roundToInt
 
 private val uiHandler = Handler(Looper.getMainLooper())
 
@@ -366,7 +367,7 @@ private val maxVideoSize by lazy {
     480f
 }
 
-fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
+fun getVideoModel(uri: Uri): VideoEditedInfo? {
     try {
         val path = uri.getFilePath() ?: return null
         val m = MediaMetadataRetriever().apply {
@@ -380,8 +381,8 @@ fun Context.getVideoModel(uri: Uri): VideoEditedInfo? {
         val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION).toLong()
         val thumbnail = image.zoomOut()?.fastBlur(1f, 10)?.bitmap2String()
         val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
-        val resultWidth = (Math.round((mediaWith * scale / 2).toDouble()) * 2).toInt()
-        val resultHeight = (Math.round((mediaHeight * scale / 2).toDouble()) * 2).toInt()
+        val resultWidth = ((mediaWith * scale / 2).toDouble().roundToInt() * 2)
+        val resultHeight = ((mediaHeight * scale / 2).toDouble().roundToInt() * 2)
         return if (scale < 1) {
             val bitrate = MediaController.getBitrate(path, scale)
             VideoEditedInfo(path, duration, rotation, mediaWith, mediaHeight, resultWidth, resultHeight, thumbnail,
