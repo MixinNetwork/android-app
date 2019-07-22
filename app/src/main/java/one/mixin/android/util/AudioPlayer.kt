@@ -184,12 +184,6 @@ class AudioPlayer private constructor() {
         return this.id == id && status != STATUS_ERROR && status != STATUS_DONE
     }
 
-    fun seekTo(progress: Int, max: Float = 100f) {
-        val p = progress * player.duration() / max
-        player.seekTo(p.toInt())
-        RxBus.publish(ProgressEvent(id!!, p))
-    }
-
     var timerDisposable: Disposable? = null
     var progress = 0f
     private fun startTimer() {

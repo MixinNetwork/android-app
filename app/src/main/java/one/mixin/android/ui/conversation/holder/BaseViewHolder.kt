@@ -57,7 +57,7 @@ abstract class BaseViewHolder constructor(containerView: View) : RecyclerView.Vi
     }
 
     private var disposable: Disposable? = null
-    protected var messageId: String? = null
+    private var messageId: String? = null
 
     fun listen(bindId: String) {
         if (disposable == null) {
