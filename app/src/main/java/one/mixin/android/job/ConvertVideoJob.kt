@@ -33,20 +33,20 @@ class ConvertVideoJob(
         const val GROUP_ID = "convert_video_group"
     }
 
-    private val video: VideoEditedInfo = MixinApplication.appContext.getVideoModel(uri)!!
-    private val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
+    private val video: VideoEditedInfo? = getVideoModel(uri)
     private val category = if (isPlain) MessageCategory.PLAIN_VIDEO.name else MessageCategory.SIGNAL_VIDEO.name
     private val createdAt: String = createdAt ?: nowInUtc()
-
     override fun onAdded() {
         val mimeType = getMimeType(uri)
+        if (video == null) {
+            return
+        }
         if (mimeType != "video/mp4") {
             video.needChange = true
         }
         if (!video.fileName.endsWith(".mp4")) {
             video.fileName = "${video.fileName.getFileNameNoEx()}.mp4"
         }
-
         val message = createVideoMessage(messageId, conversationId, senderId, category, null,
             video.fileName, uri.toString(), video.duration, video.resultWidth,
             video.resultHeight, video.thumbnail, "video/mp4",
@@ -57,7 +57,11 @@ class ConvertVideoJob(
     }
 
     override fun onRun() {
+        if (video == null) {
+            return
+        }
         jobManager.saveJob(this)
+        val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp("mp4")
         val result = MediaController.getInstance().convertVideo(video.originalPath, video.bitrate, video.resultWidth, video.resultHeight,
             video.originalWidth, video.originalHeight, videoFile, video.needChange)
         if (isCancel) {

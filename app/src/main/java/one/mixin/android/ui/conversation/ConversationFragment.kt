@@ -1516,7 +1516,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         app = chatViewModel.findAppById(user.appId!!)
         if (app != null && app!!.creatorId == Session.getAccountId()) {
-            val menuFragment = requireFragmentManager().findFragmentByTag(MenuFragment.TAG)
+            val menuFragment = fragmentManager?.findFragmentByTag(MenuFragment.TAG)
             if (menuFragment == null) {
                 initMenuLayout(true)
             }
