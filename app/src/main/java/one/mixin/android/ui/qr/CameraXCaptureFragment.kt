@@ -23,7 +23,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import java.io.File
-import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
 import kotlinx.coroutines.Dispatchers
