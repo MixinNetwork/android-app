@@ -172,7 +172,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
         override fun analyze(image: ImageProxy, rotationDegrees: Int) {
             if (!alreadyDetected && !image.planes.isNullOrEmpty() && detecting.compareAndSet(false, true)) {
-                if (isGooglePlayServicesAvailable && Locale.getDefault() != Locale.CHINA) {
+                if (isGooglePlayServicesAvailable) {
                     decodeWithFirebaseVision(image)
                 } else {
                     decodeWithZxing(image)

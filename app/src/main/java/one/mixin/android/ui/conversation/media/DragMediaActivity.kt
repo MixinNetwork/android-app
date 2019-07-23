@@ -69,11 +69,6 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_bottom.view.*
@@ -131,6 +126,11 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.math.min
 
 class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private lateinit var colorDrawable: ColorDrawable
@@ -282,11 +282,19 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         bottomSheet.show()
     }
 
+    @Suppress("DEPRECATION")
     private fun decodeQRCode(viewGroup: ViewGroup) {
-        val imageView = viewGroup.getChildAt(0) as ImageView
-        if (imageView.drawable is BitmapDrawable) {
+        val imageView = viewGroup.getChildAt(0)
+        val bitmap = if (imageView is ImageView) {
+            (imageView.drawable as BitmapDrawable).bitmap
+        } else {
+            imageView.isDrawingCacheEnabled = true
+            imageView.buildDrawingCache()
+            imageView.drawingCache
+        }
+        if (bitmap != null) {
             if (isGooglePlayServicesAvailable()) {
-                val image = FirebaseVisionImage.fromBitmap((imageView.drawable as BitmapDrawable).bitmap)
+                val image = FirebaseVisionImage.fromBitmap(bitmap)
                 val detector = FirebaseVision.getInstance().visionBarcodeDetector
                 detector.detectInImage(image)
                     .addOnSuccessListener { barcodes ->
@@ -303,10 +311,18 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     .addOnFailureListener {
                         toast(R.string.can_not_recognize)
                     }
+                    .addOnCompleteListener {
+                        if (imageView !is ImageView) {
+                            imageView.isDrawingCacheEnabled = false
+                        }
+                    }
             } else {
                 lifecycleScope.launch {
                     val url = withContext(Dispatchers.IO) {
-                        (imageView.drawable as BitmapDrawable).bitmap.decodeQR()
+                        bitmap.decodeQR()
+                    }
+                    if (imageView !is ImageView) {
+                        imageView.isDrawingCacheEnabled = false
                     }
                     if (url != null) {
                         openUrl(url, supportFragmentManager) {
@@ -320,6 +336,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         } else {
             toast(R.string.can_not_recognize)
+            if (imageView !is ImageView) {
+                imageView.isDrawingCacheEnabled = false
+            }
         }
     }
 
