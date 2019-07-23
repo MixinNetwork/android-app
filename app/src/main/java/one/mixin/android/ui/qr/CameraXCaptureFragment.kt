@@ -23,7 +23,6 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import java.io.File
-import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
 import kotlinx.coroutines.Dispatchers
@@ -172,7 +171,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
         override fun analyze(image: ImageProxy, rotationDegrees: Int) {
             if (!alreadyDetected && !image.planes.isNullOrEmpty() && detecting.compareAndSet(false, true)) {
-                if (isGooglePlayServicesAvailable && Locale.getDefault() != Locale.CHINA) {
+                if (isGooglePlayServicesAvailable) {
                     decodeWithFirebaseVision(image)
                 } else {
                     decodeWithZxing(image)

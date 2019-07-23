@@ -45,6 +45,7 @@ import androidx.fragment.app.FragmentTransaction
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailability
 import java.io.File
+import java.util.Locale
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
 import kotlin.math.roundToInt
@@ -545,7 +546,8 @@ fun Context.getSplineFlingDistance(velocity: Int): Double {
 }
 
 fun Context.isGooglePlayServicesAvailable() =
-    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS
+    GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this) == ConnectionResult.SUCCESS &&
+        Locale.getDefault() != Locale.CHINA
 
 fun Fragment.getTipsByAsset(asset: AssetItem) =
     when (asset.chainId) {
