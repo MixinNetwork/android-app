@@ -7,7 +7,6 @@ import com.google.android.exoplayer2.source.UnrecognizedInputFormatException
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -28,6 +27,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 class AudioPlayer private constructor() {
     companion object {
@@ -184,6 +184,12 @@ class AudioPlayer private constructor() {
         return this.id == id && status != STATUS_ERROR && status != STATUS_DONE
     }
 
+    fun seekTo(progress: Int, max: Float = 100f) {
+        val p = progress * player.duration() / max
+        player.seekTo(p.toInt())
+        RxBus.publish(ProgressEvent(id!!, p, STATUS_PLAY))
+    }
+
     var timerDisposable: Disposable? = null
     var progress = 0f
     private fun startTimer() {
@@ -191,7 +197,7 @@ class AudioPlayer private constructor() {
             timerDisposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                 .observeOn(AndroidSchedulers.mainThread()).subscribe {
                     progress = player.getCurrentPos().toFloat() / player.duration()
-                    RxBus.publish(ProgressEvent(id!!, progress))
+                    RxBus.publish(ProgressEvent(id!!, progress, STATUS_PLAY))
                 }
         }
     }

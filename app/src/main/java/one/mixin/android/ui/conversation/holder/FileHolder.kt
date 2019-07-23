@@ -7,9 +7,11 @@ import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.SeekBar
 import com.google.android.exoplayer2.util.MimeTypes
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_file.view.*
+import kotlinx.android.synthetic.main.layout_file_holder_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.notNullWithElse
@@ -84,6 +86,20 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         }, {
             itemView.chat_flag.visibility = View.GONE
         })
+        itemView.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar) {
+            }
+
+            override fun onStopTrackingTouch(seekBar: SeekBar) {
+                if (MimeTypes.isAudio(messageItem.mediaMimeType) &&
+                    AudioPlayer.get().isPlay(messageItem.messageId)) {
+                    AudioPlayer.get().seekTo(seekBar.progress)
+                }
+            }
+        })
         messageItem.mediaStatus?.let {
             when (it) {
                 MediaStatus.EXPIRED.name -> {
@@ -110,10 +126,13 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     itemView.file_progress.visibility = View.VISIBLE
                     if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                         itemView.file_progress.setBindOnly(messageItem.messageId)
+                        itemView.bottom_layout.bindId = messageItem.messageId
                         if (AudioPlayer.get().isPlay(messageItem.messageId)) {
                             itemView.file_progress.setPause()
+                            itemView.bottom_layout.showSeekBar()
                         } else {
                             itemView.file_progress.setPlay()
+                            itemView.bottom_layout.showText()
                         }
                         itemView.file_progress.setOnClickListener {
                             onItemListener.onAudioFileClick(messageItem)
@@ -121,12 +140,17 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
                     } else {
                         itemView.file_progress.setDone()
                         itemView.file_progress.setBindId(null)
+                        itemView.bottom_layout.bindId = null
                         itemView.file_progress.setOnClickListener {
                             handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
                         }
                     }
                     itemView.chat_layout.setOnClickListener {
-                        handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                            onItemListener.onAudioFileClick(messageItem)
+                        } else {
+                            handleClick(hasSelect, isSelect, isMe, messageItem, onItemListener)
+                        }
                     }
                 }
                 MediaStatus.CANCELED.name -> {

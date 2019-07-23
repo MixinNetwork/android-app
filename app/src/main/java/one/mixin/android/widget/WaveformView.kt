@@ -66,8 +66,10 @@ class WaveformView : View {
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.id == mBindId) {
-                        setProgress(it.progress)
-                    } else if (it.status == STATUS_PAUSE || it.status == STATUS_PLAY) {
+                        if (it.status == STATUS_PAUSE || it.status == STATUS_PLAY) {
+                            setProgress(it.progress)
+                        }
+                    } else {
                         setProgress(0f)
                     }
                 }
