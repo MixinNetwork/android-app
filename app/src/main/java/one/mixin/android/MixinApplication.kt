@@ -7,7 +7,6 @@ import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import androidx.work.Configuration
-import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
 import com.facebook.stetho.Stetho
@@ -17,14 +16,11 @@ import dagger.android.DispatchingAndroidInjector
 import dagger.android.HasActivityInjector
 import dagger.android.HasServiceInjector
 import io.reactivex.plugins.RxJavaPlugins
-import java.util.concurrent.atomic.AtomicBoolean
-import javax.inject.Inject
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppComponent
 import one.mixin.android.di.AppInjector
-import one.mixin.android.di.worker.MixinWorkerFactory
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
@@ -39,8 +35,10 @@ import org.jetbrains.anko.notificationManager
 import org.jetbrains.anko.uiThread
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicBoolean
+import javax.inject.Inject
 
-class MixinApplication : Application(), HasActivityInjector, HasServiceInjector {
+class MixinApplication : Application(), HasActivityInjector, HasServiceInjector, Configuration.Provider {
 
     @Inject
     lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
@@ -49,7 +47,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
     lateinit var dispatchingServiceInjector: DispatchingAndroidInjector<Service>
 
     @Inject
-    lateinit var mixinWorkerFactory: MixinWorkerFactory
+    lateinit var workConfiguration: Configuration
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -72,8 +70,6 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
         appContext = applicationContext
         AndroidThreeTen.init(this)
         appComponent = AppInjector.init(this)
-        val wmConfig = Configuration.Builder().setWorkerFactory(mixinWorkerFactory).build()
-        WorkManager.initialize(this, wmConfig)
         RxJavaPlugins.setErrorHandler {}
     }
 
@@ -91,6 +87,8 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector 
 
     override fun activityInjector(): DispatchingAndroidInjector<Activity>? = dispatchingAndroidInjector
     override fun serviceInjector(): DispatchingAndroidInjector<Service>? = dispatchingServiceInjector
+
+    override fun getWorkManagerConfiguration() = workConfiguration
 
     var onlining = AtomicBoolean(false)
 

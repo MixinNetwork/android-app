@@ -46,6 +46,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.OffsetDao
 import one.mixin.android.di.type.DatabaseCategory
 import one.mixin.android.di.type.DatabaseCategoryEnum
+import one.mixin.android.di.worker.MixinWorkerFactory
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.job.BaseJob
 import one.mixin.android.job.JobLogger
@@ -225,6 +226,13 @@ internal class AppModule {
         builder.scheduler(FrameworkJobSchedulerService
             .createSchedulerFor(app.applicationContext, MyJobService::class.java))
         return MixinJobManager(builder.build())
+    }
+
+    @Provides
+    fun provideWorkConfiguration(workerFactory: MixinWorkerFactory): androidx.work.Configuration {
+        return androidx.work.Configuration.Builder()
+            .setWorkerFactory(workerFactory)
+            .build()
     }
 
     @Provides
