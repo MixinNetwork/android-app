@@ -2,7 +2,6 @@ package one.mixin.android.db
 
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
-import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.MINI_VERSION
 
 class MixinDatabaseMigrations private constructor() {
@@ -52,13 +51,13 @@ class MixinDatabaseMigrations private constructor() {
             }
         }
 
-        val MIGRATION_20_21: Migration = object : Migration(20, CURRENT_VERSION) {
+        val MIGRATION_20_21: Migration = object : Migration(20, 21) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE assets ADD COLUMN asset_key TEXT")
             }
         }
 
-        val MIGRATION_21_22: Migration = object : Migration(21, CURRENT_VERSION) {
+        val MIGRATION_21_22: Migration = object : Migration(21, 22) {
             override fun migrate(database: SupportSQLiteDatabase) {
                 database.execSQL("ALTER TABLE messages ADD COLUMN thumb_url TEXT")
             }
