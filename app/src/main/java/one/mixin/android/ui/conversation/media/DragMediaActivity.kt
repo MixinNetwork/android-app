@@ -905,7 +905,16 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             when (playbackState) {
                 STATE_ENDED -> stop()
                 STATE_IDLE -> {
-                    showRefresh(mid)
+                    val messageItem = pagerAdapter.getItem(view_pager.currentItem)
+                    if (messageItem == null) {
+                        showRefresh(mid)
+                        return
+                    }
+                    if (messageItem.isLive()) {
+                        showRefresh(mid)
+                    } else {
+                        stop()
+                    }
                 }
                 STATE_READY -> {
                     hideRefresh(mid)
@@ -981,7 +990,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 this, windowView.video_aspect_ratio.aspectRatio,
                 windowView.video_aspect_ratio.videoRotation,
                 conversationId, messageItem.messageId, messageItem.isVideo(),
-                messageItem.mediaDuration?.toLong()?.formatMillis())
+                messageItem.mediaUrl, messageItem.mediaDuration?.toLong()?.formatMillis())
 
             animatorSet.playTogether(
                 ObjectAnimator.ofInt(colorDrawable, AnimationProperties.COLOR_DRAWABLE_ALPHA, 0),

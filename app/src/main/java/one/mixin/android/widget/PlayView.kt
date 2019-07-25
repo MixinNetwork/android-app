@@ -17,7 +17,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     companion object {
         const val DEFAULT_COLOR = Color.WHITE
-        val DEFAULT_BG = Color.parseColor("#33000000")
+        val DEFAULT_BG = Color.parseColor("#47ffffff")
 
         const val STATUS_IDLE = 0
         const val STATUS_LOADING = 1
@@ -45,7 +45,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     private val pb: ProgressBar by lazy {
         val view = View.inflate(context, R.layout.view_progress_bar_white, null) as ProgressBar
-        addView(view, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        addView(view, LayoutParams(MATCH_PARENT, MATCH_PARENT))
         view
     }
 
