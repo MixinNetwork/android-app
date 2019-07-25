@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.runInTransaction
+import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.getBackupPath
 
 private const val BACKUP_POSTFIX = ".backup"
@@ -47,7 +47,7 @@ fun backup(
         val copyPath = "$backupDir${File.separator}$tmpName"
         var result: File? = null
         try {
-            runInTransaction {
+            withTransaction {
                 MixinDatabase.checkPoint()
                 result = dbFile.copyTo(File(copyPath), overwrite = true)
             }

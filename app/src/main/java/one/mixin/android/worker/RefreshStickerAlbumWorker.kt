@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkerParameters
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
@@ -36,8 +37,11 @@ class RefreshStickerAlbumWorker @AssistedInject constructor(
                 if (r != null && r.isSuccess && r.data != null) {
                     val stickers = r.data as List<Sticker>
                     for (s in stickers) {
-                        stickerDao.insertUpdate(s)
-                        stickerRelationshipDao.insert(StickerRelationship(a.albumId, s.stickerId))
+                        runBlocking {
+                            stickerDao.insertUpdate(s) {
+                                stickerRelationshipDao.insert(StickerRelationship(a.albumId, s.stickerId))
+                            }
+                        }
                     }
                 }
             }

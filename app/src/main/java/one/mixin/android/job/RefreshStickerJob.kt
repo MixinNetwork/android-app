@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.vo.Sticker
 
@@ -16,7 +17,9 @@ class RefreshStickerJob(private val stickerId: String) : BaseJob(Params(PRIORITY
         val response = accountService.getStickerById(stickerId).execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val s = response.data as Sticker
-            stickerDao.insertUpdate(s)
+            runBlocking {
+                stickerDao.insertUpdate(s)
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.withTransaction
 import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
@@ -35,26 +36,28 @@ import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.User
 
-@Database(entities = [
-    (User::class),
-    (Conversation::class),
-    (Message::class),
-    (Participant::class),
-    (Offset::class),
-    (Asset::class),
-    (Snapshot::class),
-    (MessageHistory::class),
-    (SentSenderKey::class),
-    (Sticker::class),
-    (StickerAlbum::class),
-    (App::class),
-    (Hyperlink::class),
-    (FloodMessage::class),
-    (Address::class),
-    (ResendMessage::class),
-    (StickerRelationship::class),
-    (TopAsset::class),
-    (Job::class)], version = CURRENT_VERSION)
+@Database(
+    entities = [
+        (User::class),
+        (Conversation::class),
+        (Message::class),
+        (Participant::class),
+        (Offset::class),
+        (Asset::class),
+        (Snapshot::class),
+        (MessageHistory::class),
+        (SentSenderKey::class),
+        (Sticker::class),
+        (StickerAlbum::class),
+        (App::class),
+        (Hyperlink::class),
+        (FloodMessage::class),
+        (Address::class),
+        (ResendMessage::class),
+        (StickerRelationship::class),
+        (TopAsset::class),
+        (Job::class)], version = CURRENT_VERSION
+)
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
     abstract fun messageDao(): MessageDao
@@ -88,7 +91,15 @@ abstract class MixinDatabase : RoomDatabase() {
             synchronized(lock) {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
-                        .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22)
+                        .addMigrations(
+                            MIGRATION_15_16,
+                            MIGRATION_16_17,
+                            MIGRATION_17_18,
+                            MIGRATION_18_19,
+                            MIGRATION_19_20,
+                            MIGRATION_20_21,
+                            MIGRATION_21_22
+                        )
                         .enableMultiInstanceInvalidation()
                         .addCallback(CALLBACK)
                         .build()
@@ -132,6 +143,6 @@ abstract class MixinDatabase : RoomDatabase() {
     }
 }
 
-fun runInTransaction(block: () -> Unit) {
-    MixinDatabase.getDatabase(MixinApplication.appContext).runInTransaction(block)
+suspend fun <R> withTransaction(block: suspend () -> R) {
+    MixinDatabase.getDatabase(MixinApplication.appContext).withTransaction(block)
 }

@@ -22,6 +22,7 @@ import java.io.FileInputStream
 import java.util.UUID
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -152,8 +153,11 @@ internal constructor(
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
-    fun saveDraft(conversationId: String, text: String) =
-        conversationRepository.saveDraft(conversationId, text)
+    fun saveDraft(conversationId: String, text: String) {
+        GlobalScope.launch(Dispatchers.IO) {
+            conversationRepository.saveDraft(conversationId, text)
+        }
+    }
 
     fun findUserByConversationId(conversationId: String): LiveData<User> =
         userRepository.findUserByConversationId(conversationId)

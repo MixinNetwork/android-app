@@ -5,6 +5,9 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -83,7 +86,9 @@ constructor(
                 result = when (type) {
                     QrCodeType.user.name -> {
                         val user = Gson().fromJson(response.data, User::class.java)
-                        userDao.insertUpdate(user, appDao)
+                        GlobalScope.launch(Dispatchers.IO) {
+                            userDao.insertUpdate(user, appDao)
+                        }
                         Pair(type, user)
                     }
                     QrCodeType.conversation.name -> {
@@ -134,8 +139,11 @@ constructor(
     fun addStickerAsync(request: StickerAddRequest) = accountService.addStickerAsync(request)
 
     fun addStickerLocal(sticker: Sticker, albumId: String) {
-        stickerDao.insertUpdate(sticker)
-        stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
+        GlobalScope.launch(Dispatchers.IO) {
+            stickerDao.insertUpdate(sticker) {
+                stickerRelationshipDao.insert(StickerRelationship(albumId, sticker.stickerId))
+            }
+        }
     }
 
     fun trendingGifs(limit: Int, offset: Int) = giphyService.trendingGifs(limit, offset)

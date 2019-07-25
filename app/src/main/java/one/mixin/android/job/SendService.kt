@@ -8,6 +8,7 @@ import androidx.core.content.getSystemService
 import dagger.android.AndroidInjection
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.batchMarkReadAndTake
@@ -60,7 +61,9 @@ class SendService : IntentService("SendService") {
         manager?.cancel(conversationId.hashCode())
         messageDao.findUnreadMessagesSync(conversationId)?.let { list ->
             if (list.isNotEmpty()) {
-                messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
+                runBlocking {
+                    messageDao.batchMarkReadAndTake(conversationId, Session.getAccountId()!!, list.last().created_at)
+                }
                 list.map { BlazeAckMessage(it.id, MessageStatus.READ.name) }.let { messages ->
                     val chunkList = messages.chunked(100)
                     for (item in chunkList) {

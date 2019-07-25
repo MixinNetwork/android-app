@@ -6,6 +6,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.service.ConversationService
@@ -69,7 +70,9 @@ class RefreshConversationWorker @AssistedInject constructor(
                         applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
                             .putBoolean(data.conversationId, true)
                     }
-                    conversationDao.insertConversation(c)
+                    runBlocking {
+                        conversationDao.insertConversation(c)
+                    }
                 } else {
                     val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
                         ConversationStatus.SUCCESS.ordinal

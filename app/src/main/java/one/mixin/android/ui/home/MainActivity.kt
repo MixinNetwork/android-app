@@ -21,6 +21,7 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
@@ -283,7 +284,9 @@ class MainActivity : BlazeBaseActivity() {
                                     ConversationStatus.SUCCESS.ordinal,
                                     null)
                                 conversation = c
-                                conversationDao.insertConversation(c)
+                                runBlocking {
+                                    conversationDao.insertConversation(c)
+                                }
                             } else {
                                 conversationDao.updateConversation(data.conversationId, ownerId, data.category,
                                     data.name, data.announcement, data.muteUntil, data.createdAt, ConversationStatus.SUCCESS.ordinal)

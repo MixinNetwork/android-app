@@ -5,102 +5,89 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.User
 
-fun UserDao.insertUpdate(
+suspend fun UserDao.insertUpdate(
     user: User,
     appDao: AppDao
-) {
-    runInTransaction {
-        if (user.app != null) {
-            user.appId = user.app!!.appId
-            appDao.insert(user.app!!)
-        }
-        val u = findUser(user.userId)
-        if (u == null) {
-            insert(user)
-        } else {
-            update(user)
-        }
+) = withTransaction {
+    if (user.app != null) {
+        user.appId = user.app!!.appId
+        appDao.insert(user.app!!)
+    }
+    val u = findUser(user.userId)
+    if (u == null) {
+        insert(user)
+    } else {
+        update(user)
     }
 }
 
-fun UserDao.insertUpdateList(
+suspend fun UserDao.insertUpdateList(
     users: List<User>,
     appDao: AppDao
-) {
-    runInTransaction {
-        val apps = arrayListOf<App>()
-        for (u in users) {
-            if (u.app != null) {
-                u.appId = u.app!!.appId
-                apps.add(u.app!!)
-            }
+) = withTransaction {
+    val apps = arrayListOf<App>()
+    for (u in users) {
+        if (u.app != null) {
+            u.appId = u.app!!.appId
+            apps.add(u.app!!)
         }
-        appDao.insertList(apps)
-        insertList(users)
     }
+    appDao.insertList(apps)
+    insertList(users)
 }
 
-fun ConversationDao.insertConversation(
+suspend fun ConversationDao.insertConversation(
     conversation: Conversation,
-    action: (() -> Unit)? = null,
-    haveAction: ((Conversation) -> Unit)? = null
-) {
-    runInTransaction {
-        val c = findConversationById(conversation.conversationId)
-        if (c == null) {
-            insert(conversation)
-            action?.let { it() }
-        } else {
-            haveAction?.let { it(c) }
-        }
+    action: (() -> Unit)? = null
+) = withTransaction {
+    val c = findConversationById(conversation.conversationId)
+    if (c == null) {
+        insert(conversation)
     }
+    action?.invoke()
 }
 
-fun UserDao.updateRelationship(
+suspend fun UserDao.updateRelationship(
     user: User,
     relationship: String
-) {
-    runInTransaction {
-        val u = findUser(user.userId)
-        if (u == null) {
-            insert(user)
-        } else {
-            user.relationship = relationship
-            update(user)
-        }
+) = withTransaction {
+    val u = findUser(user.userId)
+    if (u == null) {
+        insert(user)
+    } else {
+        user.relationship = relationship
+        update(user)
     }
 }
 
-fun StickerDao.insertUpdate(s: Sticker) {
-    runInTransaction {
-        val sticker = getStickerByUnique(s.stickerId)
-        if (sticker != null) {
-            s.lastUseAt = sticker.lastUseAt
-        }
-        if (s.createdAt == "") {
-            s.createdAt = System.currentTimeMillis().toString()
-        }
-        insert(s)
+suspend fun StickerDao.insertUpdate(
+    s: Sticker,
+    action: (() -> Unit)? = null
+) = withTransaction {
+    val sticker = getStickerByUnique(s.stickerId)
+    if (sticker != null) {
+        s.lastUseAt = sticker.lastUseAt
     }
+    if (s.createdAt == "") {
+        s.createdAt = System.currentTimeMillis().toString()
+    }
+    insert(s)
+    action?.invoke()
 }
 
-fun MixinDatabase.clearParticipant(
+suspend fun MixinDatabase.clearParticipant(
     conversationId: String,
     participantId: String
-) {
-    runInTransaction {
-        participantDao().deleteById(conversationId, participantId)
-        sentSenderKeyDao().deleteByConversationId(conversationId)
-    }
+) = withTransaction {
+    participantDao().deleteById(conversationId, participantId)
+    sentSenderKeyDao().deleteByConversationId(conversationId)
 }
 
-fun MessageDao.batchMarkReadAndTake(
+suspend fun MessageDao.batchMarkReadAndTake(
     conversationId: String,
     userId: String,
     createdAt: String
-) {
-    runInTransaction {
-        batchMarkRead(conversationId, userId, createdAt)
-        takeUnseen(userId, conversationId)
-    }
+) = withTransaction {
+    batchMarkRead(conversationId, userId, createdAt)
+    takeUnseen(userId, conversationId)
 }

@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
@@ -9,7 +10,7 @@ import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerRelationship
 
 class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
-    .addTags(RefreshStickerAlbumJob.GROUP).requireNetwork()) {
+    .addTags(GROUP).requireNetwork()) {
 
     companion object {
         private const val serialVersionUID = 1L
@@ -28,8 +29,11 @@ class RefreshStickerAlbumJob : BaseJob(Params(PRIORITY_UI_HIGH)
                     val stickers = r.data as List<Sticker>
                     val relationships = arrayListOf<StickerRelationship>()
                     for (s in stickers) {
-                        stickerDao.insertUpdate(s)
-                        relationships.add(StickerRelationship(a.albumId, s.stickerId))
+                        runBlocking {
+                            stickerDao.insertUpdate(s) {
+                                relationships.add(StickerRelationship(a.albumId, s.stickerId))
+                            }
+                        }
                     }
                     stickerRelationshipDao.insertList(relationships)
                 }

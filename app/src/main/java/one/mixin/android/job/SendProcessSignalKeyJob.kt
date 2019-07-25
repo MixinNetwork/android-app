@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import java.util.UUID
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.clearParticipant
 import one.mixin.android.util.Session
 import one.mixin.android.websocket.BlazeMessageData
@@ -26,7 +27,9 @@ class SendProcessSignalKeyJob(
             }
         } else if (action == ProcessSignalKeyAction.REMOVE_PARTICIPANT) {
             val accountId = Session.getAccountId()
-            appDatabase.clearParticipant(data.conversationId, participantId!!)
+            runBlocking {
+                appDatabase.clearParticipant(data.conversationId, participantId!!)
+            }
             signalProtocol.clearSenderKey(data.conversationId, accountId!!)
         } else if (action == ProcessSignalKeyAction.ADD_PARTICIPANT) {
             sendSenderKey(data.conversationId, participantId!!)

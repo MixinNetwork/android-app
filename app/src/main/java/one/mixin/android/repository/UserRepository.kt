@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import io.reactivex.Observable
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
@@ -14,7 +15,6 @@ import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.db.insertUpdateList
 import one.mixin.android.db.updateRelationship
-import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.User
@@ -57,25 +57,23 @@ constructor(private val userDao: UserDao, private val appDao: AppDao, private va
         userService.relationship(request)
 
     fun upsert(user: User) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(Dispatchers.IO) {
             userDao.insertUpdate(user, appDao)
         }
     }
 
     fun upsertList(users: List<User>) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(Dispatchers.IO) {
             userDao.insertUpdateList(users, appDao)
         }
     }
 
     fun insertApp(app: App) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
-            appDao.insert(app)
-        }
+        appDao.insert(app)
     }
 
     fun upsertBlock(user: User) {
-        GlobalScope.launch(SINGLE_DB_THREAD) {
+        GlobalScope.launch(Dispatchers.IO) {
             userDao.updateRelationship(user, UserRelationship.BLOCKING.name)
         }
     }

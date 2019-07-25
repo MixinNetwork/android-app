@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import java.util.UUID
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
@@ -89,7 +90,9 @@ class ConversationJob(
                     .setIconUrl(cr.iconUrl)
                     .setCodeUrl(cr.codeUrl)
                     .build()
-                conversationDao.insertConversation(conversation)
+                runBlocking {
+                    conversationDao.insertConversation(conversation)
+                }
 
                 val participants = mutableListOf<Participant>()
                 cr.participants.mapTo(participants) { Participant(cr.conversationId, it.userId, it.role, cr.createdAt) }

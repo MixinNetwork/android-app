@@ -74,7 +74,7 @@ interface ConversationDao : BaseDao<Conversation> {
     fun searchConversationById(conversationId: String): Maybe<Conversation>
 
     @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId")
-    fun saveDraft(conversationId: String, text: String)
+    suspend fun saveDraft(conversationId: String, text: String)
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversation(conversationId: String): Conversation?

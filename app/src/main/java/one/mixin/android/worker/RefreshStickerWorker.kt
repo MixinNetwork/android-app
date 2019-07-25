@@ -5,6 +5,7 @@ import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.insertUpdate
@@ -27,7 +28,9 @@ class RefreshStickerWorker @AssistedInject constructor(
         val response = accountService.getStickerById(stickerId).execute().body()
         return if (response != null && response.isSuccess && response.data != null) {
             val s = response.data as Sticker
-            stickerDao.insertUpdate(s)
+            runBlocking {
+                stickerDao.insertUpdate(s)
+            }
             try {
                 Glide.with(applicationContext).load(s.assetUrl).submit(s.assetWidth, s.assetHeight)
             } catch (e: Exception) {

@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.work.WorkerParameters
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.UserDao
@@ -23,7 +24,9 @@ class RefreshContactWorker @AssistedInject constructor(
         val response = contactService.friends().execute().body()
         return if (response != null && response.isSuccess && response.data != null) {
             val users = response.data as List<User>
-            userDao.insertUpdateList(users, appDao)
+            runBlocking {
+                userDao.insertUpdateList(users, appDao)
+            }
             Result.success()
         } else {
             Result.failure()

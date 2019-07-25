@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.RxBus
 import one.mixin.android.db.insertConversation
 import one.mixin.android.event.GroupEvent
@@ -59,7 +60,9 @@ class RefreshConversationJob(val conversationId: String) :
                         applicationContext.sharedPreferences(PREFERENCES_CONVERSATION)
                             .putBoolean(data.conversationId, true)
                     }
-                    conversationDao.insertConversation(c)
+                    runBlocking {
+                        conversationDao.insertConversation(c)
+                    }
                 } else {
                     val status = if (data.participants.find { Session.getAccountId() == it.userId } != null) {
                         ConversationStatus.SUCCESS.ordinal
