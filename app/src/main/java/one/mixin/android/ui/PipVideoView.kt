@@ -9,40 +9,27 @@ import android.app.Activity
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.os.Build
-import android.os.PowerManager
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.TextureView
-import android.view.View
 import android.view.View.GONE
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.SeekBar
 import androidx.annotation.Keep
-import androidx.core.content.getSystemService
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import java.util.concurrent.TimeUnit
-import kotlin.math.abs
-import kotlin.math.round
-import kotlinx.android.synthetic.main.view_controller.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
-import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
@@ -55,6 +42,8 @@ import one.mixin.android.widget.AspectRatioFrameLayout
 import one.mixin.android.widget.PlayView
 import org.jetbrains.anko.dip
 import timber.log.Timber
+import kotlin.math.abs
+import kotlin.math.round
 
 class PipVideoView {
 
@@ -126,18 +115,12 @@ class PipVideoView {
     private var videoWidth: Int = 0
     private var videoHeight: Int = 0
 
+    private var inlineButton: ImageView? = null
+    private var closeButton: ImageView? = null
     private var playView: PlayView? = null
     private var refreshButton: ImageView? = null
-    private var controller: View? = null
 
-    private var isVideo = false
     private var mediaUrl: String? = null
-
-    @SuppressLint("InvalidWakeLockTag")
-    private val wakeLock =
-        appContext.getSystemService<PowerManager>()!!.run {
-            newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin_pip")
-        }
 
     private val windowManager: WindowManager by lazy {
         appContext.getSystemService(WINDOW_SERVICE) as WindowManager
@@ -150,11 +133,8 @@ class PipVideoView {
         conversationId: String,
         messageId: String,
         isVideo: Boolean,
-        mediaUrl: String?,
-        duration: String? = null
+        mediaUrl: String?
     ): TextureView {
-        wakeLock.acquire()
-        this.isVideo = isVideo
         this.mediaUrl = mediaUrl
         windowView = object : FrameLayout(activity) {
             private var startX: Float = 0f
@@ -233,39 +213,40 @@ class PipVideoView {
         val textureView = TextureView(activity)
         aspectRatioFrameLayout.addView(textureView, ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT))
 
-        val inlineButton = ImageView(activity)
-        inlineButton.scaleType = ImageView.ScaleType.CENTER
-        inlineButton.visibility = GONE
-        inlineButton.setImageResource(R.drawable.ic_outinline)
-        windowView.addView(
-            inlineButton,
-            FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END)
-        )
-        inlineButton.setOnClickListener {
-            if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-                appContext.toast(R.string.need_background_permission)
-            }
-            DragMediaActivity.show(
-                MixinApplication.appContext,
-                conversationId,
-                messageId,
-                aspectRatio,
-                VideoPlayer.player().currentPosition()
+        inlineButton = ImageView(activity).apply {
+            scaleType = ImageView.ScaleType.CENTER
+            visibility = GONE
+            setImageResource(R.drawable.ic_outinline)
+            windowView.addView(
+                this,
+                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.END)
             )
-            close()
+            setOnClickListener {
+                if (XiaomiUtilities.isMIUI() && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+                    appContext.toast(R.string.need_background_permission)
+                }
+                DragMediaActivity.show(
+                    MixinApplication.appContext,
+                    conversationId,
+                    messageId,
+                    aspectRatio,
+                    VideoPlayer.player().currentPosition()
+                )
+            }
         }
 
-        val closeButton = ImageView(activity)
-        closeButton.scaleType = ImageView.ScaleType.CENTER
-        closeButton.visibility = GONE
-        closeButton.setImageResource(R.drawable.ic_close_white_24dp)
-        windowView.addView(
-            closeButton,
-            FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START)
-        )
-        closeButton.setOnClickListener {
-            close()
-            VideoPlayer.destroy()
+        closeButton = ImageView(activity).apply {
+            scaleType = ImageView.ScaleType.CENTER
+            visibility = GONE
+            setImageResource(R.drawable.ic_close_white_24dp)
+            windowView.addView(
+                this,
+                FrameLayout.LayoutParams(appContext.dpToPx(56f), appContext.dpToPx(48f), Gravity.TOP or Gravity.START)
+            )
+            setOnClickListener {
+                close(true)
+                VideoPlayer.destroy()
+            }
         }
 
         val dp42 = appContext.dpToPx(42f)
@@ -280,7 +261,6 @@ class PipVideoView {
                 mediaUrl?.let {
                     if (isVideo) {
                         VideoPlayer.player().loadVideo(it, messageId, true)
-                        observeDuration()
                     } else {
                         VideoPlayer.player().loadHlsVideo(it, messageId, true)
                     }
@@ -327,9 +307,7 @@ class PipVideoView {
                     Player.STATE_IDLE -> {
                         if (isVideo) {
                             stop()
-                            if (playView?.isVisible == false) {
-                                playView?.fadeIn()
-                            }
+                            fadeIn()
                         } else {
                             showRefresh()
                         }
@@ -352,62 +330,18 @@ class PipVideoView {
             }
         })
 
-        if (isVideo) {
-            controller = activity.layoutInflater.inflate(R.layout.view_controller, null).apply {
-                visibility = GONE
-                duration?.let { remain_tv.text = it }
-                windowView.addView(controller,
-                    FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT, Gravity.BOTTOM).also {
-                        it.marginStart = appContext.dpToPx(8f)
-                        it.marginEnd = appContext.dpToPx(8f)
-                        it.bottomMargin = appContext.dpToPx(8f)
-                    })
-                var isPlaying = false
-                seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-                    override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                        isPlaying = VideoPlayer.player().isPlaying()
-                        VideoPlayer.player().pause()
-                    }
-
-                    override fun onStopTrackingTouch(seekBar: SeekBar?) {
-                        if (isPlaying) {
-                            VideoPlayer.player().start()
-                        }
-                    }
-
-                    override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                        if (fromUser) {
-                            VideoPlayer.player().seekTo(progress * VideoPlayer.player().duration() / 200)
-                        }
-                    }
-                })
-
-                observeDuration()
-            }
-        }
-
         textureView.setOnClickListener {
-            if (closeButton.isVisible) {
-                closeButton.fadeOut()
-                inlineButton.fadeOut()
-                if (refreshButton?.isVisible == false) {
-                    playView?.fadeOut()
-                }
-                controller?.fadeOut()
+            if (closeButton?.isVisible == true) {
+                fadeOut()
             } else {
-                closeButton.fadeIn()
-                inlineButton.fadeIn()
-                if (refreshButton?.isVisible == false && playView?.isVisible == false) {
-                    playView?.fadeIn()
-                }
-                controller?.fadeIn()
+                fadeIn()
             }
         }
-        val prefreences = appContext.defaultSharedPreferences
-        val sidex = prefreences.getInt(SIDEX, 1)
-        val sidey = prefreences.getInt(SIDEY, 0)
-        val px = prefreences.getFloat(PX, 0f)
-        val py = prefreences.getFloat(PY, 0f)
+        val preferences = appContext.defaultSharedPreferences
+        val sidex = preferences.getInt(SIDEX, 1)
+        val sidey = preferences.getInt(SIDEY, 0)
+        val px = preferences.getFloat(PX, 0f)
+        val py = preferences.getFloat(PY, 0f)
         try {
             windowLayoutParams = WindowManager.LayoutParams()
             windowLayoutParams.width = videoWidth
@@ -434,15 +368,30 @@ class PipVideoView {
 
     var shown = false
 
-    fun close() {
+    fun close(stop: Boolean) {
         try {
+            if (stop) {
+                stop()
+            }
             shown = false
             windowManager.removeView(windowView)
-            wakeLock.release()
-            if (disposable?.isDisposed == false) {
-                disposable?.dispose()
-            }
         } catch (e: Exception) {
+        }
+    }
+
+    private fun fadeIn() {
+        closeButton?.fadeIn()
+        inlineButton?.fadeIn()
+        if (refreshButton?.isVisible == false && playView?.isVisible == false) {
+            playView?.fadeIn()
+        }
+    }
+
+    private fun fadeOut() {
+        closeButton?.fadeOut()
+        inlineButton?.fadeOut()
+        if (refreshButton?.isVisible == false) {
+            playView?.fadeOut()
         }
     }
 
@@ -537,43 +486,17 @@ class PipVideoView {
         }
     }
 
-    private var disposable: Disposable? = null
     private fun start() {
-        observeDuration()
         playView?.status = PlayView.STATUS_PLAYING
         VideoPlayer.player().start()
     }
 
-    private fun observeDuration() {
-        if (isVideo) {
-            if (disposable?.isDisposed == false) {
-                disposable?.dispose()
-            }
-            disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    controller?.let {
-                        if (VideoPlayer.player().duration() != 0) {
-                            it.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
-                                VideoPlayer.player().duration()).toInt()
-                            it.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
-                            if (it.remain_tv.text.isEmpty()) {
-                                it.remain_tv.text = VideoPlayer.player().duration().toLong().formatMillis()
-                            }
-                        }
-                    }
-                }
-        }
-    }
-
     private fun pause() {
-        disposable?.dispose()
         playView?.status = PlayView.STATUS_PAUSING
         VideoPlayer.player().pause()
     }
 
     private fun stop() {
-        disposable?.dispose()
         playView?.status = PlayView.STATUS_IDLE
         VideoPlayer.player().stop()
     }
