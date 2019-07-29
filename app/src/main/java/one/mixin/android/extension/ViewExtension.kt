@@ -2,6 +2,7 @@ package one.mixin.android.extension
 
 import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -263,4 +264,14 @@ fun View.IntProperty(name: String, getAction: (View) -> Int, setAction: (View, I
             return setAction(obj, value)
         }
     }
+}
+
+fun View.isActivityNotDestroyed(): Boolean {
+    val context = this.context ?: return false
+    if (context is Activity) {
+        if (context.isDestroyed || context.isFinishing) {
+            return false
+        }
+    }
+    return true
 }

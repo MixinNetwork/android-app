@@ -174,22 +174,14 @@ public class MixinDialogFragment extends Fragment
     }
 
     /**
-     * Dismiss the fragment and its dialog.  If the fragment was added to the
-     * back stack, all back stack state up to and including this entry will
-     * be popped.  Otherwise, a new transaction will be committed to remove
+     * Dismiss the fragment and its dialog uses
+     * {@link FragmentTransaction#commitAllowingStateLoss().
+     * If the fragment was added to the back stack,
+     * all back stack state up to and including this entry will be popped.
+     * Otherwise, a new transaction will be committed to remove
      * the fragment.
      */
     public void dismiss() {
-        dismissInternal(false);
-    }
-
-    /**
-     * Version of {@link #dismiss()} that uses
-     * {@link FragmentTransaction#commitAllowingStateLoss()
-     * FragmentTransaction.commitAllowingStateLoss()}. See linked
-     * documentation for further details.
-     */
-    public void dismissAllowingStateLoss() {
         dismissInternal(true);
     }
 

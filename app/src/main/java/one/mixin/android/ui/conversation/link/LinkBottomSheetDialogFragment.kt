@@ -383,7 +383,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
 
     override fun dismiss() {
         if (isAdded) {
-            super.dismissAllowingStateLoss()
+            super.dismiss()
         }
     }
 
