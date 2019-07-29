@@ -7,11 +7,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.android.lifecycle.scope
-import javax.inject.Inject
 import one.mixin.android.R
 import one.mixin.android.di.Injectable
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.widget.BottomSheet
+import javax.inject.Inject
 
 abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectable {
 
@@ -47,7 +47,7 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
                 dialog.dismiss()
                 onDismissListener?.onDismiss()
             } catch (e: IllegalStateException) {
-                super.dismissAllowingStateLoss()
+                super.dismiss()
             }
         }
     }
