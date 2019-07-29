@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getColorCode
+import one.mixin.android.extension.isActivityNotDestroyed
 import one.mixin.android.extension.loadImage
 import org.jetbrains.anko.sp
 
@@ -65,6 +66,7 @@ class AvatarView(context: Context, attrs: AttributeSet?) : ViewAnimator(context,
     }
 
     fun setGroup(url: String?) {
+        if (!isActivityNotDestroyed()) return
         displayedChild = POS_AVATAR
         Glide.with(this)
             .load(url)
