@@ -8,8 +8,8 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 
 import dagger.android.AndroidInjection;
+import dagger.android.HasAndroidInjector;
 import dagger.android.support.AndroidSupportInjection;
-import dagger.android.support.HasSupportFragmentInjector;
 import one.mixin.android.MixinApplication;
 
 /**
@@ -67,7 +67,7 @@ public class AppInjector{
             AndroidInjection.inject(activity);
             return;
         }
-        if (activity instanceof HasSupportFragmentInjector) {
+        if (activity instanceof HasAndroidInjector) {
             AndroidInjection.inject(activity);
         }
         if (activity instanceof FragmentActivity) {
