@@ -938,12 +938,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             when (playbackState) {
                 STATE_ENDED -> stop()
                 STATE_IDLE -> {
-                    val messageItem = pagerAdapter.list?.find { it.messageId == mid }
-                    if (messageItem?.isLive() == true) {
-                        showRefresh(mid)
-                    } else {
-                        stop()
-                    }
+                    stop()
                 }
                 STATE_READY -> {
                     hideRefresh(mid)
