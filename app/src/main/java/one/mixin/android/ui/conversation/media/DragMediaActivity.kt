@@ -785,7 +785,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             .apply {
                 addUpdateListener {
                     (it.animatedValue as Int).apply {
-                        val item = pagerAdapter.getItem(view_pager.currentItem) ?: return@addUpdateListener
+                        val item = pagerAdapter.getItem(view_pager.currentItem)
+                            ?: return@addUpdateListener
                         val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${item.messageId}")
                             ?: return@addUpdateListener
                         v.translationY = (realSize().y * this / 100).toFloat()
@@ -999,6 +1000,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val position = IntArray(2)
             windowView.video_aspect_ratio.getLocationOnScreen(position)
             val messageItem = pagerAdapter.getItem(view_pager.currentItem) ?: return
+            window.decorView.systemUiVisibility =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                } else {
+                    SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                }
             val changedTextureView = pipVideoView.show(
                 this, windowView.video_aspect_ratio.aspectRatio,
                 windowView.video_aspect_ratio.videoRotation, conversationId,
@@ -1011,11 +1018,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_Y, scale),
                 ObjectAnimator.ofFloat(
                     windowView.video_aspect_ratio, View.TRANSLATION_X, rect.x - windowView.video_aspect_ratio.x -
-                        this.realSize().x * (1f - scale) / 2
+                    this.realSize().x * (1f - scale) / 2
                 ),
                 ObjectAnimator.ofFloat(
                     windowView.video_aspect_ratio, View.TRANSLATION_Y, rect.y - windowView.video_aspect_ratio.y +
-                        this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2
+                    this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2
                 )
             )
             animatorSet.interpolator = DecelerateInterpolator()
@@ -1115,9 +1122,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             activity.startActivity(
                 intent, ActivityOptions.makeSceneTransitionAnimation(
-                    activity, imageView,
-                    "transition"
-                ).toBundle()
+                activity, imageView,
+                "transition"
+            ).toBundle()
             )
         }
 
