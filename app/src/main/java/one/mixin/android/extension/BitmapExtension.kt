@@ -6,13 +6,12 @@ import com.google.zxing.BarcodeFormat
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.DecodeHintType
 import com.google.zxing.LuminanceSource
-import com.google.zxing.MultiFormatReader
 import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.ReaderException
 import com.google.zxing.Result
 import com.google.zxing.common.GlobalHistogramBinarizer
 import com.google.zxing.common.HybridBinarizer
-import com.google.zxing.multi.GenericMultipleBarcodeReader
+import com.google.zxing.qrcode.QRCodeReader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -72,7 +71,7 @@ fun Bitmap.decodeQR(): String? {
 
 private fun decodeLuminanceSource(source: LuminanceSource): String? {
     val binaryBitmap = BinaryBitmap(GlobalHistogramBinarizer(source))
-    val reader = MultiFormatReader()
+    val reader = QRCodeReader()
     val hints = EnumMap<DecodeHintType, Any>(DecodeHintType::class.java)
     hints[DecodeHintType.TRY_HARDER] = true
     hints[DecodeHintType.POSSIBLE_FORMATS] = EnumSet.allOf(BarcodeFormat::class.java)
@@ -80,26 +79,14 @@ private fun decodeLuminanceSource(source: LuminanceSource): String? {
     val results = ArrayList<Result>(1)
     var readException: ReaderException? = null
     try {
-        val multiReader = GenericMultipleBarcodeReader(reader)
-        val theResults = multiReader.decodeMultiple(binaryBitmap, hints)
-        if (theResults != null) {
-            results.addAll(theResults)
+        val hintsPure = EnumMap<DecodeHintType, Any>(hints)
+        hintsPure[DecodeHintType.PURE_BARCODE] = true
+        val theResult = reader.decode(binaryBitmap, hintsPure)
+        if (theResult != null) {
+            results.add(theResult)
         }
     } catch (e: ReaderException) {
         readException = e
-    }
-
-    if (results.isEmpty()) {
-        try {
-            val hintsPure = EnumMap<DecodeHintType, Any>(hints)
-            hintsPure[DecodeHintType.PURE_BARCODE] = true
-            val theResult = reader.decode(binaryBitmap, hintsPure)
-            if (theResult != null) {
-                results.add(theResult)
-            }
-        } catch (e: ReaderException) {
-            readException = e
-        }
     }
 
     if (results.isEmpty()) {
