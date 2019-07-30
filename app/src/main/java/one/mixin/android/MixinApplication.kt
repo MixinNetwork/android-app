@@ -1,8 +1,6 @@
 package one.mixin.android
 
-import android.app.Activity
 import android.app.Application
-import android.app.Service
 import android.content.Context
 import android.webkit.CookieManager
 import android.webkit.WebStorage
@@ -13,8 +11,7 @@ import com.facebook.stetho.Stetho
 import com.google.firebase.FirebaseApp
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.HasActivityInjector
-import dagger.android.HasServiceInjector
+import dagger.android.HasAndroidInjector
 import io.reactivex.plugins.RxJavaPlugins
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -38,13 +35,10 @@ import org.jetbrains.anko.uiThread
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 
-class MixinApplication : Application(), HasActivityInjector, HasServiceInjector, Configuration.Provider {
+class MixinApplication : Application(), HasAndroidInjector, Configuration.Provider {
 
     @Inject
-    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Activity>
-
-    @Inject
-    lateinit var dispatchingServiceInjector: DispatchingAndroidInjector<Service>
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
 
     @Inject
     lateinit var workConfiguration: Configuration
@@ -85,8 +79,7 @@ class MixinApplication : Application(), HasActivityInjector, HasServiceInjector,
         appComponent = AppInjector.inject(this)
     }
 
-    override fun activityInjector(): DispatchingAndroidInjector<Activity>? = dispatchingAndroidInjector
-    override fun serviceInjector(): DispatchingAndroidInjector<Service>? = dispatchingServiceInjector
+    override fun androidInjector() = dispatchingAndroidInjector
 
     override fun getWorkManagerConfiguration() = workConfiguration
 

@@ -6,24 +6,22 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import com.uber.autodispose.android.lifecycle.scope
 import dagger.android.DispatchingAndroidInjector
-import dagger.android.support.HasSupportFragmentInjector
+import dagger.android.HasAndroidInjector
 import javax.inject.Inject
 import one.mixin.android.R
 
 @SuppressLint("Registered")
-open class BaseActivity : AppCompatActivity(), HasSupportFragmentInjector {
+open class BaseActivity : AppCompatActivity(), HasAndroidInjector {
 
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
 
     @Inject
-    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Fragment>
+    lateinit var dispatchingAndroidInjector: DispatchingAndroidInjector<Any>
 
-    override fun supportFragmentInjector(): DispatchingAndroidInjector<Fragment>? =
-        dispatchingAndroidInjector
+    override fun androidInjector() = dispatchingAndroidInjector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
