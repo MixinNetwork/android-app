@@ -14,6 +14,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.graphics.Color
+import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -22,6 +23,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
 import android.view.View.GONE
@@ -413,6 +415,25 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         private fun createVideoView(container: ViewGroup, position: Int, messageItem: MessageItem): View {
             val view = View.inflate(container.context, R.layout.item_video_layout, null)
+            view.controller.setOnTouchListener(View.OnTouchListener { v, event ->
+                val seekRect = Rect()
+                v.seek_bar.getHitRect(seekRect)
+                if (event.y >= (seekRect.top - dpToPx(16f)) && event.y <= (seekRect.bottom + dpToPx(16f))
+                    && event.x >= seekRect.left && event.x <= seekRect.right) {
+                    val y = seekRect.top + seekRect.height() / 2f
+                    var x = event.x - seekRect.left
+                    if (x < 0) {
+                        x = 0f
+                    } else if (x > seekRect.width()) {
+                        x = seekRect.width().toFloat()
+                    }
+                    val me = MotionEvent.obtain(event.downTime, event.eventTime,
+                        event.action, x, y, event.metaState)
+                    return@OnTouchListener v.seek_bar.onTouchEvent(me)
+                }
+                return@OnTouchListener false
+            })
+
             val ratio = messageItem.mediaWidth!!.toFloat() / messageItem.mediaHeight!!.toFloat()
             setSize(ratio, view)
             view.close_iv.setOnClickListener { finishAfterTransition() }
