@@ -36,6 +36,7 @@ import com.facebook.rebound.Spring
 import com.facebook.rebound.SpringConfig
 import com.facebook.rebound.SpringSystem
 import java.io.FileNotFoundException
+import java.io.IOException
 import org.jetbrains.anko.dip
 import timber.log.Timber
 
@@ -223,6 +224,7 @@ fun View.navigate(
     }
 }
 
+@Throws(IOException::class)
 fun View.capture(context: Context) {
     val outFile = context.getPublicPicturePath().createImageTemp(noMedia = false)
     val b = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)

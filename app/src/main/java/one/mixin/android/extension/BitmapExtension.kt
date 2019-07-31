@@ -15,6 +15,7 @@ import com.google.zxing.qrcode.QRCodeReader
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
+import java.io.IOException
 import java.util.EnumMap
 import java.util.EnumSet
 
@@ -35,23 +36,30 @@ fun Bitmap.toPNGBytes(): ByteArray {
 }
 
 fun Bitmap.saveQRCode(ctx: Context, name: String) {
-    val bos = ByteArrayOutputStream()
-    compress(Bitmap.CompressFormat.PNG, 100, bos)
-    val fos = FileOutputStream(ctx.getQRCodePath(name))
-    fos.write(bos.toByteArray())
-    fos.flush()
-    fos.closeSilently()
+    try {
+        val bos = ByteArrayOutputStream()
+        compress(Bitmap.CompressFormat.PNG, 100, bos)
+        val fos = FileOutputStream(ctx.getQRCodePath(name))
+        fos.write(bos.toByteArray())
+        fos.flush()
+        fos.closeSilently()
+    } catch (ignored: Exception) {
+    }
 }
 
 fun Bitmap.saveGroupAvatar(ctx: Context, name: String) {
-    val bos = ByteArrayOutputStream()
-    compress(Bitmap.CompressFormat.PNG, 100, bos)
-    val fos = FileOutputStream(ctx.getGroupAvatarPath(name))
-    fos.write(bos.toByteArray())
-    fos.flush()
-    fos.closeSilently()
+    try {
+        val bos = ByteArrayOutputStream()
+        compress(Bitmap.CompressFormat.PNG, 100, bos)
+        val fos = FileOutputStream(ctx.getGroupAvatarPath(name))
+        fos.write(bos.toByteArray())
+        fos.flush()
+        fos.closeSilently()
+    } catch (ignored: Exception) {
+    }
 }
 
+@Throws(IOException::class)
 fun Bitmap.save(file: File) {
     val bos = ByteArrayOutputStream()
     compress(Bitmap.CompressFormat.PNG, 100, bos)
