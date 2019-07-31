@@ -116,4 +116,27 @@
             android:text="@string/setting_emergency"
             tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/setting_divider"
+        android:background="@color/bg_gray"/>
+
+    <RelativeLayout
+        android:id="@+id/contact_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/contact_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_mobile_contact"
+            tools:ignore="RelativeOverlap"/>
+    </RelativeLayout>
 </LinearLayout>
