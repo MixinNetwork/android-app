@@ -229,8 +229,7 @@ class PipVideoView {
                     MixinApplication.appContext,
                     conversationId,
                     messageId,
-                    aspectRatio,
-                    VideoPlayer.player().currentPosition()
+                    aspectRatio
                 )
             }
         }

@@ -143,10 +143,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         intent.getStringExtra(MESSAGE_ID)
     }
 
-    private val currentPosition by lazy {
-        intent.getLongExtra(CURRENT_POSITION, 0L)
-    }
-
     private val ratio by lazy {
         intent.getFloatExtra(RATIO, 0f)
     }
@@ -899,11 +895,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun play(pos: Int) = load(pos) {
         start()
-        pagerAdapter.getItem(pos)?.let { messageItem ->
-            if (messageItem.isVideo()) {
-                VideoPlayer.player().seekTo(currentPosition)
-            }
-        }
+        pagerAdapter.getItem(pos)
     }
 
     private val mediaListener = object : MixinPlayer.MediaPlayerListenerWrapper() {
@@ -1045,11 +1037,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             animatorSet.duration = 250
             animatorSet.addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationStart(animation: Animator?) {
-                    if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == STATE_IDLE) {
-                        VideoPlayer.player().loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
-                        VideoPlayer.player().setVideoTextureView(changedTextureView)
-                        VideoPlayer.player().pause()
-                    }
                     windowView.pip_iv.fadeOut()
                     windowView.close_iv.fadeOut()
                     if (windowView.live_tv.isEnabled) {
@@ -1063,6 +1050,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 override fun onAnimationEnd(animation: Animator?) {
                     pipAnimationInProgress = false
                     VideoPlayer.player().setVideoTextureView(changedTextureView)
+                    if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == STATE_IDLE) {
+                        VideoPlayer.player().loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
+                        VideoPlayer.player().setVideoTextureView(changedTextureView)
+                        VideoPlayer.player().pause()
+                    }
                     dismiss()
                 }
             })
@@ -1126,7 +1118,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     companion object {
         private const val MESSAGE_ID = "id"
         private const val RATIO = "ratio"
-        private const val CURRENT_POSITION = "current_position"
         private const val CONVERSATION_ID = "conversation_id"
         private const val ALPHA_MAX = 0xFF
         private const val PREFIX = "media"
@@ -1144,13 +1135,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             )
         }
 
-        fun show(context: Context, conversationId: String, messageId: String, ratio: Float, currentPosition: Long) {
+        fun show(context: Context, conversationId: String, messageId: String, ratio: Float) {
             val intent = Intent(context, DragMediaActivity::class.java).apply {
                 addFlags(FLAG_ACTIVITY_NEW_TASK)
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
                 putExtra(RATIO, ratio)
-                putExtra(CURRENT_POSITION, currentPosition)
             }
             context.startActivity(intent)
         }
