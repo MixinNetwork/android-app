@@ -7,15 +7,9 @@ import android.os.IBinder
 import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import com.google.gson.Gson
 import dagger.android.AndroidInjection
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
-import java.util.UUID
-import java.util.concurrent.Executors
-import java.util.concurrent.ScheduledFuture
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.api.service.AccountService
@@ -32,6 +26,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.CallNotificationBuilder
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -48,6 +43,11 @@ import org.webrtc.PeerConnectionFactory
 import org.webrtc.SessionDescription
 import org.webrtc.StatsReport
 import timber.log.Timber
+import java.util.UUID
+import java.util.concurrent.Executors
+import java.util.concurrent.ScheduledFuture
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
 
@@ -78,7 +78,7 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
     @Inject
     lateinit var conversationRepo: ConversationRepository
 
-    private val gson = Gson()
+    private val gson = customGson
 
     private var blazeMessageData: BlazeMessageData? = null
     private var quoteMessageId: String? = null

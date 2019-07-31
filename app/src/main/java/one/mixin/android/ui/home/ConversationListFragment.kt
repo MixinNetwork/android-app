@@ -50,6 +50,7 @@ import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.qr.CaptureActivity
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.AppCardData
@@ -389,7 +390,7 @@ class ConversationListFragment : LinkFragment() {
                 }
                 conversationItem.contentType == MessageCategory.APP_BUTTON_GROUP.name -> {
                     itemView.group_name_tv.visibility = GONE
-                    val buttons = Gson().fromJson(conversationItem.content, Array<AppButtonData>::class.java)
+                    val buttons = customGson.fromJson(conversationItem.content, Array<AppButtonData>::class.java)
                     var content = ""
                     buttons.map { content += "[" + it.label + "]" }
                     itemView.msg_tv.text = content
@@ -397,7 +398,7 @@ class ConversationListFragment : LinkFragment() {
                 }
                 conversationItem.contentType == MessageCategory.APP_CARD.name -> {
                     itemView.group_name_tv.visibility = GONE
-                    val cardData = Gson().fromJson(conversationItem.content, AppCardData::class.java)
+                    val cardData = customGson.fromJson(conversationItem.content, AppCardData::class.java)
                     itemView.msg_tv.text = cardData.title
                     AppCompatResources.getDrawable(itemView.context, R.drawable.ic_touch_app)
                 }

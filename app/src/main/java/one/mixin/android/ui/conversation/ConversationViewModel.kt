@@ -68,6 +68,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
@@ -175,7 +176,8 @@ internal constructor(
     fun sendReplyMessage(conversationId: String, sender: User, content: String, replyMessage: MessageItem, isPlain: Boolean) {
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
         val message = createReplyMessage(UUID.randomUUID().toString(), conversationId,
-            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING, replyMessage.messageId, Gson().toJson(QuoteMessageItem(replyMessage)))
+            sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING, replyMessage.messageId, customGson.toJson(QuoteMessageItem
+        (replyMessage)))
         jobManager.addJobInBackground(SendMessageJob(message))
     }
 
@@ -594,7 +596,7 @@ internal constructor(
                     sendForwardMessages(item.conversationId, messages, item.isBot())
                 }
 
-               withContext(Dispatchers.Main) {
+                withContext(Dispatchers.Main) {
                     MixinApplication.get().toast(R.string.forward_success)
                 }
                 findUnreadMessagesSync(conversationId!!)?.let { list ->

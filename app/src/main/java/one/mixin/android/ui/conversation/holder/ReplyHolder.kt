@@ -11,7 +11,6 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
-import com.google.gson.Gson
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_reply.view.*
 import one.mixin.android.R
@@ -23,6 +22,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.QuoteMessageItem
@@ -189,7 +189,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
             }
         }
 
-        val quoteMessage = Gson().fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
+        val quoteMessage = customGson.fromJson(messageItem.quoteContent, QuoteMessageItem::class.java)
         itemView.reply_name_tv.text = quoteMessage.userFullName
         itemView.reply_name_tv.setTextColor(getColorById(quoteMessage.userId))
         itemView.reply_layout.setBackgroundColor(getColorById(quoteMessage.userId))

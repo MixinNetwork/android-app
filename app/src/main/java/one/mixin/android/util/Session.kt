@@ -1,12 +1,9 @@
 package one.mixin.android.util
 
-import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
-import java.util.UUID
-import java.util.concurrent.ConcurrentHashMap
 import okhttp3.Request
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -21,7 +18,10 @@ import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.toHex
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.vo.Account
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 class Session {
     companion object {
@@ -30,7 +30,7 @@ class Session {
         fun storeAccount(account: Account) {
             self = account
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
-            preference.putString(Constants.Account.PREF_NAME_ACCOUNT, Gson().toJson(account))
+            preference.putString(Constants.Account.PREF_NAME_ACCOUNT, customGson.toJson(account))
         }
 
         fun getAccount(): Account? = if (self != null) {
@@ -39,7 +39,7 @@ class Session {
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
             val json = preference.getString(Constants.Account.PREF_NAME_ACCOUNT, "")
             if (!json.isNullOrBlank()) {
-                Gson().fromJson<Account>(json, object : TypeToken<Account>() {}.type)
+                customGson.fromJson<Account>(json, object : TypeToken<Account>() {}.type)
             } else {
                 null
             }

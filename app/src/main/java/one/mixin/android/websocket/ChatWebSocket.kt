@@ -5,12 +5,8 @@ import android.app.Application
 import android.util.Log
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
-import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -34,6 +30,7 @@ import one.mixin.android.job.DecryptCallMessage.Companion.listPendingOfferHandle
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshOffsetJob
 import one.mixin.android.util.ErrorHandler.Companion.AUTHENTICATION
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.util.GzipException
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.util.Session
@@ -44,6 +41,9 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
@@ -62,7 +62,7 @@ class ChatWebSocket(
     var connected: Boolean = false
     private var client: WebSocket? = null
     private val transactions = ConcurrentHashMap<String, WebSocketTransaction>()
-    private val gson = Gson()
+    private val gson = customGson
     private val accountId = Session.getAccountId()
     private val sessionId = Session.getSessionId()
 

@@ -1,10 +1,7 @@
 package one.mixin.android.repository
 
-import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
-import javax.inject.Singleton
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -31,12 +28,15 @@ import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.insertUpdate
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.util.Session
 import one.mixin.android.util.encryptPin
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class AccountRepository
@@ -82,16 +82,16 @@ constructor(
                 val type = response.data?.get("type")?.asString
                 result = when (type) {
                     QrCodeType.user.name -> {
-                        val user = Gson().fromJson(response.data, User::class.java)
+                        val user = customGson.fromJson(response.data, User::class.java)
                         userDao.insertUpdate(user, appDao)
                         Pair(type, user)
                     }
                     QrCodeType.conversation.name -> {
-                        val conversationResponse = Gson().fromJson(response.data, ConversationResponse::class.java)
+                        val conversationResponse = customGson.fromJson(response.data, ConversationResponse::class.java)
                         Pair(type, conversationResponse)
                     }
                     QrCodeType.authorization.name -> {
-                        val resp = Gson().fromJson(response.data, AuthorizationResponse::class.java)
+                        val resp = customGson.fromJson(response.data, AuthorizationResponse::class.java)
                         Pair(type, resp)
                     }
                     else -> Pair("", "")

@@ -62,6 +62,7 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.util.KeyBoardAssist
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.getMaxCustomViewHeight
@@ -504,7 +505,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         @JavascriptInterface
         fun getContext(): String? {
             return if (conversationId != null) {
-                Gson().toJson(MixinContext(conversationId))
+                customGson.toJson(MixinContext(conversationId))
             } else {
                 null
             }

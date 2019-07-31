@@ -6,18 +6,19 @@ import com.google.gson.reflect.TypeToken;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import one.mixin.android.util.GsonHelper;
 
 public class ArrayConverters {
     @TypeConverter
     public static ArrayList<String> fromString(String value) {
         Type listType = new TypeToken<ArrayList<String>>() {
         }.getType();
-        return new Gson().fromJson(value, listType);
+        return GsonHelper.INSTANCE.getCustomGson().fromJson(value, listType);
     }
 
     @TypeConverter
     public static String fromArrayList(ArrayList<String> list) {
-        Gson gson = new Gson();
+        Gson gson = GsonHelper.INSTANCE.getCustomGson();
         return gson.toJson(list);
     }
 }

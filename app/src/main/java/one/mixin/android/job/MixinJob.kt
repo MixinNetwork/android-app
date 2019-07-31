@@ -2,9 +2,7 @@ package one.mixin.android.job
 
 import android.util.Log
 import com.birbit.android.jobqueue.Params
-import com.google.gson.Gson
 import com.google.gson.JsonElement
-import java.util.UUID
 import one.mixin.android.Constants.SLEEP_MILLIS
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.NetworkException
@@ -18,6 +16,7 @@ import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.extension.fromJson
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
@@ -44,6 +43,7 @@ import one.mixin.android.websocket.createSignalKeyMessage
 import one.mixin.android.websocket.createSignalKeyMessageParam
 import one.mixin.android.websocket.createSignalKeyParam
 import timber.log.Timber
+import java.util.UUID
 
 abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
 
@@ -105,7 +105,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(requestSignalKeyUsers))
             val data = signalKeysChannel(blazeMessage)
             if (data != null) {
-                val signalKeys = Gson().fromJson<ArrayList<SignalKey>>(data)
+                val signalKeys = customGson.fromJson<ArrayList<SignalKey>>(data)
                 val keys = arrayListOf<String>()
                 if (signalKeys.isNotEmpty()) {
                     for (key in signalKeys) {
@@ -153,7 +153,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             )))
 
             val data = signalKeysChannel(blazeMessage) ?: return false
-            val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+            val keys = customGson.fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
                 signalProtocol.processSession(recipientId, preKeyBundle, deviceId)
@@ -167,7 +167,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     protected fun redirectSendSenderKey(conversationId: String, recipientId: String): Boolean {
         val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
         val data = signalKeysChannel(blazeMessage) ?: return false
-        val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+        val keys = customGson.fromJson<ArrayList<SignalKey>>(data)
         if (keys.isNotEmpty() && keys.count() > 0) {
             val preKeyBundle = createPreKeyBundle(keys[0])
             signalProtocol.processSession(recipientId, preKeyBundle)
@@ -193,7 +193,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         if (!signalProtocol.containsSession(recipientId)) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
             val data = signalKeysChannel(blazeMessage) ?: return false
-            val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+            val keys = customGson.fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
                 signalProtocol.processSession(recipientId, preKeyBundle)
@@ -286,7 +286,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun sendNoKeyMessage(conversationId: String, recipientId: String) {
-        val plainText = Gson().toJson(TransferPlainData(PlainDataAction.NO_KEY.name))
+        val plainText = customGson.toJson(TransferPlainData(PlainDataAction.NO_KEY.name))
         val encoded = Base64.encodeBytes(plainText.toByteArray())
         val params = BlazeMessageParam(conversationId, recipientId, UUID.randomUUID().toString(),
             MessageCategory.PLAIN_JSON.name, encoded, MessageStatus.SENDING.name)

@@ -1,9 +1,6 @@
 package one.mixin.android.job
 
 import androidx.collection.ArrayMap
-import com.google.gson.Gson
-import java.util.UUID
-import java.util.concurrent.Executors
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.asCoroutineDispatcher
@@ -13,6 +10,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.util.GsonHelper.customGson
 import one.mixin.android.util.Session
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.MessageCategory
@@ -27,6 +25,8 @@ import one.mixin.android.websocket.BlazeMessageData
 import one.mixin.android.websocket.LIST_PENDING_MESSAGES
 import org.webrtc.IceCandidate
 import timber.log.Timber
+import java.util.UUID
+import java.util.concurrent.Executors
 
 class DecryptCallMessage(private val callState: CallState) : Injector() {
     companion object {
@@ -35,7 +35,7 @@ class DecryptCallMessage(private val callState: CallState) : Injector() {
         var listPendingOfferHandled = false
     }
 
-    private val gson = Gson()
+    private val gson = customGson
     private val listPendingDispatcher by lazy {
         Executors.newSingleThreadExecutor().asCoroutineDispatcher()
     }
