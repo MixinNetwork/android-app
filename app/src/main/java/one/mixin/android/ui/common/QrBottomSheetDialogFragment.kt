@@ -107,7 +107,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             .autoDisposable(stopScope)
                             .subscribe({ r ->
                                 contentView.qr.setImageBitmap(r)
-                            }, { _ ->
+                            }, {
                             })
                     }
                 }
