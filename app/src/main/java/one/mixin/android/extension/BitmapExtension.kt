@@ -20,53 +20,54 @@ import java.util.EnumMap
 import java.util.EnumSet
 
 fun Bitmap.toBytes(): ByteArray {
-    val stream = ByteArrayOutputStream()
-    compress(Bitmap.CompressFormat.JPEG, 100, stream)
-    val data = stream.toByteArray()
-    stream.closeSilently()
-    return data
+    ByteArrayOutputStream().use { stream ->
+        compress(Bitmap.CompressFormat.JPEG, 100, stream)
+        return stream.toByteArray()
+    }
 }
 
 fun Bitmap.toPNGBytes(): ByteArray {
-    val stream = ByteArrayOutputStream()
-    compress(Bitmap.CompressFormat.PNG, 100, stream)
-    val data = stream.toByteArray()
-    stream.closeSilently()
-    return data
+    ByteArrayOutputStream().use { stream ->
+        compress(Bitmap.CompressFormat.PNG, 100, stream)
+        return stream.toByteArray()
+    }
 }
 
 fun Bitmap.saveQRCode(ctx: Context, name: String) {
     try {
-        val bos = ByteArrayOutputStream()
-        compress(Bitmap.CompressFormat.PNG, 100, bos)
-        val fos = FileOutputStream(ctx.getQRCodePath(name))
-        fos.write(bos.toByteArray())
-        fos.flush()
-        fos.closeSilently()
+        ByteArrayOutputStream().use { bos ->
+            compress(Bitmap.CompressFormat.PNG, 100, bos)
+            FileOutputStream(ctx.getQRCodePath(name)).use { fos ->
+                fos.write(bos.toByteArray())
+                fos.flush()
+            }
+        }
     } catch (ignored: Exception) {
     }
 }
 
 fun Bitmap.saveGroupAvatar(ctx: Context, name: String) {
     try {
-        val bos = ByteArrayOutputStream()
-        compress(Bitmap.CompressFormat.PNG, 100, bos)
-        val fos = FileOutputStream(ctx.getGroupAvatarPath(name))
-        fos.write(bos.toByteArray())
-        fos.flush()
-        fos.closeSilently()
+        ByteArrayOutputStream().use { bos ->
+            compress(Bitmap.CompressFormat.PNG, 100, bos)
+            FileOutputStream(ctx.getGroupAvatarPath(name)).use { fos ->
+                fos.write(bos.toByteArray())
+                fos.flush()
+            }
+        }
     } catch (ignored: Exception) {
     }
 }
 
 @Throws(IOException::class)
 fun Bitmap.save(file: File) {
-    val bos = ByteArrayOutputStream()
-    compress(Bitmap.CompressFormat.PNG, 100, bos)
-    val fos = FileOutputStream(file)
-    fos.write(bos.toByteArray())
-    fos.flush()
-    fos.closeSilently()
+    ByteArrayOutputStream().use { bos ->
+        compress(Bitmap.CompressFormat.PNG, 100, bos)
+        FileOutputStream(file).use { fos ->
+            fos.write(bos.toByteArray())
+            fos.flush()
+        }
+    }
 }
 
 fun Bitmap.decodeQR(): String? {
