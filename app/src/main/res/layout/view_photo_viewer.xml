@@ -33,7 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end|top"
         android:padding="8dp"
-        android:src="@drawable/ic_goinline"
+        android:src="@drawable/ic_outinline"
         android:visibility="gone" />
 
 </merge>

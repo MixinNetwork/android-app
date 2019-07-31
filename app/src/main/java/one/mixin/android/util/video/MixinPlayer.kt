@@ -27,11 +27,11 @@ import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.google.android.exoplayer2.video.VideoListener
-import java.util.concurrent.TimeUnit
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
+import java.util.concurrent.TimeUnit
 
 class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoListener {
 
@@ -151,7 +151,8 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.EventListener, VideoLis
         player.prepare(mediaSource)
     }
 
-    private var mId: String? = null
+    var mId: String? = null
+
     fun loadHlsVideo(url: String, id: String, force: Boolean = false) {
         if (!force && this.url == url && (player.playbackState == STATE_READY || player.playbackState == STATE_BUFFERING)) {
             return

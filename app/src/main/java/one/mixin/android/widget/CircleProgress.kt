@@ -49,6 +49,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
     private val mSize: Int
     private val mShadowColor: Int
     private val mProgressColor: Int
+    private val mPlayColor: Int
     private var mBindId: String? = null
     private var arcAngle = 10f
     private var mBorder = false
@@ -75,6 +76,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
             context.dip(DEFAULT_BORDER_WIDTH))
         mShadowColor = a.getColor(R.styleable.CircleProgress_shadowColor, Color.WHITE)
         mProgressColor = a.getColor(R.styleable.CircleProgress_progressColor, Color.BLUE)
+        mPlayColor = a.getColor(R.styleable.CircleProgress_playColor, context.getColor(R.color.colorDarkBlue))
         mBorder = a.getBoolean(R.styleable.CircleProgress_border, false)
         mProgress = a.getInt(R.styleable.CircleProgress_progress, mProgress)
         mMaxProgress = a.getInt(R.styleable.CircleProgress_maxProgress, mMaxProgress)
@@ -91,7 +93,7 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         mBackgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG)
         mBackgroundPaint.color = mShadowColor
 
-        drawable.color = mProgressColor
+        drawable.color = mPlayColor
 
         mForkPath = Path()
         mArrowPath = Path()

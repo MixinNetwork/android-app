@@ -8,6 +8,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.core.view.isVisible
 import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_video.view.*
 import one.mixin.android.R
@@ -69,7 +70,7 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
-            itemView.chat_name.visibility = View.VISIBLE
+            itemView.chat_name.visibility = VISIBLE
             itemView.chat_name.text = messageItem.userFullName
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
@@ -80,14 +81,14 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             itemView.chat_name.setOnClickListener { onItemListener.onUserClick(messageItem.userId) }
             itemView.chat_name.setTextColor(getColorById(messageItem.userId))
         } else {
-            itemView.chat_name.visibility = View.GONE
+            itemView.chat_name.visibility = GONE
         }
 
         if (messageItem.isLive()) {
             itemView.chat_warning.visibility = GONE
             itemView.duration_tv.visibility = GONE
             itemView.progress.visibility = GONE
-            itemView.play.visibility = GONE
+            itemView.play.isVisible = true
             itemView.live_tv.visibility = VISIBLE
             itemView.progress.setBindId(messageItem.messageId)
             itemView.progress.setOnClickListener {}
@@ -130,8 +131,8 @@ class VideoHolder constructor(containerView: View) : MediaHolder(containerView) 
             messageItem.mediaStatus?.let {
                 when (it) {
                     MediaStatus.EXPIRED.name -> {
-                        itemView.chat_warning.visibility = View.VISIBLE
-                        itemView.progress.visibility = View.GONE
+                        itemView.chat_warning.visibility = VISIBLE
+                        itemView.progress.visibility = GONE
                         itemView.play.visibility = GONE
                         itemView.chat_image.setOnLongClickListener {
                             if (!hasSelect) {
