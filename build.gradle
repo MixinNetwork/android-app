@@ -55,6 +55,7 @@ buildscript {
         ext.perfVersion = '18.0.1'
 
         ext.junitVersion = '4.12'
+        ext.androidxJunitVersion = '1.1.1'
         ext.leakcanaryVerison = '1.5.1'
         ext.mockitoVersion = '1.10.19'
         ext.hamcrestVersion = '1.3'
