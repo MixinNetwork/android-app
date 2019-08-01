@@ -47,7 +47,6 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isUUID
-import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
@@ -80,6 +79,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.MediaStatus
+import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageStatus
@@ -104,7 +104,6 @@ import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
-import one.mixin.android.vo.mediaDownloaded
 import one.mixin.android.vo.toUser
 import one.mixin.android.websocket.ACKNOWLEDGE_MESSAGE_RECEIPTS
 import one.mixin.android.websocket.BlazeAckMessage
@@ -672,22 +671,11 @@ internal constructor(
 
     suspend fun isSilence(conversationId: String, userId: String) = conversationRepository.isSilence(conversationId, userId) == 0
 
-    fun markAudioReadAndCheckNextAudioAvailable(currentMessageId: String) =
-        viewModelScope.launch(Dispatchers.IO) {
-            val currentMessage = conversationRepository.findMessageById(currentMessageId)
-                ?: return@launch
-            if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
-                conversationRepository.updateMediaStatus(MediaStatus.READ.name, currentMessageId)
-            }
-            val message = conversationRepository.findNextAudioMessage(
-                currentMessage.conversationId, currentMessage.createdAt, currentMessageId)
-                ?: return@launch
-            if (!mediaDownloaded(message.mediaStatus)) {
-                jobManager.addJobInBackground(AttachmentDownloadJob(message))
-            }
-        }
-
     fun refreshUser(userId: String, forceRefresh: Boolean) {
         jobManager.addJobInBackground(RefreshUserJob(listOf(userId), forceRefresh = forceRefresh))
+    }
+
+    fun downloadAttachment(message: Message) {
+        jobManager.addJobInBackground(AttachmentDownloadJob(message))
     }
 }

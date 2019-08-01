@@ -13,6 +13,7 @@ import kotlin.experimental.or
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ProgressEvent
+import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import org.jetbrains.anko.dip
@@ -70,7 +71,11 @@ class WaveformView : View {
                             setProgress(it.progress)
                         }
                     } else {
-                        setProgress(0f)
+                        if (it.status == STATUS_PAUSE ||
+                            it.status == STATUS_PLAY ||
+                            it.status == STATUS_ERROR) {
+                            setProgress(0f)
+                        }
                     }
                 }
         }

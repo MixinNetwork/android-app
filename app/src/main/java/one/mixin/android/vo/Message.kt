@@ -172,6 +172,8 @@ fun Message.isRecall() = category == MessageCategory.MESSAGE_RECALL.name
 
 fun Message.isVideo() = category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
 
+fun Message.isAudio() = category == MessageCategory.PLAIN_AUDIO.name || category == MessageCategory.SIGNAL_AUDIO.name
+
 fun Message.isImage() = category == MessageCategory.PLAIN_IMAGE.name || category == MessageCategory.SIGNAL_IMAGE.name
 
 enum class MessageCategory {

@@ -24,6 +24,8 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
+import kotlin.math.abs
+import kotlin.math.round
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
@@ -42,8 +44,6 @@ import one.mixin.android.widget.AspectRatioFrameLayout
 import one.mixin.android.widget.PlayView
 import org.jetbrains.anko.dip
 import timber.log.Timber
-import kotlin.math.abs
-import kotlin.math.round
 
 class PipVideoView {
 
