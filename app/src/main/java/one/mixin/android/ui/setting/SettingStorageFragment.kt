@@ -26,6 +26,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.vo.ConversationCategory
@@ -85,44 +86,44 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
             list.forEach { item ->
                 when {
                     item.category.endsWith("_IMAGE") -> {
-                        if (map["IMAGE"] != null) {
-                            map["IMAGE"]!!.mediaSize += item.mediaSize
-                            map["IMAGE"]!!.count += item.count
-                        } else {
+                        map["IMAGE"].notNullWithElse({ obj ->
+                            obj.mediaSize += item.mediaSize
+                            obj.count += item.count
+                        }, {
                             map["IMAGE"] = item
-                        }
+                        })
                     }
                     item.category.endsWith("_DATA") -> {
-                        if (map["DATA"] != null) {
-                            map["DATA"]!!.mediaSize += item.mediaSize
-                            map["DATA"]!!.count += item.count
-                        } else {
+                        map["DATA"].notNullWithElse({ obj ->
+                            obj.mediaSize += item.mediaSize
+                            obj.count += item.count
+                        }, {
                             map["DATA"] = item
-                        }
+                        })
                     }
                     item.category.endsWith("_VIDEO") -> {
-                        if (map["VIDEO"] != null) {
-                            map["VIDEO"]!!.mediaSize += item.mediaSize
-                            map["VIDEO"]!!.count += item.count
-                        } else {
+                        map["VIDEO"].notNullWithElse({ obj ->
+                            obj.mediaSize += item.mediaSize
+                            obj.count += item.count
+                        }, {
                             map["VIDEO"] = item
-                        }
+                        })
                     }
                     item.category.endsWith("_AUDIO") -> {
-                        if (map["AUDIO"] != null) {
-                            map["AUDIO"]!!.mediaSize += item.mediaSize
-                            map["AUDIO"]!!.count += item.count
-                        } else {
+                        map["AUDIO"].notNullWithElse({ obj ->
+                            obj.mediaSize += item.mediaSize
+                            obj.count += item.count
+                        }, {
                             map["AUDIO"] = item
-                        }
+                        })
                     }
                     else -> {
-                        if (map["UNKNOWN"] != null) {
-                            map["UNKNOWN"]!!.mediaSize += item.mediaSize
-                            map["UNKNOWN"]!!.count += item.count
-                        } else {
+                        map["UNKNOWN"].notNullWithElse({ obj ->
+                            obj.mediaSize += item.mediaSize
+                            obj.count += item.count
+                        }, {
                             map["UNKNOWN"] = item
-                        }
+                        })
                         unknownSet.add(item.category)
                     }
                 }
