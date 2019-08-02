@@ -4,6 +4,7 @@ import android.app.PendingIntent
 import android.content.ActivityNotFoundException
 import android.content.ClipboardManager
 import android.content.ComponentName
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Context.CLIPBOARD_SERVICE
 import android.content.Intent
@@ -57,6 +58,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.gallery.Gallery
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.engine.impl.GlideEngine
@@ -296,6 +298,38 @@ fun Fragment.openCamera(output: Uri) {
         startActivityForResult(intent, REQUEST_CAMERA)
     } else {
         context?.toast(R.string.error_no_camera)
+    }
+}
+
+fun Context.openMedia(messageItem: MessageItem) {
+    val intent = Intent()
+    intent.action = Intent.ACTION_VIEW
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    try {
+        messageItem.mediaUrl?.let {
+            val uri = Uri.parse(it)
+            if (uri.scheme == ContentResolver.SCHEME_CONTENT) {
+                intent.setDataAndType(uri, messageItem.mediaMimeType)
+                startActivity(intent)
+            } else {
+                val file = File(if (uri.scheme == ContentResolver.SCHEME_FILE) {
+                    uri.path
+                } else {
+                    messageItem.mediaUrl
+                })
+                if (!file.exists()) {
+                    toast(R.string.error_file_exists)
+                } else {
+                    intent.setDataAndType(getUriForFile(file), messageItem.mediaMimeType)
+                    startActivity(intent)
+                }
+            }
+        }
+    } catch (e: ActivityNotFoundException) {
+        toast(R.string.error_unable_to_open_media)
+    } catch (e: SecurityException) {
+        toast(R.string.error_file_exists)
     }
 }
 

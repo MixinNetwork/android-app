@@ -105,7 +105,7 @@ class AttachmentDownloadJob(private val message: Message, private val attachment
     override fun onAdded() {
         super.onAdded()
         messageDao.updateMediaStatus(MediaStatus.PENDING.name, message.id)
-        RxBus.publish(ProgressEvent(message.id, 0f))
+        RxBus.publish(ProgressEvent(message.id, 0f, STATUS_LOADING))
     }
 
     private fun decryptAttachment(url: String): Boolean {

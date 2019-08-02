@@ -141,29 +141,30 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe {
                     if (it.id == mBindId) {
-                        when {
-                            it.status == STATUS_LOADING -> {
-                                val progress = (it.progress * mMaxProgress).toInt().let {
-                                    if (it >= mMaxProgress) {
-                                        (mMaxProgress * 0.95).toInt()
-                                    } else {
-                                        it
-                                    }
+                        if (it.status == STATUS_LOADING) {
+                            val progress = (it.progress * mMaxProgress).toInt().let {
+                                if (it >= mMaxProgress) {
+                                    (mMaxProgress * 0.95).toInt()
+                                } else {
+                                    it
                                 }
-                                setProgress(progress)
                             }
-                            it.status == STATUS_PAUSE -> {
+                            setProgress(progress)
+                        } else {
+                            if (it.status == STATUS_PAUSE) {
                                 setPlay()
                                 invalidate()
-                            }
-                            it.status == STATUS_PLAY -> {
+                            } else if (it.status == STATUS_PLAY) {
                                 setPause()
                                 invalidate()
                             }
                         }
-                    } else if (it.status != STATUS_ERROR && (this.status == STATUS_PAUSE || this.status == STATUS_PLAY)) {
-                        setPlay()
-                        invalidate()
+                    } else {
+                        if ((this.status == STATUS_PLAY || this.status == STATUS_PAUSE || this.status == STATUS_ERROR) &&
+                            (it.status == STATUS_PAUSE || it.status == STATUS_PLAY || it.status == STATUS_ERROR)) {
+                            setPlay()
+                            invalidate()
+                        }
                     }
                 }
         }
@@ -367,12 +368,17 @@ class CircleProgress @JvmOverloads constructor(context: Context, attrs: Attribut
         private val ANGLE_INTERPOLATOR = LinearInterpolator()
         private const val ANGLE_ANIMATOR_DURATION = 3000
         private const val DEFAULT_BORDER_WIDTH = 3
+
+        /**
+         * Downloading or Uploading
+         */
         const val STATUS_LOADING = 0
         private const val STATUS_UPLOAD = 1
         private const val STATUS_DOWNLOAD = 2
         const val STATUS_DONE = 3
+
         const val STATUS_PLAY = 4
         const val STATUS_PAUSE = 5
-        const val STATUS_ERROR = -1
+        const val STATUS_ERROR = 6
     }
 }

@@ -139,6 +139,8 @@ fun MessageItem.isFile() =
     type == MessageCategory.SIGNAL_DATA.name ||
         type == MessageCategory.PLAIN_DATA.name
 
+fun MessageItem.mediaDownloaded() = mediaStatus == MediaStatus.DONE.name || mediaStatus == MediaStatus.READ.name
+
 fun MessageItem.canRecall(): Boolean {
     return this.type == MessageCategory.SIGNAL_TEXT.name ||
         this.type == MessageCategory.SIGNAL_IMAGE.name ||

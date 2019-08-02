@@ -4,11 +4,8 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
 import android.app.Activity
-import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.ClipData
-import android.content.ContentResolver.SCHEME_CONTENT
-import android.content.ContentResolver.SCHEME_FILE
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -47,6 +44,9 @@ import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
+import java.io.File
+import javax.inject.Inject
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -68,7 +68,6 @@ import one.mixin.android.event.BlinkEvent
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.event.GroupEvent
-import one.mixin.android.event.ProgressEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
@@ -85,13 +84,13 @@ import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getMimeType
-import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
 import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
@@ -157,7 +156,6 @@ import one.mixin.android.websocket.TransferStickerData
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.BottomSheetItem
 import one.mixin.android.widget.ChatControlView
-import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
@@ -171,9 +169,6 @@ import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardSho
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -382,23 +377,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
             override fun onAudioClick(messageItem: MessageItem) {
                 when {
-                    chat_control.isRecording -> AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
-                        .setMessage(getString(R.string.chat_audio_warning))
-                        .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .show()
+                    chat_control.isRecording -> showRecordingAlert()
                     AudioPlayer.get().isPlay(messageItem.messageId) -> AudioPlayer.get().pause()
                     else -> {
-                        RxBus.listen(ProgressEvent::class.java)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .autoDisposable(destroyScope)
-                            .subscribe {
-                                if (it.progress == -1f || it.status == STATUS_PLAY) {
-                                    chatViewModel.markAudioReadAndCheckNextAudioAvailable(it.id)
-                                }
-                            }
-                        AudioPlayer.get().play(messageItem)
+                        AudioPlayer.get().play(messageItem) {
+                            chatViewModel.downloadAttachment(it)
+                        }
                     }
                 }
             }
@@ -427,35 +411,23 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 if (Build.VERSION.SDK_INT > Build.VERSION_CODES.O &&
                     messageItem.mediaMimeType.equals("application/vnd.android.package-archive", true)) {
                     if (requireContext().packageManager.canRequestPackageInstalls()) {
-                        openMedia(messageItem)
+                        requireContext().openMedia(messageItem)
                     } else {
                         startActivity(Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES))
                     }
                 } else if (MimeTypes.isAudio(messageItem.mediaMimeType)) {
                     showBottomSheet(messageItem)
                 } else {
-                    openMedia(messageItem)
+                    requireContext().openMedia(messageItem)
                 }
             }
 
             override fun onAudioFileClick(messageItem: MessageItem) {
                 if (!MimeTypes.isAudio(messageItem.mediaMimeType)) return
-
-                if (AudioPlayer.get().isPlay(messageItem.messageId)) {
-                    AudioPlayer.get().pause()
-                } else {
-                    RxBus.listen(ProgressEvent::class.java)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDisposable(stopScope)
-                        .subscribe {
-                            if (it.progress == 0f &&
-                                it.status == STATUS_ERROR &&
-                                it.id == messageItem.messageId) {
-                                toast(R.string.error_not_supported_audio_format)
-                                openMedia(messageItem)
-                            }
-                        }
-                    AudioPlayer.get().play(messageItem)
+                when {
+                    chat_control.isRecording -> showRecordingAlert()
+                    AudioPlayer.get().isPlay(messageItem.messageId) -> AudioPlayer.get().pause()
+                    else -> AudioPlayer.get().play(messageItem)
                 }
             }
 
@@ -1775,38 +1747,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
     }
 
-    private fun openMedia(messageItem: MessageItem) {
-        val intent = Intent()
-        intent.action = Intent.ACTION_VIEW
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        try {
-            messageItem.mediaUrl?.let {
-                val uri = Uri.parse(it)
-                if (uri.scheme == SCHEME_CONTENT) {
-                    intent.setDataAndType(uri, messageItem.mediaMimeType)
-                    requireContext().startActivity(intent)
-                } else {
-                    val file = File(if (uri.scheme == SCHEME_FILE) {
-                        uri.path
-                    } else {
-                        messageItem.mediaUrl
-                    })
-                    if (!file.exists()) {
-                        context?.toast(R.string.error_file_exists)
-                    } else {
-                        intent.setDataAndType(requireContext().getUriForFile(file), messageItem.mediaMimeType)
-                        requireContext().startActivity(intent)
-                    }
-                }
-            }
-        } catch (e: ActivityNotFoundException) {
-            context?.toast(R.string.error_unable_to_open_media)
-        } catch (e: SecurityException) {
-            context?.toast(R.string.error_file_exists)
-        }
-    }
-
     private fun openCamera() {
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)
@@ -1994,7 +1934,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }))
         }
         items.add(BottomSheetItem(getString(R.string.open), {
-            openMedia(messageItem)
+            requireContext().openMedia(messageItem)
             bottomSheet?.dismiss()
         }))
         val view = buildBottomSheetView(requireContext(), items)
@@ -2015,6 +1955,15 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
             }, {
             })
+    }
+
+    private fun showRecordingAlert() {
+        AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+            .setMessage(getString(R.string.chat_audio_warning))
+            .setNegativeButton(getString(android.R.string.ok)) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun changeToSpeaker() {
