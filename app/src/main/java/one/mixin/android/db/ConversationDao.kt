@@ -23,7 +23,7 @@ interface ConversationDao : BaseDao<Conversation> {
             "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId, " +
             "m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl, " +
             "m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus, " +
-            "mu.full_name AS senderFullName, s.type AS SnapshotType,  " +
+            "mu.full_name AS senderFullName, mu.identity_number AS senderIdentityNumber, s.type AS SnapshotType,  " +
             "pu.full_name AS participantFullName, pu.user_id AS participantUserId " +
             "FROM conversations c " +
             "INNER JOIN users ou ON ou.user_id = c.owner_id " +

@@ -19,6 +19,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.extension.maxItemWidth
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
@@ -155,7 +156,7 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            itemView.chat_name.text = messageItem.userFullName.nonBlankFullName(messageItem.userIdentityNumber)
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

@@ -9,6 +9,7 @@ import kotlinx.android.synthetic.main.item_contact_header.view.*
 import kotlinx.android.synthetic.main.view_conversation_check.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.ui.contacts.ContactsAdapter
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
@@ -99,7 +100,7 @@ class SingleFriendSelectAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(
 
     open class FriendViewHolder(itemView: View) : ContactsAdapter.ViewHolder(itemView) {
         fun bind(user: User, listener: FriendSelectListener?) {
-            itemView.normal.text = user.fullName
+            itemView.normal.text = user.fullName.nonBlankFullName(user.identityNumber)
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
             if (listener != null) {

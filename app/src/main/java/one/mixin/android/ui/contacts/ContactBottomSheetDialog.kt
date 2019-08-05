@@ -9,6 +9,7 @@ import android.view.View
 import kotlinx.android.synthetic.main.fragment_contact_bottom_sheet.view.*
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -37,7 +38,7 @@ class ContactBottomSheetDialog : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.index.text = if (user.fullName != null && user.fullName!!.isNotEmpty()) user.fullName!![0].toString() else ""
-        contentView.name.text = user.fullName
+        contentView.name.text = user.fullName.nonBlankFullName(user.identityNumber)
         contentView.mobile_tv.text = getString(R.string.contact_mobile, user.phone)
         contentView.invite_tv.setOnClickListener { openSms(user.phone) }
     }

@@ -28,6 +28,7 @@ import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.event.ExitEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.contacts.ProfileFragment
@@ -249,7 +250,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (!isAdded) return@launch
 
         contentView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-        contentView.name.text = user.fullName
+        contentView.name.text = user.fullName.nonBlankFullName(user.identityNumber)
         contentView.id_tv.text = getString(R.string.contact_mixin_id, user.identityNumber)
         contentView.id_tv.setOnLongClickListener {
             context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, user.identityNumber)

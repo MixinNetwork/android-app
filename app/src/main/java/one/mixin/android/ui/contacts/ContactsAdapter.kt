@@ -12,6 +12,7 @@ import kotlinx.android.synthetic.main.view_contact_header.view.*
 import kotlinx.android.synthetic.main.view_contact_list_empty.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.util.Session
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
@@ -174,7 +175,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             val account = Session.getAccount()
             if (self != null) {
                 itemView.contact_header_avatar.setInfo(self.fullName, self.avatarUrl, self.userId)
-                itemView.contact_header_name_tv.text = self.fullName
+                itemView.contact_header_name_tv.text = self.fullName.nonBlankFullName(self.identityNumber)
                 itemView.contact_header_id_tv.text =
                     itemView.context.getString(R.string.contact_mixin_id, self.identityNumber)
                 itemView.contact_header_mobile_tv.text =
@@ -182,7 +183,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
             } else {
                 if (account != null) {
                     itemView.contact_header_avatar.setInfo(account.full_name, account.avatar_url, account.userId)
-                    itemView.contact_header_name_tv.text = account.full_name
+                    itemView.contact_header_name_tv.text = account.full_name.nonBlankFullName(account.identity_number)
                     itemView.contact_header_id_tv.text =
                         itemView.context.getString(R.string.contact_mixin_id, account.identity_number)
                     itemView.contact_header_mobile_tv.text =
@@ -209,7 +210,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
 
     class FriendViewHolder(itemView: View) : ViewHolder(itemView) {
         fun bind(user: User, listener: ContactListener?) {
-            itemView.normal.text = user.fullName
+            itemView.normal.text = user.fullName.nonBlankFullName(user.identityNumber)
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             user.showVerifiedOrBot(itemView.verified_iv, itemView.bot_iv)
             if (listener != null) {
@@ -222,7 +223,7 @@ class ContactsAdapter(val context: Context, var users: List<User>, var friendSiz
         fun bind(user: User, listener: ContactListener?) {
             itemView.index.text = if (user.fullName != null && user.fullName.isNotEmpty())
                 user.fullName[0].toString() else ""
-            itemView.contact_friend.text = user.fullName
+            itemView.contact_friend.text = user.fullName.nonBlankFullName(user.identityNumber)
             if (listener != null) {
                 itemView.setOnClickListener { listener.onContactItem(user) }
             }

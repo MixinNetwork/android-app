@@ -31,6 +31,7 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadCircleImage
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
@@ -217,7 +218,7 @@ class NewGroupFragment : BaseFragment() {
     class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         fun bind(user: User) {
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            itemView.normal.text = user.fullName
+            itemView.normal.text = user.fullName.nonBlankFullName(user.identityNumber)
         }
     }
 

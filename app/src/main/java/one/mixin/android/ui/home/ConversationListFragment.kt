@@ -36,6 +36,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.networkConnected
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
@@ -567,7 +568,7 @@ class ConversationListFragment : LinkFragment() {
         @SuppressLint("SetTextI18n")
         private fun setConversationName(conversationItem: ConversationItem) {
             if (conversationItem.isGroup() && conversationItem.senderId != Session.getAccountId()) {
-                itemView.group_name_tv.text = "${conversationItem.senderFullName}: "
+                itemView.group_name_tv.text = "${conversationItem.senderFullName.nonBlankFullName(conversationItem.senderIdentityNumber ?: "")}: "
                 itemView.group_name_tv.visibility = VISIBLE
             } else {
                 itemView.group_name_tv.visibility = GONE

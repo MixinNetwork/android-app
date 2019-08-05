@@ -9,6 +9,7 @@ import kotlinx.android.synthetic.main.item_contact_header.view.*
 import kotlinx.android.synthetic.main.item_group_friend.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.inflate
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.vo.User
 import one.mixin.android.vo.showVerifiedOrBot
@@ -83,7 +84,7 @@ class GroupFriendAdapter : RecyclerView.Adapter<GroupFriendAdapter.FriendViewHol
             alreadyUserIds: List<String>?,
             isAdd: Boolean
         ) {
-            itemView.name.text = user.fullName
+            itemView.name.text = user.fullName.nonBlankFullName(user.identityNumber)
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             if (isAdd) {
                 alreadyUserIds?.let {

@@ -13,6 +13,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.maxItemWidth
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -134,7 +135,7 @@ class HyperlinkHolder constructor(containerView: View) : BaseViewHolder(containe
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            itemView.chat_name.text = messageItem.userFullName.nonBlankFullName(messageItem.userIdentityNumber)
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

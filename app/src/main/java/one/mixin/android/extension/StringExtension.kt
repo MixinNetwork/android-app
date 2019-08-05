@@ -329,3 +329,7 @@ fun String.escapeSql(): String {
     }
     return result
 }
+
+// TODO Handle zero-width character like \u200C
+fun String?.nonBlankFullName(identityNumber: String): String =
+    if (isNullOrBlank()) identityNumber else this!!

@@ -9,6 +9,7 @@ import android.widget.Checkable
 import android.widget.LinearLayout
 import kotlinx.android.synthetic.main.view_conversation_check.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.ui.forward.ForwardAdapter
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.User
@@ -65,7 +66,7 @@ class ConversationCheckView : LinearLayout, Checkable {
     }
 
     fun bind(item: User, listener: ForwardAdapter.ForwardListener?) {
-        normal.text = item.fullName
+        normal.text = item.fullName.nonBlankFullName(item.identityNumber)
         avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
         setOnClickListener {
             toggle()

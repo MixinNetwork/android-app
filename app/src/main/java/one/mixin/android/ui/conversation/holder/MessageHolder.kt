@@ -11,6 +11,7 @@ import kotlinx.android.synthetic.main.item_chat_action.view.chat_name
 import kotlinx.android.synthetic.main.item_chat_message.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.maxItemWidth
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -124,7 +125,7 @@ class MessageHolder constructor(containerView: View) : BaseViewHolder(containerV
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            itemView.chat_name.text = messageItem.userFullName.nonBlankFullName(messageItem.userIdentityNumber)
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

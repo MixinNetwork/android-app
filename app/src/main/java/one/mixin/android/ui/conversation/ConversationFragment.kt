@@ -89,6 +89,7 @@ import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.mainThreadDelayed
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
@@ -1496,7 +1497,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun renderUserInfo(user: User) {
-        action_bar.setSubTitle(user.fullName ?: "", user.identityNumber)
+        action_bar.setSubTitle(user.fullName.nonBlankFullName(user.identityNumber), user.identityNumber)
         action_bar.avatar_iv.visibility = VISIBLE
         action_bar.avatar_iv.setTextSize(16f)
         action_bar.avatar_iv.setInfo(user.fullName, user.avatarUrl, user.userId)

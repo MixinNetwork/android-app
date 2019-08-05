@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.item_chat_audio.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.AudioPlayer
@@ -54,7 +55,7 @@ class AudioHolder constructor(containerView: View) : BaseViewHolder(containerVie
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            itemView.chat_name.text = messageItem.userFullName.nonBlankFullName(messageItem.userIdentityNumber)
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

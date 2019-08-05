@@ -25,6 +25,7 @@ data class ConversationItem(
     val pinTime: String?,
     val senderId: String?,
     val senderFullName: String?,
+    val senderIdentityNumber: String?,
     val messageStatus: String?,
     val actionName: String?,
     val participantFullName: String?,

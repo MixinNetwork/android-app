@@ -37,6 +37,7 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
@@ -87,7 +88,7 @@ class ProfileFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         val account = Session.getAccount()
         if (account != null) {
-            name_desc_tv.text = account.full_name
+            name_desc_tv.text = account.full_name.nonBlankFullName(account.identity_number)
             phone_desc_tv.text = account.phone
 
             name_rl.setOnClickListener { showDialog(false) }
@@ -135,7 +136,7 @@ class ProfileFragment : BaseFragment() {
         contactsViewModel.findSelf().observe(this, Observer { self ->
             if (self != null) {
                 user = self
-                name_desc_tv.text = self.fullName
+                name_desc_tv.text = self.fullName.nonBlankFullName(self.identityNumber)
                 phone_desc_tv.text = self.phone
                 profile_avatar.setInfo(self.fullName, self.avatarUrl, self.userId)
             }

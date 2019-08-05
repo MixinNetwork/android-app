@@ -14,6 +14,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadGifMark
 import one.mixin.android.extension.loadImageMark
 import one.mixin.android.extension.loadLongImageMark
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -62,7 +63,7 @@ class ImageHolder constructor(containerView: View) : MediaHolder(containerView) 
         val isMe = meId == messageItem.userId
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            itemView.chat_name.text = messageItem.userFullName.nonBlankFullName(messageItem.userIdentityNumber)
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

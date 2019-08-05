@@ -3,13 +3,16 @@ package one.mixin.android.ui.conversation.holder
 import android.graphics.Color
 import android.view.Gravity
 import android.view.View
-import android.view.View.*
+import android.view.View.GONE
+import android.view.View.INVISIBLE
+import android.view.View.VISIBLE
 import android.widget.FrameLayout
 import androidx.core.widget.TextViewCompat
 import kotlinx.android.synthetic.main.item_chat_sticker.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadSticker
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.round
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -102,7 +105,7 @@ class StickerHolder constructor(containerView: View) : BaseViewHolder(containerV
         itemView.chat_time.timeAgoClock(messageItem.createdAt)
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            itemView.chat_name.text = messageItem.userFullName.nonBlankFullName(messageItem.userIdentityNumber)
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

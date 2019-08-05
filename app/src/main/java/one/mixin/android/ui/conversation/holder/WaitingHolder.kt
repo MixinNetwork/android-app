@@ -5,6 +5,7 @@ import kotlinx.android.synthetic.main.item_chat_waiting.view.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.highlightLinkText
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.vo.MessageItem
@@ -42,7 +43,7 @@ class WaitingHolder constructor(
 
         if (isFirst) {
             itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            itemView.chat_name.text = messageItem.userFullName.nonBlankFullName(messageItem.userIdentityNumber)
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

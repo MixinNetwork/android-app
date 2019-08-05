@@ -7,6 +7,7 @@ import android.widget.FrameLayout
 import kotlinx.android.synthetic.main.date_wrapper.view.*
 import kotlinx.android.synthetic.main.item_chat_contact_card.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
 import one.mixin.android.util.Session
@@ -39,7 +40,7 @@ class ContactCardHolder(containerView: View) : BaseViewHolder(containerView) {
         val isMe = Session.getAccountId() == item.userId
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = item.userFullName
+            itemView.chat_name.text = item.userFullName.nonBlankFullName(item.userIdentityNumber)
             if (item.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)

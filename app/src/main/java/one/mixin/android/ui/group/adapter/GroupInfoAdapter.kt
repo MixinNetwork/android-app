@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_group_info.view.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.ui.common.recyclerview.HeaderFilterAdapter
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.group.InviteActivity
@@ -97,7 +98,7 @@ class GroupInfoAdapter : HeaderFilterAdapter<User>() {
             participantsMap: ArrayMap<String, Participant>?
         ) {
             itemView.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            itemView.normal.text = user.fullName
+            itemView.normal.text = user.fullName.nonBlankFullName(user.identityNumber)
             itemView.bot_iv.visibility = if (user.appId != null) VISIBLE else GONE
             itemView.verify_iv.visibility = if (user.isVerified != null && user.isVerified) VISIBLE else GONE
             participantsMap?.let {

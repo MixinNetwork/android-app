@@ -46,6 +46,7 @@ import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.fastBlur
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.vo.CallState
 import one.mixin.android.vo.User
@@ -80,7 +81,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
         wakeLock = powerManager?.newWakeLock(PowerManager.PROXIMITY_SCREEN_OFF_WAKE_LOCK, "mixin")
         val answer = intent.getParcelableExtra<User?>(ARGS_ANSWER)
         if (answer != null) {
-            name_tv.text = answer.fullName
+            name_tv.text = answer.fullName.nonBlankFullName(answer.identityNumber)
             avatar.setInfo(answer.fullName, answer.avatarUrl, answer.userId)
             avatar.setTextSize(48f)
             if (answer.avatarUrl != null) {

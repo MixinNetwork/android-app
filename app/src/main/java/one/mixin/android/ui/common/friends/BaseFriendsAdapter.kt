@@ -6,6 +6,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import one.mixin.android.extension.highLight
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.vo.User
 
 abstract class AbsFriendsAdapter<VH : BaseFriendsViewHolder>(callback: UserItemCallback) : ListAdapter<User, VH>(callback) {
@@ -21,7 +22,7 @@ abstract class AbsFriendsAdapter<VH : BaseFriendsViewHolder>(callback: UserItemC
 
 open class BaseFriendsViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     open fun bind(item: User, filter: String, listener: FriendsListener?) {
-        itemView.normal.text = item.fullName
+        itemView.normal.text = item.fullName.nonBlankFullName(item.identityNumber)
         itemView.normal.highLight(filter)
         itemView.avatar.setInfo(item.fullName, item.avatarUrl, item.userId)
         itemView.setOnClickListener {

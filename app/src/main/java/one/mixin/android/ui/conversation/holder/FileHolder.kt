@@ -14,6 +14,7 @@ import kotlinx.android.synthetic.main.item_chat_file.view.*
 import kotlinx.android.synthetic.main.layout_file_holder_bottom.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fileSize
+import one.mixin.android.extension.nonBlankFullName
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.timeAgoClock
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
@@ -47,7 +48,7 @@ class FileHolder constructor(containerView: View) : BaseViewHolder(containerView
         chatLayout(isMe, isLast)
         if (isFirst && !isMe) {
             itemView.chat_name.visibility = View.VISIBLE
-            itemView.chat_name.text = messageItem.userFullName
+            itemView.chat_name.text = messageItem.userFullName.nonBlankFullName(messageItem.userIdentityNumber)
             if (messageItem.appId != null) {
                 itemView.chat_name.setCompoundDrawables(null, null, botIcon, null)
                 itemView.chat_name.compoundDrawablePadding = itemView.dip(3)
