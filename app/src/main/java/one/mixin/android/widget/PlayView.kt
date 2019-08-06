@@ -22,8 +22,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         const val STATUS_IDLE = 0
         const val STATUS_LOADING = 1
         const val STATUS_PLAYING = 2
-        const val STATUS_BUFFERING = 3
-        const val STATUS_PAUSING = 4
+        const val STATUS_REFRESH = 3
     }
 
     var status = STATUS_IDLE
@@ -49,8 +48,14 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         view
     }
 
-    private val drawable: PlayPauseDrawable = PlayPauseDrawable().apply {
+    private val playDrawable: PlayPauseDrawable = PlayPauseDrawable().apply {
         callback = this@PlayView
+    }
+
+    private val refreshDrawable: Drawable by lazy {
+        resources.getDrawable(R.drawable.ic_refresh, null).apply {
+            callback = this@PlayView
+        }
     }
 
     init {
@@ -69,11 +74,12 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     }
 
     override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        drawable.setBounds(0, 0, w, h)
+        playDrawable.setBounds(0, 0, w, h)
+        refreshDrawable.setBounds(0, 0, w, h)
     }
 
     override fun verifyDrawable(who: Drawable?): Boolean {
-        return who == drawable || super.verifyDrawable(who)
+        return who == playDrawable || super.verifyDrawable(who) || who == refreshDrawable
     }
 
     override fun onDraw(canvas: Canvas) {
@@ -81,26 +87,23 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         val h = height
         when (status) {
             STATUS_IDLE -> {
-                drawable.isPlay = true
+                playDrawable.isPlay = true
+                pb.visibility = GONE
+                playDrawable.draw(canvas)
             }
             STATUS_LOADING -> {
-                drawable.isPlay = false
                 pb.visibility = VISIBLE
             }
             STATUS_PLAYING -> {
-                drawable.isPlay = false
+                playDrawable.isPlay = false
                 pb.visibility = GONE
+                playDrawable.draw(canvas)
             }
-            STATUS_BUFFERING -> {
-                drawable.isPlay = true
-                pb.visibility = View.VISIBLE
-            }
-            STATUS_PAUSING -> {
-                drawable.isPlay = true
+            STATUS_REFRESH -> {
                 pb.visibility = GONE
+                refreshDrawable.draw(canvas)
             }
         }
         canvas.drawCircle(w / 2f, h / 2f, w / 2f, bgPaint)
-        drawable.draw(canvas)
     }
 }
