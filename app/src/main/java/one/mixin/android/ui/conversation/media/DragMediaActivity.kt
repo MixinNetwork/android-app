@@ -78,7 +78,9 @@ import javax.inject.Inject
 import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
-import kotlinx.android.synthetic.main.view_drag_bottom.view.*
+import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
+import kotlinx.android.synthetic.main.view_drag_image_bottom.view.cancel
+import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -231,9 +233,22 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun showBottom() {
+    private fun showVideoBottom() {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_bottom, null)
+        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_video_bottom, null)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.share.setOnClickListener {
+            shareVideo()
+            bottomSheet.dismiss()
+        }
+        view.cancel.setOnClickListener { bottomSheet.dismiss() }
+        bottomSheet.show()
+    }
+
+    private fun showImageBottom() {
+        val builder = BottomSheet.Builder(this)
+        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_image_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.save.setOnClickListener {
@@ -458,14 +473,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     }
                 }
             }
-            (view.share_iv.layoutParams as FrameLayout.LayoutParams).marginEnd = baseContext.dpToPx(54f)
-            view.share_iv.setOnClickListener { shareVideo() }
             view.pip_iv.isEnabled = false
             view.pip_iv.alpha = 0.5f
             view.close_iv.post {
                 val statusBarHeight = statusBarHeight().toFloat()
                 view.close_iv.translationY = statusBarHeight
-                view.share_iv.translationY = statusBarHeight
                 view.live_tv.translationY = statusBarHeight
                 view.pip_iv.translationY = statusBarHeight
             }
@@ -508,19 +520,18 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 }
             }
             view.setOnClickListener {
-                if (view.close_iv.isVisible) {
-                    fadeOut(view, messageItem.isLive())
-                } else {
-                    fadeIn(view, messageItem.isLive())
-                }
+                onVideoClick(view, messageItem)
             }
-
+            view.setOnLongClickListener {
+                onVideoLongClick(messageItem)
+                return@setOnLongClickListener true
+            }
             view.video_texture.setOnClickListener {
-                if (view.close_iv.isVisible) {
-                    fadeOut(view, messageItem.isLive())
-                } else {
-                    fadeIn(view, messageItem.isLive())
-                }
+                onVideoClick(view, messageItem)
+            }
+            view.video_texture.setOnLongClickListener {
+                onVideoLongClick(messageItem)
+                return@setOnLongClickListener true
             }
 
             var isPlaying = false
@@ -544,6 +555,20 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             })
 
             return view
+        }
+
+        private fun onVideoClick(view: View, messageItem: MessageItem) {
+            if (view.close_iv.isVisible) {
+                fadeOut(view, messageItem.isLive())
+            } else {
+                fadeIn(view, messageItem.isLive())
+            }
+        }
+
+        private fun onVideoLongClick(messageItem: MessageItem) {
+            if (messageItem.isVideo()) {
+                showVideoBottom()
+            }
         }
 
         private fun setSize(rotio: Float, view: View) {
@@ -594,7 +619,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 finishAfterTransition()
             }
             imageView.setOnLongClickListener {
-                showBottom()
+                showImageBottom()
                 return@setOnLongClickListener true
             }
             return imageView
@@ -660,7 +685,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 finishAfterTransition()
             }
             imageView.setOnLongClickListener {
-                showBottom()
+                showImageBottom()
                 return@setOnLongClickListener true
             }
             return imageView
@@ -702,7 +727,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         } else {
             view.controller.fadeIn()
-            view.share_iv.fadeIn()
             view.pip_iv.fadeIn()
         }
         if (!view.refresh_iv.isVisible && !view.play_view.isVisible) {
@@ -718,7 +742,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         } else {
             view.controller.fadeOut()
-            view.share_iv.fadeOut()
         }
         if (!withoutPlay) {
             if (!view.refresh_iv.isVisible && view.play_view.isVisible) {
