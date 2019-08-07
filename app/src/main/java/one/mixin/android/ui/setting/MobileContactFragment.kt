@@ -5,6 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
@@ -14,10 +16,13 @@ import kotlinx.android.synthetic.main.fragment_setting_mobile_contact.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.createContactsRequests
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseViewModelFragment
 import org.jetbrains.anko.textColorResource
@@ -30,6 +35,7 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
 
     init {
         lifecycleScope.launchWhenCreated {
+            op_pb.isVisible = true
             handleMixinResponse(
                 invokeNetwork = { viewModel.getContacts() },
                 successBlock = { response ->
@@ -44,8 +50,12 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
                     return@handleMixinResponse false
                 },
                 exceptionBlock = {
+                    op_pb.isVisible = false
                     setUpdate()
                     return@handleMixinResponse false
+                },
+                doAfterNetworkSuccess = {
+                    op_pb.isVisible = false
                 }
             )
         }
@@ -65,16 +75,23 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
         if (!isAdded) return
         op_tv.setText(R.string.setting_mobile_contact_delete)
         op_tv.textColorResource = R.color.colorRed
-        op_tv.setOnClickListener {
-            deleteContacts()
+        op_rl.setOnClickListener {
+            AlertDialog.Builder(requireContext(), R.style.MixinAlertDialogTheme)
+                .setMessage(R.string.setting_mobile_contact_warning)
+                .setPositiveButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+                .setNegativeButton(R.string.conversation_delete) { dialog, _ ->
+                    deleteContacts()
+                    dialog.dismiss()
+                }
+                .show()
         }
     }
 
     private fun setUpdate() {
         if (!isAdded) return
-        op_tv.setText(R.string.setting_mobile_contact_update)
+        op_tv.setText(R.string.setting_mobile_contact_upload)
         op_tv.textColorResource = R.color.colorDarkBlue
-        op_tv.setOnClickListener {
+        op_rl.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.READ_CONTACTS)
                 .autoDisposable(stopScope)
@@ -82,6 +99,7 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
                     if (granted) {
                         RxContacts.fetch(requireContext())
                             .toSortedList(Contact::compareTo)
+                            .autoDisposable(stopScope)
                             .subscribe({ contacts ->
                                 updateContacts(contacts)
                             }, {
@@ -94,24 +112,47 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
     }
 
     private fun deleteContacts() = lifecycleScope.launch {
+        op_pb.isVisible = true
         handleMixinResponse(
             invokeNetwork = { viewModel.deleteContacts() },
             switchContext = Dispatchers.IO,
-            successBlock = { setUpdate() }
+            successBlock = {
+                defaultSharedPreferences.putBoolean(PREF_DELETE_MOBILE_CONTACTS, true)
+                setUpdate()
+            },
+            exceptionBlock = {
+                op_pb.isVisible = false
+                return@handleMixinResponse false
+            },
+            doAfterNetworkSuccess = {
+                op_pb.isVisible = false
+            }
         )
     }
 
     private fun updateContacts(contacts: List<Contact>) = lifecycleScope.launch {
+        op_pb.isVisible = true
         val mutableList = createContactsRequests(contacts)
         if (!isAdded) return@launch
         if (mutableList.isEmpty()) {
+            op_pb.isVisible = false
             toast(R.string.setting_mobile_contact_empty)
             return@launch
         }
         handleMixinResponse(
             invokeNetwork = { viewModel.syncContacts(mutableList) },
             switchContext = Dispatchers.IO,
-            successBlock = { setDelete() }
+            successBlock = {
+                defaultSharedPreferences.putBoolean(PREF_DELETE_MOBILE_CONTACTS, false)
+                setDelete()
+            },
+            exceptionBlock = {
+                op_pb.isVisible = false
+                return@handleMixinResponse false
+            },
+            doAfterNetworkSuccess = {
+                op_pb.isVisible = false
+            }
         )
     }
 }

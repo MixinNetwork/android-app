@@ -446,8 +446,9 @@
     <string name="setting_privacy_security">Privacy and Security</string>
     <string name="setting_mobile_contact">Mobile Contacts</string>
     <string name="setting_mobile_contact_desc">Mixin syncs your address book to Mixin servers to help you connect with other Mixin users.</string>
+    <string name="setting_mobile_contact_warning">This will remove your contacts from the Mixin servers.</string>
     <string name="setting_mobile_contact_delete">Delete Synced Contacts</string>
-    <string name="setting_mobile_contact_update">Update Mobile Contacts</string>
+    <string name="setting_mobile_contact_upload">Upload Mobile Contacts</string>
     <string name="setting_mobile_contact_empty">Empty address book</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
