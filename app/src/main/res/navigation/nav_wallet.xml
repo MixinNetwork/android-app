@@ -11,12 +11,6 @@
         tools:layout="@layout/fragment_wallet">
 
         <action
-            android:id="@+id/action_wallet_fragment_to_wallet_setting_fragment"
-            app:destination="@id/wallet_setting_fragment"
-            app:enterAnim="@anim/slide_in_bottom"
-            app:popExitAnim="@anim/slide_out_bottom"/>
-
-        <action
             android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
             app:destination="@id/all_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
@@ -81,24 +75,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/wallet_setting_fragment"
-        android:name="one.mixin.android.ui.wallet.WalletSettingFragment"
-        tools:layout="@layout/fragment_wallet_setting">
-
-        <action
-            android:id="@+id/action_wallet_setting_to_old_password"
-            app:destination="@id/old_password_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-
-        <action
-            android:id="@+id/action_wallet_setting_to_biometric_time"
-            app:destination="@id/biometric_time_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-    </fragment>
-
-    <fragment
         android:id="@+id/all_transactions_fragment"
         android:name="one.mixin.android.ui.wallet.AllTransactionsFragment"
         tools:layout="@layout/fragment_wallet_setting">
@@ -137,23 +113,6 @@
             android:name="args_snapshot_id"
             app:argType="string"/>
     </fragment>
-
-    <fragment
-        android:id="@+id/old_password_fragment"
-        android:name="one.mixin.android.ui.wallet.OldPasswordFragment"
-        tools:layout="@layout/fragment_old_password">
-
-        <action
-            android:id="@+id/action_old_password_to_password"
-            app:destination="@id/wallet_password_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/biometric_time_fragment"
-        android:name="one.mixin.android.ui.wallet.BiometricTimeFragment"
-        tools:layout="@layout/fragment_biometric_time"/>
 
     <fragment
         android:id="@+id/hidden_assets_fragment"
@@ -199,26 +158,6 @@
         <action
             android:id="@+id/action_wallet_fragment_to_all_transactions_fragment"
             app:destination="@id/all_transactions_fragment"
-            app:enterAnim="@anim/slide_in_right"
-            app:popExitAnim="@anim/slide_out_right"/>
-    </fragment>
-
-    <fragment
-        android:id="@+id/wallet_password_fragment"
-        android:name="one.mixin.android.ui.wallet.WalletPasswordFragment"
-        tools:layout="@layout/fragment_wallet_password">
-
-        <argument
-            android:name="args_change"
-            app:argType="boolean"/>
-
-        <argument
-            android:name="args_old_password"
-            app:argType="string"/>
-
-        <action
-            android:id="@+id/action_wallet_password_to_wallet"
-            app:destination="@id/wallet_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"/>
     </fragment>

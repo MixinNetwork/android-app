@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet
+package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -6,8 +6,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
-import androidx.navigation.fragment.findNavController
-import androidx.navigation.navOptions
 import com.uber.autodispose.autoDisposable
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_wallet_password.*
@@ -26,7 +24,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
@@ -236,27 +235,20 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
 
                                 activity?.let { activity ->
                                     if (activity is ConversationActivity ||
-                                        activity is SettingActivity ||
                                         activity is ContactsActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
                                         requireFragmentManager().popBackStackImmediate()
                                     } else if (activity is MainActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
-                                        activity.onBackPressed()
-                                        WalletActivity.show(requireActivity())
+                                        requireFragmentManager().popBackStackImmediate()
+                                        WalletActivity.show(activity, leftInAnim = true)
                                     } else {
                                         if (change) {
                                             context?.toast(R.string.wallet_change_password_success)
                                         } else {
                                             context?.toast(R.string.wallet_set_password_success)
                                         }
-
-                                        val navOptions = navOptions {
-                                            popUpTo(R.id.nav_root) {
-                                                inclusive = true
-                                            }
-                                        }
-                                        findNavController().navigate(R.id.action_wallet_password_to_wallet, null, navOptions)
+                                        requireFragmentManager().popBackStackImmediate()
                                     }
                                 }
                             }

@@ -5,18 +5,14 @@ import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.wallet.AllTransactionsFragment
 import one.mixin.android.ui.wallet.AssetAddFragment
 import one.mixin.android.ui.wallet.AssetKeyBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.BiometricTimeFragment
 import one.mixin.android.ui.wallet.DepositQrBottomFragment
 import one.mixin.android.ui.wallet.DepositTipBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.HiddenAssetsFragment
-import one.mixin.android.ui.wallet.OldPasswordFragment
-import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinCheckDialogFragment
 import one.mixin.android.ui.wallet.SingleFriendSelectFragment
 import one.mixin.android.ui.wallet.TransactionFragment
 import one.mixin.android.ui.wallet.TransactionsFragment
 import one.mixin.android.ui.wallet.WalletFragment
-import one.mixin.android.ui.wallet.WalletSettingFragment
 
 @Module
 abstract class WalletActivityModule {
@@ -30,9 +26,6 @@ abstract class WalletActivityModule {
     internal abstract fun contributeWalletTransactionFragment(): TransactionFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeWalletOldPasswordFragment(): OldPasswordFragment
-
-    @ContributesAndroidInjector
     internal abstract fun contributePinCheckDialogFragment(): PinCheckDialogFragment
 
     @ContributesAndroidInjector
@@ -43,15 +36,6 @@ abstract class WalletActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeDepositQrBottomFragment(): DepositQrBottomFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeWalletSettingFragment(): WalletSettingFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributePinBiometricsBottomSheetDialogFragment(): PinBiometricsBottomSheetDialogFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeBiometricTimeFragment(): BiometricTimeFragment
 
     @ContributesAndroidInjector
     internal abstract fun contributeSingleFriendSelectFragment(): SingleFriendSelectFragment

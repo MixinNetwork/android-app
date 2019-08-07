@@ -258,10 +258,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
             rootView?.navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
             bottomSheet.dismiss()
         }
-        view.setting.setOnClickListener {
-            rootView?.navigate(R.id.action_wallet_fragment_to_wallet_setting_fragment)
-            bottomSheet.dismiss()
-        }
         view.transactions_tv.setOnClickListener {
             rootView?.navigate(R.id.action_wallet_fragment_to_all_transactions_fragment)
             bottomSheet.dismiss()

@@ -13,7 +13,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_CHANGE
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
 
@@ -38,12 +37,7 @@ class WalletActivity : BlazeBaseActivity() {
             navGraph.startDestination = R.id.transactions_fragment
             navGraph.addArgument(ARGS_ASSET, NavArgument.Builder().setDefaultValue(it).build())
         }, {
-            if (account.hasPin) {
-                navGraph.startDestination = R.id.wallet_fragment
-            } else {
-                navGraph.startDestination = R.id.wallet_password_fragment
-                navGraph.addArgument(ARGS_CHANGE, NavArgument.Builder().setDefaultValue(false).build())
-            }
+            navGraph.startDestination = R.id.wallet_fragment
         })
         navController.graph = navGraph
         jobManager.addJobInBackground(RefreshAssetsJob())

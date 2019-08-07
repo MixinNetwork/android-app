@@ -100,6 +100,29 @@
         android:background="@color/bg_gray"/>
 
     <RelativeLayout
+        android:id="@+id/wallet_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/wallet_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/wallet_setting"
+            tools:ignore="RelativeOverlap"/>
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/setting_divider"
+        android:background="@color/bg_gray"/>
+
+    <RelativeLayout
         android:id="@+id/emergency_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
