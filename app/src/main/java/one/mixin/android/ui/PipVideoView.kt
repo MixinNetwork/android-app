@@ -299,6 +299,7 @@ class PipVideoView {
                     }
                     Player.STATE_READY -> {
                         if (playWhenReady) {
+                            fadeOut()
                             playView?.status = PlayView.STATUS_PLAYING
                         } else {
                             playView?.status = PlayView.STATUS_IDLE

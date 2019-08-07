@@ -6,11 +6,13 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
+import android.view.Gravity
 import android.view.View
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.FrameLayout
 import android.widget.ProgressBar
+import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
+import timber.log.Timber
 
 class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
     FrameLayout(context, attrs, defStyleAttr) {
@@ -27,6 +29,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     var status = STATUS_IDLE
         set(value) {
+            Timber.d("@@@ status: $value")
             if (value != field) {
                 field = value
                 invalidate()
@@ -44,7 +47,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     private val pb: ProgressBar by lazy {
         val view = View.inflate(context, R.layout.view_progress_bar_white, null) as ProgressBar
-        addView(view, LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        addView(view)
         view
     }
 
@@ -80,6 +83,15 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     override fun verifyDrawable(who: Drawable?): Boolean {
         return who == playDrawable || super.verifyDrawable(who) || who == refreshDrawable
+    }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        pb.updateLayoutParams<FrameLayout.LayoutParams> {
+            width = measuredWidth / 2
+            height = measuredHeight / 2
+            gravity = Gravity.CENTER
+        }
     }
 
     override fun onDraw(canvas: Canvas) {

@@ -70,11 +70,6 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
@@ -133,6 +128,11 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.math.min
 
 class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private lateinit var colorDrawable: ColorDrawable
@@ -428,7 +428,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 val seekRect = Rect()
                 v.seek_bar.getHitRect(seekRect)
                 if (event.y >= (seekRect.top - dpToPx(16f)) && event.y <= (seekRect.bottom + dpToPx(16f)) &&
-                    event.x >= seekRect.left && event.x <= seekRect.right) {
+                    event.x >= seekRect.left && event.x <= seekRect.right
+                ) {
                     val y = seekRect.top + seekRect.height() / 2f
                     var x = event.x - seekRect.left
                     if (x < 0) {
@@ -436,8 +437,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     } else if (x > seekRect.width()) {
                         x = seekRect.width().toFloat()
                     }
-                    val me = MotionEvent.obtain(event.downTime, event.eventTime,
-                        event.action, x, y, event.metaState)
+                    val me = MotionEvent.obtain(
+                        event.downTime, event.eventTime,
+                        event.action, x, y, event.metaState
+                    )
                     return@OnTouchListener v.seek_bar.onTouchEvent(me)
                 }
                 return@OnTouchListener false
@@ -467,16 +470,20 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 view.duration_tv.text = 0L.formatMillis()
                 view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
             }
-
-            view.preview_iv.visibility = VISIBLE
             view.tag = messageItem.isLive()
-            if (position != view_pager.currentItem) {
-               view.play_view.visibility = VISIBLE
-            }
-            if (VideoPlayer.player().mId == messageItem.messageId &&
-                VideoPlayer.player().isPlaying() &&
-                VideoPlayer.player().player.playbackState == STATE_READY) {
-                view.play_view.status = STATUS_PLAYING
+            if (VideoPlayer.player().mId == messageItem.messageId) {
+                val playbackState = VideoPlayer.player().player.playbackState
+                view.play_view.status = when (playbackState) {
+                    STATE_IDLE, STATE_ENDED -> STATUS_IDLE
+                    STATE_BUFFERING -> STATUS_LOADING
+                    else -> {
+                        if (VideoPlayer.player().isPlaying()) {
+                            STATUS_PLAYING
+                        } else {
+                            STATUS_IDLE
+                        }
+                    }
+                }
             }
             if (position == index && !setTransition) {
                 setTransition = true
@@ -751,7 +758,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
                 if (parentView.play_view.status == STATUS_REFRESH &&
-                    status == STATUS_IDLE) {
+                    status == STATUS_IDLE
+                ) {
                     return
                 }
                 parentView.play_view.status = status
@@ -927,15 +935,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
                 STATE_ENDED -> stop()
-                STATE_IDLE -> {
-                    stop()
-                }
-                STATE_READY -> {
-                    onStateReady(mid, playWhenReady)
-                }
-                STATE_BUFFERING -> {
-                    showLoading(mid)
-                }
+                STATE_IDLE -> stop()
+                STATE_READY -> onStateReady(mid, playWhenReady)
+                STATE_BUFFERING -> showLoading(mid)
             }
         }
 
@@ -1035,11 +1037,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_Y, scale),
                 ObjectAnimator.ofFloat(
                     windowView.video_aspect_ratio, View.TRANSLATION_X, rect.x - windowView.video_aspect_ratio.x -
-                    this.realSize().x * (1f - scale) / 2
+                        this.realSize().x * (1f - scale) / 2
                 ),
                 ObjectAnimator.ofFloat(
                     windowView.video_aspect_ratio, View.TRANSLATION_Y, rect.y - windowView.video_aspect_ratio.y +
-                    this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2
+                        this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2
                 )
             )
             animatorSet.interpolator = DecelerateInterpolator()
@@ -1138,9 +1140,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             activity.startActivity(
                 intent, ActivityOptions.makeSceneTransitionAnimation(
-                activity, imageView,
-                "transition"
-            ).toBundle()
+                    activity, imageView,
+                    "transition"
+                ).toBundle()
             )
         }
 
