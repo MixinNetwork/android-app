@@ -12,7 +12,6 @@ import android.widget.FrameLayout
 import android.widget.ProgressBar
 import androidx.core.view.updateLayoutParams
 import one.mixin.android.R
-import timber.log.Timber
 
 class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0) :
     FrameLayout(context, attrs, defStyleAttr) {
@@ -29,7 +28,6 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     var status = STATUS_IDLE
         set(value) {
-            Timber.d("@@@ status: $value")
             if (value != field) {
                 field = value
                 invalidate()
@@ -87,7 +85,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-        pb.updateLayoutParams<FrameLayout.LayoutParams> {
+        pb.updateLayoutParams<LayoutParams> {
             width = measuredWidth / 2
             height = measuredHeight / 2
             gravity = Gravity.CENTER
