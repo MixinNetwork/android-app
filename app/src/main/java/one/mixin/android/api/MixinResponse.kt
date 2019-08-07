@@ -42,7 +42,7 @@ suspend fun <T, R> handleMixinResponse(
     exceptionBlock: ((t: Throwable) -> Boolean)? = null,
     doAfterNetworkSuccess: (() -> Unit)? = null,
     defaultErrorHandle: (suspend (MixinResponse<T>) -> Unit) = {
-        ErrorHandler.handleMixinError(it.errorCode)
+        ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
     },
     defaultExceptionHandle: (suspend (t: Throwable) -> Unit) = {
         ErrorHandler.handleError(it)

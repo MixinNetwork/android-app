@@ -146,7 +146,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                         if (r.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                             toast(R.string.error_pin_check_too_many_request)
                         } else {
-                            ErrorHandler.handleMixinError(r.errorCode)
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
                     }
                 }, { t ->

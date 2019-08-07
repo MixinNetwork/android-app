@@ -171,7 +171,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                         dismiss()
                     }
                 } else {
-                    ErrorHandler.handleMixinError(r.errorCode)
+                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     error(R.string.bottom_sheet_invalid_payment)
                 }
             }, {
@@ -368,7 +368,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             }
                         }
                     } else {
-                        ErrorHandler.handleMixinError(r.errorCode)
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         error(R.string.bottom_sheet_invalid_payment)
                     }
                 }, {

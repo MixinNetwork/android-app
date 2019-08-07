@@ -231,7 +231,7 @@ class ProfileFragment : BaseFragment() {
                     contactsViewModel.insertUser(it.toUser())
                 }
             } else {
-                ErrorHandler.handleMixinError(r.errorCode)
+                ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
             }
         }, { t: Throwable ->
             redeem_pb.visibility = GONE
@@ -276,7 +276,7 @@ class ProfileFragment : BaseFragment() {
                     name_animator.displayedChild = POS_CONTENT
                 }
                 if (!r.isSuccess) {
-                    ErrorHandler.handleMixinError(r.errorCode)
+                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     return@subscribe
                 }
                 r.data?.let { data ->

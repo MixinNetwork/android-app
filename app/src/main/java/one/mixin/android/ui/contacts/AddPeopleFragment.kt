@@ -87,7 +87,7 @@ class AddPeopleFragment : BaseFragment() {
                         }
                     }
                     r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
-                    else -> ErrorHandler.handleMixinError(r.errorCode)
+                    else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                 }
             }, { t: Throwable ->
                 search_animator.displayedChild = POS_SEARCH

@@ -261,7 +261,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                 }
                             }
                         } else {
-                            ErrorHandler.handleMixinError(r.errorCode)
+                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
                         dialog.dismiss()
                     }, { t ->

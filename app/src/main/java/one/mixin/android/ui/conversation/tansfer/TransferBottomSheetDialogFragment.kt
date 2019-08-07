@@ -178,7 +178,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (it.errorCode == ErrorHandler.TOO_MANY_REQUEST) {
                         toast(R.string.error_pin_check_too_many_request)
                     } else {
-                        ErrorHandler.handleMixinError(it.errorCode)
+                        ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                     }
                 }
             }, {

@@ -77,7 +77,7 @@
     <string name="error_network">网络错误</string>
     <string name="error_server_5xx">服务器正在维护中</string>
     <string name="error_unknown">错误</string>
-    <string name="error_unknown_with_code">错误: %1$d</string>
+    <string name="error_unknown_with_code">错误 %1$d</string>
     <string name="error_forbidden">禁止访问</string>
     <string name="error_not_found">错误 %1$d：没有找到相应的信息</string>
     <string name="error_too_many_request">错误 %1$d：请求太快啦</string>
@@ -118,6 +118,7 @@
     <string name="error_too_small_withdraw_amount">错误 %1$d：提现金额太小</string>
     <string name="error_invalid_code_too_frequent">错误 %1$d：发送验证码太频繁，请稍后再试</string>
     <string name="error_invalid_emergency_contact">错误 %1$d：紧急联系人不正确</string>
+    <string name="error_withdrawal_memo_format_incorrect">ERROR %1$d: 提现备注格式不正确</string>
     <string name="error_retry_upload">重新上传失败。</string>
     <string name="error_not_supported_audio_format">不支持的音频格式，请用其他app打开。</string>
     <!--home-->

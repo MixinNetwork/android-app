@@ -81,7 +81,7 @@
     <string name="error_network">Network error</string>
     <string name="error_server_5xx">Server is under maintenance</string>
     <string name="error_unknown">Error</string>
-    <string name="error_unknown_with_code">Error: %1$d</string>
+    <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_forbidden">Access denied</string>
     <string name="error_not_found">ERROR %1$d: Not found</string>
     <string name="error_too_many_request">ERROR %1$d: Rate limit exceeded</string>
@@ -123,6 +123,7 @@
     <string name="error_too_small_withdraw_amount">ERROR %1$d: Withdraw amount too small</string>
     <string name="error_invalid_code_too_frequent">ERROR %1$d: Send verification code too frequent, please try again later.</string>
     <string name="error_invalid_emergency_contact">ERROR %1$d: Invalid emergency contact</string>
+    <string name="error_withdrawal_memo_format_incorrect">ERROR %1$d: Withdrawal memo format incorrect.</string>
     <string name="error_retry_upload">Retry upload failed.</string>
     <string name="error_not_supported_audio_format">Not supported audio format, please open by other app.</string>
     <!--home-->

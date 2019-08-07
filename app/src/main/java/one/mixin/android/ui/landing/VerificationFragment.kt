@@ -235,7 +235,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
                         recaptchaView.loadRecaptcha()
                     } else {
                         hideLoading()
-                        ErrorHandler.handleMixinError(r.errorCode)
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     }
                 } else {
                     hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact

@@ -41,10 +41,9 @@ open class ErrorHandler {
             }
         }
 
-        fun handleMixinError(code: Int) {
+        fun handleMixinError(code: Int, message: String) {
             val ctx = MixinApplication.appContext
             ctx.runOnUiThread {
-                var handled = true
                 when (code) {
                     TRANSACTION -> {
                     }
@@ -120,11 +119,12 @@ open class ErrorHandler {
                     INVALID_EMERGENCY_CONTACT -> {
                         toast(getString(R.string.error_invalid_emergency_contact, INVALID_EMERGENCY_CONTACT))
                     }
-                    else -> handled = false
-                }
-
-                if (!handled) {
-                    handleErrorCode(code, ctx)
+                    WITHDRAWAL_MEMO_FORMAT_INCORRECT -> {
+                        toast(getString(R.string.error_withdrawal_memo_format_incorrect, WITHDRAWAL_MEMO_FORMAT_INCORRECT))
+                    }
+                    else -> {
+                        toast("${getString(R.string.error_unknown_with_code, code)}: $message")
+                    }
                 }
             }
         }
@@ -193,6 +193,7 @@ open class ErrorHandler {
         private const val WITHDRAWAL_AMOUNT_SMALL = 20127
         private const val INVALID_CODE_TOO_FREQUENT = 20129
         private const val INVALID_EMERGENCY_CONTACT = 20130
+        private const val WITHDRAWAL_MEMO_FORMAT_INCORRECT = 20131
         private const val BLOCKCHAIN_ERROR = 30100
         private const val INVALID_ADDRESS = 30102
     }

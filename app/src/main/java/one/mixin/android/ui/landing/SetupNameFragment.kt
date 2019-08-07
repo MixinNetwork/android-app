@@ -55,7 +55,7 @@ class SetupNameFragment : BaseFragment() {
                     name_fab?.hide()
                     name_cover?.visibility = INVISIBLE
                     if (!r.isSuccess) {
-                        ErrorHandler.handleMixinError(r.errorCode)
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         return@subscribe
                     }
                     r.data?.let { data ->

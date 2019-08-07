@@ -169,7 +169,7 @@ class MobileFragment : BaseFragment() {
                         recaptchaView.loadRecaptcha()
                     } else {
                         hideLoading()
-                        ErrorHandler.handleMixinError(r.errorCode)
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     }
                     return@subscribe
                 }

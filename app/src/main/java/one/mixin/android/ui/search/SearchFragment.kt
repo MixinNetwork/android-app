@@ -149,7 +149,7 @@ class SearchFragment : BaseFragment() {
                             }
                         }
                         r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
-                        else -> ErrorHandler.handleMixinError(r.errorCode)
+                        else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     }
                 }, { t: Throwable ->
                     searchAdapter.searchingId = false
