@@ -72,7 +72,7 @@
             app:layout_constraintTop_toTopOf="@id/chat_image_layout"
             app:progressColor="@color/white"
             app:progressWidth="1.5dp"
-            app:shadowColor="@color/white_28"
+            app:shadowColor="@color/black_70"
             app:size="40dp" />
 
         <LinearLayout
