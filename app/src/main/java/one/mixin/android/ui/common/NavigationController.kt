@@ -10,7 +10,9 @@ import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.SearchFragment
+import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.Session
 
 class NavigationController
 @Inject
@@ -24,7 +26,14 @@ constructor(mainActivity: MainActivity) {
     }
 
     fun pushWallet() {
-        WalletActivity.show(context, leftInAnim = true)
+        if (Session.getAccount()?.hasPin == true) {
+            WalletActivity.show(context, leftInAnim = true)
+        } else {
+            fragmentManager.beginTransaction()
+                .replace(R.id.root_view, WalletPasswordFragment.newInstance(false))
+                .addToBackStack(null)
+                .commitAllowingStateLoss()
+        }
     }
 
     fun navigateToMessage() {

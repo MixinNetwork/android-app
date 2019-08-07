@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.util.Session
 
 class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
     companion object {
@@ -47,6 +48,13 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         }
         contact_rl.setOnClickListener {
             navTo(MobileContactFragment.newInstance(), MobileContactFragment.TAG)
+        }
+        wallet_rl.setOnClickListener {
+            if (Session.getAccount()?.hasPin == true) {
+                navTo(WalletSettingFragment.newInstance(), WalletSettingFragment.TAG)
+            } else {
+                navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
+            }
         }
     }
 }

@@ -16,8 +16,8 @@ import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragme
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.WalletPasswordFragment
 
 @Module
 abstract class CommonModule {

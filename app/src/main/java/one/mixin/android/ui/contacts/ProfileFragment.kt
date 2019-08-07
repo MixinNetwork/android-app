@@ -43,7 +43,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.VerifyFragment.Companion.FROM_PHONE
-import one.mixin.android.ui.wallet.WalletPasswordFragment
+import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
