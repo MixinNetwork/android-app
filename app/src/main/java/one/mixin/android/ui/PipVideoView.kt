@@ -22,7 +22,10 @@ import android.widget.ImageView
 import androidx.annotation.Keep
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlaybackException
-import com.google.android.exoplayer2.Player
+import com.google.android.exoplayer2.Player.STATE_BUFFERING
+import com.google.android.exoplayer2.Player.STATE_ENDED
+import com.google.android.exoplayer2.Player.STATE_IDLE
+import com.google.android.exoplayer2.Player.STATE_READY
 import kotlin.math.abs
 import kotlin.math.round
 import one.mixin.android.MixinApplication
@@ -41,6 +44,9 @@ import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.AspectRatioFrameLayout
 import one.mixin.android.widget.PlayView
+import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
+import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
+import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import org.jetbrains.anko.dip
 import timber.log.Timber
 
@@ -249,11 +255,30 @@ class PipVideoView {
 
         val dp42 = appContext.dpToPx(42f)
         playView = PlayView(activity).apply {
-            visibility = GONE
             windowView.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
+            val playbackState = VideoPlayer.player().player.playbackState
+            status = when (playbackState) {
+                STATE_IDLE, STATE_ENDED -> {
+                    isVisible = true
+                    STATUS_IDLE
+                }
+                STATE_BUFFERING -> {
+                    isVisible = true
+                    STATUS_LOADING
+                }
+                else -> {
+                    if (VideoPlayer.player().isPlaying()) {
+                        isVisible = false
+                        STATUS_PLAYING
+                    } else {
+                        isVisible = true
+                        STATUS_IDLE
+                    }
+                }
+            }
             setOnClickListener {
                 when (status) {
-                    PlayView.STATUS_IDLE -> {
+                    STATUS_IDLE -> {
                         mediaUrl?.let {
                             if (isPlayerIdle()) {
                                 if (isVideo) {
@@ -265,7 +290,7 @@ class PipVideoView {
                             start()
                         }
                     }
-                    PlayView.STATUS_LOADING, PlayView.STATUS_PLAYING -> {
+                    STATUS_LOADING, STATUS_PLAYING -> {
                         pause()
                     }
                     PlayView.STATUS_REFRESH -> {
@@ -283,39 +308,34 @@ class PipVideoView {
 
         VideoPlayer.player().setOnMediaPlayerListener(object : MixinPlayer.MediaPlayerListenerWrapper() {
             override fun onPlayerError(mid: String, error: ExoPlaybackException) {
+                playView?.fadeIn()
                 playView?.status = PlayView.STATUS_REFRESH
             }
 
             override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
                 when (playbackState) {
-                    Player.STATE_ENDED -> stop()
-                    Player.STATE_IDLE -> {
+                    STATE_ENDED -> stop()
+                    STATE_IDLE -> {
                         if (isVideo) {
                             stop()
                             fadeIn()
                         } else {
+                            playView?.fadeIn()
                             playView?.status = PlayView.STATUS_REFRESH
                         }
                     }
-                    Player.STATE_READY -> {
+                    STATE_READY -> {
                         if (playWhenReady) {
                             fadeOut()
-                            playView?.status = PlayView.STATUS_PLAYING
+                            playView?.status = STATUS_PLAYING
                         } else {
-                            playView?.status = PlayView.STATUS_IDLE
+                            playView?.status = STATUS_IDLE
                         }
                     }
-                    Player.STATE_BUFFERING -> {
-                        playView?.status = PlayView.STATUS_LOADING
+                    STATE_BUFFERING -> {
+                        playView?.fadeIn()
+                        playView?.status = STATUS_LOADING
                     }
-                }
-            }
-
-            override fun onRenderedFirstFrame(mid: String) {
-                if (VideoPlayer.player().isPlaying()) {
-                    playView?.status = PlayView.STATUS_PLAYING
-                } else {
-                    playView?.status = PlayView.STATUS_IDLE
                 }
             }
         })
@@ -386,8 +406,8 @@ class PipVideoView {
     }
 
     private fun isPlayerIdle() =
-        VideoPlayer.player().player.playbackState == Player.STATE_IDLE ||
-            VideoPlayer.player().player.playbackState == Player.STATE_ENDED
+        VideoPlayer.player().player.playbackState == STATE_IDLE ||
+            VideoPlayer.player().player.playbackState == STATE_ENDED
 
     private var decelerateInterpolator: DecelerateInterpolator? = null
     private fun animateToBoundsMaybe() {
@@ -477,17 +497,17 @@ class PipVideoView {
     }
 
     private fun start() {
-        playView?.status = PlayView.STATUS_PLAYING
+        playView?.status = STATUS_PLAYING
         VideoPlayer.player().start()
     }
 
     private fun pause() {
-        playView?.status = PlayView.STATUS_IDLE
+        playView?.status = STATUS_IDLE
         VideoPlayer.player().pause()
     }
 
     private fun stop() {
-        playView?.status = PlayView.STATUS_IDLE
+        playView?.status = STATUS_IDLE
         VideoPlayer.player().stop()
     }
 
