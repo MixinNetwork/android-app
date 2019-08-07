@@ -41,10 +41,9 @@ open class ErrorHandler {
             }
         }
 
-        fun handleMixinError(code: Int) {
+        fun handleMixinError(code: Int, message: String) {
             val ctx = MixinApplication.appContext
             ctx.runOnUiThread {
-                var handled = true
                 when (code) {
                     TRANSACTION -> {
                     }
@@ -120,11 +119,9 @@ open class ErrorHandler {
                     INVALID_EMERGENCY_CONTACT -> {
                         toast(getString(R.string.error_invalid_emergency_contact, INVALID_EMERGENCY_CONTACT))
                     }
-                    else -> handled = false
-                }
-
-                if (!handled) {
-                    handleErrorCode(code, ctx)
+                    else -> {
+                        toast("${getString(R.string.error_unknown_with_code, code)}: $message")
+                    }
                 }
             }
         }

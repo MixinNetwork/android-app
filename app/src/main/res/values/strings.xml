@@ -81,7 +81,7 @@
     <string name="error_network">Network error</string>
     <string name="error_server_5xx">Server is under maintenance</string>
     <string name="error_unknown">Error</string>
-    <string name="error_unknown_with_code">Error: %1$d</string>
+    <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_forbidden">Access denied</string>
     <string name="error_not_found">ERROR %1$d: Not found</string>
     <string name="error_too_many_request">ERROR %1$d: Rate limit exceeded</string>

@@ -159,7 +159,7 @@ internal constructor(
                 }
                 return@withContext Pair(topAssetList, existsSet)
             } else {
-                ErrorHandler.handleMixinError(response.errorCode)
+                ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
             }
             return@withContext Pair(null, null)
         }
@@ -177,7 +177,7 @@ internal constructor(
                 return@withContext it.iconUrl
             }
         } else {
-            ErrorHandler.handleMixinError(r.errorCode)
+            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
         }
         return@withContext null
     }

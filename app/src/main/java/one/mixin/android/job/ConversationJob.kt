@@ -114,7 +114,7 @@ class ConversationJob(
                 }
             }
             if (r?.isSuccess == false) {
-                ErrorHandler.handleMixinError(r.errorCode)
+                ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
             }
         }
     }

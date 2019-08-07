@@ -76,7 +76,7 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                             viewModel.preferences.setContacts()
                         } else {
                             viewModel.preferences.setEveryBody()
-                            ErrorHandler.handleMixinError(it.errorCode)
+                            ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                         }
                         my_contacts_pb?.visibility = View.GONE
                     }, {
@@ -108,7 +108,7 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                             viewModel.preferences.setEveryBody()
                         } else {
                             viewModel.preferences.setContacts()
-                            ErrorHandler.handleMixinError(it.errorCode)
+                            ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                         }
                         everybody_pb?.visibility = View.GONE
                     }, {
@@ -144,7 +144,7 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                             viewModel.groupPreferences.setContacts()
                         } else {
                             viewModel.groupPreferences.setEveryBody()
-                            ErrorHandler.handleMixinError(it.errorCode)
+                            ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                         }
                         my_contacts_group_pb?.visibility = View.GONE
                     }, {
@@ -176,7 +176,7 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                             viewModel.groupPreferences.setEveryBody()
                         } else {
                             viewModel.groupPreferences.setContacts()
-                            ErrorHandler.handleMixinError(it.errorCode)
+                            ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                         }
                         everybody_pb?.visibility = View.GONE
                     }, {

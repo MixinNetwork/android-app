@@ -54,7 +54,7 @@ abstract class PinCodeFragment<VH : ViewModel> : FabLoadingFragment<VH>() {
             r.errorCode == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED) {
             verification_next_fab.visibility = View.INVISIBLE
         }
-        ErrorHandler.handleMixinError(r.errorCode)
+        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
     }
 
     private suspend fun saveQrCode(account: Account) = withContext(Dispatchers.IO) {

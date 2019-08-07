@@ -75,7 +75,7 @@ constructor(
         accountService.code(code).subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
             .map { response ->
                 if (!response.isSuccess) {
-                    ErrorHandler.handleMixinError(response.errorCode)
+                    ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
                     return@map Pair("", "")
                 }
                 val result: Pair<String, Any>

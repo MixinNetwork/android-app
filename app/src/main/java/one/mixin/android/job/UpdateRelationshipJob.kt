@@ -59,7 +59,7 @@ class UpdateRelationshipJob(private val request: RelationshipRequest, private va
                         }
                         conversationDao.deleteConversationById(deleteConversationId)
                     } else {
-                        ErrorHandler.handleMixinError(r.errorCode)
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     }
                 }, { t: Throwable ->
                     Timber.e(t)
@@ -77,7 +77,7 @@ class UpdateRelationshipJob(private val request: RelationshipRequest, private va
                             userRepo.upsert(u)
                         }
                     } else {
-                        ErrorHandler.handleMixinError(r.errorCode)
+                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     }
                 }, { t: Throwable ->
                     Timber.e(t)

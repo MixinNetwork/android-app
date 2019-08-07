@@ -151,7 +151,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     success = true
                     dismiss()
                 } else {
-                    ErrorHandler.handleMixinError(r.errorCode)
+                    ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                 }
             }, { t: Throwable ->
                 contentView.confirm_anim?.displayedChild = POS_TEXT

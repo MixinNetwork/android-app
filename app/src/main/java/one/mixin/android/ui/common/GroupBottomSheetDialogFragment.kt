@@ -106,7 +106,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                     ConversationActivity.show(requireContext(), conversationId)
                 } else {
-                    ErrorHandler.handleMixinError(it.errorCode)
+                    ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
                 }
             }, {
                 ErrorHandler.handleError(it)
