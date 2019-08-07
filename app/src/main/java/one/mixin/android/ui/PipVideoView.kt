@@ -20,7 +20,6 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.Keep
-import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player
@@ -51,10 +50,10 @@ class PipVideoView {
         private val appContext by lazy {
             MixinApplication.appContext
         }
-        private val SIDEX = "sidex"
-        private val SIDEY = "sidey"
-        private val PX = "px"
-        private val PY = "py"
+        private const val SIDEX = "sidex"
+        private const val SIDEY = "sidey"
+        private const val PX = "px"
+        private const val PY = "py"
 
         fun getPipRect(aspectRatio: Float): Rect {
             val prefreences = appContext.defaultSharedPreferences
@@ -118,7 +117,6 @@ class PipVideoView {
     private var inlineButton: ImageView? = null
     private var closeButton: ImageView? = null
     private var playView: PlayView? = null
-    private var refreshButton: ImageView? = null
 
     private var mediaUrl: String? = null
 
@@ -160,6 +158,7 @@ class PipVideoView {
                 return super.onInterceptTouchEvent(event)
             }
 
+            @SuppressLint("ClickableViewAccessibility")
             override fun onTouchEvent(event: MotionEvent): Boolean {
                 val x = event.rawX
                 val y = event.rawY
@@ -249,31 +248,12 @@ class PipVideoView {
         }
 
         val dp42 = appContext.dpToPx(42f)
-        refreshButton = ImageView(activity).apply {
-            scaleType = ImageView.ScaleType.FIT_CENTER
-            visibility = GONE
-            setImageResource(R.drawable.ic_refresh)
-            windowView.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
-            setOnClickListener {
-                it.fadeOut()
-                playView?.status = PlayView.STATUS_PLAYING
-                mediaUrl?.let {
-                    if (isVideo) {
-                        VideoPlayer.player().loadVideo(it, messageId, true)
-                    } else {
-                        VideoPlayer.player().loadHlsVideo(it, messageId, true)
-                    }
-                }
-            }
-        }
-
         playView = PlayView(activity).apply {
             visibility = GONE
             windowView.addView(this, FrameLayout.LayoutParams(dp42, dp42, Gravity.CENTER))
             setOnClickListener {
                 when (status) {
                     PlayView.STATUS_IDLE -> {
-                        playView?.status = PlayView.STATUS_PLAYING
                         mediaUrl?.let {
                             if (isPlayerIdle()) {
                                 if (isVideo) {
@@ -285,11 +265,17 @@ class PipVideoView {
                             start()
                         }
                     }
-                    PlayView.STATUS_LOADING, PlayView.STATUS_PLAYING, PlayView.STATUS_BUFFERING -> {
+                    PlayView.STATUS_LOADING, PlayView.STATUS_PLAYING -> {
                         pause()
                     }
-                    PlayView.STATUS_PAUSING -> {
-                        start()
+                    PlayView.STATUS_REFRESH -> {
+                        mediaUrl?.let {
+                            if (isVideo) {
+                                VideoPlayer.player().loadVideo(it, messageId, true)
+                            } else {
+                                VideoPlayer.player().loadHlsVideo(it, messageId, true)
+                            }
+                        }
                     }
                 }
             }
@@ -297,7 +283,7 @@ class PipVideoView {
 
         VideoPlayer.player().setOnMediaPlayerListener(object : MixinPlayer.MediaPlayerListenerWrapper() {
             override fun onPlayerError(mid: String, error: ExoPlaybackException) {
-                showRefresh()
+                playView?.status = PlayView.STATUS_REFRESH
             }
 
             override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
@@ -308,14 +294,19 @@ class PipVideoView {
                             stop()
                             fadeIn()
                         } else {
-                            showRefresh()
+                            playView?.status = PlayView.STATUS_REFRESH
                         }
                     }
                     Player.STATE_READY -> {
-                        hideRefresh()
+                        if (playWhenReady) {
+                            fadeOut()
+                            playView?.status = PlayView.STATUS_PLAYING
+                        } else {
+                            playView?.status = PlayView.STATUS_IDLE
+                        }
                     }
                     Player.STATE_BUFFERING -> {
-                        hideRefresh()
+                        playView?.status = PlayView.STATUS_LOADING
                     }
                 }
             }
@@ -348,7 +339,7 @@ class PipVideoView {
             windowLayoutParams.x = getSideCoord(true, sidex, px, videoWidth)
             windowLayoutParams.y = getSideCoord(false, sidey, py, videoHeight)
             windowLayoutParams.format = PixelFormat.TRANSLUCENT
-            windowLayoutParams.gravity = Gravity.TOP or Gravity.LEFT
+            windowLayoutParams.gravity = Gravity.TOP or Gravity.START
             if (Build.VERSION.SDK_INT >= 26) {
                 windowLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             } else {
@@ -381,7 +372,7 @@ class PipVideoView {
     private fun fadeIn() {
         closeButton?.fadeIn()
         inlineButton?.fadeIn()
-        if (refreshButton?.isVisible == false && playView?.isVisible == false) {
+        if (playView?.isVisible == false) {
             playView?.fadeIn()
         }
     }
@@ -389,7 +380,7 @@ class PipVideoView {
     private fun fadeOut() {
         closeButton?.fadeOut()
         inlineButton?.fadeOut()
-        if (refreshButton?.isVisible == false) {
+        if (playView?.status != PlayView.STATUS_REFRESH) {
             playView?.fadeOut()
         }
     }
@@ -491,22 +482,13 @@ class PipVideoView {
     }
 
     private fun pause() {
-        playView?.status = PlayView.STATUS_PAUSING
+        playView?.status = PlayView.STATUS_IDLE
         VideoPlayer.player().pause()
     }
 
     private fun stop() {
         playView?.status = PlayView.STATUS_IDLE
         VideoPlayer.player().stop()
-    }
-
-    private fun showRefresh() {
-        playView?.isGone = true
-        refreshButton?.fadeIn()
-    }
-
-    private fun hideRefresh() {
-        refreshButton?.fadeOut()
     }
 
     @Keep

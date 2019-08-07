@@ -26,7 +26,6 @@ import android.provider.Settings
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
-import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
 import android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
@@ -71,14 +70,11 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
-import kotlinx.android.synthetic.main.view_drag_bottom.view.*
+import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
+import kotlinx.android.synthetic.main.view_drag_image_bottom.view.cancel
+import kotlinx.android.synthetic.main.view_drag_video_bottom.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -123,16 +119,20 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
-import one.mixin.android.widget.PlayView.Companion.STATUS_BUFFERING
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
-import one.mixin.android.widget.PlayView.Companion.STATUS_PAUSING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
+import one.mixin.android.widget.PlayView.Companion.STATUS_REFRESH
 import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.math.min
 
 class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private lateinit var colorDrawable: ColorDrawable
@@ -231,9 +231,22 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun showBottom() {
+    private fun showVideoBottom() {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_bottom, null)
+        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_video_bottom, null)
+        builder.setCustomView(view)
+        val bottomSheet = builder.create()
+        view.share.setOnClickListener {
+            shareVideo()
+            bottomSheet.dismiss()
+        }
+        view.cancel.setOnClickListener { bottomSheet.dismiss() }
+        bottomSheet.show()
+    }
+
+    private fun showImageBottom() {
+        val builder = BottomSheet.Builder(this)
+        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_image_bottom, null)
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.save.setOnClickListener {
@@ -415,7 +428,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 val seekRect = Rect()
                 v.seek_bar.getHitRect(seekRect)
                 if (event.y >= (seekRect.top - dpToPx(16f)) && event.y <= (seekRect.bottom + dpToPx(16f)) &&
-                    event.x >= seekRect.left && event.x <= seekRect.right) {
+                    event.x >= seekRect.left && event.x <= seekRect.right
+                ) {
                     val y = seekRect.top + seekRect.height() / 2f
                     var x = event.x - seekRect.left
                     if (x < 0) {
@@ -423,8 +437,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     } else if (x > seekRect.width()) {
                         x = seekRect.width().toFloat()
                     }
-                    val me = MotionEvent.obtain(event.downTime, event.eventTime,
-                        event.action, x, y, event.metaState)
+                    val me = MotionEvent.obtain(
+                        event.downTime, event.eventTime,
+                        event.action, x, y, event.metaState
+                    )
                     return@OnTouchListener v.seek_bar.onTouchEvent(me)
                 }
                 return@OnTouchListener false
@@ -437,35 +453,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 view.play_view.isVisible = false
                 switchToPip()
             }
-            view.refresh_iv.visibility = GONE
-            view.refresh_iv.setOnClickListener {
-                it.fadeOut()
-                load(position, force = true) {
-                    if (messageItem.isVideo()) {
-                        disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .autoDisposable(stopScope)
-                            .subscribe {
-                                if (VideoPlayer.player().duration() != 0) {
-                                    view.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
-                                        VideoPlayer.player().duration()).toInt()
-                                    view.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
-                                    if (view.remain_tv.text.isEmpty()) { // from google photo
-                                        view.remain_tv.text = VideoPlayer.player().duration().toLong().formatMillis()
-                                    }
-                                }
-                            }
-                    }
-                }
-            }
-            (view.share_iv.layoutParams as FrameLayout.LayoutParams).marginEnd = baseContext.dpToPx(54f)
-            view.share_iv.setOnClickListener { shareVideo() }
             view.pip_iv.isEnabled = false
             view.pip_iv.alpha = 0.5f
             view.close_iv.post {
                 val statusBarHeight = statusBarHeight().toFloat()
                 view.close_iv.translationY = statusBarHeight
-                view.share_iv.translationY = statusBarHeight
                 view.live_tv.translationY = statusBarHeight
                 view.pip_iv.translationY = statusBarHeight
             }
@@ -478,19 +470,25 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 view.duration_tv.text = 0L.formatMillis()
                 view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
             }
-
-            view.preview_iv.visibility = VISIBLE
             view.tag = messageItem.isLive()
-
+            if (VideoPlayer.player().mId == messageItem.messageId) {
+                val playbackState = VideoPlayer.player().player.playbackState
+                view.play_view.status = when (playbackState) {
+                    STATE_IDLE, STATE_ENDED -> STATUS_IDLE
+                    STATE_BUFFERING -> STATUS_LOADING
+                    else -> {
+                        if (VideoPlayer.player().isPlaying()) {
+                            STATUS_PLAYING
+                        } else {
+                            STATUS_IDLE
+                        }
+                    }
+                }
+            }
             if (position == index && !setTransition) {
                 setTransition = true
                 ViewCompat.setTransitionName(view, "transition")
                 setStartPostTransition(view)
-            }
-
-            if (position != view_pager.currentItem) {
-                if (!view.refresh_iv.isVisible)
-                    view.play_view.visibility = VISIBLE
             }
 
             view.play_view.setOnClickListener {
@@ -499,28 +497,31 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         setPreviewIv(false, view_pager.currentItem)
                         play(view_pager.currentItem)
                     }
-                    STATUS_LOADING, STATUS_PLAYING, STATUS_BUFFERING -> {
+                    STATUS_LOADING, STATUS_PLAYING -> {
                         pause()
                     }
-                    STATUS_PAUSING -> {
-                        start()
+                    STATUS_REFRESH -> {
+                        load(position, force = true) {
+                            if (messageItem.isVideo()) {
+                                startListenDuration(view)
+                            }
+                        }
                     }
                 }
             }
             view.setOnClickListener {
-                if (view.close_iv.isVisible) {
-                    fadeOut(view, messageItem.isLive())
-                } else {
-                    fadeIn(view, messageItem.isLive())
-                }
+                onVideoClick(view, messageItem)
             }
-
+            view.setOnLongClickListener {
+                onVideoLongClick(messageItem)
+                return@setOnLongClickListener true
+            }
             view.video_texture.setOnClickListener {
-                if (view.close_iv.isVisible) {
-                    fadeOut(view, messageItem.isLive())
-                } else {
-                    fadeIn(view, messageItem.isLive())
-                }
+                onVideoClick(view, messageItem)
+            }
+            view.video_texture.setOnLongClickListener {
+                onVideoLongClick(messageItem)
+                return@setOnLongClickListener true
             }
 
             var isPlaying = false
@@ -544,6 +545,20 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             })
 
             return view
+        }
+
+        private fun onVideoClick(view: View, messageItem: MessageItem) {
+            if (view.close_iv.isVisible) {
+                fadeOut(view, messageItem.isLive())
+            } else {
+                fadeIn(view, messageItem.isLive())
+            }
+        }
+
+        private fun onVideoLongClick(messageItem: MessageItem) {
+            if (messageItem.isVideo()) {
+                showVideoBottom()
+            }
         }
 
         private fun setSize(rotio: Float, view: View) {
@@ -594,7 +609,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 finishAfterTransition()
             }
             imageView.setOnLongClickListener {
-                showBottom()
+                showImageBottom()
                 return@setOnLongClickListener true
             }
             return imageView
@@ -660,7 +675,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 finishAfterTransition()
             }
             imageView.setOnLongClickListener {
-                showBottom()
+                showImageBottom()
                 return@setOnLongClickListener true
             }
             return imageView
@@ -702,10 +717,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         } else {
             view.controller.fadeIn()
-            view.share_iv.fadeIn()
             view.pip_iv.fadeIn()
         }
-        if (!view.refresh_iv.isVisible && !view.play_view.isVisible) {
+        if (!view.play_view.isVisible) {
             view.play_view.fadeIn()
         }
         view.close_iv.fadeIn()
@@ -718,16 +732,13 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         } else {
             view.controller.fadeOut()
-            view.share_iv.fadeOut()
         }
         if (!withoutPlay) {
-            if (!view.refresh_iv.isVisible && view.play_view.isVisible) {
+            if (view.play_view.isVisible) {
                 view.play_view.fadeOut()
             }
         } else {
-            if (!view.refresh_iv.isVisible) {
-                view.play_view.fadeIn()
-            }
+            view.play_view.fadeIn()
         }
         view.close_iv.fadeOut()
         view.pip_iv.fadeOut()
@@ -746,6 +757,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         findViewPagerChildByTag(pos) {
             val parentView = it.getChildAt(0)
             if (parentView is FrameLayout) {
+                if (parentView.play_view.status == STATUS_REFRESH &&
+                    status == STATUS_IDLE
+                ) {
+                    return
+                }
                 parentView.play_view.status = status
             }
         }
@@ -838,35 +854,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun start() {
-        view_pager.post {
-            findViewPagerChildByTag { viewGroup ->
-                val parentView = viewGroup.getChildAt(0)
-                if (parentView is FrameLayout) {
-                    fadeOut(parentView, parentView.tag as Boolean)
-                    parentView.play_view.status = STATUS_PLAYING
-                    disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .autoDisposable(stopScope)
-                        .subscribe {
-                            if (VideoPlayer.player().duration() != 0) {
-                                parentView.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
-                                    VideoPlayer.player().duration()).toInt()
-                                parentView.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
-                                if (parentView.remain_tv.text.isEmpty()) { // from google photo
-                                    parentView.remain_tv.text = VideoPlayer.player().duration().toLong().formatMillis()
-                                }
-                            }
-                        }
-                }
-            }
-        }
-
-        VideoPlayer.player().start()
-    }
-
     private fun pause() {
-        setPlayViewStatus(STATUS_PAUSING)
+        setPlayViewStatus(STATUS_IDLE)
         disposable?.dispose()
         VideoPlayer.player().pause()
     }
@@ -894,8 +883,31 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private fun play(pos: Int) = load(pos) {
-        start()
-        pagerAdapter.getItem(pos)
+        view_pager.post {
+            findViewPagerChildByTag { viewGroup ->
+                val parentView = viewGroup.getChildAt(0)
+                if (parentView is FrameLayout) {
+                    startListenDuration(parentView)
+                }
+            }
+        }
+        VideoPlayer.player().start()
+    }
+
+    private fun startListenDuration(view: View) {
+        disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(stopScope)
+            .subscribe {
+                if (VideoPlayer.player().duration() != 0) {
+                    view.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
+                        VideoPlayer.player().duration()).toInt()
+                    view.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
+                    if (view.remain_tv.text.isEmpty()) { // from google photo
+                        view.remain_tv.text = VideoPlayer.player().duration().toLong().formatMillis()
+                    }
+                }
+            }
     }
 
     private val mediaListener = object : MixinPlayer.MediaPlayerListenerWrapper() {
@@ -920,24 +932,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             showRefresh(mid)
         }
 
-        override fun onLoadingChanged(mid: String, isLoading: Boolean) {
-            if (VideoPlayer.player().isPlaying() && isLoading && VideoPlayer.player().player.playbackState == STATE_BUFFERING) {
-                setPlayViewStatus(STATE_BUFFERING)
-            }
-        }
-
         override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
                 STATE_ENDED -> stop()
-                STATE_IDLE -> {
-                    stop()
-                }
-                STATE_READY -> {
-                    hideRefresh(mid)
-                }
-                STATE_BUFFERING -> {
-                    hideRefresh(mid)
-                }
+                STATE_IDLE -> stop()
+                STATE_READY -> onStateReady(mid, playWhenReady)
+                STATE_BUFFERING -> showLoading(mid)
             }
         }
 
@@ -967,15 +967,26 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private fun showRefresh(messageId: String) {
         findViewPagerChildById(messageId) {
             val parentView = it.getChildAt(0)
-            parentView.refresh_iv.fadeIn()
-            parentView.play_view.visibility = GONE
+            parentView.play_view.status = STATUS_REFRESH
         }
     }
 
-    private fun hideRefresh(messageId: String) {
+    private fun showLoading(messageId: String) {
         findViewPagerChildById(messageId) {
             val parentView = it.getChildAt(0)
-            parentView.refresh_iv.fadeOut()
+            parentView.play_view.status = STATUS_LOADING
+        }
+    }
+
+    private fun onStateReady(messageId: String, playWhenReady: Boolean) {
+        findViewPagerChildById(messageId) {
+            val parentView = it.getChildAt(0)
+            if (playWhenReady) {
+                fadeOut(parentView, parentView.tag as Boolean)
+                parentView.play_view.status = STATUS_PLAYING
+            } else {
+                parentView.play_view.status = STATUS_IDLE
+            }
         }
     }
 
@@ -1026,11 +1037,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_Y, scale),
                 ObjectAnimator.ofFloat(
                     windowView.video_aspect_ratio, View.TRANSLATION_X, rect.x - windowView.video_aspect_ratio.x -
-                    this.realSize().x * (1f - scale) / 2
+                        this.realSize().x * (1f - scale) / 2
                 ),
                 ObjectAnimator.ofFloat(
                     windowView.video_aspect_ratio, View.TRANSLATION_Y, rect.y - windowView.video_aspect_ratio.y +
-                    this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2
+                        this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2
                 )
             )
             animatorSet.interpolator = DecelerateInterpolator()
@@ -1129,9 +1140,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             activity.startActivity(
                 intent, ActivityOptions.makeSceneTransitionAnimation(
-                activity, imageView,
-                "transition"
-            ).toBundle()
+                    activity, imageView,
+                    "transition"
+                ).toBundle()
             )
         }
 

@@ -9,7 +9,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:visibility="invisible"
         tools:ignore="ContentDescription" />
 
     <one.mixin.android.widget.AspectRatioFrameLayout
@@ -28,8 +27,7 @@
         android:id="@+id/play_view"
         android:layout_width="56dp"
         android:layout_height="56dp"
-        android:layout_gravity="center"
-        android:visibility="invisible" />
+        android:layout_gravity="center" />
 
     <RelativeLayout
         android:id="@+id/controller"
@@ -73,14 +71,6 @@
     </RelativeLayout>
 
     <ImageView
-        android:id="@+id/refresh_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:src="@drawable/ic_refresh"
-        android:visibility="gone" />
-
-    <ImageView
         android:id="@+id/close_iv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -118,15 +108,4 @@
         android:textSize="10sp"
         android:visibility="gone"
         tools:ignore="HardcodedText" />
-
-    <ImageView
-        android:id="@+id/share_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginEnd="8dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_share_white_24dp"
-        android:visibility="invisible"
-        tools:ignore="ContentDescription" />
 </FrameLayout>
