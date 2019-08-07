@@ -111,7 +111,7 @@
             app:progressColor="@color/white"
             app:playColor="@color/white"
             app:progressWidth="1.5dp"
-            app:shadowColor="@color/white_28"
+            app:shadowColor="@color/black_70"
             app:size="40dp" />
 
         <ImageView
