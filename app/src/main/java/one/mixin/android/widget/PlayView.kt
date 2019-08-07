@@ -17,7 +17,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
     companion object {
         const val DEFAULT_COLOR = Color.WHITE
-        val DEFAULT_BG = Color.parseColor("#47ffffff")
+        val DEFAULT_BG = Color.parseColor("#B2212121")
 
         const val STATUS_IDLE = 0
         const val STATUS_LOADING = 1
@@ -85,6 +85,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     override fun onDraw(canvas: Canvas) {
         val w = width
         val h = height
+        canvas.drawCircle(w / 2f, h / 2f, w / 2f, bgPaint)
         when (status) {
             STATUS_IDLE -> {
                 playDrawable.isPlay = true
@@ -104,6 +105,5 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
                 refreshDrawable.draw(canvas)
             }
         }
-        canvas.drawCircle(w / 2f, h / 2f, w / 2f, bgPaint)
     }
 }
