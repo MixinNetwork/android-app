@@ -15,7 +15,7 @@ buildscript {
         ext.assistedinjectVersion = '0.4.0'
         ext.ktxVersion = '1.0.2'
         ext.espressoVersion = '3.2.0'
-        ext.cameraxVersion = '1.0.0-alpha03'
+        ext.cameraxVersion = '1.0.0-alpha04'
         ext.glideVersion = '4.9.0'
         ext.webpdecoderVesion = '1.5.4.9.0'
         ext.timberVersion = '4.7.1'
