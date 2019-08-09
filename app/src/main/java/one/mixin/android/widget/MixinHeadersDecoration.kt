@@ -27,7 +27,6 @@ class MixinHeadersDecoration private constructor(
     private val mHeaderRects = SparseArray<Rect>()
 
     private val mTempRect = Rect()
-    private var attachView: View? = null
 
     constructor(adapter: MixinStickyRecyclerHeadersAdapter<*>) : this(adapter,
         LinearLayoutOrientationProvider(), DimensionCalculator())
@@ -59,8 +58,8 @@ class MixinHeadersDecoration private constructor(
             val header = getHeaderView(parent, itemPosition)
             setItemOffsetsForHeader(outRect, header, mOrientationProvider.getOrientation(parent))
         }
-        if (mAdapter.getAttachIndex(itemPosition)) {
-            getAttachView(parent)?.let {
+        if (mAdapter.hasAttachView(itemPosition)) {
+            getAttachView(parent).let {
                 outRect.top += it.measuredHeight
                 mAdapter.onBindAttachView(it)
             }
@@ -108,8 +107,8 @@ class MixinHeadersDecoration private constructor(
 
                 mHeaderPositionCalculator.initHeaderBounds(headerOffset, parent, header, itemView, hasStickyHeader)
                 mRenderer.drawHeader(parent, canvas, header, headerOffset)
-                if (mAdapter.getAttachIndex(position)) {
-                    getAttachView(parent)?.let { view ->
+                if (mAdapter.hasAttachView(position)) {
+                    getAttachView(parent).let { view ->
                         val top = (headerOffset.top - view.measuredHeight)
                         canvas.save()
                         canvas.translate(0f, top.toFloat())
@@ -118,8 +117,8 @@ class MixinHeadersDecoration private constructor(
                     }
                 }
             } else {
-                if (mAdapter.getAttachIndex(position)) {
-                    getAttachView(parent)?.let { view ->
+                if (mAdapter.hasAttachView(position)) {
+                    getAttachView(parent).let { view ->
                         val top = (itemView.y - view.measuredHeight).toInt()
                         canvas.save()
                         canvas.translate(0f, top.toFloat())
@@ -131,23 +130,27 @@ class MixinHeadersDecoration private constructor(
         }
     }
 
-    private fun getAttachView(parent: ViewGroup): View? {
-        if (attachView == null) {
-            attachView = mAdapter.onCreateAttach(parent)
-            if (attachView!!.layoutParams == null) {
-                attachView!!.layoutParams = ViewGroup.LayoutParams(
+    private var attachView: View? = null
+    private fun getAttachView(parent: ViewGroup): View {
+        return if (this.attachView == null) {
+            val attachView = mAdapter.onCreateAttach(parent)
+            if (attachView.layoutParams == null) {
+                attachView.layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
             val widthSpec = View.MeasureSpec.makeMeasureSpec(parent.width, View.MeasureSpec.EXACTLY)
             val heightSpec = View.MeasureSpec.makeMeasureSpec(parent.height, View.MeasureSpec.UNSPECIFIED)
             val childWidth = ViewGroup.getChildMeasureSpec(widthSpec,
-                parent.paddingLeft + parent.paddingRight, attachView!!.layoutParams.width)
+                parent.paddingLeft + parent.paddingRight, attachView.layoutParams.width)
             val childHeight = ViewGroup.getChildMeasureSpec(heightSpec,
-                parent.paddingTop + parent.paddingBottom, attachView!!.layoutParams.height)
-            attachView!!.measure(childWidth, childHeight)
-            attachView!!.layout(0, 0, attachView!!.measuredWidth, attachView!!.measuredHeight)
+                parent.paddingTop + parent.paddingBottom, attachView.layoutParams.height)
+            attachView.measure(childWidth, childHeight)
+            attachView.layout(0, 0, attachView.measuredWidth, attachView.measuredHeight)
+            this.attachView = attachView
+            attachView
+        } else {
+            this.attachView!!
         }
-        return attachView
     }
 
     @Suppress("unused")

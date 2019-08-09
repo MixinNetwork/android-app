@@ -7,7 +7,7 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 
 interface MixinStickyRecyclerHeadersAdapter<VH : RecyclerView.ViewHolder> : StickyRecyclerHeadersAdapter<VH> {
     fun onCreateAttach(parent: ViewGroup): View
-    fun getAttachIndex(position: Int): Boolean
+    fun hasAttachView(position: Int): Boolean
     fun onBindAttachView(view: View)
     fun isLast(position: Int): Boolean
     fun isListLast(position: Int): Boolean
