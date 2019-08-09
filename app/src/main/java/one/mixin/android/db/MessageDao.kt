@@ -175,6 +175,10 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET shared_user_id = :sharedUserId, status = :status WHERE id = :messageId AND category != 'MESSAGE_RECALL'")
     fun updateContactMessage(sharedUserId: String, status: String, messageId: String)
 
+    @Query("UPDATE messages SET media_width = :width, media_height = :height, media_url=:url, thumb_url = :thumbUrl, status = :status " +
+        "WHERE id = :messageId AND category != 'SIGNAL_LIVE'")
+    fun updateLiveMessage(width: Int, height: Int, url: String, thumbUrl: String, status: String, messageId: String)
+
     @Query("UPDATE messages SET content = :content, status = :status WHERE id = :id AND category != 'MESSAGE_RECALL'")
     fun updateMessageContentAndStatus(content: String, status: String, id: String)
 

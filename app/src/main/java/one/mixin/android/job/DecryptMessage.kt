@@ -5,8 +5,6 @@ import android.app.NotificationManager
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
-import java.io.File
-import java.util.UUID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.SignalKeyCount
@@ -75,6 +73,8 @@ import org.whispersystems.libsignal.DecryptionCallback
 import org.whispersystems.libsignal.NoSessionException
 import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
+import java.io.File
+import java.util.UUID
 
 class DecryptMessage : Injector() {
 
@@ -552,6 +552,10 @@ class DecryptMessage : Injector() {
             val contactData = gson.fromJson(String(decoded), TransferContactData::class.java)
             messageDao.updateContactMessage(contactData.userId, MessageStatus.DELIVERED.name, messageId)
             syncUser(contactData.userId)
+        } else if (data.category == MessageCategory.SIGNAL_LIVE.name) {
+            val decoded = Base64.decode(plainText)
+            val liveData = gson.fromJson(String(decoded), TransferLiveData::class.java)
+            messageDao.updateLiveMessage(liveData.width, liveData.height, liveData.url, liveData.thumbUrl, MessageStatus.DELIVERED.name, messageId)
         }
         if (messageDao.countMessageByQuoteId(data.conversationId, messageId) > 0) {
             messageDao.findMessageItemById(data.conversationId, messageId)?.let {
