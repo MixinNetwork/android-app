@@ -49,6 +49,8 @@ import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import org.jetbrains.anko.dip
 import timber.log.Timber
+import kotlin.math.abs
+import kotlin.math.round
 
 class PipVideoView {
 
@@ -73,8 +75,8 @@ class PipVideoView {
                 videoWidth = appContext.realSize().x * 2 / 3
                 videoHeight = (videoWidth / aspectRatio).toInt()
             } else {
-                videoWidth = appContext.realSize().x / 2
-                videoHeight = (videoWidth / aspectRatio).toInt()
+                videoHeight = appContext.realSize().y / 3
+                videoWidth = (videoHeight * aspectRatio).toInt()
             }
             return Rect(
                 getSideCoord(true, sidex, px, videoWidth).toFloat(),
