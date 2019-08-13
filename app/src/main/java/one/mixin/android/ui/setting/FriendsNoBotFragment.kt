@@ -47,8 +47,9 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
 
     override fun onItemClick(user: User) {
         AlertDialog.Builder(requireContext())
-            .setMessage(getString(R.string.setting_emergency_set))
-            .setNegativeButton(R.string.cancel) { dialog, _ ->
+            .setTitle(getString(R.string.setting_emergency_set))
+            .setMessage(getString(R.string.setting_emergency_set_message, user.identityNumber))
+            .setNegativeButton(R.string.change) { dialog, _ ->
                 dialog.dismiss()
             }
             .setPositiveButton(R.string.confirm) { dialog, _ ->
