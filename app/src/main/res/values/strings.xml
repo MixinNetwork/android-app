@@ -413,6 +413,7 @@
     <string name="setting_emergency_change_success">Change emergency contact successfully</string>
     <string name="setting_emergency_create_success">Create emergency contact successfully</string>
     <string name="setting_emergency_set">Set emergency contact</string>
+    <string name="setting_emergency_set_message">Confirm to set Mixin ID %1$s as your emergency contact? Please note that the other party must add you as a contact to set up successfully.</string>
     <string name="setting_emergency_change_mobile">Do you want to change your mobile number now?</string>
     <string name="setting_emergency_pin_tip">Your emergency contact is protected by PIN</string>
     <string name="setting_emergency_enable">Enable Emergency Contact</string>

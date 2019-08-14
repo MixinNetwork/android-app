@@ -400,7 +400,8 @@
     <string name="setting_emergency_send_code">请输入发送至以下 Mixin ID 的 4 位验证码：%1$s</string>
     <string name="setting_emergency_change_success">修改紧急联系人成功</string>
     <string name="setting_emergency_create_success">添加紧急联系人成功</string>
-    <string name="setting_emergency_set">设置为紧急联系人</string>
+    <string name="setting_emergency_set">设置紧急联系人</string>
+    <string name="setting_emergency_set_message">确认设置 Mixin ID %1$s 为你的紧急联系人？注意双方必须互为联系人才能设置成功！</string>
     <string name="setting_emergency_change_mobile">立即修改手机号？</string>
     <string name="setting_emergency_pin_tip">紧急联系人经支付密码加密保护</string>
     <string name="setting_emergency_enable">启用紧急联系人</string>

@@ -27,6 +27,8 @@ import com.google.android.exoplayer2.Player.STATE_ENDED
 import com.google.android.exoplayer2.Player.STATE_IDLE
 import com.google.android.exoplayer2.Player.STATE_READY
 import kotlin.math.abs
+import kotlin.math.abs
+import kotlin.math.round
 import kotlin.math.round
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -49,8 +51,6 @@ import one.mixin.android.widget.PlayView.Companion.STATUS_LOADING
 import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import org.jetbrains.anko.dip
 import timber.log.Timber
-import kotlin.math.abs
-import kotlin.math.round
 
 class PipVideoView {
 
