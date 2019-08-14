@@ -22,8 +22,10 @@ import java.util.Collections
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_contacts.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.job.MixinJobManager
@@ -84,7 +86,8 @@ class ContactsFragment : BaseFragment() {
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
         title_view.right_animator.setOnClickListener { SettingActivity.show(context!!) }
 
-        if (hasContactPermission()) {
+        if (hasContactPermission() &&
+            !defaultSharedPreferences.getBoolean(PREF_DELETE_MOBILE_CONTACTS, false)) {
             fetchContacts()
         }
     }

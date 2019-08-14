@@ -433,6 +433,12 @@
     <string name="setting_desktop_confirm">确认登录 Mixin Messenger 桌面端</string>
     <string name="setting_desktop_login">登录</string>
     <string name="setting_privacy_security">隐私和安全</string>
+    <string name="setting_mobile_contact">手机通讯录</string>
+    <string name="setting_mobile_contact_desc">同步通讯录到 Mixin 发现更多好友。</string>
+    <string name="setting_mobile_contact_warning">确定删除已同步到 Mixin 服务器的通讯录？</string>
+    <string name="setting_mobile_contact_delete">删除已同步的通讯录</string>
+    <string name="setting_mobile_contact_upload">上传手机通讯录</string>
+    <string name="setting_mobile_contact_empty">通讯录内容为空</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>

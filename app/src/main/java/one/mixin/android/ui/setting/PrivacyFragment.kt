@@ -45,5 +45,8 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         emergency_rl.setOnClickListener {
             navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
         }
+        contact_rl.setOnClickListener {
+            navTo(MobileContactFragment.newInstance(), MobileContactFragment.TAG)
+        }
     }
 }

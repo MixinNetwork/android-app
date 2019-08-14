@@ -11,11 +11,11 @@ import retrofit2.http.POST
 interface ContactService {
 
     @POST("contacts")
-    fun syncContacts(@Body contacts: List<ContactRequest>): Call<MixinResponse<Any>>
+    suspend fun syncContacts(@Body contacts: List<ContactRequest>): MixinResponse<Any>
 
     @GET("friends")
     fun friends(): Call<MixinResponse<List<User>>>
 
     @GET("contacts")
-    fun contacts(): Call<MixinResponse<List<User>>>
+    suspend fun contacts(): MixinResponse<List<User>>
 }

@@ -4,16 +4,12 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import com.birbit.android.jobqueue.Params
-import com.google.i18n.phonenumbers.PhoneNumberUtil
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
-import java.util.Locale
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
-import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.request.ContactRequest
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.createContactsRequests
 
 class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) {
 
@@ -26,30 +22,14 @@ class UploadContactsJob : BaseJob(Params(PRIORITY_BACKGROUND).requireNetwork()) 
         RxContacts.fetch(ctx)
             .toSortedList(Contact::compareTo)
             .subscribe({ contacts ->
-                val mutableList = mutableListOf<ContactRequest>()
-                for (item in contacts) {
-                    for (p in item.phoneNumbers) {
-                        if (p == null) {
-                            continue
-                        }
-                        try {
-                            val phoneNum = PhoneNumberUtil.getInstance().parse(p, Locale.getDefault().country)
-                            if (!PhoneNumberUtil.getInstance().isValidNumber(phoneNum)) continue
-                            val phone = PhoneNumberUtil.getInstance().format(phoneNum, PhoneNumberUtil.PhoneNumberFormat.E164)
-                            if (phone != null) {
-                                mutableList.add(ContactRequest(phone, item.displayName))
-                            }
-                        } catch (e: Exception) {
-                        }
-                    }
-                }
+                val mutableList = createContactsRequests(contacts)
                 if (mutableList.isEmpty()) return@subscribe
-                val call = contactService.syncContacts(mutableList)
-                call.enqueue(object : Callback<MixinResponse<Any>> {
-                    override fun onResponse(call: Call<MixinResponse<Any>>, response: Response<MixinResponse<Any>>) {}
-
-                    override fun onFailure(call: Call<MixinResponse<Any>>, t: Throwable) {}
-                })
-            }, { _ -> })
+                runBlocking {
+                    handleMixinResponse(
+                        invokeNetwork = { contactService.syncContacts(mutableList) },
+                        successBlock = {}
+                    )
+                }
+            }, { })
     }
 }

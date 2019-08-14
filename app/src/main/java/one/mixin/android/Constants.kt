@@ -34,8 +34,8 @@ object Constants {
         const val PREF_EXTENSION_SESSION_ID = "pref_extension_session_id"
         const val PREF_RECALL_SHOW = "pref_recall_show"
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
-
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
+        const val PREF_DELETE_MOBILE_CONTACTS = "pref_delete_mobile_contacts"
     }
 
     object Scheme {
