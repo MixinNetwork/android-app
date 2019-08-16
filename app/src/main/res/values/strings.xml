@@ -84,6 +84,7 @@
     <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_forbidden">Access denied</string>
     <string name="error_not_found">ERROR %1$d: Not found</string>
+    <string name="error_not_found_message">Not found</string>
     <string name="error_too_many_request">ERROR %1$d: Rate limit exceeded</string>
     <string name="error_authentication">ERROR %1$d: Sign in to continue</string>
     <string name="can_not_empty">Can not be empty</string>
