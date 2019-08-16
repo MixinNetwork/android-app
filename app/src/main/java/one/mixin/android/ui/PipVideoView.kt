@@ -69,14 +69,18 @@ class PipVideoView {
             val sidey = prefreences.getInt(SIDEY, 0)
             val px = prefreences.getFloat(PX, 0f)
             val py = prefreences.getFloat(PY, 0f)
-            val videoWidth: Int
-            val videoHeight: Int
+            var videoWidth: Int
+            var videoHeight: Int
             if (aspectRatio > 1f) {
                 videoWidth = appContext.realSize().x * 2 / 3
                 videoHeight = (videoWidth / aspectRatio).toInt()
             } else {
                 videoHeight = appContext.realSize().y / 3
                 videoWidth = (videoHeight * aspectRatio).toInt()
+                if (videoWidth > appContext.realSize().x / 2) {
+                    videoWidth = appContext.realSize().x / 2
+                    videoHeight = (videoWidth / aspectRatio).toInt()
+                }
             }
             return Rect(
                 getSideCoord(true, sidex, px, videoWidth).toFloat(),
@@ -211,8 +215,12 @@ class PipVideoView {
             videoWidth = appContext.realSize().x * 2 / 3
             videoHeight = (videoWidth / aspectRatio).toInt()
         } else {
-            videoWidth = appContext.realSize().x / 2
-            videoHeight = (videoWidth / aspectRatio).toInt()
+            videoHeight = appContext.realSize().y / 3
+            videoWidth = (videoHeight * aspectRatio).toInt()
+            if (videoWidth > appContext.realSize().x / 2) {
+                videoWidth = appContext.realSize().x / 2
+                videoHeight = (videoWidth / aspectRatio).toInt()
+            }
         }
         val aspectRatioFrameLayout = AspectRatioFrameLayout(activity)
         aspectRatioFrameLayout.setAspectRatio(aspectRatio, rotation)
