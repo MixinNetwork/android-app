@@ -463,7 +463,7 @@
     <string name="chat_group_add">%1$s added %2$s</string>
     <string name="chat_group_remove">%1$s removed %2$s</string>
     <string name="chat_group_exit">%1$s left</string>
-    <string name="chat_group_join">%1$s joined using this group\'s invite link</string>
+    <string name="chat_group_join">%1$s joined the group via invite link</string>
     <string name="chat_you_start">You</string>
     <string name="chat_you">you</string>
     <string name="chat_group_checking">Checking link</string>
