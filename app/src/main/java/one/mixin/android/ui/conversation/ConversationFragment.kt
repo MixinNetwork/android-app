@@ -493,7 +493,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
                         val index = chatViewModel.findMessageIndex(conversationId, it)
                         if (index == 0) {
-                            toast(R.string.error_not_found)
+                            toast(R.string.error_not_found_message)
                         } else {
                             if (index == chatAdapter.itemCount - 1) {
                                 scrollTo(index, 0, action = {
