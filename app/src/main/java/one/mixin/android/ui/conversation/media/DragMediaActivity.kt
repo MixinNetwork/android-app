@@ -469,10 +469,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.pip_iv.isEnabled = false
             view.pip_iv.alpha = 0.5f
             view.close_iv.post {
-                val statusBarHeight = statusBarHeight().toFloat()
-                view.close_iv.translationY = statusBarHeight
-                view.live_tv.translationY = statusBarHeight
-                view.pip_iv.translationY = statusBarHeight
+                val statusBarHeight = statusBarHeight()
+                view.action_bar.setPadding(0, statusBarHeight, 0, 0)
             }
             view.video_texture.surfaceTextureListener = this
             if (messageItem.isLive()) {
@@ -736,6 +734,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             view.play_view.fadeIn()
         }
         view.close_iv.fadeIn()
+        view.action_bar.fadeIn()
     }
 
     private fun fadeOut(view: View, live: Boolean, withoutPlay: Boolean = false) {
@@ -755,6 +754,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
         view.close_iv.fadeOut()
         view.pip_iv.fadeOut()
+        view.action_bar.fadeOut()
     }
 
     private fun setTextureView() {
