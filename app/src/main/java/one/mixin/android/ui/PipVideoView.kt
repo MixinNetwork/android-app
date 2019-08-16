@@ -9,6 +9,7 @@ import android.app.Activity
 import android.content.Context.WINDOW_SERVICE
 import android.graphics.PixelFormat
 import android.os.Build
+import android.os.PowerManager
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.TextureView
@@ -20,6 +21,7 @@ import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.annotation.Keep
+import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
 import com.google.android.exoplayer2.ExoPlaybackException
 import com.google.android.exoplayer2.Player.STATE_BUFFERING
@@ -27,8 +29,6 @@ import com.google.android.exoplayer2.Player.STATE_ENDED
 import com.google.android.exoplayer2.Player.STATE_IDLE
 import com.google.android.exoplayer2.Player.STATE_READY
 import kotlin.math.abs
-import kotlin.math.abs
-import kotlin.math.round
 import kotlin.math.round
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -52,6 +52,7 @@ import one.mixin.android.widget.PlayView.Companion.STATUS_PLAYING
 import org.jetbrains.anko.dip
 import timber.log.Timber
 
+@SuppressLint("InvalidWakeLockTag")
 class PipVideoView {
 
     companion object {
@@ -134,6 +135,16 @@ class PipVideoView {
 
     private val windowManager: WindowManager by lazy {
         appContext.getSystemService(WINDOW_SERVICE) as WindowManager
+    }
+    private val powerManager: PowerManager by lazy {
+        appContext.getSystemService<PowerManager>()!!
+    }
+
+    private val aodWakeLock by lazy {
+        powerManager.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
+            "mixin"
+        )
     }
 
     fun show(
@@ -324,7 +335,12 @@ class PipVideoView {
 
             override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
                 when (playbackState) {
-                    STATE_ENDED -> stop()
+                    STATE_ENDED -> {
+                        stop()
+                        if (aodWakeLock.isHeld) {
+                            aodWakeLock.release()
+                        }
+                    }
                     STATE_IDLE -> {
                         if (isVideo) {
                             stop()
@@ -333,6 +349,9 @@ class PipVideoView {
                             playView?.fadeIn()
                             playView?.status = PlayView.STATUS_REFRESH
                         }
+                        if (aodWakeLock.isHeld) {
+                            aodWakeLock.release()
+                        }
                     }
                     STATE_READY -> {
                         if (playWhenReady) {
@@ -340,6 +359,9 @@ class PipVideoView {
                             playView?.status = STATUS_PLAYING
                         } else {
                             playView?.status = STATUS_IDLE
+                        }
+                        if (!aodWakeLock.isHeld) {
+                            aodWakeLock.acquire()
                         }
                     }
                     STATE_BUFFERING -> {
@@ -383,6 +405,9 @@ class PipVideoView {
             Timber.e(e)
         }
         windowView.keepScreenOn = true
+        if (!aodWakeLock.isHeld) {
+            aodWakeLock.acquire()
+        }
         return textureView
     }
 
@@ -394,6 +419,9 @@ class PipVideoView {
                 stop()
             }
             shown = false
+            if (aodWakeLock.isHeld) {
+                aodWakeLock.release()
+            }
             windowManager.removeView(windowView)
         } catch (e: Exception) {
         }

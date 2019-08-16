@@ -22,6 +22,7 @@ import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.MotionEvent
 import android.view.TextureView
@@ -41,6 +42,7 @@ import android.widget.ImageView
 import android.widget.SeekBar
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
@@ -154,6 +156,17 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     @Inject
     lateinit var conversationRepository: ConversationRepository
+
+    private val powerManager: PowerManager by lazy {
+        applicationContext.getSystemService<PowerManager>()!!
+    }
+
+    private val aodWakeLock by lazy {
+        powerManager.newWakeLock(
+            PowerManager.SCREEN_BRIGHT_WAKE_LOCK or PowerManager.ON_AFTER_RELEASE,
+            "mixin"
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (ratio == 0f) {
@@ -934,9 +947,24 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         override fun onPlayerStateChanged(mid: String, playWhenReady: Boolean, playbackState: Int) {
             when (playbackState) {
-                STATE_ENDED -> stop()
-                STATE_IDLE -> stop()
-                STATE_READY -> onStateReady(mid, playWhenReady)
+                STATE_ENDED -> {
+                    stop()
+                    if (aodWakeLock.isHeld) {
+                        aodWakeLock.release()
+                    }
+                }
+                STATE_IDLE -> {
+                    stop()
+                    if (aodWakeLock.isHeld) {
+                        aodWakeLock.release()
+                    }
+                }
+                STATE_READY -> {
+                    onStateReady(mid, playWhenReady)
+                    if (!aodWakeLock.isHeld) {
+                        aodWakeLock.acquire()
+                    }
+                }
                 STATE_BUFFERING -> showLoading(mid)
             }
         }
