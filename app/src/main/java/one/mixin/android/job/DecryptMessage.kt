@@ -7,6 +7,7 @@ import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
 import java.io.File
 import java.util.UUID
+import com.crashlytics.android.Crashlytics
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.SignalKeyCount
@@ -485,6 +486,14 @@ class DecryptMessage : Injector() {
                     true
                 }
                 Bugsnag.notify(e)
+                Crashlytics.log(Log.ERROR, "Decrypt", "conversation:${data.conversationId}")
+                Crashlytics.log(Log.ERROR, "Decrypt", "message_id:${data.messageId}")
+                Crashlytics.log(Log.ERROR, "Decrypt", "user:${data.userId}")
+                Crashlytics.log(Log.ERROR, "Decrypt", "data:${data.data}")
+                Crashlytics.log(Log.ERROR, "Decrypt", "category:${data.category}")
+                Crashlytics.log(Log.ERROR, "Decrypt", "created_at:${data.createdAt}")
+                Crashlytics.log(Log.ERROR, "Decrypt", "resend_message:$resendMessageId")
+                Crashlytics.logException(e)
             }
 
             if (resendMessageId != null) {
