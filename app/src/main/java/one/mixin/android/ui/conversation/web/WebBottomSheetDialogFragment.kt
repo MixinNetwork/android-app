@@ -369,13 +369,15 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             bottomSheet.dismiss()
         }
         view.share.setOnClickListener {
-            ShareCompat.IntentBuilder
-                .from(activity)
-                .setType("text/plain")
-                .setChooserTitle(name)
-                .setText(url)
-                .startChooser()
-            bottomSheet.dismiss()
+            activity?.let {
+                ShareCompat.IntentBuilder
+                    .from(it)
+                    .setType("text/plain")
+                    .setChooserTitle(name)
+                    .setText(url)
+                    .startChooser()
+                bottomSheet.dismiss()
+            }
         }
         view.refresh.setOnClickListener {
             contentView.chat_web_view.clearCache(true)
