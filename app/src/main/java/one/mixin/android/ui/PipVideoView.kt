@@ -525,6 +525,7 @@ class PipVideoView {
                 animators.add(ObjectAnimator.ofFloat(windowView, "alpha", 0.0f))
                 animatorSet.addListener(object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
+                        close(true)
                         VideoPlayer.destroy()
                     }
                 })
