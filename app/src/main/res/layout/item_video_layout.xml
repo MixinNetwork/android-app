@@ -71,42 +71,49 @@
             android:progress="0" />
     </RelativeLayout>
 
-    <ImageView
-        android:id="@+id/close_iv"
-        android:layout_width="wrap_content"
+    <FrameLayout
+        android:id="@+id/action_bar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_close_white_24dp"
-        android:visibility="invisible"
-        tools:ignore="ContentDescription" />
+        android:background="@drawable/bg_gradient_bar">
 
-    <ImageView
-        android:id="@+id/pip_iv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="end"
-        android:layout_marginEnd="8dp"
-        android:padding="8dp"
-        android:src="@drawable/ic_outinline"
-        android:visibility="invisible"
-        tools:ignore="ContentDescription" />
+        <ImageView
+            android:id="@+id/close_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_close_white_24dp"
+            android:visibility="invisible"
+            tools:ignore="ContentDescription" />
 
-    <TextView
-        android:id="@+id/live_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/chat_live_shadow"
-        android:enabled="false"
-        android:paddingStart="3dp"
-        android:paddingTop="1dp"
-        android:paddingEnd="3dp"
-        android:paddingBottom="1dp"
-        android:text="LIVE"
-        android:textColor="@color/white"
-        android:textSize="10sp"
-        android:visibility="gone"
-        tools:ignore="HardcodedText" />
+        <ImageView
+            android:id="@+id/pip_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginEnd="8dp"
+            android:padding="8dp"
+            android:src="@drawable/ic_outinline"
+            android:visibility="invisible"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/live_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/chat_live_shadow"
+            android:enabled="false"
+            android:paddingStart="3dp"
+            android:paddingTop="1dp"
+            android:paddingEnd="3dp"
+            android:paddingBottom="1dp"
+            android:text="LIVE"
+            android:textColor="@color/white"
+            android:textSize="10sp"
+            android:visibility="gone"
+            tools:ignore="HardcodedText" />
+    </FrameLayout>
 </FrameLayout>
