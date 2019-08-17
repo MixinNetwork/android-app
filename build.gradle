@@ -53,7 +53,7 @@ buildscript {
         ext.reboundVersion = '0.3.8'
         ext.ktlintVersion = '0.34.2'
         ext.exoplayerVersion = '2.10.4'
-        ext.perfVersion = '18.0.1'
+        ext.perfVersion = '19.0.0'
 
         ext.junitVersion = '4.12'
         ext.androidxJunitVersion = '1.1.1'
