@@ -26,7 +26,7 @@ class FcmService : FirebaseMessagingService() {
         Log.d("FcmService", "From: ${remoteMessage.from}")
     }
 
-    override fun onNewToken(token: String?) {
+    override fun onNewToken(token: String) {
         if (Session.checkToken()) {
             WorkManager.getInstance(this).enqueueOneTimeNetworkWorkRequest<RefreshFcmWorker>(
                 workDataOf(RefreshFcmWorker.TOKEN to token)
