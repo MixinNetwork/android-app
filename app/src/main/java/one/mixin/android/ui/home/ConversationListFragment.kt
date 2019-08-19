@@ -589,7 +589,7 @@ class ConversationListFragment : LinkFragment() {
             .setPositiveButton(R.string.confirm) { dialog, _ ->
                 if (conversationItem.isGroup()) {
                     messagesViewModel.mute(conversationItem.conversationId, duration.toLong())
-                    context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.name} " + choices[whichItem])
+                    context?.toast(getString(R.string.contact_mute_title) + " ${conversationItem.groupName} " + choices[whichItem])
                 } else {
                     val account = Session.getAccount()
                     account?.let {
@@ -614,12 +614,13 @@ class ConversationListFragment : LinkFragment() {
     private fun unMute(conversationItem: ConversationItem) {
         if (conversationItem.isGroup()) {
             messagesViewModel.mute(conversationItem.conversationId, 0)
+            context?.toast(getString(R.string.un_mute) + " ${conversationItem.groupName}")
         } else {
             Session.getAccount()?.let {
                 messagesViewModel.mute(it.userId, conversationItem.ownerId, 0)
             }
+            context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
         }
-        context?.toast(getString(R.string.un_mute) + " ${conversationItem.name}")
     }
 
     interface OnItemClickListener {
