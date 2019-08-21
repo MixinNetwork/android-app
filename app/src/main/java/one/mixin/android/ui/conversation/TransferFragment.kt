@@ -66,6 +66,7 @@ import one.mixin.android.ui.qr.CaptureActivity.Companion.RESULT_CODE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
@@ -375,11 +376,11 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         checkInputForbidden(contentView.amount_et.text.toString())
         if (contentView.amount_et.text.isNullOrEmpty()) {
             if (swaped) {
-                contentView.amount_et.hint = "0.00 USD"
+                contentView.amount_et.hint = "0.00 ${Fiats.currency}"
                 contentView.amount_as_tv.text = "0.00 ${asset.symbol}"
             } else {
                 contentView.amount_et.hint = "0.00 ${asset.symbol}"
-                contentView.amount_as_tv.text = "0.00 USD"
+                contentView.amount_as_tv.text = "0.00 ${Fiats.currency}"
             }
             contentView.symbol_tv.text = ""
         } else {
@@ -411,7 +412,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             bottomValue.toString()
         } else {
             val s = contentView.amount_et.text.toString()
-            val symbol = if (swaped) currentAsset?.symbol ?: "" else "USD"
+            val symbol = if (swaped) currentAsset?.symbol ?: "" else Fiats.currency
             val index = s.indexOf(symbol)
             return if (index != -1) {
                 s.substring(0, index)
@@ -422,7 +423,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun getTopSymbol(): String {
-        return if (swaped) "USD" else currentAsset?.symbol ?: ""
+        return if (swaped) Fiats.currency else currentAsset?.symbol ?: ""
     }
 
     private fun getBottomText(): String {
@@ -431,14 +432,14 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         } catch (e: java.lang.NumberFormatException) {
             0.0
         }
-        val rightSymbol = if (swaped) currentAsset!!.symbol else "USD"
+        val rightSymbol = if (swaped) currentAsset!!.symbol else Fiats.currency
         val value = try {
-            if (currentAsset == null || currentAsset!!.priceUsd.toDouble() == 0.0) {
+            if (currentAsset == null || currentAsset!!.priceFiat().toDouble() == 0.0) {
                 BigDecimal(0)
             } else if (swaped) {
-                BigDecimal(amount).divide(BigDecimal(currentAsset!!.priceUsd), 8, RoundingMode.HALF_UP)
+                BigDecimal(amount).divide(currentAsset!!.priceFiat(), 8, RoundingMode.HALF_UP)
             } else {
-                (BigDecimal(amount) * BigDecimal(currentAsset!!.priceUsd))
+                (BigDecimal(amount) * currentAsset!!.priceFiat())
             }
         } catch (e: ArithmeticException) {
             BigDecimal(0)
@@ -549,9 +550,9 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 contentView.continue_tv.isEnabled = false
                 contentView.continue_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 if (contentView.amount_rl.isVisible) {
-                    contentView.amount_et.hint = "0.00 ${if (swaped) "USD" else currentAsset?.symbol}"
+                    contentView.amount_et.hint = "0.00 ${if (swaped) Fiats.currency else currentAsset?.symbol}"
                     contentView.symbol_tv.text = ""
-                    contentView.amount_as_tv.text = "0.00 ${if (swaped) currentAsset?.symbol else "USD"}"
+                    contentView.amount_as_tv.text = "0.00 ${if (swaped) currentAsset?.symbol else Fiats.currency}"
                 }
             }
         }

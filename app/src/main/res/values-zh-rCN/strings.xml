@@ -71,6 +71,7 @@
     <string name="cant_talk_self">不能和自己对话</string>
     <string name="need_camera_permission">继续使用此功能需要相机权限</string>
     <string name="need_background_permission">继续使用此功能需要后台弹出界面权限</string>
+    <string name="currency">货币</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -321,6 +322,7 @@
     <string name="wallet_already_shown">已显示 %1$s</string>
     <string name="wallet_add_asset_already">已添加过此资产</string>
     <string name="wallet_biometric_invalid">生物识别失效，请重新设置。</string>
+    <string name="wallet_setting_currency_desc">%1$s （%2$s）</string>
     <!--group-->
     <string name="group_add">添加成员</string>
     <string name="group_new_title">新建群组</string>

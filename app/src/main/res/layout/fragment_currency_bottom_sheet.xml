@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_upper_round"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/close_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:background="@drawable/mixin_ripple"
+            android:padding="8dp"
+            android:src="@drawable/ic_close_black_24dp" />
+
+        <one.mixin.android.widget.SearchView
+            android:id="@+id/search_et"
+            android:layout_width="match_parent"
+            android:layout_height="?actionBarSize"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_toEndOf="@id/close_iv"
+            android:background="@null"
+            android:drawableStart="@drawable/ic_asset_add_search"
+            android:drawablePadding="8dp"
+            android:hint="@string/search"
+            android:imeOptions="actionDone"
+            android:inputType="text"
+            android:maxLines="1"
+            android:textColor="@color/wallet_text_dark"
+            android:textColorHint="@color/text_gray"
+            android:textSize="14sp" />
+    </RelativeLayout>
+
+    <View
+        android:id="@+id/divider"
+        android:layout_width="match_parent"
+        android:layout_height=".5dp"
+        android:layout_below="@id/title"
+        android:background="@color/divider" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/currency_rv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/divider"
+        app:layoutManager="LinearLayoutManager" />
+</RelativeLayout>

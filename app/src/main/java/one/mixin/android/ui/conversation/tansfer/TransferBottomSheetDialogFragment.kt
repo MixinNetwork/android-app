@@ -40,6 +40,7 @@ import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
@@ -107,8 +108,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         contentView.balance.text = t.amount.numberFormat() + " " + t.asset.symbol
-        contentView.balance_as.text = getString(R.string.wallet_unit_usd,
-            "≈ ${(BigDecimal(t.amount) * BigDecimal(t.asset.priceUsd)).numberFormat2()}")
+        contentView.balance_as.text = "≈ ${(BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()} ${Fiats.currency}"
         contentView.keyboard.setKeyboardKeys(KEYS)
         contentView.keyboard.setOnClickKeyboardListener(object : Keyboard.OnClickKeyboardListener {
             override fun onKeyClick(position: Int, value: String) {

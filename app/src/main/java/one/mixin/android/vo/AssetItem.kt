@@ -29,9 +29,11 @@ data class AssetItem(
     val accountTag: String?,
     val assetKey: String?
 ) : Parcelable {
-    fun usd(): BigDecimal {
-        return BigDecimal(balance) * BigDecimal(priceUsd)
+    fun fiat(): BigDecimal {
+        return BigDecimal(balance) * priceFiat()
     }
+
+    fun priceFiat() = BigDecimal(priceUsd) * BigDecimal(Fiats.getRate())
 
     fun btc(): BigDecimal {
         return BigDecimal(balance) * BigDecimal(priceBtc)

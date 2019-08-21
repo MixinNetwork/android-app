@@ -7,6 +7,7 @@ import one.mixin.android.ui.setting.AboutFragment
 import one.mixin.android.ui.setting.AuthenticationsFragment
 import one.mixin.android.ui.setting.BackUpFragment
 import one.mixin.android.ui.setting.BiometricTimeFragment
+import one.mixin.android.ui.setting.CurrencyBottomSheetDialogFragment
 import one.mixin.android.ui.setting.EmergencyContactFragment
 import one.mixin.android.ui.setting.EmergencyContactTipBottomSheetDialogFragment
 import one.mixin.android.ui.setting.FriendsNoBotFragment
@@ -88,4 +89,7 @@ abstract class SettingActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributePinBiometricsBottomSheetDialogFragment(): PinBiometricsBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeCurrencyBottomSheetDialogFragment(): CurrencyBottomSheetDialogFragment
 }

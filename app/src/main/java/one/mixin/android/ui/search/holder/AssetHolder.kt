@@ -1,5 +1,6 @@
 package one.mixin.android.ui.search.holder
 
+import android.annotation.SuppressLint
 import android.view.View
 import java.math.BigDecimal
 import kotlinx.android.synthetic.main.item_search_asset.view.*
@@ -7,15 +8,16 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.textColorResource
 
 class AssetHolder constructor(containerView: View) : NormalHolder(containerView) {
+    @SuppressLint("SetTextI18n")
     fun bind(asset: AssetItem, target: String, onItemClickListener: SearchFragment.OnSearchClickListener?) {
         itemView.avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         itemView.avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
@@ -23,13 +25,13 @@ class AssetHolder constructor(containerView: View) : NormalHolder(containerView)
 
         itemView.balance.text = asset.balance.numberFormat8() + " " + asset.symbol
         itemView.balance.highLight(target)
-        itemView.balance_as.text = itemView.context.getString(R.string.wallet_unit_usd, "≈ ${asset.usd().numberFormat2()}")
+        itemView.balance_as.text = "≈ ${asset.fiat().numberFormat2()} ${Fiats.currency}"
         if (asset.priceUsd == "0") {
             itemView.price_tv.setText(R.string.asset_none)
             itemView.change_tv.visibility = View.GONE
         } else {
             itemView.change_tv.visibility = View.VISIBLE
-            itemView.price_tv.text = "$${asset.priceUsd.numberFormat()}"
+            itemView.price_tv.text = "${Fiats.currencySymbol}${asset.priceFiat().numberFormat8()}"
             if (asset.changeUsd.isNotEmpty()) {
                 val changeUsd = BigDecimal(asset.changeUsd)
                 val isPositive = changeUsd > BigDecimal.ZERO

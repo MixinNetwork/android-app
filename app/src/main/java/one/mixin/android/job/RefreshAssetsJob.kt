@@ -1,7 +1,9 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.vo.Asset
+import one.mixin.android.vo.Fiats
 
 class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PRIORITY_UI_HIGH)
     .addTags(GROUP).singleInstanceBy(assetId ?: "all-assets").persist().requireNetwork(), assetId
@@ -33,7 +35,20 @@ class RefreshAssetsJob(private val assetId: String? = null) : MixinJob(Params(PR
                 }
             }
         }
+        refreshFiats()
         removeJob()
+    }
+
+    private fun refreshFiats() = runBlocking {
+        try {
+            val resp = accountService.getFiats()
+            if (resp.isSuccess) {
+                resp.data?.let { fiatSet ->
+                    Fiats.updateFiats(fiatSet)
+                }
+            }
+        } catch (t: Throwable) {
+        }
     }
 
     override fun cancel() {

@@ -33,4 +33,35 @@
         <item>@drawable/bg_avatar_23</item>
         <item>@drawable/bg_avatar_24</item>
     </integer-array>
+
+    <integer-array name="currency_flags">
+        <item>@drawable/ic_flag_cny</item>
+        <item>@drawable/ic_flag_usd</item>
+        <item>@drawable/ic_flag_jpy</item>
+        <item>@drawable/ic_flag_eur</item>
+        <item>@drawable/ic_flag_krw</item>
+        <item>@drawable/ic_flag_hkd</item>
+        <item>@drawable/ic_flag_gbp</item>
+        <item>@drawable/ic_flag_aud</item>
+    </integer-array>
+    <string-array name="currency_names">
+        <item>CNY</item>
+        <item>USD</item>
+        <item>JPY</item>
+        <item>EUR</item>
+        <item>KRW</item>
+        <item>HKD</item>
+        <item>GBP</item>
+        <item>AUD</item>
+    </string-array>
+    <string-array name="currency_symbols">
+        <item>¥</item>
+        <item>$</item>
+        <item>¥</item>
+        <item>€</item>
+        <item>₩</item>
+        <item>HK$</item>
+        <item>£</item>
+        <item>A$</item>
+    </string-array>
 </resources>

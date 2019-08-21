@@ -153,4 +153,6 @@ constructor(
 
     suspend fun deleteEmergency(pin: String) =
         emergencyService.delete(PinRequest(encryptPin(Session.getPinToken()!!, pin)!!))
+
+    suspend fun getFiats() = accountService.getFiats()
 }

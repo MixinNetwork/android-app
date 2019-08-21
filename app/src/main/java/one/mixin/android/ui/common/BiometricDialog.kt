@@ -18,6 +18,7 @@ import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.getStackTraceString
 import org.jetbrains.anko.toast
 
@@ -68,8 +69,7 @@ class BiometricDialog<T : BiometricItem>(
 
     private fun getDescription(): String {
         val pre = "${t.amount} ${t.asset.symbol}"
-        val post = context.getString(R.string.wallet_unit_usd,
-            "≈ ${(BigDecimal(t.amount) * BigDecimal(t.asset.priceUsd)).numberFormat2()}")
+        val post = "≈ ${(BigDecimal(t.amount) * t.asset.priceFiat()).numberFormat2()} ${Fiats.currency}"
         return "$pre ($post)"
     }
 

@@ -213,4 +213,6 @@ class BottomSheetViewModel @Inject internal constructor(
             null
         }.await()
     }
+
+    suspend fun getFiats() = accountRepository.getFiats()
 }
