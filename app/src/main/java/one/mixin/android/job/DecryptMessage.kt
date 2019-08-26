@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import android.app.Activity
 import android.app.NotificationManager
+import android.graphics.Color
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
@@ -26,6 +27,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
+import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
@@ -124,6 +126,15 @@ class DecryptMessage : Injector() {
     private fun processAppButton(data: BlazeMessageData) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category,
             String(Base64.decode(data.data)), data.createdAt, MessageStatus.DELIVERED)
+        try {
+            val appButton = gson.fromJson(message.content, Array<AppButtonData>::class.java)
+            for (item in appButton) {
+                Color.parseColor(item.color.trim())
+            }
+        } catch (e: Exception) {
+            updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+            return
+        }
         messageDao.insert(message)
         sendToExtensionSession(message, data.data)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -367,6 +378,10 @@ class DecryptMessage : Injector() {
             data.category.endsWith("_LIVE") -> {
                 val decoded = Base64.decode(plainText)
                 val liveData = gson.fromJson(String(decoded), TransferLiveData::class.java)
+                if (liveData.width <= 0 || liveData.height <= 0) {
+                    updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+                    return
+                }
                 val message = createLiveMessage(data.messageId, data.conversationId, data.userId, data.category, null,
                     liveData.width, liveData.height, liveData.url, liveData.thumbUrl, MessageStatus.DELIVERED, data.createdAt)
                 messageDao.insert(message)

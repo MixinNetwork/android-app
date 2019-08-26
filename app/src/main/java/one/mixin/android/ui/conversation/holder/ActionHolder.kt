@@ -60,7 +60,13 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
             itemView.flow_layout.removeAllViews()
             for (b in buttons) {
                 val button = ActionButton(itemView.context)
-                button.setTextColor(Color.parseColor(b.color))
+                button.setTextColor(
+                    try {
+                        Color.parseColor(b.color.trim())
+                    } catch (e: Throwable) {
+                        Color.BLACK
+                    }
+                )
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label
                 itemView.flow_layout.addView(button)
