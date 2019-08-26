@@ -25,6 +25,7 @@ import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_SEND_ATTACHMENT_MESSAGE
+import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AppButtonData
@@ -129,7 +130,7 @@ class DecryptMessage : Injector() {
         try {
             val appButton = gson.fromJson(message.content, Array<AppButtonData>::class.java)
             for (item in appButton) {
-                Color.parseColor(item.color.trim())
+                ColorUtil.parseColor(item.color.trim())
             }
         } catch (e: Exception) {
             updateRemoteMessageStatus(data.messageId, MessageStatus.READ)

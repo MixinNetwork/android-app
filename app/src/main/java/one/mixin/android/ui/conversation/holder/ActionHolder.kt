@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.item_chat_action.view.*
 import one.mixin.android.ui.conversation.adapter.ConversationAdapter
+import one.mixin.android.util.ColorUtil
 import one.mixin.android.vo.AppButtonData
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.widget.ActionButton
@@ -62,7 +63,7 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                 val button = ActionButton(itemView.context)
                 button.setTextColor(
                     try {
-                        Color.parseColor(b.color.trim())
+                        ColorUtil.parseColor(b.color.trim())
                     } catch (e: Throwable) {
                         Color.BLACK
                     }
