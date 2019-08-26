@@ -87,8 +87,10 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         }
                     }
                     SCOPES[5] ->
-                        scopes.add(Scope(s, ctx.getString(R.string.auth_apps_read_description)))
+                        scopes.add(Scope(s, ctx.getString(R.string.auth_snapshot_read_description)))
                     SCOPES[6] ->
+                        scopes.add(Scope(s, ctx.getString(R.string.auth_apps_read_description)))
+                    SCOPES[7] ->
                         scopes.add(Scope(s, ctx.getString(R.string.auth_apps_write_description)))
                 }
             }
@@ -224,8 +226,9 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 SCOPES[2] -> R.string.auth_messages_represent
                 SCOPES[3] -> R.string.auth_permission_contacts_read
                 SCOPES[4] -> R.string.auth_assets
-                SCOPES[5] -> R.string.auth_app_read
-                SCOPES[6] -> R.string.auth_apps_write
+                SCOPES[5] -> R.string.auth_snapshot_read
+                SCOPES[6] -> R.string.auth_app_read
+                SCOPES[7] -> R.string.auth_apps_write
                 else -> R.string.auth_public_profile
             }
             return ctx.getString(id)

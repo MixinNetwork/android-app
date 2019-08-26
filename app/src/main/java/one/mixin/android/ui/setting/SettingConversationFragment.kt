@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageSource
 
 class SettingConversationFragment : BaseViewModelFragment<SettingConversationViewModel>() {
@@ -73,6 +74,9 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                     .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
+                            it.data?.let { account ->
+                                Session.storeAccount(account)
+                            }
                             viewModel.preferences.setContacts()
                         } else {
                             viewModel.preferences.setEveryBody()
@@ -105,6 +109,9 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                     .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
+                            it.data?.let { account ->
+                                Session.storeAccount(account)
+                            }
                             viewModel.preferences.setEveryBody()
                         } else {
                             viewModel.preferences.setContacts()
@@ -141,6 +148,9 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                     .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
+                            it.data?.let { account ->
+                                Session.storeAccount(account)
+                            }
                             viewModel.groupPreferences.setContacts()
                         } else {
                             viewModel.groupPreferences.setEveryBody()
@@ -173,6 +183,9 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
                     .autoDisposable(stopScope)
                     .subscribe({
                         if (it.isSuccess) {
+                            it.data?.let { account ->
+                                Session.storeAccount(account)
+                            }
                             viewModel.groupPreferences.setEveryBody()
                         } else {
                             viewModel.groupPreferences.setContacts()
