@@ -21,7 +21,7 @@ buildscript {
         ext.webpdecoderVesion = '1.5.4.9.0'
         ext.timberVersion = '4.7.1'
         ext.okhttpVersion = '3.13.1'
-        ext.rxJavaVersion = '2.2.11'
+        ext.rxJavaVersion = '2.2.12'
         ext.rxAndroidVersion = '2.1.1'
         ext.rxbindingVersion = '3.0.0'
         ext.retrofitVersion = '2.6.1'
