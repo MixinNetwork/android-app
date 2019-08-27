@@ -50,12 +50,12 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
                     return@handleMixinResponse false
                 },
                 exceptionBlock = {
-                    op_pb.isVisible = false
+                    op_pb?.isVisible = false
                     setUpdate()
                     return@handleMixinResponse false
                 },
                 doAfterNetworkSuccess = {
-                    op_pb.isVisible = false
+                    op_pb?.isVisible = false
                 }
             )
         }
