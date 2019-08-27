@@ -41,7 +41,7 @@
 
         <TextView
             android:id="@+id/duration_tv"
-            android:layout_width="48dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:fontFamily="monospace"
@@ -51,7 +51,7 @@
 
         <TextView
             android:id="@+id/remain_tv"
-            android:layout_width="48dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
