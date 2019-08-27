@@ -582,6 +582,8 @@
     <string name="gallery_empty_text">No media yet</string>
     <string name="account_name">Address</string>
     <string name="account_memo">Memo</string>
+    <string name="withdrawal_label">Label</string>
+    <string name="withdrawal_address">Address</string>
     <string name="deposit_account_attention">Attention: Please try a small amount for the first deposit. Both a Memo and an Address are required to successfully deposit your %1$s to Mixin Messenger.</string>
     <string name="deposit_attention">Please try a small amount for the first deposit.</string>
     <string name="deposit_confirmation">Deposit will arrive after at least %1$d block confirmations</string>
