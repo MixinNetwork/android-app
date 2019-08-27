@@ -250,7 +250,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             unreadCount
                         }
                         (chat_rv.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(position, chat_rv.measuredHeight * 3 / 4)
-                        chat_rv.visibility = VISIBLE
                     }
                     isBottom -> {
                         if (chatAdapter.currentList != null && chatAdapter.currentList!!.size > oldSize) {
@@ -863,7 +862,6 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private var firstPosition = 0
 
     private fun initView() {
-        chat_rv.visibility = INVISIBLE
         if (chat_rv.adapter == null) {
             chat_rv.adapter = chatAdapter
             chatAdapter.listen(destroyScope)
