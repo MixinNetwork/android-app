@@ -267,8 +267,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             address = it
             if (currentAsset!!.isAccountTagAsset()) {
                 contentView.title_view.setSubTitle(getString(R.string.send_to, it.accountName), it.accountTag!!.formatPublicKey())
+                contentView.memo_rl.isVisible = false
             } else {
                 contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.publicKey!!.formatPublicKey())
+                contentView.memo_rl.isVisible = true
             }
             val bold = it.fee + " " + currentAsset!!.chainSymbol
             val str = try {
