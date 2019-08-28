@@ -4,7 +4,10 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import kotlin.math.max
 import one.mixin.android.R
+import one.mixin.android.extension.round
+import org.jetbrains.anko.dip
 
 open class FlowLayout @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null, defStyle: Int = 0) :
     ViewGroup(context, attrs, defStyle) {
@@ -15,17 +18,35 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
     private val mGravity: Int
     private var lineViews: MutableList<View> = ArrayList()
 
+    var maxWidth: Int = 0
+        set(value) {
+            if (field != value) {
+                field = value
+                requestLayout()
+            }
+        }
+
     init {
         val ta = context.obtainStyledAttributes(attrs, R.styleable.FlowLayout)
         mGravity = ta.getInt(R.styleable.FlowLayout_tag_gravity, LEFT)
+        maxWidth = ta.getDimensionPixelSize(R.styleable.FlowLayout_flow_max_width, dip(300))
+        round(dip(8f))
         ta.recycle()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val sizeWidth = View.MeasureSpec.getSize(widthMeasureSpec)
-        val modeWidth = View.MeasureSpec.getMode(widthMeasureSpec)
-        val sizeHeight = View.MeasureSpec.getSize(heightMeasureSpec)
-        val modeHeight = View.MeasureSpec.getMode(heightMeasureSpec)
+        var sizeWidth = MeasureSpec.getSize(widthMeasureSpec)
+        val modeWidth = MeasureSpec.getMode(widthMeasureSpec)
+        val newWidthMeasureSpec: Int
+        if (maxWidth in 1 until sizeWidth) {
+            newWidthMeasureSpec = MeasureSpec.makeMeasureSpec(maxWidth, modeWidth)
+            super.onMeasure(newWidthMeasureSpec, heightMeasureSpec)
+            sizeWidth = MeasureSpec.getSize(newWidthMeasureSpec)
+        } else {
+            newWidthMeasureSpec = widthMeasureSpec
+        }
+        val sizeHeight = MeasureSpec.getSize(heightMeasureSpec)
+        val modeHeight = MeasureSpec.getMode(heightMeasureSpec)
 
         var width = 0
         var height = 0
@@ -39,36 +60,35 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
             val child = getChildAt(i)
             if (child.visibility == View.GONE) {
                 if (i == cCount - 1) {
-                    width = Math.max(lineWidth, width)
+                    width = max(lineWidth, width)
                     height += lineHeight
                 }
                 continue
             }
-            measureChild(child, widthMeasureSpec, heightMeasureSpec)
-            val lp = child
-                .layoutParams as ViewGroup.MarginLayoutParams
+            measureChild(child, newWidthMeasureSpec, heightMeasureSpec)
+            val lp = child.layoutParams as MarginLayoutParams
 
             val childWidth = (child.measuredWidth + lp.leftMargin + lp.rightMargin)
 
             val childHeight = (child.measuredHeight + lp.topMargin + lp.bottomMargin)
 
             if (lineWidth + childWidth > sizeWidth - paddingLeft - paddingRight) {
-                width = Math.max(width, lineWidth)
+                width = max(width, lineWidth)
                 lineWidth = childWidth
                 height += lineHeight
                 lineHeight = childHeight
             } else {
                 lineWidth += childWidth
-                lineHeight = Math.max(lineHeight, childHeight)
+                lineHeight = max(lineHeight, childHeight)
             }
             if (i == cCount - 1) {
-                width = Math.max(lineWidth, width)
+                width = max(lineWidth, width)
                 height += lineHeight
             }
         }
         setMeasuredDimension(
-            if (modeWidth == View.MeasureSpec.EXACTLY) sizeWidth else width + paddingLeft + paddingRight,
-            if (modeHeight == View.MeasureSpec.EXACTLY) sizeHeight else height + paddingTop + paddingBottom //
+            if (modeWidth == MeasureSpec.EXACTLY) sizeWidth else width + paddingLeft + paddingRight,
+            if (modeHeight == MeasureSpec.EXACTLY) sizeHeight else height + paddingTop + paddingBottom
         )
     }
 
@@ -88,8 +108,7 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
         for (i in 0 until cCount) {
             val child = getChildAt(i)
             if (child.visibility == View.GONE) continue
-            val lp = child
-                .layoutParams as ViewGroup.MarginLayoutParams
+            val lp = child.layoutParams as MarginLayoutParams
 
             val childWidth = child.measuredWidth
             val childHeight = child.measuredHeight
@@ -104,7 +123,7 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
                 lineViews = ArrayList()
             }
             lineWidth += childWidth + lp.leftMargin + lp.rightMargin
-            lineHeight = Math.max(lineHeight, childHeight + lp.topMargin + lp.bottomMargin)
+            lineHeight = max(lineHeight, childHeight + lp.topMargin + lp.bottomMargin)
             lineViews.add(child)
         }
         mLineHeight.add(lineHeight)
@@ -135,7 +154,7 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
                 }
 
                 val lp = child
-                    .layoutParams as ViewGroup.MarginLayoutParams
+                    .layoutParams as MarginLayoutParams
 
                 val lc = left + lp.leftMargin
                 val tc = top + lp.topMargin
@@ -150,16 +169,16 @@ open class FlowLayout @JvmOverloads constructor(context: Context, attrs: Attribu
         }
     }
 
-    override fun generateLayoutParams(attrs: AttributeSet): ViewGroup.LayoutParams {
-        return ViewGroup.MarginLayoutParams(context, attrs)
+    override fun generateLayoutParams(attrs: AttributeSet): LayoutParams {
+        return MarginLayoutParams(context, attrs)
     }
 
-    override fun generateDefaultLayoutParams(): ViewGroup.LayoutParams {
-        return ViewGroup.MarginLayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+    override fun generateDefaultLayoutParams(): LayoutParams {
+        return MarginLayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT)
     }
 
-    override fun generateLayoutParams(p: ViewGroup.LayoutParams): ViewGroup.LayoutParams {
-        return ViewGroup.MarginLayoutParams(p)
+    override fun generateLayoutParams(p: LayoutParams): LayoutParams {
+        return MarginLayoutParams(p)
     }
 
     companion object {

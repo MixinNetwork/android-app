@@ -71,7 +71,8 @@ class ActionHolder constructor(containerView: View) : BaseViewHolder(containerVi
                 button.setTypeface(null, Typeface.BOLD)
                 button.text = b.label
                 itemView.flow_layout.addView(button)
-                (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart = button.dip(8)
+                (button.layoutParams as ViewGroup.MarginLayoutParams).marginStart =
+                    button.dip(8)
                 button.setOnLongClickListener {
                     if (!hasSelect) {
                         onItemListener.onLongClick(messageItem, adapterPosition)
