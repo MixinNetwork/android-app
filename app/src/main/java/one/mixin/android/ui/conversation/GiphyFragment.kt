@@ -9,7 +9,6 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -46,7 +45,7 @@ class GiphyFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val stickerViewModel: ConversationViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
     var callback: StickerAlbumAdapter.Callback? = null
     var rvCallback: DraggableRecyclerView.Callback? = null

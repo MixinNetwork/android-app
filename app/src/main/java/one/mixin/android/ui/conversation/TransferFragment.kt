@@ -21,7 +21,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
@@ -121,7 +121,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
     lateinit var jobManager: MixinJobManager
 
     private val chatViewModel: ConversationViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
     private var assets = listOf<AssetItem>()

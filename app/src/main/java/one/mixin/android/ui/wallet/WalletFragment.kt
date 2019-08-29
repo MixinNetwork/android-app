@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.SimpleItemAnimator
@@ -57,7 +56,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
     private var assets: List<AssetItem> = listOf()

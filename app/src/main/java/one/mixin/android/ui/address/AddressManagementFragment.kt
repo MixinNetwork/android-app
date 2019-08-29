@@ -10,7 +10,6 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import javax.inject.Inject
@@ -49,7 +48,7 @@ class AddressManagementFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val addressViewModel: AddressViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(AddressViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(AddressViewModel::class.java)
     }
 
     private var deleteSuccess = false

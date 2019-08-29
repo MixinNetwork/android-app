@@ -20,7 +20,6 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
@@ -74,7 +73,7 @@ class ConversationListFragment : LinkFragment() {
     lateinit var jobManager: MixinJobManager
 
     private val messagesViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ConversationListViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ConversationListViewModel::class.java)
     }
 
     private val messageAdapter by lazy { MessageAdapter(message_rv) }

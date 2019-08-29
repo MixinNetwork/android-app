@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_time.*
 import kotlinx.coroutines.Job
@@ -32,7 +31,7 @@ class TimeFragment : BaseFragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val loadingViewModel: LoadingViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(LoadingViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(LoadingViewModel::class.java)
     }
 
     override fun onResume() {

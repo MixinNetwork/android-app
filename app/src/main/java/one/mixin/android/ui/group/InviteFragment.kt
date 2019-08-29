@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.uber.autodispose.autoDisposable
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_invite.*
@@ -46,7 +45,7 @@ class InviteFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val inviteViewModel: InviteViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(InviteViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(InviteViewModel::class.java)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =

@@ -9,7 +9,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -51,7 +50,7 @@ class SearchMessageFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val searchViewModel: SearchViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(SearchViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(SearchViewModel::class.java)
     }
 
     private val searchMessageItem: SearchMessageItem by lazy {

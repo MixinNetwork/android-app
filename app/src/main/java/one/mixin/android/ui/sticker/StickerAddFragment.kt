@@ -15,7 +15,6 @@ import androidx.core.net.toUri
 import androidx.core.os.bundleOf
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
@@ -82,7 +81,7 @@ class StickerAddFragment : BaseFragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val stickerViewModel: ConversationViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =

@@ -8,7 +8,6 @@ import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
@@ -37,7 +36,7 @@ class HiddenAssetsFragment : BaseFragment(), HeaderAdapter.OnItemListener {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
     }
     private var assets: List<AssetItem> = listOf()
     private val assetsAdapter by lazy { WalletAssetAdapter(assets_rv, true) }
