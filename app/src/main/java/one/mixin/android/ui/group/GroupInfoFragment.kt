@@ -15,7 +15,6 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.collection.ArrayMap
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -69,7 +68,7 @@ class GroupInfoFragment : BaseFragment() {
     lateinit var jobManager: MixinJobManager
 
     private val groupViewModel: GroupViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(GroupViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(GroupViewModel::class.java)
     }
     private val adapter by lazy {
         GroupInfoAdapter()

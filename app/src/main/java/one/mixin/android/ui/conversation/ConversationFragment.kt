@@ -35,7 +35,6 @@ import androidx.core.view.inputmethod.InputContentInfoCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -213,7 +212,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val chatViewModel: ConversationViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
     private var unreadTipCount: Int = 0

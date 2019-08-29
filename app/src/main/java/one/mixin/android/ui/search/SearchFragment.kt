@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -50,7 +49,7 @@ class SearchFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val searchViewModel: SearchViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(SearchViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(SearchViewModel::class.java)
     }
 
     private val searchAdapter: SearchAdapter by lazy {

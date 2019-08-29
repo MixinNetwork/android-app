@@ -15,7 +15,6 @@ import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
@@ -61,7 +60,7 @@ class MobileFragment : BaseFragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val mobileViewModel: MobileViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(MobileViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(MobileViewModel::class.java)
     }
     private lateinit var countryPicker: CountryPicker
     private lateinit var mCountry: Country

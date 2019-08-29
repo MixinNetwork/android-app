@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -49,7 +48,7 @@ class ContactsFragment : BaseFragment() {
     lateinit var jobManager: MixinJobManager
 
     private val contactsViewModel: ContactViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ContactViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ContactViewModel::class.java)
     }
 
     private val contactAdapter: ContactsAdapter by lazy {

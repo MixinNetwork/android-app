@@ -13,7 +13,6 @@ import androidx.collection.ArraySet
 import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -55,7 +54,7 @@ class ForwardFragment : BaseFragment() {
     lateinit var viewModelFactory: ViewModelProvider.Factory
 
     private val chatViewModel: ConversationViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ConversationViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ConversationViewModel::class.java)
     }
 
     private val adapter by lazy {

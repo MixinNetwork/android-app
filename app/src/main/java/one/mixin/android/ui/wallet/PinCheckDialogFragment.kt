@@ -9,7 +9,6 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import io.reactivex.disposables.CompositeDisposable
 import javax.inject.Inject
@@ -44,7 +43,7 @@ class PinCheckDialogFragment : MixinAppCompatDialogFragment(), Injectable {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val pinCheckViewModel: PinCheckViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(PinCheckViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(PinCheckViewModel::class.java)
     }
 
     private val disposable = CompositeDisposable()

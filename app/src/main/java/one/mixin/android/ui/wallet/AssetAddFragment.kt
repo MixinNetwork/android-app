@@ -8,7 +8,6 @@ import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.findNavController
 import javax.inject.Inject
@@ -35,7 +34,7 @@ class AssetAddFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
     private val onTopAssetListener = object : AssetAddAdapter.OnTopAssetListener {

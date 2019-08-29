@@ -6,7 +6,6 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import javax.inject.Inject
@@ -25,7 +24,7 @@ abstract class BaseTransactionsFragment<C> : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     protected val walletViewModel: WalletViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
     protected var lastCreatedAt: String? = null

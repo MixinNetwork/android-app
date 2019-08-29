@@ -14,7 +14,6 @@ import android.view.ViewGroup
 import androidx.annotation.StringRes
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
@@ -100,7 +99,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     private lateinit var code: String
     private lateinit var contentView: View
     private val linkViewModel: BottomSheetViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(BottomSheetViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(BottomSheetViewModel::class.java)
     }
 
     private val url: String by lazy {

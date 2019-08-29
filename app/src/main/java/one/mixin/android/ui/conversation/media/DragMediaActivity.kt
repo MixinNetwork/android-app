@@ -47,7 +47,7 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
-import androidx.lifecycle.ViewModelProviders
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.viewpager.widget.PagerAdapter
@@ -185,7 +185,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         colorDrawable = ColorDrawable(Color.BLACK)
         view_pager.backgroundDrawable = colorDrawable
 
-        val model = ViewModelProviders.of(this).get(DragMediaViewModel::class.java)
+        val model = ViewModelProvider(this).get(DragMediaViewModel::class.java)
         model.viewModelScope.launch {
             val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
                 if (item.isLive()) {

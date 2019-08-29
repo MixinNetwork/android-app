@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import java.math.BigDecimal
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transaction.*
@@ -52,7 +51,7 @@ class TransactionFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val walletViewModel: WalletViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(WalletViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(WalletViewModel::class.java)
     }
 
     private val snapshot: SnapshotItem? by lazy { arguments!!.getParcelable<SnapshotItem>(ARGS_SNAPSHOT) }

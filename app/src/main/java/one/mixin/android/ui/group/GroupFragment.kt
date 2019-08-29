@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -65,7 +64,7 @@ class GroupFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val groupViewModel: GroupViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(GroupViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(GroupViewModel::class.java)
     }
 
     private val from: Int by lazy {

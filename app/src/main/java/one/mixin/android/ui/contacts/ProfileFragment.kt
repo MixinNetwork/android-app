@@ -22,7 +22,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import com.yalantis.ucrop.UCrop
@@ -71,7 +70,7 @@ class ProfileFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val contactsViewModel: ContactViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ContactViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ContactViewModel::class.java)
     }
     private var user: User? = null
     private val imageUri: Uri by lazy {

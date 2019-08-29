@@ -20,14 +20,15 @@ import androidx.core.view.updateLayoutParams
 import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import java.io.File
 import javax.inject.Inject
+import kotlin.math.min
 import kotlinx.android.synthetic.main.fragment_conversation_list.*
 import kotlinx.android.synthetic.main.item_list_conversation.view.*
 import kotlinx.android.synthetic.main.view_conversation_bottom.view.*
@@ -74,7 +75,7 @@ class ConversationListFragment : LinkFragment() {
     lateinit var jobManager: MixinJobManager
 
     private val messagesViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ConversationListViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ConversationListViewModel::class.java)
     }
 
     private val messageAdapter by lazy { MessageAdapter(message_rv) }
@@ -144,7 +145,7 @@ class ConversationListFragment : LinkFragment() {
                         animDownIcon(false)
                     }
                 }
-                val progress = Math.min(targetH / vibrateDis.toFloat(), 1f)
+                val progress = min(targetH / vibrateDis.toFloat(), 1f)
                 (requireActivity() as MainActivity).dragSearch(progress)
             }
 
@@ -252,6 +253,13 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         view.delete_tv.setOnClickListener {
+            val lm = message_rv.layoutManager as LinearLayoutManager
+            val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
+            val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
+            if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
+                lm.findFirstVisibleItemPosition() == 0) {
+                shadow_view.animate().translationY(0f).duration = 200
+            }
             messagesViewModel.deleteConversation(conversationId)
             bottomSheet.dismiss()
         }

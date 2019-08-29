@@ -9,7 +9,6 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.uber.autodispose.autoDisposable
@@ -44,7 +43,7 @@ class AddPeopleFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val contactsViewModel: ContactViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(ContactViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(ContactViewModel::class.java)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =

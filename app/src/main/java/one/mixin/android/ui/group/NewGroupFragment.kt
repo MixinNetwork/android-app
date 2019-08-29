@@ -16,7 +16,6 @@ import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.yalantis.ucrop.UCrop
@@ -64,7 +63,7 @@ class NewGroupFragment : BaseFragment() {
     @Inject
     lateinit var viewModelFactory: ViewModelProvider.Factory
     private val groupViewModel: GroupViewModel by lazy {
-        ViewModelProviders.of(this, viewModelFactory).get(GroupViewModel::class.java)
+        ViewModelProvider(this, viewModelFactory).get(GroupViewModel::class.java)
     }
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
     private val imageUri: Uri by lazy {

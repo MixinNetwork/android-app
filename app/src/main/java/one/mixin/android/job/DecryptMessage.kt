@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import android.app.Activity
 import android.app.NotificationManager
-import android.graphics.Color
 import android.util.Log
 import androidx.collection.arrayMapOf
 import com.bugsnag.android.Bugsnag
