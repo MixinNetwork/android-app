@@ -55,6 +55,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshUserJob
@@ -472,15 +473,19 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             return
         }
 
+        val memo = contentView.transfer_memo.text.toString()
+        if (memo.toByteArray().size > 140) {
+            toast("${contentView.transfer_memo.hint} ${getString(R.string.group_edit_too_long)}")
+            return
+        }
+
         val biometricItem = if (user != null) {
-            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(),
-                contentView.transfer_memo.text.toString())
+            TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
         } else {
             val noPublicKey = currentAsset!!.isAccountTagAsset()
             WithdrawBiometricItem(if (noPublicKey) address!!.accountTag!! else address!!.publicKey!!, address!!.addressId,
                 if (noPublicKey) address!!.accountName!! else address!!.label!!,
-                currentAsset!!, amount, null, UUID.randomUUID().toString(),
-                contentView.transfer_memo.text.toString())
+                currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
         }
 
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
