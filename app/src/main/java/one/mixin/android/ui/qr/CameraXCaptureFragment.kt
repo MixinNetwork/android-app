@@ -1,6 +1,7 @@
 package one.mixin.android.ui.qr
 
 import android.annotation.SuppressLint
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.os.Handler
@@ -181,6 +182,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
         private fun decodeWithFirebaseVision(image: ImageProxy) {
             val buffer = image.planes[0].buffer
+            val bitmap = getBitmapFromImage(image)
             val imageMetadata = FirebaseVisionImageMetadata.Builder().apply {
                 setWidth(image.width)
                 setHeight(image.height)
@@ -197,14 +199,17 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                         }
                     }
                     .addOnCompleteListener {
-                        detecting.set(false)
+                        if (!alreadyDetected && bitmap != null) {
+                            decodeBitmapWithZxing(bitmap)
+                        } else {
+                            detecting.set(false)
+                        }
                     }
             }
         }
 
         private fun decodeWithZxing(imageProxy: ImageProxy) {
-            val byteArray = ImageUtil.imageToJpegByteArray(imageProxy)
-            val bitmap = BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            val bitmap = getBitmapFromImage(imageProxy)
             if (bitmap == null) {
                 detecting.set(false)
                 return
@@ -218,6 +223,23 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                 }
             }
             detecting.set(false)
+        }
+
+        private fun decodeBitmapWithZxing(bitmap: Bitmap) {
+            val result = bitmap.decodeQR()
+            if (result != null) {
+                alreadyDetected = true
+                lifecycleScope.launch(Dispatchers.Main) {
+                    if (!isAdded) return@launch
+                    handleAnalysis(result)
+                }
+            }
+            detecting.set(false)
+        }
+
+        private fun getBitmapFromImage(image: ImageProxy): Bitmap? {
+            val byteArray = ImageUtil.imageToJpegByteArray(image)
+            return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
         }
     }
 }
