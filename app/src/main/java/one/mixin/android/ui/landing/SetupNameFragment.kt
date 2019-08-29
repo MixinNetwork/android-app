@@ -1,12 +1,12 @@
 package one.mixin.android.ui.landing
 
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
@@ -45,7 +45,7 @@ class SetupNameFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        name_et.setText(Build.MODEL)
+        name_fab.visibility = GONE
         name_fab.setOnClickListener {
             name_fab.show()
             name_cover.visibility = VISIBLE
