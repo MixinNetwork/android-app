@@ -332,7 +332,7 @@
     <string name="wallet_already_shown">%1$s has been shown</string>
     <string name="wallet_add_asset_already">Asset already added</string>
     <string name="wallet_biometric_invalid">Invalid biometrics state, please reset in wallet setting.</string>
-    <string name="wallet_setting_currency_desc">%1$s (%2$s)</string>
+    <string name="wallet_setting_currency_desc" translatable="false">%1$s (%2$s)</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
