@@ -70,6 +70,10 @@ class ConversationJob(
             if (type != TYPE_CREATE || type != TYPE_MUTE) {
                 RxBus.publish(ConversationEvent(type, false))
                 ErrorHandler.handleError(e)
+            } else if (type == TYPE_CREATE) {
+                conversationId?.let {
+                    conversationDao.updateConversationStatusById(it, ConversationStatus.FAILURE.ordinal)
+                }
             }
             Timber.e(e)
         }
