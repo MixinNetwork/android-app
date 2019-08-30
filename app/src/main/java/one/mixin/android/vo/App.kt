@@ -14,7 +14,7 @@ import kotlinx.android.parcel.Parcelize
 @Parcelize
 @TypeConverters(ArrayConverters::class)
 @Entity(tableName = "apps")
-class App(
+data class App(
     @PrimaryKey
     @SerializedName("app_id")
     @ColumnInfo(name = "app_id")

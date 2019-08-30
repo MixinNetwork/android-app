@@ -244,12 +244,15 @@
         <provider
             android:name="androidx.work.impl.WorkManagerInitializer"
             android:authorities="${applicationId}.workmanager-init"
+            android:exported="false"
             tools:node="remove" />
 
         <service
             android:name=".job.SendService"
             android:exported="false" />
-        <service android:name=".fcm.FcmService">
+        <service
+            android:name=".fcm.FcmService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>

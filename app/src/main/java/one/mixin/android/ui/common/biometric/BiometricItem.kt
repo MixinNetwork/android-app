@@ -7,29 +7,31 @@ import one.mixin.android.vo.User
 
 @Parcelize
 open class BiometricItem(
-    val asset: AssetItem,
-    val amount: String,
-    var pin: String?,
-    val trace: String?,
-    val memo: String?
+    open val asset: AssetItem,
+    open val amount: String,
+    open var pin: String?,
+    open val trace: String?,
+    open val memo: String?
 ) : Parcelable
 
+@Parcelize
 class TransferBiometricItem(
     val user: User,
-    asset: AssetItem,
-    amount: String,
-    pin: String?,
-    trace: String?,
-    memo: String?
+    override val asset: AssetItem,
+    override val amount: String,
+    override var pin: String?,
+    override val trace: String?,
+    override val memo: String?
 ) : BiometricItem(asset, amount, pin, trace, memo)
 
+@Parcelize
 class WithdrawBiometricItem(
     val publicKey: String,
     val addressId: String,
     val label: String,
-    asset: AssetItem,
-    amount: String,
-    pin: String?,
-    trace: String?,
-    memo: String?
+    override val asset: AssetItem,
+    override val amount: String,
+    override var pin: String?,
+    override val trace: String?,
+    override val memo: String?
 ) : BiometricItem(asset, amount, pin, trace, memo)

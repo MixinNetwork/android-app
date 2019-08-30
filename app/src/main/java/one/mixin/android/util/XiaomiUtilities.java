@@ -1,13 +1,15 @@
 package one.mixin.android.util;
 
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.AppOpsManager;
 import android.content.Context;
 import android.content.Intent;
 import android.text.TextUtils;
-import java.lang.reflect.Method;
 import one.mixin.android.MixinApplication;
 import timber.log.Timber;
+
+import java.lang.reflect.Method;
 
 // MIUI. Redefining Android.
 // (not in the very best way I'd say)
@@ -70,6 +72,7 @@ public class XiaomiUtilities {
         return -1;
     }
 
+    @SuppressLint("PrivateApi")
     public static String getSystemProperty(String key) {
         try {
             Class props = Class.forName("android.os.SystemProperties");

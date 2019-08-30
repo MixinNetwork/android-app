@@ -2,16 +2,17 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.util.AttributeSet
-import android.widget.EditText
+import androidx.appcompat.widget.AppCompatEditText
 
 class TailInputEditText constructor(
     context: Context,
     attrs: AttributeSet? = null
-) : EditText(context, attrs) {
+) : AppCompatEditText(context, attrs) {
 
     override fun onSelectionChanged(selStart: Int, selEnd: Int) {
-        if (selStart != selEnd || selStart != text.length) {
-            setSelection(text.length)
+        val str = text ?: return
+        if (selStart != selEnd || selStart != str.length) {
+            setSelection(str.length)
         }
     }
 }

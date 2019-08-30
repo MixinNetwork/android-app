@@ -21,7 +21,6 @@ import com.google.i18n.phonenumbers.Phonenumber
 import com.mukesh.countrypicker.Country
 import com.mukesh.countrypicker.CountryPicker
 import com.uber.autodispose.autoDisposable
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_mobile.*
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
@@ -39,6 +38,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_RECAPTCHA
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.RecaptchaView
+import javax.inject.Inject
 
 class MobileFragment : BaseFragment() {
 
@@ -226,7 +226,7 @@ class MobileFragment : BaseFragment() {
     private val mKeyboardListener: Keyboard.OnClickKeyboardListener = object : Keyboard.OnClickKeyboardListener {
         override fun onKeyClick(position: Int, value: String) {
             context?.vibrate(longArrayOf(0, 30))
-            val editable = mobile_et.text
+            val editable = mobile_et.text ?: return
             if (position == 11 && editable.isNotEmpty()) {
                 mobile_et.text = editable.subSequence(0, editable.length - 1) as Editable?
             } else {
@@ -236,9 +236,9 @@ class MobileFragment : BaseFragment() {
 
         override fun onLongClick(position: Int, value: String) {
             context?.vibrate(longArrayOf(0, 30))
-            val editable = mobile_et.text
+            val editable = mobile_et.text ?: return
             if (position == 11 && editable.isNotEmpty()) {
-                mobile_et.text.clear()
+                mobile_et.setText("")
             } else {
                 mobile_et.text = editable.append(value)
             }

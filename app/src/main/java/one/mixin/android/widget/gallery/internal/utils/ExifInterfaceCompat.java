@@ -2,10 +2,10 @@
 package one.mixin.android.widget.gallery.internal.utils;
 
 import android.annotation.TargetApi;
-import android.media.ExifInterface;
 import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
+import androidx.exifinterface.media.ExifInterface;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
