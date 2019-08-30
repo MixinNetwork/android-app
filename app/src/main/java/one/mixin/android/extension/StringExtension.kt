@@ -201,8 +201,8 @@ fun BigDecimal.numberFormat(): String {
 }
 
 fun BigDecimal.priceFormat(): String {
-    return if (this.compareTo(BigDecimal.ONE) == 1) {
-        numberFormat2()
+    return if (this.compareTo(BigDecimal.ONE) == 1 || this.compareTo(BigDecimal.ONE) == 0) {
+        priceFormat2()
     } else {
         numberFormat8()
     }
@@ -211,6 +211,16 @@ fun BigDecimal.priceFormat(): String {
 fun BigDecimal.numberFormat8(): String {
     return try {
         DecimalFormat(this.toPlainString().getPattern()).format(this)
+    } catch (e: NumberFormatException) {
+        this.toPlainString()
+    } catch (e: IllegalArgumentException) {
+        this.toPlainString()
+    }
+}
+
+fun BigDecimal.priceFormat2(): String {
+    return try {
+        DecimalFormat(",##0.00").format(this)
     } catch (e: NumberFormatException) {
         this.toPlainString()
     } catch (e: IllegalArgumentException) {
