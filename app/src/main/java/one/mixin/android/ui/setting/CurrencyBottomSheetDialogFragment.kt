@@ -16,6 +16,7 @@ import kotlinx.android.synthetic.main.item_currency.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.close_iv
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.search_et
 import one.mixin.android.R
+import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
@@ -56,6 +57,7 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 Fiats.currency = currency.name
                 Fiats.currencySymbol = currency.symbol
                 callback?.onCurrencyClick(currency)
+                toast(R.string.save_success)
                 dismiss()
             }
         }

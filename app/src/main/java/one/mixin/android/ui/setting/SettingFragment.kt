@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.device.DeviceFragment
+import one.mixin.android.util.Session
 
 class SettingFragment : Fragment() {
     companion object {
@@ -40,6 +41,13 @@ class SettingFragment : Fragment() {
         }
         privacy_rl.setOnClickListener {
             navTo(PrivacyFragment.newInstance(), PrivacyFragment.TAG)
+        }
+        wallet_rl.setOnClickListener {
+            if (Session.getAccount()?.hasPin == true) {
+                navTo(WalletSettingFragment.newInstance(), WalletSettingFragment.TAG)
+            } else {
+                navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
+            }
         }
     }
 }

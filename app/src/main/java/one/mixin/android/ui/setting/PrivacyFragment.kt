@@ -49,12 +49,5 @@ class PrivacyFragment : BaseViewModelFragment<SettingViewModel>() {
         contact_rl.setOnClickListener {
             navTo(MobileContactFragment.newInstance(), MobileContactFragment.TAG)
         }
-        wallet_rl.setOnClickListener {
-            if (Session.getAccount()?.hasPin == true) {
-                navTo(WalletSettingFragment.newInstance(), WalletSettingFragment.TAG)
-            } else {
-                navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
-            }
-        }
     }
 }
