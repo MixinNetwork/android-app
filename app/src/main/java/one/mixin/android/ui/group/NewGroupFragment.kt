@@ -6,7 +6,6 @@ import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.os.CountDownTimer
 import android.provider.MediaStore
 import android.text.Editable
 import android.text.TextWatcher
@@ -31,7 +30,6 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.loadCircleImage
-import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
@@ -75,8 +73,6 @@ class NewGroupFragment : BaseFragment() {
     private val adapter = NewGroupAdapter()
     private var dialog: Dialog? = null
 
-    private var countDownTimer: CountDownTimer? = null
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -115,7 +111,6 @@ class NewGroupFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.dismiss()
-        countDownTimer?.cancel()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -162,11 +157,6 @@ class NewGroupFragment : BaseFragment() {
         val conversation = groupViewModel.createGroupConversation(name_desc_et.text.toString(),
             notice_desc_et.text.toString(), groupIcon, adapter.users!!, sender)
 
-        if (!requireContext().networkConnected()) {
-            go2Main()
-            return
-        }
-
         val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
         liveData.observe(this, Observer { c ->
             if (c != null) {
@@ -188,26 +178,13 @@ class NewGroupFragment : BaseFragment() {
                         ConversationActivity.show(context!!, conversation.conversationId, null)
                     }
                     c.status == ConversationStatus.FAILURE.ordinal -> {
-                        go2Main()
+                        name_desc_et.hideKeyboard()
+                        dialog?.dismiss()
+                        startActivity(Intent(context, MainActivity::class.java))
                     }
                 }
             }
         })
-        countDownTimer = object : CountDownTimer(8000, 1000) {
-            override fun onTick(millisUntilFinished: Long) {
-            }
-
-            override fun onFinish() {
-                go2Main()
-            }
-        }
-        countDownTimer?.start()
-    }
-
-    private fun go2Main() {
-        name_desc_et.hideKeyboard()
-        dialog?.dismiss()
-        startActivity(Intent(context, MainActivity::class.java))
     }
 
     private fun enableCreate(enable: Boolean) {
