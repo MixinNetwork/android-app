@@ -27,10 +27,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
-import java.math.BigDecimal
-import java.math.RoundingMode
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -76,6 +72,10 @@ import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import one.mixin.android.worker.RefreshAssetsWorker
 import org.jetbrains.anko.textColor
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.util.UUID
+import javax.inject.Inject
 
 @SuppressLint("InflateParams")
 class TransferFragment : MixinBottomSheetDialogFragment() {
@@ -372,7 +372,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             swaped = false
             contentView.swap_iv.visibility = GONE
         }
-        checkInputForbidden(contentView.amount_et.text)
+        checkInputForbidden(contentView.amount_et.text.toString())
         if (contentView.amount_et.text.isNullOrEmpty()) {
             if (swaped) {
                 contentView.amount_et.hint = "0.00 USD"
