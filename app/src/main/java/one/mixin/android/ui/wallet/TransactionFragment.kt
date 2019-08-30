@@ -15,7 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
-import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
@@ -99,7 +99,7 @@ class TransactionFragment : BaseFragment() {
             else snapshot.amount.numberFormat()
         symbol_tv.text = asset.symbol
         value_tv.textColorResource = if (isPositive) R.color.wallet_green else R.color.wallet_pink
-        val amount = (BigDecimal(snapshot.amount) * asset.priceFiat()).numberFormat2()
+        val amount = (BigDecimal(snapshot.amount) * asset.priceFiat()).priceFormat()
         value_as_tv.text = "≈ ${Fiats.currencySymbol}$amount"
         transaction_id_tv.text = snapshot.snapshotId
         transaction_type_tv.text = getSnapshotType(snapshot.type)

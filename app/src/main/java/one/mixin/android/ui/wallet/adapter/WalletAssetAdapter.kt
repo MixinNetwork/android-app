@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.HeaderFooterAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -94,7 +95,7 @@ class WalletAssetAdapter(private val rv: RecyclerView, private val slideShow: Bo
                 holder.itemView.change_tv.visibility = GONE
             } else {
                 holder.itemView.change_tv.visibility = VISIBLE
-                holder.itemView.price_tv.text = "${Fiats.currencySymbol}${asset.priceFiat().numberFormat8()}"
+                holder.itemView.price_tv.text = "${Fiats.currencySymbol}${asset.priceFiat().priceFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO

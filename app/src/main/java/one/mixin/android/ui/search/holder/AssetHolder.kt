@@ -10,6 +10,7 @@ import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.vo.AssetItem
@@ -31,7 +32,7 @@ class AssetHolder constructor(containerView: View) : NormalHolder(containerView)
             itemView.change_tv.visibility = View.GONE
         } else {
             itemView.change_tv.visibility = View.VISIBLE
-            itemView.price_tv.text = "${Fiats.currencySymbol}${asset.priceFiat().numberFormat8()}"
+            itemView.price_tv.text = "${Fiats.currencySymbol}${asset.priceFiat().priceFormat()}"
             if (asset.changeUsd.isNotEmpty()) {
                 val changeUsd = BigDecimal(asset.changeUsd)
                 val isPositive = changeUsd > BigDecimal.ZERO
