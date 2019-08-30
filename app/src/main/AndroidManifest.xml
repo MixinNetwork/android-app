@@ -71,6 +71,9 @@
                     android:host="transfer"
                     android:scheme="mixin" />
                 <data
+                    android:host="device"
+                    android:scheme="mixin" />
+                <data
                     android:host="send"
                     android:scheme="mixin" />
                 <data

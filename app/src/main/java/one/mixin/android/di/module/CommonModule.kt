@@ -15,6 +15,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletPasswordFragment
 
@@ -64,4 +65,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeVerifyFragment(): VerifyFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeConfirmBottomFragment(): ConfirmBottomFragment
 }
