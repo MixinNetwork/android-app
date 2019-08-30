@@ -132,8 +132,7 @@ inline fun openUrl(
     } else if (url.startsWith(Scheme.DEVICE, true)) {
         ConfirmBottomFragment.newInstance(url)
             .showNow(supportFragmentManager, ConfirmBottomFragment.TAG)
-    }
-    else {
+    } else {
         if (isMixinUrl(url, false)) {
             LinkBottomSheetDialogFragment
                 .newInstance(url)

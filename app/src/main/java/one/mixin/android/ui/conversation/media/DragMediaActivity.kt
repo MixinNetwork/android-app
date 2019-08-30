@@ -74,6 +74,11 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
+import java.io.File
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
@@ -132,11 +137,6 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import kotlin.math.min
 
 @SuppressLint("InvalidWakeLockTag")
 class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
