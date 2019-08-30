@@ -1,22 +1,17 @@
 package one.mixin.android.util.video;
 
-import android.app.Activity;
-import android.content.SharedPreferences;
 import android.media.*;
 import android.os.Build;
-import android.util.Pair;
 import com.coremedia.iso.IsoFile;
 import com.coremedia.iso.boxes.*;
 import com.googlecode.mp4parser.util.Path;
-import io.reactivex.Flowable;
-import io.reactivex.Scheduler;
-import io.reactivex.functions.Function;
-import io.reactivex.schedulers.Schedulers;
-import one.mixin.android.MixinApplication;
 import one.mixin.android.crypto.Util;
 import timber.log.Timber;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 

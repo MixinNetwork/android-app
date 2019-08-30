@@ -70,6 +70,7 @@
                 android:textColor="@android:color/black"
                 android:textSize="15sp"
                 app:layout_constraintStart_toEndOf="@id/line"
+                app:layout_constraintTop_toTopOf="@id/line"
                 tools:text="GitHub" />
 
             <TextView

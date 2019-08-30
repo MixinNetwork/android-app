@@ -7,7 +7,6 @@ import android.text.style.BackgroundColorSpan
 import android.view.Gravity
 import android.view.View
 import android.widget.FrameLayout
-import androidx.annotation.DrawableRes
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.widget.TextViewCompat
@@ -297,9 +296,9 @@ class ReplyHolder constructor(containerView: View) : BaseViewHolder(containerVie
         chatLayout(isMe, isLast)
     }
 
-    private fun setIcon(@DrawableRes icon: Int? = null) {
-        icon.notNullWithElse({ icon ->
-            AppCompatResources.getDrawable(itemView.context, icon).let {
+    private fun setIcon(icon: Int? = null) {
+        icon.notNullWithElse({ drawable ->
+            AppCompatResources.getDrawable(itemView.context, drawable).let {
                 it?.setBounds(0, 0, itemView.context.dpToPx(10f), itemView.context.dpToPx(10f))
                 TextViewCompat.setCompoundDrawablesRelative(itemView.reply_content_tv, it, null, null, null)
             }
