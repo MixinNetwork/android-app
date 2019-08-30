@@ -3,7 +3,7 @@ package one.mixin.android.vo.giphy
 import androidx.recyclerview.widget.DiffUtil
 import com.google.gson.annotations.SerializedName
 
-class Gif(
+data class Gif(
     @SerializedName("id")
     val id: String,
     @SerializedName("type")

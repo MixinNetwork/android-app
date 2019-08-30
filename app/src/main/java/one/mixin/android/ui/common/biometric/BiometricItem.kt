@@ -1,5 +1,6 @@
 package one.mixin.android.ui.common.biometric
 
+import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize
 import one.mixin.android.vo.AssetItem
@@ -21,7 +22,38 @@ class TransferBiometricItem(
     pin: String?,
     trace: String?,
     memo: String?
-) : BiometricItem(asset, amount, pin, trace, memo)
+) : BiometricItem(asset, amount, pin, trace, memo), Parcelable {
+    constructor(source: Parcel) : this(
+        source.readParcelable<User>(User::class.java.classLoader),
+        source.readParcelable<AssetItem>(AssetItem::class.java.classLoader),
+        source.readString(),
+        source.readString(),
+        source.readString(),
+        source.readString()
+    )
+
+    override fun describeContents() = 0
+
+    override fun writeToParcel(dest: Parcel, flags: Int) = with(dest) {
+        writeParcelable(user, 0)
+        writeParcelable(asset, 0)
+        writeString(amount)
+        writeString(pin)
+        writeString(trace)
+        writeString(memo)
+    }
+
+    companion object {
+        @JvmField
+        val CREATOR: Parcelable.Creator<TransferBiometricItem> =
+            object : Parcelable.Creator<TransferBiometricItem> {
+                override fun createFromParcel(source: Parcel): TransferBiometricItem =
+                    TransferBiometricItem(source)
+
+                override fun newArray(size: Int): Array<TransferBiometricItem?> = arrayOfNulls(size)
+            }
+    }
+}
 
 class WithdrawBiometricItem(
     val publicKey: String,
@@ -32,4 +64,39 @@ class WithdrawBiometricItem(
     pin: String?,
     trace: String?,
     memo: String?
-) : BiometricItem(asset, amount, pin, trace, memo)
+) : BiometricItem(asset, amount, pin, trace, memo), Parcelable {
+    constructor(source: Parcel) : this(
+        source.readString(),
+        source.readString(),
+        source.readString(),
+        source.readParcelable<AssetItem>(AssetItem::class.java.classLoader),
+        source.readString(),
+        source.readString(),
+        source.readString(),
+        source.readString()
+    )
+
+    override fun describeContents() = 0
+
+    override fun writeToParcel(dest: Parcel, flags: Int) = with(dest) {
+        writeString(publicKey)
+        writeString(addressId)
+        writeString(label)
+        writeParcelable(asset, 0)
+        writeString(amount)
+        writeString(pin)
+        writeString(trace)
+        writeString(memo)
+    }
+
+    companion object {
+        @JvmField
+        val CREATOR: Parcelable.Creator<WithdrawBiometricItem> =
+            object : Parcelable.Creator<WithdrawBiometricItem> {
+                override fun createFromParcel(source: Parcel): WithdrawBiometricItem =
+                    WithdrawBiometricItem(source)
+
+                override fun newArray(size: Int): Array<WithdrawBiometricItem?> = arrayOfNulls(size)
+            }
+    }
+}
