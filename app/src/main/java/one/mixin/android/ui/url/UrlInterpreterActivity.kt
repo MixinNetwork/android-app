@@ -13,6 +13,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
+import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardCategory
@@ -24,6 +25,7 @@ class UrlInterpreterActivity : BaseActivity() {
         private const val PAY = "pay"
         private const val USER = "users"
         private const val TRANSFER = "transfer"
+        private const val DEVICE = "device"
         private const val SEND = "send"
         private const val WITHDRAWAL = "withdrawal"
         private const val ADDRESS = "address"
@@ -59,6 +61,10 @@ class UrlInterpreterActivity : BaseActivity() {
                 uri.lastPathSegment?.let { lastPathSegment ->
                     TransferFragment.newInstance(lastPathSegment).showNow(supportFragmentManager, TransferFragment.TAG)
                 }
+            }
+            DEVICE -> {
+                ConfirmBottomFragment.newInstance(uri.toString())
+                    .showNow(supportFragmentManager, ConfirmBottomFragment.TAG)
             }
             SEND -> {
                 uri.getQueryParameter("text")?.let {
@@ -123,7 +129,11 @@ inline fun openUrl(
         Uri.parse(url).getQueryParameter("text")?.let {
             ForwardActivity.show(MixinApplication.appContext, arrayListOf(ForwardMessage(ForwardCategory.TEXT.name, content = it)))
         }
-    } else {
+    } else if (url.startsWith(Scheme.DEVICE, true)) {
+        ConfirmBottomFragment.newInstance(url)
+            .showNow(supportFragmentManager, ConfirmBottomFragment.TAG)
+    }
+    else {
         if (isMixinUrl(url, false)) {
             LinkBottomSheetDialogFragment
                 .newInstance(url)
