@@ -14,6 +14,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.SurfaceTexture
@@ -223,7 +224,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
         supportsPie {
             val lp = window.attributes
-            lp.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            lp.layoutInDisplayCutoutMode =
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
             window.attributes = lp
         }
         SystemUIManager.setSystemUiColor(window, Color.BLACK)
@@ -248,7 +250,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun showVideoBottom() {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_video_bottom, null)
+        val view = View.inflate(
+            ContextThemeWrapper(this, R.style.Custom),
+            R.layout.view_drag_video_bottom,
+            null
+        )
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.share.setOnClickListener {
@@ -261,7 +267,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun showImageBottom() {
         val builder = BottomSheet.Builder(this)
-        val view = View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_drag_image_bottom, null)
+        val view = View.inflate(
+            ContextThemeWrapper(this, R.style.Custom),
+            R.layout.view_drag_image_bottom,
+            null
+        )
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.save.setOnClickListener {
@@ -283,14 +293,23 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                                     item.mediaMimeType.equals(
                                         MimeType.GIF.toString(),
                                         true
-                                    ) -> this@DragMediaActivity.getPublicPicturePath().createGifTemp(false)
+                                    ) -> this@DragMediaActivity.getPublicPicturePath().createGifTemp(
+                                        false
+                                    )
                                     item.mediaMimeType.equals(MimeType.PNG.toString()) -> this@DragMediaActivity.getPublicPicturePath().createPngTemp(
                                         false
                                     )
-                                    else -> this@DragMediaActivity.getPublicPicturePath().createImageTemp(noMedia = false)
+                                    else -> this@DragMediaActivity.getPublicPicturePath().createImageTemp(
+                                        noMedia = false
+                                    )
                                 }
                                 outFile.copyFromInputStream(FileInputStream(file))
-                                sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))
+                                sendBroadcast(
+                                    Intent(
+                                        Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+                                        Uri.fromFile(outFile)
+                                    )
+                                )
                                 uiThread { toast(R.string.save_success) }
                             }
                         }
@@ -331,15 +350,19 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
         if (bitmap != null) {
             if (isGooglePlayServicesAvailable()) {
+                var url: String? = null
                 val image = FirebaseVisionImage.fromBitmap(bitmap)
                 val detector = FirebaseVision.getInstance().visionBarcodeDetector
                 detector.detectInImage(image)
                     .addOnSuccessListener { barcodes ->
-                        val url = barcodes.firstOrNull()?.rawValue
+                        url = barcodes.firstOrNull()?.rawValue
                         if (url != null) {
-                            openUrl(url, supportFragmentManager) {
-                                QrScanBottomSheetDialogFragment.newInstance(url)
-                                    .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+                            openUrl(url!!, supportFragmentManager) {
+                                QrScanBottomSheetDialogFragment.newInstance(url!!)
+                                    .showNow(
+                                        supportFragmentManager,
+                                        QrScanBottomSheetDialogFragment.TAG
+                                    )
                             }
                         } else {
                             toast(R.string.can_not_recognize)
@@ -349,33 +372,40 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         toast(R.string.can_not_recognize)
                     }
                     .addOnCompleteListener {
-                        if (imageView !is ImageView) {
-                            imageView.isDrawingCacheEnabled = false
+                        if (url == null) {
+                            decodeWithZxing(imageView, bitmap)
+                        } else {
+                            if (imageView !is ImageView) {
+                                imageView.isDrawingCacheEnabled = false
+                            }
                         }
                     }
             } else {
-                lifecycleScope.launch {
-                    val url = withContext(Dispatchers.IO) {
-                        bitmap.decodeQR()
-                    }
-                    if (imageView !is ImageView) {
-                        imageView.isDrawingCacheEnabled = false
-                    }
-                    if (url != null) {
-                        openUrl(url, supportFragmentManager) {
-                            QrScanBottomSheetDialogFragment.newInstance(url)
-                                .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
-                        }
-                    } else {
-                        toast(R.string.can_not_recognize)
-                    }
-                }
+                decodeWithZxing(imageView, bitmap)
             }
         } else {
             toast(R.string.can_not_recognize)
             if (imageView !is ImageView) {
                 imageView.isDrawingCacheEnabled = false
             }
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun decodeWithZxing(imageView: View, bitmap: Bitmap) = lifecycleScope.launch {
+        val url = withContext(Dispatchers.IO) {
+            bitmap.decodeQR()
+        }
+        if (imageView !is ImageView) {
+            imageView.isDrawingCacheEnabled = false
+        }
+        if (url != null) {
+            openUrl(url, supportFragmentManager) {
+                QrScanBottomSheetDialogFragment.newInstance(url)
+                    .showNow(supportFragmentManager, QrScanBottomSheetDialogFragment.TAG)
+            }
+        } else {
+            toast(R.string.can_not_recognize)
         }
     }
 
@@ -437,12 +467,18 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             return layout
         }
 
-        private fun createVideoView(container: ViewGroup, position: Int, messageItem: MessageItem): View {
+        private fun createVideoView(
+            container: ViewGroup,
+            position: Int,
+            messageItem: MessageItem
+        ): View {
             val view = View.inflate(container.context, R.layout.item_video_layout, null)
             view.controller.setOnTouchListener(View.OnTouchListener { v, event ->
                 val seekRect = Rect()
                 v.seek_bar.getHitRect(seekRect)
-                if (event.y >= (seekRect.top - dpToPx(16f)) && event.y <= (seekRect.bottom + dpToPx(16f)) &&
+                if (event.y >= (seekRect.top - dpToPx(16f)) && event.y <= (seekRect.bottom + dpToPx(
+                        16f
+                    )) &&
                     event.x >= seekRect.left && event.x <= seekRect.right
                 ) {
                     val y = seekRect.top + seekRect.height() / 2f
@@ -550,9 +586,14 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     }
                 }
 
-                override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                override fun onProgressChanged(
+                    seekBar: SeekBar?,
+                    progress: Int,
+                    fromUser: Boolean
+                ) {
                     if (fromUser) {
-                        VideoPlayer.player().seekTo(progress * VideoPlayer.player().duration() / 200)
+                        VideoPlayer.player()
+                            .seekTo(progress * VideoPlayer.player().duration() / 200)
                     }
                 }
             })
@@ -628,7 +669,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             return imageView
         }
 
-        private fun createPhotoView(container: ViewGroup, position: Int, messageItem: MessageItem): PhotoView {
+        private fun createPhotoView(
+            container: ViewGroup,
+            position: Int,
+            messageItem: MessageItem
+        ): PhotoView {
             val imageView = PhotoView(container.context)
             imageView.layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
@@ -705,7 +750,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             container.removeView(obj as View)
         }
 
-        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {}
+        override fun onSurfaceTextureSizeChanged(
+            surface: SurfaceTexture?,
+            width: Int,
+            height: Int
+        ) {
+        }
 
         override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) {}
 
@@ -835,8 +885,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     (it.animatedValue as Int).apply {
                         val item = pagerAdapter.getItem(view_pager.currentItem)
                             ?: return@addUpdateListener
-                        val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${item.messageId}")
-                            ?: return@addUpdateListener
+                        val v =
+                            view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX${item.messageId}")
+                                ?: return@addUpdateListener
                         v.translationY = (realSize().y * this / 100).toFloat()
                         colorDrawable.alpha = ALPHA_MAX * (100 - this) / 100
                         if (it.animatedValue == 100) {
@@ -853,7 +904,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         colorDrawable.alpha = ALPHA_MAX
     }
 
-    private inline fun findViewPagerChildByTag(pos: Int = view_pager.currentItem, action: (v: ViewGroup) -> Unit) {
+    private inline fun findViewPagerChildByTag(
+        pos: Int = view_pager.currentItem,
+        action: (v: ViewGroup) -> Unit
+    ) {
         if (isFinishing) return
         val id = pagerAdapter.getItem(pos)?.messageId ?: return
         val v = view_pager.findViewWithTag<DismissFrameLayout>("$PREFIX$id")
@@ -919,7 +973,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         VideoPlayer.player().duration()).toInt()
                     view.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
                     if (view.remain_tv.text.isEmpty()) { // from google photo
-                        view.remain_tv.text = VideoPlayer.player().duration().toLong().formatMillis()
+                        view.remain_tv.text =
+                            VideoPlayer.player().duration().toLong().formatMillis()
                     }
                 }
             }
@@ -938,7 +993,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     parentView.preview_iv.visibility = INVISIBLE
                     parentView.pip_iv.isEnabled = true
                     parentView.pip_iv.alpha = 1f
-                    parentView.live_tv.isEnabled = VideoPlayer.player().player.isCurrentWindowDynamic
+                    parentView.live_tv.isEnabled =
+                        VideoPlayer.player().player.isCurrentWindowDynamic
                 }
             }
         }
@@ -1024,7 +1080,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         override fun onPageScrollStateChanged(state: Int) {
         }
 
-        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+        override fun onPageScrolled(
+            position: Int,
+            positionOffset: Float,
+            positionOffsetPixels: Int
+        ) {
         }
 
         override fun onPageSelected(position: Int) {
@@ -1066,11 +1126,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_X, scale),
                 ObjectAnimator.ofFloat(windowView.video_texture, View.SCALE_Y, scale),
                 ObjectAnimator.ofFloat(
-                    windowView.video_aspect_ratio, View.TRANSLATION_X, rect.x - windowView.video_aspect_ratio.x -
+                    windowView.video_aspect_ratio,
+                    View.TRANSLATION_X,
+                    rect.x - windowView.video_aspect_ratio.x -
                         this.realSize().x * (1f - scale) / 2
                 ),
                 ObjectAnimator.ofFloat(
-                    windowView.video_aspect_ratio, View.TRANSLATION_Y, rect.y - windowView.video_aspect_ratio.y +
+                    windowView.video_aspect_ratio,
+                    View.TRANSLATION_Y,
+                    rect.y - windowView.video_aspect_ratio.y +
                         this.statusBarHeight() - (windowView.video_aspect_ratio.height - rect.height) / 2
                 )
             )
@@ -1092,7 +1156,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     pipAnimationInProgress = false
                     VideoPlayer.player().setVideoTextureView(changedTextureView)
                     if (messageItem.isVideo() && VideoPlayer.player().player.playbackState == STATE_IDLE) {
-                        VideoPlayer.player().loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
+                        VideoPlayer.player()
+                            .loadVideo(messageItem.mediaUrl!!, messageItem.messageId, true)
                         VideoPlayer.player().setVideoTextureView(changedTextureView)
                         VideoPlayer.player().pause()
                     }
@@ -1122,7 +1187,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 } catch (x: Exception) {
                     try {
                         intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                        intent.data = Uri.parse("package:" + MixinApplication.appContext.packageName)
+                        intent.data =
+                            Uri.parse("package:" + MixinApplication.appContext.packageName)
                         startActivity(intent)
                     } catch (xx: Exception) {
                         Timber.e(xx)
