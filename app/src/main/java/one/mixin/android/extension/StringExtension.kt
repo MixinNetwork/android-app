@@ -200,6 +200,14 @@ fun BigDecimal.numberFormat(): String {
     }
 }
 
+fun BigDecimal.priceFormat(): String {
+    return if (this.compareTo(BigDecimal.ONE) == 1) {
+        numberFormat2()
+    } else {
+        numberFormat8()
+    }
+}
+
 fun BigDecimal.numberFormat8(): String {
     return try {
         DecimalFormat(this.toPlainString().getPattern()).format(this)

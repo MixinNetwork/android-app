@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet
+package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -18,6 +18,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 
 class BiometricTimeFragment : BaseFragment() {
     companion object {
@@ -56,7 +57,8 @@ class BiometricTimeFragment : BaseFragment() {
         lv.setOnItemClickListener { _, _, i, _ ->
             if (i >= VALUES.size || adapter.selectedPos == i) return@setOnItemClickListener
 
-            val bottomSheet = PinBiometricsBottomSheetDialogFragment.newInstance(false)
+            val bottomSheet =
+                PinBiometricsBottomSheetDialogFragment.newInstance(false)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     val intervalMillis = (VALUES[i] * X_HOUR).toLong()
@@ -68,7 +70,9 @@ class BiometricTimeFragment : BaseFragment() {
                     activity?.onBackPressed()
                 }
             }
-            bottomSheet.showNow(requireFragmentManager(), PinBiometricsBottomSheetDialogFragment.TAG)
+            bottomSheet.showNow(requireFragmentManager(),
+                PinBiometricsBottomSheetDialogFragment.TAG
+            )
         }
         setSelectedPos()
     }

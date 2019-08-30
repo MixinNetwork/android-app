@@ -45,6 +45,7 @@ import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.TransactionsAdapter
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.SnapshotType
@@ -192,13 +193,13 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
         header.symbol_tv.text = asset.symbol
         header.balance_as.text = try {
-            if (asset.usd().toFloat() == 0f) {
-                "≈ $0.00"
+            if (asset.fiat().toFloat() == 0f) {
+                "≈ ${Fiats.currencySymbol}0.00"
             } else {
-                "≈ $${asset.usd().numberFormat2()}"
+                "≈ ${Fiats.currencySymbol}${asset.fiat().numberFormat2()}"
             }
         } catch (ignored: NumberFormatException) {
-            "≈ $${asset.usd().numberFormat2()}"
+            "≈ ${Fiats.currencySymbol}${asset.fiat().numberFormat2()}"
         }
     }
 

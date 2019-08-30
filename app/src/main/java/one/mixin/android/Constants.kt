@@ -36,6 +36,9 @@ object Constants {
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
         const val PREF_DELETE_MOBILE_CONTACTS = "pref_delete_mobile_contacts"
+        const val PREF_FIAT_SET = "pref_fiat_set"
+        const val PREF_CURRENCY = "pref_currency"
+        const val PREF_CURRENCY_SYMBOL = "pref_currency_symbol"
     }
 
     object Scheme {

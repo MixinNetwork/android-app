@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet
+package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -15,13 +15,12 @@ import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.navigate
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.vibrate
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_CHANGE
-import one.mixin.android.ui.wallet.WalletPasswordFragment.Companion.ARGS_OLD_PASSWORD
+import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
@@ -31,7 +30,8 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
     companion object {
         const val TAG = "OldPasswordFragment"
 
-        fun newInstance(): OldPasswordFragment = OldPasswordFragment()
+        fun newInstance(): OldPasswordFragment =
+            OldPasswordFragment()
     }
 
     @Inject
@@ -80,11 +80,9 @@ class OldPasswordFragment : BaseFragment(), PinView.OnPinListener {
             successBlock = { response ->
                 context?.updatePinCheck()
                 response.data?.let {
-                    view?.navigate(R.id.action_old_password_to_password,
-                        Bundle().apply {
-                            putBoolean(ARGS_CHANGE, true)
-                            putString(ARGS_OLD_PASSWORD, pin.code())
-                        })
+                    val pin = pin.code()
+                    activity?.onBackPressed()
+                    navTo(WalletPasswordFragment.newInstance(true, pin), WalletPasswordFragment.TAG)
                 }
             },
             exceptionBlock = {

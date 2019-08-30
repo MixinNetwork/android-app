@@ -13,13 +13,14 @@ import kotlinx.android.synthetic.main.item_wallet_asset.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.common.recyclerview.HeaderFooterAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 import org.jetbrains.anko.textColorResource
 
 class WalletAssetAdapter(private val rv: RecyclerView, private val slideShow: Boolean) : HeaderFooterAdapter<AssetItem>() {
@@ -88,13 +89,13 @@ class WalletAssetAdapter(private val rv: RecyclerView, private val slideShow: Bo
                 asset.balance.numberFormat8()
             }
             holder.itemView.symbol_tv.text = asset.symbol
-            holder.itemView.balance_as.text = "≈ $${asset.usd().numberFormat2()}"
+            holder.itemView.balance_as.text = "≈ ${Fiats.currencySymbol}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
                 holder.itemView.price_tv.setText(R.string.asset_none)
                 holder.itemView.change_tv.visibility = GONE
             } else {
                 holder.itemView.change_tv.visibility = VISIBLE
-                holder.itemView.price_tv.text = "$${asset.priceUsd.numberFormat()}"
+                holder.itemView.price_tv.text = "${Fiats.currencySymbol}${asset.priceFiat().priceFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {
                     val changeUsd = BigDecimal(asset.changeUsd)
                     val isPositive = changeUsd > BigDecimal.ZERO

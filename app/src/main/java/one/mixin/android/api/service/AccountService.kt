@@ -13,6 +13,7 @@ import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.Fiat
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.TurnServer
@@ -80,4 +81,7 @@ interface AccountService {
 
     @GET("/")
     fun ping(): Call<MixinResponse<Void>>
+
+    @GET("fiats")
+    suspend fun getFiats(): MixinResponse<Set<Fiat>>
 }

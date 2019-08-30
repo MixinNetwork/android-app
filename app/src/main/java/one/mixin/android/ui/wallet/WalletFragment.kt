@@ -41,6 +41,7 @@ import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
 import one.mixin.android.util.Session
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PercentItemView
 import one.mixin.android.widget.PercentView
@@ -117,10 +118,10 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 assetsAdapter.setAssetList(r)
 
                 var totalBTC = BigDecimal(0)
-                var totalUSD = BigDecimal(0)
+                var totalFiat = BigDecimal(0)
                 r.map {
                     totalBTC += it.btc()
-                    totalUSD += it.usd()
+                    totalFiat += it.fiat()
                 }
 
                 header.total_as_tv.text = try {
@@ -133,16 +134,17 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                     totalBTC.numberFormat8()
                 }
                 header.total_tv.text = try {
-                    if (totalUSD.numberFormat2().toFloat() == 0f) {
+                    if (totalFiat.numberFormat2().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        totalUSD.numberFormat2()
+                        totalFiat.numberFormat2()
                     }
                 } catch (ignored: NumberFormatException) {
-                    totalUSD.numberFormat2()
+                    totalFiat.numberFormat2()
                 }
+                header.symbol.text = Fiats.currencySymbol
 
-                if (totalUSD.compareTo(BigDecimal.ZERO) == 0) {
+                if (totalFiat.compareTo(BigDecimal.ZERO) == 0) {
                     header.pie_item_container.visibility = GONE
                     header.percent_view.visibility = GONE
                     header.btc_rl.updateLayoutParams<LinearLayout.LayoutParams> {
@@ -156,7 +158,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
                 }
                 header.pie_item_container.visibility = VISIBLE
                 header.percent_view.visibility = VISIBLE
-                setPieView(r, totalUSD)
+                setPieView(r, totalFiat)
             }
         })
 
@@ -174,7 +176,7 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
 
     private fun setPieView(r: List<AssetItem>, totalUSD: BigDecimal) {
         val list = r.asSequence().filter { BigDecimal(it.balance).compareTo(BigDecimal.ZERO) != 0 }.map {
-            val p = (it.usd() / totalUSD).setScale(2, RoundingMode.DOWN).toFloat()
+            val p = (it.fiat() / totalUSD).setScale(2, RoundingMode.DOWN).toFloat()
             PercentView.PercentItem(it.symbol, p)
         }.toMutableList()
         if (list.isNotEmpty()) {
@@ -255,10 +257,6 @@ class WalletFragment : BaseFragment(), HeaderAdapter.OnItemListener {
         }
         view.hide.setOnClickListener {
             rootView?.navigate(R.id.action_wallet_fragment_to_hidden_assets_fragment)
-            bottomSheet.dismiss()
-        }
-        view.setting.setOnClickListener {
-            rootView?.navigate(R.id.action_wallet_fragment_to_wallet_setting_fragment)
             bottomSheet.dismiss()
         }
         view.transactions_tv.setOnClickListener {

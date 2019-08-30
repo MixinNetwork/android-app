@@ -1,4 +1,4 @@
-package one.mixin.android.ui.wallet
+package one.mixin.android.ui.setting
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,13 +13,15 @@ import one.mixin.android.Constants.BIOMETRIC_INTERVAL
 import one.mixin.android.Constants.BIOMETRIC_INTERVAL_DEFAULT
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.navigate
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.BiometricTimeFragment.Companion.X_HOUR
+import one.mixin.android.ui.setting.BiometricTimeFragment.Companion.X_HOUR
+import one.mixin.android.ui.wallet.PinBiometricsBottomSheetDialogFragment
 import one.mixin.android.util.BiometricUtil
+import one.mixin.android.vo.Fiats
 
 class WalletSettingFragment : BaseFragment() {
     companion object {
@@ -35,13 +37,23 @@ class WalletSettingFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
         change_tv.setOnClickListener {
-            it.navigate(R.id.action_wallet_setting_to_old_password)
+            navTo(OldPasswordFragment.newInstance(), OldPasswordFragment.TAG)
+        }
+        current_tv.text = getString(R.string.wallet_setting_currency_desc, Fiats.currency, Fiats.currencySymbol)
+        currency_rl.setOnClickListener {
+            val currencyBottom = CurrencyBottomSheetDialogFragment.newInstance()
+            currencyBottom.callback = object : CurrencyBottomSheetDialogFragment.Callback {
+                override fun onCurrencyClick(currency: Currency) {
+                    current_tv?.text = getString(R.string.wallet_setting_currency_desc, currency.name, currency.symbol)
+                }
+            }
+            currencyBottom.showNow(requireFragmentManager(), CurrencyBottomSheetDialogFragment.TAG)
         }
 
         val isBiometricsSupport = BiometricUtil.isSupport(requireContext())
         if (isBiometricsSupport) {
             time_rl.setOnClickListener {
-                    it.navigate(R.id.action_wallet_setting_to_biometric_time)
+                navTo(BiometricTimeFragment.newInstance(), BiometricTimeFragment.TAG)
             }
             biometrics_sc.isClickable = false
             biometrics_rl.setOnClickListener(biometricsClickListener)
@@ -76,7 +88,8 @@ class WalletSettingFragment : BaseFragment() {
             time_rl.visibility = GONE
             BiometricUtil.deleteKey(requireContext())
         } else {
-            val bottomSheet = PinBiometricsBottomSheetDialogFragment.newInstance(true)
+            val bottomSheet =
+                PinBiometricsBottomSheetDialogFragment.newInstance(true)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     biometrics_sc.isChecked = true
@@ -86,7 +99,9 @@ class WalletSettingFragment : BaseFragment() {
                     defaultSharedPreferences.putBoolean(Constants.Account.PREF_BIOMETRICS, true)
                 }
             }
-            bottomSheet.showNow(requireFragmentManager(), PinBiometricsBottomSheetDialogFragment.TAG)
+            bottomSheet.showNow(requireFragmentManager(),
+                PinBiometricsBottomSheetDialogFragment.TAG
+            )
         }
     }
 }
