@@ -246,7 +246,8 @@ class MainActivity : BlazeBaseActivity() {
             navigationController.pushWallet()
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER)
-            TransferFragment.newInstance(userId).showNow(supportFragmentManager, TransferFragment.TAG)
+            TransferFragment.newInstance(userId, supportSwitchAsset = true)
+                .showNow(supportFragmentManager, TransferFragment.TAG)
         } else if (intent.extras != null && intent.extras!!.getString("conversation_id", null) != null) {
             alertDialog?.dismiss()
             alertDialog = alert(getString(R.string.group_wait)) {}.show()

@@ -59,7 +59,8 @@ class UrlInterpreterActivity : BaseActivity() {
             }
             TRANSFER -> {
                 uri.lastPathSegment?.let { lastPathSegment ->
-                    TransferFragment.newInstance(lastPathSegment).showNow(supportFragmentManager, TransferFragment.TAG)
+                    TransferFragment.newInstance(lastPathSegment, supportSwitchAsset = true)
+                        .showNow(supportFragmentManager, TransferFragment.TAG)
                 }
             }
             DEVICE -> {
@@ -122,7 +123,8 @@ inline fun openUrl(
         if (segments.size >= 1) {
             val data = segments[0]
             if (data.isUUID()) {
-                TransferFragment.newInstance(data).showNow(supportFragmentManager, TransferFragment.TAG)
+                TransferFragment.newInstance(data, supportSwitchAsset = true)
+                    .showNow(supportFragmentManager, TransferFragment.TAG)
             }
         }
     } else if (url.startsWith(Scheme.SEND, true)) {
