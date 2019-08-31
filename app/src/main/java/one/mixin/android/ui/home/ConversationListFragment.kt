@@ -253,15 +253,24 @@ class ConversationListFragment : LinkFragment() {
             bottomSheet.dismiss()
         }
         view.delete_tv.setOnClickListener {
-            val lm = message_rv.layoutManager as LinearLayoutManager
-            val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
-            val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
-            if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
-                lm.findFirstVisibleItemPosition() == 0) {
-                shadow_view.animate().translationY(0f).duration = 200
-            }
-            messagesViewModel.deleteConversation(conversationId)
-            bottomSheet.dismiss()
+            AlertDialog.Builder(requireContext())
+                .setMessage(getString(R.string.conversation_delete_tip))
+                .setNegativeButton(R.string.cancel) { dialog, _ ->
+                    dialog.dismiss()
+                    bottomSheet.dismiss()
+                }
+                .setPositiveButton(R.string.confirm) { _, _ ->
+                    val lm = message_rv.layoutManager as LinearLayoutManager
+                    val lastCompleteVisibleItem = lm.findLastCompletelyVisibleItemPosition()
+                    val firstCompleteVisibleItem = lm.findFirstCompletelyVisibleItemPosition()
+                    if (lastCompleteVisibleItem - firstCompleteVisibleItem <= messageAdapter.itemCount &&
+                        lm.findFirstVisibleItemPosition() == 0) {
+                        shadow_view.animate().translationY(0f).duration = 200
+                    }
+                    messagesViewModel.deleteConversation(conversationId)
+                    bottomSheet.dismiss()
+                }
+                .show()
         }
         if (hasPin) {
             view.pin_tv.setText(R.string.conversation_pin_clear)

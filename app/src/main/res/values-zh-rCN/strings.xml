@@ -131,6 +131,7 @@
     <string name="detect_qr_tip">检测到一个 Mixin 二维码，点击识别</string>
     <string name="qr_code_camera">自动识别二维码</string>
     <string name="qr_code_camera_code">打开相机会默认开启二维码识别，当二维码被检测到时会显示一个通知，点击通知识别二维码。</string>
+    <string name="conversation_delete_tip">删除后，将同时清空该聊天的消息记录</string>
     <!--search-->
     <string name="search_title_assets">资产</string>
     <string name="search_title_chat">会话</string>
