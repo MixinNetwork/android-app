@@ -8,7 +8,6 @@ import com.uber.autodispose.autoDisposable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_chat.*
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
@@ -20,6 +19,7 @@ import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIEN
 import one.mixin.android.ui.conversation.ConversationFragment.Companion.RECIPIENT_ID
 import one.mixin.android.util.Session
 import one.mixin.android.vo.ForwardMessage
+import javax.inject.Inject
 
 class ConversationActivity : BlazeBaseActivity() {
 
@@ -43,33 +43,46 @@ class ConversationActivity : BlazeBaseActivity() {
     lateinit var userRepository: UserRepository
 
     private fun showConversation(intent: Intent) {
-        val bundle = intent.extras ?: return
+        val bundle = requireNotNull(intent.extras) { "lose data" }
         if (bundle.getString(CONVERSATION_ID) == null) {
-            val userId = bundle.getString(RECIPIENT_ID)!!
+            val userId = requireNotNull(bundle.getString(RECIPIENT_ID)) {
+                "error data, lose user id"
+            }
+
             Observable.just(userId).map {
-                userRepository.getUserById(userId)!!
+                requireNotNull(userRepository.getUserById(userId)) {
+                    "error data, lose user: $userId"
+                }
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(stopScope)
                 .subscribe({
-                    if (it.userId == Session.getAccountId()) {
-                        throw IllegalArgumentException("error data")
-                    }
+                    require(it.userId != Session.getAccountId()) { "error data" }
                     bundle.putParcelable(RECIPIENT, it)
                     replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
                 }, {
-                    replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG)
+                    replaceFragment(
+                        ConversationFragment.newInstance(bundle),
+                        R.id.container,
+                        ConversationFragment.TAG
+                    )
                 })
         } else {
             Observable.just(bundle.getString(CONVERSATION_ID)).map {
                 userRepository.findContactByConversationId(it)
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(stopScope)
                 .subscribe({
-                    if (it?.userId == Session.getAccountId()) {
-                        throw IllegalArgumentException("error data ${bundle.getString(CONVERSATION_ID)}")
+                    require(it?.userId != Session.getAccountId()) {
+                        "error data ${bundle.getString(
+                            CONVERSATION_ID
+                        )}"
                     }
                     bundle.putParcelable(RECIPIENT, it)
                     replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
                 }, {
-                    replaceFragment(ConversationFragment.newInstance(intent.extras!!), R.id.container, ConversationFragment.TAG)
+                    replaceFragment(
+                        ConversationFragment.newInstance(bundle),
+                        R.id.container,
+                        ConversationFragment.TAG
+                    )
                 })
         }
     }
@@ -84,12 +97,8 @@ class ConversationActivity : BlazeBaseActivity() {
             keyword: String? = null,
             messages: ArrayList<ForwardMessage>? = null
         ) {
-            if (conversationId == null && recipientId == null) {
-                throw IllegalArgumentException("lose data")
-            }
-            if (recipientId == Session.getAccountId()) {
-                throw IllegalArgumentException("error data $conversationId")
-            }
+            require(!(conversationId == null && recipientId == null)) { "lose data" }
+            require(recipientId != Session.getAccountId()) { "error data $conversationId" }
             Intent(context, ConversationActivity::class.java).apply {
                 putExtras(ConversationFragment.putBundle(conversationId, recipientId, messageId, keyword, messages))
             }.run {
@@ -105,12 +114,8 @@ class ConversationActivity : BlazeBaseActivity() {
             keyword: String? = null,
             messages: ArrayList<ForwardMessage>? = null
         ): Intent {
-            if (conversationId == null && recipientId == null) {
-                throw IllegalArgumentException("lose data")
-            }
-            if (recipientId == Session.getAccountId()) {
-                throw IllegalArgumentException("error data $conversationId")
-            }
+            require(!(conversationId == null && recipientId == null)) { "lose data" }
+            require(recipientId != Session.getAccountId()) { "error data $conversationId" }
             return Intent(context, ConversationActivity::class.java).apply {
                 putExtras(ConversationFragment.putBundle(conversationId, recipientId, messageId, keyword, messages))
             }
