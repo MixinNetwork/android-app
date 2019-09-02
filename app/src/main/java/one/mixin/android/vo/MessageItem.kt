@@ -195,7 +195,7 @@ fun MessageItem.saveToLocal(context: Context) {
 
     val file = File(filePath)
     val outFile = if (MimeTypes.isVideo(mediaMimeType) || mediaMimeType?.isImageSupport() == true) {
-        File(context.getPublicPicturePath(), mediaName)
+        File(context.getPublicPicturePath(), mediaName ?: file.name)
     } else {
         val dir = if (MimeTypes.isAudio(mediaMimeType)) {
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC)
@@ -203,7 +203,7 @@ fun MessageItem.saveToLocal(context: Context) {
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
         }
         dir.mkdir()
-        File(dir, mediaName)
+        File(dir, mediaName ?: file.name)
     }
     outFile.copyFromInputStream(FileInputStream(file))
     context.sendBroadcast(Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(outFile)))

@@ -125,6 +125,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isVideo
+import one.mixin.android.vo.saveToLocal
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -257,8 +258,28 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         )
         builder.setCustomView(view)
         val bottomSheet = builder.create()
+        view.save_video.setOnClickListener {
+            val messageItem = pagerAdapter.list?.get(view_pager.currentItem)
+            if (messageItem == null) {
+                toast(R.string.save_failure)
+            } else {
+                RxPermissions(this)
+                    .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDisposable(stopScope)
+                    .subscribe({ granted ->
+                        if (granted) {
+                            messageItem.saveToLocal(this@DragMediaActivity)
+                        } else {
+                            openPermissionSetting()
+                        }
+                    }, {
+                        toast(R.string.save_failure)
+                    })
+            }
+            bottomSheet.dismiss()
+        }
         view.share.setOnClickListener {
-            shareVideo()
+            shareMedia(true)
             bottomSheet.dismiss()
         }
         view.cancel.setOnClickListener { bottomSheet.dismiss() }
@@ -319,6 +340,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 }, {
                     toast(R.string.save_failure)
                 })
+            bottomSheet.dismiss()
+        }
+        view.share_image.setOnClickListener {
+            shareMedia(false)
             bottomSheet.dismiss()
         }
         view.decode.setOnClickListener {
@@ -409,7 +434,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
     }
 
-    private fun shareVideo() {
+    private fun shareMedia(isVideo: Boolean) {
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
             val url = pagerAdapter.list?.get(view_pager.currentItem)?.mediaUrl
@@ -426,9 +451,10 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             } else {
                 putExtra(Intent.EXTRA_STREAM, uri)
             }
-            type = "video/*"
+            type = if (isVideo) "video/*" else "image/*"
         }
-        startActivity(Intent.createChooser(sendIntent, "Share video to.."))
+        val name = getString(if (isVideo) R.string.conversation_status_video else R.string.conversation_status_pic)
+        startActivity(Intent.createChooser(sendIntent, getString(R.string.share_to, name)))
     }
 
     private var setTransition = false
