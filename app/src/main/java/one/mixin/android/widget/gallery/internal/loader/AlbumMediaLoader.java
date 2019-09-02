@@ -95,7 +95,7 @@ public class AlbumMediaLoader extends CursorLoader {
         return new String[]{String.valueOf(mediaType), albumId};
     }
 
-    private static final String ORDER_BY = MediaStore.Images.Media.DATE_TAKEN + " DESC";
+    private static final String ORDER_BY = MediaStore.Images.Media.DATE_MODIFIED + " DESC";
     private final boolean mEnableCapture;
 
     private AlbumMediaLoader(Context context, String selection, String[] selectionArgs, boolean capture) {
