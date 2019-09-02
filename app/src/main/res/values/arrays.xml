@@ -43,6 +43,8 @@
         <item>@drawable/ic_flag_hkd</item>
         <item>@drawable/ic_flag_gbp</item>
         <item>@drawable/ic_flag_aud</item>
+        <item>@drawable/ic_flag_sgd</item>
+        <item>@drawable/ic_flag_myr</item>
     </integer-array>
     <string-array name="currency_names">
         <item>CNY</item>
@@ -53,6 +55,8 @@
         <item>HKD</item>
         <item>GBP</item>
         <item>AUD</item>
+        <item>SGD</item>
+        <item>MYR</item>
     </string-array>
     <string-array name="currency_symbols">
         <item>¥</item>
@@ -63,5 +67,7 @@
         <item>HK$</item>
         <item>£</item>
         <item>A$</item>
+        <item>S$</item>
+        <item>RM</item>
     </string-array>
 </resources>
