@@ -1944,7 +1944,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun checkWritePermissionAndSave(messageItem: MessageItem) {
         RxPermissions(requireActivity())
-            .request(Manifest.permission.READ_EXTERNAL_STORAGE)
+            .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             .autoDisposable(stopScope)
             .subscribe({ granted ->
                 if (granted) {
