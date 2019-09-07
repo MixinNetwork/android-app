@@ -153,13 +153,17 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
     }
 
     private val imageSavedListener = object : ImageCapture.OnImageSavedListener {
-        override fun onImageSaved(file: File) {
-            openEdit(file.absolutePath, false)
-        }
-
-        override fun onError(useCaseError: ImageCapture.UseCaseError, message: String, cause: Throwable?) {
+        override fun onError(
+            imageCaptureError: ImageCapture.ImageCaptureError,
+            message: String,
+            cause: Throwable?
+        ) {
             context?.toast("Photo capture failed: $message")
             cause?.printStackTrace()
+        }
+
+        override fun onImageSaved(file: File) {
+            openEdit(file.absolutePath, false)
         }
     }
 
