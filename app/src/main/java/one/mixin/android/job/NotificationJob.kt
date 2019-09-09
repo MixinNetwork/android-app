@@ -20,6 +20,7 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
+import com.google.gson.Gson
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.mainThread
@@ -27,6 +28,7 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
@@ -221,6 +223,19 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_transfer_message))
                     notificationBuilder.setContentTitle(user.fullName)
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_transfer_message))
+                }
+            }
+            MessageCategory.APP_BUTTON_GROUP.name -> {
+                notificationBuilder.setContentTitle(context.getString(R.string.app_name))
+            }
+            MessageCategory.APP_CARD.name -> {
+                val actionCard = Gson().fromJson(message.content, AppCardData::class.java)
+                if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
+                    notificationBuilder.setTicker(
+                        context.getString(R.string.alert_key_group_app_card_message, user.fullName, actionCard.title))
+                    notificationBuilder.setContentTitle(conversation.getConversationName())
+                    notificationBuilder.setContentText(
+                        context.getString(R.string.alert_key_group_app_card_message, user.fullName, actionCard.title))
                 }
             }
             MessageCategory.SYSTEM_CONVERSATION.name -> {

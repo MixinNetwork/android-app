@@ -490,6 +490,7 @@
     <string name="alert_key_group_audio_message">%1$s 发送一条语音</string>
     <string name="alert_key_group_sticker_message">%1$s 发送一张贴纸</string>
     <string name="alert_key_group_contact_message">%1$s 分享了一个联系人</string>
+    <string name="alert_key_group_app_card_message">%1$s 发送了一个 %2$s 卡片</string>
     <string name="alert_key_contact_text_message">发送一条消息</string>
     <string name="alert_key_contact_image_message">发送一张照片</string>
     <string name="alert_key_contact_video_message">发送一个视频</string>

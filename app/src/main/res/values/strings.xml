@@ -501,6 +501,7 @@
     <string name="alert_key_group_audio_message">%1$s send a audio</string>
     <string name="alert_key_group_sticker_message">%1$s send a sticker</string>
     <string name="alert_key_group_contact_message">%1$s shared a contact</string>
+    <string name="alert_key_group_app_card_message">%1$s send you a %2$s card</string>
     <string name="alert_key_contact_text_message">send you a message</string>
     <string name="alert_key_contact_image_message">send you a photo</string>
     <string name="alert_key_contact_video_message">send you a video</string>

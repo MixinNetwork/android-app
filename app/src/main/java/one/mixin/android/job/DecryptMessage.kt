@@ -138,6 +138,7 @@ class DecryptMessage : Injector() {
         messageDao.insert(message)
         sendToExtensionSession(message, data.data)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        sendNotificationJob(message, data.source)
     }
 
     private fun processAppCard(data: BlazeMessageData) {
@@ -146,6 +147,7 @@ class DecryptMessage : Injector() {
         messageDao.insert(message)
         sendToExtensionSession(message, data.data)
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
+        sendNotificationJob(message, data.source)
     }
 
     private fun sendToExtensionSession(message: Message, content: String? = null, dataUserId: String? = null) {
