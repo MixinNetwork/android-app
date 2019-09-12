@@ -204,6 +204,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.settings.useWideViewPort = true
         contentView.chat_web_view.settings.loadWithOverviewMode = true
         contentView.chat_web_view.settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+        contentView.chat_web_view.settings.mediaPlaybackRequiresUserGesture = false
 
         contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
