@@ -225,17 +225,16 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
                     notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_transfer_message))
                 }
             }
-            MessageCategory.APP_BUTTON_GROUP.name -> {
-                notificationBuilder.setContentTitle(context.getString(R.string.app_name))
-            }
-            MessageCategory.APP_CARD.name -> {
-                val actionCard = Gson().fromJson(message.content, AppCardData::class.java)
+            MessageCategory.APP_BUTTON_GROUP.name, MessageCategory.APP_CARD.name -> {
                 if (conversation.isGroup() || message.isRepresentativeMessage(conversation)) {
-                    notificationBuilder.setTicker(
-                        context.getString(R.string.alert_key_group_app_card_message, user.fullName, actionCard.title))
                     notificationBuilder.setContentTitle(conversation.getConversationName())
-                    notificationBuilder.setContentText(
-                        context.getString(R.string.alert_key_group_app_card_message, user.fullName, actionCard.title))
+                    notificationBuilder.setTicker(
+                        context.getString(R.string.alert_key_group_text_message, user.fullName))
+                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_text_message))
+                } else {
+                    notificationBuilder.setContentTitle(user.fullName)
+                    notificationBuilder.setTicker(context.getString(R.string.alert_key_contact_text_message))
+                    notificationBuilder.setContentText(context.getString(R.string.alert_key_contact_text_message))
                 }
             }
             MessageCategory.SYSTEM_CONVERSATION.name -> {
