@@ -20,7 +20,6 @@ import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
 import com.bumptech.glide.request.target.Target
-import com.google.gson.Gson
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.mainThread
@@ -28,7 +27,6 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
