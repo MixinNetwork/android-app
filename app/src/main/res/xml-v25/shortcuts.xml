@@ -6,10 +6,6 @@
         android:icon="@mipmap/ic_adaptive_shortcut_wallet"
         android:shortcutShortLabel="@string/shortcut_wallet_label">
         <intent
-            android:action="android.intent.action.MAIN"
-            android:targetClass="one.mixin.android.ui.home.MainActivity"
-            android:targetPackage="one.mixin.messenger" />
-        <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="one.mixin.messenger"
             android:targetClass="one.mixin.android.ui.wallet.WalletActivity" />
@@ -21,10 +17,6 @@
         android:enabled="true"
         android:icon="@mipmap/ic_adaptive_shortcut_scan"
         android:shortcutShortLabel="@string/shortcut_scan_label">
-        <intent
-            android:action="android.intent.action.MAIN"
-            android:targetClass="one.mixin.android.ui.home.MainActivity"
-            android:targetPackage="one.mixin.messenger" />
         <intent
             android:action="android.intent.action.VIEW"
             android:targetPackage="one.mixin.messenger"
