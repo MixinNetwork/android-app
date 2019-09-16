@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -28,6 +29,7 @@ import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
+import androidx.core.graphics.ColorUtils
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
 import com.google.firebase.ml.vision.FirebaseVision
@@ -67,6 +69,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.runOnUiThread
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
 
@@ -215,9 +218,22 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.settings.mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         contentView.chat_web_view.settings.mediaPlaybackRequiresUserGesture = false
 
-        contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId), "MixinContext")
+        contentView.chat_web_view.addJavascriptInterface(WebAppInterface(context!!, conversationId, contentView.web_control), "MixinContext")
         contentView.chat_web_view.webViewClient = WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
             override fun onPageFinished() {
+                contentView.chat_web_view.loadUrl("""
+                    javascript:window.MixinContext.processHTML(
+                        function() {
+                            var metas = document.getElementsByTagName('meta');
+                            for (var i = 0; i < metas.length; i++) {
+                                if (metas[i].getAttribute("name") == "theme-color") {
+                                    return metas[i].getAttribute("content");
+                                }
+                            }
+                            return "";
+                        }
+                    ());
+                """)
             }
         }, conversationId, this.requireFragmentManager())
 
@@ -496,7 +512,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    class WebAppInterface(val context: Context, val conversationId: String?) {
+    class WebAppInterface(
+        val context: Context,
+        val conversationId: String?,
+        private val webControlView: WebControlView
+    ) {
         @JavascriptInterface
         fun showToast(toast: String) {
             Toast.makeText(context, toast, Toast.LENGTH_SHORT).show()
@@ -508,6 +528,17 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 Gson().toJson(MixinContext(conversationId))
             } else {
                 null
+            }
+        }
+
+        @JavascriptInterface
+        fun processHTML(content: String) {
+            try {
+                val dark = ColorUtils.calculateLuminance(Color.parseColor(content)) < 0.5
+                context.runOnUiThread {
+                    webControlView.mode = dark
+                }
+            } catch (e: Exception) {
             }
         }
     }
