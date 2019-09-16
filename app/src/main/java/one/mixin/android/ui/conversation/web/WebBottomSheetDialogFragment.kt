@@ -374,8 +374,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 ShareCompat.IntentBuilder
                     .from(it)
                     .setType("text/plain")
-                    .setChooserTitle(name)
-                    .setText(url)
+                    .setChooserTitle(contentView.chat_web_view.title)
+                    .setText(contentView.chat_web_view.url)
                     .startChooser()
                 bottomSheet.dismiss()
             }
