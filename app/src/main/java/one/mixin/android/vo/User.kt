@@ -32,6 +32,9 @@ data class User(
     @SerializedName("relationship")
     @ColumnInfo(name = "relationship")
     var relationship: String,
+    @SerializedName("biography")
+    @ColumnInfo(name = "biography")
+    val biography: String,
     @SerializedName("full_name")
     @ColumnInfo(name = "full_name")
     val fullName: String?,
@@ -79,7 +82,7 @@ data class User(
 const val SYSTEM_USER = "00000000-0000-0000-0000-000000000000"
 
 fun createSystemUser(): User {
-    return User(SYSTEM_USER, "0", "", "0", null, null, false, null, null)
+    return User(SYSTEM_USER, "0", "", "", "0", null, null, false, null, null)
 }
 
 fun User.showVerifiedOrBot(verifiedView: View, botView: View) {

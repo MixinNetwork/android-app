@@ -31,4 +31,4 @@ open class Account(
 )
 
 fun Account.toUser(): User =
-    User(userId, identity_number, relationship, full_name, avatar_url, phone, null, created_at, null, hasPin)
+    User(userId, identity_number, relationship, "",full_name, avatar_url, phone, null, created_at, null, hasPin)

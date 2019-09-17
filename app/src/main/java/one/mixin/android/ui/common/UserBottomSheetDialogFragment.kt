@@ -262,7 +262,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.transfer_fl.visibility = GONE
             bottomViewModel.findAppById(user.appId!!)?.let { app ->
                 contentView.detail_tv.visibility = VISIBLE
-                contentView.detail_tv.text = app.description
+                contentView.detail_tv.text = user.biography
                 contentView.open_fl.setOnClickListener {
                     dismiss()
                     WebBottomSheetDialogFragment

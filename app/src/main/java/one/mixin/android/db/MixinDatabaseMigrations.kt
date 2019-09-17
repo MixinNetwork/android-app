@@ -62,5 +62,11 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE messages ADD COLUMN thumb_url TEXT")
             }
         }
+
+        val MIGRATION_22_23: Migration = object : Migration(22, 23) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE users ADD COLUMN biography TEXT NOT NULL DEFAULT ''")
+            }
+        }
     }
 }
