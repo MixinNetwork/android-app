@@ -21,7 +21,7 @@
 
     <View
         android:id="@+id/divide"
-        android:layout_width="1px"
+        android:layout_width="1dp"
         android:layout_height="match_parent"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp" />

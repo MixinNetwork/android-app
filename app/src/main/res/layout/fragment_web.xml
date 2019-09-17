@@ -1,26 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:fitsSystemWindows="true">
+    android:layout_height="match_parent">
 
-    <androidx.cardview.widget.CardView
+    <View
+        android:id="@+id/ph"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white" />
+
+    <WebView
+        android:id="@+id/chat_web_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:cardCornerRadius="@dimen/padding8">
+        android:layout_below="@id/ph" />
 
-        <WebView
-            android:id="@+id/chat_web_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-        <one.mixin.android.widget.WebControlView
-            android:id="@+id/web_control"
-            android:layout_width="74dp"
-            android:layout_height="32dp"
-            android:layout_gravity="end"
-            android:layout_marginTop="24dp"
-            android:layout_marginEnd="24dp" />
-    </androidx.cardview.widget.CardView>
-</FrameLayout>
+    <one.mixin.android.widget.WebControlView
+        android:id="@+id/web_control"
+        android:layout_width="88dp"
+        android:layout_height="32dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="28dp"
+        android:layout_marginEnd="10dp" />
+</RelativeLayout>
