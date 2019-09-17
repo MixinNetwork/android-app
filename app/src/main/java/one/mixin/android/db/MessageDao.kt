@@ -46,7 +46,7 @@ interface MessageDao : BaseDao<Message> {
     fun getMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
     @Query("SELECT count(*) FROM messages WHERE conversation_id = :conversationId " +
-        "AND created_at > (SELECT created_at FROM messages WHERE id = :messageId)")
+        "AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)")
     suspend fun findMessageIndex(conversationId: String, messageId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
