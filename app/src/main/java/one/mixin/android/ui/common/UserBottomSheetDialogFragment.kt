@@ -261,8 +261,6 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.open_fl.visibility = VISIBLE
             contentView.transfer_fl.visibility = GONE
             bottomViewModel.findAppById(user.appId!!)?.let { app ->
-                contentView.detail_tv.visibility = VISIBLE
-                contentView.detail_tv.text = user.biography
                 contentView.open_fl.setOnClickListener {
                     dismiss()
                     WebBottomSheetDialogFragment
@@ -278,11 +276,15 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     })
             }
         } else {
-            contentView.detail_tv.visibility = GONE
             contentView.open_fl.visibility = GONE
             contentView.transfer_fl.visibility = VISIBLE
         }
-
+        if (user.biography.isNotEmpty()) {
+            contentView.detail_tv.text = user.biography
+            contentView.detail_tv.visibility = VISIBLE
+        } else {
+            contentView.detail_tv.visibility = GONE
+        }
         updateUserStatus(user.relationship)
     }
 
