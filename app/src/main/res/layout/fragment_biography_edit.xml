@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:rightText="@string/save"
+        app:titleText="@string/edit_biography" />
+
+    <EditText
+        android:id="@+id/desc_et"
+        style="@style/NormalTextStyle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/white"
+        android:gravity="start|end"
+        android:hint="@string/biography"
+        android:maxLength="1024"
+        android:padding="@dimen/activity_horizontal_margin" />
+
+</LinearLayout>

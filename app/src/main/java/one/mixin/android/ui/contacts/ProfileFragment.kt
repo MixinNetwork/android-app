@@ -26,7 +26,6 @@ import androidx.lifecycle.ViewModelProvider
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import com.yalantis.ucrop.UCrop
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -37,12 +36,13 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.inTransaction
-import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BiographyFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.VerifyFragment.Companion.FROM_PHONE
 import one.mixin.android.ui.setting.WalletPasswordFragment
@@ -55,6 +55,7 @@ import org.jetbrains.anko.dimen
 import org.jetbrains.anko.margin
 import org.jetbrains.anko.noButton
 import org.jetbrains.anko.singleLine
+import javax.inject.Inject
 
 class ProfileFragment : BaseFragment() {
 
@@ -93,7 +94,7 @@ class ProfileFragment : BaseFragment() {
             phone_desc_tv.text = account.phone
             biography_desc_tv.text = account.biography
             name_rl.setOnClickListener { showDialog(false) }
-            biography_rl.setOnClickListener { showBiographyDialog(Session.getAccount()?.biography) }
+            biography_rl.setOnClickListener { editBiography() }
             phone_rl.setOnClickListener {
                 alert(getString(R.string.profile_modify_number)) {
                     positiveButton(R.string.profile_phone) { dialog ->
@@ -183,45 +184,15 @@ class ProfileFragment : BaseFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    private fun showBiographyDialog(biography: String?) {
+    private fun editBiography() {
         if (context == null) {
             return
         }
-        val editText = EditText(context!!)
-        editText.singleLine = true
-        val frameLayout = FrameLayout(requireContext())
-        frameLayout.addView(editText)
-        val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
-        editText.layoutParams = params
-        editText.setText(biography)
-        editText.setSelection(biography.notNullWithElse({ it.length }, 0))
-        editText.maxLines = 140
-        dialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
-            .setTitle(R.string.edit_biography)
-            .setView(frameLayout)
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.save) { dialog, _ ->
-                biography_animator.displayedChild = POS_PROGRESS
-                contactsViewModel.update(AccountUpdateRequest(biography = editText.text.toString()))
-                    .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
-                        if (!isAdded) return@subscribe
-                        biography_animator.displayedChild = POS_CONTENT
-                        if (r.isSuccess) {
-                            Session.storeAccount(r.data!!)
-                            biography_desc_tv.text = r.data?.biography
-                        }
-                    }, {
-                        biography_animator.displayedChild = POS_CONTENT
-                    })
-                dialog.dismiss()
-            }
-            .show()
-        dialog?.window?.clearFlags(
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
-        )
-        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        val biographyFragment = BiographyFragment.newInstance()
+        biographyFragment.callback = {
+            biography_desc_tv.text = Session.getAccount()!!.biography
+        }
+        navTo(biographyFragment, BiographyFragment.TAG)
     }
 
     @SuppressLint("RestrictedApi")
