@@ -46,6 +46,7 @@ import java.net.URISyntaxException
 import java.util.concurrent.TimeUnit
 import kotlinx.android.synthetic.main.fragment_web.view.*
 import kotlinx.android.synthetic.main.view_web_bottom.view.*
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Mixin_Conversation_ID_HEADER
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -611,6 +612,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
     class MixinContext(
         @SerializedName("conversation_id")
-        val conversationId: String?
+        val conversationId: String?,
+        @SerializedName("app_version")
+        val appVersion: String = BuildConfig.VERSION_NAME
     )
 }
