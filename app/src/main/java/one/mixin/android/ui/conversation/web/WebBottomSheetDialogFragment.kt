@@ -587,11 +587,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         @JavascriptInterface
         fun getContext(): String? {
-            return if (conversationId != null) {
-                Gson().toJson(MixinContext(conversationId))
-            } else {
-                null
-            }
+            return Gson().toJson(MixinContext(conversationId))
         }
 
         @JavascriptInterface
