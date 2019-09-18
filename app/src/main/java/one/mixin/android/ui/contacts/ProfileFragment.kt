@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
 import android.app.Dialog
 import android.content.Intent
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -116,6 +117,7 @@ class ProfileFragment : BaseFragment() {
             photo_rl.setOnClickListener {
                 RxPermissions(activity!!)
                     .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    .autoDisposable(stopScope)
                     .subscribe { granted ->
                         if (granted) {
                             openImage(imageUri)
@@ -155,12 +157,13 @@ class ProfileFragment : BaseFragment() {
             val options = UCrop.Options()
             options.setToolbarColor(ContextCompat.getColor(context!!, R.color.black))
             options.setStatusBarColor(ContextCompat.getColor(context!!, R.color.black))
+            options.setToolbarWidgetColor(Color.WHITE)
             options.setHideBottomControls(true)
             UCrop.of(selectedImageUri, imageUri)
                 .withOptions(options)
                 .withAspectRatio(1f, 1f)
                 .withMaxResultSize(MAX_PHOTO_SIZE, MAX_PHOTO_SIZE)
-                .start(activity!!)
+                .start(requireContext(), this)
         }
         if (resultCode == RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
             if (data != null && context != null) {
