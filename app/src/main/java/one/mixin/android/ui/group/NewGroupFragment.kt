@@ -1,7 +1,6 @@
 package one.mixin.android.ui.group
 
 import android.Manifest
-import android.app.Activity
 import android.app.Dialog
 import android.content.Intent
 import android.net.Uri
@@ -13,31 +12,26 @@ import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.yalantis.ucrop.UCrop
+import com.uber.autodispose.autoDisposable
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_new_group.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.REQUEST_IMAGE
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.loadCircleImage
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toBytes
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.contacts.ProfileFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.Session
@@ -94,6 +88,7 @@ class NewGroupFragment : BaseFragment() {
         photo_rl.setOnClickListener {
             RxPermissions(activity!!)
                 .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .autoDisposable(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         openImage(imageUri)
@@ -111,40 +106,6 @@ class NewGroupFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.dismiss()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_IMAGE) {
-            var selectedImageUri: Uri?
-            if (data == null || data.action != null &&
-                data.action == MediaStore.ACTION_IMAGE_CAPTURE) {
-                selectedImageUri = imageUri
-            } else {
-                selectedImageUri = data.data
-                if (selectedImageUri == null) {
-                    selectedImageUri = imageUri
-                }
-            }
-            val options = UCrop.Options()
-            options.setToolbarColor(ContextCompat.getColor(context!!, R.color.black))
-            options.setStatusBarColor(ContextCompat.getColor(context!!, R.color.black))
-            options.setHideBottomControls(true)
-            UCrop.of(selectedImageUri, imageUri)
-                .withOptions(options)
-                .withAspectRatio(1f, 1f)
-                .withMaxResultSize(ProfileFragment.MAX_PHOTO_SIZE, ProfileFragment.MAX_PHOTO_SIZE)
-                .start(activity!!)
-        }
-        if (resultCode == Activity.RESULT_OK && requestCode == UCrop.REQUEST_CROP) {
-            if (data != null) {
-                resultUri = UCrop.getOutput(data)
-                new_group_avatar.loadCircleImage(resultUri.toString(), R.drawable.ic_photo_camera)
-            }
-        } else if (resultCode == UCrop.RESULT_ERROR) {
-            if (data != null) {
-                context?.toast("crop failed")
-            }
-        }
     }
 
     private fun createGroup() {
