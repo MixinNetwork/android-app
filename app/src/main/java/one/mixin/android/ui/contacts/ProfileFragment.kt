@@ -37,6 +37,7 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
@@ -82,6 +83,7 @@ class ProfileFragment : BaseFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_profile, container, false)
 
+    @SuppressLint("AutoDispose")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
@@ -89,8 +91,9 @@ class ProfileFragment : BaseFragment() {
         if (account != null) {
             name_desc_tv.text = account.full_name
             phone_desc_tv.text = account.phone
-
+            biography_desc_tv.text = account.biography
             name_rl.setOnClickListener { showDialog(false) }
+            biography_rl.setOnClickListener { showBiographyDialog(Session.getAccount()?.biography) }
             phone_rl.setOnClickListener {
                 alert(getString(R.string.profile_modify_number)) {
                     positiveButton(R.string.profile_phone) { dialog ->
@@ -177,6 +180,48 @@ class ProfileFragment : BaseFragment() {
                 context?.toast(cropError.toString())
             }
         }
+    }
+
+    @SuppressLint("RestrictedApi")
+    private fun showBiographyDialog(biography: String?) {
+        if (context == null) {
+            return
+        }
+        val editText = EditText(context!!)
+        editText.singleLine = true
+        val frameLayout = FrameLayout(requireContext())
+        frameLayout.addView(editText)
+        val params = editText.layoutParams as FrameLayout.LayoutParams
+        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
+        editText.layoutParams = params
+        editText.setText(biography)
+        editText.setSelection(biography.notNullWithElse({ it.length }, 0))
+        editText.maxLines = 140
+        dialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
+            .setTitle(R.string.edit_biography)
+            .setView(frameLayout)
+            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton(R.string.save) { dialog, _ ->
+                biography_animator.displayedChild = POS_PROGRESS
+                contactsViewModel.update(AccountUpdateRequest(biography = editText.text.toString()))
+                    .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
+                        if (!isAdded) return@subscribe
+                        biography_animator.displayedChild = POS_CONTENT
+                        if (r.isSuccess) {
+                            Session.storeAccount(r.data!!)
+                            biography_desc_tv.text = r.data?.biography
+                        }
+                    }, {
+                        biography_animator.displayedChild = POS_CONTENT
+                    })
+                dialog.dismiss()
+            }
+            .show()
+        dialog?.window?.clearFlags(
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM
+        )
+        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
     }
 
     @SuppressLint("RestrictedApi")

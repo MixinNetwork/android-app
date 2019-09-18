@@ -13,6 +13,7 @@ open class Account(
      */
     val relationship: String,
     val full_name: String?,
+    val biography: String,
     val avatar_url: String?,
     var phone: String,
     val avatar_base64: String?,
@@ -31,4 +32,4 @@ open class Account(
 )
 
 fun Account.toUser(): User =
-    User(userId, identity_number, relationship, "",full_name, avatar_url, phone, null, created_at, null, hasPin)
+    User(userId, identity_number, relationship, biography, full_name, avatar_url, phone, null, created_at, null, hasPin)

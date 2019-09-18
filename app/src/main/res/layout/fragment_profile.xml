@@ -108,6 +108,55 @@
         </ViewAnimator>
     </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/biography_rl"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/biography_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/biography"
+            tools:ignore="RelativeOverlap" />
+
+        <ViewAnimator
+            android:id="@+id/biography_animator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:layout_toEndOf="@id/biography_tv"
+            android:inAnimation="@anim/fade_in"
+            android:outAnimation="@anim/fade_out"
+            tools:ignore="RelativeOverlap">
+
+            <TextView
+                android:id="@+id/biography_desc_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|end"
+                android:ellipsize="end"
+                android:maxWidth="120dp"
+                android:singleLine="true"
+                android:textColor="@color/text_gray" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|end"
+                android:theme="@style/AppTheme.BlueProgress" />
+        </ViewAnimator>
+    </RelativeLayout>
 
     <include layout="@layout/view_item_divider"/>
 

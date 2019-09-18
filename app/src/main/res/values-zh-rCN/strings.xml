@@ -196,6 +196,8 @@
     <string name="profile_modify_number">你想要修改手机号码么？</string>
     <string name="change_phone_success">修改手机号成功!</string>
     <string name="edit_name">修改昵称</string>
+    <string name="edit_biography">修改简介</string>
+    <string name="biography">简介</string>
     <!-- chat -->
     <string name="chat_waiting">等待%1$s上线后建立加密会话。%2$s。</string>
     <string name="chat_learn">了解更多</string>
