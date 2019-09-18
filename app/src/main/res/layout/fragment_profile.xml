@@ -218,39 +218,6 @@
             tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
 
-
-    <RelativeLayout
-        android:id="@+id/redeem_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/redeem_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:text="@string/wallet_get_free_redeem"
-            android:textColor="@color/colorBlue"
-            tools:ignore="RelativeOverlap"/>
-
-        <ProgressBar
-            android:id="@+id/redeem_pb"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:theme="@style/AppTheme.BlueAccent"
-            android:visibility="gone"/>
-    </RelativeLayout>
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"

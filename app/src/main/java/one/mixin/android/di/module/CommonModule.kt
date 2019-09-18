@@ -3,7 +3,7 @@ package one.mixin.android.di.module
 import dagger.Module
 import dagger.android.ContributesAndroidInjector
 import one.mixin.android.ui.auth.AuthBottomSheetDialogFragment
-import one.mixin.android.ui.common.BiographyFragment
+import one.mixin.android.ui.common.EditBottomSheetDialogFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
@@ -71,5 +71,5 @@ abstract class CommonModule {
     internal abstract fun contributeConfirmBottomFragment(): ConfirmBottomFragment
 
     @ContributesAndroidInjector
-    internal abstract fun contributeBiographyFragment(): BiographyFragment
+    internal abstract fun contributeBiographyFragment(): EditBottomSheetDialogFragment
 }
