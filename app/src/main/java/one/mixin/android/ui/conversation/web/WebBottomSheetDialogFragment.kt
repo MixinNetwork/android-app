@@ -53,6 +53,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createImageTemp
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hideKeyboard
@@ -135,8 +136,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             return@setOnKeyListener false
         }
+        val statusBarHeight = requireContext().statusBarHeight()
         contentView.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+            height = statusBarHeight
+        }
+        contentView.web_control.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            topMargin = requireContext().dpToPx(10f) + statusBarHeight
         }
         registerForContextMenu(contentView.chat_web_view)
         (dialog as BottomSheet).apply {
