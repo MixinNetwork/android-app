@@ -602,15 +602,17 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 context.runOnUiThread {
                     dialog.window?.decorView?.let {
                         if (dark) {
-                            it.systemUiVisibility = 0
+                            it.systemUiVisibility = it.systemUiVisibility xor SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                         } else {
-                            it.systemUiVisibility = SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                            it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                         }
                     }
                     ph.setBackgroundColor(c)
                     webControlView.mode = dark
                 }
             } catch (e: Exception) {
+                ph.setBackgroundColor(Color.WHITE)
+                webControlView.mode = false
             }
         }
     }
