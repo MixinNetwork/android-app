@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -74,16 +75,28 @@ class SearchMessageFragment : BaseFragment() {
         }
         title_view.avatar_iv.visibility = VISIBLE
         title_view.avatar_iv.setTextSize(16f)
-        title_view.avatar_iv.setInfo(searchMessageItem.conversationName,
-            searchMessageItem.conversationAvatarUrl, searchMessageItem.conversationId)
         if (searchMessageItem.conversationCategory == ConversationCategory.CONTACT.name) {
-            title_view.setSubTitle(searchMessageItem.userFullName
-                ?: "", getString(R.string.search_related_message, searchMessageItem.messageCount))
+            if (isConversationSearch()) {
+                title_view.title_tv.text = searchMessageItem.userFullName
+            } else {
+                title_view.setSubTitle(
+                    searchMessageItem.userFullName
+                        ?: "",
+                    getString(R.string.search_related_message, searchMessageItem.messageCount)
+                )
+            }
             title_view.avatar_iv.setInfo(searchMessageItem.userFullName,
                 searchMessageItem.userAvatarUrl, searchMessageItem.userId)
         } else {
-            title_view.setSubTitle(searchMessageItem.conversationName
-                ?: "", getString(R.string.search_related_message, searchMessageItem.messageCount))
+            if (isConversationSearch()) {
+                title_view.title_tv.text = searchMessageItem.conversationName
+            } else {
+                title_view.setSubTitle(
+                    searchMessageItem.conversationName
+                        ?: "",
+                    getString(R.string.search_related_message, searchMessageItem.messageCount)
+                )
+            }
             title_view.avatar_iv.setGroup(searchMessageItem.conversationAvatarUrl)
         }
 
@@ -98,6 +111,9 @@ class SearchMessageFragment : BaseFragment() {
                             conversationId = searchMessageItem.conversationId,
                             messageId = item.messageId,
                             keyword = search_et.text.toString())
+                        if (isConversationSearch()) {
+                            parentFragmentManager.popBackStack()
+                        }
                     }
             }
         }
@@ -115,7 +131,14 @@ class SearchMessageFragment : BaseFragment() {
         search_et.postDelayed({
             onTextChanged(query)
         }, 50)
+        if (isConversationSearch()) {
+            search_et.postDelayed({
+                search_et.showKeyboard()
+            }, 200)
+        }
     }
+
+    private fun isConversationSearch() = searchMessageItem.messageCount == 0
 
     private fun onTextChanged(s: String) {
         if (s == adapter.query) return

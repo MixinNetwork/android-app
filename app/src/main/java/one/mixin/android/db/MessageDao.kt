@@ -84,8 +84,8 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
     fun updateQuoteContentByQuoteId(conversationId: String, messageId: String, content: String)
 
-    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl, " +
-        "c.name AS conversationName, c.category AS conversationCategory, m.category AS type, count(m.id) as messageCount, " +
+    @Query("SELECT m.conversation_id AS conversationId, c.icon_url AS conversationAvatarUrl, " +
+        "c.name AS conversationName, c.category AS conversationCategory, count(m.id) as messageCount, " +
         "u.user_id AS userId, u.avatar_url AS userAvatarUrl, u.full_name AS userFullName " +
         "FROM messages m " +
         "INNER JOIN users u ON c.owner_id = u.user_id " +

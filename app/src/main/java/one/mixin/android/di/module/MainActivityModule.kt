@@ -6,7 +6,6 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.search.SearchFragment
-import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.search.SearchSingleFragment
 
 @Module
@@ -26,7 +25,4 @@ abstract class MainActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeSearchSingleFragment(): SearchSingleFragment
-
-    @ContributesAndroidInjector
-    internal abstract fun contributeSearchMessageFragment(): SearchMessageFragment
 }

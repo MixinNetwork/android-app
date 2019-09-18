@@ -17,6 +17,7 @@ import one.mixin.android.ui.conversation.tansfer.TransferBottomSheetDialogFragme
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
+import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.setting.WalletPasswordFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 
@@ -72,4 +73,7 @@ abstract class CommonModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeBiographyFragment(): EditBottomSheetDialogFragment
+
+    @ContributesAndroidInjector
+    internal abstract fun contributeSearchMessageItemFragment(): SearchMessageFragment
 }
