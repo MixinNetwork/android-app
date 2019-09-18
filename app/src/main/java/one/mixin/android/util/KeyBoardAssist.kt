@@ -3,7 +3,6 @@ package one.mixin.android.util
 import android.graphics.Rect
 import android.view.View
 import android.view.ViewGroup
-import android.widget.FrameLayout
 import one.mixin.android.extension.hasNavigationBar
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.statusBarHeight
@@ -12,12 +11,12 @@ class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean
 
     private val mChildOfContent: View = content.getChildAt(0)
     private var usableHeightPrevious: Int = 0
-    private val frameLayoutParams: FrameLayout.LayoutParams
+    private val layoutParams: ViewGroup.LayoutParams
     private var firstIn = true
 
     init {
         mChildOfContent.viewTreeObserver.addOnGlobalLayoutListener { possiblyResizeChildOfContent() }
-        frameLayoutParams = mChildOfContent.layoutParams as FrameLayout.LayoutParams
+        layoutParams = mChildOfContent.layoutParams as ViewGroup.LayoutParams
     }
 
     private fun possiblyResizeChildOfContent() {
@@ -27,9 +26,9 @@ class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean
                 val usableHeightSansKeyboard = mChildOfContent.rootView.height
                 val heightDifference = usableHeightSansKeyboard - usableHeightNow
                 if (heightDifference > usableHeightSansKeyboard / 4) {
-                    frameLayoutParams.height = usableHeightSansKeyboard - heightDifference
+                    layoutParams.height = usableHeightSansKeyboard - heightDifference
                 } else {
-                    frameLayoutParams.height = usableHeightSansKeyboard - if (isFull) {
+                    layoutParams.height = usableHeightSansKeyboard - if (isFull) {
                         0
                     } else {
                         mChildOfContent.context.statusBarHeight() + if (mChildOfContent.context.hasNavigationBar()) {
@@ -53,8 +52,8 @@ class KeyBoardAssist constructor(content: ViewGroup, private val isFull: Boolean
     }
 
     companion object {
-        fun assistContent(contentView: ViewGroup): KeyBoardAssist {
-            return KeyBoardAssist(contentView)
+        fun assistContent(contentView: ViewGroup, isFull: Boolean): KeyBoardAssist {
+            return KeyBoardAssist(contentView, isFull)
         }
     }
 }

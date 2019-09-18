@@ -34,6 +34,7 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import androidx.appcompat.widget.LinearLayoutCompat
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
@@ -98,24 +99,24 @@ class BottomSheet(context: Context, private val focusable: Boolean) : Dialog(con
         }
 
         override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-            val width = View.MeasureSpec.getSize(widthMeasureSpec)
-            var height = View.MeasureSpec.getSize(heightMeasureSpec)
+            val width = MeasureSpec.getSize(widthMeasureSpec)
+            var height = MeasureSpec.getSize(heightMeasureSpec)
             if (lastInsets != null) {
                 height -= lastInsets!!.systemWindowInsetBottom
             }
             setMeasuredDimension(width, height)
             val isPortrait = width < height
             val widthSpec = if (context.isTablet()) {
-                View.MeasureSpec.makeMeasureSpec(
+                MeasureSpec.makeMeasureSpec(
                     (minOf(context.displayMetrics.widthPixels, context.displayMetrics.heightPixels) * 0.8f).toInt(),
-                    View.MeasureSpec.EXACTLY)
+                    MeasureSpec.EXACTLY)
             } else {
-                View.MeasureSpec.makeMeasureSpec(
+                MeasureSpec.makeMeasureSpec(
                     if (isPortrait) width
-                    else Math.max(width * 0.8f, minOf(context.dip(480f), width).toFloat()).toInt(),
-                    View.MeasureSpec.EXACTLY)
+                    else max(width * 0.8f, minOf(context.dip(480f), width).toFloat()).toInt(),
+                    MeasureSpec.EXACTLY)
             }
-            sheetContainer.measure(widthSpec, View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.AT_MOST))
+            sheetContainer.measure(widthSpec, MeasureSpec.makeMeasureSpec(height, AT_MOST))
         }
     }
 
