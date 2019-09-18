@@ -27,7 +27,7 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val isName by lazy { arguments!!.getBoolean(IS_NAME) }
     private val maxLength by lazy {
         if (isName) {
-            64
+            50
         } else {
             140
         }
@@ -44,36 +44,38 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         } else {
             Session.getAccount()?.biography
         }
-        contentView.biography_et.setText(str)
-        contentView.title.setText(
+        contentView.edit_et.setText(str)
+        contentView.edit_title.setText(
             if (isName) {
                 R.string.edit_name
             } else {
                 R.string.edit_biography
             }
         )
+        contentView.edit_et.maxLines = maxLength
         if (str != null) {
-            contentView.biography_et.setSelection(str.length)
-            contentView.biography_counter.text = "${maxLength - str.length}"
+            contentView.edit_et.setSelection(str.length)
+            contentView.edit_counter.text = "${maxLength - str.length}"
         } else {
-            contentView.biography_counter.text = "$maxLength"
+            contentView.edit_counter.text = "$maxLength"
         }
-        contentView.biography_et.addTextChangedListener(object : TextWatcher {
+        contentView.edit_et.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {}
 
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                contentView.edit_save.isEnabled = !(isName && s.isNullOrEmpty())
                 if (s != null) {
-                    contentView.biography_counter.text = "${maxLength - s.length}"
+                    contentView.edit_counter.text = "${maxLength - s.length}"
                 } else {
-                    contentView.biography_counter.text = "$maxLength"
+                    contentView.edit_counter.text = "$maxLength"
                 }
             }
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
         })
-        contentView.biography_cancel.setOnClickListener { dismiss() }
-        contentView.biography_save.setOnClickListener {
-            changeAction?.invoke(contentView.biography_et.text.toString())
+        contentView.edit_cancel.setOnClickListener { dismiss() }
+        contentView.edit_save.setOnClickListener {
+            changeAction?.invoke(contentView.edit_et.text.toString())
             dismiss()
         }
         (dialog as BottomSheet).apply {
@@ -81,8 +83,8 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
             
             setOnShowListener {
-                contentView.biography_et.requestFocus()
-                contentView.biography_et.showKeyboard()
+                contentView.edit_et.requestFocus()
+                contentView.edit_et.showKeyboard()
             }
         }
     }

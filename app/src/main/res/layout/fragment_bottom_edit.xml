@@ -8,7 +8,7 @@
 
     <TextView
         style="@style/NormalTextStyle"
-        android:id="@+id/title"
+        android:id="@+id/edit_title"
         android:textSize="16sp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -19,18 +19,17 @@
         android:layout_height="wrap_content">
 
         <EditText
-            android:id="@+id/biography_et"
+            android:id="@+id/edit_et"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:paddingEnd="30dp"
-            android:maxLength="140"
             android:layout_marginBottom="16dp"
             android:singleLine="true"
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/biography_counter"
+            android:id="@+id/edit_counter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
@@ -44,18 +43,18 @@
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/biography_cancel"
+            android:id="@+id/edit_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="48dp"
             android:text="@android:string/cancel"
-            android:textColor="@color/selector_tv_blue" />
+            android:textColor="@color/selector_dialog_tv" />
 
         <TextView
-            android:id="@+id/biography_save"
+            android:id="@+id/edit_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/save"
-            android:textColor="@color/selector_tv_blue" />
+            android:textColor="@color/selector_dialog_tv" />
     </LinearLayout>
 </LinearLayout>
