@@ -160,6 +160,11 @@ fun String.fullDate(): String {
     return date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(LocaleZone)) as String
 }
 
+fun String.localTime(): String {
+    val date = ZonedDateTime.parse(this).toOffsetDateTime()
+    return date.format(DateTimeFormatter.ofPattern("yyyy/MM/dd, hh:mm a").withZone(LocaleZone)) as String
+}
+
 fun String.createAtToLong(): Long {
     val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
     return date.toInstant().toEpochMilli()

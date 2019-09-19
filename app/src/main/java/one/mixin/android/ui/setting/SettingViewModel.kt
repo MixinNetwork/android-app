@@ -3,14 +3,18 @@ package one.mixin.android.ui.setting
 import androidx.lifecycle.ViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ContactRequest
 import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.vo.PINLogResponse
 import one.mixin.android.vo.UserRelationship
+import javax.inject.Inject
 
 class SettingViewModel @Inject
 internal constructor(
@@ -37,4 +41,10 @@ internal constructor(
 
     suspend fun syncContacts(contactRequests: List<ContactRequest>) =
         contactService.syncContacts(contactRequests)
+
+    suspend fun getPinLogs(offset: Int? = null): MixinResponse<List<PINLogResponse>> {
+       return withContext(Dispatchers.IO) {
+            accountRepository.getPinLogs(offset)
+        }
+    }
 }
