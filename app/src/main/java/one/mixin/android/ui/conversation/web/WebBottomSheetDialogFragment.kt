@@ -595,20 +595,26 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             try {
                 val c = Color.parseColor(content)
                 val dark = ColorUtils.calculateLuminance(c) < 0.5
-                context.runOnUiThread {
-                    dialog.window?.decorView?.let {
-                        if (dark) {
-                            it.systemUiVisibility = it.systemUiVisibility xor SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                        } else {
-                            it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                        }
-                    }
-                    ph.setBackgroundColor(c)
-                    webControlView.mode = dark
-                }
+                refreshByLuminance(dark, c)
             } catch (e: Exception) {
-                ph.setBackgroundColor(Color.WHITE)
-                webControlView.mode = false
+                refreshByLuminance(false, Color.WHITE)
+            }
+        }
+
+        private fun refreshByLuminance(
+            dark: Boolean,
+            color: Int
+        ) {
+            context.runOnUiThread {
+                dialog.window?.decorView?.let {
+                    if (dark) {
+                        it.systemUiVisibility = it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                    } else {
+                        it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                    }
+                }
+                ph.setBackgroundColor(color)
+                webControlView.mode = dark
             }
         }
     }
