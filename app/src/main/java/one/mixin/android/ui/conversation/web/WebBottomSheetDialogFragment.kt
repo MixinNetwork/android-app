@@ -93,7 +93,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         private const val CONVERSATION_ID = "conversation_id"
         const val APP_NAME = "app_name"
         const val APP_AVATAR = "app_avatar"
-        const val APP_CAPABILITES = "app_capabilites"
+        const val APP_CAPABILITIES = "app_capabilities"
+
+        const val IMMERSIVE = "IMMERSIVE"
 
         fun newInstance(
             url: String,
@@ -101,13 +103,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             appName: String? = null,
             appAvatar: String? = null,
             appCapabilities: ArrayList<String>? = null
-        ) =
-            WebBottomSheetDialogFragment().withArgs {
+        ) = WebBottomSheetDialogFragment().withArgs {
                 putString(URL, url)
                 putString(CONVERSATION_ID, conversationId)
                 putString(APP_NAME, appName)
                 putString(APP_AVATAR, appAvatar)
-                putStringArrayList(APP_CAPABILITES, appCapabilities)
+                putStringArrayList(APP_CAPABILITIES, appCapabilities)
             }
     }
 
@@ -124,7 +125,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         arguments!!.getString(APP_AVATAR)
     }
     private val appCapabilities: ArrayList<String>? by lazy {
-        arguments!!.getStringArrayList(APP_CAPABILITES)
+        arguments!!.getStringArrayList(APP_CAPABILITIES)
     }
 
     @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
@@ -143,7 +144,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             height = statusBarHeight
         }
         contentView.web_control.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            topMargin = requireContext().dpToPx(10f) + statusBarHeight
+            topMargin = requireContext().dpToPx(6f) + statusBarHeight
         }
         registerForContextMenu(contentView.chat_web_view)
         (dialog as BottomSheet).apply {
@@ -376,8 +377,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
         appCapabilities?.let {
-            // TODO use app capabilities
-            contentView.title_ll.isGone = true
+            if (it.contains(IMMERSIVE)) {
+                contentView.title_ll.isGone = true
+            }
         }
 
         dialog.setOnShowListener {
