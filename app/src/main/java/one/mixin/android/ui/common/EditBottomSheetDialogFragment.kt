@@ -82,7 +82,7 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).apply {
             fullScreen = true
             setCustomView(contentView)
-            
+
             setOnShowListener {
                 contentView.post {
                     contentView.edit_et.requestFocus()

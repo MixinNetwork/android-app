@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import com.yalantis.ucrop.UCrop
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -46,7 +47,6 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import org.jetbrains.anko.noButton
-import javax.inject.Inject
 
 class ProfileFragment : BaseFragment() {
 
@@ -244,7 +244,6 @@ class ProfileFragment : BaseFragment() {
                     biography_animator.isVisible = data.biography.isNotEmpty()
                     biography_desc_tv.text = data.biography
                 }
-
             }, { t: Throwable ->
                 if (!isAdded) return@subscribe
 
