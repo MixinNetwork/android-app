@@ -84,8 +84,10 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomView(contentView)
             
             setOnShowListener {
-                contentView.edit_et.requestFocus()
-                contentView.edit_et.showKeyboard()
+                contentView.post {
+                    contentView.edit_et.requestFocus()
+                    contentView.edit_et.showKeyboard()
+                }
             }
         }
     }
