@@ -161,13 +161,19 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
             val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
             linkViewModel.pay(transferRequest).autoDisposable(scopeProvider).subscribe({ r ->
                 if (r.isSuccess) {
-                    val paymentResponse = r.data!!
-                    if (paymentResponse.status == PaymentStatus.paid.name) {
-                        error(R.string.pay_paid)
-                    } else {
-                        authOrPay = true
-                        showTransferBottom(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
-                        dismiss()
+                    linkViewModel.viewModelScope.launch {
+                        val asset = linkViewModel.findAssetItemById(assetId)
+                        if (asset == null) {
+                            linkViewModel.refreshAsset(assetId)
+                        }
+                        val paymentResponse = r.data!!
+                        if (paymentResponse.status == PaymentStatus.paid.name) {
+                            error(R.string.pay_paid)
+                        } else {
+                            authOrPay = true
+                            showTransferBottom(paymentResponse.recipient, amount, paymentResponse.asset, trace, memo)
+                            dismiss()
+                        }
                     }
                 } else {
                     ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
