@@ -24,6 +24,7 @@ import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
 import java.io.File
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
 import kotlinx.coroutines.Dispatchers
@@ -66,7 +67,11 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         retainInstance = true
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_capture_camerax, container, false)
 
     @SuppressLint("RestrictedApi")
@@ -175,7 +180,9 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         private val detecting = AtomicBoolean(false)
 
         override fun analyze(image: ImageProxy, rotationDegrees: Int) {
-            if (!alreadyDetected && !image.planes.isNullOrEmpty() && detecting.compareAndSet(false, true)) {
+            if (!alreadyDetected && !image.planes.isNullOrEmpty() &&
+                detecting.compareAndSet(false, true)
+            ) {
                 if (isGooglePlayServicesAvailable) {
                     decodeWithFirebaseVision(image)
                 } else {
@@ -186,7 +193,6 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
         private fun decodeWithFirebaseVision(image: ImageProxy) {
             val buffer = image.planes[0].buffer
-            val bitmap = getBitmapFromImage(image)
             val imageMetadata = FirebaseVisionImageMetadata.Builder().apply {
                 setWidth(image.width)
                 setHeight(image.height)
@@ -194,6 +200,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                 setFormat(FirebaseVisionImageMetadata.IMAGE_FORMAT_NV21)
             }.build()
             val visionImage = FirebaseVisionImage.fromByteBuffer(buffer, imageMetadata)
+            val latch = CountDownLatch(1)
             detector.use { d ->
                 d.detectInImage(visionImage)
                     .addOnSuccessListener { result ->
@@ -203,13 +210,20 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
                         }
                     }
                     .addOnCompleteListener {
-                        if (!alreadyDetected && bitmap != null) {
-                            decodeBitmapWithZxing(bitmap)
+                        if (!alreadyDetected) {
+                            val bitmap = getBitmapFromImage(image)
+                            if (bitmap == null) {
+                                detecting.set(false)
+                            } else {
+                                decodeBitmapWithZxing(bitmap)
+                            }
                         } else {
                             detecting.set(false)
                         }
+                        latch.countDown()
                     }
             }
+            latch.await()
         }
 
         private fun decodeWithZxing(imageProxy: ImageProxy) {
@@ -242,8 +256,12 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         }
 
         private fun getBitmapFromImage(image: ImageProxy): Bitmap? {
-            val byteArray = ImageUtil.imageToJpegByteArray(image)
-            return BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            return try {
+                val byteArray = ImageUtil.imageToJpegByteArray(image)
+                BitmapFactory.decodeByteArray(byteArray, 0, byteArray.size)
+            } catch (e: Exception) {
+                null
+            }
         }
     }
 }
