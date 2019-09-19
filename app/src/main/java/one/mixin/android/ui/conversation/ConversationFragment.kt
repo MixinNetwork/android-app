@@ -2060,7 +2060,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             app?.let {
                 chat_control.chat_et.hideKeyboard()
                 recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
-                botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId, appName = it.name, appAvatar = recipient?.avatarUrl)
+                botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
+                    it.homeUri, conversationId, it.name, it.icon_url, it.capabilites)
                 botWebBottomSheet?.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
             }
         }

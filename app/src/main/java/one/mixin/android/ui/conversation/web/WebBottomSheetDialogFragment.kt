@@ -31,6 +31,8 @@ import android.widget.Toast
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.app.ShareCompat
 import androidx.core.graphics.ColorUtils
+import androidx.core.view.isGone
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import com.bumptech.glide.Glide
@@ -58,6 +60,7 @@ import one.mixin.android.extension.getImagePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isWebUrl
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
@@ -88,22 +91,23 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         private const val URL = "url"
         private const val CONVERSATION_ID = "conversation_id"
-        private const val NAME = "name"
         const val APP_NAME = "app_name"
         const val APP_AVATAR = "app_avatar"
+        const val APP_CAPABILITES = "app_capabilites"
+
         fun newInstance(
             url: String,
             conversationId: String?,
-            name: String? = null,
             appName: String? = null,
-            appAvatar: String? = null
+            appAvatar: String? = null,
+            appCapabilities: ArrayList<String>? = null
         ) =
             WebBottomSheetDialogFragment().withArgs {
                 putString(URL, url)
                 putString(CONVERSATION_ID, conversationId)
-                putString(NAME, name)
                 putString(APP_NAME, appName)
                 putString(APP_AVATAR, appAvatar)
+                putStringArrayList(APP_CAPABILITES, appCapabilities)
             }
     }
 
@@ -113,17 +117,15 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private val conversationId: String? by lazy {
         arguments!!.getString(CONVERSATION_ID)
     }
-    private val name: String? by lazy {
-        arguments!!.getString(NAME)
-    }
     private val appName: String? by lazy {
         arguments!!.getString(APP_NAME)
     }
     private val appAvatar: String? by lazy {
         arguments!!.getString(APP_AVATAR)
     }
-
-    private var titleText = ""
+    private val appCapabilities: ArrayList<String>? by lazy {
+        arguments!!.getStringArrayList(APP_CAPABILITES)
+    }
 
     @SuppressLint("RestrictedApi", "SetJavaScriptEnabled")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -249,8 +251,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 requireContext(),
                 dialog,
                 conversationId,
-                contentView.web_control,
-                contentView.ph
+                contentView
             ), "MixinContext"
         )
         contentView.chat_web_view.webViewClient =
@@ -278,7 +279,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
                 if (!title.equals(url)) {
-                    titleText = title ?: ""
+                    contentView.title_tv.text = title
                 }
             }
 
@@ -305,7 +306,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (fileChooserParams?.isCaptureEnabled == true) {
                     if (intent?.type == "video/*") {
                         PermissionBottomSheetDialogFragment.requestVideo(
-                            titleText,
+                            contentView.title_tv.text.toString(),
                             appName,
                             appAvatar
                         )
@@ -332,7 +333,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         return true
                     } else if (intent?.type == "image/*") {
                         PermissionBottomSheetDialogFragment.requestCamera(
-                            titleText,
+                            contentView.title_tv.text.toString(),
                             appName,
                             appAvatar
                         )
@@ -366,7 +367,19 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
         }
 
-        name?.let { titleText = it }
+        appName?.let { contentView.title_tv.text = it }
+        appAvatar?.let {
+            contentView.icon_iv.isVisible = true
+            contentView.icon_iv.loadImage(it)
+            contentView.title_tv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                marginStart = requireContext().dpToPx(10f)
+            }
+        }
+        appCapabilities?.let {
+            // TODO use app capabilities
+            contentView.title_ll.isGone = true
+        }
+
         dialog.setOnShowListener {
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
@@ -577,8 +590,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val context: Context,
         private val dialog: Dialog,
         val conversationId: String?,
-        private val webControlView: WebControlView,
-        private val ph: View
+        private val contentView: View
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -608,13 +620,16 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             context.runOnUiThread {
                 dialog.window?.decorView?.let {
                     if (dark) {
+                        contentView.title_tv.setTextColor(Color.WHITE)
                         it.systemUiVisibility = it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
                     } else {
+                        contentView.title_tv.setTextColor(Color.BLACK)
                         it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
                     }
                 }
-                ph.setBackgroundColor(color)
-                webControlView.mode = dark
+                contentView.title_ll.setBackgroundColor(color)
+                contentView.ph.setBackgroundColor(color)
+                contentView.web_control.mode = dark
             }
         }
     }
