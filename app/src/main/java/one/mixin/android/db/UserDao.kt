@@ -57,7 +57,7 @@ interface UserDao : BaseDao<User> {
     fun updateUserRelationship(id: String, relationship: String)
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT u.user_id, u.identity_number, u.full_name, u.relationship FROM participants p, users u " +
+    @Query("SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.relationship FROM participants p, users u " +
         "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id")
     fun getGroupParticipants(conversationId: String): LiveData<List<User>>
 

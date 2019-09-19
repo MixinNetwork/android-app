@@ -10,5 +10,7 @@ data class AccountUpdateRequest(
     @SerializedName("receive_message_source")
     val receiveMessageSource: String? = null,
     @SerializedName("accept_conversation_source")
-    val acceptConversationSource: String? = null
+    val acceptConversationSource: String? = null,
+    @SerializedName("biography")
+    val biography: String? = null
 )

@@ -206,6 +206,8 @@
     <string name="verify_pin">Verify PIN</string>
     <string name="change_phone_success">Change phone number successfully!</string>
     <string name="edit_name">Edit Name</string>
+    <string name="edit_biography">Edit Biography</string>
+    <string name="biography">Biography</string>
     <!-- chat -->
     <string name="chat_waiting">Waiting for %1$s to get online and establish an encrypted session. %2$s.</string>
     <string name="chat_waiting_url" translatable="false">https://mixin.one/pages/1000007</string>

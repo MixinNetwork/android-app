@@ -108,6 +108,53 @@
         </ViewAnimator>
     </RelativeLayout>
 
+    <RelativeLayout
+        android:id="@+id/biography_rl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
+        android:background="@android:color/white"
+        android:paddingBottom="16dp"
+        android:foreground="?attr/selectableItemBackground">
+
+        <TextView
+            android:id="@+id/biography_tv"
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:text="@string/biography"
+            tools:ignore="RelativeOverlap" />
+
+        <ViewAnimator
+            android:id="@+id/biography_animator"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inAnimation="@anim/fade_in"
+            android:outAnimation="@anim/fade_out"
+            android:layout_below="@id/biography_tv"
+            android:layout_marginTop="8dp"
+            tools:ignore="RelativeOverlap">
+
+            <TextView
+                android:id="@+id/biography_desc_tv"
+                style="@style/NormalTextStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:textColor="@color/text_gray" />
+
+            <ProgressBar
+                style="?android:attr/progressBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:theme="@style/AppTheme.BlueProgress" />
+        </ViewAnimator>
+    </RelativeLayout>
 
     <include layout="@layout/view_item_divider"/>
 
@@ -167,39 +214,6 @@
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
             android:textColor="@color/colorBlue"
             tools:ignore="RelativeOverlap"/>
-    </RelativeLayout>
-
-
-    <RelativeLayout
-        android:id="@+id/redeem_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:foreground="?attr/selectableItemBackground"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/redeem_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:paddingStart="@dimen/activity_horizontal_margin"
-            android:paddingEnd="@dimen/activity_horizontal_margin"
-            android:text="@string/wallet_get_free_redeem"
-            android:textColor="@color/colorBlue"
-            tools:ignore="RelativeOverlap"/>
-
-        <ProgressBar
-            android:id="@+id/redeem_pb"
-            style="?android:attr/progressBarStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:theme="@style/AppTheme.BlueAccent"
-            android:visibility="gone"/>
     </RelativeLayout>
 
     <FrameLayout

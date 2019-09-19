@@ -3,30 +3,24 @@ package one.mixin.android.ui.contacts
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
-import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.text.InputType
 import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
-import android.view.WindowManager
-import android.widget.EditText
-import android.widget.FrameLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDisposable
 import com.yalantis.ucrop.UCrop
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_profile.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
@@ -42,6 +36,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.EditBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.VerifyFragment.Companion.FROM_PHONE
 import one.mixin.android.ui.setting.WalletPasswordFragment
@@ -50,10 +45,8 @@ import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
-import org.jetbrains.anko.dimen
-import org.jetbrains.anko.margin
 import org.jetbrains.anko.noButton
-import org.jetbrains.anko.singleLine
+import javax.inject.Inject
 
 class ProfileFragment : BaseFragment() {
 
@@ -62,6 +55,10 @@ class ProfileFragment : BaseFragment() {
 
         const val POS_CONTENT = 0
         const val POS_PROGRESS = 1
+
+        const val TYPE_NAME = 0
+        const val TYPE_PHOTO = 1
+        const val TYPE_BIOGRAPHY = 2
 
         const val MAX_PHOTO_SIZE = 512
 
@@ -77,11 +74,11 @@ class ProfileFragment : BaseFragment() {
     private val imageUri: Uri by lazy {
         Uri.fromFile(requireContext().getImagePath().createImageTemp())
     }
-    private var dialog: Dialog? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_profile, container, false)
 
+    @SuppressLint("AutoDispose")
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         title_view.left_ib.setOnClickListener { activity?.onBackPressed() }
@@ -89,8 +86,10 @@ class ProfileFragment : BaseFragment() {
         if (account != null) {
             name_desc_tv.text = account.full_name
             phone_desc_tv.text = account.phone
-
-            name_rl.setOnClickListener { showDialog(false) }
+            biography_animator.isVisible = account.biography.isNotEmpty()
+            biography_desc_tv.text = account.biography
+            name_rl.setOnClickListener { editName() }
+            biography_rl.setOnClickListener { editBiography() }
             phone_rl.setOnClickListener {
                 alert(getString(R.string.profile_modify_number)) {
                     positiveButton(R.string.profile_phone) { dialog ->
@@ -127,7 +126,6 @@ class ProfileFragment : BaseFragment() {
                     }
             }
         }
-        redeem_rl.setOnClickListener { showDialog(true) }
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -169,7 +167,7 @@ class ProfileFragment : BaseFragment() {
             if (data != null && context != null) {
                 val resultUri = UCrop.getOutput(data)
                 val bitmap = MediaStore.Images.Media.getBitmap(context!!.contentResolver, resultUri)
-                update(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP), true)
+                update(Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP), TYPE_PHOTO)
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
             if (data != null) {
@@ -180,102 +178,61 @@ class ProfileFragment : BaseFragment() {
     }
 
     @SuppressLint("RestrictedApi")
-    private fun showDialog(isRedeem: Boolean) {
+    private fun editBiography() {
         if (context == null) {
             return
         }
-        val editText = EditText(context!!)
-        editText.singleLine = true
-        if (!isRedeem) {
-            editText.hint = getString(R.string.profile_modify_name_hint)
-            val text = name_desc_tv.text.toString()
-            editText.setText(text)
-            editText.setSelection(text.length)
-        } else {
-            editText.hint = getString(R.string.wallet_redeem)
-            editText.inputType = InputType.TYPE_CLASS_NUMBER
+        val biographyFragment = EditBottomSheetDialogFragment.newInstance(false)
+        biographyFragment.changeAction = {
+            update(it, TYPE_BIOGRAPHY)
         }
-        val frameLayout = FrameLayout(requireContext())
-        frameLayout.addView(editText)
-        val params = editText.layoutParams as FrameLayout.LayoutParams
-        params.margin = context!!.dimen(R.dimen.activity_horizontal_margin)
-        editText.layoutParams = params
-        dialog = AlertDialog.Builder(context!!, R.style.MixinAlertDialogTheme)
-            .setTitle(if (isRedeem) R.string.wallet_get_free_redeem else R.string.profile_modify_name)
-            .setView(frameLayout)
-            .setNegativeButton(R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(if (isRedeem) R.string.wallet_redeem else R.string.confirm) { dialog, _ ->
-                if (isRedeem) {
-                    redeem(editText.text.toString())
-                } else {
-                    update(editText.text.toString(), false)
-                    dialog.dismiss()
-                }
-            }
-            .show()
-        dialog?.window?.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-            WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM)
-        dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+        biographyFragment.show(fragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
-    private fun redeem(code: String) {
-        if (code.isEmpty()) {
-            context?.toast(R.string.can_not_empty)
+    @SuppressLint("RestrictedApi")
+    private fun editName() {
+        if (context == null) {
             return
         }
-        dialog?.dismiss()
-        redeem_pb.visibility = VISIBLE
-        contactsViewModel.redeem(code).autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
-            redeem_pb.visibility = GONE
-            if (r.isSuccess) {
-                r.data?.let {
-                    Session.storeAccount(it)
-                    contactsViewModel.insertUser(it.toUser())
-                }
-            } else {
-                ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-            }
-        }, { t: Throwable ->
-            redeem_pb.visibility = GONE
-            ErrorHandler.handleError(t)
-        })
+        val biographyFragment = EditBottomSheetDialogFragment.newInstance(true)
+        biographyFragment.changeAction = {
+            update(it, TYPE_NAME)
+        }
+        biographyFragment.show(fragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
     @Suppress("unused")
     private fun renderInvitation(account: Account) {
         if (account.invitation_code.isEmpty()) {
             invitation_rl.visibility = GONE
-            redeem_rl.visibility = VISIBLE
             invitation_count_tv.text = getString(R.string.wallet_get_free_redeem_tip)
         } else {
             invitation_rl.visibility = VISIBLE
-            redeem_rl.visibility = GONE
             invitation_desc_tv.text = account.invitation_code
             invitation_count_tv.text = getString(R.string.profile_invitation_tip, account.consumed_count)
         }
     }
 
-    private fun update(content: String, isPhoto: Boolean) {
+    private fun update(content: String, type: Int) {
         if (!isAdded) return
 
-        if (isPhoto) {
-            photo_animator.displayedChild = POS_PROGRESS
-        } else {
-            name_animator.displayedChild = POS_PROGRESS
+        when (type) {
+            TYPE_PHOTO -> photo_animator.displayedChild = POS_PROGRESS
+            TYPE_BIOGRAPHY -> biography_animator.displayedChild = POS_PROGRESS
+            else -> name_animator.displayedChild = POS_PROGRESS
         }
-        val accountUpdateRequest = if (isPhoto) {
-            AccountUpdateRequest(null, content)
-        } else {
-            AccountUpdateRequest(content, null)
+        val accountUpdateRequest = when (type) {
+            TYPE_PHOTO -> AccountUpdateRequest(null, content)
+            TYPE_BIOGRAPHY -> AccountUpdateRequest(biography = content)
+            else -> AccountUpdateRequest(content, null)
         }
         contactsViewModel.update(accountUpdateRequest)
             .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
                 if (!isAdded) return@subscribe
-
-                if (isPhoto) {
-                    photo_animator.displayedChild = POS_CONTENT
-                } else {
-                    name_animator.displayedChild = POS_CONTENT
+                when (type) {
+                    TYPE_PHOTO -> photo_animator.displayedChild = POS_CONTENT
+                    TYPE_BIOGRAPHY -> biography_animator.displayedChild = POS_CONTENT
+                    else -> name_animator.displayedChild = POS_CONTENT
                 }
                 if (!r.isSuccess) {
                     ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
@@ -284,14 +241,17 @@ class ProfileFragment : BaseFragment() {
                 r.data?.let { data ->
                     Session.storeAccount(data)
                     contactsViewModel.insertUser(data.toUser())
+                    biography_animator.isVisible = data.biography.isNotEmpty()
+                    biography_desc_tv.text = data.biography
                 }
+
             }, { t: Throwable ->
                 if (!isAdded) return@subscribe
 
-                if (isPhoto) {
-                    photo_animator.displayedChild = POS_CONTENT
-                } else {
-                    name_animator.displayedChild = POS_CONTENT
+                when (type) {
+                    TYPE_PHOTO -> photo_animator.displayedChild = POS_CONTENT
+                    TYPE_BIOGRAPHY -> biography_animator.displayedChild = POS_CONTENT
+                    else -> name_animator.displayedChild = POS_CONTENT
                 }
                 ErrorHandler.handleError(t)
             })
