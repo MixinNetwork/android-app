@@ -3,6 +3,7 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.text.Editable
+import android.text.InputFilter
 import android.text.TextWatcher
 import android.view.View
 import kotlinx.android.synthetic.main.fragment_bottom_edit.view.*
@@ -52,7 +53,7 @@ class EditBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 R.string.edit_biography
             }
         )
-        contentView.edit_et.maxLines = maxLength
+        contentView.edit_et.filters = arrayOf(InputFilter.LengthFilter(maxLength))
         if (str != null) {
             contentView.edit_et.setSelection(str.length)
             contentView.edit_counter.text = "${maxLength - str.length}"

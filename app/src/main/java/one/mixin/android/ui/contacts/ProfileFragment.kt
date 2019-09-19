@@ -3,7 +3,6 @@ package one.mixin.android.ui.contacts
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity.RESULT_OK
-import android.app.Dialog
 import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
@@ -16,6 +15,7 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -74,7 +74,6 @@ class ProfileFragment : BaseFragment() {
     private val imageUri: Uri by lazy {
         Uri.fromFile(requireContext().getImagePath().createImageTemp())
     }
-    private var dialog: Dialog? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_profile, container, false)
@@ -87,6 +86,7 @@ class ProfileFragment : BaseFragment() {
         if (account != null) {
             name_desc_tv.text = account.full_name
             phone_desc_tv.text = account.phone
+            biography_animator.isVisible = account.biography.isNotEmpty()
             biography_desc_tv.text = account.biography
             name_rl.setOnClickListener { editName() }
             biography_rl.setOnClickListener { editBiography() }
@@ -241,11 +241,10 @@ class ProfileFragment : BaseFragment() {
                 r.data?.let { data ->
                     Session.storeAccount(data)
                     contactsViewModel.insertUser(data.toUser())
+                    biography_animator.isVisible = data.biography.isNotEmpty()
+                    biography_desc_tv.text = data.biography
                 }
-                if (type == TYPE_BIOGRAPHY) {
-                    Session.storeAccount(r.data!!)
-                    biography_desc_tv.text = r.data!!.biography
-                }
+
             }, { t: Throwable ->
                 if (!isAdded) return@subscribe
 

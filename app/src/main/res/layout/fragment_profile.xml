@@ -111,8 +111,13 @@
     <RelativeLayout
         android:id="@+id/biography_rl"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
+        android:layout_height="wrap_content"
+        android:animateLayoutChanges="true"
+        android:paddingStart="16dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="16dp"
         android:background="@android:color/white"
+        android:paddingBottom="16dp"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -120,22 +125,18 @@
             style="@style/NormalTextStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:layout_alignParentTop="true"
             android:text="@string/biography"
             tools:ignore="RelativeOverlap" />
 
         <ViewAnimator
             android:id="@+id/biography_animator"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_toEndOf="@id/biography_tv"
             android:inAnimation="@anim/fade_in"
             android:outAnimation="@anim/fade_out"
+            android:layout_below="@id/biography_tv"
+            android:layout_marginTop="8dp"
             tools:ignore="RelativeOverlap">
 
             <TextView
@@ -143,17 +144,14 @@
                 style="@style/NormalTextStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center|end"
                 android:ellipsize="end"
-                android:maxWidth="120dp"
-                android:singleLine="true"
                 android:textColor="@color/text_gray" />
 
             <ProgressBar
                 style="?android:attr/progressBarStyleSmall"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical|end"
+                android:layout_gravity="center"
                 android:theme="@style/AppTheme.BlueProgress" />
         </ViewAnimator>
     </RelativeLayout>
