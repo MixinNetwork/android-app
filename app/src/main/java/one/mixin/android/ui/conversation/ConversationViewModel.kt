@@ -381,6 +381,8 @@ internal constructor(
     fun getGroupParticipantsLiveData(conversationId: String) =
         conversationRepository.getGroupParticipantsLiveData(conversationId)
 
+    fun getGroupBotsLiveData(conversationId: String) = conversationRepository.getGroupBotsLiveData(conversationId)
+
     fun initConversation(conversationId: String, recipient: User, sender: User) {
         val createdAt = nowInUtc()
         val conversation = createConversation(conversationId, ConversationCategory.CONTACT.name,

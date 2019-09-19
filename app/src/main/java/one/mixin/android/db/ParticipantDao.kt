@@ -5,6 +5,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
+import one.mixin.android.vo.App
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 
@@ -20,6 +21,9 @@ interface ParticipantDao : BaseDao<Participant> {
     @Query("SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship, u.app_id, u.is_verified FROM participants p, users u " +
         "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC")
     fun getGroupParticipantsLiveData(conversationId: String): LiveData<List<User>>
+
+    @Query("SELECT a.* FROM participants p, users u, apps a WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id AND u.app_id == a.app_id")
+    fun getGroupBotsLiveData(conversationId: String): LiveData<List<App>>
 
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
     fun updateParticipantRole(conversationId: String, userId: String, role: String)

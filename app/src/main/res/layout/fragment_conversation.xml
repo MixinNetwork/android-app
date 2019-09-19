@@ -129,10 +129,26 @@
                         android:textSize="12sp"
                         android:translationZ="1dp"
                         android:visibility="gone"/>
-
                 </FrameLayout>
-
             </LinearLayout>
+
+            <one.mixin.android.widget.MentionLayout
+                android:id="@+id/mention_layout"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toTopOf="@id/chat_control"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/mention_rv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:layout_gravity="bottom"/>
+            </one.mixin.android.widget.MentionLayout>
 
             <one.mixin.android.widget.ReplyView
                 android:id="@+id/reply_view"

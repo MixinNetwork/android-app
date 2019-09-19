@@ -5,21 +5,24 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.holder.MentionHolder
-import one.mixin.android.vo.User
+import one.mixin.android.vo.App
 
 class MentionAdapter constructor(private val onClickListener: OnUserClickListener) :
     RecyclerView.Adapter<MentionHolder>() {
 
-    var list: List<User>? = null
+    var list: List<App>? = null
 
-    private var filterList: List<User>? = null
+    var filterList: List<App>? = null
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
 
-    private var keyword: String? = null
+    var keyword: String? = null
 
     fun clear() {
         if (filterList != null) {
             filterList = null
-            notifyDataSetChanged()
         }
     }
 
@@ -35,6 +38,6 @@ class MentionAdapter constructor(private val onClickListener: OnUserClickListene
         MentionHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_chat_mention, parent, false))
 
     interface OnUserClickListener {
-        fun onUserClick(keyword: String?, userName: String)
+        fun onUserClick(appNumber: String)
     }
 }
