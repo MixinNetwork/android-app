@@ -156,6 +156,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 choices.add(getString(R.string.contact_other_block))
             }
         }
+        choices.add(getString(R.string.group_info_clear_chat))
         choices.add(getString(R.string.contact_other_report))
         menu = AlertDialog.Builder(context!!)
             .setItems(choices.toTypedArray()) { _, which ->
@@ -192,6 +193,14 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     getString(R.string.mute) -> {
                         keepDialog = true
                         mute()
+                    }
+                    getString(R.string.group_info_clear_chat) -> {
+                        bottomViewModel.deleteMessageByConversationId(
+                            generateConversationId(
+                                Session.getAccountId()!!,
+                                user.userId
+                            )
+                        )
                     }
                     getString(R.string.contact_other_block) -> {
                         bottomViewModel.updateRelationship(RelationshipRequest(user.userId, RelationshipAction.BLOCK.name))
