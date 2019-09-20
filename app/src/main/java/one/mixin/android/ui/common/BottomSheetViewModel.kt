@@ -12,6 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.ConversationRequest
@@ -215,4 +216,6 @@ class BottomSheetViewModel @Inject internal constructor(
     }
 
     suspend fun getFiats() = accountRepository.getFiats()
+
+    suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
 }

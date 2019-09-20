@@ -16,7 +16,7 @@ fun String.endAt(): String? {
 
 fun String.removeEnd(remove: String?): String {
     if (remove != null) {
-        return this.substring(0, length - remove.length - 1)
+        return this.substring(0, length - remove.length)
     }
     return this
 }

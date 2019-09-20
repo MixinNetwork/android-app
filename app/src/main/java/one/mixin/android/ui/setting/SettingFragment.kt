@@ -49,5 +49,8 @@ class SettingFragment : Fragment() {
                 navTo(WalletPasswordFragment.newInstance(false), WalletPasswordFragment.TAG)
             }
         }
+        notification_rl.setOnClickListener {
+            navTo(NotificationsFragment.newInstance(), NotificationsFragment.TAG)
+        }
     }
 }

@@ -40,7 +40,7 @@ interface AccountService {
     fun update(@Body request: AccountUpdateRequest): Observable<MixinResponse<Account>>
 
     @POST("me/preferences")
-    fun preferences(@Body request: AccountUpdateRequest): Observable<MixinResponse<Account>>
+    suspend fun preferences(@Body request: AccountUpdateRequest): MixinResponse<Account>
 
     @GET("me")
     fun getMe(): Call<MixinResponse<Account>>

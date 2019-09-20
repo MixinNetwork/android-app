@@ -73,6 +73,7 @@
     <string name="need_background_permission">继续使用此功能需要后台弹出界面权限</string>
     <string name="currency">货币</string>
     <string name="share_to">分享%1$s到…</string>
+    <string name="currency_switch">切换货币中</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -459,6 +460,9 @@
     <string name="setting_mobile_contact_delete">删除已同步的通讯录</string>
     <string name="setting_mobile_contact_upload">上传手机通讯录</string>
     <string name="setting_mobile_contact_empty">通讯录内容为空</string>
+    <string name="setting_notification_transfer">转账通知</string>
+    <string name="setting_notification_transfer_desc">当收到不少于%1$s的转账时显示通知。</string>
+    <string name="setting_notification_transfer_amount">转账金额(%1$s)</string>
     <!--about-->
     <string name="about_follow_twitter">关注我们的 Twitter</string>
     <string name="about_follow_facebook">关注我们的 Facebook</string>

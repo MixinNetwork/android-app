@@ -3,23 +3,17 @@ package one.mixin.android.ui.setting
 import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.MessageSource
 
 class SettingConversationViewModel @Inject
 internal constructor(private val userService: AccountService) : ViewModel() {
 
-    fun savePreferences(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
-        userService.preferences(request).observeOn(AndroidSchedulers.mainThread()).subscribeOn(Schedulers.io())
+    suspend fun savePreferences(request: AccountUpdateRequest) = userService.preferences(request)
 
     fun initPreferences(context: Context): MessageSourcePreferences {
         preferences = MessageSourcePreferences(context)

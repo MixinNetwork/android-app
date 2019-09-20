@@ -28,7 +28,12 @@ open class Account(
     val hasPin: Boolean,
     val accept_conversation_source: String,
     @SerializedName("has_emergency_contact")
-    var hasEmergencyContact: Boolean
+    var hasEmergencyContact: Boolean,
+    @SerializedName("fiat_currency")
+    var fiatCurrency: String,
+    @SerializedName("transfer_notification_threshold")
+    val transferNotificationThreshold: String
+
 )
 
 fun Account.toUser(): User =

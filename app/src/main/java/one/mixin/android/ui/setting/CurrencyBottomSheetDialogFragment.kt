@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -15,9 +16,15 @@ import kotlinx.android.synthetic.main.fragment_currency_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.item_currency.view.*
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.close_iv
 import kotlinx.android.synthetic.main.view_wallet_transfer_type_bottom.view.search_et
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.util.Session
 import one.mixin.android.vo.Fiats
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
@@ -54,15 +61,46 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         currencyAdapter.checkedName = Fiats.currency
         currencyAdapter.currencyListener = object : OnCurrencyListener {
             override fun onClick(currency: Currency) {
-                Fiats.currency = currency.name
-                Fiats.currencySymbol = currency.symbol
-                callback?.onCurrencyClick(currency)
-                toast(R.string.save_success)
-                dismiss()
+                savePreference(currency)
             }
         }
         contentView.currency_rv.adapter = currencyAdapter
         setListData()
+    }
+
+    private fun savePreference(currency: Currency) = lifecycleScope.launch {
+        val pb = indeterminateProgressDialog(message = R.string.pb_dialog_message,
+                title = R.string.currency_switch).apply {
+                setCancelable(false)
+            }
+        pb.show()
+
+        handleMixinResponse(
+            invokeNetwork = {
+                bottomViewModel.preferences(
+                    AccountUpdateRequest(fiatCurrency = currency.name)
+                )
+            },
+            switchContext = Dispatchers.IO,
+            successBlock = {
+                it.data?.let { account ->
+                    Session.storeAccount(account)
+
+                    Fiats.currency = currency.name
+                    Fiats.currencySymbol = currency.symbol
+                    callback?.onCurrencyClick(currency)
+                    toast(R.string.save_success)
+                    dismiss()
+                }
+            },
+            doAfterNetworkSuccess = {
+                pb.dismiss()
+            },
+            exceptionBlock = {
+                pb.dismiss()
+                return@handleMixinResponse false
+            }
+        )
     }
 
     private fun setListData() {

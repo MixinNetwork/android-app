@@ -141,6 +141,8 @@ class Session {
                 .signWith(SignatureAlgorithm.RS512, key)
                 .compact()
         }
+
+        fun getFiatCurrency() = getAccount()?.fiatCurrency ?: "USD"
     }
 }
 
