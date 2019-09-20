@@ -1199,7 +1199,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 AppCap.CONTACT.name
             }
             appList = list.filter {
-                it.capabilites?.contains(type) == true
+                it.capabilities?.contains(type) == true
             }
             appList?.let {
                 (requireFragmentManager().findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
@@ -2061,7 +2061,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chat_control.chat_et.hideKeyboard()
                 recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
                 botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
-                    it.homeUri, conversationId, it.name, it.icon_url, it.capabilites)
+                    it.homeUri, conversationId, it.name, it.icon_url, it.capabilities)
                 botWebBottomSheet?.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
             }
         }
