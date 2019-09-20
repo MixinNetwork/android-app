@@ -40,9 +40,9 @@ data class App(
     @SerializedName("app_secret")
     @ColumnInfo(name = "app_secret")
     val appSecret: String,
-    @SerializedName("capabilites")
+    @SerializedName("capabilities")
     @ColumnInfo(name = "capabilites")
-    val capabilites: ArrayList<String>?,
+    val capabilities: ArrayList<String>?,
     @SerializedName("creator_id")
     @ColumnInfo(name = "creator_id")
     val creatorId: String
@@ -62,4 +62,4 @@ data class App(
     }
 }
 
-enum class AppCap { GROUP, CONTACT }
+enum class AppCap { GROUP, CONTACT, IMMERSIVE }

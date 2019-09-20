@@ -273,7 +273,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 contentView.open_fl.setOnClickListener {
                     dismiss()
                     WebBottomSheetDialogFragment
-                        .newInstance(app.homeUri, conversationId, app.name)
+                        .newInstance(app.homeUri, conversationId, app.name, app.icon_url, app.capabilities)
                         .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
                 }
                 bottomViewModel.findUserById(app.creatorId)

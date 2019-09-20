@@ -6,6 +6,7 @@
     android:weightSum="2">
 
     <FrameLayout
+        android:id="@+id/more_fl"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1">
@@ -27,6 +28,7 @@
         android:layout_marginBottom="8dp" />
 
     <FrameLayout
+        android:id="@+id/close_fl"
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1">

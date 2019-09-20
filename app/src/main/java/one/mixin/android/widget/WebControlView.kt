@@ -24,8 +24,8 @@ class WebControlView(context: Context, attrs: AttributeSet) : LinearLayout(conte
         LayoutInflater.from(context).inflate(R.layout.view_web_control, this, true)
         orientation = HORIZONTAL
         weightSum = 2f
-        more_iv.setOnClickListener { callback?.onMoreClick() }
-        close_iv.setOnClickListener { callback?.onCloseClick() }
+        more_fl.setOnClickListener { callback?.onMoreClick() }
+        close_fl.setOnClickListener { callback?.onCloseClick() }
         updateByMode(false)
     }
 
