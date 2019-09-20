@@ -49,7 +49,9 @@ class WalletSettingFragment : BaseFragment() {
             }
             currencyBottom.showNow(parentFragmentManager, CurrencyBottomSheetDialogFragment.TAG)
         }
-
+        pin_log_tv.setOnClickListener {
+            navTo(PinLogsFragment.newInstance(), PinLogsFragment.TAG)
+        }
         val isBiometricsSupport = BiometricUtil.isSupport(requireContext())
         if (isBiometricsSupport) {
             time_rl.setOnClickListener {

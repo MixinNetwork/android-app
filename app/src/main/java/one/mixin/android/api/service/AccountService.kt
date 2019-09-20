@@ -14,6 +14,7 @@ import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Fiat
+import one.mixin.android.vo.PINLogResponse
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.TurnServer
@@ -22,6 +23,7 @@ import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface AccountService {
 
@@ -84,4 +86,7 @@ interface AccountService {
 
     @GET("fiats")
     suspend fun getFiats(): MixinResponse<Set<Fiat>>
+
+    @GET("pin_logs")
+    suspend fun getPinLogs(@Query("offset") offset: Int? = null): MixinResponse<List<PINLogResponse>>
 }

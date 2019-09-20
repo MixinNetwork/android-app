@@ -337,6 +337,19 @@
     <string name="wallet_add_asset_already">Asset already added</string>
     <string name="wallet_biometric_invalid">Invalid biometrics state, please reset in wallet setting.</string>
     <string name="wallet_setting_currency_desc" translatable="false">%1$s (%2$s)</string>
+    <!--pin logs-->
+    <string name="pin_logs">View PIN Incorrect Logs</string>
+    <string name="pin_verification">Verify</string>
+    <string name="pin_raw_transfer">Transfer to mixin address</string>
+    <string name="pin_user_transfer">Transfer to user or bot</string>
+    <string name="pin_withdrawal">Withdrawal</string>
+    <string name="pin_add_address">Add address</string>
+    <string name="pin_delete_address">Delete address</string>
+    <string name="pin_add_emergency">Add emergency contact</string>
+    <string name="pin_delete_emergency">Delete emergency contact</string>
+    <string name="pin_read_emergency">View emergency contact</string>
+    <string name="pin_update_phone">Change phone number</string>
+    <string name="pin_update_pin">Change PIN</string>
     <!--group-->
     <string name="group_add">Add Participants</string>
     <string name="group_new_title">New Group</string>
