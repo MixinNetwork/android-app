@@ -3,9 +3,11 @@ package one.mixin.android.ui.setting
 import androidx.lifecycle.ViewModel
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.api.request.ContactRequest
 import one.mixin.android.api.request.DeauthorRequest
 import one.mixin.android.api.service.AuthorizationService
@@ -14,7 +16,6 @@ import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.vo.PINLogResponse
 import one.mixin.android.vo.UserRelationship
-import javax.inject.Inject
 
 class SettingViewModel @Inject
 internal constructor(
@@ -47,4 +48,6 @@ internal constructor(
             accountRepository.getPinLogs(offset)
         }
     }
+
+    suspend fun preferences(request: AccountUpdateRequest) = accountRepository.preferences(request)
 }

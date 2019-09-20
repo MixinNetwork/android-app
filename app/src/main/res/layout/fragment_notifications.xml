@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_gray"
@@ -13,261 +12,40 @@
         android:layout_height="wrap_content"
         app:titleText="@string/notification" />
 
-    <ScrollView
+    <RelativeLayout
+        android:id="@+id/transfer_rl"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="@dimen/item_contact_height"
+        android:background="@android:color/white"
+        android:foreground="?attr/selectableItemBackground">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            style="@style/NormalTextStyle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/activity_horizontal_margin"
+            android:text="@string/setting_notification_transfer" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:text="@string/setting_notification_message"
-                android:textColor="@color/text_gray"
-                android:textSize="12sp" />
+        <TextView
+            android:id="@+id/transfer_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/activity_horizontal_margin"
+            android:textColor="@color/text_gray"/>
+    </RelativeLayout>
 
-            <RelativeLayout
-                android:id="@+id/message_show_notification_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white">
-
-                <TextView
-                    android:id="@+id/message_show_notification"
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:background="@android:color/white"
-                    android:text="@string/setting_show_notification"
-                    android:textColor="@android:color/black"
-                    tools:ignore="RelativeOverlap" />
-
-                <Switch
-                    android:id="@+id/message_show_notification_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/SwitchStyle"
-                    tools:checked="false" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/message_sound_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white">
-
-                <TextView
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:background="@android:color/white"
-                    android:text="@string/setting_notification_sound"
-                    android:textColor="@android:color/black"
-                    tools:ignore="RelativeOverlap" />
-
-                <Switch
-                    android:id="@+id/message_sound_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/SwitchStyle"
-                    tools:checked="false" />
-            </RelativeLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:text="@string/setting_notification_group"
-                android:textColor="@color/text_gray"
-                android:textSize="12sp" />
-
-            <RelativeLayout
-                android:id="@+id/group_show_notification_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white">
-
-                <TextView
-                    android:id="@+id/group_show_notification"
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:background="@android:color/white"
-                    android:text="@string/setting_show_notification"
-                    android:textColor="@android:color/black"
-                    tools:ignore="RelativeOverlap" />
-
-                <Switch
-                    android:id="@+id/group_show_notification_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/SwitchStyle"
-                    tools:checked="false" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/group_sound_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white">
-
-                <TextView
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:background="@android:color/white"
-                    android:text="@string/setting_notification_sound"
-                    android:textColor="@android:color/black"
-                    tools:ignore="RelativeOverlap" />
-
-                <Switch
-                    android:id="@+id/group_sound_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/SwitchStyle"
-                    tools:checked="false" />
-            </RelativeLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:text="@string/setting_notification_contact"
-                android:textColor="@color/text_gray"
-                android:textSize="12sp" />
-
-            <RelativeLayout
-                android:id="@+id/contact_show_notification_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white">
-
-                <TextView
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:background="@android:color/white"
-                    android:text="@string/setting_show_request_notification"
-                    android:textColor="@android:color/black"
-                    tools:ignore="RelativeOverlap" />
-
-                <Switch
-                    android:id="@+id/contact_show_notification_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/SwitchStyle"
-                    tools:checked="false" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/contact_sound_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white">
-
-                <TextView
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:background="@android:color/white"
-                    android:text="@string/setting_notification_sound"
-                    android:textColor="@android:color/black"
-                    tools:ignore="RelativeOverlap" />
-
-                <Switch
-                    android:id="@+id/contact_sound_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/SwitchStyle"
-                    tools:checked="false" />
-            </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/show_preview_rl"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:background="@android:color/white">
-
-                <TextView
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:layout_marginTop="@dimen/activity_vertical_margin"
-                    android:background="@android:color/white"
-                    android:text="@string/setting_show_preview"
-                    android:textColor="@android:color/black"
-                    tools:ignore="RelativeOverlap" />
-
-                <Switch
-                    android:id="@+id/show_preview_switch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/SwitchStyle"
-                    tools:checked="false" />
-            </RelativeLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                android:layout_marginStart="@dimen/activity_horizontal_margin"
-                android:layout_marginTop="8dp"
-                android:text="@string/setting_notification_tip"
-                android:textColor="@color/text_gray"
-                android:textSize="12sp" />
-        </LinearLayout>
-    </ScrollView>
+    <TextView
+        android:id="@+id/transfer_desc_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/activity_horizontal_margin"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+        android:layout_marginBottom="@dimen/activity_vertical_margin"
+        android:text="@string/setting_notification_transfer_desc"
+        android:textColor="@color/text_gray"
+        android:textSize="12sp"/>
 </LinearLayout>

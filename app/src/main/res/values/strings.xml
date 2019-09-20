@@ -77,6 +77,7 @@
     <string name="need_background_permission">Requires start in background permission for continue</string>
     <string name="currency">Currency</string>
     <string name="share_to">Share %1$s to…</string>
+    <string name="currency_switch">Switching currency</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -471,6 +472,9 @@
     <string name="setting_mobile_contact_delete">Delete Synced Contacts</string>
     <string name="setting_mobile_contact_upload">Upload Mobile Contacts</string>
     <string name="setting_mobile_contact_empty">Empty address book</string>
+    <string name="setting_notification_transfer">Transfer Notifications</string>
+    <string name="setting_notification_transfer_desc">Show notifications when receiving a transfer greater than or equal to %1$s.</string>
+    <string name="setting_notification_transfer_amount">Transfer Amount(%1$s)</string>
     <!--about-->
     <string name="about_follow_twitter">Follow us on Twitter</string>
     <string name="about_follow_facebook">Follow us on Facebook</string>

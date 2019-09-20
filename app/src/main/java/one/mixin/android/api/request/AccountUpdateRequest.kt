@@ -12,5 +12,9 @@ data class AccountUpdateRequest(
     @SerializedName("accept_conversation_source")
     val acceptConversationSource: String? = null,
     @SerializedName("biography")
-    val biography: String? = null
+    val biography: String? = null,
+    @SerializedName("fiat_currency")
+    val fiatCurrency: String? = null,
+    @SerializedName("transfer_notification_threshold")
+    val transferNotificationThreshold: Double? = null
 )

@@ -6,14 +6,15 @@ import android.view.View
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
-import com.uber.autodispose.autoDisposable
-import io.reactivex.disposables.Disposable
+import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_setting_conversation.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.ui.common.BaseViewModelFragment
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MessageSource
 
@@ -27,7 +28,11 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
 
     override fun getModelClass() = SettingConversationViewModel::class.java
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_setting_conversation, container, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -47,12 +52,6 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
             })
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        disposable?.dispose()
-    }
-
-    private var disposable: Disposable? = null
     private fun render(prefer: Int) {
         if (prefer == MessageSource.EVERYBODY.ordinal) {
             everybody_iv.visibility = VISIBLE
@@ -64,30 +63,32 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
 
                 everybody_iv.visibility = View.GONE
                 my_contacts_pb.visibility = VISIBLE
-                disposable?.let {
-                    if (!it.isDisposed) {
-                        it.dispose()
-                    }
-                }
-                disposable = viewModel
-                    .savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.CONTACTS.name))
-                    .autoDisposable(stopScope)
-                    .subscribe({
-                        if (it.isSuccess) {
+                lifecycleScope.launch {
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.CONTACTS.name))
+                        },
+                        switchContext = Dispatchers.IO,
+                        successBlock = {
                             it.data?.let { account ->
                                 Session.storeAccount(account)
                             }
                             viewModel.preferences.setContacts()
-                        } else {
+                        },
+                        failureBlock = {
                             viewModel.preferences.setEveryBody()
-                            ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
+                            return@handleMixinResponse false
+                        },
+                        exceptionBlock = {
+                            my_contacts_pb?.visibility = View.GONE
+                            viewModel.preferences.setEveryBody()
+                            return@handleMixinResponse false
+                        },
+                        doAfterNetworkSuccess = {
+                            my_contacts_pb?.visibility = View.GONE
                         }
-                        my_contacts_pb?.visibility = View.GONE
-                    }, {
-                        my_contacts_pb?.visibility = View.GONE
-                        viewModel.preferences.setEveryBody()
-                        ErrorHandler.handleError(it)
-                    })
+                    )
+                }
             }
         } else {
             everybody_iv.visibility = View.GONE
@@ -99,30 +100,32 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
 
                 everybody_pb.visibility = VISIBLE
                 my_contacts_iv.visibility = View.GONE
-                disposable?.let {
-                    if (!it.isDisposed) {
-                        it.dispose()
-                    }
-                }
-                disposable = viewModel
-                    .savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.EVERYBODY.name))
-                    .autoDisposable(stopScope)
-                    .subscribe({
-                        if (it.isSuccess) {
+                lifecycleScope.launch {
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            viewModel.savePreferences(AccountUpdateRequest(receiveMessageSource = MessageSource.EVERYBODY.name))
+                        },
+                        switchContext = Dispatchers.IO,
+                        successBlock = {
                             it.data?.let { account ->
                                 Session.storeAccount(account)
                             }
                             viewModel.preferences.setEveryBody()
-                        } else {
+                        },
+                        failureBlock = {
                             viewModel.preferences.setContacts()
-                            ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
+                            return@handleMixinResponse false
+                        },
+                        exceptionBlock = {
+                            everybody_pb?.visibility = View.GONE
+                            viewModel.preferences.setContacts()
+                            return@handleMixinResponse false
+                        },
+                        doAfterNetworkSuccess = {
+                            everybody_pb?.visibility = View.GONE
                         }
-                        everybody_pb?.visibility = View.GONE
-                    }, {
-                        everybody_pb?.visibility = View.GONE
-                        viewModel.preferences.setContacts()
-                        ErrorHandler.handleError(it)
-                    })
+                    )
+                }
             }
         }
     }
@@ -138,30 +141,32 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
 
                 everybody_group_iv.visibility = View.GONE
                 my_contacts_group_pb.visibility = VISIBLE
-                disposable?.let {
-                    if (!it.isDisposed) {
-                        it.dispose()
-                    }
-                }
-                disposable = viewModel
-                    .savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.CONTACTS.name))
-                    .autoDisposable(stopScope)
-                    .subscribe({
-                        if (it.isSuccess) {
+                lifecycleScope.launch {
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.CONTACTS.name))
+                        },
+                        switchContext = Dispatchers.IO,
+                        successBlock = {
                             it.data?.let { account ->
                                 Session.storeAccount(account)
                             }
                             viewModel.groupPreferences.setContacts()
-                        } else {
+                        },
+                        failureBlock = {
                             viewModel.groupPreferences.setEveryBody()
-                            ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
+                            return@handleMixinResponse false
+                        },
+                        exceptionBlock = {
+                            my_contacts_group_pb?.visibility = View.GONE
+                            viewModel.groupPreferences.setEveryBody()
+                            return@handleMixinResponse false
+                        },
+                        doAfterNetworkSuccess = {
+                            my_contacts_group_pb?.visibility = View.GONE
                         }
-                        my_contacts_group_pb?.visibility = View.GONE
-                    }, {
-                        my_contacts_group_pb?.visibility = View.GONE
-                        viewModel.groupPreferences.setEveryBody()
-                        ErrorHandler.handleError(it)
-                    })
+                    )
+                }
             }
         } else {
             everybody_group_iv.visibility = View.GONE
@@ -173,30 +178,32 @@ class SettingConversationFragment : BaseViewModelFragment<SettingConversationVie
 
                 everybody_group_pb.visibility = VISIBLE
                 my_contacts_group_iv.visibility = View.GONE
-                disposable?.let {
-                    if (!it.isDisposed) {
-                        it.dispose()
-                    }
-                }
-                disposable = viewModel
-                    .savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.EVERYBODY.name))
-                    .autoDisposable(stopScope)
-                    .subscribe({
-                        if (it.isSuccess) {
+                lifecycleScope.launch {
+                    handleMixinResponse(
+                        invokeNetwork = {
+                            viewModel.savePreferences(AccountUpdateRequest(acceptConversationSource = MessageSource.EVERYBODY.name))
+                        },
+                        switchContext = Dispatchers.IO,
+                        successBlock = {
                             it.data?.let { account ->
                                 Session.storeAccount(account)
                             }
                             viewModel.groupPreferences.setEveryBody()
-                        } else {
+                        },
+                        failureBlock = {
                             viewModel.groupPreferences.setContacts()
-                            ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
+                            return@handleMixinResponse false
+                        },
+                        exceptionBlock = {
+                            everybody_group_pb?.visibility = View.GONE
+                            viewModel.groupPreferences.setContacts()
+                            return@handleMixinResponse false
+                        },
+                        doAfterNetworkSuccess = {
+                            everybody_group_pb?.visibility = View.GONE
                         }
-                        everybody_pb?.visibility = View.GONE
-                    }, {
-                        everybody_pb?.visibility = View.GONE
-                        viewModel.groupPreferences.setContacts()
-                        ErrorHandler.handleError(it)
-                    })
+                    )
+                }
             }
         }
     }
