@@ -6,13 +6,14 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.ui.conversation.holder.MentionHolder
 import one.mixin.android.vo.App
+import one.mixin.android.vo.User
 
 class MentionAdapter constructor(private val onClickListener: OnUserClickListener) :
     RecyclerView.Adapter<MentionHolder>() {
 
-    var list: List<App>? = null
+    var list: List<User>? = null
 
-    var filterList: List<App>? = null
+    var filterList: List<User>? = null
         set(value) {
             field = value
             notifyDataSetChanged()

@@ -1526,12 +1526,12 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 action_bar.avatar_iv.setGroup(it.iconUrl)
             }
         })
-        chatViewModel.getGroupBotsLiveData(conversationId).observe(this, Observer { apps ->
+        chatViewModel.getGroupBotsLiveData(conversationId).observe(this, Observer { users ->
             if (mention_rv.adapter == null) {
                 mention_rv.adapter = mentionAdapter
                 mention_rv.layoutManager = LinearLayoutManager(context)
             }
-            mentionAdapter.list = apps
+            mentionAdapter.list = users
         })
     }
 
@@ -2229,7 +2229,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         mention_layout.show()
                     }
                     mentionAdapter.filterList = mentionAdapter.list?.filter {
-                        it.appNumber.startsWith("700")
+                        it.identityNumber.startsWith("700")
                     }
                 } else {
                     if (mention_layout.isVisible) {

@@ -3,6 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="60dp"
+    xmlns:tools="http://schemas.android.com/tools"
     android:background="?android:attr/selectableItemBackground">
 
     <Space
@@ -11,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true" />
 
-    <one.mixin.android.widget.CircleImageView
+    <one.mixin.android.widget.AvatarView
         android:id="@+id/icon_iv"
         android:layout_width="36dp"
         android:layout_height="36dp"
@@ -40,6 +41,16 @@
             android:textSize="16sp" />
 
         <ImageView
+            android:id="@+id/verified_iv"
+            android:layout_width="12dp"
+            android:layout_height="12dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:src="@drawable/ic_user_verified"
+            android:visibility="visible"
+            tools:ignore="ContentDescription"/>
+
+        <ImageView
             android:id="@+id/bot_iv"
             android:layout_width="12dp"
             android:layout_height="12dp"
@@ -47,7 +58,7 @@
             android:layout_marginStart="8dp"
             android:contentDescription="@null"
             android:src="@drawable/ic_bot"
-            android:visibility="visible" />
+            android:visibility="visible"/>
     </LinearLayout>
 
     <TextView
