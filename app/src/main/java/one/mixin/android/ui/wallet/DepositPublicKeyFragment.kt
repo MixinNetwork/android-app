@@ -56,7 +56,7 @@ class DepositPublicKeyFragment : DepositFragment() {
         key_code.text = asset.publicKey
         confirm_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
         qr_fl.setOnClickListener {
-            DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
+            DepositQrBottomFragment.newInstance(asset, TYPE_ADDRESS).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
         if (asset.publicKey != null) {
             if (context!!.isQRCodeFileExists(asset.publicKey!!)) {

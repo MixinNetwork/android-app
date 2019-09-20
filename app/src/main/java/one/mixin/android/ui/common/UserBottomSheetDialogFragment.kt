@@ -274,7 +274,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     dismiss()
                     WebBottomSheetDialogFragment
                         .newInstance(app.homeUri, conversationId, app.name, app.icon_url, app.capabilities)
-                        .showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+                        .showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
                 }
                 bottomViewModel.findUserById(app.creatorId)
                     .observe(this@UserBottomSheetDialogFragment, Observer { u ->

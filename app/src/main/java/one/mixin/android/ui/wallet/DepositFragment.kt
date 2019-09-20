@@ -31,6 +31,6 @@ abstract class DepositFragment : Fragment() {
 
     private val showTipRunnable = Runnable {
         DepositTipBottomSheetDialogFragment.newInstance(asset)
-            .showNow(requireFragmentManager(), DepositTipBottomSheetDialogFragment.TAG)
+            .showNow(parentFragmentManager, DepositTipBottomSheetDialogFragment.TAG)
     }
 }
