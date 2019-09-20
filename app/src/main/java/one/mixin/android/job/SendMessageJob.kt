@@ -2,7 +2,6 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
-import java.io.File
 import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
 import one.mixin.android.event.RecallEvent
@@ -23,13 +22,15 @@ import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.createCallMessage
 import one.mixin.android.websocket.createParamBlazeMessage
+import java.io.File
 
 open class SendMessageJob(
     val message: Message,
     private val resendData: ResendData? = null,
     private val alreadyExistMessage: Boolean = false,
-    private val recipientId: String? = null,
+    private var recipientId: String? = null,
     private val recallMessageId: String? = null,
+    private val appNumber: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).addTags(message.id).groupBy("send_message_group")
     .requireWebSocketConnected().persist(), message.id) {
@@ -119,7 +120,12 @@ open class SendMessageJob(
                 content = Base64.encodeBytes(message.content!!.toByteArray())
             }
         }
-        val blazeParam = BlazeMessageParam(message.conversationId, recipientId,
+        val blazeParam = BlazeMessageParam(
+            message.conversationId, if (appNumber != null) {
+                userDao.findUserByAppId(appNumber)?.userId
+            } else {
+                recipientId
+            },
             message.id, message.category, content, quote_message_id = message.quoteMessageId)
         val blazeMessage = if (message.isCall()) {
             createCallMessage(blazeParam)

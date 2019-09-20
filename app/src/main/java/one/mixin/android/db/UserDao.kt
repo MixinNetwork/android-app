@@ -76,4 +76,7 @@ interface UserDao : BaseDao<User> {
 
     @Query("SELECT * FROM users WHERE relationship = 'FRIEND' AND app_id IS NULL")
     fun findFriendsNotBot(): LiveData<List<User>>
+
+    @Query("SELECT * FROM users WHERE app_id = (SELECT app_id FROM apps WHERE app_number = :appNumber)")
+    fun findUserByAppId(appNumber: String): User?
 }

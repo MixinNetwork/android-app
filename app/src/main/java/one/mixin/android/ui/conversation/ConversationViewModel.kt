@@ -17,10 +17,6 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import java.io.File
-import java.io.FileInputStream
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -118,6 +114,11 @@ import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import java.util.UUID
+import java.util.regex.Pattern
+import javax.inject.Inject
 
 class ConversationViewModel
 @Inject
@@ -165,6 +166,18 @@ internal constructor(
     }
 
     fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
+        if (content.startsWith("@7000")) {
+            val pattern = Pattern.compile("^@7000\\d{6} ")
+            val matcher = pattern.matcher(content)
+            if (matcher.find()) {
+                val msg = content.substring(matcher.end())
+                val botId = matcher.group().substring(1, 11)
+                val message = createMessage(UUID.randomUUID().toString(), conversationId,
+                    sender.userId, MessageCategory.PLAIN_TEXT.name, msg.trim(), nowInUtc(), MessageStatus.SENDING)
+                jobManager.addJobInBackground(SendMessageJob(message, appNumber=botId))
+                return
+            }
+        }
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
         val message = createMessage(UUID.randomUUID().toString(), conversationId,
             sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING)
