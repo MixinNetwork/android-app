@@ -183,20 +183,20 @@ class ContactsFragment : BaseFragment() {
         }
 
         override fun onContactItem(user: User) {
-            ContactBottomSheetDialog.newInstance(user).showNow(requireFragmentManager(), ContactBottomSheetDialog.TAG)
+            ContactBottomSheetDialog.newInstance(user).showNow(parentFragmentManager, ContactBottomSheetDialog.TAG)
         }
 
         override fun onMyQr(self: User?) {
             self?.let {
                 QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_MY_QR)
-                    .showNow(requireFragmentManager(), QrBottomSheetDialogFragment.TAG)
+                    .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
             }
         }
 
         override fun onReceiveQr(self: User?) {
             self?.let {
                 QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
-                    .showNow(requireFragmentManager(), QrBottomSheetDialogFragment.TAG)
+                    .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
             }
         }
     }

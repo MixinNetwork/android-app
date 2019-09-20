@@ -434,7 +434,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 chatViewModel.getUserById(userId).autoDisposable(stopScope).subscribe({
                     it?.let {
                         UserBottomSheetDialogFragment.newInstance(it, conversationId)
-                            .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
                 }, {
                     Timber.e(it)
@@ -478,7 +478,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 chatViewModel.getUserById(userId).autoDisposable(stopScope).subscribe({
                     it?.let {
-                        UserBottomSheetDialogFragment.newInstance(it, conversationId).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                        UserBottomSheetDialogFragment.newInstance(it, conversationId).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
                 }, {
                     Timber.e(it)
@@ -1438,7 +1438,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun showGroupBottomSheet(expand: Boolean) {
         hideIfShowBottomSheet()
         val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(conversationId = conversationId, expand = expand)
-        bottomSheetDialogFragment.showNow(requireFragmentManager(), GroupBottomSheetDialogFragment.TAG)
+        bottomSheetDialogFragment.showNow(parentFragmentManager, GroupBottomSheetDialogFragment.TAG)
         bottomSheetDialogFragment.callback = object : GroupBottomSheetDialogFragment.Callback {
             override fun onDelete() {
                 activity?.finish()
@@ -1469,7 +1469,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         action_bar.avatar_iv.setOnClickListener {
             hideIfShowBottomSheet()
             UserBottomSheetDialogFragment.newInstance(user, conversationId)
-                .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
         }
         bottom_unblock.setOnClickListener {
             recipient?.let { user ->
@@ -1592,7 +1592,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         if (Session.getAccount()?.hasPin == true) {
                             recipient?.let {
                                 TransferFragment.newInstance(it.userId, supportSwitchAsset = true)
-                                    .showNow(requireFragmentManager(), TransferFragment.TAG)
+                                    .showNow(parentFragmentManager, TransferFragment.TAG)
                             }
                         } else {
                             requireFragmentManager().inTransaction {
@@ -1810,7 +1810,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (previewDialogFragment == null) {
             previewDialogFragment = PreviewDialogFragment.newInstance()
         }
-        previewDialogFragment?.show(requireFragmentManager(), uri, action)
+        previewDialogFragment?.show(parentFragmentManager, uri, action)
     }
 
     private val voiceAlert by lazy {
@@ -2062,7 +2062,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
                 botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
                     it.homeUri, conversationId, it.name, it.icon_url, it.capabilities)
-                botWebBottomSheet?.showNow(requireFragmentManager(), WebBottomSheetDialogFragment.TAG)
+                botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
             }
         }
 

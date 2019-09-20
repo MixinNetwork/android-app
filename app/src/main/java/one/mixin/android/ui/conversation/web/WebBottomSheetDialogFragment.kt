@@ -201,7 +201,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                         openUrl(result, requireFragmentManager()) {
                                             QrScanBottomSheetDialogFragment.newInstance(result)
                                                 .showNow(
-                                                    requireFragmentManager(),
+                                                    parentFragmentManager,
                                                     QrScanBottomSheetDialogFragment.TAG
                                                 )
                                         }

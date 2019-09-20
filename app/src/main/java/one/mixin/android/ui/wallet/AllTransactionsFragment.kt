@@ -99,7 +99,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     view?.navigate(R.id.action_all_transactions_to_user_transactions,
                         Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
                 }
-                f.show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }
     }

@@ -131,7 +131,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 }.observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider).subscribe({
                     it.notNullWithElse({
                         UserBottomSheetDialogFragment.newInstance(it)
-                            .showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         dismiss()
                     }, {
                         context?.toast(R.string.error_user_not_found)
@@ -201,7 +201,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             context?.let { ConversationActivity.show(it, response.conversationId) }
                         } else {
                             GroupBottomSheetDialogFragment.newInstance(response.conversationId, code)
-                                .showNow(requireFragmentManager(), GroupBottomSheetDialogFragment.TAG)
+                                .showNow(parentFragmentManager, GroupBottomSheetDialogFragment.TAG)
                         }
                         dismiss()
                     }
@@ -211,7 +211,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                         if (account != null && account.userId == (result.second as User).userId) {
                             context?.toast("It's your QR Code, please try another.")
                         } else {
-                            UserBottomSheetDialogFragment.newInstance(user).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(user).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                         dismiss()
                     }
@@ -224,7 +224,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                     val scopes = AuthBottomSheetDialogFragment
                                         .handleAuthorization(it, authorization, assets)
                                     AuthBottomSheetDialogFragment.newInstance(scopes, authorization)
-                                        .showNow(requireFragmentManager(), AuthBottomSheetDialogFragment.TAG)
+                                        .showNow(parentFragmentManager, AuthBottomSheetDialogFragment.TAG)
                                     authOrPay = true
                                     dismiss()
                                 }
@@ -269,7 +269,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                     accountName = address.accountName,
                                     accountTag = address.accountTag,
                                     type = PinAddrBottomSheetDialogFragment.DELETE
-                                ).showNow(this@LinkBottomSheetDialogFragment.requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
+                                ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                                 dismiss()
                             } else {
                                 error()
@@ -309,7 +309,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                 accountName = accountName,
                                 accountTag = accountTag,
                                 type = PinAddrBottomSheetDialogFragment.ADD)
-                                .showNow(this@LinkBottomSheetDialogFragment.requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
+                                .showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                             dismiss()
                         } else {
                             error()
@@ -363,7 +363,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                                     if (noPublicKey) address.accountName!! else address.label!!,
                                                     asset!!, amount, null, traceId, memo)
                                             val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-                                            bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
+                                            bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                                             dismiss()
                                         }
                                     }
@@ -401,7 +401,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
     private fun showTransferBottom(user: User, amount: String, asset: Asset, trace: String?, memo: String?) {
         TransferBottomSheetDialogFragment
             .newInstance(TransferBiometricItem(user, asset.toAssetItem(), amount, null, trace, memo))
-            .showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
+            .showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
     }
 
     private val mBottomSheetBehaviorCallback = object : BottomSheetBehavior.BottomSheetCallback() {

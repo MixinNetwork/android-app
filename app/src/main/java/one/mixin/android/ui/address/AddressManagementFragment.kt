@@ -103,7 +103,7 @@ class AddressManagementFragment : BaseFragment() {
 
             override fun onAddrClick(addr: Address) {
                 TransferFragment.newInstance(asset = asset, address = addr)
-                    .showNow(requireFragmentManager(), TransferFragment.TAG)
+                    .showNow(parentFragmentManager, TransferFragment.TAG)
             }
         }
         ItemTouchHelper(ItemCallback(object : ItemCallback.ItemCallbackListener {
@@ -152,7 +152,7 @@ class AddressManagementFragment : BaseFragment() {
             accountTag = addr.accountTag,
             accountName = addr.accountName,
             assetName = asset.name, type = DELETE)
-        bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
+        bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
         bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 deleteSuccess = true

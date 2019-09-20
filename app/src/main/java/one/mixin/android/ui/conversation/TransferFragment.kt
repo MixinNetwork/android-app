@@ -217,7 +217,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
                 shouldShowWithdrawalTip() -> {
                     currentAsset?.let {
                         val withdrawalBottom = WithdrawalTipBottomSheetDialogFragment.newInstance(it)
-                        withdrawalBottom.showNow(requireFragmentManager(), WithdrawalTipBottomSheetDialogFragment.TAG)
+                        withdrawalBottom.showNow(parentFragmentManager, WithdrawalTipBottomSheetDialogFragment.TAG)
                         withdrawalBottom.callback = object : WithdrawalTipBottomSheetDialogFragment.Callback {
                             override fun onSuccess() {
                                 showTransferBottom()
@@ -490,7 +490,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         }
 
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
-        bottom.showNow(requireFragmentManager(), TransferBottomSheetDialogFragment.TAG)
+        bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         bottom.callback = object : TransferBottomSheetDialogFragment.Callback {
             override fun onSuccess() {
                 dialog?.dismiss()

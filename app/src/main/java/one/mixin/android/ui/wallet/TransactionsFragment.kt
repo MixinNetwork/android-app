@@ -99,7 +99,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }
         headerView.top_rl.setOnClickListener {
             AssetKeyBottomSheetDialogFragment.newInstance(asset)
-                .showNow(requireFragmentManager(), AssetKeyBottomSheetDialogFragment.TAG)
+                .showNow(parentFragmentManager, AssetKeyBottomSheetDialogFragment.TAG)
         }
         updateHeader(headerView, asset)
         headerView.send_tv.setOnClickListener {
@@ -295,7 +295,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     view?.navigate(R.id.action_transactions_to_user_transactions,
                         Bundle().apply { putString(Constants.ARGS_USER_ID, userId) })
                 }
-                f.show(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                f.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
             }
         }
     }

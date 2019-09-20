@@ -59,10 +59,10 @@ class DepositAccountFragment : DepositFragment() {
         tip_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
         warning_tv.text = getString(R.string.deposit_account_attention, asset.symbol)
         account_name_qr_fl.setOnClickListener {
-            DepositQrBottomFragment.newInstance(asset).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
+            DepositQrBottomFragment.newInstance(asset).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
         account_memo_qr_fl.setOnClickListener {
-            DepositQrBottomFragment.newInstance(asset, TYPE_TAG).show(requireFragmentManager(), DepositQrBottomFragment.TAG)
+            DepositQrBottomFragment.newInstance(asset, TYPE_TAG).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
         account_name_copy_tv.setOnClickListener {
             context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, asset.accountName)

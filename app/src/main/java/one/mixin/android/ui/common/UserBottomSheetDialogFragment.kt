@@ -114,7 +114,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         })
         contentView.transfer_fl.setOnClickListener {
             TransferFragment.newInstance(user.userId, supportSwitchAsset = true)
-                .showNow(requireFragmentManager(), TransferFragment.TAG)
+                .showNow(parentFragmentManager, TransferFragment.TAG)
         }
         contentView.send_fl.setOnClickListener {
             if (user.userId == Session.getAccountId()) {
@@ -166,7 +166,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             if (it.userId == Session.getAccountId()) {
                                 activity?.addFragment(this@UserBottomSheetDialogFragment, ProfileFragment.newInstance(), ProfileFragment.TAG)
                             } else {
-                                UserBottomSheetDialogFragment.newInstance(it).showNow(requireFragmentManager(), TAG)
+                                UserBottomSheetDialogFragment.newInstance(it).showNow(parentFragmentManager, TAG)
                             }
                         }
                         dismiss()

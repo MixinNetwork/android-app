@@ -95,7 +95,7 @@ class AddressAddFragment : BaseFragment() {
                     chainIconUrl = asset.chainIconUrl,
                     label = label_et.text.toString(), publicKey = addr_et.text.toString(), type = type)
             }
-            bottomSheet.showNow(requireFragmentManager(), PinAddrBottomSheetDialogFragment.TAG)
+            bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
                     activity?.onBackPressed()

@@ -51,7 +51,7 @@ class SingleFriendSelectFragment : BaseFragment() {
         adapter.listener = object : SingleFriendSelectAdapter.FriendSelectListener {
             override fun onItemClick(user: User) {
                 TransferFragment.newInstance(user.userId)
-                    .showNow(requireFragmentManager(), TransferFragment.TAG)
+                    .showNow(parentFragmentManager, TransferFragment.TAG)
                 view?.findNavController()?.navigateUp()
             }
         }

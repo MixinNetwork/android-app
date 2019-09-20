@@ -70,7 +70,7 @@ class BiometricTimeFragment : BaseFragment() {
                     activity?.onBackPressed()
                 }
             }
-            bottomSheet.showNow(requireFragmentManager(),
+            bottomSheet.showNow(parentFragmentManager,
                 PinBiometricsBottomSheetDialogFragment.TAG
             )
         }

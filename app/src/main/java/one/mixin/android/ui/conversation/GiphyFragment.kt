@@ -78,7 +78,7 @@ class GiphyFragment : BaseFragment() {
 
             override fun onSearchClick() {
                 val f = GiphyBottomSheetFragment.newInstance()
-                f.showNow(requireFragmentManager(), GiphyBottomSheetFragment.TAG)
+                f.showNow(parentFragmentManager, GiphyBottomSheetFragment.TAG)
                 f.callback = object : GiphyBottomSheetFragment.Callback {
                     override fun onGiphyClick(image: Image, previewUrl: String) {
                         callback?.onGiphyClick(image, previewUrl)

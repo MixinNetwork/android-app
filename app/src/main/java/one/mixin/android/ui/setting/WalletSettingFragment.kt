@@ -47,7 +47,7 @@ class WalletSettingFragment : BaseFragment() {
                     current_tv?.text = getString(R.string.wallet_setting_currency_desc, currency.name, currency.symbol)
                 }
             }
-            currencyBottom.showNow(requireFragmentManager(), CurrencyBottomSheetDialogFragment.TAG)
+            currencyBottom.showNow(parentFragmentManager, CurrencyBottomSheetDialogFragment.TAG)
         }
 
         val isBiometricsSupport = BiometricUtil.isSupport(requireContext())
@@ -99,7 +99,7 @@ class WalletSettingFragment : BaseFragment() {
                     defaultSharedPreferences.putBoolean(Constants.Account.PREF_BIOMETRICS, true)
                 }
             }
-            bottomSheet.showNow(requireFragmentManager(),
+            bottomSheet.showNow(parentFragmentManager,
                 PinBiometricsBottomSheetDialogFragment.TAG
             )
         }

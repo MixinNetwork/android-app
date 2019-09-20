@@ -45,13 +45,13 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
         title_view.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
         enable_rl.setOnClickListener {
             EmergencyContactTipBottomSheetDialogFragment.newInstance()
-                .showNow(requireFragmentManager(), EmergencyContactTipBottomSheetDialogFragment.TAG)
+                .showNow(parentFragmentManager, EmergencyContactTipBottomSheetDialogFragment.TAG)
         }
         view_rl.setOnClickListener {
             showEmergency = true
             val pinBottom = PinEmergencyBottomSheetDialog.newInstance()
             pinBottom.pinEmergencyCallback = bottomSheetCallback
-            pinBottom.showNow(requireFragmentManager(), PinEmergencyBottomSheetDialog.TAG)
+            pinBottom.showNow(parentFragmentManager, PinEmergencyBottomSheetDialog.TAG)
         }
         change_rl.setOnClickListener {
             requireFragmentManager().inTransaction {
@@ -71,7 +71,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
                     showEmergency = false
                     val pinBottom = PinEmergencyBottomSheetDialog.newInstance()
                     pinBottom.pinEmergencyCallback = bottomSheetCallback
-                    pinBottom.showNow(requireFragmentManager(), PinEmergencyBottomSheetDialog.TAG)
+                    pinBottom.showNow(parentFragmentManager, PinEmergencyBottomSheetDialog.TAG)
                     dialog.dismiss()
                 }
                 .show()

@@ -82,7 +82,7 @@ class AddPeopleFragment : BaseFragment() {
                                 ProfileFragment.newInstance(), ProfileFragment.TAG)
                         } else {
                             contactsViewModel.insertUser(user = data)
-                            UserBottomSheetDialogFragment.newInstance(data).showNow(requireFragmentManager(), UserBottomSheetDialogFragment.TAG)
+                            UserBottomSheetDialogFragment.newInstance(data).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                         }
                     }
                     r.errorCode == ErrorHandler.NOT_FOUND -> context?.toast(R.string.error_user_not_found)
