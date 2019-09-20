@@ -12,6 +12,7 @@ import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.uber.autodispose.autoDisposable
+import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_setup_name.*
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -25,7 +26,6 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
-import javax.inject.Inject
 
 class SetupNameFragment : BaseFragment() {
 

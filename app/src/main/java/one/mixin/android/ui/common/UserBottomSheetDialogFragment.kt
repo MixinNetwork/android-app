@@ -128,7 +128,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.detail_tv.addAutoLinkMode(AutoLinkMode.MODE_URL)
         contentView.detail_tv.setUrlModeColor(BaseViewHolder.LINK_COLOR)
         contentView.detail_tv.setAutoLinkOnClickListener { _, url ->
-            openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
+            openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
             dismiss()
         }
 

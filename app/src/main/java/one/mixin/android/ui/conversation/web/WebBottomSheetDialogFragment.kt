@@ -198,7 +198,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 .addOnSuccessListener { barcodes ->
                                     val result = barcodes.firstOrNull()?.rawValue
                                     if (result != null) {
-                                        openUrl(result, requireFragmentManager()) {
+                                        openUrl(result, parentFragmentManager) {
                                             QrScanBottomSheetDialogFragment.newInstance(result)
                                                 .showNow(
                                                     parentFragmentManager,
@@ -281,7 +281,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 """
                     )
                 }
-            }, conversationId, this.requireFragmentManager())
+            }, conversationId, this.parentFragmentManager)
 
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {

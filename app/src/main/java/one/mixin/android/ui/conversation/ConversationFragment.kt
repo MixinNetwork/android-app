@@ -442,7 +442,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onUrlClick(url: String) {
-                openUrlWithExtraWeb(url, conversationId, requireFragmentManager())
+                openUrlWithExtraWeb(url, conversationId, parentFragmentManager)
             }
 
             override fun onMentionClick(name: String) {
@@ -463,7 +463,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onActionClick(action: String) {
-                openUrlWithExtraWeb(action, conversationId, requireFragmentManager())
+                openUrlWithExtraWeb(action, conversationId, parentFragmentManager)
             }
 
             override fun onBillClick(messageItem: MessageItem) {
@@ -1202,7 +1202,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 it.capabilities?.contains(type) == true
             }
             appList?.let {
-                (requireFragmentManager().findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
+                (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
             }
         })
     }
@@ -1512,21 +1512,21 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     }
 
     private fun clickSticker() {
-        val stickerAlbumFragment = requireFragmentManager().findFragmentByTag(StickerAlbumFragment.TAG)
+        val stickerAlbumFragment = parentFragmentManager.findFragmentByTag(StickerAlbumFragment.TAG)
         if (stickerAlbumFragment == null) {
             initStickerLayout()
         }
     }
 
     private fun clickMenu() {
-        val menuFragment = requireFragmentManager().findFragmentByTag(MenuFragment.TAG)
+        val menuFragment = parentFragmentManager.findFragmentByTag(MenuFragment.TAG)
         if (menuFragment == null) {
             initMenuLayout()
         }
     }
 
     private fun clickGallery() {
-        val galleryAlbumFragment = requireFragmentManager().findFragmentByTag(GalleryAlbumFragment.TAG)
+        val galleryAlbumFragment = parentFragmentManager.findFragmentByTag(GalleryAlbumFragment.TAG)
         if (galleryAlbumFragment == null) {
             initGalleryLayout()
         }
@@ -1595,7 +1595,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                     .showNow(parentFragmentManager, TransferFragment.TAG)
                             }
                         } else {
-                            requireFragmentManager().inTransaction {
+                            parentFragmentManager.inTransaction {
                                 setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                                     .anim.slide_in_bottom, R.anim.slide_out_bottom)
                                     .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
@@ -1604,7 +1604,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                         }
                     }
                     MenuType.Contact -> {
-                        requireFragmentManager().inTransaction {
+                        parentFragmentManager.inTransaction {
                             setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                                 .anim.slide_in_bottom, R.anim.slide_out_bottom)
                                 .add(R.id.container,
@@ -1644,7 +1644,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     MenuType.App -> {
                         menu.homeUri?.let {
                             chat_control.chat_et.hideKeyboard()
-                            openWebBottomSheet(it, conversationId, requireFragmentManager())
+                            openWebBottomSheet(it, conversationId, parentFragmentManager)
                         }
                     }
                 }

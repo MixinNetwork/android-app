@@ -252,7 +252,7 @@ class StickerAddFragment : BaseFragment() {
         dialog?.dismiss()
         requireContext().toast(toastRes)
         if (fromManagement) {
-            requireFragmentManager().popBackStackImmediate()
+            parentFragmentManager.popBackStackImmediate()
         } else {
             requireActivity().finish()
         }

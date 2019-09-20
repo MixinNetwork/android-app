@@ -38,7 +38,7 @@ class EmergencyContactTipBottomSheetDialogFragment : MixinBottomSheetDialogFragm
                         .addToBackStack(null)
                 }
             } else {
-                requireFragmentManager().inTransaction {
+                parentFragmentManager.inTransaction {
                     setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
                         .anim.slide_in_bottom, R.anim.slide_out_bottom)
                         .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)

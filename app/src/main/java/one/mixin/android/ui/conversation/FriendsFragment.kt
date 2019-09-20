@@ -50,7 +50,7 @@ class FriendsFragment : BaseFriendsFragment<FriendsViewHolder, ConversationViewM
     override fun onItemClick(user: User) {
         if (friendClick != null) {
             friendClick!!(user)
-            requireFragmentManager().beginTransaction().remove(this).commit()
+            parentFragmentManager.beginTransaction().remove(this).commit()
         } else {
             val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)
             ConversationActivity.show(requireContext(), conversationId, null, messages = arrayListOf(fw))

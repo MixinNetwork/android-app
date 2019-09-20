@@ -54,7 +54,7 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
             pinBottom.showNow(parentFragmentManager, PinEmergencyBottomSheetDialog.TAG)
         }
         change_rl.setOnClickListener {
-            requireFragmentManager().inTransaction {
+            parentFragmentManager.inTransaction {
                 setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom,
                     R.anim.slide_in_bottom, R.anim.slide_out_bottom)
                     .add(R.id.container, VerifyFragment.newInstance(VerifyFragment.FROM_EMERGENCY))

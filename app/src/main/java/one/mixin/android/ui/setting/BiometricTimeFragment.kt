@@ -65,7 +65,7 @@ class BiometricTimeFragment : BaseFragment() {
                     defaultSharedPreferences.putLong(BIOMETRIC_INTERVAL, intervalMillis)
                     adapter.selectedPos = i
 
-                    val walletSettingFragment = requireFragmentManager().findFragmentByTag(WalletSettingFragment.TAG)
+                    val walletSettingFragment = parentFragmentManager.findFragmentByTag(WalletSettingFragment.TAG)
                     (walletSettingFragment as? WalletSettingFragment)?.setTimeDesc()
                     activity?.onBackPressed()
                 }

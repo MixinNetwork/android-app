@@ -236,10 +236,10 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                     if (activity is ConversationActivity ||
                                         activity is ContactsActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
-                                        requireFragmentManager().popBackStackImmediate()
+                                        parentFragmentManager.popBackStackImmediate()
                                     } else if (activity is MainActivity) {
                                         context?.toast(R.string.wallet_set_password_success)
-                                        requireFragmentManager().popBackStackImmediate()
+                                        parentFragmentManager.popBackStackImmediate()
                                         WalletActivity.show(activity, leftInAnim = true)
                                     } else {
                                         if (change) {
@@ -247,7 +247,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                                         } else {
                                             context?.toast(R.string.wallet_set_password_success)
                                         }
-                                        requireFragmentManager().popBackStackImmediate()
+                                        parentFragmentManager.popBackStackImmediate()
                                     }
                                 }
                             }
