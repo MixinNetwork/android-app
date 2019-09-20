@@ -279,7 +279,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
-                if (!title.equals(url)) {
+                if (appName == null) {
                     contentView.title_tv.text = title
                 }
             }
