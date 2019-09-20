@@ -72,6 +72,7 @@ import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
+import one.mixin.android.vo.AppCap
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.doAsync
@@ -94,8 +95,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val APP_NAME = "app_name"
         const val APP_AVATAR = "app_avatar"
         const val APP_CAPABILITIES = "app_capabilities"
-
-        const val IMMERSIVE = "IMMERSIVE"
 
         fun newInstance(
             url: String,
@@ -247,11 +246,19 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         contentView.chat_web_view.settings.mediaPlaybackRequiresUserGesture = false
 
+        var immersive = false
+        appCapabilities?.let {
+            if (it.contains(AppCap.IMMERSIVE.name)) {
+                immersive = true
+            }
+        }
+
         contentView.chat_web_view.addJavascriptInterface(
             WebAppInterface(
                 requireContext(),
                 dialog,
                 conversationId,
+                immersive,
                 contentView
             ), "MixinContext"
         )
@@ -376,11 +383,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 marginStart = requireContext().dpToPx(10f)
             }
         }
-        appCapabilities?.let {
-            if (it.contains(IMMERSIVE)) {
-                contentView.title_ll.isGone = true
-            }
-        }
+        contentView.title_ll.isGone = immersive
 
         dialog.setOnShowListener {
             val extraHeaders = HashMap<String, String>()
@@ -592,6 +595,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val context: Context,
         private val dialog: Dialog,
         val conversationId: String?,
+        val immersive: Boolean,
         private val contentView: View
     ) {
         @JavascriptInterface
@@ -601,7 +605,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         @JavascriptInterface
         fun getContext(): String? {
-            return Gson().toJson(MixinContext(conversationId))
+            return Gson().toJson(MixinContext(conversationId, immersive))
         }
 
         @JavascriptInterface
@@ -639,6 +643,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     class MixinContext(
         @SerializedName("conversation_id")
         val conversationId: String?,
+        @SerializedName("immersive")
+        val immersive: Boolean,
         @SerializedName("app_version")
         val appVersion: String = BuildConfig.VERSION_NAME
     )

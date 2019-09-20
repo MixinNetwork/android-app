@@ -62,4 +62,4 @@ data class App(
     }
 }
 
-enum class AppCap { GROUP, CONTACT }
+enum class AppCap { GROUP, CONTACT, IMMERSIVE }
