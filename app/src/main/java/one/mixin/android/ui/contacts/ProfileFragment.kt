@@ -86,7 +86,7 @@ class ProfileFragment : BaseFragment() {
         if (account != null) {
             name_desc_tv.text = account.full_name
             phone_desc_tv.text = account.phone
-            biography_animator.isVisible = account.biography.isNotEmpty()
+            biography_animator.isVisible = account.biography?.isNotEmpty() ?: false
             biography_desc_tv.text = account.biography
             name_rl.setOnClickListener { editName() }
             biography_rl.setOnClickListener { editBiography() }
@@ -241,7 +241,7 @@ class ProfileFragment : BaseFragment() {
                 r.data?.let { data ->
                     Session.storeAccount(data)
                     contactsViewModel.insertUser(data.toUser())
-                    biography_animator.isVisible = data.biography.isNotEmpty()
+                    biography_animator.isVisible = !data.biography.isNullOrEmpty()
                     biography_desc_tv.text = data.biography
                 }
             }, { t: Throwable ->
