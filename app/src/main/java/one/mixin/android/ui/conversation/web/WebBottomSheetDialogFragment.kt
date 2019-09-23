@@ -229,6 +229,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     @SuppressLint("SetJavaScriptEnabled")
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        if (BuildConfig.DEBUG) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
         contentView.web_control.callback = object : WebControlView.Callback {
             override fun onMoreClick() {
                 showBottomSheet()
@@ -245,6 +248,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.settings.mixedContentMode =
             WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
         contentView.chat_web_view.settings.mediaPlaybackRequiresUserGesture = false
+        contentView.chat_web_view.settings.userAgentString = contentView.chat_web_view.settings.userAgentString + " Mixin/"+ BuildConfig.VERSION_NAME
 
         var immersive = false
         appCapabilities?.let {
