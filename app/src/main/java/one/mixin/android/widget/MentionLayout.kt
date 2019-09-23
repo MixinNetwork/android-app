@@ -9,6 +9,8 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
+import kotlin.math.abs
+import kotlin.math.min
 import one.mixin.android.extension.animateHeight
 import one.mixin.android.extension.dpToPx
 
@@ -26,26 +28,32 @@ class MentionLayout @JvmOverloads constructor(
 
     private var lastY = 0f
 
-    private var minHeight = context.dpToPx(150f)
+    private val minHeight = context.dpToPx(180f)
+    private val itemHeight = context.dpToPx(60f)
 
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         val child = getChildAt(0) as RecyclerView
+        val itemCount = child.adapter?.itemCount ?: 0
         when (ev.action) {
             MotionEvent.ACTION_DOWN -> {
                 lastY = ev.y
             }
             MotionEvent.ACTION_MOVE -> {
                 val moveY = ev.y - lastY
+                if (abs(moveY) > 0) {
+                    mode = Mode.PART
+                }
                 lastY = ev.y
                 if (mode == Mode.PART) {
                     child.updateLayoutParams<ViewGroup.LayoutParams> {
                         height = (height - moveY).toInt()
-                        if (height >= this@MentionLayout.height) {
-                            height = this@MentionLayout.height
+                        if (height >= itemCount * itemHeight) {
+                            height = itemCount * itemHeight
                             mode = Mode.MAX
-                        } else if (height < minHeight) {
-                            hide()
-                            return true
+                        } else if (itemCount > 2 && height < minHeight) {
+                            height = minHeight
+                        } else if (itemCount <= 2 && height < itemCount * itemHeight) {
+                            height = itemCount * itemHeight
                         }
                     }
                 } else if (mode == Mode.MAX) {
@@ -66,9 +74,14 @@ class MentionLayout @JvmOverloads constructor(
     }
 
     fun show() {
-        mode = Mode.PART
-        val child = getChildAt(0)
-        child.animateHeight(0, minHeight)
+        mode = Mode.MIN
+        val child = getChildAt(0) as RecyclerView
+        val itemCount = child.adapter?.itemCount ?: 0
+        if (itemCount > 2) {
+            child.animateHeight(0, minHeight)
+        } else {
+            child.animateHeight(0, itemCount * itemHeight)
+        }
         isVisible = true
     }
 
@@ -78,6 +91,20 @@ class MentionLayout @JvmOverloads constructor(
         child.animateHeight(child.height, 0, onEndAction = {
             isGone = true
         })
+    }
+
+    fun animate2RightHeight(itemCount: Int) {
+        val child = getChildAt(0) as RecyclerView
+        child.isVisible = true
+        if (mode == Mode.MIN) {
+            if (itemCount > 2) {
+                child.animateHeight(child.height, minHeight)
+            } else {
+                child.animateHeight(child.height, itemCount * itemHeight)
+            }
+        } else {
+            child.animateHeight(child.height, min(itemCount * itemHeight, height))
+        }
     }
 
     enum class Mode {

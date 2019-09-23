@@ -5,7 +5,6 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
-import one.mixin.android.vo.App
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 

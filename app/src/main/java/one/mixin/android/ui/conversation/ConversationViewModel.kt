@@ -17,6 +17,11 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
+import java.io.File
+import java.io.FileInputStream
+import java.util.UUID
+import java.util.regex.Pattern
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -114,11 +119,6 @@ import one.mixin.android.widget.gallery.MimeType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.toast
 import timber.log.Timber
-import java.io.File
-import java.io.FileInputStream
-import java.util.UUID
-import java.util.regex.Pattern
-import javax.inject.Inject
 
 class ConversationViewModel
 @Inject
@@ -174,7 +174,7 @@ internal constructor(
                 val botId = matcher.group().substring(1, matcher.end() - 1)
                 val message = createMessage(UUID.randomUUID().toString(), conversationId,
                     sender.userId, MessageCategory.PLAIN_TEXT.name, msg.trim(), nowInUtc(), MessageStatus.SENDING)
-                jobManager.addJobInBackground(SendMessageJob(message, appNumber=botId))
+                jobManager.addJobInBackground(SendMessageJob(message, appNumber = botId))
                 return
             }
         }

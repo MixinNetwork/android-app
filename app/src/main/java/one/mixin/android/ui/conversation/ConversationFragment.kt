@@ -586,7 +586,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             override fun onUserClick(appNumber: String) {
                 chat_control.chat_et.setText("@$appNumber ")
                 chat_control.chat_et.setSelection(chat_control.chat_et.text!!.length)
-                mentionAdapter.clear()
+                mentionAdapter.submitList(null)
             }
         })
     }
@@ -1532,7 +1532,20 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 mention_rv.layoutManager = LinearLayoutManager(context)
             }
             mentionAdapter.list = users
+            val text = chat_control.chat_et.text
+            if (mention_layout.isGone && inMentionState(text.toString())) {
+                submitMentionList(text.toString())
+                mention_layout.show()
+            }
         })
+    }
+
+    private fun submitMentionList(s: String?): List<User>? {
+        val targetList = mentionAdapter.list?.filter {
+            it.identityNumber.startsWith(s!!.substring(1, s.length))
+        }
+        mentionAdapter.submitList(targetList)
+        return targetList
     }
 
     private fun showGroupBottomSheet(expand: Boolean) {
@@ -1614,6 +1627,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
         }
     }
+
+    private fun inMentionState(text: String?) =
+        text != null && text.startsWith("@700") && !text.contains(' ')
 
     private fun clickSticker() {
         val stickerAlbumFragment = parentFragmentManager.findFragmentByTag(StickerAlbumFragment.TAG)
@@ -2224,13 +2240,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
             if (isGroup) {
                 mentionAdapter.keyword = s?.toString()
-                if (s != null && s.startsWith("@700") && !s.contains(' ')) {
+                if (mention_rv.adapter != null && inMentionState(s.toString())) {
+                    val targetList = submitMentionList(s.toString())
                     if (mention_layout.isGone) {
                         mention_layout.show()
+                    } else {
+                        mention_layout.animate2RightHeight(targetList?.size ?: 0)
                     }
-                    mentionAdapter.filterList = mentionAdapter.list?.filter {
-                        it.identityNumber.startsWith("700")
-                    }
+                    mention_rv.layoutManager?.smoothScrollToPosition(mention_rv, null, 0)
                 } else {
                     if (mention_layout.isVisible) {
                         mention_layout.hide()
