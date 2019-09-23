@@ -1,8 +1,6 @@
 package one.mixin.android.job
 
 import android.annotation.SuppressLint
-import android.app.Notification
-import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
@@ -27,6 +25,9 @@ import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.supportsNougat
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.ChannelManager
+import one.mixin.android.util.ChannelManager.Companion.CHANNEL_MESSAGE
+import one.mixin.android.util.ChannelManager.Companion.getChannelId
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.SnapshotType
@@ -39,14 +40,13 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
 
     companion object {
         private const val serialVersionUID = 1L
-        const val CHANNEL_GROUP = "channel_group"
-        const val CHANNEL_MESSAGE = "channel_message"
         const val KEY_REPLY = "key_reply"
         const val CONVERSATION_ID = "conversation_id"
         const val IS_PLAIN = "is_plain"
     }
 
     override fun onRun() {
+        ChannelManager.updateSound(MixinApplication.appContext)
         notifyMessage(message)
     }
 
@@ -71,21 +71,14 @@ class NotificationJob(val message: Message) : BaseJob(Params(PRIORITY_UI_HIGH).r
         val conversationIntent = ConversationActivity
             .putIntent(context, message.conversationId)
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = if (conversation.isGroup()) {
-                notificationBuilder = NotificationCompat.Builder(context, CHANNEL_GROUP)
-                NotificationChannel(CHANNEL_GROUP,
-                    MixinApplication.get().getString(R.string.notification_group), NotificationManager.IMPORTANCE_HIGH)
+        notificationBuilder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (conversation.isGroup()) {
+                NotificationCompat.Builder(context, getChannelId(MixinApplication.appContext, true))
             } else {
-                notificationBuilder = NotificationCompat.Builder(context, CHANNEL_MESSAGE)
-                NotificationChannel(CHANNEL_MESSAGE,
-                    MixinApplication.get().getString(R.string.notification_message),
-                    NotificationManager.IMPORTANCE_HIGH)
+                NotificationCompat.Builder(context, getChannelId(MixinApplication.appContext, false))
             }
-            channel.lockscreenVisibility = Notification.VISIBILITY_PUBLIC
-            notificationManager.createNotificationChannel(channel)
         } else {
-            notificationBuilder = NotificationCompat.Builder(context, CHANNEL_MESSAGE)
+            NotificationCompat.Builder(context, CHANNEL_MESSAGE)
         }
 
         notificationBuilder.setContentIntent(
