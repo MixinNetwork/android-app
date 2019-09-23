@@ -50,9 +50,7 @@ class ConversationActivity : BlazeBaseActivity() {
                 userRepository.getUserById(userId)!!
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(stopScope)
                 .subscribe({
-                    if (it.userId == Session.getAccountId()) {
-                        throw IllegalArgumentException("error data")
-                    }
+                    require(it.userId != Session.getAccountId()) { "error data" }
                     bundle.putParcelable(RECIPIENT, it)
                     replaceFragment(ConversationFragment.newInstance(bundle), R.id.container, ConversationFragment.TAG)
                 }, {
@@ -84,12 +82,8 @@ class ConversationActivity : BlazeBaseActivity() {
             keyword: String? = null,
             messages: ArrayList<ForwardMessage>? = null
         ) {
-            if (conversationId == null && recipientId == null) {
-                throw IllegalArgumentException("lose data")
-            }
-            if (recipientId == Session.getAccountId()) {
-                throw IllegalArgumentException("error data $conversationId")
-            }
+            require(!(conversationId == null && recipientId == null)) { "lose data" }
+            require(recipientId != Session.getAccountId()) { "error data $conversationId" }
             Intent(context, ConversationActivity::class.java).apply {
                 putExtras(ConversationFragment.putBundle(conversationId, recipientId, messageId, keyword, messages))
             }.run {
@@ -105,12 +99,8 @@ class ConversationActivity : BlazeBaseActivity() {
             keyword: String? = null,
             messages: ArrayList<ForwardMessage>? = null
         ): Intent {
-            if (conversationId == null && recipientId == null) {
-                throw IllegalArgumentException("lose data")
-            }
-            if (recipientId == Session.getAccountId()) {
-                throw IllegalArgumentException("error data $conversationId")
-            }
+            require(!(conversationId == null && recipientId == null)) { "lose data" }
+            require(recipientId != Session.getAccountId()) { "error data $conversationId" }
             return Intent(context, ConversationActivity::class.java).apply {
                 putExtras(ConversationFragment.putBundle(conversationId, recipientId, messageId, keyword, messages))
             }

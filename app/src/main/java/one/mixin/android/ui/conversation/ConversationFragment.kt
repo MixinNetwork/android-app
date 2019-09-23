@@ -191,9 +191,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             messages: ArrayList<ForwardMessage>?
         ): Bundle =
             Bundle().apply {
-                if (conversationId == null && recipientId == null) {
-                    throw IllegalArgumentException("lose data")
-                }
+                require(!(conversationId == null && recipientId == null)) { "lose data" }
                 messageId?.let {
                     putString(MESSAGE_ID, messageId)
                 }
@@ -1324,7 +1322,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                                 sendVideoMessage(Uri.parse(item.mediaUrl))
                             }
                             ForwardCategory.TEXT.name -> {
-                                item.content?.let { sendMessage(it) }
+                                item.content?.let { content -> sendMessage(content) }
                             }
                         }
                     }
@@ -1629,7 +1627,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
         app = chatViewModel.findAppById(user.appId!!)
         if (app != null && app!!.creatorId == Session.getAccountId()) {
-            val menuFragment = fragmentManager?.findFragmentByTag(MenuFragment.TAG)
+            val menuFragment = parentFragmentManager.findFragmentByTag(MenuFragment.TAG)
             if (menuFragment == null) {
                 initMenuLayout(true)
             }
