@@ -3,6 +3,7 @@ package one.mixin.android.widget
 import android.content.Context
 import android.util.AttributeSet
 import android.view.MotionEvent
+import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.core.view.isGone
@@ -31,6 +32,20 @@ class MentionLayout @JvmOverloads constructor(
     private val minHeight = context.dpToPx(180f)
     private val itemHeight = context.dpToPx(60f)
 
+    private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+
+    private var itemClickEnable = true
+
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+        val child = getChildAt(0) as RecyclerView
+        child.addOnItemTouchListener(object : RecyclerView.SimpleOnItemTouchListener() {
+            override fun onInterceptTouchEvent(rv: RecyclerView, e: MotionEvent): Boolean {
+                return !itemClickEnable
+            }
+        })
+    }
+
     override fun onInterceptTouchEvent(ev: MotionEvent): Boolean {
         val child = getChildAt(0) as RecyclerView
         val itemCount = child.adapter?.itemCount ?: 0
@@ -42,6 +57,9 @@ class MentionLayout @JvmOverloads constructor(
                 val moveY = ev.y - lastY
                 if (abs(moveY) > 0) {
                     mode = Mode.PART
+                }
+                if (abs(moveY) > touchSlop) {
+                    itemClickEnable = false
                 }
                 lastY = ev.y
                 if (mode == Mode.PART) {
@@ -60,6 +78,12 @@ class MentionLayout @JvmOverloads constructor(
                     if (moveY > 0 && !child.canScrollVertically(-1)) {
                         mode = Mode.PART
                     }
+                }
+            }
+            MotionEvent.ACTION_CANCEL, MotionEvent.ACTION_UP -> {
+                if (!itemClickEnable) {
+                    itemClickEnable = true
+                    return true
                 }
             }
         }

@@ -513,7 +513,8 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 }
                 chatViewModel.getUserById(userId).autoDisposable(stopScope).subscribe({
                     it?.let {
-                        UserBottomSheetDialogFragment.newInstance(it, conversationId).showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                        UserBottomSheetDialogFragment.newInstance(it, conversationId)
+                            .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                     }
                 }, {
                     Timber.e(it)
@@ -1287,7 +1288,9 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 it.capabilities?.contains(type) == true
             }
             appList?.let {
-                (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(it)
+                (parentFragmentManager.findFragmentByTag(MenuFragment.TAG) as? MenuFragment)?.setAppList(
+                    it
+                )
             }
         })
     }
@@ -1526,6 +1529,25 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 action_bar.avatar_iv.setGroup(it.iconUrl)
             }
         })
+        chatViewModel.getGroupParticipantsLiveData(conversationId).observe(this, Observer { users ->
+            users?.let {
+                groupNumber = it.size
+                action_bar.setSubTitle(
+                    groupName ?: "",
+                    getString(R.string.title_participants, groupNumber)
+                )
+                val userIds = arrayListOf<String>()
+                users.mapTo(userIds) { it.userId }
+                if (userIds.contains(Session.getAccountId())) {
+                    chat_control.visibility = VISIBLE
+                    bottom_cant_send.visibility = GONE
+                } else {
+                    chat_control.visibility = INVISIBLE
+                    bottom_cant_send.visibility = VISIBLE
+                    chat_control.chat_et.hideKeyboard()
+                }
+            }
+        })
         chatViewModel.getGroupBotsLiveData(conversationId).observe(this, Observer { users ->
             if (mention_rv.adapter == null) {
                 mention_rv.adapter = mentionAdapter
@@ -1550,7 +1572,10 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
 
     private fun showGroupBottomSheet(expand: Boolean) {
         hideIfShowBottomSheet()
-        val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(conversationId = conversationId, expand = expand)
+        val bottomSheetDialogFragment = GroupBottomSheetDialogFragment.newInstance(
+            conversationId = conversationId,
+            expand = expand
+        )
         bottomSheetDialogFragment.showNow(parentFragmentManager, GroupBottomSheetDialogFragment.TAG)
         bottomSheetDialogFragment.callback = object : GroupBottomSheetDialogFragment.Callback {
             override fun onDelete() {
@@ -1720,18 +1745,27 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                             }
                         } else {
                             parentFragmentManager.inTransaction {
-                                setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                                    .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                    .add(R.id.container, WalletPasswordFragment.newInstance(), WalletPasswordFragment.TAG)
+                                setCustomAnimations(
+                                    R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                                        .anim.slide_in_bottom, R.anim.slide_out_bottom
+                                )
+                                    .add(
+                                        R.id.container,
+                                        WalletPasswordFragment.newInstance(),
+                                        WalletPasswordFragment.TAG
+                                    )
                                     .addToBackStack(null)
                             }
                         }
                     }
                     MenuType.Contact -> {
                         parentFragmentManager.inTransaction {
-                            setCustomAnimations(R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
-                                .anim.slide_in_bottom, R.anim.slide_out_bottom)
-                                .add(R.id.container,
+                            setCustomAnimations(
+                                R.anim.slide_in_bottom, R.anim.slide_out_bottom, R
+                                    .anim.slide_in_bottom, R.anim.slide_out_bottom
+                            )
+                                .add(
+                                    R.id.container,
                                     FriendsFragment.newInstance(conversationId).apply {
                                         setOnFriendClick {
                                             sendContactMessage(it.userId)
@@ -2220,7 +2254,13 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             app?.let {
                 chat_control.chat_et.hideKeyboard()
                 recipient?.let { user -> chatViewModel.refreshUser(user.userId, true) }
-                botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(it.homeUri, conversationId, it.name, it.icon_url, it.capabilities)
+                botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
+                    it.homeUri,
+                    conversationId,
+                    it.name,
+                    it.icon_url,
+                    it.capabilities
+                )
                 botWebBottomSheet?.showNow(parentFragmentManager, WebBottomSheetDialogFragment.TAG)
             }
         }
