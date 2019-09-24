@@ -20,7 +20,6 @@ import io.reactivex.schedulers.Schedulers
 import java.io.File
 import java.io.FileInputStream
 import java.util.UUID
-import java.util.regex.Pattern
 import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -166,18 +165,6 @@ internal constructor(
     }
 
     fun sendTextMessage(conversationId: String, sender: User, content: String, isPlain: Boolean) {
-        if (content.startsWith("@7000")) {
-            val pattern = Pattern.compile("^@7000\\d* ")
-            val matcher = pattern.matcher(content)
-            if (matcher.find()) {
-                val msg = content.substring(matcher.end())
-                val botId = matcher.group().substring(1, matcher.end() - 1)
-                val message = createMessage(UUID.randomUUID().toString(), conversationId,
-                    sender.userId, MessageCategory.PLAIN_TEXT.name, msg.trim(), nowInUtc(), MessageStatus.SENDING)
-                jobManager.addJobInBackground(SendMessageJob(message, appNumber = botId))
-                return
-            }
-        }
         val category = if (isPlain) MessageCategory.PLAIN_TEXT.name else MessageCategory.SIGNAL_TEXT.name
         val message = createMessage(UUID.randomUUID().toString(), conversationId,
             sender.userId, category, content.trim(), nowInUtc(), MessageStatus.SENDING)

@@ -36,6 +36,7 @@ import okio.Okio
 import okio.Source
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
+import java.util.regex.Pattern
 
 fun String.generateQRCode(size: Int): Bitmap? {
     val result: BitMatrix
@@ -346,4 +347,18 @@ fun String.escapeSql(): String {
         result = result.replace(c.toString(), "\\$c")
     }
     return result
+}
+
+
+fun String.splitBotNumberAndContent(): Pair<String, String>? {
+    if (this.startsWith("@7000")) {
+        val pattern = Pattern.compile("^@7000\\d* ")
+        val matcher = pattern.matcher(this)
+        if (matcher.find()) {
+            val msg = this.substring(matcher.end())
+            val botId = matcher.group().substring(1, matcher.end() - 1)
+            return Pair(botId, msg)
+        }
+    }
+    return null
 }

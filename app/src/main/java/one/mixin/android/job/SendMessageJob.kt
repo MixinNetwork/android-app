@@ -1,5 +1,6 @@
 package one.mixin.android.job
 
+import android.util.Log
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
 import java.io.File
@@ -8,6 +9,7 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.findLastUrl
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.extension.splitBotNumberAndContent
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -18,6 +20,7 @@ import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isText
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
@@ -30,7 +33,6 @@ open class SendMessageJob(
     private val alreadyExistMessage: Boolean = false,
     private var recipientId: String? = null,
     private val recallMessageId: String? = null,
-    private val appNumber: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).addTags(message.id).groupBy("send_message_group")
     .requireWebSocketConnected().persist(), message.id) {
@@ -103,6 +105,15 @@ open class SendMessageJob(
 
     override fun onRun() {
         jobManager.saveJob(this)
+        if (message.isText()) {
+            val bot = message.content?.splitBotNumberAndContent()
+            val isBotMessage = bot != null && bot.first.isNotBlank() && bot.second.isNotBlank()
+            if (isBotMessage) {
+                recipientId = userDao.findUserByAppId(bot!!.first)?.userId
+                message.content = bot.second
+                message.category = MessageCategory.PLAIN_TEXT.name
+            }
+        }
         if (message.isPlain() || message.isCall() || message.isRecall()) {
             sendPlainMessage()
         } else {
@@ -121,12 +132,12 @@ open class SendMessageJob(
             }
         }
         val blazeParam = BlazeMessageParam(
-            message.conversationId, if (appNumber != null) {
-                userDao.findUserByAppId(appNumber)?.userId
-            } else {
-                recipientId
-            },
-            message.id, message.category, content, quote_message_id = message.quoteMessageId)
+            message.conversationId,
+            recipientId,
+            message.id,
+            message.category,
+            content,
+            quote_message_id = message.quoteMessageId)
         val blazeMessage = if (message.isCall()) {
             createCallMessage(blazeParam)
         } else {
