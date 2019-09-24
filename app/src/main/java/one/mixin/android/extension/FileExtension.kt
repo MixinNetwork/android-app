@@ -14,7 +14,6 @@ import android.media.ThumbnailUtils
 import android.net.Uri
 import android.os.Environment
 import android.provider.MediaStore
-import android.provider.MediaStore.Images.ImageColumns
 import android.util.Base64
 import android.util.Size
 import android.webkit.MimeTypeMap
@@ -257,15 +256,17 @@ fun File.createDocumentTemp(type: String?, noMedia: Boolean = true): File {
     }, noMedia)
 }
 
-fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): File {
-    val fileName = name ?: "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}"
+fun File.createDocumentFile(noMedia: Boolean = true, name: String? = null): Pair<File, Boolean> {
+    val defaultName = "FILE_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}"
+    val fileName = name ?: defaultName
     if (!this.exists()) {
         this.mkdirs()
     }
     if (noMedia) {
         createNoMediaDir()
     }
-    return File(this, fileName)
+    val f = File(this, fileName)
+    return Pair(f, f.exists())
 }
 
 fun File.createVideoTemp(type: String, noMedia: Boolean = true): File {
@@ -311,7 +312,7 @@ fun Uri.getFilePath(context: Context = MixinApplication.appContext): String? {
                 cursor = context.contentResolver.query(this, arrayOf(MediaStore.Images.Media.DATA), null, null, null)
                 if (null != cursor) {
                     if (cursor.moveToFirst()) {
-                        val index = cursor.getColumnIndex(ImageColumns.DATA)
+                        val index = cursor.getColumnIndex(MediaStore.Images.Media.DATA)
                         if (index > -1) {
                             data = cursor.getString(index)
                             if (data == null) {
@@ -338,8 +339,11 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
         var input: InputStream? = null
         return try {
             input = context.contentResolver.openInputStream(this)
-            val outFile = context.getDocumentPath().createDocumentFile(name = name)
-            outFile.copyFromInputStream(input)
+            val pair = context.getDocumentPath().createDocumentFile(name = name)
+            val outFile = pair.first
+            if (!pair.second) {
+                outFile.copyFromInputStream(input)
+            }
             outFile.absolutePath
         } catch (ignored: Exception) {
             null
