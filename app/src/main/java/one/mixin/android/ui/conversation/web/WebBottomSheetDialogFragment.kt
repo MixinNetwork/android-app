@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.net.Uri
 import android.os.Build
@@ -292,6 +293,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 super.onReceivedTitle(view, title)
                 if (appName == null) {
                     contentView.title_tv.text = title
+                }
+            }
+
+            override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
+                super.onReceivedIcon(view, icon)
+                icon?.let {
+                    contentView.icon_iv.isVisible = true
+                    contentView.icon_iv.setImageBitmap(it)
                 }
             }
 
