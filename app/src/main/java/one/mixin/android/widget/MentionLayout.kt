@@ -73,6 +73,8 @@ class MentionLayout @JvmOverloads constructor(
                         } else if (itemCount <= 2 && height < itemCount * itemHeight) {
                             height = itemCount * itemHeight
                         }
+                        // Some device not refresh UI if not call this, like smartisan OS
+                        child.parent.requestLayout()
                     }
                 } else if (mode == Mode.MAX) {
                     if (moveY > 0 && !child.canScrollVertically(-1)) {
