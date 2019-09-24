@@ -349,14 +349,12 @@ fun String.escapeSql(): String {
     return result
 }
 
-fun String.splitBotNumberAndContent(): Pair<String, String>? {
+fun String.getBotNumber(): String? {
     if (this.startsWith("@7000")) {
         val pattern = Pattern.compile("^@7000\\d* ")
         val matcher = pattern.matcher(this)
         if (matcher.find()) {
-            val msg = this.substring(matcher.end())
-            val botId = matcher.group().substring(1, matcher.end() - 1)
-            return Pair(botId, msg)
+            return matcher.group().substring(1, matcher.end() - 1)
         }
     }
     return null

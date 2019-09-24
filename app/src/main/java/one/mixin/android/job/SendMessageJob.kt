@@ -7,8 +7,8 @@ import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.findLastUrl
+import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
-import one.mixin.android.extension.splitBotNumberAndContent
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
@@ -105,14 +105,13 @@ open class SendMessageJob(
     override fun onRun() {
         jobManager.saveJob(this)
         if (message.isText()) {
-            val bot = message.content?.splitBotNumberAndContent()
-            val isBotMessage = bot != null && bot.first.isNotBlank() && bot.second.isNotBlank()
+            val botNumber = message.content?.getBotNumber()
+            val isBotMessage = botNumber != null && botNumber.isNotBlank()
             if (isBotMessage) {
-                recipientId = userDao.findUserByAppId(bot!!.first)?.userId
+                recipientId = userDao.findUserByAppId(botNumber!!)?.userId
                 if (recipientId != null && recipientId!!.isNotEmpty()) {
                     val p = participantDao.findParticipantByIds(message.conversationId, recipientId!!)
                     if (p != null) {
-                        message.content = bot.second
                         message.category = MessageCategory.PLAIN_TEXT.name
                     }
                 }
