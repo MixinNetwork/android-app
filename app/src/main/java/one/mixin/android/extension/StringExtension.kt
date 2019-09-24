@@ -26,6 +26,7 @@ import java.util.Formatter
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
 import kotlin.collections.set
 import kotlin.math.abs
 import okio.Buffer
@@ -346,4 +347,15 @@ fun String.escapeSql(): String {
         result = result.replace(c.toString(), "\\$c")
     }
     return result
+}
+
+fun String.getBotNumber(): String? {
+    if (this.startsWith("@7000")) {
+        val pattern = Pattern.compile("^@7000\\d* ")
+        val matcher = pattern.matcher(this)
+        if (matcher.find()) {
+            return matcher.group().substring(1, matcher.end() - 1)
+        }
+    }
+    return null
 }

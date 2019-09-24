@@ -569,7 +569,9 @@ class ChatControlView : FrameLayout {
 
         override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
 
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+            callback.onTextChanged(s, start, before, count)
+        }
     }
 
     private var velocityTracker: VelocityTracker? = null
@@ -851,5 +853,6 @@ class ChatControlView : FrameLayout {
         fun onDragChatControl(dis: Float)
         fun onReleaseChatControl(fling: Int)
         fun onRecordLocked()
+        fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int)
     }
 }

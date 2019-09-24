@@ -170,6 +170,8 @@ fun Message.isCall() = category.startsWith("WEBRTC_")
 
 fun Message.isRecall() = category == MessageCategory.MESSAGE_RECALL.name
 
+fun Message.isText() = category == MessageCategory.PLAIN_TEXT.name || category == MessageCategory.SIGNAL_TEXT.name
+
 fun Message.isVideo() = category == MessageCategory.PLAIN_VIDEO.name || category == MessageCategory.SIGNAL_VIDEO.name
 
 fun Message.isAudio() = category == MessageCategory.PLAIN_AUDIO.name || category == MessageCategory.SIGNAL_AUDIO.name

@@ -7,6 +7,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.findLastUrl
+import one.mixin.android.extension.getBotNumber
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
@@ -18,6 +19,7 @@ import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.isText
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.ResendData
@@ -28,7 +30,7 @@ open class SendMessageJob(
     val message: Message,
     private val resendData: ResendData? = null,
     private val alreadyExistMessage: Boolean = false,
-    private val recipientId: String? = null,
+    private var recipientId: String? = null,
     private val recallMessageId: String? = null,
     messagePriority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(messagePriority).addTags(message.id).groupBy("send_message_group")
@@ -102,6 +104,19 @@ open class SendMessageJob(
 
     override fun onRun() {
         jobManager.saveJob(this)
+        if (message.isText()) {
+            val botNumber = message.content?.getBotNumber()
+            val isBotMessage = botNumber != null && botNumber.isNotBlank()
+            if (isBotMessage) {
+                recipientId = userDao.findUserByAppId(botNumber!!)?.userId
+                if (recipientId != null && recipientId!!.isNotEmpty()) {
+                    val p = participantDao.findParticipantByIds(message.conversationId, recipientId!!)
+                    if (p != null) {
+                        message.category = MessageCategory.PLAIN_TEXT.name
+                    }
+                }
+            }
+        }
         if (message.isPlain() || message.isCall() || message.isRecall()) {
             sendPlainMessage()
         } else {
@@ -119,8 +134,13 @@ open class SendMessageJob(
                 content = Base64.encodeBytes(message.content!!.toByteArray())
             }
         }
-        val blazeParam = BlazeMessageParam(message.conversationId, recipientId,
-            message.id, message.category, content, quote_message_id = message.quoteMessageId)
+        val blazeParam = BlazeMessageParam(
+            message.conversationId,
+            recipientId,
+            message.id,
+            message.category,
+            content,
+            quote_message_id = message.quoteMessageId)
         val blazeMessage = if (message.isCall()) {
             createCallMessage(blazeParam)
         } else {
