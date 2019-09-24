@@ -33,7 +33,7 @@ class CaptureActivity : BlazeBaseActivity() {
     }
 
     private fun checkCameraCanUse() {
-        if (Build.MANUFACTURER == "smartisan" || Build.MANUFACTURER == "Meizu") {
+        if (Build.MANUFACTURER == "smartisan" || Build.MANUFACTURER == "Meizu" || Build.MANUFACTURER == "YOTA") {
             if (!isCameraCanUse()) {
                 toast(R.string.need_camera_permission)
                 finish()

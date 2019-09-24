@@ -5,6 +5,7 @@ import android.view.View
 import androidx.fragment.app.MixinDialogFragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import com.bumptech.glide.manager.SupportRequestManagerFragment
 import com.uber.autodispose.android.lifecycle.scope
 import javax.inject.Inject
 import one.mixin.android.R
@@ -32,10 +33,14 @@ abstract class MixinBottomSheetDialogFragment : MixinDialogFragment(), Injectabl
     override fun onDetach() {
         super.onDetach()
         if (activity is UrlInterpreterActivity) {
-            fragmentManager?.fragments?.let {
-                if (it.size <= 0) {
-                    activity?.finish()
+            var realFragmentCount = 0
+            parentFragmentManager.fragments.forEach { f ->
+                if (f !is SupportRequestManagerFragment) {
+                    realFragmentCount++
                 }
+            }
+            if (realFragmentCount <= 0) {
+                activity?.finish()
             }
         }
     }
