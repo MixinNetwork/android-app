@@ -109,8 +109,13 @@ open class SendMessageJob(
             val isBotMessage = bot != null && bot.first.isNotBlank() && bot.second.isNotBlank()
             if (isBotMessage) {
                 recipientId = userDao.findUserByAppId(bot!!.first)?.userId
-                message.content = bot.second
-                message.category = MessageCategory.PLAIN_TEXT.name
+                if (recipientId != null && recipientId!!.isNotEmpty()) {
+                    val p = participantDao.findParticipantByIds(message.conversationId, recipientId!!)
+                    if (p != null) {
+                        message.content = bot.second
+                        message.category = MessageCategory.PLAIN_TEXT.name
+                    }
+                }
             }
         }
         if (message.isPlain() || message.isCall() || message.isRecall()) {
