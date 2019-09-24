@@ -26,6 +26,7 @@ import java.util.Formatter
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
 import kotlin.collections.set
 import kotlin.math.abs
 import okio.Buffer
@@ -36,7 +37,6 @@ import okio.Okio
 import okio.Source
 import one.mixin.android.util.GzipException
 import org.threeten.bp.Instant
-import java.util.regex.Pattern
 
 fun String.generateQRCode(size: Int): Bitmap? {
     val result: BitMatrix
@@ -348,7 +348,6 @@ fun String.escapeSql(): String {
     }
     return result
 }
-
 
 fun String.splitBotNumberAndContent(): Pair<String, String>? {
     if (this.startsWith("@7000")) {

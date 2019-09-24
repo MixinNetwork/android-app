@@ -1,6 +1,5 @@
 package one.mixin.android.job
 
-import android.util.Log
 import com.birbit.android.jobqueue.Params
 import com.bugsnag.android.Bugsnag
 import java.io.File
