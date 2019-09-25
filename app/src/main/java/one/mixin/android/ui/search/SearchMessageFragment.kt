@@ -76,27 +76,11 @@ class SearchMessageFragment : BaseFragment() {
         title_view.avatar_iv.visibility = VISIBLE
         title_view.avatar_iv.setTextSize(16f)
         if (searchMessageItem.conversationCategory == ConversationCategory.CONTACT.name) {
-            if (isConversationSearch()) {
-                title_view.title_tv.text = searchMessageItem.userFullName
-            } else {
-                title_view.setSubTitle(
-                    searchMessageItem.userFullName
-                        ?: "",
-                    getString(R.string.search_related_message, searchMessageItem.messageCount)
-                )
-            }
+            title_view.title_tv.text = searchMessageItem.userFullName
             title_view.avatar_iv.setInfo(searchMessageItem.userFullName,
                 searchMessageItem.userAvatarUrl, searchMessageItem.userId)
         } else {
-            if (isConversationSearch()) {
-                title_view.title_tv.text = searchMessageItem.conversationName
-            } else {
-                title_view.setSubTitle(
-                    searchMessageItem.conversationName
-                        ?: "",
-                    getString(R.string.search_related_message, searchMessageItem.messageCount)
-                )
-            }
+            title_view.title_tv.text = searchMessageItem.conversationName
             title_view.avatar_iv.setGroup(searchMessageItem.conversationAvatarUrl)
         }
 
@@ -133,8 +117,8 @@ class SearchMessageFragment : BaseFragment() {
         }, 50)
         if (isConversationSearch()) {
             search_et.postDelayed({
-                search_et.showKeyboard()
-            }, 200)
+                search_et?.showKeyboard()
+            }, 500)
         }
     }
 
