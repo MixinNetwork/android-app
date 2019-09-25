@@ -298,9 +298,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
             override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
                 super.onReceivedIcon(view, icon)
-                icon?.let {
-                    contentView.icon_iv.isVisible = true
-                    contentView.icon_iv.setImageBitmap(it)
+                if (appAvatar == null) {
+                    icon?.let {
+                        contentView.icon_iv.isVisible = true
+                        contentView.icon_iv.setImageBitmap(it)
+                    }
                 }
             }
 
