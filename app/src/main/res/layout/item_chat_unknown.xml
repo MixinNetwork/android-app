@@ -9,7 +9,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:background="@drawable/chat_bubble_info"
+        android:background="@drawable/chat_bubble_unknown"
         android:gravity="center"
         android:maxWidth="300dp"
         android:padding="4dp"
