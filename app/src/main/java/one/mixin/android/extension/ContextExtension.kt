@@ -486,7 +486,7 @@ fun Window.isNotchScreen(): Boolean {
             val cutout = insets.displayCutout
             if (cutout != null) {
                 val rects = cutout.boundingRects
-                if (rects != null && rects.size > 0) {
+                if (rects.size > 0) {
                     return true
                 }
             }

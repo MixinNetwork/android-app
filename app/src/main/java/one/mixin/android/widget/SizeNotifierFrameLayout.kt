@@ -2,7 +2,6 @@ package one.mixin.android.widget
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Point
 import android.graphics.Rect
 import android.graphics.Shader
 import android.graphics.drawable.BitmapDrawable
@@ -10,9 +9,8 @@ import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
-import android.view.WindowManager
 import android.widget.FrameLayout
-import java.lang.reflect.Field
+import kotlin.math.ceil
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.statusBarHeight
 
@@ -75,8 +73,8 @@ class SizeNotifierFrameLayout : FrameLayout {
                     canvas.save()
                     val scale: Float = 2.0f / context.resources.displayMetrics.density
                     canvas.scale(scale, scale)
-                    backgroundImage!!.setBounds(0, 0, Math.ceil((measuredWidth / scale).toDouble()).toInt(),
-                        Math.ceil((measuredHeight / scale).toDouble()).toInt())
+                    backgroundImage!!.setBounds(0, 0, ceil((measuredWidth / scale).toDouble()).toInt(),
+                        ceil((measuredHeight / scale).toDouble()).toInt())
                     backgroundImage!!.draw(canvas)
                     canvas.restore()
                 } else {
@@ -85,8 +83,8 @@ class SizeNotifierFrameLayout : FrameLayout {
                     val scaleX = measuredWidth.toFloat() / backgroundImage!!.intrinsicWidth.toFloat()
                     val scaleY = (viewHeight + keyboardHeight).toFloat() / backgroundImage!!.intrinsicHeight.toFloat()
                     val scale = if (scaleX < scaleY) scaleY else scaleX
-                    val width = Math.ceil((backgroundImage!!.intrinsicWidth * scale).toDouble()).toInt()
-                    val height = Math.ceil((backgroundImage!!.intrinsicHeight * scale).toDouble()).toInt()
+                    val width = ceil((backgroundImage!!.intrinsicWidth * scale).toDouble()).toInt()
+                    val height = ceil((backgroundImage!!.intrinsicHeight * scale).toDouble()).toInt()
                     val x = (measuredWidth - width) / 2
                     val y = (viewHeight - height + keyboardHeight) / 2 + actionBarHeight
                     if (bottomClip != 0) {
@@ -105,37 +103,5 @@ class SizeNotifierFrameLayout : FrameLayout {
         }
     }
 
-    private var mAttachInfoField: Field? = null
-    private var mStableInsetsField: Field? = null
-    private fun getViewInset(view: View?): Int {
-        if (view == null || view.height == displaySize.y || view.height == displaySize.y - context.statusBarHeight()) {
-            return 0
-        }
-        try {
-            if (mAttachInfoField == null) {
-                mAttachInfoField = View::class.java.getDeclaredField("mAttachInfo")
-                mAttachInfoField!!.isAccessible = true
-            }
-            val mAttachInfo = mAttachInfoField!!.get(view)
-            if (mAttachInfo != null) {
-                if (mStableInsetsField == null) {
-                    mStableInsetsField = mAttachInfo.javaClass.getDeclaredField("mStableInsets")
-                    mStableInsetsField!!.isAccessible = true
-                }
-                val insets = mStableInsetsField!!.get(mAttachInfo) as Rect
-                return insets.bottom
-            }
-        } catch (e: Exception) {
-        }
-
-        return 0
-    }
-
-    private val displaySize by lazy {
-        val displaySize = Point()
-        val manager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val display = manager.defaultDisplay
-        display?.getSize(displaySize)
-        displaySize
-    }
+    private fun getViewInset(view: View?) = view?.rootWindowInsets?.stableInsetBottom ?: 0
 }

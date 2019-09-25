@@ -54,7 +54,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val userId: String by lazy { arguments!!.getString(ARGS_USER_ID) }
+    private val userId: String by lazy { arguments!!.getString(ARGS_USER_ID)!! }
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
 
     @SuppressLint("RestrictedApi")

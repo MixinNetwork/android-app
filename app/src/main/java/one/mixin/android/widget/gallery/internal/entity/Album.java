@@ -30,7 +30,7 @@ public class Album implements Parcelable {
     private final String mDisplayName;
     private long mCount;
 
-    Album(String id, String coverPath, String albumName, long count) {
+    public Album(String id, String coverPath, String albumName, long count) {
         mId = id;
         mCoverPath = coverPath;
         mDisplayName = albumName;

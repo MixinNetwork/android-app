@@ -113,7 +113,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val url: String by lazy {
-        arguments!!.getString(URL)
+        arguments!!.getString(URL)!!
     }
     private val conversationId: String? by lazy {
         arguments!!.getString(CONVERSATION_ID)

@@ -39,7 +39,7 @@ class InviteFragment : BaseFragment() {
     }
 
     private val conversationId: String by lazy {
-        arguments!!.getString(ARGS_ID)
+        arguments!!.getString(ARGS_ID)!!
     }
 
     @Inject
@@ -73,7 +73,7 @@ class InviteFragment : BaseFragment() {
                     }
                 }
                 invite_copy.setOnClickListener {
-                    context?.getClipboardManager()?.primaryClip = ClipData.newPlainText(null, url)
+                    context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, url))
                     context?.toast(R.string.copy_success)
                 }
                 invite_share.setOnClickListener {

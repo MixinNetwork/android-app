@@ -52,7 +52,7 @@ class PercentView : View {
         if (blurShadow != null && !blurShadow!!.isRecycled) {
             val saveCount = canvas.save()
             canvas.translate(0f, strokeHeight.toFloat())
-            canvas.drawBitmap(blurShadow, 0f, 0f, shadowPaint)
+            canvas.drawBitmap(blurShadow!!, 0f, 0f, shadowPaint)
             canvas.restoreToCount(saveCount)
         }
 

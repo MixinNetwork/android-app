@@ -56,7 +56,7 @@ class SearchSingleFragment : BaseFragment() {
     }
 
     private val query by lazy {
-        arguments!!.getString(ARGS_QUERY)
+        arguments!!.getString(ARGS_QUERY)!!
     }
 
     private val type by lazy {

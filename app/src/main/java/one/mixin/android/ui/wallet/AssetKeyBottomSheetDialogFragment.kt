@@ -26,7 +26,7 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private val asset: AssetItem by lazy {
-        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)
+        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!!
     }
 
     @SuppressLint("RestrictedApi")
@@ -45,7 +45,7 @@ class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chain_as_tv.text = asset.chainName
         contentView.asset_key_as_tv.text = asset.assetKey
         contentView.asset_key_as_tv.setOnLongClickListener {
-            requireContext().getClipboardManager().primaryClip = ClipData.newPlainText(null, asset.assetKey)
+            requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, asset.assetKey))
             requireContext().toast(R.string.copy_success)
             return@setOnLongClickListener true
         }
