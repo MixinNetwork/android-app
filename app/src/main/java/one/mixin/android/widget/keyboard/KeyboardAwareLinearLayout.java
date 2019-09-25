@@ -8,18 +8,16 @@ import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
 import android.preference.PreferenceManager;
-import androidx.appcompat.widget.LinearLayoutCompat;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
-import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
+import androidx.appcompat.widget.LinearLayoutCompat;
+import one.mixin.android.R;
 
-import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
-
-import one.mixin.android.R;
 
 
 public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
@@ -55,7 +53,10 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
         defaultCustomKeyboardSize = getResources().getDimensionPixelSize(R.dimen.default_custom_keyboard_size);
         minCustomKeyboardTopMargin = getResources().getDimensionPixelSize(R.dimen.min_custom_keyboard_top_margin);
         statusBarHeight = statusBarRes > 0 ? getResources().getDimensionPixelSize(statusBarRes) : 0;
-        viewInset = getViewInset();
+        setOnApplyWindowInsetsListener((v, insets) -> {
+            viewInset = insets.getStableInsetBottom();
+            return v.onApplyWindowInsets(insets);
+        });
     }
 
     @Override
@@ -80,9 +81,9 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
             if (keyboardOpen) onKeyboardClose();
             return;
         }
-
-        if (viewInset == 0 && Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP)
+        if (viewInset == 0 && Build.VERSION.SDK_INT >= VERSION_CODES.LOLLIPOP) {
             viewInset = getViewInset();
+        }
         final int availableHeight = this.getRootView().getHeight() - statusBarHeight - viewInset;
         getWindowVisibleDisplayFrame(rect);
 
@@ -98,20 +99,9 @@ public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
 
     @TargetApi(VERSION_CODES.LOLLIPOP)
     private int getViewInset() {
-        try {
-            Field attachInfoField = View.class.getDeclaredField("mAttachInfo");
-            attachInfoField.setAccessible(true);
-            Object attachInfo = attachInfoField.get(this);
-            if (attachInfo != null) {
-                Field stableInsetsField = attachInfo.getClass().getDeclaredField("mStableInsets");
-                stableInsetsField.setAccessible(true);
-                Rect insets = (Rect) stableInsetsField.get(attachInfo);
-                return insets.bottom;
-            }
-        } catch (NoSuchFieldException nsfe) {
-            Log.w(TAG, "field reflection error when measuring view inset", nsfe);
-        } catch (IllegalAccessException iae) {
-            Log.w(TAG, "access reflection error when measuring view inset", iae);
+        WindowInsets windowInsets = getRootWindowInsets();
+        if (windowInsets != null) {
+            return windowInsets.getStableInsetBottom();
         }
         return 0;
     }
