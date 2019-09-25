@@ -42,7 +42,7 @@ import one.mixin.android.ui.conversation.holder.StickerHolder
 import one.mixin.android.ui.conversation.holder.StrangerHolder
 import one.mixin.android.ui.conversation.holder.TimeHolder
 import one.mixin.android.ui.conversation.holder.TransparentHolder
-import one.mixin.android.ui.conversation.holder.UnknowHolder
+import one.mixin.android.ui.conversation.holder.UnknownHolder
 import one.mixin.android.ui.conversation.holder.VideoHolder
 import one.mixin.android.ui.conversation.holder.WaitingHolder
 import one.mixin.android.vo.MessageCategory
@@ -173,7 +173,7 @@ class ConversationAdapter(
                     (holder as StrangerHolder).bind(onItemListener)
                 }
                 UNKNOWN_TYPE -> {
-                    (holder as UnknowHolder).bind()
+                    (holder as UnknownHolder).bind()
                 }
                 STICKER_TYPE -> {
                     (holder as StickerHolder).bind(it, isFirst(position), selectSet.size > 0, isSelect(position), onItemListener)
@@ -386,8 +386,8 @@ class ConversationAdapter(
                 StrangerHolder(item)
             }
             UNKNOWN_TYPE -> {
-                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unknow, parent, false)
-                UnknowHolder(item)
+                val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_unknown, parent, false)
+                UnknownHolder(item)
             }
             FILE_TYPE -> {
                 val item = LayoutInflater.from(parent.context).inflate(R.layout.item_chat_file, parent, false)
