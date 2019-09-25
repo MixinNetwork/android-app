@@ -489,7 +489,14 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onActionClick(action: String) {
-                openUrlWithExtraWeb(action, conversationId, parentFragmentManager)
+                if (action.startsWith("input:")) {
+                    val msg = action.substring(6).trim()
+                    if (msg.isNotEmpty()) {
+                        sendMessage(msg)
+                    }
+                } else {
+                    openUrlWithExtraWeb(action, conversationId, parentFragmentManager)
+                }
             }
 
             override fun onBillClick(messageItem: MessageItem) {
