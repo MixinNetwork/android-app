@@ -79,7 +79,7 @@ class PlayView @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         refreshDrawable.setBounds(0, 0, w, h)
     }
 
-    override fun verifyDrawable(who: Drawable?): Boolean {
+    override fun verifyDrawable(who: Drawable): Boolean {
         return who == playDrawable || super.verifyDrawable(who) || who == refreshDrawable
     }
 

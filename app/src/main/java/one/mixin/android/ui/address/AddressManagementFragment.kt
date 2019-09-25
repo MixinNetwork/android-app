@@ -53,7 +53,7 @@ class AddressManagementFragment : BaseFragment() {
 
     private var deleteSuccess = false
     private val asset: AssetItem by lazy {
-        arguments!!.getParcelable(ARGS_ASSET) as AssetItem
+        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!!
     }
     private var addresses: List<Address>? = null
 

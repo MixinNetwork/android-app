@@ -102,9 +102,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
         ViewModelProvider(this, viewModelFactory).get(BottomSheetViewModel::class.java)
     }
 
-    private val url: String by lazy {
-        arguments!!.getString(CODE)
-    }
+    private val url: String by lazy { arguments!!.getString(CODE)!! }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)

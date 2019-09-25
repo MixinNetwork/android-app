@@ -37,7 +37,7 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsNoBotViewHolder, Emergen
         }
     }
 
-    private val pin: String by lazy { arguments!!.getString(LandingActivity.ARGS_PIN) }
+    private val pin: String by lazy { arguments!!.getString(LandingActivity.ARGS_PIN)!! }
 
     override fun getModelClass() = EmergencyViewModel::class.java
 

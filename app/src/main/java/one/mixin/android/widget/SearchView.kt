@@ -20,13 +20,13 @@ class SearchView(context: Context, attrs: AttributeSet?) : AppCompatEditText(con
         val size = context.dpToPx(16f)
         context.getDrawable(R.drawable.ic_asset_add_search_clear).apply {
             this?.setBounds(0, 0, size, size)
-        }
+        }!!
     }
     private val iconSearch: Drawable by lazy {
         val size = context.dpToPx(16f)
         context.getDrawable(R.drawable.ic_asset_add_search).apply {
             this?.setBounds(0, 0, size, size)
-        }
+        }!!
     }
 
     private val watcher: TextWatcher = object : TextWatcher {

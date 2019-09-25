@@ -56,10 +56,7 @@ private fun Context.getAppPath(): File {
             "${Environment.getExternalStorageDirectory()}${File.separator}Mixin${File.separator}"
         )
     } else {
-        var externalFile: Array<File>? = ContextCompat.getExternalFilesDirs(this, null)
-        if (externalFile == null) {
-            externalFile = arrayOf(this.getExternalFilesDir(null))
-        }
+        val externalFile = ContextCompat.getExternalFilesDirs(this, null)
         val root = File("${externalFile[0]}${File.separator}Mixin${File.separator}")
         root.mkdirs()
         return if (root.exists()) {
@@ -338,7 +335,7 @@ fun Uri.copyFileUrlWithAuthority(context: Context, name: String? = null): String
     if (this.authority != null) {
         var input: InputStream? = null
         return try {
-            input = context.contentResolver.openInputStream(this)
+            input = context.contentResolver.openInputStream(this) ?: return null
             val pair = context.getDocumentPath().createDocumentFile(name = name)
             val outFile = pair.first
             if (!pair.second) {

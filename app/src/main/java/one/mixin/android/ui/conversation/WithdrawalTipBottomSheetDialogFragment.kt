@@ -25,7 +25,7 @@ class WithdrawalTipBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var mCountDownTimer: CountDownTimer? = null
 
     private val asset: AssetItem by lazy {
-        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)
+        arguments!!.getParcelable<AssetItem>(ARGS_ASSET)!!
     }
 
     @SuppressLint("RestrictedApi")

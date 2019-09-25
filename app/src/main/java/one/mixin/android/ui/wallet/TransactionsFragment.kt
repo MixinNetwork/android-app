@@ -80,7 +80,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        asset = arguments!!.getParcelable(ARGS_ASSET) as AssetItem
+        asset = arguments!!.getParcelable(ARGS_ASSET)!!
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
