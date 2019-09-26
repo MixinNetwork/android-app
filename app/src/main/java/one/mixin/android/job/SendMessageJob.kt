@@ -106,14 +106,10 @@ open class SendMessageJob(
         jobManager.saveJob(this)
         if (message.isText()) {
             val botNumber = message.content?.getBotNumber()
-            val isBotMessage = botNumber != null && botNumber.isNotBlank()
-            if (isBotMessage) {
-                recipientId = userDao.findUserByAppId(botNumber!!)?.userId
-                if (recipientId != null && recipientId!!.isNotEmpty()) {
-                    val p = participantDao.findParticipantByIds(message.conversationId, recipientId!!)
-                    if (p != null) {
-                        message.category = MessageCategory.PLAIN_TEXT.name
-                    }
+            if (botNumber != null && botNumber.isNotBlank()) {
+                recipientId = userDao.findUserIdByAppId(message.conversationId, botNumber)
+                recipientId?.let {
+                    message.category = MessageCategory.PLAIN_TEXT.name
                 }
             }
         }
