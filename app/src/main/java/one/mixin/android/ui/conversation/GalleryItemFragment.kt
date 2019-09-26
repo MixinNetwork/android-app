@@ -7,10 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
-import io.reactivex.disposables.Disposable
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDisposable
 import kotlinx.android.synthetic.main.fragment_draggable_recycler_view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -45,7 +47,7 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
     var callback: GalleryCallback? = null
     var rvCallback: DraggableRecyclerView.Callback? = null
 
-    private var disposable: Disposable? = null
+    private val stopScope = scope(Lifecycle.Event.ON_STOP)
 
     private val album: Album by lazy { arguments!!.getParcelable<Album>(ARGS_ALBUM)!! }
     private val needCamera: Boolean by lazy { arguments!!.getBoolean(ARGS_NEED_CAMERA) }
@@ -98,7 +100,8 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
         albumMediaCollection.onCreate(this, this)
         albumMediaCollection.load(album)
 
-        disposable = RxBus.listen(DragReleaseEvent::class.java)
+        RxBus.listen(DragReleaseEvent::class.java)
+            .autoDisposable(stopScope)
             .subscribe {
                 rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
             }
@@ -106,7 +109,6 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
 
     override fun onDestroyView() {
         super.onDestroyView()
-        disposable?.dispose()
         albumMediaCollection.onDestroy()
     }
 

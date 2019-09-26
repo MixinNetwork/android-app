@@ -10,8 +10,8 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
+import com.uber.autodispose.autoDisposable
 import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -85,7 +85,6 @@ class GroupFragment : BaseFragment() {
 
     private var users: List<User>? = null
     private var checkedUsers: MutableList<User> = mutableListOf()
-    private var disposable: Disposable? = null
     private var dialog: Dialog? = null
 
     override fun onCreateView(
@@ -111,15 +110,21 @@ class GroupFragment : BaseFragment() {
             if (from == TYPE_ADD || from == TYPE_REMOVE) {
                 groupViewModel.modifyGroupMembers(conversationId!!, checkedUsers, from)
                 if (dialog == null) {
-                    val title = if (from == TYPE_ADD) R.string.group_adding else R.string.group_removing
-                    dialog = indeterminateProgressDialog(message = R.string.pb_dialog_message, title = title).apply {
+                    val title =
+                        if (from == TYPE_ADD) R.string.group_adding else R.string.group_removing
+                    dialog = indeterminateProgressDialog(
+                        message = R.string.pb_dialog_message,
+                        title = title
+                    ).apply {
                         setCancelable(false)
                     }
                 }
                 dialog!!.show()
             } else {
-                activity?.addFragment(this@GroupFragment,
-                    NewGroupFragment.newInstance(ArrayList(checkedUsers)), NewGroupFragment.TAG)
+                activity?.addFragment(
+                    this@GroupFragment,
+                    NewGroupFragment.newInstance(ArrayList(checkedUsers)), NewGroupFragment.TAG
+                )
             }
         }
         title_view.right_animator.isEnabled = false
@@ -152,32 +157,31 @@ class GroupFragment : BaseFragment() {
             }
         }
 
-        if (disposable == null) {
-            disposable = RxBus.listen(ConversationEvent::class.java)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe {
-                    if (it.type == TYPE_ADD || it.type == TYPE_REMOVE) {
-                        dialog?.dismiss()
-                        if (it.isSuccess) {
-                            activity?.supportFragmentManager?.popBackStackImmediate()
-                        }
+        RxBus.listen(ConversationEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDisposable(stopScope)
+            .subscribe {
+                if (it.type == TYPE_ADD || it.type == TYPE_REMOVE) {
+                    dialog?.dismiss()
+                    if (it.isSuccess) {
+                        activity?.supportFragmentManager?.popBackStackImmediate()
                     }
                 }
-        }
+            }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        disposable?.dispose()
-        disposable = null
         dialog?.dismiss()
     }
 
     private fun updateTitle(size: Int) {
-        title_view.setSubTitle(when (from) {
-            TYPE_REMOVE -> getString(R.string.group_info_remove_member)
-            else -> getString(R.string.group_add)
-        }, "$size/$MAX_USER")
+        title_view.setSubTitle(
+            when (from) {
+                TYPE_REMOVE -> getString(R.string.group_info_remove_member)
+                else -> getString(R.string.group_add)
+            }, "$size/$MAX_USER"
+        )
     }
 
     private val mGroupFriendListener = object : GroupFriendAdapter.GroupFriendListener {
@@ -188,8 +192,10 @@ class GroupFragment : BaseFragment() {
                 checkedUsers.remove(user)
             }
             val existCount = if (alreadyUsers == null) 0 else alreadyUsers!!.size
-            updateTitle(if (from == TYPE_ADD || from == TYPE_CREATE)
-                checkedUsers.size + existCount else existCount - checkedUsers.size)
+            updateTitle(
+                if (from == TYPE_ADD || from == TYPE_CREATE)
+                    checkedUsers.size + existCount else existCount - checkedUsers.size
+            )
 
             if (checkedUsers.isEmpty()) {
                 title_view.right_tv.textColor = resources.getColor(R.color.text_gray, null)
@@ -210,8 +216,15 @@ class GroupFragment : BaseFragment() {
 
         override fun afterTextChanged(s: Editable?) {
             val keyword = s.toString().trim()
-            groupFriendAdapter.setData(users?.filter { it.fullName!!.contains(keyword, true) || it.identityNumber.contains(keyword, true) },
-                s.isNullOrEmpty())
+            groupFriendAdapter.setData(
+                users?.filter {
+                    it.fullName!!.contains(keyword, true) || it.identityNumber.contains(
+                        keyword,
+                        true
+                    )
+                },
+                s.isNullOrEmpty()
+            )
         }
     }
 }

@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import io.reactivex.disposables.Disposable
+import com.uber.autodispose.autoDisposable
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import kotlinx.coroutines.launch
@@ -76,14 +76,16 @@ class StickerFragment : BaseFragment() {
         context!!.dip(PADDING)
     }
 
-    private var disposable: Disposable? = null
-
     var rvCallback: DraggableRecyclerView.Callback? = null
 
     private var callback: StickerAlbumAdapter.Callback? = null
     private var personalAlbumId: String? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? =
         layoutInflater.inflate(R.layout.fragment_sticker, container, false)
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
@@ -143,15 +145,11 @@ class StickerFragment : BaseFragment() {
             }
         }
 
-        disposable = RxBus.listen(DragReleaseEvent::class.java)
+        RxBus.listen(DragReleaseEvent::class.java)
+            .autoDisposable(stopScope)
             .subscribe {
                 sticker_rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
             }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        disposable?.dispose()
     }
 
     @Synchronized
@@ -166,7 +164,10 @@ class StickerFragment : BaseFragment() {
         this.callback = callback
     }
 
-    private class StickerAdapter(private val stickers: List<Sticker>, private val needAdd: Boolean) : RecyclerView.Adapter<StickerViewHolder>() {
+    private class StickerAdapter(
+        private val stickers: List<Sticker>,
+        private val needAdd: Boolean
+    ) : RecyclerView.Adapter<StickerViewHolder>() {
         private var listener: StickerListener? = null
         var size: Int = 0
 
@@ -198,7 +199,8 @@ class StickerFragment : BaseFragment() {
         override fun getItemCount(): Int = if (needAdd) stickers.size + 1 else stickers.size
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StickerViewHolder {
-            val view = LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false)
+            val view =
+                LayoutInflater.from(parent.context).inflate(R.layout.item_sticker, parent, false)
             return StickerViewHolder(view)
         }
 
