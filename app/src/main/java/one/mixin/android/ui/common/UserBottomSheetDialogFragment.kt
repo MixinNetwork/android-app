@@ -19,6 +19,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
@@ -38,10 +39,13 @@ import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
+import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.Session
+import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
+import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
@@ -141,6 +145,9 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             choices.add(getString(R.string.developer))
         }
         choices.add(getString(R.string.contact_other_share))
+        if (conversationId != null) {
+            choices.add(getString(R.string.contact_other_search_conversation))
+        }
         choices.add(getString(R.string.contact_other_transactions))
         when (user.relationship) {
             UserRelationship.BLOCKING.name -> {
@@ -173,6 +180,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                     getString(R.string.contact_other_share) -> {
                         ForwardActivity.show(context!!, arrayListOf(ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = user.userId)), true)
+                        dismiss()
+                    }
+                    getString(R.string.contact_other_search_conversation) -> {
+                        startSearchConversation()
                         dismiss()
                     }
                     getString(R.string.contact_other_transactions) -> {
@@ -225,6 +236,20 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.more_fl.setOnClickListener {
             (dialog as BottomSheet).fakeDismiss()
             menu.show()
+        }
+    }
+
+    private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
+        bottomViewModel.getConversation(conversationId!!)?.let {
+            val searchMessageItem = if (it.category == ConversationCategory.CONTACT.name) {
+                SearchMessageItem(it.conversationId, it.category, null,
+                    0, user.userId, user.fullName, user.avatarUrl, null)
+            } else {
+                SearchMessageItem(it.conversationId, it.category, it.name,
+                    0, "", null, null, it.iconUrl)
+            }
+            activity?.addFragment(this@UserBottomSheetDialogFragment,
+                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG)
         }
     }
 

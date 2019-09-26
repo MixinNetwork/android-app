@@ -36,12 +36,14 @@ import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.group.GroupEditFragment
 import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
+import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.linktext.AutoLinkMode
 import org.jetbrains.anko.dimen
@@ -177,6 +179,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun initMenu() {
         val choices = mutableListOf<String>()
         choices.add(getString(R.string.participants))
+        choices.add(getString(R.string.contact_other_search_conversation))
         if (me != null) {
             if (me!!.role == ParticipantRole.OWNER.name || me!!.role == ParticipantRole.ADMIN.name) {
                 if (TextUtils.isEmpty(conversation.announcement)) {
@@ -206,6 +209,10 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     getString(R.string.participants) -> {
                         dismiss()
                         GroupActivity.show(requireContext(), GroupActivity.INFO, conversationId)
+                    }
+                    getString(R.string.contact_other_search_conversation) -> {
+                        startSearchConversation()
+                        dismiss()
                     }
                     getString(R.string.group_info_add) -> {
                         activity?.addFragment(this@GroupBottomSheetDialogFragment, GroupEditFragment.newInstance(
@@ -240,6 +247,15 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             if (!keepDialog) {
                 dismiss()
             }
+        }
+    }
+
+    private fun startSearchConversation() = lifecycleScope.launch(Dispatchers.IO) {
+        bottomViewModel.getConversation(conversationId)?.let {
+            val searchMessageItem = SearchMessageItem(it.conversationId, it.category, it.name,
+                    0, "", null, null, it.iconUrl)
+            activity?.addFragment(this@GroupBottomSheetDialogFragment,
+                SearchMessageFragment.newInstance(searchMessageItem, ""), SearchMessageFragment.TAG)
         }
     }
 

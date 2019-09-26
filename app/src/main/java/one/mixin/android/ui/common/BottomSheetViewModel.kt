@@ -121,6 +121,8 @@ class BottomSheetViewModel @Inject internal constructor(
 
     fun getConversationById(id: String) = conversationRepo.getConversationById(id)
 
+    fun getConversation(id: String) = conversationRepo.getConversation(id)
+
     fun findParticipantByIds(conversationId: String, userId: String) = conversationRepo.findParticipantByIds(conversationId, userId)
 
     fun mute(senderId: String, recipientId: String, duration: Long) {
