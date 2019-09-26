@@ -8,6 +8,7 @@
   * Device: _____
   * OS version: _____
   * App version: _____
+  * Mixin ID: ____
   
 ### Step 3: Describe the problem:
 
