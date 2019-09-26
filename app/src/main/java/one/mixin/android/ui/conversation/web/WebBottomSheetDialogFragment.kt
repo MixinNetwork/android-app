@@ -506,6 +506,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
         if (isBot()) {
             view.open.isVisible = false
+            view.share.isVisible = false
         }
 
         bottomSheet.show()
