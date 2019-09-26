@@ -74,6 +74,8 @@ import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.url.isMixinUrl
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.vo.AppCap
+import one.mixin.android.vo.ForwardCategory
+import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.WebControlView
 import org.jetbrains.anko.doAsync
@@ -93,6 +95,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         private const val URL = "url"
         private const val CONVERSATION_ID = "conversation_id"
+        const val APP_ID = "app_id"
         const val APP_NAME = "app_name"
         const val APP_AVATAR = "app_avatar"
         const val APP_CAPABILITIES = "app_capabilities"
@@ -100,12 +103,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         fun newInstance(
             url: String,
             conversationId: String?,
+            appId: String? = null,
             appName: String? = null,
             appAvatar: String? = null,
             appCapabilities: ArrayList<String>? = null
         ) = WebBottomSheetDialogFragment().withArgs {
                 putString(URL, url)
                 putString(CONVERSATION_ID, conversationId)
+                putString(APP_ID, appId)
                 putString(APP_NAME, appName)
                 putString(APP_AVATAR, appAvatar)
                 putStringArrayList(APP_CAPABILITIES, appCapabilities)
@@ -117,6 +122,9 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
     private val conversationId: String? by lazy {
         arguments!!.getString(CONVERSATION_ID)
+    }
+    private val appId: String? by lazy {
+        arguments!!.getString(APP_ID)
     }
     private val appName: String? by lazy {
         arguments!!.getString(APP_NAME)
@@ -291,14 +299,14 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.chat_web_view.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
-                if (appName == null) {
+                if (!isBot()) {
                     contentView.title_tv.text = title
                 }
             }
 
             override fun onReceivedIcon(view: WebView?, icon: Bitmap?) {
                 super.onReceivedIcon(view, icon)
-                if (appAvatar == null) {
+                if (!isBot()) {
                     icon?.let {
                         contentView.icon_iv.isVisible = true
                         contentView.icon_iv.setImageBitmap(it)
@@ -352,7 +360,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                         }
                                     }, {
                                     })
-                            }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                            }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     } else if (intent?.type == "image/*") {
                         PermissionBottomSheetDialogFragment.requestCamera(
@@ -375,7 +383,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                         }
                                     }, {
                                     })
-                            }.show(fragmentManager, PermissionBottomSheetDialogFragment.TAG)
+                            }.show(parentFragmentManager, PermissionBottomSheetDialogFragment.TAG)
                         return true
                     }
                 }
@@ -446,6 +454,8 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return imageUri!!
     }
 
+    private fun isBot() = appId != null || appName != null || appAvatar != null || appCapabilities != null
+
     override fun onDestroyView() {
         contentView.chat_web_view.stopLoading()
         contentView.chat_web_view.webViewClient = null
@@ -464,7 +474,12 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.forward.setOnClickListener {
-            ForwardActivity.show(requireContext(), contentView.chat_web_view.url)
+            if (isBot()) {
+                val fw = ForwardMessage(ForwardCategory.CONTACT.name, sharedUserId = appId)
+                ForwardActivity.show(requireContext(), arrayListOf(fw))
+            } else {
+                ForwardActivity.show(requireContext(), contentView.chat_web_view.url)
+            }
             bottomSheet.dismiss()
         }
         view.share.setOnClickListener {
@@ -484,8 +499,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             bottomSheet.dismiss()
         }
         view.open.setOnClickListener {
-            context?.openUrl(contentView.chat_web_view.url)
+            contentView.chat_web_view.url?.let {
+                context?.openUrl(it)
+            }
             bottomSheet.dismiss()
+        }
+        if (isBot()) {
+            view.open.isVisible = false
         }
 
         bottomSheet.show()
