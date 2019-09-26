@@ -23,7 +23,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
-import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.service.ConversationService
@@ -45,8 +44,6 @@ import one.mixin.android.job.RefreshOneTimePreKeysJob
 import one.mixin.android.job.RefreshStickerAlbumJob
 import one.mixin.android.job.RefreshStickerAlbumJob.Companion.REFRESH_STICKER_ALBUM_PRE_KEY
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.job.RotateSignedPreKeyJob
-import one.mixin.android.job.RotateSignedPreKeyJob.Companion.ROTATE_SIGNED_PRE_KEY
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.NavigationController
@@ -163,7 +160,6 @@ class MainActivity : BlazeBaseActivity() {
         }
 
         refreshStickerAlbum()
-        rotateSignalPreKey()
         checkRoot()
 
         initView()
@@ -199,11 +195,6 @@ class MainActivity : BlazeBaseActivity() {
             BiometricUtil.deleteKey(this)
         }
     }
-
-    private fun rotateSignalPreKey() =
-        runIntervalTask(ROTATE_SIGNED_PRE_KEY, INTERVAL_48_HOURS) {
-            jobManager.addJobInBackground(RotateSignedPreKeyJob())
-        }
 
     private fun refreshStickerAlbum() =
         runIntervalTask(REFRESH_STICKER_ALBUM_PRE_KEY, INTERVAL_24_HOURS) {
