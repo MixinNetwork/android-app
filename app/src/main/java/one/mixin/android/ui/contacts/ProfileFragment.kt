@@ -201,18 +201,6 @@ class ProfileFragment : BaseFragment() {
         biographyFragment.show(fragmentManager, EditBottomSheetDialogFragment.TAG)
     }
 
-    @Suppress("unused")
-    private fun renderInvitation(account: Account) {
-        if (account.invitation_code.isEmpty()) {
-            invitation_rl.visibility = GONE
-            invitation_count_tv.text = getString(R.string.wallet_get_free_redeem_tip)
-        } else {
-            invitation_rl.visibility = VISIBLE
-            invitation_desc_tv.text = account.invitation_code
-            invitation_count_tv.text = getString(R.string.profile_invitation_tip, account.consumed_count)
-        }
-    }
-
     private fun update(content: String, type: Int) {
         if (!isAdded) return
 

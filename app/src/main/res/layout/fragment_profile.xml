@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_gray"
     android:orientation="vertical">
 
     <one.mixin.android.widget.TitleView
@@ -186,52 +187,4 @@
             android:textColor="@color/text_gray"
             tools:ignore="RelativeOverlap"/>
     </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/invitation_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/invitation_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/profile_invitation"
-            tools:ignore="RelativeOverlap"/>
-
-        <TextView
-            android:id="@+id/invitation_desc_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:textColor="@color/colorBlue"
-            tools:ignore="RelativeOverlap"/>
-    </RelativeLayout>
-
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/bg_gray">
-
-        <TextView
-            android:id="@+id/invitation_count_tv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginBottom="8dp"
-            android:text="@string/profile_invitation_tip"
-            android:textColor="@color/colorGray"
-            android:textSize="12sp"
-            android:visibility="gone"/>
-    </FrameLayout>
 </LinearLayout>

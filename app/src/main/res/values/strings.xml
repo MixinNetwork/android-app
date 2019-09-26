@@ -198,8 +198,6 @@
     <string name="profile_my_title">My Profile</string>
     <string name="profile_photo">Profile Photo</string>
     <string name="profile_phone">Change Number</string>
-    <string name="profile_invitation">My Invitation Code</string>
-    <string name="profile_invitation_tip">You have invited total %1$d people</string>
     <string name="profile_modify_name">Modify Name</string>
     <string name="profile_modify_name_hint">Please input name</string>
     <string name="profile_modify_number">Do you want to change your phone number?</string>
