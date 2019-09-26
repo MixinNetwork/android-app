@@ -2262,6 +2262,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 botWebBottomSheet = WebBottomSheetDialogFragment.newInstance(
                     it.homeUri,
                     conversationId,
+                    it.appId,
                     it.name,
                     it.icon_url,
                     it.capabilities
