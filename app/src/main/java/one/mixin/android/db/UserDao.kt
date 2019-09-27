@@ -80,5 +80,5 @@ interface UserDao : BaseDao<User> {
     @Query("SELECT u.user_id FROM users u" +
             "   INNER JOIN participants p ON p.user_id = u.user_id" +
             "   WHERE p.conversation_id = :conversationId AND u.identity_number = :appNumber")
-    fun findUserIdByAppId(conversationId: String, appNumber: String): String?
+    fun findUserIdByAppNumber(conversationId: String, appNumber: String): String?
 }

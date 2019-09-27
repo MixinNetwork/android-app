@@ -82,7 +82,6 @@ abstract class MixinDatabase : RoomDatabase() {
         private var READINSTANCE: MixinDatabase? = null
 
         private val lock = Any()
-        private val readlock = Any()
         private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
 
         fun getDatabase(context: Context): MixinDatabase {
@@ -103,7 +102,7 @@ abstract class MixinDatabase : RoomDatabase() {
         }
 
         fun getReadDatabase(context: Context): MixinDatabase {
-            synchronized(readlock) {
+            synchronized(lock) {
                 if (READINSTANCE == null) {
                     READINSTANCE = Room.databaseBuilder(context, MixinDatabase::class.java, DB_NAME)
                         .addMigrations(MIGRATION_15_16, MIGRATION_16_17, MIGRATION_17_18, MIGRATION_18_19, MIGRATION_19_20, MIGRATION_20_21, MIGRATION_21_22, MIGRATION_22_23)

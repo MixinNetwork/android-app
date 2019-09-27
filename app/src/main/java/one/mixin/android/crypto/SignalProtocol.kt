@@ -155,7 +155,7 @@ class SignalProtocol(ctx: Context) {
         return !senderKeyRecord.isEmpty
     }
 
-    fun containsSession(recipientId: String, deviceId: Int = SignalProtocol.DEFAULT_DEVICE_ID): Boolean {
+    fun containsSession(recipientId: String, deviceId: Int = DEFAULT_DEVICE_ID): Boolean {
         val signalProtocolAddress = SignalProtocolAddress(recipientId, deviceId)
         return signalProtocolStore.containsSession(signalProtocolAddress)
     }
@@ -169,7 +169,7 @@ class SignalProtocol(ctx: Context) {
         sessionDao.deleteSession(userId)
     }
 
-    fun processSession(userId: String, preKeyBundle: PreKeyBundle, deviceId: Int = SignalProtocol.DEFAULT_DEVICE_ID) {
+    fun processSession(userId: String, preKeyBundle: PreKeyBundle, deviceId: Int = DEFAULT_DEVICE_ID) {
         val signalProtocolAddress = SignalProtocolAddress(userId, deviceId)
         val sessionBuilder = SessionBuilder(signalProtocolStore, signalProtocolAddress)
         try {

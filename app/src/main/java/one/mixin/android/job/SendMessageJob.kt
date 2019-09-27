@@ -107,7 +107,7 @@ open class SendMessageJob(
         if (message.isText()) {
             val botNumber = message.content?.getBotNumber()
             if (botNumber != null && botNumber.isNotBlank()) {
-                recipientId = userDao.findUserIdByAppId(message.conversationId, botNumber)
+                recipientId = userDao.findUserIdByAppNumber(message.conversationId, botNumber)
                 recipientId?.let {
                     message.category = MessageCategory.PLAIN_TEXT.name
                 }

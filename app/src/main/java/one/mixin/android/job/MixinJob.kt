@@ -230,10 +230,11 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             } else {
                 Thread.sleep(SLEEP_MILLIS)
                 // warning: may caused job leak if server return error data and come to this branch
-                deliverNoThrow(blazeMessage)
+                return deliverNoThrow(blazeMessage)
             }
+        } else {
+            return true
         }
-        return true
     }
 
     protected fun deliver(blazeMessage: BlazeMessage): Boolean {
