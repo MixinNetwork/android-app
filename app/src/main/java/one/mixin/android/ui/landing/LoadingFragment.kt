@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
@@ -37,40 +36,37 @@ class LoadingFragment : BaseFragment() {
         super.onActivityCreated(savedInstanceState)
         MixinApplication.get().onlining.set(true)
         lifecycleScope.launch {
+            if (!defaultSharedPreferences.getBoolean(IS_LOADED, false)) {
+                load()
+            }
             // check session and do something
             // ...
 
-            if (!defaultSharedPreferences.getBoolean(IS_LOADED, false)) {
-                load()
-            } else {
-                MainActivity.show(context!!)
-                activity?.finish()
-            }
+            // Go to home page
+            MainActivity.show(context!!)
+            activity?.finish()
         }
     }
 
-    private fun load() {
+    private suspend fun load() {
         if (count > 0) {
             count--
-            loadingViewModel.pushAsyncSignalKeys().autoDispose(stopScope).subscribe({
+            try {
+                val response = loadingViewModel.pushAsyncSignalKeys()
                 when {
-                    it?.isSuccess == true -> {
-                        context!!.defaultSharedPreferences.putBoolean(IS_LOADED, true)
-                        MainActivity.show(context!!)
-                        activity?.finish()
+                    response.isSuccess -> {
+                        requireContext().defaultSharedPreferences.putBoolean(IS_LOADED, true)
                     }
-                    it?.errorCode == ErrorHandler.AUTHENTICATION -> {
+                    response.errorCode == ErrorHandler.AUTHENTICATION -> {
                         MixinApplication.get().closeAndClear()
                         activity?.finish()
                     }
                     else -> load()
                 }
-            }, {
+            } catch (e: Exception) {
+                ErrorHandler.handleError(e)
                 load()
-                ErrorHandler.handleError(it)
-            })
-        } else {
-            activity?.finish()
+            }
         }
     }
 
