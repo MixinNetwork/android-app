@@ -3,7 +3,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="72dp"
-                android:background="@color/white"
+                android:background="@color/colorPrimaryDark"
                 android:foreground="?android:attr/selectableItemBackground"
                 tools:layout_editor_absoluteY="81dp">
 
@@ -142,7 +142,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_gravity="center_vertical"
                 android:background="@drawable/bg_unread"
-                android:textColor="@color/white"
+                android:textColor="@color/colorTextLight"
                 android:fontFamily="monospace"
                 android:textSize="12sp"
                 android:visibility="gone"/>

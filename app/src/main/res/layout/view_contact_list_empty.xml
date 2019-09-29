@@ -11,7 +11,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/item_contact_header_height"
         android:foreground="?attr/selectableItemBackground"
-        android:background="@android:color/white">
+        android:background="@color/colorPrimaryDark">
 
         <TextView
             android:layout_width="wrap_content"

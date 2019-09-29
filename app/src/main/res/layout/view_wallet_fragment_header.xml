@@ -8,7 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/colorPrimary"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -26,7 +26,7 @@
                 android:layout_marginEnd="@dimen/padding8"
                 android:layout_toStartOf="@+id/total_tv"
                 android:text="$"
-                android:textColor="@color/wallet_text_gray"
+                android:textColor="@color/text_gray"
                 tools:ignore="HardcodedText"/>
 
             <TextView
@@ -36,7 +36,7 @@
                 android:layout_centerHorizontal="true"
                 android:fontFamily="@font/mixin_condensed"
                 android:gravity="center"
-                android:textColor="@android:color/black"
+                android:textColor="@color/text_black"
                 android:textSize="40sp"
                 tools:text="12345.8"/>
         </RelativeLayout>
@@ -57,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/mixin_condensed"
-                android:textColor="@color/wallet_text_dark"
+                android:textColor="@color/text_black"
                 android:textSize="18sp"
                 tools:text="0.123"/>
 
@@ -69,7 +69,7 @@
                 android:layout_marginStart="@dimen/padding8"
                 android:layout_toEndOf="@+id/total_as_tv"
                 android:text="BTC"
-                android:textColor="@color/wallet_text_gray"
+                android:textColor="@color/text_gray"
                 tools:ignore="HardcodedText"/>
         </RelativeLayout>
 
@@ -95,5 +95,5 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="10dp"
-        android:background="@drawable/ic_shadow_divider"/>
+        android:background="@color/bg_gray"/>
 </LinearLayout>

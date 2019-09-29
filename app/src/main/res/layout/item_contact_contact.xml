@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="@dimen/item_contact_height"
-    android:background="@android:color/white"
+    android:background="@color/colorPrimary"
     android:foreground="?attr/selectableItemBackground">
 
     <TextView
@@ -26,5 +26,5 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:singleLine="true"
-        android:textColor="@android:color/black"/>
+        android:textColor="@color/text_black"/>
 </LinearLayout>

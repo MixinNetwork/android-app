@@ -20,7 +20,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/activity_vertical_margin"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -58,7 +58,7 @@
         android:id="@+id/name_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white">
+        android:background="@color/colorPrimary">
 
         <TextView
             android:id="@+id/name_tv"
@@ -92,7 +92,7 @@
         android:id="@+id/notice_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:visibility="gone">
 
         <TextView

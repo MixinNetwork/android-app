@@ -3,7 +3,7 @@
                 xmlns:tools="http://schemas.android.com/tools"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/item_contact_height"
-                android:background="@android:color/white"
+                android:background="@color/colorPrimary"
                 android:foreground="?attr/selectableItemBackground">
 
     <TextView

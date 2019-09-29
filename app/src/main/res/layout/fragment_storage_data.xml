@@ -23,7 +23,7 @@
             android:id="@+id/storage_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:foreground="?attr/selectableItemBackground">
 
             <TextView
@@ -42,7 +42,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:padding="16dp">
 
             <TextView
@@ -83,7 +83,7 @@
             android:id="@+id/storage_mobile"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:foreground="?attr/selectableItemBackground">
 
             <TextView
@@ -120,7 +120,7 @@
             android:id="@+id/storage_wifi"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:foreground="?attr/selectableItemBackground">
 
             <TextView
@@ -157,7 +157,7 @@
             android:id="@+id/storage_roaming"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:foreground="?attr/selectableItemBackground">
 
             <TextView

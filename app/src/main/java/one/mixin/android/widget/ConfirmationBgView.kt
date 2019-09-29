@@ -20,7 +20,7 @@ class ConfirmationBgView : RelativeLayout {
             callback = this@ConfirmationBgView
         } as RippleDrawable
     }
-    private val colorWhite by lazy { context.getColor(R.color.white) }
+    private val colorWhite by lazy { context.getColor(R.color.colorPrimary) }
     private val colorBlue by lazy { context.getColor(R.color.wallet_blue_light) }
 
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)

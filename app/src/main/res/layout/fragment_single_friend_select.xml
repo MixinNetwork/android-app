@@ -21,7 +21,7 @@
         android:id="@+id/search_et"
         android:layout_width="match_parent"
         android:layout_height="?actionBarSize"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:drawablePadding="8dp"
         android:drawableStart="@drawable/ic_asset_add_search"
         android:inputType="text"

@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:animateLayoutChanges="true"
         android:minHeight="@dimen/chat_control_height"
-        android:background="@color/white"
+        android:background="@color/colorPrimary"
         android:layout_gravity="bottom"
         android:orientation="horizontal">
 
@@ -46,6 +46,7 @@
                 android:layout_centerVertical="true"
                 android:gravity="center_vertical"
                 android:inputType="textMultiLine|textNoSuggestions"
+                android:textColor="@color/text_black"
                 android:background="@null"
                 android:maxLines="5"
                 android:paddingTop="2dp"

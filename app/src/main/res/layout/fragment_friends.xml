@@ -15,7 +15,7 @@
         android:id="@+id/search_et"
         android:layout_width="match_parent"
         android:layout_height="60dp"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:drawableStart="@drawable/ic_search"
         android:drawablePadding="8dp"
         android:hint="@string/contact_search_hint"

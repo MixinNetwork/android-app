@@ -17,7 +17,7 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:layout_below="@id/title_view"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:drawablePadding="8dp"
         android:drawableStart="@drawable/ic_search"
         android:inputType="number|phone"
@@ -45,7 +45,7 @@
         android:outAnimation="@anim/fade_out"
         android:layout_above="@+id/keyboard"
         android:visibility="gone"
-        android:background="@android:color/white">
+        android:background="@color/colorPrimary">
 
         <TextView
             android:id="@+id/search_tv"

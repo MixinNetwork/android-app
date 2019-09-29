@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#2B3136</color>
+    <color name="colorPrimaryDark">#22272B</color>
+    <color name="colorAccent">#FFFFFF</color>
+
+    <color name="colorTextLight">#FFFFFE</color>
+    <color name="colorIcon">#EAEAEB</color>
+    <color name="colorIconLight">#EAEAEB</color>
+    <color name="colorIconDark">#EAEAEB</color>
+    <color name="colorIconWhite">#22272B</color>
+    <color name="colorIconGray">#555A5E</color>
+    <color name="colorIconBlack">#FFFFFF</color>
+
+    <color name="colorShadow">#737373</color>
+    <color name="bg_gray">#1D2733</color>
+    <color name="bg_input">#414D5A</color>
+
+    <color name="wallet_bg_gray">#555A5E</color>
+    <color name="menu_bg_border">#555A5E</color>
+
+    <color name="text_black">#E9EEF4</color>
+    <color name="text_gray">#7D8B97</color>
+
+    <color name="gray_50">#EFEFEF</color>
+    <color name="unread">#3E5264</color>
+</resources>

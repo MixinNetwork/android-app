@@ -7,6 +7,19 @@
     <color name="colorDarkBlue">#1987FF</color>
     <color name="colorGray">#9B9B9B</color>
 
+    <color name="colorTextLight">#FFFFFF</color>
+    <color name="colorIcon">#FF000000</color>
+    <color name="colorIconLight">#3A3C3E</color>
+    <color name="colorIconDark">#BBBEC3</color>
+    <color name="colorIconWhite">#FFFFFF</color>
+    <color name="colorIconGray">#E5E7EC</color>
+    <color name="colorIconBlack">#000000</color>
+
+    <color name="colorShadow">#FFFFFF</color>
+
+    <color name="bg_input">#F5F5F5</color>
+    <color name="unread">#397EE4</color>
+
     <color name="white">#ffffffff</color>
     <color name="white_45">#73ffffff</color>
     <color name="white_28">#47ffffff</color>

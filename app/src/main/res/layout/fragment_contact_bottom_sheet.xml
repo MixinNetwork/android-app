@@ -50,7 +50,7 @@
             style="@style/NormalTextStyle"
             android:layout_width="match_parent"
             android:layout_height="@dimen/bottom_button_height"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:gravity="center"
             android:text="@string/contact_less_invite"
             android:textColor="@color/colorBlue"

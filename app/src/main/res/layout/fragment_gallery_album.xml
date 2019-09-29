@@ -4,7 +4,7 @@
     android:id="@+id/va"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white">
+    android:background="@color/colorPrimary">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -25,8 +25,8 @@
             android:layout_marginEnd="8dp"
             app:tabBackground="@null"
             app:tabIndicatorHeight="0dp"
-            app:tabSelectedTextColor="@color/gray_black"
-            app:tabTextColor="@color/wallet_text_gray"/>
+            app:tabSelectedTextColor="@color/text_black"
+            app:tabTextColor="@color/text_gray"/>
     </RelativeLayout>
 
     <ProgressBar

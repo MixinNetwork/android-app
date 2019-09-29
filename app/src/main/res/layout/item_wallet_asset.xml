@@ -56,7 +56,7 @@
             android:maxLines="1"
             android:ellipsize="end"
             android:layout_toEndOf="@id/avatar"
-            android:textColor="@color/wallet_text_dark"/>
+            android:textColor="@color/text_black"/>
 
         <TextView
             android:id="@+id/symbol_tv"
@@ -68,7 +68,7 @@
             android:layout_alignBaseline="@+id/balance"
             android:translationY="-1dp"
             android:textSize="12sp"
-            android:textColor="@color/wallet_text_dark"/>
+            android:textColor="@color/text_black"/>
 
         <TextView
             android:id="@+id/balance_as"
@@ -84,7 +84,7 @@
             android:ellipsize="end"
             android:layout_toEndOf="@id/avatar"
             android:textSize="12sp"
-            android:textColor="@color/wallet_text_gray"/>
+            android:textColor="@color/text_gray"/>
 
         <TextView
             android:id="@+id/change_tv"
@@ -110,6 +110,6 @@
             android:gravity="end"
             android:maxLines="1"
             android:textSize="12sp"
-            android:textColor="@color/wallet_text_gray"/>
+            android:textColor="@color/text_gray"/>
     </one.mixin.android.widget.ConfirmationBgView>
 </FrameLayout>

@@ -24,7 +24,7 @@
       android:strokeLineJoin="round"
       android:strokeWidth="2"
       android:fillColor="#FFFFFF"
-      android:strokeColor="#3A3C3E"
+      android:strokeColor="@color/colorIconLight"
       android:fillType="evenOdd"
       android:strokeLineCap="round"/>
 </vector>

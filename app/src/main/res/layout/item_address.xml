@@ -59,7 +59,7 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:foreground="?attr/selectableItemBackground"
-        android:background="@android:color/white">
+        android:background="@color/colorPrimary">
 
         <TextView
             android:id="@+id/name_tv"

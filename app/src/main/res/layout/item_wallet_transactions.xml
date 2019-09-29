@@ -3,7 +3,7 @@
     android:id="@+id/bg"
     android:layout_width="match_parent"
     android:layout_height="62dp"
-    android:background="@android:color/white">
+    android:background="@color/colorPrimary">
 
     <one.mixin.android.widget.AvatarView
         android:id="@+id/avatar"
@@ -22,7 +22,7 @@
         android:ellipsize="end"
         android:maxWidth="200dp"
         android:singleLine="true"
-        android:textColor="@color/wallet_text_dark"
+        android:textColor="@color/text_black"
         android:textSize="14sp" />
 
     <TextView

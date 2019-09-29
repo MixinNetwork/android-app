@@ -12,7 +12,7 @@
   <path
       android:pathData="M25,21L25,19C25,18.4477 25.4477,18 26,18C26.5523,18 27,18.4477 27,19L27,21L29,21C29.5523,21 30,21.4477 30,22C30,22.5523 29.5523,23 29,23L27,23L27,25C27,25.5523 26.5523,26 26,26C25.4477,26 25,25.5523 25,25L25,23L23,23C22.4477,23 22,22.5523 22,22C22,21.4477 22.4477,21 23,21L25,21Z"
       android:strokeWidth="1"
-      android:fillColor="#BBBEC3"
+    android:fillColor="@color/colorIconDark"
       android:fillType="evenOdd"
       android:strokeColor="#00000000"/>
   <path
@@ -20,7 +20,7 @@
       android:strokeLineJoin="round"
       android:strokeWidth="2"
       android:fillColor="#00000000"
-      android:strokeColor="#3A3C3E"
+      android:strokeColor="@color/colorIconLight"
       android:fillType="evenOdd"
       android:strokeLineCap="round"/>
   <path
@@ -28,7 +28,7 @@
       android:strokeLineJoin="round"
       android:strokeWidth="2"
       android:fillColor="#00000000"
-      android:strokeColor="#3A3C3E"
+      android:strokeColor="@color/colorIconLight"
       android:fillType="evenOdd"
       android:strokeLineCap="round"/>
 </vector>

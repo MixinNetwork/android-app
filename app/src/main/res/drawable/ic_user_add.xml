@@ -16,19 +16,19 @@
       android:strokeLineJoin="round"
       android:strokeWidth="2"
       android:fillColor="#FFFFFF"
-      android:strokeColor="#3A3C3E"
+      android:strokeColor="@color/colorIconLight"
       android:fillType="evenOdd"
       android:strokeLineCap="round"/>
   <path
       android:pathData="M22,21L28,21A1,1 0,0 1,29 22L29,22A1,1 0,0 1,28 23L22,23A1,1 0,0 1,21 22L21,22A1,1 0,0 1,22 21z"
       android:strokeWidth="1"
-      android:fillColor="#BBBEC3"
+    android:fillColor="@color/colorIconDark"
       android:fillType="evenOdd"
       android:strokeColor="#00000000"/>
   <path
       android:pathData="M26,19L26,25A1,1 0,0 1,25 26L25,26A1,1 0,0 1,24 25L24,19A1,1 0,0 1,25 18L25,18A1,1 0,0 1,26 19z"
       android:strokeWidth="1"
-      android:fillColor="#BBBEC3"
+    android:fillColor="@color/colorIconDark"
       android:fillType="evenOdd"
       android:strokeColor="#00000000"/>
 </vector>

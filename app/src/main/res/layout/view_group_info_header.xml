@@ -20,7 +20,7 @@
             android:id="@+id/add_rl"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:foreground="?attr/selectableItemBackground"
             android:visibility="gone">
 
@@ -40,7 +40,7 @@
             android:id="@+id/invite_item"
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:foreground="?attr/selectableItemBackground"
             android:visibility="gone">
 

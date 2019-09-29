@@ -14,7 +14,7 @@
 
     <EditText
             android:id="@+id/desc_et"
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:padding="@dimen/activity_horizontal_margin"
             android:maxLength="1024"
             style="@style/NormalTextStyle"

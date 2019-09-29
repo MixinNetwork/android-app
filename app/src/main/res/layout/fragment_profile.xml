@@ -22,7 +22,7 @@
         android:id="@+id/photo_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -64,7 +64,7 @@
         android:id="@+id/name_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -117,7 +117,7 @@
         android:paddingStart="16dp"
         android:paddingTop="16dp"
         android:paddingEnd="16dp"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:paddingBottom="16dp"
         android:foreground="?attr/selectableItemBackground">
 
@@ -163,7 +163,7 @@
         android:id="@+id/phone_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView

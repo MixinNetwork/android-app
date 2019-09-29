@@ -44,6 +44,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="12sp"
+            android:textColor="@color/text_gray"
             app:layout_constraintStart_toStartOf="@id/backup_title"
             app:layout_constraintTop_toBottomOf="@id/backup_title"
             tools:text="@string/backup_never"/>
@@ -64,7 +65,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginEnd="32dp"
-            android:textColor="@color/black"
+            android:textColor="@color/text_black"
             android:text="@string/backup_des"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/backup_title"
@@ -98,6 +99,7 @@
                 android:textSize="14sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:textColor="@color/text_gray"
                 tools:text="**@mixin.one"/>
 
         </LinearLayout>

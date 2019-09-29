@@ -4,7 +4,7 @@
     android:id="@+id/layout"
     android:layout_width="match_parent"
     android:layout_height="70dp"
-    android:background="@android:color/white"
+    android:background="@color/colorPrimary"
     android:foreground="?attr/selectableItemBackground">
 
     <FrameLayout
@@ -37,7 +37,7 @@
         android:layout_marginStart="@dimen/activity_horizontal_margin"
         android:ellipsize="end"
         android:singleLine="true"
-        android:textColor="@android:color/black"/>
+        android:textColor="@color/text_black"/>
 
     <ImageView
         android:id="@+id/bot_iv"

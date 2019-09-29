@@ -9,7 +9,7 @@
         android:id="@+id/contact_header_rl"
         android:layout_width="match_parent"
         android:layout_height="90dp"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimaryDark"
         android:foreground="?attr/selectableItemBackground">
 
         <one.mixin.android.widget.AvatarView
@@ -29,7 +29,7 @@
             android:layout_toEndOf="@+id/contact_header_avatar"
             android:ellipsize="end"
             android:singleLine="true"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_black"
             android:textSize="16sp"/>
 
         <TextView
@@ -61,7 +61,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@android:color/white">
+        android:background="@color/colorPrimaryDark">
 
         <FrameLayout
             android:id="@+id/receive_fl"
@@ -77,7 +77,7 @@
                 android:layout_gravity="center"
                 android:drawablePadding="8dp"
                 android:drawableStart="@drawable/ic_contacts_receive"
-                android:textColor="@color/black"
+                android:textColor="@color/text_black"
                 android:text="@string/contact_receive_money"/>
         </FrameLayout>
 
@@ -95,7 +95,7 @@
                 android:layout_gravity="center"
                 android:drawablePadding="8dp"
                 android:drawableStart="@drawable/ic_contacts_qr"
-                android:textColor="@color/black"
+                android:textColor="@color/text_black"
                 android:text="@string/contact_my_qr_title"/>
         </FrameLayout>
     </LinearLayout>
@@ -106,7 +106,7 @@
         android:id="@+id/new_group_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimaryDark"
         android:foreground="?attr/selectableItemBackground">
 
         <androidx.legacy.widget.Space
@@ -148,7 +148,7 @@
         android:id="@+id/add_contact_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimaryDark"
         android:foreground="?attr/selectableItemBackground">
 
         <androidx.legacy.widget.Space
@@ -191,7 +191,7 @@
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:visibility="gone"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <androidx.legacy.widget.Space
@@ -236,7 +236,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:visibility="gone"
         android:foreground="?attr/selectableItemBackground"
-        android:background="@android:color/white">
+        android:background="@color/colorPrimary">
 
         <androidx.legacy.widget.Space
             android:id="@+id/center_invite"

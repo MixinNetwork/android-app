@@ -21,7 +21,7 @@
             android:layout_height="@dimen/item_contact_height"
             android:layout_marginTop="@dimen/item_divider"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@android:color/white">
+            android:background="@color/colorPrimary">
 
         <TextView
                 style="@style/NormalTextStyle"
@@ -47,7 +47,7 @@
             android:layout_width="match_parent"
             android:layout_height="@dimen/item_contact_height"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@android:color/white">
+            android:background="@color/colorPrimary">
 
         <TextView
                 style="@style/NormalTextStyle"
@@ -83,7 +83,7 @@
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@color/white"/>
+            android:background="@color/colorPrimary"/>
 
     <TextView
             style="@style/NormalTextStyle"
@@ -95,14 +95,14 @@
             android:paddingStart="@dimen/activity_horizontal_margin"
             android:paddingEnd="@dimen/activity_horizontal_margin"
             android:foreground="?attr/selectableItemBackground"
-            android:background="@color/white"/>
+            android:background="@color/colorPrimary"/>
 
     <RelativeLayout
         android:id="@+id/currency_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
         android:layout_marginTop="@dimen/margin20"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView

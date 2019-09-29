@@ -30,7 +30,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:clickable="true"
         android:focusable="true"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -71,7 +71,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:clickable="true"
         android:focusable="true"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -123,7 +123,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:clickable="true"
         android:focusable="true"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -164,7 +164,7 @@
         android:layout_height="@dimen/item_contact_height"
         android:clickable="true"
         android:focusable="true"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView

@@ -1,0 +1,17 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:fontFamily">@font/sf_pro_regular</item>
+        <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="android:windowContentTransitions">true</item>
+        <item name="android:textColorHighlight">@color/blue_highlight</item>
+        <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
+    </style>
+
+</resources>

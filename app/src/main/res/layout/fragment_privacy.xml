@@ -17,7 +17,7 @@
         android:id="@+id/blocked_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -45,7 +45,7 @@
         android:id="@+id/conversation_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -80,7 +80,7 @@
         android:id="@+id/auth_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -103,7 +103,7 @@
         android:id="@+id/emergency_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView
@@ -126,7 +126,7 @@
         android:id="@+id/contact_rl"
         android:layout_width="match_parent"
         android:layout_height="@dimen/item_contact_height"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground">
 
         <TextView

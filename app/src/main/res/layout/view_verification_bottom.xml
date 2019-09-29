@@ -20,7 +20,7 @@
         android:id="@+id/lost_tv"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@android:color/white"
+        android:background="@color/colorPrimary"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center_vertical"
         android:paddingStart="16dp"

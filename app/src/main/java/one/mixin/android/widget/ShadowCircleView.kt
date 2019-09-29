@@ -48,7 +48,7 @@ class ShadowCircleView : View {
             val x1 = width / 2f
             val y1 = height.toFloat()
             val c0 = Color.TRANSPARENT
-            val c1 = Color.WHITE
+            val c1 = context.getColor(R.color.colorShadow)
             framePaint.shader = LinearGradient(x0, y0, x1, y1, c0, c1, Shader.TileMode.CLAMP)
 
             midX = width / 2f
