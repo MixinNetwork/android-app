@@ -17,6 +17,7 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ResendMessageDao
+import one.mixin.android.db.SessionDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.UserDao
@@ -45,6 +46,8 @@ open class Injector : Injectable {
     lateinit var messageHistoryDao: MessageHistoryDao
     @Inject
     lateinit var userDao: UserDao
+    @Inject
+    lateinit var sessionDao: SessionDao
     @Inject
     lateinit var jobDao: JobDao
     @Inject

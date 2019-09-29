@@ -59,23 +59,7 @@ open class SendMessageJob(
         val conversation = conversationDao.findConversationById(message.conversationId)
         if (conversation != null) {
             if (message.isRecall()) {
-                messageDao.recallMessage(recallMessageId!!)
-                messageDao.findMessageById(recallMessageId)?.let { msg ->
-                    RxBus.publish(RecallEvent(msg.id))
-                    messageDao.recallFailedMessage(msg.id)
-                    messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
-                    if (msg.mediaUrl != null) {
-                        File(msg.mediaUrl.getFilePath()).let { file ->
-                            if (file.exists() && file.isFile) {
-                                file.delete()
-                            }
-                        }
-                    }
-                    messageDao.findMessageItemById(message.conversationId, msg.id)?.let { quoteMsg ->
-                        messageDao.updateQuoteContentByQuoteId(message.conversationId, msg.id, GsonHelper.customGson.toJson(quoteMsg))
-                    }
-                    jobManager.cancelJobById(msg.id)
-                }
+                recallMessage()
             } else {
                 messageDao.insert(message)
                 parseHyperlink()
@@ -84,8 +68,33 @@ open class SendMessageJob(
             Bugsnag.notify(Throwable("Insert failed, no conversation $alreadyExistMessage"))
         }
 
+        // TODO deprecated
         if (Session.getExtensionSessionId() != null) {
             jobManager.addJobInBackground(SendSessionMessageJob(message))
+        }
+    }
+
+    private fun recallMessage() {
+        messageDao.recallMessage(recallMessageId!!)
+        messageDao.findMessageById(recallMessageId)?.let { msg ->
+            RxBus.publish(RecallEvent(msg.id))
+            messageDao.recallFailedMessage(msg.id)
+            messageDao.takeUnseen(Session.getAccountId()!!, msg.conversationId)
+            msg.mediaUrl?.getFilePath()?.let {
+                File(it).let { file ->
+                    if (file.exists() && file.isFile) {
+                        file.delete()
+                    }
+                }
+            }
+            messageDao.findMessageItemById(message.conversationId, msg.id)?.let { quoteMsg ->
+                messageDao.updateQuoteContentByQuoteId(
+                    message.conversationId,
+                    msg.id,
+                    GsonHelper.customGson.toJson(quoteMsg)
+                )
+            }
+            jobManager.cancelJobById(msg.id)
         }
     }
 
@@ -153,12 +162,12 @@ open class SendMessageJob(
             return
         }
         if (signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
-            checkSentSenderKey(message.conversationId)
+            checkAndSendSenderKey(message.conversationId)
         } else {
             val conversation = conversationDao.getConversation(message.conversationId) ?: return
             if (conversation.isGroup()) {
                 syncConversation(conversation)
-                sendGroupSenderKey(conversation.conversationId)
+                checkAndSendSenderKey(conversation.conversationId)
             } else {
                 requestCreateConversation(conversation)
                 sendSenderKey(conversation.conversationId, conversation.ownerId!!)

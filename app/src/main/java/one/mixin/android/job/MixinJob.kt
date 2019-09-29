@@ -72,7 +72,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    protected fun checkSentSenderKey(conversationId: String) {
+    protected fun checkAndSendSenderKey(conversationId: String) {
         val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
         if (participants.size == 1) {
             sendSenderKey(conversationId, participants[0].userId)
@@ -81,9 +81,31 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    protected fun sendGroupSenderKey(conversationId: String) {
-        val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
-        sendBatchSenderKey(conversationId, participants)
+    protected fun sendSenderKey(conversationId: String, recipientId: String): Boolean {
+        if (!signalProtocol.containsSession(recipientId)) {
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
+            val data = signalKeysChannel(blazeMessage) ?: return false
+            val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
+            if (keys.isNotEmpty() && keys.count() > 0) {
+                val preKeyBundle = createPreKeyBundle(keys[0])
+                signalProtocol.processSession(recipientId, preKeyBundle)
+            } else {
+                sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
+                Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
+                return false
+            }
+        }
+
+        val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, recipientId)
+        if (err) return false
+        val param = createSignalKeyParam(conversationId, recipientId, cipherText!!)
+        val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
+        val result = deliverNoThrow(bm)
+        if (result) {
+            sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId,
+                SentSenderKeyStatus.SENT.ordinal, senderKeyId))
+        }
+        return result
     }
 
     private fun sendBatchSenderKey(conversationId: String, participants: List<Participant>) {
@@ -190,33 +212,6 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         return result
     }
 
-    protected fun sendSenderKey(conversationId: String, recipientId: String): Boolean {
-        if (!signalProtocol.containsSession(recipientId)) {
-            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
-            val data = signalKeysChannel(blazeMessage) ?: return false
-            val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
-            if (keys.isNotEmpty() && keys.count() > 0) {
-                val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle)
-            } else {
-                sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId, SentSenderKeyStatus.UNKNOWN.ordinal))
-                Log.e(TAG, "No any signal key from server" + SentSenderKeyStatus.UNKNOWN.ordinal)
-                return false
-            }
-        }
-
-        val (cipherText, senderKeyId, err) = signalProtocol.encryptSenderKey(conversationId, recipientId)
-        if (err) return false
-        val param = createSignalKeyParam(conversationId, recipientId, cipherText!!)
-        val bm = BlazeMessage(UUID.randomUUID().toString(), CREATE_MESSAGE, param)
-        val result = deliverNoThrow(bm)
-        if (result) {
-            sentSenderKeyDao.insert(SentSenderKey(conversationId, recipientId,
-                SentSenderKeyStatus.SENT.ordinal, senderKeyId))
-        }
-        return result
-    }
-
     protected tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): Boolean {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
@@ -308,8 +303,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 category = conversation.category, participants = participantRequest)
             val response = conversationApi.create(request).execute().body()
             if (response != null && response.isSuccess && response.data != null && !isCancel) {
-                conversationDao
-                    .updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
+                conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
             } else {
                 throw Exception("Create Conversation Exception")
             }

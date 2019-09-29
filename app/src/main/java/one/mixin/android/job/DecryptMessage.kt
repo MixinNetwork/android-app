@@ -66,6 +66,12 @@ import one.mixin.android.websocket.ResendData
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.SystemConversationAction
 import one.mixin.android.websocket.SystemConversationData
+import one.mixin.android.websocket.AttachmentMessagePayload
+import one.mixin.android.websocket.ContactMessagePayload
+import one.mixin.android.websocket.LiveMessagePayload
+import one.mixin.android.websocket.SystemConversationMessagePayload
+import one.mixin.android.websocket.SystemSessionMessageAction
+import one.mixin.android.websocket.SystemSessionMessagePayload
 import one.mixin.android.websocket.TransferPlainData
 import one.mixin.android.websocket.createCountSignalKeys
 import one.mixin.android.websocket.createParamBlazeMessage
@@ -164,12 +170,16 @@ class DecryptMessage : Injector() {
     private fun processSystemMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.SYSTEM_CONVERSATION.name) {
             val json = Base64.decode(data.data)
-            val systemMessage = gson.fromJson(String(json), SystemConversationData::class.java)
+            val systemMessage = gson.fromJson(String(json), SystemConversationMessagePayload::class.java)
             processSystemConversationMessage(data, systemMessage)
         } else if (data.category == MessageCategory.SYSTEM_ACCOUNT_SNAPSHOT.name) {
             val json = Base64.decode(data.data)
             val systemSnapshot = gson.fromJson(String(json), Snapshot::class.java)
             processSystemSnapshotMessage(data, systemSnapshot)
+        } else if (data.category == MessageCategory.SYSTEM_SESSION.name) {
+            val json = Base64.decode(data.data)
+            val systemSession = gson.fromJson(String(json), SystemSessionMessagePayload::class.java)
+            processSystemSessionMessage(data, systemSession)
         }
 
         updateRemoteMessageStatus(data.messageId, MessageStatus.READ)
@@ -398,6 +408,14 @@ class DecryptMessage : Injector() {
         }
     }
 
+    private fun processSystemSessionMessage(data: BlazeMessageData, systemSession: SystemSessionMessagePayload) {
+        if (systemSession.action == SystemSessionMessageAction.ADD.name) {
+            sessionDao.insert(one.mixin.android.vo.Session(systemSession.sessionId, systemSession.userId, "Desktop"))
+        } else if (systemSession.action == SystemSessionMessageAction.DESTROY.name) {
+            sessionDao.delete(one.mixin.android.vo.Session(systemSession.sessionId, systemSession.userId, ""))
+        }
+    }
+
     private fun processSystemSnapshotMessage(data: BlazeMessageData, snapshot: Snapshot) {
         val message = createMessage(data.messageId, data.conversationId, data.userId, data.category, "",
             data.createdAt, MessageStatus.DELIVERED, snapshot.type, null, snapshot.snapshotId)
@@ -414,7 +432,7 @@ class DecryptMessage : Injector() {
         }
     }
 
-    private fun processSystemConversationMessage(data: BlazeMessageData, systemMessage: SystemConversationData) {
+    private fun processSystemConversationMessage(data: BlazeMessageData, systemMessage: SystemConversationMessagePayload) {
         var userId = data.userId
         if (systemMessage.userId != null) {
             userId = systemMessage.userId

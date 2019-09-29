@@ -31,6 +31,14 @@ internal class BaseDbModule {
 
     @Singleton
     @Provides
+    fun provideSessionDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.sessionDao()
+
+    @Singleton
+    @Provides
+    fun provideSessionParticipantDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.sessionParticipantDao()
+
+    @Singleton
+    @Provides
     @DatabaseCategory(DatabaseCategoryEnum.BASE)
     fun provideConversationDao(@DatabaseCategory(DatabaseCategoryEnum.BASE) db: MixinDatabase) = db.conversationDao()
 

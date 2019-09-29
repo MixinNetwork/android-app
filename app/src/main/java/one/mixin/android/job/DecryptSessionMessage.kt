@@ -29,6 +29,7 @@ import one.mixin.android.websocket.PlainDataAction
 import one.mixin.android.websocket.RecallMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
 import one.mixin.android.websocket.SystemConversationData
+import one.mixin.android.websocket.SystemConversationMessagePayload
 import one.mixin.android.websocket.SystemExtensionSessionAction
 import one.mixin.android.websocket.TransferPlainAckData
 import org.whispersystems.libsignal.DecryptionCallback
@@ -86,7 +87,7 @@ class DecryptSessionMessage : Injector() {
     private fun processSystemMessage(data: BlazeMessageData) {
         if (data.category == MessageCategory.SYSTEM_EXTENSION_SESSION.name) {
             val json = Base64.decode(data.data)
-            val systemMessage = gson.fromJson(String(json), SystemConversationData::class.java)
+            val systemMessage = gson.fromJson(String(json), SystemConversationMessagePayload::class.java)
             if (systemMessage.action == SystemExtensionSessionAction.ADD_SESSION.name && data.sessionId != null) {
                 Session.storeExtensionSessionId(data.sessionId)
                 signalProtocol.deleteSession(data.userId)
