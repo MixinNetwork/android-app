@@ -195,17 +195,19 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         model.viewModelScope.launch {
             index = conversationRepository.indexMediaMessages(conversationId, messageId)
             val list = conversationRepository.getMediaMessages(conversationId, index)
-            pagerAdapter.submitList(list)
-            view_pager.adapter = pagerAdapter
-            if (index != -1) {
-                view_pager.currentItem = index
-                lastPos = index
-                play(index)
-            } else {
-                view_pager.currentItem = 0
-                lastPos = 0
-                this@DragMediaActivity.finish()
+            pagerAdapter.submitAction = {
+                if (index != -1) {
+                    view_pager.currentItem = index
+                    lastPos = index
+                    play(index)
+                } else {
+                    view_pager.currentItem = 0
+                    lastPos = 0
+                    this@DragMediaActivity.finish()
+                }
             }
+            view_pager.adapter = pagerAdapter
+            pagerAdapter.submitList(list)
         }
 
         view_pager.addOnPageChangeListener(pageListener)
@@ -487,8 +489,6 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             container.removeView(obj as View)
         }
-
-        fun getItem(position: Int): MessageItem? = pagedList?.get(position)
 
         private fun createVideoView(
             container: ViewGroup,
