@@ -60,6 +60,10 @@ abstract class PagedListPagerAdapter<T> : PagerAdapter() {
         }
 
         private fun isInterleave(start: Int, end: Int) =
+            try {
                 start <= visiblePositions.last() && visiblePositions.first() <= end
+            } catch (e: Exception) {
+                false
+            }
     }
 }
