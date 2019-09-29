@@ -1,13 +1,17 @@
 package one.mixin.android.repository
 
 import android.annotation.SuppressLint
+import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.lifecycle.LiveData
+import androidx.paging.PagedList
 import io.reactivex.Observable
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
@@ -28,7 +32,6 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Job
-import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
@@ -105,8 +108,18 @@ internal constructor(
 
     suspend fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
 
-    suspend fun getMediaMessages(conversationId: String): List<MessageItem> =
-        readMessageDao.getMediaMessages(conversationId)
+    suspend fun indexMediaMessages(conversationId: String, messageId: String): Int =
+        readMessageDao.indexMediaMessages(conversationId, messageId)
+
+    suspend fun getMediaMessages(conversationId: String, index: Int): PagedList<MessageItem> {
+        return withContext(Dispatchers.IO) {
+            PagedList.Builder<Int, MessageItem>(readMessageDao.getMediaMessages(conversationId).create(), 5)
+                .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
+                .setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
+                .setInitialKey(index)
+                .build()
+        }
+    }
 
     fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
 
@@ -210,10 +223,6 @@ internal constructor(
             }
         } catch (e: IOException) {
         }
-    }
-
-    fun insertMessage(message: Message) {
-        messageDao.insert(message)
     }
 
     suspend fun findFirstUnreadMessageId(conversationId: String, userId: String): String? = messageDao.findFirstUnreadMessageId(conversationId, userId)

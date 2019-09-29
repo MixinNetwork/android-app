@@ -52,7 +52,6 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
-import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
@@ -127,6 +126,7 @@ import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.PagedListPagerAdapter
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
@@ -155,7 +155,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private var index: Int = 0
     private var lastPos: Int = -1
-    private val pagerAdapter = MediaAdapter(this)
+    private val pagerAdapter by lazy {
+        MediaAdapter(this@DragMediaActivity)
+    }
     private var disposable: Disposable? = null
 
     @Inject
@@ -191,17 +193,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         val model = ViewModelProvider(this).get(DragMediaViewModel::class.java)
         model.viewModelScope.launch {
-            val list = conversationRepository.getMediaMessages(conversationId).filter { item ->
-                if (item.isLive()) {
-                    true
-                } else {
-                    val path = item.mediaUrl?.toUri()?.getFilePath()
-                    path != null && File(path).exists()
-                }
-            }.reversed()
-
-            index = list.indexOfFirst { item -> messageId == item.messageId }
-            pagerAdapter.list = list
+            index = conversationRepository.indexMediaMessages(conversationId, messageId)
+            val list = conversationRepository.getMediaMessages(conversationId, index)
+            pagerAdapter.submitList(list)
             view_pager.adapter = pagerAdapter
             if (index != -1) {
                 view_pager.currentItem = index
@@ -259,7 +253,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         builder.setCustomView(view)
         val bottomSheet = builder.create()
         view.save_video.setOnClickListener {
-            val messageItem = pagerAdapter.list?.get(view_pager.currentItem)
+            val messageItem = pagerAdapter.getItem(view_pager.currentItem)
             if (messageItem == null) {
                 toast(R.string.save_failure)
             } else {
@@ -302,8 +296,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {
-                            pagerAdapter.list?.let { list ->
-                                val item = list[view_pager.currentItem]
+                            pagerAdapter.getItem(view_pager.currentItem)?.let { item ->
                                 val path = item.mediaUrl?.toUri()?.getFilePath()
                                 if (path == null) {
                                     toast(R.string.save_failure)
@@ -437,7 +430,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private fun shareMedia(isVideo: Boolean) {
         val sendIntent = Intent().apply {
             action = Intent.ACTION_SEND
-            val url = pagerAdapter.list?.get(view_pager.currentItem)?.mediaUrl
+            val url = pagerAdapter.getItem(view_pager.currentItem)?.mediaUrl
             var uri = Uri.parse(url)
             if (ContentResolver.SCHEME_FILE == uri.scheme) {
                 val path = uri.getFilePath(this@DragMediaActivity)
@@ -461,17 +454,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     inner class MediaAdapter(
         private val onDismissListener: DismissFrameLayout.OnDismissListener
-    ) : PagerAdapter(), TextureView.SurfaceTextureListener {
-
-        var list: List<MessageItem>? = null
-
-        fun getItem(position: Int): MessageItem? = list?.get(position)
-
-        override fun getCount(): Int = list?.size ?: 0
-
-        override fun isViewFromObject(view: View, obj: Any): Boolean = view === obj
-
-        override fun instantiateItem(container: ViewGroup, position: Int): Any {
+    ) : PagedListPagerAdapter<MessageItem>(), TextureView.SurfaceTextureListener {
+        override fun createItem(container: ViewGroup, position: Int): Any {
             val messageItem = getItem(position) ?: return DismissFrameLayout(container.context)
             val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
                 messageItem.type == MessageCategory.PLAIN_IMAGE.name
@@ -492,6 +476,19 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             container.addView(layout)
             return layout
         }
+
+        override fun removeItem(container: ViewGroup, position: Int, obj: Any) {
+            if (obj is View) {
+                obj.tag?.let {
+                    if (it is Disposable && !it.isDisposed) {
+                        it.dispose()
+                    }
+                }
+            }
+            container.removeView(obj as View)
+        }
+
+        fun getItem(position: Int): MessageItem? = pagedList?.get(position)
 
         private fun createVideoView(
             container: ViewGroup,
@@ -762,18 +759,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 showImageBottom()
                 return@setOnLongClickListener true
             }
-            return imageView
-        }
-
-        override fun destroyItem(container: ViewGroup, position: Int, obj: Any) {
-            if (obj is View) {
-                obj.tag?.let {
-                    if (it is Disposable && !it.isDisposed) {
-                        it.dispose()
-                    }
-                }
+            if (position == index) {
+                ViewCompat.setTransitionName(imageView, "transition")
+                setStartPostTransition(imageView)
             }
-            container.removeView(obj as View)
+            return imageView
         }
 
         override fun onSurfaceTextureSizeChanged(
