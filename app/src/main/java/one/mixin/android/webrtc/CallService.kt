@@ -100,10 +100,18 @@ class CallService : Service(), PeerConnectionClient.PeerConnectionEvents {
                 self = user
             }
         }
+        supportsOreo {
+            updateNotification()
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent == null || intent.action == null) return START_NOT_STICKY
+        if (intent == null || intent.action == null) {
+            supportsOreo {
+                updateNotification()
+            }
+            return START_NOT_STICKY
+        }
 
         callExecutor.execute {
             when (intent.action) {
