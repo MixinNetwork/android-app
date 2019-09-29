@@ -8,8 +8,7 @@ import java.util.SortedSet
 import java.util.TreeSet
 
 abstract class PagedListPagerAdapter<T> : PagerAdapter() {
-    var pagedList: PagedList<T>? = null
-        private set
+    private var pagedList: PagedList<T>? = null
     private var callback = PagerCallback()
 
     private var visiblePositions: SortedSet<Int> = TreeSet()
@@ -17,6 +16,16 @@ abstract class PagedListPagerAdapter<T> : PagerAdapter() {
     override fun isViewFromObject(view: View, obj: Any) = view == obj
 
     override fun getCount() = pagedList?.size ?: 0
+
+    fun getItem(position: Int): T? {
+        return if (position >= 0 && position < pagedList?.size ?: 0) {
+            pagedList?.get(position)
+        } else {
+            null
+        }
+    }
+
+    var submitAction: (() -> Unit)? = null
 
     final override fun instantiateItem(container: ViewGroup, position: Int): Any {
         visiblePositions.add(position)
@@ -39,6 +48,10 @@ abstract class PagedListPagerAdapter<T> : PagerAdapter() {
         this.pagedList = pagedList
         pagedList?.addWeakCallback(null, callback)
         notifyDataSetChanged()
+        submitAction?.let {
+            it.invoke()
+            submitAction = null
+        }
     }
 
     private inner class PagerCallback : PagedList.Callback() {
