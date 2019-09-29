@@ -37,7 +37,7 @@ fun backup(
             return@launch
         }
 
-        val exists = backupDir.listFiles().any { it.name.contains(dbFile.name) }
+        val exists = backupDir.listFiles()?.any { it.name.contains(dbFile.name) } == true
         val name = "${dbFile.name}.${Constants.DataBase.CURRENT_VERSION}"
         val tmpName = if (exists) {
             "$name$BACKUP_POSTFIX"
@@ -81,7 +81,7 @@ fun backup(
         }
 
         try {
-            backupDir.listFiles().forEach { f ->
+            backupDir.listFiles()?.forEach { f ->
                 if (f.name != tmpName) {
                     f.delete()
                 }
