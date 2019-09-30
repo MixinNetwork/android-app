@@ -10,7 +10,7 @@ import androidx.navigation.findNavController
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transactions_user.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -76,7 +76,7 @@ class UserTransactionsFragment : BaseFragment(), OnSnapshotListener {
 
     override fun <T> onNormalItemClick(item: T) {
         val snapshot = item as SnapshotItem
-        walletViewModel.getAssetItem(snapshot.assetId).autoDisposable(stopScope).subscribe({ assetItem ->
+        walletViewModel.getAssetItem(snapshot.assetId).autoDispose(stopScope).subscribe({ assetItem ->
             assetItem.let {
                 try {
                     view?.findNavController()?.navigate(R.id.action_user_transactions_to_transaction,

@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import ir.mirrajabi.rxcontacts.Contact
@@ -129,7 +129,7 @@ class ContactsFragment : BaseFragment() {
             .toSortedList(Contact::compareTo)
             .observeOn(AndroidSchedulers.mainThread())
             .subscribeOn(Schedulers.io())
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe({ contacts ->
                 val mutableList = mutableListOf<User>()
                 for (item in contacts) {
@@ -163,7 +163,7 @@ class ContactsFragment : BaseFragment() {
         override fun onEmptyRl() {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.READ_CONTACTS)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         contactAdapter.removeFooter()

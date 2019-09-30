@@ -3,7 +3,7 @@ package one.mixin.android.ui.setting
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import com.uber.autodispose.ScopeProvider
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.schedulers.Schedulers
 import javax.inject.Inject
 import one.mixin.android.api.service.UserService
@@ -21,7 +21,7 @@ internal constructor(
 
     fun blockingUsers(scopeProvider: ScopeProvider): LiveData<List<User>> {
         userService.blockingUsers().subscribeOn(Schedulers.io()).observeOn(Schedulers.io())
-            .autoDisposable(scopeProvider).subscribe({
+            .autoDispose(scopeProvider).subscribe({
                 if (it.isSuccess) {
                     it.data?.let {
                         for (user in it) {

@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_authentications.*
 import kotlinx.android.synthetic.main.item_auth.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -40,7 +40,7 @@ class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
                 showDialog(app, position)
             }
         })
-        viewModel.authorizations().autoDisposable(stopScope).subscribe({ list ->
+        viewModel.authorizations().autoDispose(stopScope).subscribe({ list ->
             if (list.isSuccess) {
                 this.list = list.data?.map {
                     it.app
@@ -66,7 +66,7 @@ class AuthenticationsFragment : BaseViewModelFragment<SettingViewModel>() {
             }
             .setMessage(getString(R.string.setting_auth_cancel_msg, app.name))
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
-                viewModel.deauthApp(app.appId).autoDisposable(stopScope).subscribe({}, {})
+                viewModel.deauthApp(app.appId).autoDispose(stopScope).subscribe({}, {})
                 list?.removeAt(position)
                 auth_rv.adapter?.notifyItemRemoved(position)
                 dialog.dismiss()

@@ -26,7 +26,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.UUID
@@ -180,7 +180,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         contentView.memo_iv.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.CAMERA)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         CaptureActivity.show(requireActivity()) {

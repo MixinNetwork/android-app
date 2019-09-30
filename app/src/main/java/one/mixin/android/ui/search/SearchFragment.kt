@@ -15,7 +15,7 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_search.*
 import kotlinx.android.synthetic.main.item_search_app.view.*
@@ -135,7 +135,7 @@ class SearchFragment : BaseFragment() {
             override fun onTipClick() {
                 search_rv.hideKeyboard()
                 searchAdapter.searchingId = true
-                searchViewModel.search(searchAdapter.query).autoDisposable(stopScope).subscribe({ r ->
+                searchViewModel.search(searchAdapter.query).autoDispose(stopScope).subscribe({ r ->
                     searchAdapter.searchingId = false
                     when {
                         r.isSuccess -> r.data?.let { data ->

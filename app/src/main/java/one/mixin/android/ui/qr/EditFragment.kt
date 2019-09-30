@@ -20,7 +20,7 @@ import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.io.File
 import kotlinx.android.synthetic.main.fragment_edit.*
 import kotlinx.coroutines.Dispatchers
@@ -122,7 +122,7 @@ class EditFragment : CaptureVisionFragment() {
         download_iv.setOnClickListener {
             RxPermissions(activity!!)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         save()

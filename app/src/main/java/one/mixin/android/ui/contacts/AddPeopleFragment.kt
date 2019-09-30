@@ -11,7 +11,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
 import com.google.i18n.phonenumbers.NumberParseException
 import com.google.i18n.phonenumbers.PhoneNumberUtil
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.util.Locale
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_add_people.*
@@ -72,7 +72,7 @@ class AddPeopleFragment : BaseFragment() {
         search_tv.setOnClickListener {
             search_animator.displayedChild = POS_PROGRESS
             search_tv.isEnabled = false
-            contactsViewModel.search(search_et.text.toString()).autoDisposable(stopScope).subscribe({ r ->
+            contactsViewModel.search(search_et.text.toString()).autoDispose(stopScope).subscribe({ r ->
                 search_animator.displayedChild = POS_SEARCH
                 search_tv.isEnabled = true
                 when {

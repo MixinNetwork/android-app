@@ -16,7 +16,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_new_group.*
 import kotlinx.android.synthetic.main.item_contact_normal.view.*
@@ -88,7 +88,7 @@ class NewGroupFragment : BaseFragment() {
         photo_rl.setOnClickListener {
             RxPermissions(activity!!)
                 .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         openImage(imageUri)

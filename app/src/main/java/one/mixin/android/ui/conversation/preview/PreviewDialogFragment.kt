@@ -11,7 +11,7 @@ import android.view.WindowManager
 import androidx.core.os.bundleOf
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.MixinDialogFragment
-import com.uber.autodispose.android.lifecycle.autoDisposable
+import com.uber.autodispose.android.lifecycle.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
@@ -118,7 +118,7 @@ class PreviewDialogFragment : MixinDialogFragment(), VideoTimelineView.VideoTime
                 mediaDialogView!!.time.setVideoPath(uri!!.getFilePath(context!!))
                 Observable.interval(0, 100, TimeUnit.MILLISECONDS)
                     .observeOn(AndroidSchedulers.mainThread())
-                    .autoDisposable(this).subscribe {
+                    .autoDispose(this).subscribe {
                     if (mixinPlayer.duration() != 0 && mixinPlayer.isPlaying()) {
                         mediaDialogView!!.time.progress = mixinPlayer.getCurrentPos().toFloat() / mixinPlayer.duration()
                     }

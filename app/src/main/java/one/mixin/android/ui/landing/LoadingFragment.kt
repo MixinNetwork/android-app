@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -43,7 +43,7 @@ class LoadingFragment : BaseFragment() {
     private fun load() {
         if (count > 0) {
             count--
-            loadingViewModel.pushAsyncSignalKeys().autoDisposable(stopScope).subscribe({
+            loadingViewModel.pushAsyncSignalKeys().autoDispose(stopScope).subscribe({
                 when {
                     it?.isSuccess == true -> {
                         context!!.defaultSharedPreferences.putBoolean(IS_LOADED, true)

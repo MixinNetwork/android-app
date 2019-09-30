@@ -27,7 +27,7 @@ import androidx.transition.TransitionManager
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.GlideException
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.disposables.Disposable
 import java.util.Timer
 import java.util.TimerTask
@@ -219,7 +219,7 @@ class CallActivity : BaseActivity(), SensorEventListener {
     private fun handleAnswer() {
         RxPermissions(this)
             .request(Manifest.permission.RECORD_AUDIO)
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
                     handleAnswering()

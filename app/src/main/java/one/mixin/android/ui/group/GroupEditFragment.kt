@@ -7,7 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group_edit.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -68,7 +68,7 @@ class GroupEditFragment : BaseFragment() {
             } else {
                 title_view.pb.visibility = View.VISIBLE
                 title_view.right_tv.visibility = View.GONE
-                groupViewModel.updateGroup(conversationId, desc_et.text.toString()).autoDisposable(stopScope).subscribe({
+                groupViewModel.updateGroup(conversationId, desc_et.text.toString()).autoDispose(stopScope).subscribe({
                     if (it.isSuccess) {
                         groupViewModel.updateAnnouncement(conversationId, it.data?.announcement)
                         desc_et.hideKeyboard()

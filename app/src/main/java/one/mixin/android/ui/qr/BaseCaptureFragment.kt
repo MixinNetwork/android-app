@@ -12,7 +12,7 @@ import android.os.SystemClock
 import android.view.View
 import androidx.core.view.isVisible
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.io.File
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
 import kotlinx.android.synthetic.main.view_camera_tip.view.*
@@ -81,7 +81,7 @@ abstract class BaseCaptureFragment : CaptureVisionFragment() {
         gallery_iv.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         openGallery()

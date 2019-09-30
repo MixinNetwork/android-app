@@ -10,7 +10,7 @@ import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group.*
@@ -159,7 +159,7 @@ class GroupFragment : BaseFragment() {
 
         RxBus.listen(ConversationEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe {
                 if (it.type == TYPE_ADD || it.type == TYPE_REMOVE) {
                     dialog?.dismiss()

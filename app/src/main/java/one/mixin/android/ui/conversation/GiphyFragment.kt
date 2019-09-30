@@ -12,7 +12,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import one.mixin.android.R
@@ -97,7 +97,7 @@ class GiphyFragment : BaseFragment() {
         }
         sticker_progress.visibility = View.VISIBLE
         stickerViewModel.trendingGifs(26, 0)
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe({ list ->
                 if (!isAdded) return@subscribe
                 giphyAdapter.data = list

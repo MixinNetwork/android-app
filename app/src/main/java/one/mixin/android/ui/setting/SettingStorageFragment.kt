@@ -15,7 +15,7 @@ import androidx.collection.ArrayMap
 import androidx.collection.ArraySet
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -129,7 +129,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
                 }
             }
             map.values.toMutableList()
-        }.autoDisposable(stopScope).subscribe({
+        }.autoDispose(stopScope).subscribe({
             menuAdapter.setData(it)
             selectSet.clear()
             it?.let {
@@ -215,7 +215,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
                 }
             }
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe({
                 dialog.dismiss()
             }, {

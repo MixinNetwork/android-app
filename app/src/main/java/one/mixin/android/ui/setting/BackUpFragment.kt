@@ -15,7 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Observer
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.util.Date
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_backup.*
@@ -61,7 +61,7 @@ class BackUpFragment : BaseFragment() {
         backup_bn.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         jobManager.addJobInBackground(BackupJob(true))

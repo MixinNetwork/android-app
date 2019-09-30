@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -140,7 +140,7 @@ class AddressAddFragment : BaseFragment() {
     private fun handleClick(isAddr: Boolean) {
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
                     CaptureActivity.show(requireActivity()) {

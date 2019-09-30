@@ -17,7 +17,7 @@ import androidx.lifecycle.viewModelScope
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_forward.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -180,7 +180,7 @@ class ForwardFragment : BaseFragment() {
                 .request(
                     WRITE_EXTERNAL_STORAGE,
                     READ_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         chatViewModel.sendForwardMessages(adapter.selectItem, messages)
@@ -204,7 +204,7 @@ class ForwardFragment : BaseFragment() {
                 .request(
                     WRITE_EXTERNAL_STORAGE,
                     READ_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         sharePreOperation()

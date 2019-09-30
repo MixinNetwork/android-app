@@ -42,7 +42,7 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.io.ByteArrayInputStream
 import java.io.FileInputStream
 import java.net.URISyntaxException
@@ -348,7 +348,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             .setGrantedAction {
                                 RxPermissions(requireActivity())
                                     .request(Manifest.permission.CAMERA)
-                                    .autoDisposable(stopScope)
+                                    .autoDispose(stopScope)
                                     .subscribe({ granted ->
                                         if (granted) {
                                             startActivityForResult(
@@ -374,7 +374,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }.setGrantedAction {
                                 RxPermissions(requireActivity())
                                     .request(Manifest.permission.CAMERA)
-                                    .autoDisposable(stopScope)
+                                    .autoDispose(stopScope)
                                     .subscribe({ granted ->
                                         if (granted) {
                                             openCamera(getImageUri())
@@ -532,7 +532,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (!isAdded) return
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe { granted ->
                 if (granted) {
                     doAsync {

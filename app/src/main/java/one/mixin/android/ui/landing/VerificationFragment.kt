@@ -12,7 +12,7 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_verification.*
 import kotlinx.android.synthetic.main.view_verification_bottom.view.*
 import kotlinx.coroutines.Dispatchers
@@ -157,7 +157,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
     private fun handlePhoneModification() {
         showLoading()
         viewModel.changePhone(arguments!!.getString(ARGS_ID)!!, pin_verification_view.code(), pin = pin!!)
-            .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
+            .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
                 verification_next_fab.hide()
                 verification_cover.visibility = GONE
                 if (!r.isSuccess) {
@@ -229,7 +229,7 @@ class VerificationFragment : PinCodeFragment<MobileViewModel>() {
             if (isPhoneModification()) VerificationPurpose.PHONE.name else VerificationPurpose.SESSION.name,
             gRecaptchaResponse)
         viewModel.verification(verificationRequest)
-            .autoDisposable(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
+            .autoDispose(stopScope).subscribe({ r: MixinResponse<VerificationResponse> ->
                 if (!r.isSuccess) {
                     if (r.errorCode == NEED_RECAPTCHA) {
                         recaptchaView.loadRecaptcha()
