@@ -175,6 +175,6 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
         confirmBottomFragment.setCallBack {
             updateUI(true)
         }
-        confirmBottomFragment.show(fragmentManager, ConfirmBottomFragment.TAG)
+        confirmBottomFragment.show(parentFragmentManager, ConfirmBottomFragment.TAG)
     }
 }

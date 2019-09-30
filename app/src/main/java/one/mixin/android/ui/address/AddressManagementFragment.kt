@@ -117,7 +117,7 @@ class AddressManagementFragment : BaseFragment() {
                 } else if (direction == ItemTouchHelper.END) {
                     val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
                     val bottomSheet = showBottomSheet(addr, asset)
-                    fragmentManager?.executePendingTransactions()
+                    parentFragmentManager.executePendingTransactions()
                     bottomSheet.dialog.setOnDismissListener {
                         bottomSheet.dismiss()
                         if (!deleteSuccess) {
