@@ -69,7 +69,7 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.shizhefei.view.largeimage.LargeImageView
 import com.shizhefei.view.largeimage.factory.FileBitmapDecoderFactory
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -261,7 +261,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             } else {
                 RxPermissions(this)
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDisposable(stopScope)
+                    .autoDispose(stopScope)
                     .subscribe({ granted ->
                         if (granted) {
                             messageItem.saveToLocal(this@DragMediaActivity)
@@ -294,7 +294,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         view.save.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         doAsync {
@@ -982,7 +982,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private fun startListenDuration(view: View) {
         disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe {
                 if (VideoPlayer.player().duration() != 0) {
                     view.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /

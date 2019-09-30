@@ -10,7 +10,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -123,7 +123,7 @@ class SearchSingleFragment : BaseFragment() {
         search_et.setText(query)
         search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(destroyScope)
+            .autoDispose(destroyScope)
             .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 if (it == adapter.query) return@subscribe

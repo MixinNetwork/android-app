@@ -11,7 +11,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker.*
 import kotlinx.coroutines.launch
@@ -146,7 +146,7 @@ class StickerFragment : BaseFragment() {
         }
 
         RxBus.listen(DragReleaseEvent::class.java)
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe {
                 sticker_rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
             }

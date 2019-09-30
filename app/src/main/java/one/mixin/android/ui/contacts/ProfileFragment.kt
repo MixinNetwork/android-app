@@ -17,7 +17,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_profile.*
@@ -114,7 +114,7 @@ class ProfileFragment : BaseFragment() {
             photo_rl.setOnClickListener {
                 RxPermissions(activity!!)
                     .request(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDisposable(stopScope)
+                    .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
                             openImage(imageUri)
@@ -213,7 +213,7 @@ class ProfileFragment : BaseFragment() {
             else -> AccountUpdateRequest(content, null)
         }
         contactsViewModel.update(accountUpdateRequest)
-            .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
+            .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
                 if (!isAdded) return@subscribe
                 when (type) {
                     TYPE_PHOTO -> photo_animator.displayedChild = POS_CONTENT

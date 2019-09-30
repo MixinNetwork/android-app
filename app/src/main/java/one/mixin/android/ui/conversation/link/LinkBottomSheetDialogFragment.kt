@@ -17,7 +17,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -126,7 +126,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                         }
                     }
                     user
-                }.observeOn(AndroidSchedulers.mainThread()).autoDisposable(scopeProvider).subscribe({
+                }.observeOn(AndroidSchedulers.mainThread()).autoDispose(scopeProvider).subscribe({
                     it.notNullWithElse({
                         UserBottomSheetDialogFragment.newInstance(it)
                             .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -157,7 +157,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 return
             }
             val transferRequest = TransferRequest(assetId, userId, amount, null, trace, memo)
-            linkViewModel.pay(transferRequest).autoDisposable(scopeProvider).subscribe({ r ->
+            linkViewModel.pay(transferRequest).autoDispose(scopeProvider).subscribe({ r ->
                 if (r.isSuccess) {
                     linkViewModel.viewModelScope.launch {
                         val asset = linkViewModel.findAssetItemById(assetId)
@@ -188,7 +188,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
             } else {
                 segments[0]
             }
-            linkViewModel.searchCode(code).autoDisposable(scopeProvider).subscribe({ result ->
+            linkViewModel.searchCode(code).autoDispose(scopeProvider).subscribe({ result ->
                 when {
                     result.first == QrCodeType.conversation.name -> {
                         val response = result.second as ConversationResponse
@@ -338,7 +338,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 error()
             } else {
                 val transferRequest = TransferRequest(assetId, null, amount, null, traceId, memo, addressId)
-                linkViewModel.pay(transferRequest).autoDisposable(scopeProvider).subscribe({ r ->
+                linkViewModel.pay(transferRequest).autoDispose(scopeProvider).subscribe({ r ->
                     if (r.isSuccess) {
                         val paymentResponse = r.data!!
                         if (paymentResponse.status == PaymentStatus.paid.name) {

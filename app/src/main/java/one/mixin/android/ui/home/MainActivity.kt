@@ -13,7 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.work.WorkManager
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.Maybe
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -323,7 +323,7 @@ class MainActivity : BlazeBaseActivity() {
                 runOnUiThread { alertDialog?.dismiss() }
                 innerIntent
             }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(stopScope).subscribe({
+                .autoDispose(stopScope).subscribe({
                     it?.let { intent ->
                         this.startActivity(intent)
                     }

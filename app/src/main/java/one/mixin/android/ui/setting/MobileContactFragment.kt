@@ -9,7 +9,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import ir.mirrajabi.rxcontacts.Contact
 import ir.mirrajabi.rxcontacts.RxContacts
 import kotlinx.android.synthetic.main.fragment_setting_mobile_contact.*
@@ -94,12 +94,12 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
         op_rl.setOnClickListener {
             RxPermissions(requireActivity())
                 .request(Manifest.permission.READ_CONTACTS)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         RxContacts.fetch(requireContext())
                             .toSortedList(Contact::compareTo)
-                            .autoDisposable(stopScope)
+                            .autoDispose(stopScope)
                             .subscribe({ contacts ->
                                 updateContacts(contacts)
                             }, {

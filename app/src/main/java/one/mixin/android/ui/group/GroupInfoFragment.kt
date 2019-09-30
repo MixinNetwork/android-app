@@ -16,7 +16,7 @@ import androidx.collection.ArrayMap
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group_info.*
@@ -249,7 +249,7 @@ class GroupInfoFragment : BaseFragment() {
 
         RxBus.listen(ConversationEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe {
                 if (it.type == TYPE_MAKE_ADMIN || it.type == TYPE_REMOVE || it.type == TYPE_EXIT) {
                     dialog?.dismiss()

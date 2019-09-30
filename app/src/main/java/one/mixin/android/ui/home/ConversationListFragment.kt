@@ -25,7 +25,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.gson.Gson
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.io.File
 import javax.inject.Inject
 import kotlin.math.min
@@ -171,7 +171,7 @@ class ConversationListFragment : LinkFragment() {
         shadow_view.setOnClickListener {
             RxPermissions(activity!!)
                 .request(Manifest.permission.CAMERA)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe { granted ->
                     if (granted) {
                         CaptureActivity.show(requireActivity())

@@ -16,7 +16,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.io.File
 import kotlinx.android.synthetic.main.fragment_group_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -95,7 +95,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView.join_tv.setOnClickListener {
             if (code == null) return@setOnClickListener
 
-            bottomViewModel.join(code!!).autoDisposable(stopScope).subscribe({
+            bottomViewModel.join(code!!).autoDispose(stopScope).subscribe({
                 if (it.isSuccess) {
                     dismiss()
                     val conversationResponse = it.data as ConversationResponse

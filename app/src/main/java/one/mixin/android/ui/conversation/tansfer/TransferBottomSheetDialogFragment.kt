@@ -10,7 +10,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.math.BigDecimal
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -158,7 +158,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 (t as WithdrawBiometricItem).let {
                     bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.memo)
                 }
-        }.autoDisposable(stopScope)
+        }.autoDispose(stopScope)
             .subscribe({
                 contentView.pin_va?.displayedChild = POS_PIN
                 if (it.isSuccess) {

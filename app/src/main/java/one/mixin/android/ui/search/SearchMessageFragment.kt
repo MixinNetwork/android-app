@@ -13,7 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -88,7 +88,7 @@ class SearchMessageFragment : BaseFragment() {
         adapter.callback = object : SearchMessageAdapter.SearchMessageCallback {
             override fun onItemClick(item: SearchMessageDetailItem) {
                 searchViewModel.findConversationById(searchMessageItem.conversationId)
-                    .autoDisposable(stopScope)
+                    .autoDispose(stopScope)
                     .subscribe {
                         search_et.hideKeyboard()
                         ConversationActivity.show(requireContext(),
@@ -107,7 +107,7 @@ class SearchMessageFragment : BaseFragment() {
         search_et.setText(query)
         search_et.textChanges().debounce(SEARCH_DEBOUNCE, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(destroyScope)
+            .autoDispose(destroyScope)
             .subscribe({
                 clear_ib.isVisible = it.isNotEmpty()
                 onTextChanged(it.toString())

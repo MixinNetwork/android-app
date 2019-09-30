@@ -8,7 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_invite.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -52,7 +52,7 @@ class InviteFragment : BaseFragment() {
         layoutInflater.inflate(R.layout.fragment_invite, container, false)
 
     private fun refreshUrl() {
-        inviteViewModel.findConversation(conversationId).autoDisposable(stopScope).subscribe({
+        inviteViewModel.findConversation(conversationId).autoDispose(stopScope).subscribe({
             if (it.isSuccess && it.data != null) {
                 inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
             }
@@ -89,7 +89,7 @@ class InviteFragment : BaseFragment() {
         })
 
         invite_revoke.setOnClickListener {
-            inviteViewModel.rotate(conversationId).autoDisposable(stopScope).subscribe({
+            inviteViewModel.rotate(conversationId).autoDispose(stopScope).subscribe({
                 if (it.isSuccess) {
                     val cr = it.data!!
                     invite_link.text = cr.codeUrl

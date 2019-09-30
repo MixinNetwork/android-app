@@ -5,7 +5,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import androidx.core.os.bundleOf
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_pin_bottom_sheet_address.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -119,7 +119,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                 } else {
                     bottomViewModel.deleteAddr(addressId!!, contentView.pin.code())
                 }
-                observable.autoDisposable(stopScope).subscribe({ r ->
+                observable.autoDispose(stopScope).subscribe({ r ->
                     if (r.isSuccess) {
                         doAsync {
                             if (type == ADD || type == MODIFY) {

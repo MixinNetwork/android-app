@@ -11,7 +11,7 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_setup_name.*
 import one.mixin.android.MixinApplication
@@ -56,7 +56,7 @@ class SetupNameFragment : BaseFragment() {
             name_cover.visibility = VISIBLE
             val accountUpdateRequest = AccountUpdateRequest(name_et.text.toString())
             mobileViewModel.update(accountUpdateRequest)
-                .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
+                .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
                     name_fab?.hide()
                     name_cover?.visibility = INVISIBLE
                     if (!r.isSuccess) {

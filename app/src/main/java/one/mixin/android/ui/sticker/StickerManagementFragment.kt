@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_sticker_management.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -94,7 +94,7 @@ class StickerManagementFragment : BaseFragment() {
                 RxPermissions(activity!!)
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE,
                         Manifest.permission.READ_EXTERNAL_STORAGE)
-                    .autoDisposable(stopScope)
+                    .autoDispose(stopScope)
                     .subscribe({ granted ->
                         if (granted) {
                             openGalleryFromSticker()

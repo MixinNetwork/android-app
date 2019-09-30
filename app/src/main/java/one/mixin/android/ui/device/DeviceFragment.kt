@@ -10,7 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.disposables.Disposable
 import kotlinx.android.synthetic.main.fragment_device.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -104,7 +104,7 @@ class DeviceFragment : MixinBottomSheetDialogFragment() {
             } else {
                 RxPermissions(activity!!)
                     .request(Manifest.permission.CAMERA)
-                    .autoDisposable(stopScope)
+                    .autoDispose(stopScope)
                     .subscribe { granted ->
                         if (granted) {
                             CaptureActivity.show(requireActivity()) {

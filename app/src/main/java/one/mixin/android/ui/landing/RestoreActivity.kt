@@ -10,7 +10,7 @@ import android.view.View
 import androidx.annotation.RequiresPermission
 import androidx.appcompat.app.AlertDialog
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import java.io.File
 import java.util.Date
 import javax.inject.Inject
@@ -51,7 +51,7 @@ class RestoreActivity : BaseActivity() {
             .setPositiveButton(R.string.restore_authorization) { dialog, _ ->
                 RxPermissions(this)
                     .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .autoDisposable(stopScope)
+                    .autoDispose(stopScope)
                     .subscribe({ granted ->
                         if (!granted) {
                             openPermissionSetting()
@@ -127,7 +127,7 @@ class RestoreActivity : BaseActivity() {
         restore_restore.setOnClickListener {
             RxPermissions(this)
                 .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (!granted) {
                         openPermissionSetting()

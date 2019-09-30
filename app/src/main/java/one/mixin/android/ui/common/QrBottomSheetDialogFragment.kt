@@ -11,7 +11,7 @@ import androidx.core.os.bundleOf
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -104,7 +104,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }
                         }.subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
-                            .autoDisposable(stopScope)
+                            .autoDispose(stopScope)
                             .subscribe({ r ->
                                 contentView.qr.setImageBitmap(r)
                             }, {
@@ -131,7 +131,7 @@ class QrBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         view.save.setOnClickListener {
             RxPermissions(activity!!)
                 .request(android.Manifest.permission.CAMERA, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe({ granted ->
                     if (granted) {
                         lifecycleScope.launch(Dispatchers.IO) {

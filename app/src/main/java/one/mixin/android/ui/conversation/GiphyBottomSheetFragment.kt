@@ -13,7 +13,7 @@ import android.widget.TextView
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_giphy_search_bottom_sheet.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
@@ -137,7 +137,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             bottomViewModel.searchGifs(query, LIMIT, offset)
         } else {
             bottomViewModel.trendingGifs(LIMIT, offset)
-        }.autoDisposable(stopScope)
+        }.autoDispose(stopScope)
             .subscribe({ list ->
                 if (!isAdded) return@subscribe
                 if (offset == 0) {

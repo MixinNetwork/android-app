@@ -35,7 +35,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
 import com.bugsnag.android.Bugsnag
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.android.autoDisposable
+import com.uber.autodispose.android.autoDispose
 import kotlinx.android.synthetic.main.view_chat_control.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fadeIn
@@ -791,7 +791,7 @@ class ChatControlView : FrameLayout {
             if (!RxPermissions(activity!! as FragmentActivity).isGranted(Manifest.permission.RECORD_AUDIO)) {
                 RxPermissions(activity!! as FragmentActivity)
                     .request(Manifest.permission.RECORD_AUDIO)
-                    .autoDisposable(this)
+                    .autoDispose(this)
                     .subscribe({}, { Bugsnag.notify(it) })
                 return@Runnable
             }

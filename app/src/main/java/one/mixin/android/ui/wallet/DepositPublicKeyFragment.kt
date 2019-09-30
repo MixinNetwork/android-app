@@ -9,7 +9,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -71,7 +71,7 @@ class DepositPublicKeyFragment : DepositFragment() {
                         }
                     }.subscribeOn(Schedulers.io())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .autoDisposable(scopeProvider)
+                        .autoDispose(scopeProvider)
                         .subscribe({ r ->
                             qr.setImageBitmap(r)
                         }, {

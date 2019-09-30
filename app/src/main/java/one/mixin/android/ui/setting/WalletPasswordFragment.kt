@@ -5,7 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_wallet_password.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -217,7 +217,7 @@ class WalletPasswordFragment : BaseFragment(), PinView.OnPinListener {
                 dialog.show()
 
                 walletViewModel.updatePin(pin.code(), oldPassword)
-                    .autoDisposable(stopScope).subscribe({ r: MixinResponse<Account> ->
+                    .autoDispose(stopScope).subscribe({ r: MixinResponse<Account> ->
                         if (r.isSuccess) {
                             r.data?.let {
                                 Session.storeAccount(it)

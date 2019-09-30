@@ -42,7 +42,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.exoplayer2.util.MimeTypes
 import com.tbruyelle.rxpermissions2.RxPermissions
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
 import java.io.File
 import javax.inject.Inject
@@ -449,7 +449,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             }
 
             override fun onUserClick(userId: String) {
-                chatViewModel.getUserById(userId).autoDisposable(stopScope).subscribe({
+                chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe({
                     it?.let {
                         UserBottomSheetDialogFragment.newInstance(it, conversationId)
                             .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -516,7 +516,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                     )
                     return
                 }
-                chatViewModel.getUserById(userId).autoDisposable(stopScope).subscribe({
+                chatViewModel.getUserById(userId).autoDispose(stopScope).subscribe({
                     it?.let {
                         UserBottomSheetDialogFragment.newInstance(it, conversationId)
                             .showNow(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -568,7 +568,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
                 } else {
                     RxPermissions(requireActivity())
                         .request(Manifest.permission.RECORD_AUDIO)
-                        .autoDisposable(stopScope)
+                        .autoDispose(stopScope)
                         .subscribe({ granted ->
                             if (granted) {
                                 callVoice()
@@ -681,7 +681,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         AudioPlayer.get().setStatusListener(this)
         RxBus.listen(ExitEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe {
                 if (it.conversationId == conversationId) {
                     activity?.finish()
@@ -706,7 +706,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         if (isGroup) {
             RxBus.listen(GroupEvent::class.java)
                 .observeOn(AndroidSchedulers.mainThread())
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe {
                     if (it.conversationId == conversationId) {
                         showGroupNotification = true
@@ -720,7 +720,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         }
         RxBus.listen(RecallEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe { event ->
                 if (chatAdapter.selectSet.any { it.messageId == event.messageId }) {
                     closeTool()
@@ -1001,7 +1001,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
             down_unread.visibility = GONE
         }
         chatViewModel.searchConversationById(conversationId)
-            .autoDisposable(stopScope).subscribe({
+            .autoDispose(stopScope).subscribe({
                 it?.draft?.let { str ->
                     if (isAdded) {
                         chat_control.chat_et.setText(str)
@@ -1367,7 +1367,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun sendImageMessage(uri: Uri, mimeType: String? = null) {
         createConversation {
             chatViewModel.sendImageMessage(conversationId, sender, uri, isPlainMessage(), mimeType)
-                ?.autoDisposable(stopScope)?.subscribe({
+                ?.autoDispose(stopScope)?.subscribe({
                     when (it) {
                         0 -> {
                             scrollToDown()
@@ -1432,7 +1432,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         id?.let {
             createConversation {
                 chatViewModel.sendFordMessage(conversationId, sender, it, isPlainMessage())
-                    .autoDisposable(stopScope).subscribe({
+                    .autoDispose(stopScope).subscribe({
                         if (it == 0) {
                             toast(R.string.error_file_exists)
                         }
@@ -1941,7 +1941,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun openCamera() {
         RxPermissions(requireActivity())
             .request(Manifest.permission.CAMERA)
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe({ granted ->
                 if (granted) {
                     imageUri = createImageUri()
@@ -2138,7 +2138,7 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
     private fun checkWritePermissionAndSave(messageItem: MessageItem) {
         RxPermissions(requireActivity())
             .request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe({ granted ->
                 if (granted) {
                     messageItem.saveToLocal(requireContext())

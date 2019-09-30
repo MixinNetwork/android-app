@@ -14,7 +14,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.collection.ArraySet
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.synthetic.main.fragment_auth.view.*
 import kotlinx.android.synthetic.main.item_third_login_scope.view.*
@@ -144,7 +144,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             contentView.confirm_anim.displayedChild = POS_PB
             contentView.confirm_anim.isEnabled = false
             val request = AuthorizeRequest(auth.authorizationId, scopeAdapter.checkedScopes.toList())
-            bottomViewModel.authorize(request).autoDisposable(stopScope).subscribe({ r ->
+            bottomViewModel.authorize(request).autoDispose(stopScope).subscribe({ r ->
                 contentView.confirm_anim?.displayedChild = POS_TEXT
                 contentView.confirm_anim.isEnabled = true
                 if (r.isSuccess && r.data != null) {
@@ -167,7 +167,7 @@ class AuthBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         if (!success && isAdded) {
             val request = AuthorizeRequest(auth.authorizationId, listOf())
             bottomViewModel.authorize(request)
-                .autoDisposable(stopScope)
+                .autoDispose(stopScope)
                 .subscribe({
                 if (it.isSuccess && it.data != null) {
                     redirect(it.data!!.app.redirectUri, it.data!!.authorization_code)

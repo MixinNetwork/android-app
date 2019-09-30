@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -48,7 +48,7 @@ class ConversationActivity : BlazeBaseActivity() {
             val userId = bundle.getString(RECIPIENT_ID)!!
             Observable.just(userId).map {
                 userRepository.getUserById(userId)!!
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(stopScope)
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDispose(stopScope)
                 .subscribe({
                     require(it.userId != Session.getAccountId()) { "error data" }
                     bundle.putParcelable(RECIPIENT, it)
@@ -59,7 +59,7 @@ class ConversationActivity : BlazeBaseActivity() {
         } else {
             Observable.just(bundle.getString(CONVERSATION_ID)).map {
                 userRepository.findContactByConversationId(it)
-            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDisposable(stopScope)
+            }.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread()).autoDispose(stopScope)
                 .subscribe({
                     if (it?.userId == Session.getAccountId()) {
                         throw IllegalArgumentException("error data ${bundle.getString(CONVERSATION_ID)}")

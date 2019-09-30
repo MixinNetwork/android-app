@@ -12,7 +12,7 @@ import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
 import androidx.paging.PagedList
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_transactions.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -205,7 +205,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
 
     private fun refreshPendingDeposits(asset: AssetItem) {
         asset.differentProcess({
-            walletViewModel.pendingDeposits(asset.assetId, key = asset.publicKey).autoDisposable(stopScope)
+            walletViewModel.pendingDeposits(asset.assetId, key = asset.publicKey).autoDispose(stopScope)
                 .subscribe({ list ->
                     updateData(list.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
@@ -213,7 +213,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
                     ErrorHandler.handleError(it)
                 })
         }, {
-            walletViewModel.pendingDeposits(asset.assetId, name = asset.accountName, tag = asset.accountTag).autoDisposable(stopScope)
+            walletViewModel.pendingDeposits(asset.assetId, name = asset.accountName, tag = asset.accountTag).autoDispose(stopScope)
                 .subscribe({ list ->
                     updateData(list.data?.map { it.toSnapshot(asset.assetId) })
                 }, {
@@ -223,7 +223,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
         }, {
             headerView.receive_tv.visibility = GONE
             headerView.receive_progress.visibility = VISIBLE
-            walletViewModel.getAsset(asset.assetId).autoDisposable(stopScope).subscribe({ response ->
+            walletViewModel.getAsset(asset.assetId).autoDispose(stopScope).subscribe({ response ->
                 if (response?.isSuccess == true) {
                     headerView.receive_tv.visibility = VISIBLE
                     headerView.receive_progress.visibility = GONE

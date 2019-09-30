@@ -12,7 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.SCROLL_STATE_IDLE
 import com.uber.autodispose.android.lifecycle.scope
-import com.uber.autodispose.autoDisposable
+import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_draggable_recycler_view.*
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -101,7 +101,7 @@ class GalleryItemFragment : Fragment(), AlbumMediaCollection.AlbumMediaCallbacks
         albumMediaCollection.load(album)
 
         RxBus.listen(DragReleaseEvent::class.java)
-            .autoDisposable(stopScope)
+            .autoDispose(stopScope)
             .subscribe {
                 rv.direction = if (it.isExpand) DIRECTION_TOP_2_BOTTOM else DIRECTION_NONE
             }
