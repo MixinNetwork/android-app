@@ -272,11 +272,17 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun makeMessageStatus(status: String, messageId: String) {
-        val curStatus = messageDao.findMessageStatusById(messageId)
-        if (curStatus != null && curStatus != MessageStatus.READ.name) {
+        val currentStatus = messageDao.findMessageStatusById(messageId)
+        if (currentStatus == MessageStatus.SENDING.name) {
             messageDao.updateMessageStatus(status, messageId)
+            sendSessionAck(status, messageId)
+        } else if (currentStatus == MessageStatus.SENT.name && (status == MessageStatus.DELIVERED.name || status == MessageStatus.READ.name)) {
+            messageDao.updateMessageStatus(status, messageId)
+            sendSessionAck(status, messageId)
+        } else if (currentStatus == MessageStatus.DELIVERED.name && status == MessageStatus.READ.name) {
+            messageDao.updateMessageStatus(status, messageId)
+            sendSessionAck(status, messageId)
         }
-        sendSessionAck(status, messageId)
     }
 
     private fun sendSessionAck(status: String, messageId: String) {
