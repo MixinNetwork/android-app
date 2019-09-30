@@ -7,13 +7,14 @@ import android.content.Context;
 import android.graphics.Rect;
 import android.os.Build;
 import android.os.Build.VERSION_CODES;
-import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Surface;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.preference.PreferenceManager;
+
 import one.mixin.android.R;
 
 import java.util.HashSet;

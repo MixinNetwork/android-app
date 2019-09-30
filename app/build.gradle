@@ -129,6 +129,7 @@ dependencies {
     implementation "androidx.core:core-ktx:${ktxVersion}"
     implementation "androidx.collection:collection:${collectionx}"
     implementation "androidx.collection:collection-ktx:${collectionx}"
+    implementation "androidx.preference:preference-ktx:${preference_version}"
 
     implementation "androidx.camera:camera-core:${cameraxVersion}"
     implementation "androidx.camera:camera-camera2:${cameraxVersion}"
