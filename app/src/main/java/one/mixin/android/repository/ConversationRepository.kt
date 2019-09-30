@@ -236,4 +236,12 @@ internal constructor(
 
     suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String) =
         messageDao.findNextAudioMessage(conversationId, createdAt, messageId)
+
+    fun getMediaMessagesExcludeLive(conversationId: String) = messageDao.getMediaMessagesExcludeLive(conversationId)
+
+    fun getAudioMessages(conversationId: String) = messageDao.getAudioMessages(conversationId)
+
+    fun getLinkMessages(conversationId: String) = messageDao.getLinkMessages(conversationId)
+
+    fun getFileMessages(conversationId: String) = messageDao.getFileMessages(conversationId)
 }

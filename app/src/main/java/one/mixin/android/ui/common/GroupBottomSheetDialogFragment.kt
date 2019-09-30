@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.extension.addFragment
@@ -35,7 +36,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Comp
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.group.GroupEditFragment
-import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
+import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.ErrorHandler
@@ -180,6 +181,7 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val choices = mutableListOf<String>()
         choices.add(getString(R.string.participants))
         choices.add(getString(R.string.contact_other_search_conversation))
+        choices.add(getString(R.string.contact_other_shared_media))
         if (me != null) {
             if (me!!.role == ParticipantRole.OWNER.name || me!!.role == ParticipantRole.ADMIN.name) {
                 if (TextUtils.isEmpty(conversation.announcement)) {
@@ -212,6 +214,10 @@ class GroupBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                     getString(R.string.contact_other_search_conversation) -> {
                         startSearchConversation()
+                        dismiss()
+                    }
+                    getString(R.string.contact_other_shared_media) -> {
+                        SharedMediaActivity.show(requireContext(), conversationId)
                         dismiss()
                     }
                     getString(R.string.group_info_add) -> {

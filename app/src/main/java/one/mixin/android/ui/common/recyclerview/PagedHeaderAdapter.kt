@@ -7,8 +7,8 @@ import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 
-abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
-    PagedListAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
+abstract class PagedHeaderAdapter<T, VH : RecyclerView.ViewHolder>(diffCallback: DiffUtil.ItemCallback<T>) :
+    PagedListAdapter<T, VH>(diffCallback) {
     companion object {
         const val TYPE_HEADER = 0
         const val TYPE_NORMAL = 1
@@ -36,12 +36,13 @@ abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
         }
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_HEADER) {
+    @Suppress("UNCHECKED_CAST")
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        return (if (viewType == TYPE_HEADER) {
             getHeaderViewHolder()
         } else {
             getNormalViewHolder(parent.context, parent)
-        }
+        }) as VH
     }
 
     open fun getHeaderViewHolder() = HeadHolder(headerView!!)

@@ -80,6 +80,9 @@
     <string name="currency_switch">Switching currency</string>
     <string name="unknown">Unknown</string>
     <string name="not_any" translatable="false">N/A</string>
+    <string name="media">Media</string>
+    <string name="links">Links</string>
+    <string name="files">Files</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -255,6 +258,7 @@
     <string name="contact_other_send">Send Message</string>
     <string name="contact_other_share">Share Contact Card</string>
     <string name="contact_other_search_conversation">Search Conversation</string>
+    <string name="contact_other_shared_media">Shared Media</string>
     <string name="contact_other_block">Block User</string>
     <string name="contact_other_unblock">Unblock User</string>
     <string name="contact_other_remove">Remove Contact</string>

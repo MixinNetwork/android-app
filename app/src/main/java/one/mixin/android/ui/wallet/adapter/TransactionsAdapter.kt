@@ -12,7 +12,9 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapterDataObserver
 import one.mixin.android.vo.SnapshotItem
 
-class TransactionsAdapter : PagedHeaderAdapter<SnapshotItem>(SnapshotItem.DIFF_CALLBACK), StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
+class TransactionsAdapter :
+    PagedHeaderAdapter<SnapshotItem, SnapshotHolder>(SnapshotItem.DIFF_CALLBACK),
+    StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
 
     var listener: OnSnapshotListener? = null
 
@@ -33,12 +35,10 @@ class TransactionsAdapter : PagedHeaderAdapter<SnapshotItem>(SnapshotItem.DIFF_C
         vh.bind(time)
     }
 
-    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        if (holder is SnapshotHolder) {
-            val pos = getPos(position)
-            getItem(pos)?.let {
-                holder.bind(it, listener)
-            }
+    override fun onBindViewHolder(holder: SnapshotHolder, position: Int) {
+        val pos = getPos(position)
+        getItem(pos)?.let {
+            holder.bind(it, listener)
         }
     }
 
@@ -47,5 +47,11 @@ class TransactionsAdapter : PagedHeaderAdapter<SnapshotItem>(SnapshotItem.DIFF_C
     }
 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
-        SnapshotHolder(LayoutInflater.from(context).inflate(R.layout.item_wallet_transactions, parent, false))
+        SnapshotHolder(
+            LayoutInflater.from(context).inflate(
+                R.layout.item_wallet_transactions,
+                parent,
+                false
+            )
+        )
 }

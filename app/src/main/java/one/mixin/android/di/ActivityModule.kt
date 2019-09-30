@@ -14,6 +14,7 @@ import one.mixin.android.di.module.InviteActivityModule
 import one.mixin.android.di.module.LandingActivityModule
 import one.mixin.android.di.module.MainActivityModule
 import one.mixin.android.di.module.SettingActivityModule
+import one.mixin.android.di.module.SharedMediaActvityModule
 import one.mixin.android.di.module.UrlInterpreterActivityModule
 import one.mixin.android.di.module.WalletActivityModule
 import one.mixin.android.ui.address.AddressActivity
@@ -28,6 +29,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.sticker.StickerActivity
@@ -86,4 +88,7 @@ abstract class ActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeRestore(): RestoreActivity
+
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActvityModule::class)])
+    internal abstract fun contributeSharedMedia(): SharedMediaActivity
 }

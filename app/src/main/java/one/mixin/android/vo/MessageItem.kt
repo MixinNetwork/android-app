@@ -9,6 +9,7 @@ import android.os.Parcelable
 import android.view.View
 import androidx.core.net.toUri
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DiffUtil
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.google.android.exoplayer2.util.MimeTypes
@@ -86,7 +87,17 @@ data class MessageItem(
     val quoteId: String? = null,
     val quoteContent: String? = null,
     val groupName: String? = null
-) : Parcelable
+) : Parcelable {
+    companion object {
+        val DIFF_CALLBACK = object : DiffUtil.ItemCallback<MessageItem>() {
+            override fun areItemsTheSame(oldItem: MessageItem, newItem: MessageItem) =
+                oldItem.messageId == newItem.messageId
+
+            override fun areContentsTheSame(oldItem: MessageItem, newItem: MessageItem) =
+                oldItem == newItem
+        }
+    }
+}
 
 fun create(type: String, createdAt: String? = null) = MessageItem("", "", "", "", "",
     type, null, createdAt

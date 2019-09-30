@@ -15,6 +15,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ConversationEvent
@@ -36,7 +37,6 @@ class GroupFragment : BaseFragment() {
 
         const val ARGS_FROM = "args_from"
         const val ARGS_ALREADY_USERS = "args_already_users"
-        const val ARGS_CONVERSATION_ID = "args_conversation_id"
 
         const val MAX_USER = 256
 
