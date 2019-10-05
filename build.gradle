@@ -64,7 +64,7 @@ buildscript {
         ext.mockitoCoreVersion = '2.7.19'
         ext.testSupVersion = '1.0.1'
 
-        ext.gsonVersion = '2.8.5'
+        ext.gsonVersion = '2.8.6'
         ext.autodisposeVersion = '1.4.0'
         ext.bugsnagVersion = '4.20.0'
         ext.jsoupVersion = '1.12.1'
