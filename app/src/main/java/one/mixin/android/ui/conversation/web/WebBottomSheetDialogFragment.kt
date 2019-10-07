@@ -99,6 +99,17 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val APP_NAME = "app_name"
         const val APP_AVATAR = "app_avatar"
         const val APP_CAPABILITIES = "app_capabilities"
+        const val themeColorScript = """
+            (function() {
+                var metas = document.getElementsByTagName('meta');
+                for (var i = 0; i < metas.length; i++) {
+                    if (metas[i].getAttribute('name') === 'theme-color' && metas[i].hasAttribute('content')) {
+                        return metas[i].getAttribute('content');
+                    }
+                }
+                return '';
+            }) ();
+            """
 
         fun newInstance(
             url: String,
@@ -271,28 +282,15 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 requireContext(),
                 dialog,
                 conversationId,
-                immersive,
-                contentView
+                immersive
             ), "MixinContext"
         )
         contentView.chat_web_view.webViewClient =
             WebViewClientImpl(object : WebViewClientImpl.OnPageFinishedListener {
                 override fun onPageFinished() {
-                    contentView.chat_web_view.loadUrl(
-                        """
-                    javascript:window.MixinContext.processHTML(
-                        function() {
-                            var metas = document.getElementsByTagName('meta');
-                            for (var i = 0; i < metas.length; i++) {
-                                if (metas[i].getAttribute("name") == "theme-color") {
-                                    return metas[i].getAttribute("content");
-                                }
-                            }
-                            return "";
-                        }
-                    ());
-                """
-                    )
+                    contentView.chat_web_view.evaluateJavascript(themeColorScript) {
+                        setStatusBarColor(it)
+                    }
                 }
             }, conversationId, this.parentFragmentManager)
 
@@ -571,6 +569,38 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
     }
 
+    fun setStatusBarColor(content: String) {
+        try {
+            val color = content.replace("\"", "")
+            val c = Color.parseColor(color)
+            val dark = ColorUtils.calculateLuminance(c) < 0.5
+            refreshByLuminance(dark, c)
+        } catch (e: Exception) {
+            refreshByLuminance(false, Color.WHITE)
+        }
+    }
+
+    private fun refreshByLuminance(
+        dark: Boolean,
+        color: Int
+    ) {
+        context?.runOnUiThread {
+            dialog.window?.decorView?.let {
+                if (dark) {
+                    contentView.title_tv.setTextColor(Color.WHITE)
+                    it.systemUiVisibility = it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+                } else {
+                    contentView.title_tv.setTextColor(Color.BLACK)
+                    it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                }
+            }
+            contentView.title_ll.setBackgroundColor(color)
+            contentView.ph.setBackgroundColor(color)
+            contentView.web_control.mode = dark
+        }
+    }
+
+
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
@@ -579,6 +609,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
         override fun onPageFinished(view: WebView?, url: String?) {
             super.onPageFinished(view, url)
+            onPageFinishedListener.onPageFinished()
+        }
+
+        override fun onPageCommitVisible(view: WebView?, url: String?) {
+            super.onPageCommitVisible(view, url)
             onPageFinishedListener.onPageFinished()
         }
 
@@ -631,8 +666,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val context: Context,
         private val dialog: Dialog,
         val conversationId: String?,
-        val immersive: Boolean,
-        private val contentView: View
+        val immersive: Boolean
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -644,36 +678,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             return Gson().toJson(MixinContext(conversationId, immersive))
         }
 
-        @JavascriptInterface
-        fun processHTML(content: String) {
-            try {
-                val c = Color.parseColor(content)
-                val dark = ColorUtils.calculateLuminance(c) < 0.5
-                refreshByLuminance(dark, c)
-            } catch (e: Exception) {
-                refreshByLuminance(false, Color.WHITE)
-            }
-        }
-
-        private fun refreshByLuminance(
-            dark: Boolean,
-            color: Int
-        ) {
-            context.runOnUiThread {
-                dialog.window?.decorView?.let {
-                    if (dark) {
-                        contentView.title_tv.setTextColor(Color.WHITE)
-                        it.systemUiVisibility = it.systemUiVisibility and SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-                    } else {
-                        contentView.title_tv.setTextColor(Color.BLACK)
-                        it.systemUiVisibility = it.systemUiVisibility or SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-                    }
-                }
-                contentView.title_ll.setBackgroundColor(color)
-                contentView.ph.setBackgroundColor(color)
-                contentView.web_control.mode = dark
-            }
-        }
     }
 
     class MixinContext(
