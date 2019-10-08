@@ -110,7 +110,9 @@ class AudioPlayer private constructor() {
                     stopTimber()
                     status = STATUS_DONE
 
-                    checkNext()
+                    if (autoPlayNext) {
+                        checkNext()
+                    }
                 }
             }
 
@@ -142,6 +144,8 @@ class AudioPlayer private constructor() {
             }
         }
 
+    private var autoPlayNext: Boolean = true
+
     private fun isFile(): Boolean {
         return messageItem?.type == MessageCategory.PLAIN_DATA.name || messageItem?.type == MessageCategory.SIGNAL_DATA.name
     }
@@ -157,8 +161,10 @@ class AudioPlayer private constructor() {
 
     fun play(
         messageItem: MessageItem,
+        autoPlayNext: Boolean = true,
         whenPlayNewAudioMessage: ((Message) -> Unit)? = null
     ) {
+        this.autoPlayNext = autoPlayNext
         if (messageItem.mediaUrl == null) {
             MixinApplication.appContext.toast(R.string.error_bad_data)
             return
@@ -171,7 +177,7 @@ class AudioPlayer private constructor() {
             this.messageItem = messageItem
             player.loadAudio(messageItem.mediaUrl)
 
-            if (messageItem.isAudio()) {
+            if (autoPlayNext && messageItem.isAudio()) {
                 markAudioReadAndCheckNextAudioAvailable(messageItem, whenPlayNewAudioMessage)
             }
         } else if (status == STATUS_DONE || status == STATUS_ERROR) {

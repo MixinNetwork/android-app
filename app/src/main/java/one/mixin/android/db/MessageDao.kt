@@ -6,6 +6,7 @@ import androidx.room.Query
 import androidx.room.RoomWarnings
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.util.Session
+import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaMessageMinimal
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
@@ -96,14 +97,14 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, u.avatar_url AS userAvatarUrl,
         u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
-        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration,  m.media_waveform AS mediaWaveform
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO') AND m.media_status = 'DONE'
+        AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO') AND (m.media_status = 'DONE' OR m.media_status = 'READ')
         ORDER BY m.created_at DESC
         """
     )
@@ -111,18 +112,15 @@ interface MessageDao : BaseDao<Message> {
 
     @Query(
         """
-        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
-        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
-        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
-        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
-        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
-        WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT') AND m.media_status = 'DONE'
-        ORDER BY m.created_at DESC
+            SELECT h.hyperlink AS hyperlink, h.site_description AS siteDescription, h.site_image AS siteImage,
+            h.site_name AS siteName, h.site_title AS siteTitle, m.created_at AS createdAt
+            FROM hyperlinks h INNER JOIN messages m ON h.hyperlink = m.hyperlink
+            WHERE m.conversation_id = :conversationId
+            AND (m.category = 'SIGNAL_TEXT' OR m.category = 'PLAIN_TEXT')
+            ORDER BY m.created_at DESC
         """
     )
-    fun getLinkMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+    fun getLinkMessages(conversationId: String): DataSource.Factory<Int, HyperlinkItem>
 
     @Query(
         """

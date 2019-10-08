@@ -7,6 +7,7 @@ import androidx.paging.PagedList
 import javax.inject.Inject
 import one.mixin.android.Constants
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MessageItem
 
 class SharedMediaViewModel @Inject constructor(
@@ -37,7 +38,7 @@ class SharedMediaViewModel @Inject constructor(
             .build()
     }
 
-    fun getLinkMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
+    fun getLinkMessages(conversationId: String): LiveData<PagedList<HyperlinkItem>> {
         return LivePagedListBuilder(
             conversationRepository.getLinkMessages(conversationId),
             PagedList.Config.Builder()

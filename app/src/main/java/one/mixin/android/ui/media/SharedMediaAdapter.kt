@@ -16,9 +16,9 @@ class SharedMediaAdapter(
 
     override fun getItem(position: Int) = when (position) {
         0 -> MediaFragment.newInstance(conversationId)
-        1 -> AudioFragment.newInstance()
-        2 -> LinkFragment.newInstance()
-        else -> FileFragment.newInstance()
+        1 -> AudioFragment.newInstance(conversationId)
+        2 -> LinkFragment.newInstance(conversationId)
+        else -> FileFragment.newInstance(conversationId)
     }
 
     override fun getCount() = TAG_COUNT

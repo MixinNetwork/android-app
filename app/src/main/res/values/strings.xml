@@ -83,6 +83,10 @@
     <string name="media">Media</string>
     <string name="links">Links</string>
     <string name="files">Files</string>
+    <string name="no_media">NO MEDIA</string>
+    <string name="no_audio">NO AUDIO</string>
+    <string name="no_file">NO FILE</string>
+    <string name="no_link">NO LINK</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

@@ -1,6 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="90dp">
 
-</LinearLayout>
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"/>
+
+    <FrameLayout
+        android:id="@+id/left_fl"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin16"
+        android:background="@drawable/bg_shared_media_icon">
+
+        <ImageView
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_empty_link"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/desc_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/center"
+        android:layout_toEndOf="@id/left_fl"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_marginBottom="2dp"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textColor="@color/wallet_text_dark"/>
+
+    <TextView
+        android:id="@+id/link_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/center"
+        android:layout_toEndOf="@id/left_fl"
+        android:layout_marginTop="2dp"
+        android:layout_marginEnd="@dimen/margin20"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:textSize="12sp"
+        android:textColor="@color/wallet_pending_text_color"/>
+</RelativeLayout>

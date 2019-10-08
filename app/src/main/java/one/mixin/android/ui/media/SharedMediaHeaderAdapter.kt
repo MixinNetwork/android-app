@@ -18,8 +18,8 @@ abstract class SharedMediaHeaderAdapter<VH : NormalHolder> :
         return if (headerView != null && pos == TYPE_HEADER) {
             -1
         } else {
-            val snapshot = getItem(getPos(pos))
-            abs(snapshot?.createdAt?.hashForDate() ?: -1)
+            val messageItem = getItem(getPos(pos))
+            abs(messageItem?.createdAt?.hashForDate() ?: -1)
         }
     }
 

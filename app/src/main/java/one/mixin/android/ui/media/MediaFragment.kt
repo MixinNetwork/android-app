@@ -4,9 +4,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ViewAnimator
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
+import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.realSize
@@ -49,7 +50,6 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        view as RecyclerView
         adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
         val lm = GridLayoutManager(requireContext(), COLUMN)
         lm.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
@@ -64,10 +64,17 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
                 }
             }
         }
-        view.layoutManager = lm
-        view.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
-        view.adapter = adapter
+        recycler_view.layoutManager = lm
+        recycler_view.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
+        recycler_view.adapter = adapter
+        empty_iv.setImageResource(R.drawable.ic_empty_media)
+        empty_tv.setText(R.string.no_media)
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(this, Observer {
+            if (it.size <= 0) {
+                (view as ViewAnimator).displayedChild = 1
+            } else {
+                (view as ViewAnimator).displayedChild = 0
+            }
             adapter.submitList(it)
         })
     }
