@@ -362,7 +362,7 @@ fun String.getBotNumber(): String? {
 
 
 inline fun String?.getDeviceId(): Int {
-    return if (this == null) {
+    return if (this == null || this.isEmpty()) {
         1
     } else {
         UUID.fromString(this).hashCode()

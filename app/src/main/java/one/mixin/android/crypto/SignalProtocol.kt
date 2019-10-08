@@ -123,10 +123,10 @@ class SignalProtocol(ctx: Context) {
         dataType: Int,
         cipherText: ByteArray,
         category: String,
-        callback: DecryptionCallback,
-        deviceId: Int = DEFAULT_DEVICE_ID
+        sessionId: String? = null,
+        callback: DecryptionCallback
     ) {
-        val address = SignalProtocolAddress(senderId, deviceId)
+        val address = SignalProtocolAddress(senderId, sessionId.getDeviceId())
         val sessionCipher = SessionCipher(signalProtocolStore, address)
         if (category == MessageCategory.SIGNAL_KEY.name) {
             if (dataType == PREKEY_TYPE) {
