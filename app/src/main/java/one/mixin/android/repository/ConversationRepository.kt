@@ -5,9 +5,6 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
 import io.reactivex.Observable
-import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -36,6 +33,9 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SearchMessageItem
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 @Singleton
 class ConversationRepository
@@ -108,12 +108,28 @@ internal constructor(
 
     suspend fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
 
-    suspend fun indexMediaMessages(conversationId: String, messageId: String): Int =
+    suspend fun indexMediaMessages(
+        conversationId: String,
+        messageId: String,
+        excludeLive: Boolean
+    ): Int = if (excludeLive) {
+        readMessageDao.indexMediaMessagesExcludeLive(conversationId, messageId)
+    } else {
         readMessageDao.indexMediaMessages(conversationId, messageId)
+    }
 
-    suspend fun getMediaMessages(conversationId: String, index: Int): PagedList<MessageItem> {
+    suspend fun getMediaMessages(
+        conversationId: String,
+        index: Int,
+        excludeLive: Boolean
+    ): PagedList<MessageItem> {
         return withContext(Dispatchers.IO) {
-            PagedList.Builder<Int, MessageItem>(readMessageDao.getMediaMessages(conversationId).create(), 5)
+            PagedList.Builder<Int, MessageItem>(
+                if (excludeLive) {
+                    readMessageDao.getMediaMessagesExcludeLive(conversationId).create()
+                } else {
+                    readMessageDao.getMediaMessages(conversationId).create()
+                }, 5)
                 .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
                 .setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
                 .setInitialKey(index)

@@ -87,6 +87,13 @@ interface MessageDao : BaseDao<Message> {
     )
     fun getMediaMessagesExcludeLive(conversationId: String): DataSource.Factory<Int, MessageItem>
 
+    @Query("""SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
+        AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)
+        AND ((category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
+        AND media_status = 'DONE')
+        """)
+    suspend fun indexMediaMessagesExcludeLive(conversationId: String, messageId: String): Int
+
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,

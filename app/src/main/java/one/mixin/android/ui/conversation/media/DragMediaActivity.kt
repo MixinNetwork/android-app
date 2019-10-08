@@ -148,7 +148,9 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private val messageId by lazy {
         intent.getStringExtra(MESSAGE_ID)
     }
-
+    private val excludeLive by lazy {
+        intent.getBooleanExtra(EXCLUDE_LIVE, false)
+    }
     private val ratio by lazy {
         intent.getFloatExtra(RATIO, 0f)
     }
@@ -193,8 +195,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         val model = ViewModelProvider(this).get(DragMediaViewModel::class.java)
         model.viewModelScope.launch {
-            index = conversationRepository.indexMediaMessages(conversationId, messageId)
-            val list = conversationRepository.getMediaMessages(conversationId, index)
+            index = conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
+            val list = conversationRepository.getMediaMessages(conversationId, index, excludeLive)
             pagerAdapter.submitAction = {
                 if (index != -1) {
                     view_pager.currentItem = index
@@ -1242,13 +1244,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private const val MESSAGE_ID = "id"
         private const val RATIO = "ratio"
         private const val CONVERSATION_ID = "conversation_id"
+        private const val EXCLUDE_LIVE = "exclude_live"
         private const val ALPHA_MAX = 0xFF
         private const val PREFIX = "media"
 
-        fun show(activity: Activity, imageView: View, conversationId: String, messageId: String) {
+        fun show(activity: Activity, imageView: View, conversationId: String, messageId: String, excludeLive: Boolean = false) {
             val intent = Intent(activity, DragMediaActivity::class.java).apply {
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
+                putExtra(EXCLUDE_LIVE, excludeLive)
             }
             activity.startActivity(
                 intent, ActivityOptions.makeSceneTransitionAnimation(

@@ -36,7 +36,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     }
 
     private val adapter = MediaAdapter(fun(imageView: View, messageId: String) {
-        DragMediaActivity.show(requireActivity(), imageView, conversationId, messageId)
+        DragMediaActivity.show(requireActivity(), imageView, conversationId, messageId, true)
     })
 
     override fun getModelClass() = SharedMediaViewModel::class.java
