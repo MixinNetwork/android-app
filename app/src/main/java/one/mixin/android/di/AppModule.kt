@@ -10,11 +10,6 @@ import com.google.firebase.iid.FirebaseInstanceId
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
 import dagger.Provides
-import java.util.Locale
-import java.util.UUID
-import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
-import kotlin.math.abs
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.SessionProvider
@@ -61,6 +56,11 @@ import one.mixin.android.websocket.ChatWebSocket
 import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.Locale
+import java.util.UUID
+import java.util.concurrent.TimeUnit
+import javax.inject.Singleton
+import kotlin.math.abs
 
 @Module(includes = [(ViewModelModule::class), (BaseDbModule::class), (ReadDbModule::class)])
 internal class AppModule {
@@ -126,7 +126,7 @@ internal class AppModule {
                 }
 
                 if (!response.isSuccessful) {
-                    val code = response.code()
+                    val code = response.code
                     if (code in 500..599) {
                         throw ServerErrorException(code)
                     }
