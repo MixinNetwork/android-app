@@ -103,12 +103,12 @@ class VerifyFragment : BaseFragment(), PinView.OnPinListener {
             },
             exceptionBlock = {
                 hideLoading()
-                pin.clear()
+                pin?.clear()
                 return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
                 hideLoading()
-                pin.clear()
+                pin?.clear()
             }
         )
     }

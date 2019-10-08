@@ -121,11 +121,11 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
                 setUpdate()
             },
             exceptionBlock = {
-                op_pb.isVisible = false
+                op_pb?.isVisible = false
                 return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
-                op_pb.isVisible = false
+                op_pb?.isVisible = false
             }
         )
     }
@@ -147,11 +147,11 @@ class MobileContactFragment : BaseViewModelFragment<SettingViewModel>() {
                 setDelete()
             },
             exceptionBlock = {
-                op_pb.isVisible = false
+                op_pb?.isVisible = false
                 return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
-                op_pb.isVisible = false
+                op_pb?.isVisible = false
             }
         )
     }

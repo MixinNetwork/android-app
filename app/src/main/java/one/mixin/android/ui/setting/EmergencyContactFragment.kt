@@ -103,12 +103,12 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
                 navTo(ViewEmergencyContactFragment.newInstance(user), ViewEmergencyContactFragment.TAG)
             },
             exceptionBlock = {
-                view_pb.isVisible = false
+                view_pb?.isVisible = false
                 setEmergencySet()
                 return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
-                view_pb.isVisible = false
+                view_pb?.isVisible = false
                 setEmergencySet()
             }
         )
@@ -126,12 +126,12 @@ class EmergencyContactFragment : BaseViewModelFragment<EmergencyViewModel>() {
                 setEmergencySet()
             },
             exceptionBlock = {
-                delete_pb.isVisible = false
+                delete_pb?.isVisible = false
                 setEmergencySet()
                 return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
-                delete_pb.isVisible = false
+                delete_pb?.isVisible = false
                 setEmergencySet()
             }
         )
