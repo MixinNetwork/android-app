@@ -15,8 +15,8 @@ import one.mixin.android.api.createPreKeyBundle
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.crypto.Base64
-import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.extension.fromJson
+import one.mixin.android.extension.getDeviceId
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.Session
@@ -28,6 +28,7 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SentSenderKey
 import one.mixin.android.vo.SentSenderKeyStatus
+import one.mixin.android.vo.SessionParticipant
 import one.mixin.android.vo.createAckJob
 import one.mixin.android.websocket.BlazeAckMessage
 import one.mixin.android.websocket.BlazeMessage
@@ -72,7 +73,21 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
+    protected fun checkSessionSenderKey(conversationId: String) {
+        val participants = sessionParticipantDao.getNotSendSessionParticipants(conversationId, Session.getSessionId()!!) ?: return
+        if (participants.isEmpty()) return
+        val requestSignalKeyUsers = arrayListOf<BlazeMessageParamSession>()
+        for (p in participants) {
+            if (!signalProtocol.containsSession(p.userId, p.sessionId)) {
+                requestSignalKeyUsers.add(BlazeMessageParamSession(p.userId, p.sessionId))
+            } else {
+
+            }
+        }
+    }
+
     protected fun checkAndSendSenderKey(conversationId: String) {
+        checkSessionSenderKey(conversationId)
         val participants = participantDao.getNotSentKeyParticipants(conversationId, Session.getAccountId()!!) ?: return
         if (participants.size == 1) {
             sendSenderKey(conversationId, participants[0].userId)
@@ -81,9 +96,9 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         }
     }
 
-    protected fun sendSenderKey(conversationId: String, recipientId: String): Boolean {
+    protected fun sendSenderKey(conversationId: String, recipientId: String, sessionId: String? = null): Boolean {
         if (!signalProtocol.containsSession(recipientId)) {
-            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId))))
+            val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(BlazeMessageParamSession(recipientId, sessionId))))
             val data = signalKeysChannel(blazeMessage) ?: return false
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
@@ -166,11 +181,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
     }
 
     protected fun checkSignalSession(recipientId: String, sessionId: String? = null): Boolean {
-        var deviceId = SignalProtocol.DEFAULT_DEVICE_ID
-        if (sessionId != null) {
-            deviceId = UUID.fromString(sessionId).hashCode()
-        }
-        if (!signalProtocol.containsSession(recipientId, deviceId)) {
+        if (!signalProtocol.containsSession(recipientId, sessionId)) {
             val blazeMessage = createConsumeSessionSignalKeys(createConsumeSignalKeysParam(arrayListOf(
                 BlazeMessageParamSession(recipientId, sessionId)
             )))
@@ -179,7 +190,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val keys = Gson().fromJson<ArrayList<SignalKey>>(data)
             if (keys.isNotEmpty() && keys.count() > 0) {
                 val preKeyBundle = createPreKeyBundle(keys[0])
-                signalProtocol.processSession(recipientId, preKeyBundle, deviceId)
+                signalProtocol.processSession(recipientId, preKeyBundle, sessionId.getDeviceId())
             } else {
                 return false
             }
@@ -304,6 +315,10 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val response = conversationApi.create(request).execute().body()
             if (response != null && response.isSuccess && response.data != null && !isCancel) {
                 conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
+                val sessions = response.data!!.participantSessions.map {
+                    SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
+                }
+                sessionParticipantDao.insertList(sessions)
             } else {
                 throw Exception("Create Conversation Exception")
             }

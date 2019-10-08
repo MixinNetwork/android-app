@@ -21,7 +21,6 @@ class MixinResponse<T>() {
 
     var data: T? = null
     var error: ResponseError? = null
-    var prev: String? = null
     var next: String? = null
 
     val isSuccess: Boolean

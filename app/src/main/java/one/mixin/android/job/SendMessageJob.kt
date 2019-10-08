@@ -15,6 +15,7 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.Participant
+import one.mixin.android.vo.SessionParticipant
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isGroup
 import one.mixin.android.vo.isPlain
@@ -161,18 +162,15 @@ open class SendMessageJob(
             }
             return
         }
-        if (signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
-            checkAndSendSenderKey(message.conversationId)
-        } else {
+        if (!signalProtocol.isExistSenderKey(message.conversationId, message.userId)) {
             val conversation = conversationDao.getConversation(message.conversationId) ?: return
             if (conversation.isGroup()) {
                 syncConversation(conversation)
-                checkAndSendSenderKey(conversation.conversationId)
             } else {
                 requestCreateConversation(conversation)
-                sendSenderKey(conversation.conversationId, conversation.ownerId!!)
             }
         }
+        checkAndSendSenderKey(message.conversationId)
         deliver(encryptNormalMessage())
     }
 
@@ -184,6 +182,12 @@ open class SendMessageJob(
                     Participant(conversation.conversationId, it.userId, it.role, it.createdAt!!)
                 }
                 participantDao.replaceAll(conversation.conversationId, remote)
+
+                val participantSessions = data.participantSessions.map {
+                    SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
+                }
+                // TODO should update the data
+                sessionParticipantDao.insertList(participantSessions)
             }
         }
     }
