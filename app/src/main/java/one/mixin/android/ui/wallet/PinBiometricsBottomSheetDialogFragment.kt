@@ -92,12 +92,12 @@ class PinBiometricsBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
             },
             exceptionBlock = {
                 contentView.pin_va?.displayedChild = POS_PIN
-                contentView.pin.clear()
+                contentView.pin?.clear()
                 return@handleMixinResponse false
             },
             doAfterNetworkSuccess = {
                 contentView.pin_va?.displayedChild = POS_PIN
-                contentView.pin.clear()
+                contentView.pin?.clear()
             }
         )
     }
