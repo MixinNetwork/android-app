@@ -19,8 +19,8 @@ import org.jetbrains.anko.dip
 class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
         const val TAG = "MediaFragment"
-        const val PADDING = 10
-        const val COLUMN = 3
+        const val PADDING = 1
+        const val COLUMN = 4
 
         fun newInstance(conversationId: String) = MediaFragment().withArgs {
             putString(ARGS_CONVERSATION_ID, conversationId)

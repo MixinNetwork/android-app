@@ -16,7 +16,7 @@ abstract class PagedHeaderAdapter<T, VH : RecyclerView.ViewHolder>(diffCallback:
 
     var headerView: View? = null
 
-    var onItemListener: OnItemListener? = null
+    var onItemListener: OnItemListener<T>? = null
 
     override fun getItemViewType(position: Int): Int {
         return if (position == TYPE_HEADER && headerView != null) {
@@ -50,7 +50,7 @@ abstract class PagedHeaderAdapter<T, VH : RecyclerView.ViewHolder>(diffCallback:
 
     open class HeadHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    interface OnItemListener {
-        fun <T> onNormalItemClick(item: T)
+    interface OnItemListener<in T> {
+        fun onNormalItemClick(item: T)
     }
 }

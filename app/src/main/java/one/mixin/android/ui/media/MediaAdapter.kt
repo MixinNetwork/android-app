@@ -1,24 +1,24 @@
 package one.mixin.android.ui.media
 
 import android.content.Context
+import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
-import kotlinx.android.synthetic.main.item_transaction_header.view.*
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
+import kotlinx.android.synthetic.main.item_media.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.hashForDate
-import one.mixin.android.extension.inflate
-import one.mixin.android.extension.timeAgoDay
-import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
+import one.mixin.android.extension.loadGif
+import one.mixin.android.extension.loadImageCenterCrop
+import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.MessageItem
-import kotlin.math.abs
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isVideo
+import one.mixin.android.widget.gallery.MimeType
 
 class MediaAdapter(private val onClickListener: (imageView: View, messageId: String) -> Unit) :
-    PagedHeaderAdapter<MessageItem, MediaHolder>(MessageItem.DIFF_CALLBACK),
-    StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
-
+    SharedMediaHeaderAdapter<MediaHolder>() {
     var size: Int = 0
 
     override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
@@ -35,27 +35,53 @@ class MediaAdapter(private val onClickListener: (imageView: View, messageId: Str
             holder.bind(it, size, onClickListener)
         }
     }
-
-    override fun getHeaderId(pos: Int): Long {
-        return if (headerView != null && pos == TYPE_HEADER) {
-            -1
-        } else {
-            val snapshot = getItem(getPos(pos))
-            abs(snapshot?.createdAt?.hashForDate() ?: -1)
-        }
-    }
-
-    override fun onCreateHeaderViewHolder(parent: ViewGroup) =
-        MediaHeaderViewHolder(parent.inflate(R.layout.item_transaction_header, false))
-
-    override fun onBindHeaderViewHolder(holder: MediaHeaderViewHolder, pos: Int) {
-        val time = getItem(getPos(pos))?.createdAt ?: return
-        holder.bind(time)
-    }
 }
 
-class MediaHeaderViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    fun bind(time: String) {
-        itemView.date_tv.timeAgoDay(time)
+class MediaHolder(itemView: View) : NormalHolder(itemView) {
+    fun bind(
+        item: MessageItem,
+        size: Int,
+        onClickListener: (imageView: View, messageId: String) -> Unit
+    ) {
+        val params = itemView.layoutParams
+        params.width = size
+        params.height = size
+        itemView.layoutParams = params
+        val imageView = itemView.thumbnail_iv
+        imageView.updateLayoutParams<ViewGroup.LayoutParams> {
+            width = size
+            height = size
+        }
+        if (item.isImage()) {
+            val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
+            if (isGif) {
+                imageView.loadGif(
+                    item.mediaUrl.toString(),
+                    centerCrop = true,
+                    holder = R.drawable.ic_giphy_place_holder
+                )
+                itemView.gif_tv.isVisible = true
+            } else {
+                imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
+                itemView.gif_tv.isVisible = false
+            }
+            itemView.video_iv.isVisible = false
+            itemView.duration_tv.isVisible = false
+        } else {
+            itemView.gif_tv.isVisible = false
+            if (item.isVideo()) {
+                itemView.video_iv.isVisible = true
+                itemView.duration_tv.isVisible = true
+                itemView.duration_tv.text =
+                    DateUtils.formatElapsedTime(item.mediaDuration?.toLong() ?: 0 / 1000)
+            } else {
+                itemView.video_iv.isVisible = false
+                itemView.duration_tv.isVisible = false
+            }
+            imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
+        }
+        itemView.setOnClickListener {
+            onClickListener(itemView.thumbnail_iv, item.messageId)
+        }
     }
 }

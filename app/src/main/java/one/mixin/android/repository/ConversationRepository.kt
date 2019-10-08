@@ -5,6 +5,9 @@ import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.lifecycle.LiveData
 import androidx.paging.PagedList
 import io.reactivex.Observable
+import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -33,9 +36,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.SearchMessageItem
-import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
 @Singleton
 class ConversationRepository

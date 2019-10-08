@@ -5,7 +5,6 @@ import androidx.lifecycle.ViewModelProvider
 import dagger.Binds
 import dagger.Module
 import dagger.multibindings.IntoMap
-import one.mixin.android.di.module.SharedMediaActvityModule
 import one.mixin.android.ui.address.AddressViewModel
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.contacts.ContactViewModel
