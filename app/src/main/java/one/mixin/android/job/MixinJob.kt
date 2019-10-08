@@ -362,10 +362,14 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
             val response = conversationApi.create(request).execute().body()
             if (response != null && response.isSuccess && response.data != null && !isCancel) {
                 conversationDao.updateConversationStatusById(conversation.conversationId, ConversationStatus.SUCCESS.ordinal)
-                val sessions = response.data!!.participantSessions.map {
-                    SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
+                val sessions = response.data!!.participantSessions?.let {
+                    it.map {
+                        SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
+                    }
                 }
-                sessionParticipantDao.insertList(sessions)
+                sessions?.let {
+                    sessionParticipantDao.insertList(sessions)
+                }
             } else {
                 throw Exception("Create Conversation Exception")
             }
