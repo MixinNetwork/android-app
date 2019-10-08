@@ -15,7 +15,8 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.vo.MessageItem
 import kotlin.math.abs
 
-class MediaAdapter : PagedHeaderAdapter<MessageItem, MediaHolder>(MessageItem.DIFF_CALLBACK),
+class MediaAdapter(private val onClickListener: (imageView: View, messageId: String) -> Unit) :
+    PagedHeaderAdapter<MessageItem, MediaHolder>(MessageItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
 
     var size: Int = 0
@@ -31,7 +32,7 @@ class MediaAdapter : PagedHeaderAdapter<MessageItem, MediaHolder>(MessageItem.DI
 
     override fun onBindViewHolder(holder: MediaHolder, position: Int) {
         getItem(position)?.let {
-            holder.bind(it, size)
+            holder.bind(it, size, onClickListener)
         }
     }
 

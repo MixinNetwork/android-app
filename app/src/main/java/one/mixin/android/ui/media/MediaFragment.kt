@@ -13,6 +13,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
+import one.mixin.android.ui.conversation.media.DragMediaActivity
 import org.jetbrains.anko.dip
 
 class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
@@ -34,7 +35,9 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         requireContext().dip(PADDING)
     }
 
-    private val adapter = MediaAdapter()
+    private val adapter = MediaAdapter(fun(imageView: View, messageId: String) {
+        DragMediaActivity.show(requireActivity(), imageView, conversationId, messageId)
+    })
 
     override fun getModelClass() = SharedMediaViewModel::class.java
 

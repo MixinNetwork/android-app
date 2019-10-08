@@ -7,17 +7,18 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.item_media.view.*
 import one.mixin.android.R
-import one.mixin.android.extension.loadGif
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isVideo
-import timber.log.Timber
 
 class MediaHolder(itemView: View) : NormalHolder(itemView) {
 
-    fun bind(item: MessageItem, size: Int) {
+    fun bind(
+        item: MessageItem,
+        size: Int,
+        onClickListener: (imageView: View, messageId: String) -> Unit
+    ) {
         val params = itemView.layoutParams
         params.width = size
         params.height = size
@@ -50,5 +51,8 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
             }
             imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
         // }
+        itemView.setOnClickListener {
+            onClickListener(itemView.thumbnail_iv, item.messageId)
+        }
     }
 }
