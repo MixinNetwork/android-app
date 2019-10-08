@@ -133,7 +133,7 @@ open class SendMessageJob(
 
     private fun sendPlainMessage() {
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
-        requestCreateConversation(conversation)
+        checkConversationExist(conversation)
         var content = message.content
         if (message.category == MessageCategory.PLAIN_TEXT.name || message.isCall()) {
             if (message.content != null) {
@@ -167,7 +167,7 @@ open class SendMessageJob(
             if (conversation.isGroup()) {
                 syncConversation(conversation)
             } else {
-                requestCreateConversation(conversation)
+                checkConversationExist(conversation)
             }
         }
         checkAndSendSenderKey(message.conversationId)

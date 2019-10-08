@@ -34,7 +34,7 @@ class SendSessionMessageJob(
 
         val conversation = conversationDao.getConversation(message.conversationId) ?: return
         if (conversation.isContact()) {
-            requestCreateConversation(conversation)
+            checkConversationExist(conversation)
         }
         jobManager.saveJob(this)
         val accountId = Session.getAccountId()!!
