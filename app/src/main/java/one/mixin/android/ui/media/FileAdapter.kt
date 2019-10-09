@@ -4,13 +4,17 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import kotlinx.android.synthetic.main.item_file.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.fileSize
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.vo.MessageItem
+import java.util.Locale
 
-class FileAdapter : SharedMediaHeaderAdapter<FileHolder>() {
+class FileAdapter(private val onClickListener: (MessageItem) -> Unit) :
+    SharedMediaHeaderAdapter<FileHolder>() {
     override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
-        MediaHolder(
+        FileHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_file,
                 parent,
@@ -20,13 +24,24 @@ class FileAdapter : SharedMediaHeaderAdapter<FileHolder>() {
 
     override fun onBindViewHolder(holder: FileHolder, position: Int) {
         getItem(position)?.let {
-            holder.bind(it)
+            holder.bind(it, onClickListener)
         }
     }
 }
 
 class FileHolder(itemView: View) : NormalHolder(itemView) {
-
-    fun bind(item: MessageItem) {
+    fun bind(item: MessageItem, onClickListener: (MessageItem) -> Unit) {
+        itemView.name_tv.text = item.mediaName
+        itemView.size_tv.text = item.mediaSize?.fileSize()
+        var type = item.mediaName
+            ?.substringAfterLast(".", "")
+            ?.toUpperCase(Locale.getDefault())
+        if (type != null && type.length > 3) {
+            type = type.substring(0, 3)
+        }
+        itemView.type_tv.text = type
+        itemView.setOnClickListener {
+            item.let(onClickListener)
+        }
     }
 }

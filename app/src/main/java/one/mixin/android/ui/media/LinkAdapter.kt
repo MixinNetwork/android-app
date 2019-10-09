@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
+import kotlin.math.abs
 import kotlinx.android.synthetic.main.item_shared_media_link.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hashForDate
@@ -12,7 +13,6 @@ import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.vo.HyperlinkItem
-import kotlin.math.abs
 
 class LinkAdapter(private val onClickListener: (url: String) -> Unit) :
     PagedHeaderAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),

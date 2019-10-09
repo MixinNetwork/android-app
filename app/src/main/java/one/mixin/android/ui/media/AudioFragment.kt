@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import android.widget.ViewAnimator
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
