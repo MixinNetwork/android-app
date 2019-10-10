@@ -462,7 +462,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
                 messageItem.type == MessageCategory.PLAIN_IMAGE.name
             ) {
-                if (messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f) {
+                if (!messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true) && messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f) {
                     createLargeImageView(container, position, messageItem)
                 } else {
                     createPhotoView(container, position, messageItem)
