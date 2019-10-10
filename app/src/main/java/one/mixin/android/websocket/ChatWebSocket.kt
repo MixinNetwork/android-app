@@ -8,9 +8,6 @@ import com.crashlytics.android.Crashlytics
 import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
@@ -44,6 +41,9 @@ import one.mixin.android.vo.Offset
 import one.mixin.android.vo.STATUS_OFFSET
 import one.mixin.android.vo.createAckJob
 import org.jetbrains.anko.runOnUiThread
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 class ChatWebSocket(
     private val okHttpClient: OkHttpClient,
@@ -140,7 +140,7 @@ class ChatWebSocket(
     }
 
     @Synchronized
-    override fun onOpen(webSocket: WebSocket?, response: Response?) {
+    override fun onOpen(webSocket: WebSocket, response: Response) {
         if (client != null) {
             connected = true
             client = webSocket
@@ -155,10 +155,10 @@ class ChatWebSocket(
         }
     }
 
-    override fun onMessage(webSocket: WebSocket?, bytes: ByteString?) {
+    override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
         GlobalScope.launch(SINGLE_DB_THREAD) {
             try {
-                val json = bytes?.ungzip()
+                val json = bytes.ungzip()
                 val blazeMessage = gson.fromJson(json, BlazeMessage::class.java)
                 if (blazeMessage.error == null) {
                     if (transactions[blazeMessage.id] != null) {
@@ -192,7 +192,7 @@ class ChatWebSocket(
 
     @SuppressLint("CheckResult")
     @Synchronized
-    override fun onClosed(webSocket: WebSocket?, code: Int, reason: String?) {
+    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
         connected = false
         if (code == failCode) {
             closeInternal(code)
@@ -206,19 +206,19 @@ class ChatWebSocket(
                 })
             }
         } else {
-            webSocket?.cancel()
+            webSocket.cancel()
         }
     }
 
     private var connectTimer: Disposable? = null
 
     @Synchronized
-    override fun onFailure(webSocket: WebSocket?, t: Throwable?, response: Response?) {
-        t?.let {
+    override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+        t.let {
             Log.e(TAG, "WebSocket onFailure ", it)
         }
         if (client != null) {
-            if (t != null && (t is ClientErrorException && t.code == AUTHENTICATION)) {
+            if (t is ClientErrorException && t.code == AUTHENTICATION) {
                 closeInternal(quitCode)
             } else {
                 onClosed(webSocket, failCode, "OK")

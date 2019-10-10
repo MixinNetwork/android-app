@@ -13,6 +13,14 @@ import com.google.zxing.EncodeHintType
 import com.google.zxing.MultiFormatWriter
 import com.google.zxing.common.BitMatrix
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel
+import okio.Buffer
+import okio.ByteString
+import okio.GzipSink
+import okio.GzipSource
+import okio.Source
+import okio.buffer
+import one.mixin.android.util.GzipException
+import org.threeten.bp.Instant
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -29,14 +37,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.regex.Pattern
 import kotlin.collections.set
 import kotlin.math.abs
-import okio.Buffer
-import okio.ByteString
-import okio.GzipSink
-import okio.GzipSource
-import okio.Okio
-import okio.Source
-import one.mixin.android.util.GzipException
-import org.threeten.bp.Instant
 
 fun String.generateQRCode(size: Int): Bitmap? {
     val result: BitMatrix
@@ -79,7 +79,7 @@ fun String.getEpochNano(): Long {
 @Throws(IOException::class)
 fun String.gzip(): ByteString {
     val result = Buffer()
-    val sink = Okio.buffer(GzipSink(result))
+    val sink = GzipSink(result).buffer()
     sink.use {
         sink.write(toByteArray())
     }
@@ -90,7 +90,7 @@ fun String.gzip(): ByteString {
 fun ByteString.ungzip(): String {
     val buffer = Buffer().write(this)
     val gzip = GzipSource(buffer as Source)
-    return Okio.buffer(gzip).readUtf8()
+    return gzip.buffer().readUtf8()
 }
 
 inline fun String.md5(): String {
