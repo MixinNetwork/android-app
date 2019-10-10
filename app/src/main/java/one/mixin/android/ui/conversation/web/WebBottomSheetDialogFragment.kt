@@ -600,7 +600,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-
     class WebViewClientImpl(
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
@@ -677,7 +676,6 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         fun getContext(): String? {
             return Gson().toJson(MixinContext(conversationId, immersive))
         }
-
     }
 
     class MixinContext(
