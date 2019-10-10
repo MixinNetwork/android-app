@@ -87,6 +87,7 @@
     <string name="no_audio">NO AUDIO</string>
     <string name="no_file">NO FILE</string>
     <string name="no_link">NO LINK</string>
+    <string name="media_date_patten">MMM dd, yyyy</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>

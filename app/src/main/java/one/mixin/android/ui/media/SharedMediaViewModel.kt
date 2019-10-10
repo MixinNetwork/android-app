@@ -4,12 +4,12 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import javax.inject.Inject
 import one.mixin.android.Constants
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MessageItem
 import org.threeten.bp.ZonedDateTime
-import javax.inject.Inject
 
 class SharedMediaViewModel @Inject constructor(
     val conversationRepository: ConversationRepository

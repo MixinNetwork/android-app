@@ -82,6 +82,7 @@
     <string name="no_audio">没有音频</string>
     <string name="no_file">没有文件</string>
     <string name="no_link">没有链接</string>
+    <string name="media_date_patten">yyyy年MM月dd日</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>

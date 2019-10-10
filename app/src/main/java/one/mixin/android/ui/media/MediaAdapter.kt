@@ -35,6 +35,8 @@ class MediaAdapter(private val onClickListener: (imageView: View, messageId: Str
             holder.bind(it, size, onClickListener)
         }
     }
+
+    override fun getHeaderTextMargin() = 5f
 }
 
 class MediaHolder(itemView: View) : NormalHolder(itemView) {

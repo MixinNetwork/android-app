@@ -11,6 +11,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.round
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 
@@ -30,6 +31,8 @@ class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Un
             holder.bind(it, onClickListener)
         }
     }
+
+    override fun getHeaderTextMargin() = 20f
 }
 
 class AudioHolder(itemView: View) : NormalHolder(itemView) {
@@ -43,7 +46,8 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
         item.mediaDuration?.let {
             itemView.audio_duration.text = "${it.toLong() / 1000}'"
         }
-        itemView.audio_waveform.isFresh = item.mediaStatus != MediaStatus.READ.name
+        itemView.audio_waveform.isFresh = item.userId != Session.getAccountId() &&
+            item.mediaStatus != MediaStatus.READ.name
         if (AudioPlayer.get().isLoaded(item.messageId)) {
             itemView.audio_waveform.setProgress(AudioPlayer.get().progress)
         } else {

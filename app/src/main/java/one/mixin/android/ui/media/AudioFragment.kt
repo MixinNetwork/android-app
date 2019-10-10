@@ -35,7 +35,7 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         if (AudioPlayer.get().isPlay(messageItem.messageId)) {
             AudioPlayer.get().pause()
         } else {
-            AudioPlayer.get().play(messageItem, autoPlayNext = false)
+            AudioPlayer.get().play(messageItem, continuePlayOnlyToday = true)
         }
     })
 

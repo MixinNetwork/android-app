@@ -102,13 +102,13 @@ fun String.timeAgoDate(context: Context): String {
     return timeAgoDate as String
 }
 
-fun String.timeAgoDay(): String {
+fun String.timeAgoDay(patten: String = "dd/MM/yyyy"): String {
     val today = ZonedDateTime.of(ZonedDateTime.now().toLocalDate(),
         LocalTime.MIN, LocaleZone.normalized()).toInstant().toEpochMilli()
     var timeAgoDate = TimeCache.singleton.getTimeAgoDate(this + today)
     if (timeAgoDate == null) {
         val date = ZonedDateTime.parse(this).withZoneSameInstant(LocaleZone)
-        timeAgoDate = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy").withZone(LocaleZone))
+        timeAgoDate = date.format(DateTimeFormatter.ofPattern(patten).withZone(LocaleZone))
         TimeCache.singleton.putTimeAgoDate(this + today, timeAgoDate)
     }
     return timeAgoDate as String

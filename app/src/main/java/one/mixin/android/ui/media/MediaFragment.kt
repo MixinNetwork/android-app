@@ -14,6 +14,7 @@ import one.mixin.android.extension.realSize
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
+import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
 import one.mixin.android.ui.conversation.media.DragMediaActivity
 import org.jetbrains.anko.dip
 
@@ -50,7 +51,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        adapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+        adapter.size = (requireContext().realSize().x - (COLUMN - 1) * padding) / COLUMN
         val lm = GridLayoutManager(requireContext(), COLUMN)
         lm.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
@@ -65,6 +66,7 @@ class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {
             }
         }
         recycler_view.layoutManager = lm
+        recycler_view.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, false))
         recycler_view.addItemDecoration(StickyRecyclerHeadersDecorationForGrid(adapter, COLUMN))
         recycler_view.adapter = adapter
         empty_iv.setImageResource(R.drawable.ic_empty_media)
