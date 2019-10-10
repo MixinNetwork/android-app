@@ -157,7 +157,6 @@
                     android:layout_marginStart="@dimen/margin12"
                     android:layout_marginEnd="@dimen/margin12"
                     android:padding="8dp"
-                    android:rotation="90"
                     android:src="@drawable/ic_as"
                     tools:ignore="ContentDescription"/>
 
