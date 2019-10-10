@@ -4,8 +4,6 @@ import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
 import android.util.DisplayMetrics
 import android.util.Rational
 import android.util.Size
@@ -20,6 +18,7 @@ import androidx.camera.core.ImageCaptureConfig
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
+import androidx.camera.core.impl.utils.executor.CameraXExecutors
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
@@ -108,14 +107,16 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
     override fun isLensBack() = CameraX.LensFacing.BACK == lensFacing
 
+    @SuppressLint("RestrictedApi")
     override fun onTakePicture() {
         val outFile = requireContext().getImageCachePath().createImageTemp()
         val metadata = ImageCapture.Metadata().apply {
             isReversedHorizontal = lensFacing == CameraX.LensFacing.FRONT
         }
-        imageCapture?.takePicture(outFile, imageSavedListener, metadata)
+        imageCapture?.takePicture(outFile, metadata, CameraXExecutors.mainThreadExecutor(), imageSavedListener)
     }
 
+    @SuppressLint("RestrictedApi")
     private fun bindCameraUseCase() {
         CameraX.unbindAll()
         val metrics = DisplayMetrics().also { view_finder.display.getRealMetrics(it) }
@@ -125,7 +126,6 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         val previewConfig = PreviewConfig.Builder().apply {
             setLensFacing(lensFacing)
             setTargetResolution(screenSize)
-            setTargetAspectRatio(screenAspectRatio)
             setTargetRotation(view_finder.display.rotation)
         }.build()
         preview = AutoFitPreviewBuilder.build(previewConfig, view_finder)
@@ -133,19 +133,17 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         val imageCaptureConfig = ImageCaptureConfig.Builder().apply {
             setLensFacing(lensFacing)
             setCaptureMode(ImageCapture.CaptureMode.MIN_LATENCY)
-            setTargetAspectRatio(screenAspectRatio)
+            setTargetAspectRatioCustom(screenAspectRatio)
             setTargetRotation(view_finder.display.rotation)
         }.build()
         imageCapture = ImageCapture(imageCaptureConfig)
 
         val imageAnalysisConfig = ImageAnalysisConfig.Builder().apply {
             setLensFacing(lensFacing)
-            val analysisThread = HandlerThread("ImageAnalysis").apply { start() }
-            setCallbackHandler(Handler(analysisThread.looper))
             setImageReaderMode(ImageAnalysis.ImageReaderMode.ACQUIRE_LATEST_IMAGE)
         }.build()
         val imageAnalysis = ImageAnalysis(imageAnalysisConfig).apply {
-            analyzer = imageAnalyzer
+            setAnalyzer(CameraXExecutors.ioExecutor(), imageAnalyzer)
         }
 
         CameraX.bindToLifecycle(this, preview, imageCapture, imageAnalysis)
