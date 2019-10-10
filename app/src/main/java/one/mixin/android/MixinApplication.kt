@@ -7,7 +7,14 @@ import android.webkit.WebStorage
 import androidx.work.Configuration
 import com.bugsnag.android.Bugsnag
 import com.crashlytics.android.Crashlytics
-import com.facebook.stetho.Stetho
+import com.facebook.flipper.android.AndroidFlipperClient
+import com.facebook.flipper.android.utils.FlipperUtils
+import com.facebook.flipper.plugins.crashreporter.CrashReporterPlugin
+import com.facebook.flipper.plugins.databases.DatabasesFlipperPlugin
+import com.facebook.flipper.plugins.inspector.DescriptorMapping
+import com.facebook.flipper.plugins.inspector.InspectorFlipperPlugin
+import com.facebook.flipper.plugins.network.NetworkFlipperPlugin
+import com.facebook.soloader.SoLoader
 import com.google.firebase.FirebaseApp
 import com.jakewharton.threetenabp.AndroidThreeTen
 import dagger.android.DispatchingAndroidInjector
@@ -48,6 +55,8 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
 
     lateinit var appComponent: AppComponent
 
+    var networkFlipperPlugin: NetworkFlipperPlugin? = null
+
     companion object {
         lateinit var appContext: Context
         @JvmField
@@ -70,7 +79,16 @@ class MixinApplication : Application(), HasAndroidInjector, Configuration.Provid
     private fun init() {
         Bugsnag.init(this, BuildConfig.BUGSNAG_API_KEY)
         if (BuildConfig.DEBUG) {
-            Stetho.initializeWithDefaults(this)
+            SoLoader.init(this, false)
+            if (FlipperUtils.shouldEnableFlipper(this)) {
+                val client = AndroidFlipperClient.getInstance(this)
+                client.addPlugin(InspectorFlipperPlugin(this, DescriptorMapping.withDefaults()))
+                client.addPlugin(DatabasesFlipperPlugin(this))
+                client.addPlugin(CrashReporterPlugin.getInstance())
+                networkFlipperPlugin = NetworkFlipperPlugin()
+                client.addPlugin(networkFlipperPlugin)
+                client.start()
+            }
             Timber.plant(Timber.DebugTree())
         }
     }

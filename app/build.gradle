@@ -218,10 +218,14 @@ dependencies {
     kapt "com.github.bumptech.glide:compiler:$glideVersion"
     implementation "jp.wasabeef:glide-transformations:${glideTransformationsVersion}"
     implementation "com.jakewharton.timber:timber:${timberVersion}"
-    implementation "com.facebook.stetho:stetho:${stethoVersion}"
-    implementation("com.facebook.stetho:stetho-okhttp3:${stethoVersion}") {
+
+    implementation "com.facebook.soloader:soloader:$soloaderVersion"
+    debugImplementation "com.facebook.flipper:flipper:$flipperVersion"
+    debugImplementation ("com.facebook.flipper:flipper-network-plugin:$flipperVersion") {
         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
     }
+    releaseImplementation "com.facebook.flipper:flipper-noop:$flipperVersion"
+
     implementation "com.github.jorgecastilloprz:fabprogresscircle:${fabprogresscircleVersion}"
     implementation "com.github.tougee:country-picker-android:${countryPickerVersion}"
     implementation "com.dmitrymalkovich.android:progress-fab:${fabVersion}"

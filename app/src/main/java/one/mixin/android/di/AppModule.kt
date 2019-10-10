@@ -5,7 +5,7 @@ import android.content.ContentResolver
 import android.provider.Settings
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
-import com.facebook.stetho.okhttp3.StethoInterceptor
+import com.facebook.flipper.plugins.network.FlipperOkhttpInterceptor
 import com.google.firebase.iid.FirebaseInstanceId
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import dagger.Module
@@ -85,7 +85,7 @@ internal class AppModule {
             val logging = HttpLoggingInterceptor()
             logging.level = HttpLoggingInterceptor.Level.BODY
             builder.addNetworkInterceptor(logging)
-            builder.addNetworkInterceptor(StethoInterceptor())
+            builder.addNetworkInterceptor(FlipperOkhttpInterceptor(MixinApplication.get().networkFlipperPlugin))
         }
         builder.connectTimeout(10, TimeUnit.SECONDS)
         builder.writeTimeout(10, TimeUnit.SECONDS)
@@ -268,7 +268,6 @@ internal class AppModule {
                 val logging = HttpLoggingInterceptor()
                 logging.level = HttpLoggingInterceptor.Level.BODY
                 addNetworkInterceptor(logging)
-                addNetworkInterceptor(StethoInterceptor())
             }
         }.build()
         val retrofit = Retrofit.Builder()
