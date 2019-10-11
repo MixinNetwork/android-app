@@ -30,8 +30,8 @@ class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean
         }
         val addr = addresses!![position]
         holder.itemView.background_rl.visibility = if (canSwipe) VISIBLE else GONE
-        holder.itemView.name_tv.text = if (asset.isAccountTagAsset()) addr.accountName else addr.label
-        holder.itemView.addr_tv.text = if (asset.isAccountTagAsset()) addr.accountTag else addr.publicKey
+        holder.itemView.name_tv.text = addr.label
+        holder.itemView.addr_tv.text = addr.destination
         holder.itemView.setOnClickListener { addrListener?.onAddrClick(addr) }
         holder.itemView.setOnLongClickListener {
             addrListener?.onAddrLongClick(holder.itemView, addr)

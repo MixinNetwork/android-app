@@ -6,8 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
-import java.math.BigDecimal
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transaction.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -28,6 +26,8 @@ import one.mixin.android.vo.SnapshotType
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.textColorResource
 import org.jetbrains.anko.uiThread
+import java.math.BigDecimal
+import javax.inject.Inject
 
 class TransactionFragment : BaseFragment() {
     companion object {
@@ -107,7 +107,7 @@ class TransactionFragment : BaseFragment() {
         date_tv.text = snapshot.createdAt.fullDate()
         when {
             snapshot.type == SnapshotType.deposit.name -> {
-                if (!asset.accountName.isNullOrEmpty()) {
+                if (!asset.isPublicKeyAsset()) {
                     sender_title.text = getString(R.string.account_name)
                 } else {
                     sender_title.text = getString(R.string.sender)
@@ -126,7 +126,7 @@ class TransactionFragment : BaseFragment() {
                 }
             }
             else -> {
-                if (!asset.accountName.isNullOrEmpty()) {
+                if (!asset.isPublicKeyAsset()) {
                     receiver_title.text = getString(R.string.account_name)
                 } else {
                     receiver_title.text = getString(R.string.receiver)

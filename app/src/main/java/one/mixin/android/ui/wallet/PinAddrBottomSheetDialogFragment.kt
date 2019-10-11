@@ -35,23 +35,21 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         const val ARGS_ASSET_URL = "args_asset_url"
         const val ARGS_CHAIN_URL = "args_chain_url"
         const val ARGS_LABEL = "args_label"
-        const val ARGS_PUBLIC_KEY = "args_public_key"
+        const val ARGS_DESTINATION = "args_destination"
+        const val ARGS_TAG = "args_tag"
         const val ARGS_ADDRESS_ID = "args_address_id"
         const val ARGS_TYPE = "args_type"
-        const val ARGS_ACCOUNT_NAME = "args_account_name"
-        const val ARGS_ACCOUNT_TAG = "args_account_tag"
 
         fun newInstance(
             assetId: String? = null,
             assetName: String? = null,
             assetUrl: String? = null,
             chainIconUrl: String? = null,
-            label: String? = null,
-            publicKey: String? = null,
+            label: String,
+            destination: String,
+            tag: String? = null,
             addressId: String? = null,
-            type: Int = ADD,
-            accountName: String? = null,
-            accountTag: String? = null
+            type: Int = ADD
         ) = PinAddrBottomSheetDialogFragment().apply {
             val b = bundleOf(
                 ARGS_ASSET_ID to assetId,
@@ -59,11 +57,10 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                 ARGS_ASSET_URL to assetUrl,
                 ARGS_CHAIN_URL to chainIconUrl,
                 ARGS_LABEL to label,
-                ARGS_PUBLIC_KEY to publicKey,
+                ARGS_DESTINATION to destination,
                 ARGS_ADDRESS_ID to addressId,
                 ARGS_TYPE to type,
-                ARGS_ACCOUNT_NAME to accountName,
-                ARGS_ACCOUNT_TAG to accountTag
+                ARGS_TAG to tag
             )
             arguments = b
         }
@@ -74,11 +71,10 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
     private val assetUrl: String? by lazy { arguments!!.getString(ARGS_ASSET_URL) }
     private val chainIconUrl: String? by lazy { arguments!!.getString(ARGS_CHAIN_URL) }
     private val label: String? by lazy { arguments!!.getString(ARGS_LABEL) }
-    private val publicKey: String? by lazy { arguments!!.getString(ARGS_PUBLIC_KEY) }
+    private val destination: String? by lazy { arguments!!.getString(ARGS_DESTINATION) }
     private val addressId: String? by lazy { arguments!!.getString(ARGS_ADDRESS_ID) }
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
-    private val accountName: String? by lazy { arguments!!.getString(ARGS_ACCOUNT_NAME) }
-    private val accountTag: String? by lazy { arguments!!.getString(ARGS_ACCOUNT_TAG) }
+    private val addressTag: String? by lazy { arguments!!.getString(ARGS_TAG) }
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -98,16 +94,9 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
         }, assetName))
         contentView.asset_icon.bg.loadImage(assetUrl, R.drawable.ic_avatar_place_holder)
         contentView.asset_icon.badge.loadImage(chainIconUrl, R.drawable.ic_avatar_place_holder)
-        contentView.asset_name.text = if (!accountName.isNullOrBlank()) {
-            accountName
-        } else {
-            label
-        }
-        contentView.asset_address.text = if (!accountTag.isNullOrBlank()) {
-            accountTag
-        } else {
-            publicKey
-        }
+        contentView.asset_name.text = label
+        contentView.asset_address.text = destination
+
 
         contentView.pin.setListener(object : PinView.OnPinListener {
             override fun onUpdate(index: Int) {
@@ -115,7 +104,7 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
 
                 contentView.pin_va?.displayedChild = POS_PB
                 val observable = if (type == ADD || type == MODIFY) {
-                    bottomViewModel.syncAddr(assetId!!, publicKey, label, contentView.pin.code(), accountName, accountTag)
+                    bottomViewModel.syncAddr(assetId!!, destination, label, addressTag, contentView.pin.code())
                 } else {
                     bottomViewModel.deleteAddr(addressId!!, contentView.pin.code())
                 }

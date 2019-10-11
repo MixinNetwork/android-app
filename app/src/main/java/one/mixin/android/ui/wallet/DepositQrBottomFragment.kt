@@ -72,15 +72,15 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         when (type) {
             TYPE_NAME -> {
                 contentView.title.title_tv.text = getString(R.string.account_name)
-                contentView.addr_tv.text = asset.accountName!!
+                contentView.addr_tv.text = asset.destination
             }
             TYPE_TAG -> {
                 contentView.title.title_tv.text = getString(R.string.account_memo)
-                contentView.addr_tv.text = asset.accountTag!!
+                contentView.addr_tv.text = asset.tag
             }
             else -> {
                 contentView.title.title_tv.text = getString(R.string.address)
-                contentView.addr_tv.text = asset.publicKey!!
+                contentView.addr_tv.text = asset.destination
             }
         }
         contentView.badge_view.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
@@ -105,9 +105,9 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
         }
 
         val name = when (type) {
-            TYPE_NAME -> "${BuildConfig.VERSION_CODE}-${asset.accountName}"
-            TYPE_TAG -> "${BuildConfig.VERSION_CODE}-${asset.accountTag}"
-            else -> "${BuildConfig.VERSION_CODE}-${asset.publicKey}"
+            TYPE_NAME -> "${BuildConfig.VERSION_CODE}-${asset.destination}"
+            TYPE_TAG -> "${BuildConfig.VERSION_CODE}-${asset.tag}"
+            else -> "${BuildConfig.VERSION_CODE}-${asset.destination}"
         }
         if (requireContext().isQRCodeFileExists(name)) {
             contentView.qr.setImageBitmap(BitmapFactory.decodeFile(requireContext().getQRCodePath(name).absolutePath))
@@ -115,9 +115,9 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             contentView.qr.post {
                 Observable.create<Bitmap> { e ->
                     val code = when (type) {
-                        TYPE_NAME -> asset.accountName
-                        TYPE_TAG -> asset.accountTag
-                        else -> asset.publicKey
+                        TYPE_NAME -> asset.destination
+                        TYPE_TAG -> asset.tag
+                        else -> asset.destination
                     }
                     val b = code!!.generateQRCode(getSize(requireContext()))
                     if (b != null) {

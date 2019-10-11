@@ -27,10 +27,6 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.work.WorkManager
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
-import java.math.BigDecimal
-import java.math.RoundingMode
-import java.util.UUID
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_transfer.view.*
 import kotlinx.android.synthetic.main.item_transfer_type.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
@@ -77,6 +73,10 @@ import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
 import one.mixin.android.worker.RefreshAssetsWorker
 import org.jetbrains.anko.textColor
+import java.math.BigDecimal
+import java.math.RoundingMode
+import java.util.UUID
+import javax.inject.Inject
 
 @SuppressLint("InflateParams")
 class TransferFragment : MixinBottomSheetDialogFragment() {
@@ -268,10 +268,10 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         chatViewModel.observeAddress(address!!.addressId).observe(this, Observer {
             address = it
             if (currentAsset!!.isAccountTagAsset()) {
-                contentView.title_view.setSubTitle(getString(R.string.send_to, it.accountName), it.accountTag!!.formatPublicKey())
+                contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.tag.formatPublicKey())
                 contentView.memo_rl.isVisible = false
             } else {
-                contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.publicKey!!.formatPublicKey())
+                contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.destination.formatPublicKey())
                 contentView.memo_rl.isVisible = true
             }
             val bold = it.fee + " " + currentAsset!!.chainSymbol
@@ -484,9 +484,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
             TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
         } else {
             val noPublicKey = currentAsset!!.isAccountTagAsset()
-            WithdrawBiometricItem(if (noPublicKey) address!!.accountTag!! else address!!.publicKey!!, address!!.addressId,
-                if (noPublicKey) address!!.accountName!! else address!!.label!!,
-                currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
+            WithdrawBiometricItem(if (noPublicKey) address!!.tag else address!!.destination, address!!.addressId,
+                address!!.label, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
         }
 
         val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)

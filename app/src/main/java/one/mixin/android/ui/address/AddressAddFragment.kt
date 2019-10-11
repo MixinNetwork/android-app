@@ -85,16 +85,18 @@ class AddressAddFragment : BaseFragment() {
         avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
         save_tv.setOnClickListener {
-            val bottomSheet = if (noPublicKey()) {
-                PinAddrBottomSheetDialogFragment.newInstance(assetId = asset.assetId, assetName = asset.name,
-                    assetUrl = asset.iconUrl, chainIconUrl = asset.chainIconUrl, type = type,
-                    accountName = label_et.text.toString(), accountTag = addr_et.text.toString())
-            } else {
-                PinAddrBottomSheetDialogFragment.newInstance(asset.assetId, asset.name,
+            val bottomSheet =
+                PinAddrBottomSheetDialogFragment.newInstance(
+                    asset.assetId,
+                    asset.name,
                     assetUrl = asset.iconUrl,
                     chainIconUrl = asset.chainIconUrl,
-                    label = label_et.text.toString(), publicKey = addr_et.text.toString(), type = type)
-            }
+                    label = label_et.text.toString(),
+                    destination = addr_et.text.toString(),
+                    tag = tag_et.text.toString(),
+                    type = type
+                )
+
             bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
             bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {
                 override fun onSuccess() {
@@ -102,19 +104,22 @@ class AddressAddFragment : BaseFragment() {
                 }
             }
         }
-        if (!asset.accountName.isNullOrEmpty()) {
-            label_et.hint = getString(R.string.account_name)
-            addr_et.hint = getString(R.string.account_memo)
-        }
+
         label_et.addTextChangedListener(mWatcher)
         addr_et.addTextChangedListener(mWatcher)
-        qr_iv.setOnClickListener { handleClick(true) }
-        label_iv.setOnClickListener { handleClick(false) }
-        label_iv.isVisible = noPublicKey()
+        tag_et.addTextChangedListener(mWatcher)
+        addr_iv.setOnClickListener { handleClick(true) }
+        if (asset.tag.isNotEmpty()) {
+            tag_iv.setOnClickListener { handleClick(false) }
+        } else {
+            tag_et.isEnabled = false
+            tag_et.setText(R.string.withdrawal_ne_tag)
+            tag_iv.isVisible = false
+        }
 
         address?.let {
-            label_et.setText(if (noPublicKey()) it.accountName else it.label)
-            addr_et.setText(if (noPublicKey()) it.accountTag else it.publicKey)
+            label_et.setText(it.label)
+            addr_et.setText(it.destination)
             title_view.title_tv.text = getString(R.string.withdrawal_addr_modify, asset.symbol)
         }
     }
@@ -130,12 +135,10 @@ class AddressAddFragment : BaseFragment() {
                 }
                 return
             }
-            val label = data?.getStringExtra(ARGS_ACCOUNT_NAME_RESULT) ?: return
-            label_et.setText(label)
+            val tag = data?.getStringExtra(ARGS_ACCOUNT_NAME_RESULT) ?: return
+            tag_et.setText(tag)
         }
     }
-
-    private fun noPublicKey() = !asset.accountName.isNullOrEmpty()
 
     private fun handleClick(isAddr: Boolean) {
         RxPermissions(requireActivity())
@@ -163,7 +166,10 @@ class AddressAddFragment : BaseFragment() {
         override fun afterTextChanged(s: Editable) {
             if (!isAdded) return
 
-            if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty()) {
+            if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty() && (asset.tag.isNotEmpty() && tag_et.text.isNotEmpty())) {
+                save_tv.isEnabled = true
+                save_tv.textColor = requireContext().getColor(R.color.white)
+            } else if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty() && asset.tag.isEmpty()) {
                 save_tv.isEnabled = true
                 save_tv.textColor = requireContext().getColor(R.color.white)
             } else {

@@ -21,7 +21,6 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Flowable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_bottom_sheet.view.*
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Scheme
@@ -54,6 +53,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toAssetItem
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
+import javax.inject.Inject
 
 class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectable {
 
@@ -263,9 +263,8 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                     assetName = asset.name,
                                     addressId = addressId,
                                     label = address.label,
-                                    publicKey = address.publicKey,
-                                    accountName = address.accountName,
-                                    accountTag = address.accountTag,
+                                    destination = address.destination,
+                                    tag = address.tag,
                                     type = PinAddrBottomSheetDialogFragment.DELETE
                                 ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                                 dismiss()
@@ -279,18 +278,15 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 }
             } else {
                 val assetId = uri.getQueryParameter("asset")
-                val publicKey = uri.getQueryParameter("public_key")
+                val destination = uri.getQueryParameter("destination")
                 val label = uri.getQueryParameter("label").run {
                     Uri.decode(this)
                 }
-                val accountName = uri.getQueryParameter("account_name")?.run {
+                val tag = uri.getQueryParameter("tag").run {
                     Uri.decode(this)
                 }
 
-                val accountTag = uri.getQueryParameter("account_tag")
-                if (assetId != null && assetId.isUUID() &&
-                    ((publicKey != null && label != null && accountName == null && accountTag == null) ||
-                        (publicKey == null && label == null && accountName != null && accountTag != null))) {
+                if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
                     linkViewModel.viewModelScope.launch {
                         var asset = linkViewModel.findAssetItemById(assetId)
                         if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isPublicKeyAsset() == false)) {
@@ -303,9 +299,8 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                 chainIconUrl = asset!!.chainIconUrl,
                                 assetName = asset!!.name,
                                 label = label,
-                                publicKey = publicKey,
-                                accountName = accountName,
-                                accountTag = accountTag,
+                                destination = destination,
+                                tag = tag,
                                 type = PinAddrBottomSheetDialogFragment.ADD)
                                 .showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
                             dismiss()
@@ -357,9 +352,8 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                         else -> {
                                             val noPublicKey = asset!!.isAccountTagAsset()
                                             val biometricItem =
-                                                WithdrawBiometricItem(if (noPublicKey) address.accountTag!! else address.publicKey!!, address.addressId,
-                                                    if (noPublicKey) address.accountName!! else address.label!!,
-                                                    asset!!, amount, null, traceId, memo)
+                                                WithdrawBiometricItem(address.destination, address.addressId,
+                                                    address.label, asset!!, amount, null, traceId, memo)
                                             val bottom = TransferBottomSheetDialogFragment.newInstance(biometricItem)
                                             bottom.showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
                                             dismiss()

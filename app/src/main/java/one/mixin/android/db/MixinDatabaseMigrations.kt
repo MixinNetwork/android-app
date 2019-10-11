@@ -68,5 +68,36 @@ class MixinDatabaseMigrations private constructor() {
                 database.execSQL("ALTER TABLE users ADD COLUMN biography TEXT NOT NULL DEFAULT ''")
             }
         }
+
+        val MIGRATION_23_24: Migration = object : Migration(23, 24) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("DROP TABLE IF EXISTS addresses")
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS addresses (address_id TEXT NOT NULL, type TEXT NOT NULL, 
+                    asset_id TEXT NOT NULL, destination TEXT NOT NULL, label TEXT NOT NULL, updated_at TEXT NOT NULL, 
+                    reserve TEXT NOT NULL, fee TEXT NOT NULL, tag TEXT NOT NULL, dust TEXT, PRIMARY KEY(address_id))
+                    """
+                )
+                database.execSQL("DROP TABLE IF EXISTS assets")
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS assets (asset_id TEXT NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, 
+                    icon_url TEXT NOT NULL, balance TEXT NOT NULL, destination TEXT NOT NULL, tag TEXT NOT NULL, price_btc TEXT NOT NULL, 
+                    price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, 
+                    hidden INTEGER, confirmations INTEGER NOT NULL, asset_key TEXT, PRIMARY KEY(asset_id))
+                    """
+                )
+                database.execSQL("DROP TABLE IF EXISTS top_assets")
+                database.execSQL(
+                    """
+                    CREATE TABLE IF NOT EXISTS top_assets (asset_id TEXT NOT NULL, symbol TEXT NOT NULL, name TEXT NOT NULL, 
+                    icon_url TEXT NOT NULL, balance TEXT NOT NULL, destination TEXT NOT NULL, tag TEXT NOT NULL, price_btc TEXT NOT NULL, 
+                    price_usd TEXT NOT NULL, chain_id TEXT NOT NULL, change_usd TEXT NOT NULL, change_btc TEXT NOT NULL, 
+                    confirmations INTEGER NOT NULL, capitalization REAL, PRIMARY KEY(asset_id))
+                    """
+                )
+            }
+        }
     }
 }

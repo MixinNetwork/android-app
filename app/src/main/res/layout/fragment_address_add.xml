@@ -54,7 +54,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="60dp"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:layout_toStartOf="@+id/label_iv"
                     android:background="@null"
                     android:hint="@string/withdrawal_label"
                     android:inputType="text"
@@ -63,15 +62,6 @@
                     android:textColor="@android:color/black"
                     android:textSize="16sp"/>
 
-                <ImageView
-                    android:id="@+id/label_iv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_addr_qr"/>
             </RelativeLayout>
 
             <RelativeLayout
@@ -89,7 +79,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:layout_toStartOf="@id/qr_iv"
+                    android:layout_toStartOf="@id/addr_iv"
                     android:background="@null"
                     android:hint="@string/withdrawal_address"
                     android:paddingStart="@dimen/activity_horizontal_margin"
@@ -98,7 +88,41 @@
                     android:textSize="16sp"/>
 
                 <ImageView
-                    android:id="@+id/qr_iv"
+                    android:id="@+id/addr_iv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_addr_qr"/>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/tag_rl"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginStart="@dimen/margin20"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="@dimen/margin20"
+                android:background="@drawable/bg_round_8_solid_gray"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/tag_et"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                    android:layout_toStartOf="@id/tag_iv"
+                    android:background="@null"
+                    android:hint="@string/withdrawal_tag"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="8dp"
+                    android:textColor="@android:color/black"
+                    android:textSize="16sp"/>
+
+                <ImageView
+                    android:id="@+id/tag_iv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_alignParentEnd="true"

@@ -132,7 +132,7 @@ class AddressManagementFragment : BaseFragment() {
         search_et.listener = object : SearchView.OnSearchViewListener {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
-                    val name = if (asset.isAccountTagAsset()) it.accountName else it.label
+                    val name = it.label
                     name?.contains(s.toString(), ignoreCase = true) ?: false
                 }?.toMutableList()
             }
@@ -147,10 +147,9 @@ class AddressManagementFragment : BaseFragment() {
         val bottomSheet = PinAddrBottomSheetDialogFragment.newInstance(addressId = addr.addressId,
             assetUrl = asset.iconUrl,
             chainIconUrl = asset.chainIconUrl,
-            publicKey = addr.publicKey,
+            destination = addr.destination,
             label = addr.label,
-            accountTag = addr.accountTag,
-            accountName = addr.accountName,
+            tag = addr.tag,
             assetName = asset.name, type = DELETE)
         bottomSheet.showNow(parentFragmentManager, PinAddrBottomSheetDialogFragment.TAG)
         bottomSheet.callback = object : PinBottomSheetDialogFragment.Callback {

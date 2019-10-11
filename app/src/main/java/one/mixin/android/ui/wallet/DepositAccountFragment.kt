@@ -54,8 +54,8 @@ class DepositAccountFragment : DepositFragment() {
         account_memo_qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         account_memo_qr_avatar.setBorder()
         account_memo_qr_avatar.badge.loadImage(asset.chainIconUrl, R.drawable.ic_avatar_place_holder)
-        account_name_key_code.text = asset.accountName
-        account_memo_key_code.text = asset.accountTag
+        account_name_key_code.text = asset.destination
+        account_memo_key_code.text = asset.tag
         tip_tv.text = getTipsByAsset(asset) + getString(R.string.deposit_confirmation, asset.confirmations)
         warning_tv.text = getString(R.string.deposit_account_attention, asset.symbol)
         account_name_qr_fl.setOnClickListener {
@@ -65,19 +65,18 @@ class DepositAccountFragment : DepositFragment() {
             DepositQrBottomFragment.newInstance(asset, TYPE_TAG).show(parentFragmentManager, DepositQrBottomFragment.TAG)
         }
         account_name_copy_tv.setOnClickListener {
-            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.accountName))
+            context?.getClipboardManager()
+                ?.setPrimaryClip(ClipData.newPlainText(null, asset.destination))
             context?.toast(R.string.copy_success)
         }
         account_memo_copy_tv.setOnClickListener {
-            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.accountTag))
+            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, asset.tag))
             context?.toast(R.string.copy_success)
         }
 
-        asset.accountName?.let {
-            showQR(account_name_qr, "${BuildConfig.VERSION_CODE}-${asset.accountName}", it)
-        }
-        asset.accountTag?.let {
-            showQR(account_memo_qr, "${BuildConfig.VERSION_CODE}-${asset.accountTag}", it)
+        showQR(account_name_qr, "${BuildConfig.VERSION_CODE}-${asset.destination}", asset.destination)
+        if (asset.tag.isNotEmpty()) {
+            showQR(account_memo_qr, "${BuildConfig.VERSION_CODE}-${asset.tag}", asset.tag)
         }
         showTip()
     }

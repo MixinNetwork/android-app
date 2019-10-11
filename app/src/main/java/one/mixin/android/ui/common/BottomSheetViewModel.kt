@@ -7,7 +7,6 @@ import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
-import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
@@ -45,6 +44,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.giphy.Gif
 import org.jetbrains.anko.doAsync
+import javax.inject.Inject
 
 class BottomSheetViewModel @Inject internal constructor(
     private val accountRepository: AccountRepository,
@@ -91,8 +91,8 @@ class BottomSheetViewModel @Inject internal constructor(
         }
     }
 
-    fun syncAddr(assetId: String, publicKey: String?, label: String?, code: String, accountName: String?, accountTag: String?): Observable<MixinResponse<Address>> =
-        assetRepository.syncAddr(AddressRequest(assetId, publicKey, label, encryptPin(Session.getPinToken()!!, code)!!, accountName, accountTag))
+    fun syncAddr(assetId: String, destination: String?, label: String?, tag:String?, code: String): Observable<MixinResponse<Address>> =
+        assetRepository.syncAddr(AddressRequest(assetId, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
     fun saveAddr(addr: Address) = assetRepository.saveAddr(addr)

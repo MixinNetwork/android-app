@@ -3,8 +3,8 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
-import java.math.BigDecimal
 import kotlinx.android.parcel.Parcelize
+import java.math.BigDecimal
 
 @SuppressLint("ParcelCreator")
 @Parcelize
@@ -14,7 +14,8 @@ data class AssetItem(
     val name: String,
     val iconUrl: String,
     val balance: String,
-    val publicKey: String?,
+    val destination: String,
+    val tag: String,
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
@@ -25,8 +26,6 @@ data class AssetItem(
     val chainIconUrl: String?,
     val chainSymbol: String?,
     val chainName: String?,
-    val accountName: String?,
-    val accountTag: String?,
     val assetKey: String?
 ) : Parcelable {
     fun fiat(): BigDecimal {
@@ -39,15 +38,17 @@ data class AssetItem(
         return BigDecimal(balance) * BigDecimal(priceBtc)
     }
 
-    fun toAsset() = Asset(assetId, symbol, name, iconUrl, balance, publicKey, priceBtc, priceUsd,
-        chainId, changeUsd, changeBtc, hidden, confirmations, accountName, accountTag, assetKey)
+    fun toAsset() = Asset(
+        assetId, symbol, name, iconUrl, balance, destination, tag, priceBtc, priceUsd,
+        chainId, changeUsd, changeBtc, hidden, confirmations, assetKey
+    )
 
     fun isPublicKeyAsset(): Boolean {
-        return !publicKey.isNullOrEmpty() && accountName.isNullOrEmpty() && accountTag.isNullOrEmpty()
+        return tag.isEmpty()
     }
 
     fun isAccountTagAsset(): Boolean {
-        return !accountName.isNullOrEmpty() && !accountTag.isNullOrEmpty() && publicKey.isNullOrEmpty()
+        return tag.isNotEmpty()
     }
 
     companion object {
