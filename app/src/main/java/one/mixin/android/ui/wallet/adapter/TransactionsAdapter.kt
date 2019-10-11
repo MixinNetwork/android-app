@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
+import kotlin.math.abs
 import one.mixin.android.R
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
@@ -13,9 +14,8 @@ import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapterDataObserver
 import one.mixin.android.vo.SnapshotItem
 
 class TransactionsAdapter :
-    PagedHeaderAdapter<SnapshotItem, SnapshotHolder>(SnapshotItem.DIFF_CALLBACK),
+    PagedHeaderAdapter<SnapshotItem>(SnapshotItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
-
     var listener: OnSnapshotListener? = null
 
     override fun getHeaderId(pos: Int): Long {
@@ -23,7 +23,7 @@ class TransactionsAdapter :
             -1
         } else {
             val snapshot = getItem(getPos(pos))
-            Math.abs(snapshot?.createdAt?.hashForDate() ?: -1)
+            abs(snapshot?.createdAt?.hashForDate() ?: -1)
         }
     }
 
@@ -35,10 +35,12 @@ class TransactionsAdapter :
         vh.bind(time)
     }
 
-    override fun onBindViewHolder(holder: SnapshotHolder, position: Int) {
-        val pos = getPos(position)
-        getItem(pos)?.let {
-            holder.bind(it, listener)
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        if (holder is SnapshotHolder) {
+            val pos = getPos(position)
+            getItem(pos)?.let {
+                holder.bind(it, listener)
+            }
         }
     }
 

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.media
 
-import android.content.Context
 import android.text.format.DateUtils
 import android.view.LayoutInflater
 import android.view.View
@@ -21,7 +20,7 @@ class MediaAdapter(private val onClickListener: (imageView: View, messageId: Str
     SharedMediaHeaderAdapter<MediaHolder>() {
     var size: Int = 0
 
-    override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         MediaHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_media,

@@ -1,7 +1,6 @@
 package one.mixin.android.ui.media
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +16,7 @@ import one.mixin.android.vo.MessageItem
 
 class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Unit) :
     SharedMediaHeaderAdapter<AudioHolder>() {
-    override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         AudioHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_audio,

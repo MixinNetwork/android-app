@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagedListAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
+import kotlin.math.abs
 import one.mixin.android.R
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
@@ -20,7 +21,7 @@ class SnapshotPagedAdapter : PagedListAdapter<SnapshotItem, SnapshotHolder>(DIFF
         return if (snapshot == null) {
             -1
         } else {
-            Math.abs(snapshot.createdAt.hashForDate())
+            abs(snapshot.createdAt.hashForDate())
         }
     }
 

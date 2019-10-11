@@ -1,6 +1,5 @@
 package one.mixin.android.ui.media
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,7 @@ import one.mixin.android.vo.MessageItem
 
 class FileAdapter(private val onClickListener: (MessageItem) -> Unit) :
     SharedMediaHeaderAdapter<FileHolder>() {
-    override fun getNormalViewHolder(context: Context, parent: ViewGroup) =
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) =
         FileHolder(
             LayoutInflater.from(parent.context).inflate(
                 R.layout.item_file,
