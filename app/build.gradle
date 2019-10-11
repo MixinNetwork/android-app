@@ -29,9 +29,6 @@ android {
             }
         }
 
-        ndk {
-            abiFilters "armeabi-v7a", "arm64-v8a"
-        }
 
         buildConfigField 'String', 'BUGSNAG_API_KEY', "\"${propOrEmpty('MIXIN_BUGSNAG_API_KEY')}\""
         buildConfigField 'String', 'RECAPTCHA_KEY', "\"${propOrEmpty('MIXIN_RECAPTCHA_KEY')}\""
@@ -89,6 +86,9 @@ android {
     buildTypes {
         if (project.hasProperty("RELEASE_STORE_FILE")) {
             release {
+                ndk {
+                    abiFilters "armeabi-v7a", "arm64-v8a"
+                }
                 debuggable false
                 jniDebuggable false
                 shrinkResources true
@@ -100,6 +100,9 @@ android {
         debug {
             signingConfig signingConfigs.debug
             jniDebuggable false
+            ndk {
+                abiFilters "x86", "arm64-v8a"
+            }
         }
     }
 
