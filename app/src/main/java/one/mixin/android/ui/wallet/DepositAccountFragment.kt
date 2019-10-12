@@ -46,7 +46,7 @@ class DepositAccountFragment : DepositFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         title.left_ib.setOnClickListener { activity?.onBackPressed() }
-        title.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT_ACCOUNT) }
+        title.right_animator.setOnClickListener { context?.openUrl(Constants.HelpLink.DEPOSIT) }
         title.setSubTitle(getString(R.string.filters_deposit), asset.symbol)
         account_name_qr_avatar.bg.loadImage(asset.iconUrl, R.drawable.ic_avatar_place_holder)
         account_name_qr_avatar.setBorder()

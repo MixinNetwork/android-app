@@ -13,8 +13,7 @@ object Constants {
     object HelpLink {
         const val CENTER = "https://mixinmessenger.zendesk.com"
         const val EMERGENCY = "https://mixinmessenger.zendesk.com/hc/articles/360029154692"
-        const val DEPOSIT_PUBLIC_KEY = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
-        const val DEPOSIT_ACCOUNT = "https://mixinmessenger.zendesk.com/hc/articles/360023738212"
+        const val DEPOSIT = "https://mixinmessenger.zendesk.com/hc/articles/360018789931"
     }
 
     object Account {
