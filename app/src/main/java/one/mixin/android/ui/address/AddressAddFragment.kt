@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,8 +17,10 @@ import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.highLightClick
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
@@ -66,6 +69,7 @@ class AddressAddFragment : BaseFragment() {
     }
 
     private val type: Int by lazy { arguments!!.getInt(ARGS_TYPE) }
+    private var memoEnabled = true
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? =
         inflater.inflate(R.layout.fragment_address_add, container, false)
@@ -93,7 +97,11 @@ class AddressAddFragment : BaseFragment() {
                     chainIconUrl = asset.chainIconUrl,
                     label = label_et.text.toString(),
                     destination = addr_et.text.toString(),
-                    tag = tag_et.text.toString(),
+                    tag = if (memoEnabled) {
+                        tag_et.text.toString()
+                    } else {
+                        ""
+                    },
                     type = type
                 )
 
@@ -109,18 +117,37 @@ class AddressAddFragment : BaseFragment() {
         addr_et.addTextChangedListener(mWatcher)
         tag_et.addTextChangedListener(mWatcher)
         addr_iv.setOnClickListener { handleClick(true) }
-        if (asset.tag.isNotEmpty()) {
-            tag_iv.setOnClickListener { handleClick(false) }
-        } else {
-            tag_et.isEnabled = false
-            tag_et.setText(R.string.withdrawal_ne_tag)
-            tag_iv.isVisible = false
-        }
+        info.movementMethod = LinkMovementMethod.getInstance()
+        handleMemo(address)
 
         address?.let {
             label_et.setText(it.label)
             addr_et.setText(it.destination)
             title_view.title_tv.text = getString(R.string.withdrawal_addr_modify, asset.symbol)
+        }
+    }
+
+    private fun handleMemo(address: Address? = null) {
+        if (memoEnabled) {
+            tag_et.isEnabled = true
+            tag_et.setText(address?.tag ?: "")
+            tag_iv.isVisible = true
+            tag_iv.setOnClickListener { handleClick(false) }
+            info.setText(R.string.withdrawal_addr_memo)
+            info.highLightClick(getString(R.string.withdrawal_addr_memo_link), action = {
+                memoEnabled = false
+                handleMemo()
+            })
+        } else {
+            tag_et.isEnabled = false
+            tag_et.setText(R.string.withdrawal_ne_tag)
+            tag_iv.isVisible = false
+            info.setText(R.string.withdrawal_addr_no_memo)
+            info.highLightClick(getString(R.string.withdrawal_addr_no_memo_link), action = {
+                memoEnabled = true
+                handleMemo()
+                tag_et.showKeyboard()
+            })
         }
     }
 

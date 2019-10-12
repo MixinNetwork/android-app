@@ -4,9 +4,12 @@ import android.content.res.ColorStateList
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.TextPaint
 import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.text.style.ForegroundColorSpan
 import android.text.style.TextAppearanceSpan
+import android.view.View
 import android.widget.TextView
 import androidx.annotation.ColorInt
 import androidx.core.content.ContextCompat
@@ -19,17 +22,13 @@ fun TextView.highlightLinkText(
     links: Array<String>,
     color: Int = ContextCompat.getColor(context, R.color.colorBlue)
 ) {
-    if (texts.size != links.size) {
-        throw IllegalArgumentException("texts's length should equals with links")
-    }
+    require(texts.size == links.size) { "texts's length should equals with links" }
     val sp = SpannableString(source)
     for (i in texts.indices) {
         val text = texts[i]
         val link = links[i]
         val start = source.indexOf(text)
-        if (start == -1) {
-            throw IllegalArgumentException("start index can not be -1")
-        }
+        require(start != -1) { "start index can not be -1" }
         sp.setSpan(NoUnderLineSpan(link), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
         sp.setSpan(ForegroundColorSpan(color), start, start + text.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
     }
@@ -52,6 +51,43 @@ fun TextView.highLight(
         spannable.setSpan(
             TextAppearanceSpan(null, 0, 0, ColorStateList.valueOf(color), null),
             index, index + target.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
+    }
+    setText(spannable)
+}
+
+fun TextView.highLightClick(
+    target: String?,
+    ignoreCase: Boolean = true,
+    @ColorInt color: Int = resources.getColor(R.color.wallet_blue_secondary, null),
+    action: () -> Unit
+) {
+    if (target.isNullOrBlank()) {
+        return
+    }
+    val text = this.text.toString()
+    val spannable = SpannableString(text)
+    var index = text.indexOf(target, ignoreCase = ignoreCase)
+    while (index != -1) {
+        spannable.setSpan(
+            ForegroundColorSpan(color),
+            index,
+            index + target.length,
+            Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        spannable.setSpan(
+            object : ClickableSpan() {
+                override fun onClick(widget: View) {
+                    action()
+                }
+
+                override fun updateDrawState(ds: TextPaint) {
+                    ds.color = ds.linkColor
+                    ds.isUnderlineText = false
+                }
+            },
+            index, index + target.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
         index = text.indexOf(target, index + target.length, ignoreCase = ignoreCase)
     }
     setText(spannable)
