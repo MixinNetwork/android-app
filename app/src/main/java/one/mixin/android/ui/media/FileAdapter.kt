@@ -2,13 +2,17 @@ package one.mixin.android.ui.media
 
 import android.view.LayoutInflater
 import android.view.View
+import android.view.View.GONE
+import android.view.View.VISIBLE
 import android.view.ViewGroup
-import java.util.Locale
 import kotlinx.android.synthetic.main.item_file.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.fileSize
 import one.mixin.android.ui.common.recyclerview.NormalHolder
+import one.mixin.android.util.Session
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import java.util.Locale
 
 class FileAdapter(private val onClickListener: (MessageItem) -> Unit) :
     SharedMediaHeaderAdapter<FileHolder>() {
@@ -41,6 +45,41 @@ class FileHolder(itemView: View) : NormalHolder(itemView) {
             type = type.substring(0, 3)
         }
         itemView.type_tv.text = type
+        item.mediaStatus?.let {
+            when (it) {
+                MediaStatus.EXPIRED.name -> {
+                    itemView.file_expired.visibility = VISIBLE
+                    itemView.file_progress.visibility = GONE
+                    itemView.type_tv.visibility = GONE
+                }
+                MediaStatus.PENDING.name -> {
+                    itemView.file_expired.visibility = GONE
+                    itemView.file_progress.visibility = VISIBLE
+                    itemView.type_tv.visibility = GONE
+                    itemView.file_progress.enableLoading()
+                    itemView.file_progress.setBindId(item.messageId)
+                }
+                MediaStatus.DONE.name, MediaStatus.READ.name -> {
+                    itemView.file_expired.visibility = GONE
+                    itemView.file_progress.visibility = GONE
+                    itemView.type_tv.visibility = VISIBLE
+                    itemView.file_progress.setDone()
+                    itemView.file_progress.setBindId(null)
+                }
+                MediaStatus.CANCELED.name -> {
+                    itemView.file_expired.visibility = GONE
+                    itemView.file_progress.visibility = VISIBLE
+                    itemView.type_tv.visibility = GONE
+                    if (Session.getAccountId() == item.userId && item.mediaUrl != null) {
+                        itemView.file_progress.enableUpload()
+                    } else {
+                        itemView.file_progress.enableDownload()
+                    }
+                    itemView.file_progress.setBindId(item.messageId)
+                    itemView.file_progress.setProgress(-1)
+                }
+            }
+        }
         itemView.setOnClickListener {
             item.let(onClickListener)
         }

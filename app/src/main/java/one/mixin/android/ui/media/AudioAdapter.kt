@@ -38,6 +38,7 @@ class AudioAdapter(private val onClickListener: (messageItem: MessageItem) -> Un
 class AudioHolder(itemView: View) : NormalHolder(itemView) {
     @SuppressLint("SetTextI18n")
     fun bind(item: MessageItem, onClickListener: (messageItem: MessageItem) -> Unit) {
+        val isMe = item.userId == Session.getAccountId()
         itemView.avatar.setInfo(item.userFullName, item.userAvatarUrl, item.userIdentityNumber)
         itemView.cover.round(itemView.context.dpToPx(25f))
         item.mediaWaveform?.let {
@@ -46,7 +47,7 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
         item.mediaDuration?.let {
             itemView.audio_duration.text = it.toLong().formatMillis()
         }
-        if (item.userId != Session.getAccountId() && item.mediaStatus != MediaStatus.READ.name) {
+        if (!isMe && item.mediaStatus != MediaStatus.READ.name) {
             itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.colorBlue))
             itemView.audio_waveform.isFresh = true
         } else {
@@ -58,15 +59,43 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
         } else {
             itemView.audio_waveform.setProgress(0f)
         }
-        itemView.audio_progress.visibility = View.VISIBLE
-        itemView.audio_progress.setBindOnly(item.messageId)
-        itemView.audio_waveform.setBind(item.messageId)
-        if (AudioPlayer.get().isPlay(item.messageId)) {
-            itemView.audio_progress.setPause()
-        } else {
-            itemView.audio_progress.setPlay()
+        item.mediaStatus?.let {
+            when (it) {
+                MediaStatus.EXPIRED.name -> {
+                    itemView.audio_expired.visibility = View.VISIBLE
+                    itemView.audio_progress.visibility = View.INVISIBLE
+                }
+                MediaStatus.PENDING.name -> {
+                    itemView.audio_expired.visibility = View.GONE
+                    itemView.audio_progress.visibility = View.VISIBLE
+                    itemView.audio_progress.enableLoading()
+                    itemView.audio_progress.setBindOnly(item.messageId)
+                }
+                MediaStatus.DONE.name, MediaStatus.READ.name -> {
+                    itemView.audio_expired.visibility = View.GONE
+                    itemView.audio_progress.visibility = View.VISIBLE
+                    itemView.audio_progress.setBindOnly(item.messageId)
+                    itemView.audio_waveform.setBind(item.messageId)
+                    if (AudioPlayer.get().isPlay(item.messageId)) {
+                        itemView.audio_progress.setPause()
+                    } else {
+                        itemView.audio_progress.setPlay()
+                    }
+                }
+                MediaStatus.CANCELED.name -> {
+                    itemView.audio_expired.visibility = View.GONE
+                    itemView.audio_progress.visibility = View.VISIBLE
+                    if (isMe) {
+                        itemView.audio_progress.enableUpload()
+                    } else {
+                        itemView.audio_progress.enableDownload()
+                    }
+                    itemView.audio_progress.setBindOnly(item.messageId)
+                    itemView.audio_progress.setProgress(-1)
+                }
+            }
         }
-        itemView.audio_progress.setOnClickListener {
+        itemView.setOnClickListener {
             onClickListener(item)
         }
     }

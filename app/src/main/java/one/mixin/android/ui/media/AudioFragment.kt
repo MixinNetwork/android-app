@@ -11,10 +11,14 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.util.AudioPlayer
+import one.mixin.android.util.Session
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.mediaDownloaded
 
 class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
@@ -32,10 +36,24 @@ class AudioFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     }
 
     private val adapter = AudioAdapter(fun(messageItem: MessageItem) {
-        if (AudioPlayer.get().isPlay(messageItem.messageId)) {
-            AudioPlayer.get().pause()
-        } else {
-            AudioPlayer.get().play(messageItem, continuePlayOnlyToday = true)
+        when {
+            messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
+                if (Session.getAccountId() == messageItem.userId) {
+                    viewModel.retryUpload(messageItem.messageId) {
+                        toast(R.string.error_retry_upload)
+                    }
+                } else {
+                    viewModel.retryDownload(messageItem.messageId)
+                }
+            }
+            messageItem.mediaStatus == MediaStatus.PENDING.name -> {
+                viewModel.cancel(messageItem.messageId)
+            }
+            mediaDownloaded(messageItem.status) -> if (AudioPlayer.get().isPlay(messageItem.messageId)) {
+                AudioPlayer.get().pause()
+            } else {
+                AudioPlayer.get().play(messageItem, continuePlayOnlyToday = true)
+            }
         }
     })
 

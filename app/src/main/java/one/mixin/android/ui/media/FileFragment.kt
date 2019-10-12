@@ -12,8 +12,11 @@ import kotlinx.android.synthetic.main.layout_recycler_view.*
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.openMedia
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
+import one.mixin.android.util.Session
+import one.mixin.android.vo.MediaStatus
 
 class FileFragment : BaseViewModelFragment<SharedMediaViewModel>() {
     companion object {
@@ -28,8 +31,23 @@ class FileFragment : BaseViewModelFragment<SharedMediaViewModel>() {
         arguments!!.getString(Constants.ARGS_CONVERSATION_ID)!!
     }
 
-    private val adapter = FileAdapter {
-        requireContext().openMedia(it)
+    private val adapter = FileAdapter { messageItem ->
+        when {
+            messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
+                if (Session.getAccountId() == messageItem.userId) {
+                    viewModel.retryUpload(messageItem.messageId) {
+                        toast(R.string.error_retry_upload)
+                    }
+                } else {
+                    viewModel.retryDownload(messageItem.messageId)
+                }
+            }
+            messageItem.mediaStatus == MediaStatus.PENDING.name -> {
+                viewModel.cancel(messageItem.messageId)
+            }
+            messageItem.mediaStatus == MediaStatus.EXPIRED.name -> {}
+            else -> requireContext().openMedia(messageItem)
+        }
     }
 
     override fun getModelClass() = SharedMediaViewModel::class.java

@@ -1,49 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="90dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:foreground="?android:attr/selectableItemBackground">
 
     <Space
         android:id="@+id/center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true" />
 
-    <TextView
-        android:id="@+id/type_tv"
+    <FrameLayout
+        android:id="@+id/left_fl"
         android:layout_width="50dp"
         android:layout_height="50dp"
-        android:layout_centerVertical="true"
-        android:gravity="center"
         android:layout_marginStart="@dimen/margin20"
         android:layout_marginEnd="@dimen/margin16"
-        android:textColor="@color/wallet_pending_text_color"
-        android:textSize="16sp"
-        android:background="@drawable/bg_shared_media_icon"/>
+        android:layout_centerVertical="true">
+
+        <TextView
+            android:id="@+id/type_tv"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_shared_media_icon"
+            android:gravity="center"
+            android:textColor="@color/wallet_pending_text_color"
+            android:textSize="16sp" />
+
+        <one.mixin.android.widget.CircleProgress
+            android:id="@+id/file_progress"
+            app:progressColor="@color/colorDarkBlue"
+            app:progressWidth="1.5dp"
+            app:shadowColor="@color/progress_gary"
+            app:size="40dp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_avatar_place_holder" />
+
+        <ImageView
+            android:id="@+id/file_expired"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_expired"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/name_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_above="@id/center"
-        android:layout_toEndOf="@id/type_tv"
         android:layout_marginEnd="@dimen/margin20"
         android:layout_marginBottom="2dp"
-        android:maxLines="1"
+        android:layout_toEndOf="@id/left_fl"
         android:ellipsize="end"
-        android:textColor="@color/wallet_text_dark"/>
+        android:maxLines="1"
+        android:textColor="@color/wallet_text_dark" />
 
     <TextView
         android:id="@+id/size_tv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/center"
-        android:layout_toEndOf="@id/type_tv"
         android:layout_marginTop="2dp"
         android:layout_marginEnd="@dimen/margin20"
-        android:maxLines="1"
+        android:layout_toEndOf="@id/left_fl"
         android:ellipsize="end"
-        android:textSize="12sp"
-        android:textColor="@color/wallet_pending_text_color"/>
+        android:maxLines="1"
+        android:textColor="@color/wallet_pending_text_color"
+        android:textSize="12sp" />
 </RelativeLayout>

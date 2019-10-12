@@ -104,7 +104,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration,  m.media_waveform AS mediaWaveform
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO') AND (m.media_status = 'DONE' OR m.media_status = 'READ')
+        AND (m.category = 'SIGNAL_AUDIO' OR m.category = 'PLAIN_AUDIO')
         ORDER BY m.created_at DESC
         """
     )
@@ -130,7 +130,7 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA') AND m.media_status = 'DONE'
+        AND (m.category = 'SIGNAL_DATA' OR m.category = 'PLAIN_DATA')
         ORDER BY m.created_at DESC
         """
     )

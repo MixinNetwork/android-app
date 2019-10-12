@@ -40,6 +40,16 @@
             app:progressWidth="1.5dp"
             app:shadowColor="@android:color/transparent"
             app:size="40dp" />
+
+        <ImageView
+            android:id="@+id/audio_expired"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_expired"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </FrameLayout>
 
     <one.mixin.android.widget.WaveformView
