@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import kotlinx.android.synthetic.main.item_audio.view.*
 import one.mixin.android.R
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.round
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.AudioPlayer
@@ -43,10 +44,15 @@ class AudioHolder(itemView: View) : NormalHolder(itemView) {
             itemView.audio_waveform.setWaveform(it)
         }
         item.mediaDuration?.let {
-            itemView.audio_duration.text = "${it.toLong() / 1000}'"
+            itemView.audio_duration.text = it.toLong().formatMillis()
         }
-        itemView.audio_waveform.isFresh = item.userId != Session.getAccountId() &&
-            item.mediaStatus != MediaStatus.READ.name
+        if (item.userId != Session.getAccountId() && item.mediaStatus != MediaStatus.READ.name) {
+            itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.colorBlue))
+            itemView.audio_waveform.isFresh = true
+        } else {
+            itemView.audio_duration.setTextColor(itemView.context.getColor(R.color.gray_50))
+            itemView.audio_waveform.isFresh = false
+        }
         if (AudioPlayer.get().isLoaded(item.messageId)) {
             itemView.audio_waveform.setProgress(AudioPlayer.get().progress)
         } else {
