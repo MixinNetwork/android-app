@@ -12,7 +12,6 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
-import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_address_management.*
 import kotlinx.android.synthetic.main.item_address.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
@@ -26,11 +25,11 @@ import one.mixin.android.ui.common.PinBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.DELETE
-import one.mixin.android.ui.wallet.PinAddrBottomSheetDialogFragment.Companion.MODIFY
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.widget.SearchView
+import javax.inject.Inject
 
 class AddressManagementFragment : BaseFragment() {
 
@@ -92,9 +91,6 @@ class AddressManagementFragment : BaseFragment() {
                 popMenu.setOnMenuItemClickListener {
                     if (it.itemId == R.id.delete) {
                         showBottomSheet(addr, asset)
-                    } else if (it.itemId == R.id.edit) {
-                        activity?.addFragment(this@AddressManagementFragment,
-                            AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
                     }
                     return@setOnMenuItemClickListener true
                 }
@@ -110,19 +106,13 @@ class AddressManagementFragment : BaseFragment() {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val deletePos = viewHolder.adapterPosition
                 val addr = adapter.addresses!![deletePos]
-                if (direction == ItemTouchHelper.START) {
-                    adapter.notifyItemChanged(deletePos)
-                    activity?.addFragment(this@AddressManagementFragment,
-                        AddressAddFragment.newInstance(asset, addr, MODIFY), AddressAddFragment.TAG)
-                } else if (direction == ItemTouchHelper.END) {
-                    val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
-                    val bottomSheet = showBottomSheet(addr, asset)
-                    parentFragmentManager.executePendingTransactions()
-                    bottomSheet.dialog.setOnDismissListener {
-                        bottomSheet.dismiss()
-                        if (!deleteSuccess) {
-                            adapter.restoreItem(deleteItem, deletePos)
-                        }
+                val deleteItem = adapter.removeItem(viewHolder.adapterPosition)!!
+                val bottomSheet = showBottomSheet(addr, asset)
+                parentFragmentManager.executePendingTransactions()
+                bottomSheet.dialog.setOnDismissListener {
+                    bottomSheet.dismiss()
+                    if (!deleteSuccess) {
+                        adapter.restoreItem(deleteItem, deletePos)
                     }
                 }
             }

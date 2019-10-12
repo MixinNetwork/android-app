@@ -55,13 +55,13 @@ class ItemCallback(private val listener: ItemCallbackListener) :
             viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorRed)
             viewHolder.itemView.delete_icon.isVisible = true
             viewHolder.itemView.delete_tv.isVisible = true
-            viewHolder.itemView.edit_icon.isGone = true
-            viewHolder.itemView.edit_tv.isGone = true
+            viewHolder.itemView.delete_icon_copy.isGone = true
+            viewHolder.itemView.delete_tv_copy.isGone = true
         } else if (dX < 0 && direction != ItemTouchHelper.END) {
             direction = ItemTouchHelper.END
-            viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorBlue)
-            viewHolder.itemView.edit_icon.isVisible = true
-            viewHolder.itemView.edit_tv.isVisible = true
+            viewHolder.itemView.background_rl.setBackgroundResource(R.color.colorRed)
+            viewHolder.itemView.delete_tv_copy.isVisible = true
+            viewHolder.itemView.delete_icon_copy.isVisible = true
             viewHolder.itemView.delete_icon.isGone = true
             viewHolder.itemView.delete_tv.isGone = true
         }

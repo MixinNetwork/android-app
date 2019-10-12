@@ -103,10 +103,10 @@ class PinAddrBottomSheetDialogFragment : PinBottomSheetDialogFragment() {
                 if (index != contentView.pin.getCount()) return
 
                 contentView.pin_va?.displayedChild = POS_PB
-                val observable = when (type) {
-                    ADD -> bottomViewModel.syncAddr(assetId!!, destination, label, addressTag, contentView.pin.code())
-                    MODIFY -> bottomViewModel.updateAddr(assetId!!, destination, label, addressTag, contentView.pin.code())
-                    else -> bottomViewModel.deleteAddr(addressId!!, contentView.pin.code())
+                val observable = if (type == ADD || type == MODIFY) {
+                    bottomViewModel.syncAddr(assetId!!, destination, label, addressTag, contentView.pin.code())
+                } else {
+                    bottomViewModel.deleteAddr(addressId!!, contentView.pin.code())
                 }
                 observable.autoDispose(stopScope).subscribe({ r ->
                     if (r.isSuccess) {
