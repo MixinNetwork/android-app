@@ -11,7 +11,6 @@ import android.view.View.VISIBLE
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
-import java.math.BigDecimal
 import kotlinx.android.synthetic.main.fragment_transfer_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
@@ -23,7 +22,6 @@ import one.mixin.android.Constants.BIOMETRIC_PIN_CHECK
 import one.mixin.android.Constants.KEYS
 import one.mixin.android.R
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat
@@ -45,6 +43,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 import org.jetbrains.anko.support.v4.toast
+import java.math.BigDecimal
 
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
@@ -77,20 +76,21 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         contentView.title_view.right_iv.setOnClickListener { dismiss() }
+        contentView.title_view.roundClose()
         when (t) {
             is TransferBiometricItem -> {
                 (t as TransferBiometricItem).let {
-                    contentView.title_view.showAvatar(it.user)
-                    contentView.title_view.setSubTitle(it.user.fullName
-                        ?: "", it.user.identityNumber)
+                    contentView.title.text = it.user.fullName ?: ""
+                    contentView.sub_title.text = "MixinID:${it.user.identityNumber}"
                 }
+                contentView.pay_tv.setText(R.string.wallet_pay_with_pwd)
             }
             is WithdrawBiometricItem -> {
                 (t as WithdrawBiometricItem).let {
-                    contentView.title_view.showAddressAvatar()
-                    contentView.title_view.setSubTitle(getString(R.string.withdrawal_to, it.label),
-                        it.publicKey.formatPublicKey())
+                    contentView.title.text = getString(R.string.withdrawal_to, it.label)
+                    contentView.sub_title.text = it.publicKey
                 }
+                contentView.pay_tv.setText(R.string.withdrawal_with_pwd)
             }
         }
         if (!TextUtils.isEmpty(t.memo)) {

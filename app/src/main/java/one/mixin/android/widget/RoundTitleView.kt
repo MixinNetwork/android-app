@@ -88,4 +88,8 @@ class RoundTitleView(context: Context, attrs: AttributeSet) : RelativeLayout(con
             sub_title_tv.text = second
         }
     }
+
+    fun roundClose(){
+        right_iv.setImageResource(R.drawable.ic_close)
+    }
 }
