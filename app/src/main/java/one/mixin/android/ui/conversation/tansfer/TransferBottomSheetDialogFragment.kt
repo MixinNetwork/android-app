@@ -88,14 +88,14 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             is WithdrawBiometricItem -> {
                 (t as WithdrawBiometricItem).let {
                     contentView.title.text = getString(R.string.withdrawal_to, it.label)
-                    contentView.sub_title.text = it.publicKey
+                    contentView.sub_title.text = it.destination
                 }
                 contentView.pay_tv.setText(R.string.withdrawal_with_pwd)
             }
         }
-        if (!TextUtils.isEmpty(t.memo)) {
+        if (!TextUtils.isEmpty(t.tag)) {
             contentView.memo.visibility = VISIBLE
-            contentView.memo.text = t.memo
+            contentView.memo.text = t.tag
         }
         contentView.asset_icon.bg.loadImage(t.asset.iconUrl, R.drawable.ic_avatar_place_holder)
         lifecycleScope.launch(Dispatchers.IO) {
@@ -152,11 +152,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         when (t) {
             is TransferBiometricItem ->
                 (t as TransferBiometricItem).let {
-                    bottomViewModel.transfer(t.asset.assetId, it.user.userId, t.amount, pin, t.trace, t.memo)
+                    bottomViewModel.transfer(t.asset.assetId, it.user.userId, t.amount, pin, t.trace, t.tag)
                 }
             else ->
                 (t as WithdrawBiometricItem).let {
-                    bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.memo)
+                    bottomViewModel.withdrawal(it.addressId, it.amount, pin, it.trace!!, it.tag)
                 }
         }.autoDispose(stopScope)
             .subscribe({

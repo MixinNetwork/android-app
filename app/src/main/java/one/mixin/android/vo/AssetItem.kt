@@ -43,14 +43,6 @@ data class AssetItem(
         chainId, changeUsd, changeBtc, hidden, confirmations, assetKey
     )
 
-    fun isPublicKeyAsset(): Boolean {
-        return tag.isEmpty()
-    }
-
-    fun isAccountTagAsset(): Boolean {
-        return tag.isNotEmpty()
-    }
-
     companion object {
         val DIFF_CALLBACK = object : DiffUtil.ItemCallback<AssetItem>() {
             override fun areItemsTheSame(oldItem: AssetItem, newItem: AssetItem) =
@@ -64,8 +56,8 @@ data class AssetItem(
 
 fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
     when {
-        isPublicKeyAsset() -> keyAction()
-        isAccountTagAsset() -> memoAction()
+        destination.isNotEmpty() && tag.isNotEmpty() -> keyAction()
+        destination.isNotEmpty() -> memoAction()
         else -> errorAction()
     }
 }

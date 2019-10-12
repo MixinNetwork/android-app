@@ -99,6 +99,8 @@ constructor(
 
     fun syncAddr(addressRequest: AddressRequest) = addressService.addresses(addressRequest)
 
+    fun syncAddr(assetId: String, addressRequest: AddressRequest) = addressService.addresses(assetId, addressRequest)
+
     fun deleteAddr(id: String, pin: String) = addressService.delete(id, Pin(pin))
 
     fun deleteLocalAddr(id: String) = addressDao.deleteById(id)

@@ -15,6 +15,9 @@ interface AddressService {
     @POST("addresses")
     fun addresses(@Body request: AddressRequest): Observable<MixinResponse<Address>>
 
+    @POST("addresses/{id}")
+    fun addresses(@Path("id") id: String, @Body request: AddressRequest): Observable<MixinResponse<Address>>
+
     @POST("addresses/{id}/delete")
     fun delete(@Path("id") id: String, @Body pin: Pin): Observable<MixinResponse<Unit>>
 

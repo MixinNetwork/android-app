@@ -95,6 +95,10 @@ class BottomSheetViewModel @Inject internal constructor(
         assetRepository.syncAddr(AddressRequest(assetId, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
             .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
 
+    fun updateAddr(assetId: String, destination: String?, label: String?, tag:String?, code: String): Observable<MixinResponse<Address>> =
+        assetRepository.syncAddr(assetId,AddressRequest(null, destination, tag, label, encryptPin(Session.getPinToken()!!, code)!!))
+            .subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+
     fun saveAddr(addr: Address) = assetRepository.saveAddr(addr)
 
     fun deleteAddr(id: String, code: String): Observable<MixinResponse<Unit>> =

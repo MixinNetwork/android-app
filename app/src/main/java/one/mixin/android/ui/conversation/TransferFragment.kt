@@ -267,7 +267,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         chatViewModel.observeAddress(address!!.addressId).observe(this, Observer {
             address = it
-            if (currentAsset!!.isAccountTagAsset()) {
+            if (currentAsset!!.tag.isEmpty()) {
                 contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.tag.formatPublicKey())
                 contentView.memo_rl.isVisible = false
             } else {
@@ -483,7 +483,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         val biometricItem = if (user != null) {
             TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
         } else {
-            val noPublicKey = currentAsset!!.isAccountTagAsset()
+            val noPublicKey = currentAsset!!.tag.isNotEmpty()
             WithdrawBiometricItem(if (noPublicKey) address!!.tag else address!!.destination, address!!.addressId,
                 address!!.label, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
         }

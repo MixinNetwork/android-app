@@ -252,7 +252,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             error(R.string.error_address_exists)
                         } else {
                             var asset = linkViewModel.findAssetItemById(assetId)
-                            if (asset == null || (!asset.isPublicKeyAsset() && !asset.isAccountTagAsset())) {
+                            if (asset == null || asset.destination.isEmpty()) {
                                 asset = linkViewModel.refreshAsset(assetId)
                             }
                             if (asset != null) {
@@ -289,10 +289,10 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                 if (assetId != null && assetId.isUUID() && !destination.isNullOrEmpty() && !label.isNullOrEmpty()) {
                     linkViewModel.viewModelScope.launch {
                         var asset = linkViewModel.findAssetItemById(assetId)
-                        if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isPublicKeyAsset() == false)) {
+                        if (asset == null || asset?.destination.isNullOrEmpty()) {
                             asset = linkViewModel.refreshAsset(assetId)
                         }
-                        if (asset != null && (asset?.isPublicKeyAsset() == true || asset?.isAccountTagAsset() == true)) {
+                        if (asset != null && asset!!.destination.isNotEmpty()) {
                             PinAddrBottomSheetDialogFragment.newInstance(
                                 assetId = assetId,
                                 assetUrl = asset!!.iconUrl,
@@ -342,7 +342,7 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                             linkViewModel.viewModelScope.launch {
                                 val address = linkViewModel.findAddressById(addressId, assetId)
                                 var asset = linkViewModel.findAssetItemById(assetId)
-                                if (asset == null || (asset?.isPublicKeyAsset() == false && asset?.isAccountTagAsset() == false)) {
+                                if (asset == null || asset?.destination.isNullOrEmpty()) {
                                     asset = linkViewModel.refreshAsset(assetId)
                                 }
                                 if (asset != null) {
@@ -350,7 +350,6 @@ class LinkBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), Injectab
                                         address == null -> error(R.string.error_address_exists)
                                         asset == null -> error(R.string.error_asset_exists)
                                         else -> {
-                                            val noPublicKey = asset!!.isAccountTagAsset()
                                             val biometricItem =
                                                 WithdrawBiometricItem(address.destination, address.addressId,
                                                     address.label, asset!!, amount, null, traceId, memo)
