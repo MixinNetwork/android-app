@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import javax.inject.Inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -23,7 +24,6 @@ import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isVideo
 import org.threeten.bp.ZonedDateTime
-import javax.inject.Inject
 
 class SharedMediaViewModel @Inject constructor(
     val conversationRepository: ConversationRepository,

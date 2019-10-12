@@ -53,6 +53,15 @@ fun ImageView.loadImage(uri: String?, width: Int, height: Int) {
     Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
 }
 
+fun ImageView.loadBase64ImageCenterCrop(imageByteArray: ByteArray, @DrawableRes holder: Int? = null) {
+    if (!isActivityNotDestroyed()) return
+    Glide.with(this).asBitmap().load(imageByteArray).apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
+        if (holder != null) {
+            this.placeholder(holder)
+        }
+    }).into(this)
+}
+
 fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {

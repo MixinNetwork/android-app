@@ -1,6 +1,6 @@
 package one.mixin.android.ui.media
 
-import android.text.format.DateUtils
+import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,6 +8,8 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import kotlinx.android.synthetic.main.item_media.view.*
 import one.mixin.android.R
+import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.loadBase64ImageCenterCrop
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImageCenterCrop
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -53,33 +55,37 @@ class MediaHolder(itemView: View) : NormalHolder(itemView) {
             width = size
             height = size
         }
-        if (item.isImage()) {
-            val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
-            if (isGif) {
-                imageView.loadGif(
-                    item.mediaUrl.toString(),
-                    centerCrop = true,
-                    holder = R.drawable.ic_giphy_place_holder
-                )
-                itemView.gif_tv.isVisible = true
-            } else {
-                imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
-                itemView.gif_tv.isVisible = false
-            }
-            itemView.video_iv.isVisible = false
-            itemView.duration_tv.isVisible = false
+        if (item.mediaUrl == null) {
+            val imageData = Base64.decode(item.thumbImage, Base64.DEFAULT)
+            imageView.loadBase64ImageCenterCrop(imageData)
         } else {
-            itemView.gif_tv.isVisible = false
-            if (item.isVideo()) {
-                itemView.video_iv.isVisible = true
-                itemView.duration_tv.isVisible = true
-                itemView.duration_tv.text =
-                    DateUtils.formatElapsedTime(item.mediaDuration?.toLong() ?: 0 / 1000)
-            } else {
+            if (item.isImage()) {
+                val isGif = item.mediaMimeType.equals(MimeType.GIF.toString(), true)
+                if (isGif) {
+                    imageView.loadGif(
+                        item.mediaUrl.toString(),
+                        centerCrop = true,
+                        holder = R.drawable.ic_giphy_place_holder
+                    )
+                    itemView.gif_tv.isVisible = true
+                } else {
+                    imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
+                    itemView.gif_tv.isVisible = false
+                }
                 itemView.video_iv.isVisible = false
                 itemView.duration_tv.isVisible = false
+            } else {
+                itemView.gif_tv.isVisible = false
+                if (item.isVideo()) {
+                    itemView.video_iv.isVisible = true
+                    itemView.duration_tv.isVisible = true
+                    itemView.duration_tv.text = item.mediaDuration?.toLong()?.formatMillis()
+                } else {
+                    itemView.video_iv.isVisible = false
+                    itemView.duration_tv.isVisible = false
+                }
+                imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
             }
-            imageView.loadImageCenterCrop(item.mediaUrl, R.drawable.image_holder)
         }
         itemView.setOnClickListener {
             onClickListener(itemView.thumbnail_iv, item.messageId)

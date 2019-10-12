@@ -1,17 +1,16 @@
 package one.mixin.android.repository
 
 import android.annotation.SuppressLint
-import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.lifecycle.LiveData
+import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Observable
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
@@ -118,23 +117,24 @@ internal constructor(
         readMessageDao.indexMediaMessages(conversationId, messageId)
     }
 
-    suspend fun getMediaMessages(
+    fun getMediaMessages(
         conversationId: String,
         index: Int,
         excludeLive: Boolean
-    ): PagedList<MessageItem> {
-        return withContext(Dispatchers.IO) {
-            PagedList.Builder<Int, MessageItem>(
-                if (excludeLive) {
-                    readMessageDao.getMediaMessagesExcludeLive(conversationId).create()
-                } else {
-                    readMessageDao.getMediaMessages(conversationId).create()
-                }, 5)
-                .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
-                .setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
-                .setInitialKey(index)
-                .build()
+    ): LiveData<PagedList<MessageItem>> {
+        val dataSource = if (excludeLive) {
+            readMessageDao.getMediaMessagesExcludeLive(conversationId)
+        } else {
+            readMessageDao.getMediaMessages(conversationId)
         }
+        val config = PagedList.Config.Builder()
+            .setPrefetchDistance(PAGE_SIZE)
+            .setPageSize(PAGE_SIZE)
+            .setEnablePlaceholders(true)
+            .build()
+        return LivePagedListBuilder(dataSource, config)
+            .setInitialLoadKey(index)
+            .build()
     }
 
     fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)

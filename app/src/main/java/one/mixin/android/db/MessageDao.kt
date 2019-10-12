@@ -56,20 +56,26 @@ interface MessageDao : BaseDao<Message> {
     suspend fun findMessageIndex(conversationId: String, messageId: String): Int
 
     @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
-    @Query("SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId, " +
-        "u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type, " +
-        "m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus," +
-        "m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, " +
-        "m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration " +
-        "FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId " +
-        "AND (((m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO') " +
-        "AND m.media_status = 'DONE') OR m.category = 'SIGNAL_LIVE' OR m.category = 'PLAIN_LIVE') ORDER BY m.created_at ASC")
+    @Query(
+        """SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
+        m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id WHERE m.conversation_id = :conversationId
+        AND ((m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO')
+        OR m.category = 'SIGNAL_LIVE' OR m.category = 'PLAIN_LIVE') ORDER BY m.created_at ASC
+        """
+    )
     fun getMediaMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @Query("SELECT count(*) FROM messages WHERE conversation_id = :conversationId " +
-        "AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)" +
-        "AND (((category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO') " +
-        "AND media_status = 'DONE') OR category = 'SIGNAL_LIVE' OR category = 'PLAIN_LIVE')")
+    @Query(
+        """SELECT count(*) FROM messages WHERE conversation_id = :conversationId
+        AND rowid < (SELECT rowid FROM messages WHERE id = :messageId)
+        AND ((category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
+        OR category = 'SIGNAL_LIVE' OR category = 'PLAIN_LIVE')
+        """
+    )
     suspend fun indexMediaMessages(conversationId: String, messageId: String): Int
 
     @Query(
@@ -82,17 +88,17 @@ interface MessageDao : BaseDao<Message> {
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND (m.category = 'SIGNAL_IMAGE' OR m.category = 'PLAIN_IMAGE' OR m.category = 'SIGNAL_VIDEO' OR m.category = 'PLAIN_VIDEO')
-        AND m.media_status = 'DONE'
         ORDER BY m.created_at DESC
         """
     )
     fun getMediaMessagesExcludeLive(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @Query("""SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
+    @Query(
+        """SELECT count(*) FROM messages WHERE conversation_id = :conversationId 
         AND rowid > (SELECT rowid FROM messages WHERE id = :messageId)
-        AND ((category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
-        AND media_status = 'DONE')
-        """)
+        AND (category = 'SIGNAL_IMAGE' OR category = 'PLAIN_IMAGE' OR category = 'SIGNAL_VIDEO' OR category = 'PLAIN_VIDEO')
+        """
+    )
     suspend fun indexMediaMessagesExcludeLive(conversationId: String, messageId: String): Int
 
     @Query(
