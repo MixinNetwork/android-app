@@ -27,7 +27,9 @@ import android.view.View.GONE
 import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.core.net.toUri
 import androidx.core.view.children
@@ -40,13 +42,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import com.google.android.exoplayer2.util.MimeTypes
+import com.google.android.material.snackbar.Snackbar
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.autoDispose
 import io.reactivex.android.schedulers.AndroidSchedulers
-import java.io.File
-import javax.inject.Inject
-import kotlin.math.abs
 import kotlinx.android.synthetic.main.dialog_delete.view.*
 import kotlinx.android.synthetic.main.fragment_conversation.*
 import kotlinx.android.synthetic.main.view_chat_control.view.*
@@ -130,6 +132,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.Session
+import one.mixin.android.util.SystemUtil
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.ForwardCategory
@@ -168,6 +171,10 @@ import one.mixin.android.widget.keyboard.KeyboardAwareLinearLayout.OnKeyboardSho
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import java.io.IOException
+import javax.inject.Inject
+import kotlin.math.abs
 
 @SuppressLint("InvalidWakeLockTag")
 class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboardHiddenListener,
@@ -1686,10 +1693,35 @@ class ConversationFragment : LinkFragment(), OnKeyboardShownListener, OnKeyboard
         val galleryAlbumFragment = GalleryAlbumFragment.newInstance()
         galleryAlbumFragment.callback = object : GalleryCallback {
             override fun onItemClick(pos: Int, uri: Uri, isVideo: Boolean) {
-                if (isVideo) {
-                    sendVideoMessage(uri)
-                } else {
-                    sendImageMessage(uri)
+                try {
+                    if (isVideo) {
+                        sendVideoMessage(uri)
+                    } else {
+                        sendImageMessage(uri)
+                    }
+                } catch (e: IOException) {
+                    if (SystemUtil.isHuaWei()) {
+                        Snackbar.make(input_layout, R.string.error_hw_file, Snackbar.LENGTH_LONG)
+                            .setAction(android.R.string.ok) {
+                                context?.openPermissionSetting()
+                            }.setActionTextColor(
+                                ContextCompat.getColor(
+                                    requireContext(),
+                                    R.color.wallet_blue
+                                )
+                            ).apply {
+                                view?.setBackgroundResource(R.color.call_btn_icon_checked)
+                                (view?.findViewById(R.id.snackbar_text) as TextView)
+                                    .setTextColor(
+                                        ContextCompat.getColor(
+                                            requireContext(),
+                                            R.color.white
+                                        )
+                                    )
+                            }.show()
+                    }
+                    Crashlytics.logException(e)
+                    Bugsnag.notify(e)
                 }
                 releaseChatControl(FLING_DOWN)
             }
