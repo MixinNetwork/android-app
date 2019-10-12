@@ -20,7 +20,7 @@ import org.spongycastle.asn1.pkcs.PrivateKeyInfo
 import org.spongycastle.util.io.pem.PemObject
 import org.spongycastle.util.io.pem.PemWriter
 
-fun generateRSAKeyPair(keyLength: Int = 1024): KeyPair {
+fun generateRSAKeyPair(keyLength: Int = 2048): KeyPair {
     val kpg = KeyPairGenerator.getInstance("RSA")
     kpg.initialize(keyLength)
     return kpg.genKeyPair()
