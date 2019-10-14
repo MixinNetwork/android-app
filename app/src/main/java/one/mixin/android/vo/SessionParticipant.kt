@@ -18,3 +18,12 @@ data class SessionParticipant(
     @ColumnInfo(name = "created_at")
     val createdAt: String? = nowInUtc()
 )
+
+data class SessionParticipantPart(
+    @ColumnInfo(name = "conversation_id")
+    val conversationId: String,
+    @ColumnInfo(name = "user_id")
+    val userId: String,
+    @ColumnInfo(name = "session_id")
+    val sessionId: String
+)
