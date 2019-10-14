@@ -216,7 +216,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         return result
     }
 
-    protected fun deliverNoThrow(blazeMessage: BlazeMessage): Boolean {
+    protected tailrec fun deliverNoThrow(blazeMessage: BlazeMessage): Boolean {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
             if (!MixinApplication.appContext.networkConnected() || !LinkState.isOnline(linkState.state)) {
@@ -254,7 +254,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
         return true
     }
 
-    private fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
+    private tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
             Thread.sleep(SLEEP_MILLIS)
@@ -265,7 +265,7 @@ abstract class MixinJob(params: Params, val jobId: String) : BaseJob(params) {
                 null
             } else {
                 Thread.sleep(SLEEP_MILLIS)
-                signalKeysChannel(blazeMessage)
+                return signalKeysChannel(blazeMessage)
             }
         }
         return bm.data

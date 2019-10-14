@@ -73,7 +73,7 @@ open class Injector : Injectable {
         MixinApplication.get().appComponent.inject(this)
     }
 
-    protected fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
+    protected tailrec fun signalKeysChannel(blazeMessage: BlazeMessage): JsonElement? {
         val bm = chatWebSocket.sendMessage(blazeMessage)
         if (bm == null) {
             Thread.sleep(SLEEP_MILLIS)
@@ -83,7 +83,7 @@ open class Injector : Injectable {
                 null
             } else {
                 Thread.sleep(SLEEP_MILLIS)
-                signalKeysChannel(blazeMessage)
+                return signalKeysChannel(blazeMessage)
             }
         }
         return bm.data

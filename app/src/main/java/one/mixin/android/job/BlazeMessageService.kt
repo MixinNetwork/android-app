@@ -308,15 +308,22 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
             return
         }
         floodJob = GlobalScope.launch(floodThread) {
-            floodJobBlock()
+            try {
+                processFloodMessage()
+            } catch (e: Exception) {
+                runFloodJob()
+            } finally {
+                floodJob = null
+            }
         }
     }
 
     private var floodJob: Job? = null
 
-    private suspend fun floodJobBlock() {
-        try {
-            floodMessageDao.findFloodMessages()?.forEach { message ->
+    private tailrec suspend fun processFloodMessage(): Boolean {
+        val messages = floodMessageDao.findFloodMessages()
+        if (!messages.isNullOrEmpty()) {
+            messages.forEach { message ->
                 val data = gson.fromJson(message.data, BlazeMessageData::class.java)
                 if (data.category.startsWith("WEBRTC_")) {
                     callMessageDecrypt.onRun(data)
@@ -327,10 +334,9 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
                 }
                 floodMessageDao.delete(message)
             }
-        } catch (e: Exception) {
-            runFloodJob()
-        } finally {
-            floodJob = null
+            return processFloodMessage()
+        } else {
+            return false
         }
     }
 
