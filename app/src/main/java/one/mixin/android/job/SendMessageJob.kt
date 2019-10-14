@@ -168,23 +168,13 @@ open class SendMessageJob(
     }
 
     private fun syncConversation(conversation: Conversation) {
-        val local = participantDao.getRealParticipants(conversation.conversationId)
-        val localIds = local.map { it.userId }
         val response = conversationApi.getConversation(conversation.conversationId).execute().body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
                 val remote = data.participants.map {
                     Participant(conversation.conversationId, it.userId, it.role, it.createdAt!!)
                 }
-                val remoteIds = remote.map { it.userId }
-                val needAdd = remote.filter { !localIds.contains(it.userId) }
-                val needRemove = local.filter { !remoteIds.contains(it.userId) }
-                if (needRemove.isNotEmpty()) {
-                    participantDao.deleteList(needRemove)
-                }
-                if (needAdd.isNotEmpty()) {
-                    participantDao.insertList(needAdd)
-                }
+                participantDao.replaceAll(conversation.conversationId, remote)
             }
         }
     }

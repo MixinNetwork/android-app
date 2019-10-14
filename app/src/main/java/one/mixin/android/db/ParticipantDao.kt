@@ -32,8 +32,17 @@ interface ParticipantDao : BaseDao<Participant> {
     fun getRealParticipants(conversationId: String): List<Participant>
 
     @Transaction
+    fun replaceAll(conversationId: String, participants: List<Participant>) {
+        deleteByConversationId(conversationId)
+        insertList(participants)
+    }
+
+    @Transaction
     @Query("SELECT * FROM participants WHERE conversation_id = :conversationId")
     suspend fun getRealParticipantsSuspend(conversationId: String): List<Participant>
+
+    @Query("DELETE FROM participants WHERE conversation_id = :conversationId")
+    fun deleteByConversationId(conversationId: String)
 
     @Query("DELETE FROM participants WHERE conversation_id = :conversationId AND user_id = :userId")
     fun deleteById(conversationId: String, userId: String)
