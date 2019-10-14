@@ -56,8 +56,8 @@ data class AssetItem(
 
 fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
     when {
-        destination.isNotEmpty() && tag.isNotEmpty() -> keyAction()
-        destination.isNotEmpty() -> memoAction()
+        destination.isNotEmpty() && tag.isNotEmpty() -> memoAction()
+        destination.isNotEmpty() -> keyAction()
         else -> errorAction()
     }
 }
