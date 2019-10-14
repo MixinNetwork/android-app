@@ -123,7 +123,7 @@ class AddressManagementFragment : BaseFragment() {
             override fun afterTextChanged(s: Editable?) {
                 adapter.addresses = addresses?.filter {
                     val name = it.label
-                    name?.contains(s.toString(), ignoreCase = true) ?: false
+                    name.contains(s.toString(), ignoreCase = true)
                 }?.toMutableList()
             }
 

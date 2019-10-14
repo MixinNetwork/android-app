@@ -40,7 +40,6 @@ import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
-import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
@@ -68,6 +67,7 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
+import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
@@ -267,13 +267,8 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         chatViewModel.observeAddress(address!!.addressId).observe(this, Observer {
             address = it
-            if (currentAsset!!.tag.isEmpty()) {
-                contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.tag.formatPublicKey())
-                contentView.memo_rl.isVisible = false
-            } else {
-                contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.destination.formatPublicKey())
-                contentView.memo_rl.isVisible = true
-            }
+            contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.displayAddress())
+            contentView.memo_rl.isVisible = isInnerTransfer()
             val bold = it.fee + " " + currentAsset!!.chainSymbol
             val str = try {
                 val reserveDouble = it.reserve.toDouble()
@@ -483,8 +478,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
         val biometricItem = if (user != null) {
             TransferBiometricItem(user!!, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
         } else {
-            val noPublicKey = currentAsset!!.tag.isNotEmpty()
-            WithdrawBiometricItem(if (noPublicKey) address!!.tag else address!!.destination, address!!.addressId,
+            WithdrawBiometricItem(address!!.displayAddress(), address!!.addressId,
                 address!!.label, currentAsset!!, amount, null, UUID.randomUUID().toString(), memo)
         }
 

@@ -10,6 +10,7 @@ import kotlinx.android.synthetic.main.item_address.view.*
 import one.mixin.android.R
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
+import one.mixin.android.vo.displayAddress
 
 class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean = false) :
     RecyclerView.Adapter<AddressAdapter.ItemHolder>() {
@@ -31,7 +32,7 @@ class AddressAdapter(private val asset: AssetItem, private val canSwipe: Boolean
         val addr = addresses!![position]
         holder.itemView.background_rl.visibility = if (canSwipe) VISIBLE else GONE
         holder.itemView.name_tv.text = addr.label
-        holder.itemView.addr_tv.text = addr.destination
+        holder.itemView.addr_tv.text = addr.displayAddress()
         holder.itemView.setOnClickListener { addrListener?.onAddrClick(addr) }
         holder.itemView.setOnLongClickListener {
             addrListener?.onAddrLongClick(holder.itemView, addr)

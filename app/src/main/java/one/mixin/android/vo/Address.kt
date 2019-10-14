@@ -40,3 +40,11 @@ data class Address(
     @SerializedName("dust")
     val dust: String?
 ) : Parcelable
+
+fun Address.displayAddress(): String {
+    return if (tag.isNotEmpty()){
+        "$destination:$tag"
+    }else{
+        destination
+    }
+}
