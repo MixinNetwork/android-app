@@ -8,6 +8,7 @@ import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.util.AudioPlayer
 
 class SharedMediaActivity : BaseActivity() {
     companion object {
@@ -25,5 +26,11 @@ class SharedMediaActivity : BaseActivity() {
         val conversationId = intent.getStringExtra(ARGS_CONVERSATION_ID)
         replaceFragment(SharedMediaFragment.newInstance(conversationId), R.id.container, SharedMediaFragment.TAG)
         window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        AudioPlayer.pause()
+        AudioPlayer.release()
     }
 }
