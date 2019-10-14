@@ -129,22 +129,24 @@ class AddressAddFragment : BaseFragment() {
 
     private fun handleMemo(address: Address? = null) {
         if (memoEnabled) {
-            tag_et.isEnabled = true
+            tag_et.isEnabled = memoEnabled
             tag_et.setText(address?.tag ?: "")
-            tag_iv.isVisible = true
+            tag_iv.isVisible = memoEnabled
             tag_iv.setOnClickListener { handleClick(false) }
             info.setText(R.string.withdrawal_addr_memo)
             info.highLightClick(getString(R.string.withdrawal_addr_memo_link), action = {
                 memoEnabled = false
+                updateSaveButton()
                 handleMemo()
             })
         } else {
-            tag_et.isEnabled = false
+            tag_et.isEnabled = memoEnabled
             tag_et.setText(R.string.withdrawal_ne_tag)
-            tag_iv.isVisible = false
+            tag_iv.isVisible = memoEnabled
             info.setText(R.string.withdrawal_addr_no_memo)
             info.highLightClick(getString(R.string.withdrawal_addr_no_memo_link), action = {
                 memoEnabled = true
+                updateSaveButton()
                 handleMemo()
                 tag_et.showKeyboard()
             })
@@ -192,17 +194,17 @@ class AddressAddFragment : BaseFragment() {
 
         override fun afterTextChanged(s: Editable) {
             if (!isAdded) return
+            updateSaveButton()
+        }
+    }
 
-            if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty() && (asset.tag.isNotEmpty() && tag_et.text.isNotEmpty())) {
-                save_tv.isEnabled = true
-                save_tv.textColor = requireContext().getColor(R.color.white)
-            } else if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty() && asset.tag.isEmpty()) {
-                save_tv.isEnabled = true
-                save_tv.textColor = requireContext().getColor(R.color.white)
-            } else {
-                save_tv.isEnabled = false
-                save_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-            }
+    private fun updateSaveButton() {
+        if (addr_et.text.isNotEmpty() && label_et.text.isNotEmpty() && (!memoEnabled || tag_et.text.isNotEmpty())) {
+            save_tv.isEnabled = true
+            save_tv.textColor = requireContext().getColor(R.color.white)
+        } else {
+            save_tv.isEnabled = false
+            save_tv.textColor = requireContext().getColor(R.color.wallet_text_gray)
         }
     }
 }
