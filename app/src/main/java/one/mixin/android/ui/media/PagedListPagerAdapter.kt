@@ -1,4 +1,4 @@
-package one.mixin.android.widget
+package one.mixin.android.ui.media
 
 import android.view.View
 import android.view.ViewGroup

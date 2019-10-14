@@ -4,7 +4,7 @@
              android:id="@+id/container"
              android:layout_width="match_parent"
              android:layout_height="match_parent"
-             tools:context=".ui.conversation.media.DragMediaActivity">
+             tools:context=".ui.media.DragMediaActivity">
 
     <one.mixin.android.widget.FixMultiViewPager
             android:id="@+id/view_pager"

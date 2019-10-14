@@ -21,7 +21,6 @@ import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.InviteActivity
@@ -29,6 +28,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.media.DragMediaActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.setting.SettingActivity

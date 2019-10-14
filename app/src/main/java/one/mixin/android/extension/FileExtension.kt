@@ -465,7 +465,7 @@ private fun File.blurThumbnail(width: Int, height: Int): Bitmap? {
 }
 
 fun String.decodeBase64(): ByteArray {
-    return Base64.decode(this, 0)
+    return Base64.decode(this, Base64.DEFAULT)
 }
 
 fun Bitmap.bitmap2String(mimeType: String = "", bitmapQuality: Int = 90): String? {

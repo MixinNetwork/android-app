@@ -185,7 +185,7 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
-            android:name=".ui.conversation.media.DragMediaActivity"
+            android:name=".ui.media.DragMediaActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Photo"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />

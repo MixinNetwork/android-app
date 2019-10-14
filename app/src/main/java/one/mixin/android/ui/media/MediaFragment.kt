@@ -15,7 +15,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseViewModelFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
 import one.mixin.android.ui.conversation.adapter.StickerSpacingItemDecoration
-import one.mixin.android.ui.conversation.media.DragMediaActivity
 import org.jetbrains.anko.dip
 
 class MediaFragment : BaseViewModelFragment<SharedMediaViewModel>() {

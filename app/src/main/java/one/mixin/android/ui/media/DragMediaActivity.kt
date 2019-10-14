@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.media
+package one.mixin.android.ui.media
 
 import android.Manifest
 import android.animation.Animator
@@ -57,6 +57,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
+import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
@@ -92,6 +93,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.dpToPx
@@ -103,7 +105,6 @@ import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getUriForFile
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.isGooglePlayServicesAvailable
-import one.mixin.android.extension.loadBase64ImageCenterCrop
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.loadVideo
@@ -119,10 +120,10 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
-import one.mixin.android.ui.media.SharedMediaViewModel
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.Session
+import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.vo.MediaStatus
@@ -134,7 +135,6 @@ import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.CircleProgress
-import one.mixin.android.widget.PagedListPagerAdapter
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
@@ -569,40 +569,46 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             view.video_texture.surfaceTextureListener = this
 
-            if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
+            if (messageItem.isLive()) {
                 circleProgress.isVisible = false
                 view.play_view.isVisible = true
-                circleProgress.setBindId(messageItem.messageId)
-                if (messageItem.isLive()) {
-                    view.preview_iv.loadImage(messageItem.thumbUrl!!, messageItem.thumbImage)
-                } else {
-                    view.preview_iv.loadVideo(messageItem.mediaUrl!!)
-                    view.seek_bar.progress = 0
-                    view.duration_tv.text = 0L.formatMillis()
-                    view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
-                }
+                view.preview_iv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
             } else {
-                val imageData = Base64.decode(messageItem.thumbImage, Base64.DEFAULT)
-                view.preview_iv.loadBase64ImageCenterCrop(imageData)
-                view.play_view.isVisible = false
-                circleProgress.isVisible = true
-                circleProgress.setBindId(messageItem.messageId)
-                if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
-                    circleProgress.enableLoading()
-                } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
-                    if (Session.getAccountId() == messageItem.userId) {
-                        circleProgress.enableUpload()
-                    } else {
-                        circleProgress.enableDownload()
-                    }
+                if (messageItem.mediaUrl != null) {
+                    view.preview_iv.loadVideo(messageItem.mediaUrl)
                 } else {
-                    // TODO expired
+                    val imageData = messageItem.thumbImage?.decodeBase64()
+                    Glide.with(view).load(imageData).into(view.preview_iv)
                 }
-                circleProgress.setOnClickListener { handleCircleProgressClick(messageItem) }
+                view.seek_bar.progress = 0
+                view.duration_tv.text = 0L.formatMillis()
+                view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
+                if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
+                    circleProgress.isVisible = false
+                    view.play_view.isVisible = true
+                    circleProgress.setBindId(messageItem.messageId)
+                } else {
+                    view.play_view.isVisible = false
+                    circleProgress.isVisible = true
+                    circleProgress.setBindId(messageItem.messageId)
+                    if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
+                        circleProgress.enableLoading()
+                    } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
+                        if (Session.getAccountId() == messageItem.userId) {
+                            circleProgress.enableUpload()
+                        } else {
+                            circleProgress.enableDownload()
+                        }
+                    } else {
+                        // TODO expired
+                    }
+                    circleProgress.setOnClickListener { handleCircleProgressClick(messageItem) }
+                }
             }
             view.tag = messageItem.isLive()
             if (VideoPlayer.player().mId == messageItem.messageId) {
-                val playbackState = VideoPlayer.player().player.playbackState
+                val playbackState = VideoPlayer.player()
+                    .player.playbackState
                 view.play_view.status = when (playbackState) {
                     STATE_IDLE, STATE_ENDED -> STATUS_IDLE
                     STATE_BUFFERING -> STATUS_LOADING
@@ -657,7 +663,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             var isPlaying = false
             view.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                    isPlaying = VideoPlayer.player().isPlaying()
+                    isPlaying = VideoPlayer.player()
+                        .isPlaying()
                     VideoPlayer.player().pause()
                 }
 
@@ -782,63 +789,61 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             imageView.layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
             )
+            if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
+                imageView.loadGif(messageItem.mediaUrl, object : RequestListener<GifDrawable?> {
+                    override fun onResourceReady(
+                        resource: GifDrawable?,
+                        model: Any?,
+                        target: Target<GifDrawable?>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        if (position == initialIndex) {
+                            ViewCompat.setTransitionName(imageView, "transition")
+                            setStartPostTransition(imageView)
+                        }
+                        return false
+                    }
+
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<GifDrawable?>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+                }, base64Holder = messageItem.thumbImage)
+            } else {
+                imageView.loadImage(messageItem.mediaUrl, object : RequestListener<Drawable?> {
+                    override fun onResourceReady(
+                        resource: Drawable?,
+                        model: Any?,
+                        target: Target<Drawable?>?,
+                        dataSource: DataSource?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        if (position == initialIndex) {
+                            ViewCompat.setTransitionName(imageView, "transition")
+                            setStartPostTransition(imageView)
+                        }
+                        return false
+                    }
+
+                    override fun onLoadFailed(
+                        e: GlideException?,
+                        model: Any?,
+                        target: Target<Drawable?>?,
+                        isFirstResource: Boolean
+                    ): Boolean {
+                        return false
+                    }
+                }, base64Holder = messageItem.thumbImage)
+            }
             if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
                 circleProgress.isVisible = false
                 circleProgress.setBindId(messageItem.messageId)
-                if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
-                    imageView.loadGif(messageItem.mediaUrl, object : RequestListener<GifDrawable?> {
-                        override fun onResourceReady(
-                            resource: GifDrawable?,
-                            model: Any?,
-                            target: Target<GifDrawable?>?,
-                            dataSource: DataSource?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            if (position == initialIndex) {
-                                ViewCompat.setTransitionName(imageView, "transition")
-                                setStartPostTransition(imageView)
-                            }
-                            return false
-                        }
-
-                        override fun onLoadFailed(
-                            e: GlideException?,
-                            model: Any?,
-                            target: Target<GifDrawable?>?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
-                    })
-                } else {
-                    imageView.loadImage(messageItem.mediaUrl, object : RequestListener<Drawable?> {
-                        override fun onResourceReady(
-                            resource: Drawable?,
-                            model: Any?,
-                            target: Target<Drawable?>?,
-                            dataSource: DataSource?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            if (position == initialIndex) {
-                                ViewCompat.setTransitionName(imageView, "transition")
-                                setStartPostTransition(imageView)
-                            }
-                            return false
-                        }
-
-                        override fun onLoadFailed(
-                            e: GlideException?,
-                            model: Any?,
-                            target: Target<Drawable?>?,
-                            isFirstResource: Boolean
-                        ): Boolean {
-                            return false
-                        }
-                    })
-                }
             } else {
-                val imageData = Base64.decode(messageItem.thumbImage, Base64.DEFAULT)
-                imageView.loadBase64ImageCenterCrop(imageData)
                 circleProgress.isVisible = true
                 circleProgress.setBindId(messageItem.messageId)
                 if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
@@ -1074,9 +1079,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.mediaUrl?.let {
                 if (messageItem.isLive()) {
-                    VideoPlayer.player().loadHlsVideo(it, messageItem.messageId, force)
+                    VideoPlayer.player()
+                        .loadHlsVideo(it, messageItem.messageId, force)
                 } else {
-                    VideoPlayer.player().loadVideo(it, messageItem.messageId, force)
+                    VideoPlayer.player()
+                        .loadVideo(it, messageItem.messageId, force)
                 }
             }
             setTextureView()
@@ -1104,7 +1111,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 if (VideoPlayer.player().duration() != 0) {
                     view.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
                         VideoPlayer.player().duration()).toInt()
-                    view.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
+                    view.duration_tv.text = VideoPlayer.player()
+                        .getCurrentPos().formatMillis()
                     if (view.remain_tv.text.isEmpty()) { // from google photo
                         view.remain_tv.text =
                             VideoPlayer.player().duration().toLong().formatMillis()
