@@ -216,20 +216,26 @@ class BlazeMessageService : Service(), NetworkEventProvider.Listener, ChatWebSoc
     private var ackJob: Job? = null
 
     private suspend fun ackJobBlock() {
-        jobDao.findAckJobs()?.let { list ->
-            if (list.isNotEmpty()) {
-                list.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
-                    try {
-                        deliver(createAckListParamBlazeMessage(it)).let {
-                            jobDao.deleteList(list)
-                        }
-                    } catch (e: Exception) {
-                        runAckJob()
-                    } finally {
-                        ackJob = null
-                    }
+        try {
+            processAck()
+        } catch (e: Exception) {
+            runAckJob()
+        } finally {
+            ackJob = null
+        }
+    }
+
+    private tailrec suspend fun processAck(): Boolean {
+        val ackMessages = jobDao.findAckJobs()
+        if (!ackMessages.isNullOrEmpty()) {
+            ackMessages.map { gson.fromJson(it.blazeMessage, BlazeAckMessage::class.java) }.let {
+                deliver(createAckListParamBlazeMessage(it)).let {
+                    jobDao.deleteList(ackMessages)
                 }
             }
+            return processAck()
+        } else {
+            return false
         }
     }
 
