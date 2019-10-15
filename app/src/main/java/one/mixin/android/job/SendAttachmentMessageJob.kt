@@ -3,6 +3,8 @@ package one.mixin.android.job
 import android.net.Uri
 import android.util.Log
 import com.birbit.android.jobqueue.Params
+import com.bugsnag.android.Bugsnag
+import com.crashlytics.android.Crashlytics
 import io.reactivex.disposables.Disposable
 import java.net.URL
 import javax.net.ssl.HttpsURLConnection
@@ -90,6 +92,8 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
             }
         }, {
             Log.e(TAG, "upload attachment error", it)
+            Bugsnag.notify(it)
+            Crashlytics.logException(it)
             messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.id)
             removeJob()
         })
@@ -126,6 +130,8 @@ class SendAttachmentMessageJob(val message: Message) : MixinJob(Params(PRIORITY_
                 uploadAttachment(attachResponse.upload_url!!, attachmentData) // SHA256
             }
         } catch (e: Exception) {
+            Bugsnag.notify(e)
+            Crashlytics.logException(e)
             return false
         }
         if (isCancel) {
