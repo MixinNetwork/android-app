@@ -33,7 +33,8 @@ data class TransferPlainAckData(
 
 data class ResendData(
     val userId: String,
-    val messageId: String
+    val messageId: String,
+    val sessionId: String? = null
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 4L

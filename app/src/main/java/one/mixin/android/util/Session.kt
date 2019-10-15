@@ -66,6 +66,7 @@ class Session {
             preference.putString(Constants.Account.PREF_EXTENSION_SESSION_ID, extensionSession)
         }
 
+        @Deprecated("Get Session from sessions table")
         fun getExtensionSessionId(): String? {
             val preference = MixinApplication.appContext.sharedPreferences(Constants.Account.PREF_SESSION)
             return preference.getString(Constants.Account.PREF_EXTENSION_SESSION_ID, null)

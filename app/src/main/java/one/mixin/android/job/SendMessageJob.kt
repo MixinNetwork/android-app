@@ -183,12 +183,11 @@ open class SendMessageJob(
                 }
                 participantDao.replaceAll(conversation.conversationId, remote)
 
-                val participantSessions = data.participantSessions?.map {
+                val sessionParticipants = data.participantSessions?.map {
                     SessionParticipant(conversation.conversationId, it.userId, it.sessionId)
                 }
-                participantSessions?.let {
-                    // TODO should update the data
-                    sessionParticipantDao.insertList(it)
+                sessionParticipants?.let {
+                    sessionParticipantDao.replaceAll(conversation.conversationId, it)
                 }
             }
         }
