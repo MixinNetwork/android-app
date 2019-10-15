@@ -78,6 +78,8 @@
     <string name="currency">Currency</string>
     <string name="share_to">Share %1$s to…</string>
     <string name="currency_switch">Switching currency</string>
+    <string name="unknown">Unknown</string>
+    <string name="not_any" translatable="false">N/A</string>
     <!--error-->
     <string name="error_no_connection">No network connection</string>
     <string name="error_connection_timeout">Network connection timeout</string>
@@ -410,7 +412,6 @@
     <string name="conversation_status_file">File</string>
     <string name="conversation_status_audio">Audio</string>
     <string name="conversation_status_voice">Voice call</string>
-    <string name="conversation_status_unknown">Unknown</string>
     <string name="conversation_status_transfer">Transfer</string>
     <string name="conversation_status_sticker">Sticker</string>
     <string name="conversation_status_live">Live</string>
@@ -489,7 +490,7 @@
     <string name="chat_you">you</string>
     <string name="chat_group_checking">Checking link</string>
     <string name="chat_expired">Expired</string>
-    <string name="unknown">Unknown type of Message, please upgrade the APP</string>
+    <string name="unknown_update_app">Unknown type of Message, please upgrade the APP</string>
     <string name="group_ok">OK</string>
     <string name="link_error">This link is invalid</string>
     <string name="bottom_sheet_check_payment_info">Checking payment info</string>

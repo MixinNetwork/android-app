@@ -140,12 +140,13 @@ class TransactionFragment : BaseFragment() {
 
     private fun getSnapshotType(type: String): String {
         val s = when (type) {
-            "transfer" -> R.string.transfer
-            "deposit" -> R.string.wallet_bottom_deposit
-            "withdrawal" -> R.string.withdrawal
-            "fee" -> R.string.fee
-            "rebate" -> R.string.rebate
-            else -> throw IllegalArgumentException("error snapshot type")
+            SnapshotType.transfer.name -> R.string.transfer
+            SnapshotType.deposit.name -> R.string.wallet_bottom_deposit
+            SnapshotType.withdrawal.name -> R.string.withdrawal
+            SnapshotType.fee.name -> R.string.fee
+            SnapshotType.rebate.name -> R.string.rebate
+            // SnapshotType.pending can NOT access this page
+            else -> R.string.not_any
         }
         return requireContext().getString(s)
     }

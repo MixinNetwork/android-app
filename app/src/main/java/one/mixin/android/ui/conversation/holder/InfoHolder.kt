@@ -101,7 +101,7 @@ class InfoHolder constructor(containerView: View) : BaseViewHolder(containerView
                 itemView.chat_info.text = getText(R.string.group_role)
             }
             else -> {
-                itemView.chat_info.text = getText(R.string.unknown)
+                itemView.chat_info.text = getText(R.string.unknown_update_app)
             }
         }
     }
