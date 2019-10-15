@@ -15,7 +15,7 @@ data class AssetItem(
     val iconUrl: String,
     val balance: String,
     val destination: String,
-    val tag: String,
+    val tag: String?,
     val priceBtc: String,
     val priceUsd: String,
     val chainId: String,
@@ -56,7 +56,7 @@ data class AssetItem(
 
 fun AssetItem.differentProcess(keyAction: () -> Unit, memoAction: () -> Unit, errorAction: () -> Unit) {
     when {
-        destination.isNotEmpty() && tag.isNotEmpty() -> memoAction()
+        destination.isNotEmpty() && !tag.isNullOrEmpty() -> memoAction()
         destination.isNotEmpty() -> keyAction()
         else -> errorAction()
     }

@@ -30,7 +30,7 @@ data class TopAsset(
     val destination: String,
     @SerializedName("tag")
     @ColumnInfo(name = "tag")
-    val tag: String,
+    val tag: String?,
     @SerializedName("price_btc")
     @ColumnInfo(name = "price_btc")
     val priceBtc: String,
@@ -47,7 +47,5 @@ data class TopAsset(
     @ColumnInfo(name = "change_btc")
     val changeBtc: String,
     @ColumnInfo(name = "confirmations")
-    val confirmations: Int,
-    @ColumnInfo(name = "capitalization")
-    val capitalization: Float?
+    val confirmations: Int
 ) : Parcelable

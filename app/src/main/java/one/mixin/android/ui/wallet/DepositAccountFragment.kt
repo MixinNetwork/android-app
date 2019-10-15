@@ -75,8 +75,8 @@ class DepositAccountFragment : DepositFragment() {
         }
 
         showQR(account_name_qr, "${BuildConfig.VERSION_CODE}-${asset.destination}", asset.destination)
-        if (asset.tag.isNotEmpty()) {
-            showQR(account_memo_qr, "${BuildConfig.VERSION_CODE}-${asset.tag}", asset.tag)
+        if (!asset.tag.isNullOrEmpty()) {
+            showQR(account_memo_qr, "${BuildConfig.VERSION_CODE}-${asset.tag}", asset.tag!!)
         }
         showTip()
     }

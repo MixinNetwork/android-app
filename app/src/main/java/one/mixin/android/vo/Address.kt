@@ -35,14 +35,14 @@ data class Address(
     val fee: String,
     @ColumnInfo(name = "tag")
     @SerializedName("tag")
-    val tag: String,
+    val tag: String?,
     @ColumnInfo(name = "dust")
     @SerializedName("dust")
     val dust: String?
 ) : Parcelable
 
 fun Address.displayAddress(): String {
-    return if (tag.isNotEmpty()){
+    return if (!tag.isNullOrEmpty()){
         "$destination:$tag"
     }else{
         destination

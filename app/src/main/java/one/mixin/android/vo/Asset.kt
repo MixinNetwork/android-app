@@ -30,7 +30,7 @@ data class Asset(
     val destination: String,
     @SerializedName("tag")
     @ColumnInfo(name = "tag")
-    val tag: String,
+    val tag: String?,
     @SerializedName("price_btc")
     @ColumnInfo(name = "price_btc")
     val priceBtc: String,

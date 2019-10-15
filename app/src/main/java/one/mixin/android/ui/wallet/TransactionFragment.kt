@@ -107,7 +107,7 @@ class TransactionFragment : BaseFragment() {
         date_tv.text = snapshot.createdAt.fullDate()
         when {
             snapshot.type == SnapshotType.deposit.name -> {
-                if (asset.tag.isNotEmpty()) {
+                if (!asset.tag.isNullOrEmpty()) {
                     sender_title.text = getString(R.string.account_name)
                 } else {
                     sender_title.text = getString(R.string.sender)
@@ -126,7 +126,7 @@ class TransactionFragment : BaseFragment() {
                 }
             }
             else -> {
-                if (asset.tag.isNotEmpty()) {
+                if (!asset.tag.isNullOrEmpty()) {
                     receiver_title.text = getString(R.string.account_name)
                 } else {
                     receiver_title.text = getString(R.string.receiver)
