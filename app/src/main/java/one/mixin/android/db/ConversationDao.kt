@@ -74,7 +74,7 @@ interface ConversationDao : BaseDao<Conversation> {
     fun searchConversationById(conversationId: String): Maybe<Conversation>
 
     @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId")
-    fun saveDraft(conversationId: String, text: String)
+    suspend fun saveDraft(conversationId: String, text: String)
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversation(conversationId: String): Conversation?
@@ -91,7 +91,7 @@ interface ConversationDao : BaseDao<Conversation> {
     fun getConversationItem(conversationId: String): ConversationItem?
 
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
-    fun updateCodeUrl(conversationId: String, codeUrl: String)
+    suspend fun updateCodeUrl(conversationId: String, codeUrl: String)
 
     @Query("UPDATE conversations SET status = :status WHERE conversation_id = :conversationId")
     fun updateConversationStatusById(conversationId: String, status: Int)
@@ -113,10 +113,10 @@ interface ConversationDao : BaseDao<Conversation> {
     )
 
     @Query("UPDATE conversations SET announcement = :announcement WHERE conversation_id = :conversationId")
-    fun updateConversationAnnouncement(conversationId: String, announcement: String)
+    suspend fun updateConversationAnnouncement(conversationId: String, announcement: String)
 
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
-    fun deleteConversationById(conversationId: String)
+    suspend fun deleteConversationById(conversationId: String)
 
     @Query("UPDATE conversations SET mute_until = :muteUntil WHERE conversation_id = :conversationId")
     fun updateGroupDuration(conversationId: String, muteUntil: String)

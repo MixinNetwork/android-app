@@ -41,7 +41,9 @@ class RefreshUserJob(
         val response = userService.getUsers(userIds).execute().body()
         if (response != null && response.isSuccess) {
             response.data?.let { data ->
-                userRepo.upsertList(data)
+                runBlocking {
+                    userRepo.upsertList(data)
+                }
                 conversationId?.let {
                     jobManager.addJobInBackground(GenerateAvatarJob(conversationId))
                 }

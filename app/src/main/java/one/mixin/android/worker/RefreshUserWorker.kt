@@ -6,6 +6,7 @@ import androidx.work.WorkerParameters
 import androidx.work.workDataOf
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.UserService
 import one.mixin.android.di.worker.ChildWorkerFactory
@@ -33,7 +34,7 @@ class RefreshUserWorker @AssistedInject constructor(
         return if (response != null && response.isSuccess) {
             response.data?.let { data ->
                 for (u in data) {
-                    userRepo.upsert(u)
+                    runBlocking { userRepo.upsert(u) }
                 }
 
                 conversationId?.let {

@@ -1,11 +1,14 @@
 package one.mixin.android.ui.group
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import java.util.UUID
 import javax.inject.Inject
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.ParticipantRequest
@@ -51,7 +54,9 @@ internal constructor(
             .build()
         val mutableList = mutableListOf<Participant>()
         users.mapTo(mutableList) { Participant(conversationId, it.userId, "", createdAt) }
-        conversationRepository.insertConversation(conversation, mutableList)
+        viewModelScope.launch(Dispatchers.IO) {
+            conversationRepository.insertConversation(conversation, mutableList)
+        }
 
         val participantRequestList = mutableListOf<ParticipantRequest>()
         mutableList.mapTo(participantRequestList) { ParticipantRequest(it.userId, it.role) }
@@ -107,7 +112,7 @@ internal constructor(
         jobManager.addJobInBackground(ConversationJob(conversationId = conversationId, type = TYPE_EXIT))
     }
 
-    fun deleteMessageByConversationId(conversationId: String) {
+    fun deleteMessageByConversationId(conversationId: String) = viewModelScope.launch {
         conversationRepository.deleteMessageByConversationId(conversationId)
     }
 
@@ -117,7 +122,7 @@ internal constructor(
             type = ConversationJob.TYPE_MUTE))
     }
 
-    fun updateAnnouncement(conversationId: String, announcement: String?) {
+    fun updateAnnouncement(conversationId: String, announcement: String?) = viewModelScope.launch {
         announcement?.let {
             conversationRepository.updateAnnouncement(conversationId, announcement)
         }

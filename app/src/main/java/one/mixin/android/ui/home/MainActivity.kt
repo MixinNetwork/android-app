@@ -28,6 +28,7 @@ import javax.inject.Inject
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.MixinApplication
@@ -369,7 +370,7 @@ class MainActivity : BlazeBaseActivity() {
                         if (response != null && response.isSuccess) {
                             response.data?.let { data ->
                                 for (u in data) {
-                                    userRepo.upsert(u)
+                                    runBlocking { userRepo.upsert(u) }
                                 }
                             }
                             user = response.data?.get(0)

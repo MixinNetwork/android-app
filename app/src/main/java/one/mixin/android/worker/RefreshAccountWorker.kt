@@ -5,6 +5,7 @@ import android.graphics.Point
 import androidx.work.WorkerParameters
 import com.squareup.inject.assisted.Assisted
 import com.squareup.inject.assisted.AssistedInject
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.di.worker.ChildWorkerFactory
@@ -30,7 +31,8 @@ class RefreshAccountWorker @AssistedInject constructor(
         val response = accountService.getMe().execute().body()
         if (response != null && response.isSuccess && response.data != null) {
             val account = response.data
-            userRepo.upsert(account!!.toUser())
+            val u = account!!.toUser()
+            runBlocking { userRepo.upsert(u) }
             Session.storeAccount(account)
             if (account.code_id.isNotEmpty()) {
                 val p = Point()

@@ -152,8 +152,9 @@ internal constructor(
 
     fun getConversationById(id: String) = conversationRepository.getConversationById(id)
 
-    fun saveDraft(conversationId: String, text: String) =
+    fun saveDraft(conversationId: String, text: String) = viewModelScope.launch {
         conversationRepository.saveDraft(conversationId, text)
+    }
 
     fun findUserByConversationId(conversationId: String): LiveData<User> =
         userRepository.findUserByConversationId(conversationId)

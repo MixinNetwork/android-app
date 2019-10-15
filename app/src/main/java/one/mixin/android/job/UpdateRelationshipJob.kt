@@ -3,6 +3,7 @@ package one.mixin.android.job
 import android.annotation.SuppressLint
 import com.birbit.android.jobqueue.Params
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipAction.ADD
@@ -16,7 +17,10 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import timber.log.Timber
 
-class UpdateRelationshipJob(private val request: RelationshipRequest, private val deleteConversationId: String? = null) :
+class UpdateRelationshipJob(
+    private val request: RelationshipRequest,
+    private val deleteConversationId: String? = null
+) :
     BaseJob(Params(PRIORITY_UI_HIGH).addTags(GROUP).groupBy("relationship").requireNetwork()) {
 
     companion object {
@@ -50,14 +54,16 @@ class UpdateRelationshipJob(private val request: RelationshipRequest, private va
                 .subscribeOn(Schedulers.io())
                 .subscribe({ r: MixinResponse<User> ->
                     if (r.isSuccess) {
-                        r.data?.let { u ->
-                            if (u.app != null) {
-                                u.appId = u.app!!.appId
-                                userRepo.insertApp(u.app!!)
+                        runBlocking {
+                            r.data?.let { u ->
+                                if (u.app != null) {
+                                    u.appId = u.app!!.appId
+                                    userRepo.insertApp(u.app!!)
+                                }
+                                userRepo.upsert(u)
                             }
-                            userRepo.upsert(u)
+                            conversationDao.deleteConversationById(deleteConversationId)
                         }
-                        conversationDao.deleteConversationById(deleteConversationId)
                     } else {
                         ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                     }
@@ -69,12 +75,14 @@ class UpdateRelationshipJob(private val request: RelationshipRequest, private va
                 .subscribeOn(Schedulers.io())
                 .subscribe({ r: MixinResponse<User> ->
                     if (r.isSuccess) {
-                        r.data?.let { u ->
-                            if (u.app != null) {
-                                u.appId = u.app!!.appId
-                                userRepo.insertApp(u.app!!)
+                        runBlocking {
+                            r.data?.let { u ->
+                                if (u.app != null) {
+                                    u.appId = u.app!!.appId
+                                    userRepo.insertApp(u.app!!)
+                                }
+                                userRepo.upsert(u)
                             }
-                            userRepo.upsert(u)
                         }
                     } else {
                         ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)

@@ -45,7 +45,7 @@ internal constructor(
     private val jobManager: MixinJobManager
 ) : ViewModel() {
 
-    fun insertUser(user: User) {
+    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
         userRepository.upsert(user)
     }
 

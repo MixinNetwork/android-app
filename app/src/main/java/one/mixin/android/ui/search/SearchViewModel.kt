@@ -13,6 +13,7 @@ import javax.inject.Inject
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.extension.escapeSql
 import one.mixin.android.repository.AccountRepository
@@ -72,7 +73,7 @@ internal constructor(
         accountRepository.search(query).subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread())
 
-    fun insertUser(user: User) {
+    fun insertUser(user: User) = viewModelScope.launch(Dispatchers.IO) {
         userRepository.upsert(user)
     }
 }

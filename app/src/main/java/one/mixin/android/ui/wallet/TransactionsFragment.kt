@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import androidx.paging.PagedList
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
@@ -20,7 +21,6 @@ import kotlinx.android.synthetic.main.view_transactions_fragment_header.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_bottom.view.*
 import kotlinx.android.synthetic.main.view_wallet_transactions_send_bottom.view.*
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -288,7 +288,7 @@ class TransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>()
     }
 
     override fun onUserClick(userId: String) {
-        GlobalScope.launch(Dispatchers.IO) {
+        lifecycleScope.launch(Dispatchers.IO) {
             walletViewModel.getUser(userId)?.let {
                 val f = UserBottomSheetDialogFragment.newInstance(it)
                 f.showUserTransactionAction = {
