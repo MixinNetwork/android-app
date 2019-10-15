@@ -292,7 +292,7 @@ class SettingStorageFragment : BaseViewModelFragment<SettingStorageViewModel>() 
                 storageUsage.category.endsWith("_DATA") -> R.string.conversation_status_file
                 storageUsage.category.endsWith("_VIDEO") -> R.string.conversation_status_video
                 storageUsage.category.endsWith("_AUDIO") -> R.string.conversation_status_audio
-                else -> R.string.conversation_status_unknown
+                else -> R.string.unknown
             })
             itemView.check_view.setSize(storageUsage.mediaSize)
             itemView.check_view.isChecked = true

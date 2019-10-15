@@ -74,6 +74,7 @@
     <string name="currency">货币</string>
     <string name="share_to">分享%1$s到…</string>
     <string name="currency_switch">切换货币中</string>
+    <string name="unknown">未知</string>
     <!--error-->
     <string name="error_no_connection">无网络连接</string>
     <string name="error_connection_timeout">网络连接超时</string>
@@ -402,7 +403,6 @@
     <string name="conversation_status_transfer">转账</string>
     <string name="conversation_status_sticker">贴纸</string>
     <string name="conversation_status_live">直播</string>
-    <string name="conversation_status_unknown">未知</string>
     <string name="setting_no_blocked">没有屏蔽任何人</string>
     <string name="setting_authentications">授权</string>
     <string name="setting_emergency">紧急联系人</string>
@@ -477,7 +477,7 @@
     <string name="chat_you">您</string>
     <string name="chat_group_checking">正在检查链接</string>
     <string name="chat_expired">已过期</string>
-    <string name="unknown">未知类型，请升级APP</string>
+    <string name="unknown_update_app">未知类型，请升级APP</string>
     <string name="group_ok">好</string>
     <string name="link_error">无效链接</string>
     <string name="bottom_sheet_check_payment_info">请检查支付信息</string>
