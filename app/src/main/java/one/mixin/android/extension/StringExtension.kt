@@ -361,8 +361,8 @@ fun String.getBotNumber(): String? {
 }
 
 
-inline fun String?.getDeviceId(): Int {
-    return if (this == null || this.isEmpty()) {
+inline fun String?.getDeviceId(platform: String? = null): Int {
+    return if (this == null || this.isEmpty() || platform == "Android" || platform == "iOS") {
         1
     } else {
         UUID.fromString(this).hashCode()

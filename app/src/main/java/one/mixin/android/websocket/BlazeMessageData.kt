@@ -29,7 +29,9 @@ data class BlazeMessageData(
     @SerializedName("session_id")
     val sessionId: String?,
     @SerializedName("primitive_id")
-    val primitiveId: String?
+    val primitiveId: String?,
+    @SerializedName("platform")
+    val platform: String?
 ) : Serializable {
     companion object {
         private const val serialVersionUID: Long = 5L
