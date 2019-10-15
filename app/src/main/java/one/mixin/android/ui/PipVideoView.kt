@@ -40,8 +40,8 @@ import one.mixin.android.extension.getPixelsInCM
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
-import one.mixin.android.ui.conversation.media.DragMediaActivity
-import one.mixin.android.ui.conversation.media.VideoPlayer
+import one.mixin.android.ui.media.DragMediaActivity
+import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.AspectRatioFrameLayout

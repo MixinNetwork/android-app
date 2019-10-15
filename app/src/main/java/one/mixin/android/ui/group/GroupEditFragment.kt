@@ -11,13 +11,13 @@ import com.uber.autodispose.autoDispose
 import javax.inject.Inject
 import kotlinx.android.synthetic.main.fragment_group_edit.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
 import one.mixin.android.util.ErrorHandler
 import org.jetbrains.anko.textColorResource
 

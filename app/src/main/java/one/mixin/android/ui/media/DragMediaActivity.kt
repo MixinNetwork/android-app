@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.media
+package one.mixin.android.ui.media
 
 import android.Manifest
 import android.animation.Animator
@@ -15,6 +15,7 @@ import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.Rect
 import android.graphics.SurfaceTexture
@@ -26,6 +27,8 @@ import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import android.provider.Settings
+import android.util.Base64
+import android.view.Gravity
 import android.view.MotionEvent
 import android.view.TextureView
 import android.view.View
@@ -49,10 +52,12 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.viewpager.widget.ViewPager
+import com.bumptech.glide.Glide
 import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.gif.GifDrawable
@@ -73,11 +78,6 @@ import com.uber.autodispose.autoDispose
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
-import java.io.File
-import java.io.FileInputStream
-import java.util.concurrent.TimeUnit
-import javax.inject.Inject
-import kotlin.math.min
 import kotlinx.android.synthetic.main.activity_drag_media.*
 import kotlinx.android.synthetic.main.item_video_layout.view.*
 import kotlinx.android.synthetic.main.view_drag_image_bottom.view.*
@@ -93,6 +93,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
+import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.decodeQR
 import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.dpToPx
@@ -102,6 +103,7 @@ import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.getFilePath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.getUriForFile
+import one.mixin.android.extension.inflate
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.loadGif
 import one.mixin.android.extension.loadImage
@@ -112,21 +114,27 @@ import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsPie
 import one.mixin.android.extension.toast
+import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.ui.PipVideoView
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
 import one.mixin.android.ui.url.openUrl
 import one.mixin.android.util.AnimationProperties
+import one.mixin.android.util.Session
+import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.video.MixinPlayer
+import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isMedia
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.saveToLocal
 import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.PagedListPagerAdapter
+import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.PlayView.Companion.STATUS_IDLE
@@ -138,6 +146,11 @@ import org.jetbrains.anko.backgroundDrawable
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 import timber.log.Timber
+import java.io.File
+import java.io.FileInputStream
+import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import kotlin.math.min
 
 @SuppressLint("InvalidWakeLockTag")
 class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
@@ -148,20 +161,30 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     private val messageId by lazy {
         intent.getStringExtra(MESSAGE_ID)
     }
-
+    private val excludeLive by lazy {
+        intent.getBooleanExtra(EXCLUDE_LIVE, false)
+    }
     private val ratio by lazy {
         intent.getFloatExtra(RATIO, 0f)
     }
 
-    private var index: Int = 0
+    private var initialIndex: Int = 0
+    private var firstLoad = true
     private var lastPos: Int = -1
     private val pagerAdapter by lazy {
         MediaAdapter(this@DragMediaActivity)
     }
-    private var disposable: Disposable? = null
+
+    @Inject
+    lateinit var viewModelFactory: ViewModelProvider.Factory
+    private val viewModel: SharedMediaViewModel by lazy {
+        ViewModelProvider(this, viewModelFactory).get(SharedMediaViewModel::class.java)
+    }
 
     @Inject
     lateinit var conversationRepository: ConversationRepository
+    @Inject
+    lateinit var jobManager: MixinJobManager
 
     private val powerManager: PowerManager by lazy {
         applicationContext.getSystemService<PowerManager>()!!
@@ -190,24 +213,24 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         setContentView(R.layout.activity_drag_media)
         colorDrawable = ColorDrawable(Color.BLACK)
         view_pager.backgroundDrawable = colorDrawable
-
-        val model = ViewModelProvider(this).get(DragMediaViewModel::class.java)
-        model.viewModelScope.launch {
-            index = conversationRepository.indexMediaMessages(conversationId, messageId)
-            val list = conversationRepository.getMediaMessages(conversationId, index)
-            pagerAdapter.submitAction = {
-                if (index != -1) {
-                    view_pager.currentItem = index
-                    lastPos = index
-                    play(index)
-                } else {
-                    view_pager.currentItem = 0
-                    lastPos = 0
-                    this@DragMediaActivity.finish()
-                }
-            }
-            view_pager.adapter = pagerAdapter
-            pagerAdapter.submitList(list)
+        lifecycleScope.launch {
+            initialIndex =
+                conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
+            conversationRepository.getMediaMessages(conversationId, initialIndex, excludeLive)
+                .observe(this@DragMediaActivity, Observer { list ->
+                    pagerAdapter.submitAction = {
+                        if (firstLoad) {
+                            firstLoad = false
+                            view_pager.currentItem = initialIndex
+                            lastPos = initialIndex
+                            play(initialIndex)
+                        }
+                    }
+                    if (view_pager.adapter == null) {
+                        view_pager.adapter = pagerAdapter
+                    }
+                    pagerAdapter.submitList(list)
+                })
         }
 
         view_pager.addOnPageChangeListener(pageListener)
@@ -448,7 +471,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             }
             type = if (isVideo) "video/*" else "image/*"
         }
-        val name = getString(if (isVideo) R.string.conversation_status_video else R.string.conversation_status_pic)
+        val name =
+            getString(if (isVideo) R.string.conversation_status_video else R.string.conversation_status_pic)
         startActivity(Intent.createChooser(sendIntent, getString(R.string.share_to, name)))
     }
 
@@ -459,21 +483,30 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     ) : PagedListPagerAdapter<MessageItem>(), TextureView.SurfaceTextureListener {
         override fun createItem(container: ViewGroup, position: Int): Any {
             val messageItem = getItem(position) ?: return DismissFrameLayout(container.context)
+            val layout = DismissFrameLayout(container.context)
+            val circleProgress = layout.inflate(R.layout.view_circle_progress) as CircleProgress
+            circleProgress.updateLayoutParams<FrameLayout.LayoutParams> {
+                gravity = Gravity.CENTER
+            }
             val innerView = if (messageItem.type == MessageCategory.SIGNAL_IMAGE.name ||
                 messageItem.type == MessageCategory.PLAIN_IMAGE.name
             ) {
-                if (!messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true) && messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f) {
-                    createLargeImageView(container, position, messageItem)
+                if (!messageItem.mediaMimeType.equals(
+                        MimeType.GIF.toString(),
+                        true
+                    ) && messageItem.mediaHeight!! / messageItem.mediaWidth!!.toFloat() > displayRatio() * 1.5f
+                ) {
+                    createLargeImageView(container, position, messageItem, circleProgress)
                 } else {
-                    createPhotoView(container, position, messageItem)
+                    createPhotoView(container, position, messageItem, circleProgress)
                 }
             } else {
-                createVideoView(container, position, messageItem)
+                createVideoView(container, position, messageItem, circleProgress)
             }
-            val layout = DismissFrameLayout(container.context)
             layout.setDismissListener(onDismissListener)
             layout.layoutParams = ViewPager.LayoutParams()
             layout.addView(innerView)
+            layout.addView(circleProgress)
             layout.tag = "$PREFIX${messageItem.messageId}"
             container.addView(layout)
             return layout
@@ -493,7 +526,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun createVideoView(
             container: ViewGroup,
             position: Int,
-            messageItem: MessageItem
+            messageItem: MessageItem,
+            circleProgress: CircleProgress
         ): View {
             val view = View.inflate(container.context, R.layout.item_video_layout, null)
             view.controller.setOnTouchListener(View.OnTouchListener { v, event ->
@@ -534,17 +568,47 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 view.action_bar.setPadding(0, statusBarHeight, 0, 0)
             }
             view.video_texture.surfaceTextureListener = this
+
             if (messageItem.isLive()) {
-                view.preview_iv.loadImage(messageItem.thumbUrl!!, messageItem.thumbImage)
+                circleProgress.isVisible = false
+                view.play_view.isVisible = true
+                view.preview_iv.loadImage(messageItem.thumbUrl, messageItem.thumbImage)
             } else {
-                view.preview_iv.loadVideo(messageItem.mediaUrl!!)
+                if (messageItem.mediaUrl != null) {
+                    view.preview_iv.loadVideo(messageItem.mediaUrl)
+                } else {
+                    val imageData = messageItem.thumbImage?.decodeBase64()
+                    Glide.with(view).load(imageData).into(view.preview_iv)
+                }
                 view.seek_bar.progress = 0
                 view.duration_tv.text = 0L.formatMillis()
                 view.remain_tv.text = messageItem.mediaDuration?.toLong()?.formatMillis()
+                if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
+                    circleProgress.isVisible = false
+                    view.play_view.isVisible = true
+                    circleProgress.setBindId(messageItem.messageId)
+                } else {
+                    view.play_view.isVisible = false
+                    circleProgress.isVisible = true
+                    circleProgress.setBindId(messageItem.messageId)
+                    if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
+                        circleProgress.enableLoading()
+                    } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
+                        if (Session.getAccountId() == messageItem.userId) {
+                            circleProgress.enableUpload()
+                        } else {
+                            circleProgress.enableDownload()
+                        }
+                    } else {
+                        // TODO expired
+                    }
+                    circleProgress.setOnClickListener { handleCircleProgressClick(messageItem) }
+                }
             }
             view.tag = messageItem.isLive()
             if (VideoPlayer.player().mId == messageItem.messageId) {
-                val playbackState = VideoPlayer.player().player.playbackState
+                val playbackState = VideoPlayer.player()
+                    .player.playbackState
                 view.play_view.status = when (playbackState) {
                     STATE_IDLE, STATE_ENDED -> STATUS_IDLE
                     STATE_BUFFERING -> STATUS_LOADING
@@ -557,7 +621,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     }
                 }
             }
-            if (position == index && !setTransition) {
+            if (position == initialIndex && !setTransition) {
                 setTransition = true
                 ViewCompat.setTransitionName(view, "transition")
                 setStartPostTransition(view)
@@ -599,7 +663,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             var isPlaying = false
             view.seek_bar.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onStartTrackingTouch(seekBar: SeekBar?) {
-                    isPlaying = VideoPlayer.player().isPlaying()
+                    isPlaying = VideoPlayer.player()
+                        .isPlaying()
                     VideoPlayer.player().pause()
                 }
 
@@ -671,14 +736,36 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun createLargeImageView(
             container: ViewGroup,
             position: Int,
-            messageItem: MessageItem
+            messageItem: MessageItem,
+            circleProgress: CircleProgress
         ): LargeImageView {
             val imageView = LargeImageView(container.context)
-            imageView.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
+            if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
+                circleProgress.isVisible = false
+                circleProgress.setBindId(messageItem.messageId)
+                imageView.setImage(FileBitmapDecoderFactory(File(messageItem.mediaUrl?.getFilePath())))
+            } else {
+                val imageData = Base64.decode(messageItem.thumbImage, Base64.DEFAULT)
+                imageView.setImage(BitmapFactory.decodeByteArray(imageData, 0, imageData.size))
+                circleProgress.isVisible = true
+                circleProgress.setBindId(messageItem.messageId)
+                if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
+                    circleProgress.enableLoading()
+                } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
+                    if (Session.getAccountId() == messageItem.userId) {
+                        circleProgress.enableUpload()
+                    } else {
+                        circleProgress.enableDownload()
+                    }
+                } else {
+                    // TODO expired
+                }
+                circleProgress.setOnClickListener { handleCircleProgressClick(messageItem) }
+            }
             if (messageItem.mediaWidth!! < screenWidth()) {
                 imageView.scale = (screenWidth().toFloat() / messageItem.mediaWidth)
             }
-            if (position == index) {
+            if (position == initialIndex) {
                 ViewCompat.setTransitionName(imageView, "transition")
                 setStartPostTransition(imageView)
             }
@@ -695,7 +782,8 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private fun createPhotoView(
             container: ViewGroup,
             position: Int,
-            messageItem: MessageItem
+            messageItem: MessageItem,
+            circleProgress: CircleProgress
         ): PhotoView {
             val imageView = PhotoView(container.context)
             imageView.layoutParams = ViewGroup.LayoutParams(
@@ -710,7 +798,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         dataSource: DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        if (position == index) {
+                        if (position == initialIndex) {
                             ViewCompat.setTransitionName(imageView, "transition")
                             setStartPostTransition(imageView)
                         }
@@ -725,7 +813,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     ): Boolean {
                         return false
                     }
-                })
+                }, base64Holder = messageItem.thumbImage)
             } else {
                 imageView.loadImage(messageItem.mediaUrl, object : RequestListener<Drawable?> {
                     override fun onResourceReady(
@@ -735,7 +823,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                         dataSource: DataSource?,
                         isFirstResource: Boolean
                     ): Boolean {
-                        if (position == index) {
+                        if (position == initialIndex) {
                             ViewCompat.setTransitionName(imageView, "transition")
                             setStartPostTransition(imageView)
                         }
@@ -750,7 +838,26 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                     ): Boolean {
                         return false
                     }
-                })
+                }, base64Holder = messageItem.thumbImage)
+            }
+            if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
+                circleProgress.isVisible = false
+                circleProgress.setBindId(messageItem.messageId)
+            } else {
+                circleProgress.isVisible = true
+                circleProgress.setBindId(messageItem.messageId)
+                if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
+                    circleProgress.enableLoading()
+                } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
+                    if (Session.getAccountId() == messageItem.userId) {
+                        circleProgress.enableUpload()
+                    } else {
+                        circleProgress.enableDownload()
+                    }
+                } else {
+                    // TODO expired
+                }
+                circleProgress.setOnClickListener { handleCircleProgressClick(messageItem) }
             }
             imageView.setOnClickListener {
                 finishAfterTransition()
@@ -759,7 +866,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
                 showImageBottom()
                 return@setOnLongClickListener true
             }
-            if (position == index) {
+            if (position == initialIndex) {
                 ViewCompat.setTransitionName(imageView, "transition")
                 setStartPostTransition(imageView)
             }
@@ -779,6 +886,23 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
             setTextureView()
+        }
+    }
+
+    private fun handleCircleProgressClick(messageItem: MessageItem) {
+        when {
+            messageItem.mediaStatus == MediaStatus.CANCELED.name -> {
+                if (Session.getAccountId() == messageItem.userId) {
+                    viewModel.retryUpload(messageItem.messageId) {
+                        toast(R.string.error_retry_upload)
+                    }
+                } else {
+                    viewModel.retryDownload(messageItem.messageId)
+                }
+            }
+            messageItem.mediaStatus == MediaStatus.PENDING.name -> {
+                viewModel.cancel(messageItem.messageId)
+            }
         }
     }
 
@@ -886,7 +1010,7 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
             } else {
                 SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
             }
-        if (view_pager.currentItem == index) {
+        if (view_pager.currentItem == initialIndex) {
             super.finishAfterTransition()
         } else {
             finish()
@@ -941,14 +1065,12 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
 
     private fun pause() {
         setPlayViewStatus(STATUS_IDLE)
-        disposable?.dispose()
         VideoPlayer.player().pause()
     }
 
     private fun stop() {
         setPlayViewStatus(STATUS_IDLE)
         handleLast()
-        disposable?.dispose()
         VideoPlayer.player().stop()
     }
 
@@ -957,9 +1079,11 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         if (messageItem.isVideo() || messageItem.isLive()) {
             messageItem.mediaUrl?.let {
                 if (messageItem.isLive()) {
-                    VideoPlayer.player().loadHlsVideo(it, messageItem.messageId, force)
+                    VideoPlayer.player()
+                        .loadHlsVideo(it, messageItem.messageId, force)
                 } else {
-                    VideoPlayer.player().loadVideo(it, messageItem.messageId, force)
+                    VideoPlayer.player()
+                        .loadVideo(it, messageItem.messageId, force)
                 }
             }
             setTextureView()
@@ -980,14 +1104,15 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
     }
 
     private fun startListenDuration(view: View) {
-        disposable = Observable.interval(0, 100, TimeUnit.MILLISECONDS)
+        Observable.interval(0, 100, TimeUnit.MILLISECONDS)
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
             .subscribe {
                 if (VideoPlayer.player().duration() != 0) {
                     view.seek_bar.progress = (VideoPlayer.player().getCurrentPos() * 200 /
                         VideoPlayer.player().duration()).toInt()
-                    view.duration_tv.text = VideoPlayer.player().getCurrentPos().formatMillis()
+                    view.duration_tv.text = VideoPlayer.player()
+                        .getCurrentPos().formatMillis()
                     if (view.remain_tv.text.isEmpty()) { // from google photo
                         view.remain_tv.text =
                             VideoPlayer.player().duration().toLong().formatMillis()
@@ -1104,12 +1229,31 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         }
 
         override fun onPageSelected(position: Int) {
-            if (lastPos == -1 || lastPos == position) return
+            if (lastPos == -1) {
+                downloadMedia(position)
+                return
+            }
+            if (lastPos == position) return
 
             stop()
             lastPos = position
+
+            downloadMedia(position)
         }
     }
+
+    private fun downloadMedia(position: Int) {
+        val currMessageItem = pagerAdapter.getItem(position) ?: return
+        if (currMessageItem.mediaStatus == MediaStatus.CANCELED.name) return
+        if (currMessageItem.isMedia() && currMessageItem.mediaUrl == null) {
+            lifecycleScope.launch(Dispatchers.IO) {
+                conversationRepository.findMessageById(currMessageItem.messageId)?.let {
+                    jobManager.addJobInBackground(AttachmentDownloadJob(it))
+                }
+            }
+        }
+    }
+
     private var pipAnimationInProgress = false
     private fun switchToPip() {
         if (!checkInlinePermissions() || pipAnimationInProgress) {
@@ -1242,13 +1386,21 @@ class DragMediaActivity : BaseActivity(), DismissFrameLayout.OnDismissListener {
         private const val MESSAGE_ID = "id"
         private const val RATIO = "ratio"
         private const val CONVERSATION_ID = "conversation_id"
+        private const val EXCLUDE_LIVE = "exclude_live"
         private const val ALPHA_MAX = 0xFF
         private const val PREFIX = "media"
 
-        fun show(activity: Activity, imageView: View, conversationId: String, messageId: String) {
+        fun show(
+            activity: Activity,
+            imageView: View,
+            conversationId: String,
+            messageId: String,
+            excludeLive: Boolean = false
+        ) {
             val intent = Intent(activity, DragMediaActivity::class.java).apply {
                 putExtra(CONVERSATION_ID, conversationId)
                 putExtra(MESSAGE_ID, messageId)
+                putExtra(EXCLUDE_LIVE, excludeLive)
             }
             activity.startActivity(
                 intent, ActivityOptions.makeSceneTransitionAnimation(

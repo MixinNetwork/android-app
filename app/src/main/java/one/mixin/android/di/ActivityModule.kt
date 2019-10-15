@@ -14,13 +14,13 @@ import one.mixin.android.di.module.InviteActivityModule
 import one.mixin.android.di.module.LandingActivityModule
 import one.mixin.android.di.module.MainActivityModule
 import one.mixin.android.di.module.SettingActivityModule
+import one.mixin.android.di.module.SharedMediaActvityModule
 import one.mixin.android.di.module.UrlInterpreterActivityModule
 import one.mixin.android.di.module.WalletActivityModule
 import one.mixin.android.ui.address.AddressActivity
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.media.DragMediaActivity
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.InviteActivity
@@ -28,6 +28,8 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.media.DragMediaActivity
+import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.sticker.StickerActivity
@@ -69,9 +71,6 @@ abstract class ActivityModule {
     @ContributesAndroidInjector(modules = [(CommonModule::class), (CaptureActivityModule::class)])
     internal abstract fun contributeCapture(): CaptureActivity
 
-    @ContributesAndroidInjector(modules = [(CommonModule::class), (ConversationActivityModule::class)])
-    internal abstract fun contributeDragMedia(): DragMediaActivity
-
     @ContributesAndroidInjector(modules = [(CommonModule::class), (UrlInterpreterActivityModule::class)])
     internal abstract fun contributeUrlInterpreter(): UrlInterpreterActivity
 
@@ -86,4 +85,10 @@ abstract class ActivityModule {
 
     @ContributesAndroidInjector
     internal abstract fun contributeRestore(): RestoreActivity
+
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActvityModule::class)])
+    internal abstract fun contributeSharedMedia(): SharedMediaActivity
+
+    @ContributesAndroidInjector(modules = [(CommonModule::class), (SharedMediaActvityModule::class)])
+    internal abstract fun contributeDragMedia(): DragMediaActivity
 }

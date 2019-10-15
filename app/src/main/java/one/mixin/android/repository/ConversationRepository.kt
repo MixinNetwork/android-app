@@ -1,17 +1,16 @@
 package one.mixin.android.repository
 
 import android.annotation.SuppressLint
-import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.lifecycle.LiveData
+import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
 import io.reactivex.Observable
 import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.ConversationDao
@@ -108,17 +107,34 @@ internal constructor(
 
     suspend fun indexUnread(conversationId: String) = readConversationDao.indexUnread(conversationId)
 
-    suspend fun indexMediaMessages(conversationId: String, messageId: String): Int =
+    suspend fun indexMediaMessages(
+        conversationId: String,
+        messageId: String,
+        excludeLive: Boolean
+    ): Int = if (excludeLive) {
+        readMessageDao.indexMediaMessagesExcludeLive(conversationId, messageId)
+    } else {
         readMessageDao.indexMediaMessages(conversationId, messageId)
+    }
 
-    suspend fun getMediaMessages(conversationId: String, index: Int): PagedList<MessageItem> {
-        return withContext(Dispatchers.IO) {
-            PagedList.Builder<Int, MessageItem>(readMessageDao.getMediaMessages(conversationId).create(), 5)
-                .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
-                .setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
-                .setInitialKey(index)
-                .build()
+    fun getMediaMessages(
+        conversationId: String,
+        index: Int,
+        excludeLive: Boolean
+    ): LiveData<PagedList<MessageItem>> {
+        val dataSource = if (excludeLive) {
+            readMessageDao.getMediaMessagesExcludeLive(conversationId)
+        } else {
+            readMessageDao.getMediaMessages(conversationId)
         }
+        val config = PagedList.Config.Builder()
+            .setPrefetchDistance(PAGE_SIZE)
+            .setPageSize(PAGE_SIZE)
+            .setEnablePlaceholders(true)
+            .build()
+        return LivePagedListBuilder(dataSource, config)
+            .setInitialLoadKey(index)
+            .build()
     }
 
     fun getConversationIdIfExistsSync(recipientId: String) = readConversationDao.getConversationIdIfExistsSync(recipientId)
@@ -236,4 +252,12 @@ internal constructor(
 
     suspend fun findNextAudioMessage(conversationId: String, createdAt: String, messageId: String) =
         messageDao.findNextAudioMessage(conversationId, createdAt, messageId)
+
+    fun getMediaMessagesExcludeLive(conversationId: String) = messageDao.getMediaMessagesExcludeLive(conversationId)
+
+    fun getAudioMessages(conversationId: String) = messageDao.getAudioMessages(conversationId)
+
+    fun getLinkMessages(conversationId: String) = messageDao.getLinkMessages(conversationId)
+
+    fun getFileMessages(conversationId: String) = messageDao.getFileMessages(conversationId)
 }

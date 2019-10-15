@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.fragment_user_bottom_sheet.view.*
 import kotlinx.android.synthetic.main.view_round_title.view.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -38,7 +39,7 @@ import one.mixin.android.ui.conversation.UserTransactionsFragment
 import one.mixin.android.ui.conversation.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.web.WebBottomSheetDialogFragment
 import one.mixin.android.ui.forward.ForwardActivity
-import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
+import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
 import one.mixin.android.ui.url.openUrlWithExtraWeb
 import one.mixin.android.util.Session
@@ -147,6 +148,7 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         choices.add(getString(R.string.contact_other_share))
         if (conversationId != null) {
             choices.add(getString(R.string.contact_other_search_conversation))
+            choices.add(getString(R.string.contact_other_shared_media))
         }
         choices.add(getString(R.string.contact_other_transactions))
         when (user.relationship) {
@@ -184,6 +186,10 @@ class UserBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                     getString(R.string.contact_other_search_conversation) -> {
                         startSearchConversation()
+                        dismiss()
+                    }
+                    getString(R.string.contact_other_shared_media) -> {
+                        SharedMediaActivity.show(requireContext(), conversationId!!)
                         dismiss()
                     }
                     getString(R.string.contact_other_transactions) -> {

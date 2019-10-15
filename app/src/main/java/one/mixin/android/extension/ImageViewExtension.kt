@@ -42,7 +42,10 @@ fun ImageView.loadImage(uri: String?, @DrawableRes holder: Int) {
     Glide.with(this).load(uri).apply(RequestOptions.placeholderOf(holder)).into(this)
 }
 
-fun ImageView.loadImage(uri: String?, requestListener: RequestListener<Drawable?>) {
+fun ImageView.loadImage(
+    uri: String?,
+    requestListener: RequestListener<Drawable?>
+) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).listener(requestListener).into(this)
 }
@@ -53,29 +56,60 @@ fun ImageView.loadImage(uri: String?, width: Int, height: Int) {
     Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(multi).dontAnimate()).into(this)
 }
 
+fun ImageView.loadBase64ImageCenterCrop(imageByteArray: ByteArray?, @DrawableRes holder: Int? = null) {
+    if (!isActivityNotDestroyed()) return
+    Glide.with(this).asBitmap().load(imageByteArray)
+        .apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
+            if (holder != null) {
+                this.placeholder(holder)
+            }
+        }).into(this)
+}
+
 fun ImageView.loadImageCenterCrop(uri: String?, @DrawableRes holder: Int? = null) {
     if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
-        if (holder != null) {
-            this.placeholder(holder)
-        }
-    }).into(this)
+    Glide.with(this).load(uri)
+        .apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
+            if (holder != null) {
+                this.placeholder(holder)
+            }
+        }).into(this)
 }
 
 fun ImageView.loadImageCenterCrop(uri: Uri?, @DrawableRes holder: Int? = null) {
     if (!isActivityNotDestroyed()) return
-    Glide.with(this).load(uri).apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
-        if (holder != null) {
-            this.placeholder(holder)
-        }
-    }).into(this)
+    Glide.with(this).load(uri)
+        .apply(RequestOptions().dontAnimate().dontTransform().centerCrop().apply {
+            if (holder != null) {
+                this.placeholder(holder)
+            }
+        }).into(this)
+}
+
+fun ImageView.loadImage(
+    uri: String?,
+    requestListener: RequestListener<Drawable?>? = null,
+    base64Holder: String? = null
+) {
+    if (!isActivityNotDestroyed()) return
+    var requestOptions = RequestOptions().dontTransform()
+    if (base64Holder != null) {
+        requestOptions = requestOptions.fallback(base64Holder.toDrawable())
+    }
+    if (requestListener != null) {
+        Glide.with(this).load(uri).apply(requestOptions).listener(requestListener)
+            .into(this)
+    } else {
+        Glide.with(this).load(uri).apply(requestOptions).into(this)
+    }
 }
 
 fun ImageView.loadGif(
     uri: String?,
     requestListener: RequestListener<GifDrawable?>? = null,
     centerCrop: Boolean? = null,
-    @DrawableRes holder: Int? = null
+    @DrawableRes holder: Int? = null,
+    base64Holder: String? = null
 ) {
     if (!isActivityNotDestroyed()) return
     var requestOptions = RequestOptions().dontTransform()
@@ -85,8 +119,12 @@ fun ImageView.loadGif(
     if (holder != null) {
         requestOptions = requestOptions.placeholder(holder)
     }
+    if (base64Holder != null) {
+        requestOptions = requestOptions.fallback(base64Holder.toDrawable())
+    }
     if (requestListener != null) {
-        Glide.with(this).asGif().load(uri).apply(requestOptions).listener(requestListener).into(this)
+        Glide.with(this).asGif().load(uri).apply(requestOptions).listener(requestListener)
+            .into(this)
     } else {
         Glide.with(this).asGif().load(uri).apply(requestOptions).into(this)
     }
@@ -207,7 +245,13 @@ fun ImageView.loadLongImageMark(uri: String?, holder: String?, mark: Int) {
 fun ImageView.loadLongImageMark(uri: String?, mark: Int) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
-        RequestOptions.bitmapTransform(CropTransformation(0, layoutParams.height, CropTransformation.CropType.TOP))
+        RequestOptions.bitmapTransform(
+            CropTransformation(
+                0,
+                layoutParams.height,
+                CropTransformation.CropType.TOP
+            )
+        )
             .dontAnimate()
             .signature(StringSignature("$uri$mark"))
     ).listener(object : RequestListener<Drawable> {
@@ -278,7 +322,7 @@ fun ImageView.loadVideoMark(
         }).submit(layoutParams.width, layoutParams.height)
 }
 
-fun ImageView.loadVideo(uri: String) {
+fun ImageView.loadVideo(uri: String?) {
     if (!isActivityNotDestroyed()) return
     Glide.with(this).load(uri).apply(
         RequestOptions().frame(0)
@@ -318,7 +362,8 @@ fun ImageView.loadCircleImage(uri: String?, @DrawableRes holder: Int? = null) {
     } else if (holder == null) {
         Glide.with(this).load(uri).apply(RequestOptions().circleCrop()).into(this)
     } else {
-        Glide.with(this).load(uri).apply(RequestOptions().placeholder(holder).circleCrop()).into(this)
+        Glide.with(this).load(uri).apply(RequestOptions().placeholder(holder).circleCrop())
+            .into(this)
     }
 }
 
@@ -327,7 +372,8 @@ fun ImageView.loadRoundImage(uri: String?, radius: Int, @DrawableRes holder: Int
     if (uri.isNullOrBlank() && holder != null) {
         setImageResource(holder)
     } else if (holder == null) {
-        Glide.with(this).load(uri).apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(radius, 0)))
+        Glide.with(this).load(uri)
+            .apply(RequestOptions.bitmapTransform(RoundedCornersTransformation(radius, 0)))
             .into(this)
     } else {
         Glide.with(this).load(uri).apply(

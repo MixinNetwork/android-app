@@ -100,7 +100,7 @@ object Constants {
 
     const val ARGS_USER = "args_user"
     const val ARGS_USER_ID = "args_user_id"
-
+    const val ARGS_CONVERSATION_ID = "args_conversation_id"
     const val ARGS_ASSET_ID = "args_asset_id"
 
     const val MY_QR = "my_qr"

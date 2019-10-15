@@ -69,6 +69,6 @@ fun TextView.timeAgoDate(str: String) {
     text = str.timeAgoDate(context)
 }
 
-fun TextView.timeAgoDay(str: String) {
-    text = str.timeAgoDay()
+fun TextView.timeAgoDay(str: String, pattern: String = "dd/MM/yyyy") {
+    text = str.timeAgoDay(pattern)
 }

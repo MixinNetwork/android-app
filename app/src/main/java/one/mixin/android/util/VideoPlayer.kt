@@ -1,4 +1,4 @@
-package one.mixin.android.ui.conversation.media
+package one.mixin.android.util
 
 import one.mixin.android.util.video.MixinPlayer
 
@@ -7,7 +7,8 @@ class VideoPlayer private constructor() {
         @Synchronized
         fun getInstance(): VideoPlayer {
             if (instance == null) {
-                instance = VideoPlayer()
+                instance =
+                    VideoPlayer()
             }
             return instance as VideoPlayer
         }

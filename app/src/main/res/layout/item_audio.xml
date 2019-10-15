@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="90dp"
+    android:orientation="vertical">
+
+    <Space
+        android:id="@+id/center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true" />
+
+    <FrameLayout
+        android:id="@+id/audio_fl"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="@dimen/margin20"
+        android:layout_marginEnd="@dimen/margin16">
+
+        <one.mixin.android.widget.AvatarView
+            android:id="@+id/avatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <View
+            android:id="@+id/cover"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/black_20"/>
+
+        <one.mixin.android.widget.CircleProgress
+            android:id="@+id/audio_progress"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_avatar_place_holder"
+            app:progressColor="@color/white"
+            app:playColor="@color/white"
+            app:progressWidth="1.5dp"
+            app:shadowColor="@android:color/transparent"
+            app:size="40dp" />
+
+        <ImageView
+            android:id="@+id/audio_expired"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_expired"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+    </FrameLayout>
+
+    <one.mixin.android.widget.WaveformView
+        android:id="@+id/audio_waveform"
+        android:layout_width="match_parent"
+        android:layout_height="20dp"
+        android:layout_above="@id/center"
+        android:layout_marginEnd="@dimen/margin20"
+        android:layout_marginBottom="2dp"
+        android:layout_toEndOf="@id/audio_fl"
+        android:textColor="@color/text_black"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/audio_duration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/center"
+        android:layout_marginTop="2dp"
+        android:layout_toEndOf="@id/audio_fl"
+        android:textColor="@color/colorDarkBlue" />
+</RelativeLayout>

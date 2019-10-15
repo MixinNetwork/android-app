@@ -23,6 +23,7 @@ import kotlinx.android.synthetic.main.fragment_group_info.*
 import kotlinx.android.synthetic.main.view_group_info_header.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.event.ConversationEvent
@@ -39,7 +40,6 @@ import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.group.GroupFragment.Companion.ARGS_CONVERSATION_ID
 import one.mixin.android.ui.group.GroupFragment.Companion.MAX_USER
 import one.mixin.android.ui.group.adapter.GroupInfoAdapter
 import one.mixin.android.ui.home.MainActivity

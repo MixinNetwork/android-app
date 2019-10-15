@@ -32,6 +32,7 @@ import one.mixin.android.widget.CircleProgress.Companion.STATUS_DONE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_ERROR
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PAUSE
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
+import org.threeten.bp.ZonedDateTime
 import timber.log.Timber
 
 class AudioPlayer private constructor() {
@@ -110,7 +111,9 @@ class AudioPlayer private constructor() {
                     stopTimber()
                     status = STATUS_DONE
 
-                    checkNext()
+                    if (autoPlayNext) {
+                        checkNext()
+                    }
                 }
             }
 
@@ -142,6 +145,9 @@ class AudioPlayer private constructor() {
             }
         }
 
+    private var autoPlayNext: Boolean = true
+    private var continuePlayOnlyToday: Boolean = false
+
     private fun isFile(): Boolean {
         return messageItem?.type == MessageCategory.PLAIN_DATA.name || messageItem?.type == MessageCategory.SIGNAL_DATA.name
     }
@@ -157,8 +163,12 @@ class AudioPlayer private constructor() {
 
     fun play(
         messageItem: MessageItem,
+        autoPlayNext: Boolean = true,
+        continuePlayOnlyToday: Boolean = false,
         whenPlayNewAudioMessage: ((Message) -> Unit)? = null
     ) {
+        this.autoPlayNext = autoPlayNext
+        this.continuePlayOnlyToday = continuePlayOnlyToday
         if (messageItem.mediaUrl == null) {
             MixinApplication.appContext.toast(R.string.error_bad_data)
             return
@@ -171,7 +181,7 @@ class AudioPlayer private constructor() {
             this.messageItem = messageItem
             player.loadAudio(messageItem.mediaUrl)
 
-            if (messageItem.isAudio()) {
+            if (autoPlayNext && messageItem.isAudio()) {
                 markAudioReadAndCheckNextAudioAvailable(messageItem, whenPlayNewAudioMessage)
             }
         } else if (status == STATUS_DONE || status == STATUS_ERROR) {
@@ -244,6 +254,13 @@ class AudioPlayer private constructor() {
                     .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId)
                     ?: return@launch
                 if (!nextMessage.mediaDownloaded() || !nextMessage.isAudio() || nextMessage.mediaUrl == null) return@launch
+
+                if (continuePlayOnlyToday) {
+                    val currentMessageDate = ZonedDateTime.parse(item.createdAt)
+                    val nextMessageDate = ZonedDateTime.parse(nextMessage.createdAt)
+                    if (currentMessageDate.year != nextMessageDate.year) return@launch
+                    if (currentMessageDate.dayOfYear != nextMessageDate.dayOfYear) return@launch
+                }
 
                 withContext(Dispatchers.Main) {
                     play(nextMessage)

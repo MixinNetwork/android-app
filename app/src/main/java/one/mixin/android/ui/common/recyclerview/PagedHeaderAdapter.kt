@@ -16,7 +16,7 @@ abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
 
     var headerView: View? = null
 
-    var onItemListener: OnItemListener? = null
+    var onItemListener: OnItemListener<T>? = null
 
     override fun getItemViewType(position: Int): Int {
         return if (position == TYPE_HEADER && headerView != null) {
@@ -26,7 +26,8 @@ abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
         }
     }
 
-    override fun getItemCount() = if (headerView != null) super.getItemCount() + 1 else super.getItemCount()
+    override fun getItemCount() =
+        if (headerView != null) super.getItemCount() + 1 else super.getItemCount()
 
     protected fun getPos(position: Int): Int {
         return if (headerView != null) {
@@ -36,12 +37,13 @@ abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
-        return if (viewType == TYPE_HEADER) {
+        return (if (viewType == TYPE_HEADER) {
             getHeaderViewHolder()
         } else {
             getNormalViewHolder(parent.context, parent)
-        }
+        })
     }
 
     open fun getHeaderViewHolder() = HeadHolder(headerView!!)
@@ -49,7 +51,7 @@ abstract class PagedHeaderAdapter<T>(diffCallback: DiffUtil.ItemCallback<T>) :
 
     open class HeadHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
 
-    interface OnItemListener {
-        fun <T> onNormalItemClick(item: T)
+    interface OnItemListener<in T> {
+        fun onNormalItemClick(item: T)
     }
 }
