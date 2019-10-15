@@ -40,6 +40,7 @@ import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.enqueueOneTimeNetworkWorkRequest
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
@@ -267,7 +268,7 @@ class TransferFragment : MixinBottomSheetDialogFragment() {
 
         chatViewModel.observeAddress(address!!.addressId).observe(this, Observer {
             address = it
-            contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.displayAddress())
+            contentView.title_view.setSubTitle(getString(R.string.send_to, it.label), it.displayAddress().formatPublicKey())
             contentView.memo_rl.isVisible = isInnerTransfer()
             val bold = it.fee + " " + currentAsset!!.chainSymbol
             val str = try {

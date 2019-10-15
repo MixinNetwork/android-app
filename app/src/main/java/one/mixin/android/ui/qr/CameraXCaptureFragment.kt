@@ -19,12 +19,10 @@ import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.core.PreviewConfig
 import androidx.camera.core.impl.utils.executor.CameraXExecutors
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.firebase.ml.vision.common.FirebaseVisionImage
 import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata
-import java.io.File
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.android.synthetic.main.fragment_capture_camerax.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,6 +36,9 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ACCOUNT_NAME
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_ADDRESS
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_MEMO
+import java.io.File
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.atomic.AtomicBoolean
 
 class CameraXCaptureFragment : BaseCaptureFragment() {
     companion object {
@@ -61,6 +62,12 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
 
     private var alreadyDetected = false
 
+    private val forScan by lazy {
+        arguments?.getBoolean(ARGS_FOR_ADDRESS) == true ||
+            arguments?.getBoolean(ARGS_FOR_ACCOUNT_NAME) == true ||
+            arguments?.getBoolean(ARGS_FOR_MEMO) == true
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         retainInstance = true
@@ -79,6 +86,7 @@ class CameraXCaptureFragment : BaseCaptureFragment() {
         view_finder.post {
             bindCameraUseCase()
         }
+        bottom_ll.isVisible = !forScan
     }
 
     override fun onFlashClick() {

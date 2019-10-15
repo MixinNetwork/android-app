@@ -115,7 +115,7 @@
                     android:layout_marginEnd="@dimen/activity_horizontal_margin"
                     android:layout_toStartOf="@id/tag_iv"
                     android:background="@null"
-                    android:hint="@string/withdrawal_tag"
+                    android:hint="@string/withdrawal_addr_memo_hint"
                     android:paddingStart="@dimen/activity_horizontal_margin"
                     android:paddingEnd="8dp"
                     android:textColor="@android:color/black"

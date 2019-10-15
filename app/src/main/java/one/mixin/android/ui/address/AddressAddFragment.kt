@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.text.method.LinkMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,9 +14,10 @@ import com.uber.autodispose.autoDispose
 import kotlinx.android.synthetic.main.fragment_address_add.*
 import kotlinx.android.synthetic.main.view_badge_circle_image.view.*
 import kotlinx.android.synthetic.main.view_title.view.*
+import one.mixin.android.Constants.ChainId.RIPPLE_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.highLightClick
+import one.mixin.android.extension.highLight
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showKeyboard
@@ -82,6 +82,7 @@ class AddressAddFragment : BaseFragment() {
 
             if (label_et.isFocused) label_et.hideKeyboard()
             if (addr_et.isFocused) addr_et.hideKeyboard()
+            if (tag_et.isFocused) tag_et.hideKeyboard()
             activity?.onBackPressed()
         }
         title_view.title_tv.text = getString(if (type == ADD) R.string.withdrawal_addr_new
@@ -113,43 +114,74 @@ class AddressAddFragment : BaseFragment() {
             }
         }
 
+        if (asset.assetId == RIPPLE_CHAIN_ID) {
+            tag_et.setHint(R.string.withdrawal_addr_tag_hint)
+        } else {
+            tag_et.setHint(R.string.withdrawal_addr_memo_hint)
+        }
         label_et.addTextChangedListener(mWatcher)
         addr_et.addTextChangedListener(mWatcher)
         tag_et.addTextChangedListener(mWatcher)
         addr_iv.setOnClickListener { handleClick(true) }
-        info.movementMethod = LinkMovementMethod.getInstance()
         handleMemo(address)
-
         address?.let {
             label_et.setText(it.label)
             addr_et.setText(it.destination)
             title_view.title_tv.text = getString(R.string.withdrawal_addr_modify, asset.symbol)
         }
+        label_et.showKeyboard()
     }
 
     private fun handleMemo(address: Address? = null) {
         if (memoEnabled) {
             tag_et.isEnabled = memoEnabled
+            tag_rl.isVisible = memoEnabled
             tag_et.setText(address?.tag ?: "")
             tag_iv.isVisible = memoEnabled
             tag_iv.setOnClickListener { handleClick(false) }
-            info.setText(R.string.withdrawal_addr_memo)
-            info.highLightClick(getString(R.string.withdrawal_addr_memo_link), action = {
+            info.setOnClickListener {
                 memoEnabled = false
                 updateSaveButton()
                 handleMemo()
-            })
+            }
+            info.setText(
+                if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    R.string.withdrawal_addr_memo_ripple
+                } else {
+                    R.string.withdrawal_addr_memo
+                }
+            )
+            info.highLight(
+                if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    getString(R.string.withdrawal_addr_memo_link_ripple)
+                } else {
+                    getString(R.string.withdrawal_addr_memo_link)
+                }
+            )
         } else {
             tag_et.isEnabled = memoEnabled
+            tag_rl.isVisible = memoEnabled
             tag_et.setText(R.string.withdrawal_ne_tag)
             tag_iv.isVisible = memoEnabled
-            info.setText(R.string.withdrawal_addr_no_memo)
-            info.highLightClick(getString(R.string.withdrawal_addr_no_memo_link), action = {
+            info.setOnClickListener {
                 memoEnabled = true
                 updateSaveButton()
                 handleMemo()
                 tag_et.showKeyboard()
-            })
+            }
+            info.setText(
+                if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    R.string.withdrawal_addr_no_memo_ripple
+                } else {
+                    R.string.withdrawal_addr_no_memo
+                }
+            )
+            info.highLight(
+                if (asset.assetId == RIPPLE_CHAIN_ID) {
+                    getString(R.string.withdrawal_addr_no_memo_link_ripple)
+                } else {
+                    getString(R.string.withdrawal_addr_no_memo_link)
+                })
         }
     }
 
