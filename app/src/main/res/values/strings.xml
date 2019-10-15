@@ -600,11 +600,11 @@
     <string name="withdrawal_addr_memo">Destination Tag or ID Number or notes. If not, you can set it No Memo.</string>
     <string name="withdrawal_addr_no_memo">If you are required to fill in Destination Tag or ID Number or notes, you can Add Memo.</string>
     <string name="withdrawal_addr_memo_link">No Memo</string>
-    <string name="withdrawal_addr_no_memo_link">Memo</string>
+    <string name="withdrawal_addr_no_memo_link">Add Memo</string>
     <string name="withdrawal_addr_memo_ripple">Destination Tag or ID Number or notes. If not, you can set it No Tag.</string>
     <string name="withdrawal_addr_no_memo_ripple">If you are required to fill in Destination Tag or ID Number or notes, you can Add Tag.</string>
     <string name="withdrawal_addr_memo_link_ripple">No Tag</string>
-    <string name="withdrawal_addr_no_memo_link_ripple">Tag</string>
+    <string name="withdrawal_addr_no_memo_link_ripple">Add Tag</string>
     <string name="withdrawal_addr_memo_hint">Memo</string>
     <string name="withdrawal_addr_tag_hint">Tag</string>
     <string name="withdrawal_success">Withdrawal success</string>
