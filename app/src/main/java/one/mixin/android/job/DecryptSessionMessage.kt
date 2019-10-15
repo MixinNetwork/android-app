@@ -8,6 +8,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.Base64
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.extension.findLastUrl
+import one.mixin.android.extension.getDeviceId
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.Session
 import one.mixin.android.vo.MediaStatus
@@ -71,7 +72,7 @@ class DecryptSessionMessage : Injector() {
     private fun processSignalMessage(data: BlazeMessageData) {
         val (keyType, cipherText, _) = SignalProtocol.decodeMessageData(data.data)
         try {
-            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId, DecryptionCallback {
+            signalProtocol.decrypt(data.conversationId, data.userId, keyType, cipherText, data.category, data.sessionId, data.sessionId.getDeviceId(data.platform), DecryptionCallback {
                 if (!data.primitiveId.isNullOrBlank()) {
                     data.userId = data.primitiveId
                 }

@@ -195,7 +195,7 @@ open class SendMessageJob(
 
     private fun encryptNormalMessage(): BlazeMessage {
         return if (resendData != null) {
-            signalProtocol.encryptSessionMessage(message, resendData.userId, resendData.messageId)
+            signalProtocol.encryptSessionMessage(message, resendData.userId, resendData.messageId, resendData.sessionId)
         } else {
             signalProtocol.encryptGroupMessage(message)
         }

@@ -5,7 +5,6 @@ import one.mixin.android.websocket.BlazeMessage
 
 class SendPlaintextJob(
     private val blazeMessage: BlazeMessage,
-    val userId: String? = null,
     priority: Int = PRIORITY_SEND_MESSAGE
 ) : MixinJob(Params(priority).addTags(blazeMessage.id).groupBy("send_message_group")
         .requireWebSocketConnected().persist(), blazeMessage.id) {
